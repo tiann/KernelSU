@@ -1,0 +1,5 @@
+config KSU
+	tristate "KernelSU module"
+	default y
+	help
+	This is the KSU privilege driver for android system.
