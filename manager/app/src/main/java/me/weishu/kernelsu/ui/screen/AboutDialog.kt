@@ -1,86 +1,70 @@
+import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
+import android.util.Patterns
+import android.widget.TextView
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import me.weishu.kernelsu.HyperlinkText
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.text.util.LinkifyCompat
+import me.weishu.kernelsu.LinkifyText
 
+@Composable
+fun DefaultLinkifyText(modifier: Modifier = Modifier, text: String?) {
+    val context = LocalContext.current
+    val customLinkifyTextView = remember {
+        TextView(context)
+    }
+    AndroidView(modifier = modifier, factory = { customLinkifyTextView }) { textView ->
+        textView.text = text ?: ""
+        LinkifyCompat.addLinks(textView, Linkify.ALL)
+        Linkify.addLinks(textView, Patterns.PHONE,"tel:",
+            Linkify.sPhoneNumberMatchFilter, Linkify.sPhoneNumberTransformFilter)
+        textView.movementMethod = LinkMovementMethod.getInstance()
+    }
+}
 @Composable
 fun AboutDialog(openDialog: Boolean, onDismiss: () -> Unit) {
 
-    if (openDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                onDismiss()
-            },
-            title = {
-                Text(text = "About")
-            },
-            text = {
-                Column {
-
-                    HyperlinkText(
-                        fullText = "Author: weishu",
-                        hyperLinks = mutableMapOf(
-                            "weishu" to "https://github.com/tiann",
-                        ),
-                        textStyle = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        linkTextColor = MaterialTheme.colors.secondary,
-                    )
-
-                    HyperlinkText(
-                        fullText = "Github: https://github.com/tiann/KernelSU",
-                        hyperLinks = mutableMapOf(
-                            "https://github.com/tiann/KernelSU" to "https://github.com/tiann/KernelSU",
-                        ),
-                        textStyle = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        linkTextColor = MaterialTheme.colors.secondary,
-                    )
-
-                    HyperlinkText(
-                        fullText = "Telegram: https://t.me/KernelSU",
-                        hyperLinks = mutableMapOf(
-                            "https://t.me/KernelSU" to "https://t.me/KernelSU",
-                        ),
-                        textStyle = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        linkTextColor = MaterialTheme.colors.secondary,
-                    )
-
-                    HyperlinkText(
-                        fullText = "QQ: https://pd.qq.com/s/8lipl1brp",
-                        hyperLinks = mutableMapOf(
-                            "https://pd.qq.com/s/8lipl1brp" to "https://pd.qq.com/s/8lipl1brp",
-                        ),
-                        textStyle = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        linkTextColor = MaterialTheme.colors.secondary,
-                    )
-
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDismiss()
-                    }) {
-                    Text("OK")
-                }
-            },
-        )
+    if (!openDialog) {
+        return
     }
+
+    AlertDialog(
+        onDismissRequest = {
+            onDismiss()
+        },
+        title = {
+            Text(text = "About")
+        },
+        text = {
+            Column {
+                LinkifyText(text = "Author: weishu")
+                LinkifyText(text = "Github: https://github.com/tiann/KernelSU")
+                LinkifyText(text = "Telegram: https://t.me/KernelSU")
+                LinkifyText(text = "QQ: https://pd.qq.com/s/8lipl1brp")
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                }) {
+                Text("OK")
+            }
+        },
+    )
+
+}
+
+@Preview
+@Composable
+fun Preview_AboutDialog() {
+    AboutDialog(true, {})
 }

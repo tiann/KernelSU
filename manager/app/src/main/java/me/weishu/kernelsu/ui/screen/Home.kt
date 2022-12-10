@@ -3,15 +3,13 @@ import android.system.Os
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -19,7 +17,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.weishu.kernelsu.Natives
-import java.util.*
 
 @Composable
 fun Info(label: String, value: String) {
@@ -29,7 +26,6 @@ fun Info(label: String, value: String) {
             withStyle(
                 style = SpanStyle(
                     fontWeight = FontWeight.W900,
-                    color = MaterialTheme.colors.secondary
                 )
             ) {
                 append(value)
@@ -50,8 +46,6 @@ fun Home() {
                 .fillMaxWidth()
                 .padding(6.dp)
                 .clickable { },
-            elevation = 10.dp,
-            backgroundColor = MaterialTheme.colors.secondary
         ) {
             Row(
                 modifier = Modifier
@@ -89,8 +83,6 @@ fun Home() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(6.dp)
-                .clickable { },
-            elevation = 10.dp
         ) {
             Column(
                 modifier = Modifier.padding(10.dp)

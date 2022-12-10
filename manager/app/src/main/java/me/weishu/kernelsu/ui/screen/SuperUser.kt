@@ -1,26 +1,28 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import me.weishu.kernelsu.Natives
 import java.util.*
+
+private const val TAG = "SuperUser"
 
 class SuperUserData(
     val name: CharSequence,
@@ -39,43 +41,30 @@ fun SuperUserItem(
     onCheckedChange: (Boolean) -> Unit,
     onItemClick: () -> Unit
 ) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .clickable {
-            onItemClick()
-        }) {
 
-        Image(
-            painter = rememberDrawablePainter(drawable = superUserData.icon),
-            contentDescription = superUserData.name.toString(),
-            modifier = Modifier
-                .padding(4.dp)
-                .width(48.dp)
-                .height(48.dp)
+    Column {
+        ListItem(
+            headlineText = { Text(superUserData.name.toString()) },
+            supportingText = { Text(superUserData.description) },
+            leadingContent = {
+                Image(
+                    painter = rememberDrawablePainter(drawable = superUserData.icon),
+                    contentDescription = superUserData.name.toString(),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .width(48.dp)
+                        .height(48.dp)
+                )
+            },
+            trailingContent = {
+                Switch(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange,
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
         )
-
-        Column {
-            Text(
-                superUserData.name.toString(),
-                modifier = Modifier.padding(4.dp),
-                color = Color.Black,
-                fontSize = 16.sp
-            )
-            Text(
-                superUserData.description,
-                modifier = Modifier.padding(4.dp),
-                color = Color.Gray,
-                fontSize = 12.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            modifier = Modifier.padding(4.dp)
-        )
+        Divider(thickness = Dp.Hairline)
     }
 }
 
@@ -84,8 +73,8 @@ private fun getAppList(context: Context): List<SuperUserData> {
     val allowList = Natives.getAllowList()
     val denyList = Natives.getDenyList();
 
-    Log.i("mylog", "allowList: ${Arrays.toString(allowList)}")
-    Log.i("mylog", "denyList: ${Arrays.toString(denyList)}")
+    Log.i(TAG, "allowList: ${Arrays.toString(allowList)}")
+    Log.i(TAG, "denyList: ${Arrays.toString(denyList)}")
 
     val result = mutableListOf<SuperUserData>()
 
@@ -110,8 +99,16 @@ private fun getAppList(context: Context): List<SuperUserData> {
         }
     }
 
+    val defaultDenyList = denyList.toMutableList()
+
+    val shellUid = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) android.os.Process.SHELL_UID else 2000;
+    if (!allowList.contains(shellUid)) {
+        // shell uid is not in allow list, add it to default deny list
+        defaultDenyList.add(shellUid)
+    }
+
     // add deny list
-    for (uid in denyList) {
+    for (uid in defaultDenyList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
             continue
@@ -144,7 +141,9 @@ fun SuperUser() {
     val apps = remember { list.toMutableStateList() }
 
     if (apps.isEmpty()) {
-        Text("No apps found")
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No apps request superuser")
+        }
         return
     }
 
@@ -171,4 +170,10 @@ fun SuperUser() {
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun Preview_SuperUser() {
+    SuperUser()
 }

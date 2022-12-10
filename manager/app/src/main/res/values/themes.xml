@@ -2,6 +2,5 @@
 <resources>
 
     <style name="Theme.KernelSU" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/yellow_700</item>
     </style>
 </resources>
