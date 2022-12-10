@@ -102,7 +102,7 @@ private fun getAppList(context: Context): List<SuperUserData> {
     val defaultDenyList = denyList.toMutableList()
 
     val shellUid = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) android.os.Process.SHELL_UID else 2000;
-    if (!allowList.contains(shellUid)) {
+    if (!allowList.contains(shellUid) && !denyList.contains(shellUid)) {
         // shell uid is not in allow list, add it to default deny list
         defaultDenyList.add(shellUid)
     }
