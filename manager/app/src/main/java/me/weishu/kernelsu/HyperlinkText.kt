@@ -1,6 +1,7 @@
 package me.weishu.kernelsu
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +28,7 @@ fun LinkifyText(text: String, modifier: Modifier = Modifier) {
         linksList.forEach {
             addStyle(
                 style = SpanStyle(
-                    color = Color.Companion.Blue,
+                    color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline
                 ),
                 start = it.start,
