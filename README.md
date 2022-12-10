@@ -11,11 +11,12 @@ A Kernel based root solution for Android GKI.
 
 ### Build GKI Kernel
 
-1. Put the `kernel` directory to GKI source's `common/drivers`
-2. Edit `common/drivers/Makefile` and add the driver to target
-3. Follow the [GKI build instruction](https://source.android.com/docs/core/architecture/kernel/generic-kernel-image) and build the kernel.
+1. Download the GKI source first, you can refer the [GKI build instruction](https://source.android.com/docs/core/architecture/kernel/generic-kernel-image)
+2. cd `<GKI kernel source dir>`
+3. `curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -`
+4. Build the kernel.
 
-### Build App
+### Build the Manager App
 
 Just open Android Studio and import the project.
 
