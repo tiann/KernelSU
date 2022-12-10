@@ -11,8 +11,8 @@ android {
         applicationId "me.weishu.kernelsu"
         minSdk 26
         targetSdk 32
-        versionCode 10011
-        versionName "0.1.1"
+        versionCode 10012
+        versionName "0.1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
