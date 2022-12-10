@@ -24,16 +24,17 @@ import me.weishu.kernelsu.getKernelVersion
 @Composable
 fun Info(label: String, value: String) {
     Text(
-        buildAnnotatedString {
+        text = buildAnnotatedString {
             append("$label: ")
             withStyle(
                 style = SpanStyle(
-                    fontWeight = FontWeight.W900,
+                    fontWeight = FontWeight.W500,
                 )
             ) {
                 append(value)
             }
-        }
+        },
+        softWrap = true,
     )
 }
 

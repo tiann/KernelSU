@@ -72,6 +72,8 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:$nav_version"
 
     implementation "com.google.accompanist:accompanist-drawablepainter:0.28.0"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
+
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
 
 
