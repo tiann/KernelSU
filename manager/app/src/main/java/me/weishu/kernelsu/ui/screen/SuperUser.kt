@@ -82,6 +82,8 @@ private fun getAppList(context: Context): List<SuperUserData> {
     for (uid in allowList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
+            result.add(SuperUserData("Unknown", "Unknown",
+                context.getDrawable(android.R.drawable.sym_def_app_icon)!!, uid, true))
             continue
         }
 
@@ -111,6 +113,8 @@ private fun getAppList(context: Context): List<SuperUserData> {
     for (uid in defaultDenyList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
+            result.add(SuperUserData("Unknown", "Unknown",
+                context.getDrawable(android.R.drawable.sym_def_app_icon)!!, uid, true))
             continue
         }
 
