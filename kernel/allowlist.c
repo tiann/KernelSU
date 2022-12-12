@@ -41,6 +41,15 @@ static struct work_struct ksu_load_work;
 
 bool persistent_allow_list(void);
 
+struct file *permissive_filp_open(const char * path, int flags, umode_t mode) {
+  struct file* fp;
+  // fixme: u:r:kernel:s0 don't have permission to write /data/adb...
+  setenforce(false);
+  fp = filp_open(path, flags, mode);
+  setenforce(true);
+  return fp;
+}
+
 bool ksu_allow_uid(uid_t uid, bool allow) {
 
   // find the node first!
@@ -113,10 +122,7 @@ void do_persistent_allow_list(struct work_struct *work) {
   struct list_head *pos = NULL;
   loff_t off = 0;
 
-  // fixme: u:r:kernel:s0 don't have permission to write /data/adb...
-  setenforce(0);
-  struct file *fp = filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
-  setenforce(1);
+  struct file *fp = permissive_filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
 
   if (IS_ERR(fp)) {
     pr_err("save_allow_list creat file failed: %d\n", PTR_ERR(fp));
@@ -156,17 +162,22 @@ void do_load_allow_list(struct work_struct *work) {
 
   fp = filp_open("/data/adb/", O_RDONLY, 0);
   if (IS_ERR(fp)) {
+    int errno = PTR_ERR(fp);
     pr_err("load_allow_list open '/data/adb' failed: %d\n", PTR_ERR(fp));
-    // we cannot use mdelay, it cause bootloop.
-    msleep(2000);
-
-    queue_work(ksu_workqueue, &ksu_load_work);
-    return;
+    if (errno == -ENOENT) {
+      msleep(2000);
+      queue_work(ksu_workqueue, &ksu_load_work);
+      return;
+    } else {
+      pr_info("load_allow list dir exist now!");
+    }
+  } else {
+    filp_close(fp, 0);
   }
-  filp_close(fp, 0);
 
+#if 1
   // load allowlist now!
-  fp = filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
+  fp = permissive_filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 
   if (IS_ERR(fp)) {
     pr_err("load_allow_list open file failed: %d\n", PTR_ERR(fp));
@@ -189,10 +200,6 @@ void do_load_allow_list(struct work_struct *work) {
   while (true) {
     u32 uid;
     bool allow = false;
-    if (n++ > 10) {
-      pr_info("load_allow_list n: %d\n", n);
-      break;
-    }
     ret = kernel_read(fp, &uid, sizeof(uid), &off);
     if (ret <= 0) {
       pr_info("load_allow_list read err: %d\n", ret);
@@ -208,6 +215,7 @@ void do_load_allow_list(struct work_struct *work) {
 exit:
 
   filp_close(fp, 0);
+#endif
 }
 
 static int init_work(void) {
