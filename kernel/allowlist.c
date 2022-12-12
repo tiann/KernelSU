@@ -20,6 +20,10 @@
 #include <linux/delay.h> // msleep
 
 #include "klog.h"
+#include "selinux/selinux.h"
+
+#define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
+#define FILE_FORMAT_VERSION 1 // u32
 
 struct perm_data {
   struct list_head list;
@@ -29,7 +33,7 @@ struct perm_data {
 
 static struct list_head allow_list;
 
-#define KERNEL_SU_DIR "/data/adb/kernelsu"
+#define KERNEL_SU_ALLOWLIST "/data/adb/.ksu_allowlist"
 
 static struct workqueue_struct *ksu_workqueue;
 static struct work_struct ksu_save_work;
@@ -77,7 +81,7 @@ bool ksu_is_allow_uid(uid_t uid) {
   struct list_head *pos = NULL;
   list_for_each(pos, &allow_list) {
     p = list_entry(pos, struct perm_data, list);
-    pr_info("uid :%d, allow: %d\n", p->uid, p->allow);
+    pr_info("is_allow_uid uid :%d, allow: %d\n", p->uid, p->allow);
     if (uid == p->uid) {
       return p->allow;
     }
@@ -92,7 +96,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow) {
   int i = 0;
   list_for_each(pos, &allow_list) {
     p = list_entry(pos, struct perm_data, list);
-    pr_info("uid: %d allow: %d\n", p->uid, p->allow);
+    pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
     if (p->allow == allow) {
       array[i++] = p->uid;
     }
@@ -103,25 +107,41 @@ bool ksu_get_allow_list(int *array, int *length, bool allow) {
 }
 
 void do_persistent_allow_list(struct work_struct *work) {
+  u32 magic = FILE_MAGIC;
+  u32 version = FILE_FORMAT_VERSION;
   struct perm_data *p = NULL;
   struct list_head *pos = NULL;
   loff_t off = 0;
 
-  struct file *fp = filp_open("/data/adb/ksu_list", O_WRONLY | O_CREAT, 0644);
+  // fixme: u:r:kernel:s0 don't have permission to write /data/adb...
+  setenforce(0);
+  struct file *fp = filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
+  setenforce(1);
 
   if (IS_ERR(fp)) {
-    pr_err("work creat file failed: %d\n", PTR_ERR(fp));
+    pr_err("save_allow_list creat file failed: %d\n", PTR_ERR(fp));
     return;
   }
-  pr_info("work create file success!\n");
+
+  // store magic and version
+  if (kernel_write(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
+    pr_err("save_allow_list write magic failed.\n");
+    goto exit;
+  }
+
+  if (kernel_write(fp, &version, sizeof(version), &off) != sizeof(version)) {
+    pr_err("save_allow_list write version failed.\n");
+    goto exit;
+  }
 
   list_for_each(pos, &allow_list) {
     p = list_entry(pos, struct perm_data, list);
-    pr_info("uid :%d, allow: %d\n", p->uid, p->allow);
+    pr_info("save allow list uid :%d, allow: %d\n", p->uid, p->allow);
     kernel_write(fp, &p->uid, sizeof(p->uid), &off);
     kernel_write(fp, &p->allow, sizeof(p->allow), &off);
   }
 
+exit:
   filp_close(fp, 0);
 }
 
@@ -130,11 +150,15 @@ void do_load_allow_list(struct work_struct *work) {
   loff_t off = 0;
   ssize_t ret = 0;
   struct file *fp = NULL;
+  int n = 0;
+  u32 magic;
+  u32 version;
 
   fp = filp_open("/data/adb/", O_RDONLY, 0);
   if (IS_ERR(fp)) {
-    pr_err("work open '/data/adb' failed: %d\n", PTR_ERR(fp));
-    mdelay(2000);
+    pr_err("load_allow_list open '/data/adb' failed: %d\n", PTR_ERR(fp));
+    // we cannot use mdelay, it cause bootloop.
+    msleep(2000);
 
     queue_work(ksu_workqueue, &ksu_load_work);
     return;
@@ -142,21 +166,36 @@ void do_load_allow_list(struct work_struct *work) {
   filp_close(fp, 0);
 
   // load allowlist now!
-  fp = filp_open("/data/adb/ksu_list", O_RDONLY, 0);
+  fp = filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 
   if (IS_ERR(fp)) {
-    pr_err("work open file failed: %d\n", PTR_ERR(fp));
+    pr_err("load_allow_list open file failed: %d\n", PTR_ERR(fp));
     return;
   }
-  pr_info("work open file success!\n");
+
+  // verify magic
+  if (kernel_read(fp, &magic, sizeof(magic), &off) != sizeof(magic) || magic != FILE_MAGIC) {
+    pr_err("allowlist file invalid: %d!\n", magic);
+    goto exit;
+  }
+
+  if (kernel_read(fp, &version, sizeof(version), &off) != sizeof(version)) {
+    pr_err("allowlist read version: %d failed\n", version);
+    goto exit;
+  }
+
+  pr_info("allowlist version: %d\n", version);
 
   while (true) {
     u32 uid;
     bool allow = false;
+    if (n++ > 10) {
+      pr_info("load_allow_list n: %d\n", n);
+      break;
+    }
     ret = kernel_read(fp, &uid, sizeof(uid), &off);
-    pr_info("kernel read ret: %d, off: %ld\n", ret, off);
     if (ret <= 0) {
-      pr_info("read err: %d\n", ret);
+      pr_info("load_allow_list read err: %d\n", ret);
       break;
     }
     ret = kernel_read(fp, &allow, sizeof(allow), &off);
@@ -166,11 +205,13 @@ void do_load_allow_list(struct work_struct *work) {
     ksu_allow_uid(uid, allow);
   }
 
+exit:
+
   filp_close(fp, 0);
 }
 
 static int init_work(void) {
-  ksu_workqueue = alloc_workqueue("kernelsu_work", 0, 0);
+  ksu_workqueue = alloc_workqueue("kernelsu_work_queue", 0, 0);
   INIT_WORK(&ksu_save_work, do_persistent_allow_list);
   INIT_WORK(&ksu_load_work, do_load_allow_list);
   return 0;
@@ -182,18 +223,14 @@ bool persistent_allow_list(void) {
   return true;
 }
 
-bool load_allow_list(void) {
-  queue_work(ksu_workqueue, &ksu_load_work);
-  return true;
-}
-
 bool ksu_allowlist_init(void) {
 
   INIT_LIST_HEAD(&allow_list);
 
   init_work();
 
-  // load_allow_list();
+  // start load allow list.
+  queue_work(ksu_workqueue, &ksu_load_work);
 
   return true;
 }

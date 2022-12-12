@@ -84,3 +84,9 @@ void setup_selinux() {
         }
     }
 }
+
+void setenforce(bool enforce) {
+#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+	selinux_state.enforcing = enforce;
+#endif
+}
