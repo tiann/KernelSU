@@ -5,4 +5,6 @@ void setup_selinux();
 
 void setenforce(bool);
 
+bool getenforce();
+
 #endif

@@ -90,3 +90,11 @@ void setenforce(bool enforce) {
 	selinux_state.enforcing = enforce;
 #endif
 }
+
+bool getenforce() {
+#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+	return selinux_state.enforcing;
+#else
+    return false;
+#endif
+}

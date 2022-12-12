@@ -44,9 +44,10 @@ bool persistent_allow_list(void);
 struct file *permissive_filp_open(const char * path, int flags, umode_t mode) {
   struct file* fp;
   // fixme: u:r:kernel:s0 don't have permission to write /data/adb...
-  setenforce(false);
+  bool enforcing = getenforce();
+  if (enforcing) setenforce(false);
   fp = filp_open(path, flags, mode);
-  setenforce(true);
+  if (enforcing) setenforce(true);
   return fp;
 }
 
