@@ -23,6 +23,7 @@
 #include "klog.h"
 #include "apk_sign.h"
 #include "allowlist.h"
+#include "arch.h"
 
 #define KERNEL_SU_VERSION 3
 
@@ -149,12 +150,12 @@ static bool is_allow_su() {
 
 static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 
-	struct pt_regs* real_regs = (struct pt_regs*) regs->regs[0];
-    int option = (int) real_regs->regs[0];
-    unsigned long arg2 = (unsigned long) real_regs->regs[1];
-    unsigned long arg3 = (unsigned long) real_regs->regs[2];
-    unsigned long arg4 = (unsigned long) real_regs->regs[3];
-    unsigned long arg5 = (unsigned long) real_regs->regs[4];
+	struct pt_regs* real_regs = (struct pt_regs*) PT_REGS_PARM1(regs);
+    int option = (int) PT_REGS_PARM1(real_regs);
+    unsigned long arg2 = (unsigned long) PT_REGS_PARM2(real_regs);
+    unsigned long arg3 = (unsigned long) PT_REGS_PARM3(real_regs);
+    unsigned long arg4 = (unsigned long) PT_REGS_PARM4(real_regs);
+    unsigned long arg5 = (unsigned long) PT_REGS_PARM5(real_regs);
 
 	// if success, we modify the arg5 as result!
 	u32* result = (u32*) arg5;
@@ -221,7 +222,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 }
 
 static struct kprobe kp = {
-    .symbol_name = "__arm64_sys_prctl",
+    .symbol_name = PRCTL_SYMBOL,
     .pre_handler = handler_pre,
 };
 
