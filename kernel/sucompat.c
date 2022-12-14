@@ -108,8 +108,6 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs) {
         escape_to_root(false);
     }
 
-    putname(filename);
-
     return 0;
 }
 
