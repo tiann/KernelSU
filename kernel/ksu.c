@@ -38,7 +38,7 @@
 #define CMD_GET_ALLOW_LIST 5
 #define CMD_GET_DENY_LIST 6
 
-static void escape_to_root(void) {
+void escape_to_root(bool disable_seccomp) {
 	struct cred* cred;
 
 	cred = (struct cred *)__task_cred(current);
@@ -56,10 +56,11 @@ static void escape_to_root(void) {
 	memset(&cred->cap_bset, 0xff, sizeof(cred->cap_bset));
 	memset(&cred->cap_ambient, 0xff, sizeof(cred->cap_ambient));
 
-	// DISABLE SECCOMP
-	current_thread_info()->flags = 0;
-	current->seccomp.mode = 0;
-	current->seccomp.filter = NULL;
+	if (disable_seccomp) {
+		current_thread_info()->flags = 0;
+		current->seccomp.mode = 0;
+		current->seccomp.filter = NULL;
+	}
 
 	setup_selinux();
 }
@@ -148,6 +149,8 @@ static bool is_allow_su() {
 	return ksu_is_allow_uid(uid);
 }
 
+extern void enable_sucompat();
+
 static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 
 	struct pt_regs* real_regs = (struct pt_regs*) PT_REGS_PARM1(regs);
@@ -179,7 +182,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 	if (arg2 == CMD_GRANT_ROOT) {
 		if (is_allow_su()) {
 			pr_info("allow root for: %d\n", current_uid());
-			escape_to_root();
+			escape_to_root(true);
 		} else {
 			pr_info("deny root for: %d\n", current_uid());
 			// add it to deny list!
@@ -232,6 +235,8 @@ int kernelsu_init(void){
 	ksu_allowlist_init();
 
 	rc = register_kprobe(&kp);
+
+	enable_sucompat();
 
 	return rc;
 }

@@ -91,7 +91,7 @@ bool ksu_is_allow_uid(uid_t uid) {
   struct list_head *pos = NULL;
   list_for_each(pos, &allow_list) {
     p = list_entry(pos, struct perm_data, list);
-    pr_info("is_allow_uid uid :%d, allow: %d\n", p->uid, p->allow);
+    // pr_info("is_allow_uid uid :%d, allow: %d\n", p->uid, p->allow);
     if (uid == p->uid) {
       return p->allow;
     }
