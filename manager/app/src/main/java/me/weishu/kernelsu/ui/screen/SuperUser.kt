@@ -101,16 +101,8 @@ private fun getAppList(context: Context): List<SuperUserData> {
         }
     }
 
-    val defaultDenyList = denyList.toMutableList()
-
-    val shellUid = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) android.os.Process.SHELL_UID else 2000;
-    if (!allowList.contains(shellUid) && !denyList.contains(shellUid)) {
-        // shell uid is not in allow list, add it to default deny list
-        defaultDenyList.add(shellUid)
-    }
-
     // add deny list
-    for (uid in defaultDenyList) {
+    for (uid in denyList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
             result.add(SuperUserData("Unknown", "Unknown",
@@ -130,6 +122,24 @@ private fun getAppList(context: Context): List<SuperUserData> {
                 )
             )
         }
+    }
+
+    // todo: use root to get all uids if possible
+    val apps = pm.getInstalledApplications(0)
+    // add other apps
+    for (app in apps) {
+        if (allowList.contains(app.uid) || denyList.contains(app.uid)) {
+            continue
+        }
+        result.add(
+            SuperUserData(
+                name = app.loadLabel(pm),
+                description = app.packageName,
+                icon = app.loadIcon(pm),
+                uid = app.uid,
+                initialChecked = false
+            )
+        )
     }
 
     return result
