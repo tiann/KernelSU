@@ -4,7 +4,6 @@
 
 #if defined(__aarch64__)
 
-#define __PT_REGS_CAST(x) ((const struct user_pt_regs *)(x))
 #define __PT_PARM1_REG regs[0]
 #define __PT_PARM2_REG regs[1]
 #define __PT_PARM3_REG regs[2]

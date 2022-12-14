@@ -54,8 +54,10 @@ static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs) {
     }
     if (!memcmp(filename->name, su, sizeof(su))) {
         pr_info("faccessat su->sh!\n");
-        regs->regs[1] = sh_user_path();
+        PT_REGS_PARM2(regs) = sh_user_path();
     }
+
+    putname(filename);
 
     return 0;
 }
@@ -76,8 +78,10 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs) {
     }
     if (!memcmp(filename->name, su, sizeof(su))) {
         pr_info("newfstatat su->sh!\n");
-        regs->regs[1] = sh_user_path();
+        PT_REGS_PARM2(regs) = sh_user_path();
     }
+
+    putname(filename);
 
     return 0;
 }
@@ -103,6 +107,8 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs) {
 
         escape_to_root(false);
     }
+
+    putname(filename);
 
     return 0;
 }
