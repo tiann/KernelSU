@@ -60,6 +60,14 @@ android {
             version '3.18.1'
         }
     }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def versionName = variant.versionName
+            def buildType = variant.buildType.name
+            outputFileName = "KernelSU_${versionName}-${buildType}.apk"
+        }
+    }
 }
 
 dependencies {
