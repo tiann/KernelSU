@@ -25,9 +25,9 @@ import java.util.*
 private const val TAG = "SuperUser"
 
 class SuperUserData(
-    val name: CharSequence,
+    val name: () -> CharSequence,
     val description: String,
-    val icon: Drawable,
+    val icon: () -> Drawable,
     val uid: Int,
     initialChecked: Boolean = false
 ) {
@@ -44,11 +44,11 @@ fun SuperUserItem(
 
     Column {
         ListItem(
-            headlineText = { Text(superUserData.name.toString()) },
+            headlineText = { Text(superUserData.name().toString()) },
             supportingText = { Text(superUserData.description) },
             leadingContent = {
                 Image(
-                    painter = rememberDrawablePainter(drawable = superUserData.icon),
+                    painter = rememberDrawablePainter(drawable = superUserData.icon()),
                     contentDescription = superUserData.name.toString(),
                     modifier = Modifier
                         .padding(4.dp)
@@ -78,12 +78,15 @@ private fun getAppList(context: Context): List<SuperUserData> {
 
     val result = mutableListOf<SuperUserData>()
 
+    val unknownName = { "Unknown" }
+    val unknownDesc = "Unknown"
+    val defaultIcon = { context.getDrawable(android.R.drawable.sym_def_app_icon)!! }
+
     // add allow list
     for (uid in allowList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
-            result.add(SuperUserData("Unknown", "Unknown",
-                context.getDrawable(android.R.drawable.sym_def_app_icon)!!, uid, true))
+            result.add(SuperUserData(unknownName, unknownDesc, defaultIcon, uid, true))
             continue
         }
 
@@ -91,9 +94,9 @@ private fun getAppList(context: Context): List<SuperUserData> {
             val applicationInfo = pm.getApplicationInfo(packageName, 0)
             result.add(
                 SuperUserData(
-                    name = applicationInfo.loadLabel(pm),
+                    name = { applicationInfo.loadLabel(pm) },
                     description = applicationInfo.packageName,
-                    icon = applicationInfo.loadIcon(pm),
+                    icon = { applicationInfo.loadIcon(pm) },
                     uid = uid,
                     initialChecked = true
                 )
@@ -105,8 +108,11 @@ private fun getAppList(context: Context): List<SuperUserData> {
     for (uid in denyList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
-            result.add(SuperUserData("Unknown", "Unknown",
-                context.getDrawable(android.R.drawable.sym_def_app_icon)!!, uid, true))
+            result.add(
+                SuperUserData(
+                    unknownName, unknownDesc, defaultIcon, uid, true
+                )
+            )
             continue
         }
 
@@ -114,9 +120,9 @@ private fun getAppList(context: Context): List<SuperUserData> {
             val applicationInfo = pm.getApplicationInfo(packageName, 0)
             result.add(
                 SuperUserData(
-                    name = applicationInfo.loadLabel(pm),
+                    name = { applicationInfo.loadLabel(pm) },
                     description = applicationInfo.packageName,
-                    icon = applicationInfo.loadIcon(pm),
+                    icon = { applicationInfo.loadIcon(pm) },
                     uid = uid,
                     initialChecked = false
                 )
@@ -133,9 +139,9 @@ private fun getAppList(context: Context): List<SuperUserData> {
         }
         result.add(
             SuperUserData(
-                name = app.loadLabel(pm),
+                name = { app.loadLabel(pm) },
                 description = app.packageName,
-                icon = app.loadIcon(pm),
+                icon = { app.loadIcon(pm) },
                 uid = app.uid,
                 initialChecked = false
             )
