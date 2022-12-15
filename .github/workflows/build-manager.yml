@@ -21,7 +21,7 @@ jobs:
     - name: Extract keystore
       if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
       run: |
-        if [ ! -z "${{ secrets.KEY_STORE }}" ]; then
+        if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
           echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}' >> sign.properties
           echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}' >> sign.properties
           echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}' >> sign.properties
