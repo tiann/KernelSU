@@ -1,0 +1,24 @@
+name: Build Userspace
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r25b
+        local-cache: true
+    - name: Build with NDK
+      working-directory: ./userspace
+      run: ndk-build
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: su
+        path: ./userspace/libs
+      

@@ -7,6 +7,10 @@ android {
     namespace 'me.weishu.kernelsu'
     compileSdk 33
 
+    signingConfigs {
+        sign
+    }
+
     defaultConfig {
         applicationId "me.weishu.kernelsu"
         minSdk 26
@@ -29,6 +33,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.sign
         }
     }
     compileOptions {
@@ -84,3 +89,5 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_ui_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_ui_version"
 }
+
+apply from: rootProject.file('sign.gradle')

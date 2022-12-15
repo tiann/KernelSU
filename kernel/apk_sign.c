@@ -112,9 +112,6 @@ clean:
     return sign;
 }
 
-#define EXPECTED_SIZE 0x033b
-#define EXPECTED_HASH 0xb0b91415
-
 int is_manager_apk(char* path) {
     return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
 }
