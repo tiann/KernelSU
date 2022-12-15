@@ -164,7 +164,7 @@ void do_load_allow_list(struct work_struct *work) {
   fp = filp_open("/data/adb/", O_RDONLY, 0);
   if (IS_ERR(fp)) {
     int errno = PTR_ERR(fp);
-    pr_err("load_allow_list open '/data/adb' failed: %d\n", PTR_ERR(fp));
+    pr_err("load_allow_list open '/data/adb': %d\n", PTR_ERR(fp));
     if (errno == -ENOENT) {
       msleep(2000);
       queue_work(ksu_workqueue, &ksu_load_work);
@@ -232,14 +232,19 @@ bool persistent_allow_list(void) {
   return true;
 }
 
+bool ksu_load_allow_list(void) {
+  queue_work(ksu_workqueue, &ksu_load_work);
+  return true;
+}
+
 bool ksu_allowlist_init(void) {
 
   INIT_LIST_HEAD(&allow_list);
 
   init_work();
 
-  // start load allow list.
-  queue_work(ksu_workqueue, &ksu_load_work);
+  // start load allow list, we load it before app_process exec now, refer: sucompat#execve_handler_pre
+  // ksu_load_allow_list();
 
   return true;
 }
