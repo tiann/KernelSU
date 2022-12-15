@@ -11,7 +11,7 @@ A Kernel based root solution for Android GKI.
 
 ### Build GKI Kernel
 
-1. Download the GKI source first, you can refer the [GKI build instruction](https://source.android.com/docs/core/architecture/kernel/generic-kernel-image)
+1. Download the GKI source first, you can refer the [GKI build instruction](https://source.android.com/docs/setup/build/building-kernels)
 2. cd `<GKI kernel source dir>`
 3. `curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -`
 4. Build the kernel.
