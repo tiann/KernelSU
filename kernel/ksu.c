@@ -140,11 +140,6 @@ static bool is_allow_su() {
 		return true;
 	}
 
-	if (uid == 0) {
-		// we are already root, allow!
-		return true;
-	}
-
 	return ksu_is_allow_uid(uid);
 }
 

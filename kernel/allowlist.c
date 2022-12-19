@@ -87,6 +87,11 @@ exit:
 }
 
 bool ksu_is_allow_uid(uid_t uid) {
+  if (uid == 0) {
+    // already root
+    return true;
+  }
+
   struct perm_data *p = NULL;
   struct list_head *pos = NULL;
   list_for_each(pos, &allow_list) {
