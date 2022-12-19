@@ -8,6 +8,7 @@
 #include <linux/printk.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+#include <linux/sched/task_stack.h>
 #include <linux/slab.h>
 #include <asm-generic/errno-base.h>
 
