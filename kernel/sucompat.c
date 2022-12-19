@@ -24,7 +24,7 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
-extern void escape_to_root(bool);
+extern void escape_to_root();
 
 static void __user *userspace_stack_buffer(const void *d, size_t len) {
 	/* To avoid having to mmap a page in userspace, just write below the stack pointer. */
@@ -113,7 +113,7 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs) {
         pr_info("do_execveat_common su found\n");
         memcpy((void*) filename->name, sh, sizeof(sh));
 
-        escape_to_root(false);
+        escape_to_root();
     }
 
     return 0;
