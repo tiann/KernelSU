@@ -78,15 +78,11 @@ private fun getAppList(context: Context): List<SuperUserData> {
 
     val result = mutableListOf<SuperUserData>()
 
-    val unknownName = { "Unknown" }
-    val unknownDesc = "Unknown"
-    val defaultIcon = { context.getDrawable(android.R.drawable.sym_def_app_icon)!! }
-
     // add allow list
     for (uid in allowList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
-            result.add(SuperUserData(unknownName, unknownDesc, defaultIcon, uid, true))
+            Log.w(TAG, "uid $uid has no package")
             continue
         }
 
@@ -108,11 +104,7 @@ private fun getAppList(context: Context): List<SuperUserData> {
     for (uid in denyList) {
         val packagesForUid = pm.getPackagesForUid(uid)
         if (packagesForUid == null || packagesForUid.isEmpty()) {
-            result.add(
-                SuperUserData(
-                    unknownName, unknownDesc, defaultIcon, uid, true
-                )
-            )
+            Log.w(TAG, "uid $uid has no package")
             continue
         }
 
