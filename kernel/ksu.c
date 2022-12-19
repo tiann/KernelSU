@@ -235,10 +235,14 @@ int kernelsu_init(void){
 	ksu_allowlist_init();
 
 	rc = register_kprobe(&kp);
+	if (rc) {
+		pr_info("prctl kprobe failed: %d, please check your kernel config.\n", rc);
+		return rc;
+	}
 
 	enable_sucompat();
 
-	return rc;
+	return 0;
 }
 
 void kernelsu_exit(void){
@@ -250,6 +254,10 @@ void kernelsu_exit(void){
 
 module_init(kernelsu_init);
 module_exit(kernelsu_exit);
+
+#ifndef CONFIG_KPROBES
+#error("`CONFIG_KPROBES` must be enabled for KernelSU!")
+#endif
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("weishu");
