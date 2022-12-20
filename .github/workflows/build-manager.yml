@@ -2,8 +2,12 @@ name: Build Manager
 on:
   push:
     branches: [ "main" ]
+    paths: 
+      - 'manager/**'
   pull_request:
     branches: [ "main" ]
+    paths: 
+      - 'manager/**'
 jobs:
   build:
     runs-on: ubuntu-latest
