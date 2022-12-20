@@ -1,0 +1,40 @@
+name: Build Kernel
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - version: android12-5.10-81
+            tag: common-android12-5.10-2022-03
+          - version: android12-5.10-101
+            tag: common-android12-5.10-2022-05
+          - version: android12-5.10-110
+            tag: common-android12-5.10-2022-07
+          - version: android12-5.10-136
+            tag: common-android12-5.10-2022-11
+
+    name: Build aarch64-${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download kernel source
+      run: |
+        git clone https://gerrit.googlesource.com/git-repo
+        mkdir android-kernel && cd android-kernel
+        ../git-repo/repo init -u https://android.googlesource.com/kernel/manifest -b ${{ matrix.tag }}
+        ../git-repo/repo sync
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+    
+    - name: Build kernel
+      working-directory: android-kernel
+      run: LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
+      
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: kernel-aarch64-${{ matrix.version }}
+        path: android-kernel/out/${{ matrix.tag }}/dist/Image
