@@ -57,7 +57,11 @@ void escape_to_root() {
 	memset(&cred->cap_ambient, 0xff, sizeof(cred->cap_ambient));
 
 	// disable seccomp
+#ifdef CONFIG_GENERIC_ENTRY
+	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
+#else
 	current_thread_info()->flags &= ~TIF_SECCOMP;
+#endif
 	current->seccomp.mode = 0;
 	current->seccomp.filter = NULL;
 
