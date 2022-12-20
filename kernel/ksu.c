@@ -83,21 +83,25 @@ static bool is_manager() {
 }
 
 static bool become_manager() {
-	if (__manager_uid != 0) {
-		pr_info("manager already exist: %d\n", __manager_uid);
-		return true;
-	}
-	// list current process's files
-	struct files_struct *current_files; 
  	struct fdtable *files_table;
  	int i = 0;
  	struct path files_path;
 	char *cwd;
- 	char *buf = (char *)kmalloc(GFP_KERNEL, PATH_MAX);
+ 	char *buf;
 	bool result = false;
 
- 	current_files = current->files;
-    files_table = files_fdtable(current_files);
+	if (__manager_uid != 0) {
+		pr_info("manager already exist: %d\n", __manager_uid);
+		return true;
+	}
+
+ 	buf = (char *) kmalloc(GFP_KERNEL, PATH_MAX);
+	if (!buf) {
+		pr_err("kalloc path failed.\n");
+		return false;
+	}
+
+    files_table = files_fdtable(current->files);
 
 	// todo: use iterate_fd
  	while(files_table->fd[i] != NULL) { 
@@ -168,7 +172,9 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 		// someone wants to be root manager, just check it!
 		bool success = become_manager();
 		if (success) {
-			copy_to_user(result, &reply_ok, sizeof(reply_ok));
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("prctl reply error\n");
+			}
 		}
 		return 0;
 	}
@@ -198,21 +204,29 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 		uid_t uid = (uid_t) arg3;
 		success = ksu_allow_uid(uid, allow);
 		if (success) {
-			copy_to_user(result, &reply_ok, sizeof(reply_ok));
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("prctl reply error, cmd: %d\n", arg2);
+			}
 		}
 	}  else if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
 		u32 array[128];
 		u32 array_length;
 		bool success = ksu_get_allow_list(array, &array_length, arg2 == CMD_GET_ALLOW_LIST);
 		if (success) {
-			copy_to_user(arg4, &array_length, sizeof(array_length));
-			copy_to_user(arg3, array, sizeof(u32) * array_length);
-
-			copy_to_user(result, &reply_ok, sizeof(reply_ok));
+			if (!copy_to_user(arg4, &array_length, sizeof(array_length)) && 
+					!copy_to_user(arg3, array, sizeof(u32) * array_length)) {
+				if (!copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+					pr_err("prctl reply error, cmd: %d\n", arg2);
+				}
+			} else {
+				pr_err("prctl copy allowlist error\n");
+			}
 		}
 	} else if (arg2 == CMD_GET_VERSION) {
 		u32 version = KERNEL_SU_VERSION;
-		copy_to_user(arg3, &version, sizeof(version));
+		if (copy_to_user(arg3, &version, sizeof(version))) {
+			pr_err("prctl reply error, cmd: %d\n", arg2);
+		}
 	}
 
     return 0;

@@ -87,13 +87,14 @@ exit:
 }
 
 bool ksu_is_allow_uid(uid_t uid) {
+  struct perm_data *p = NULL;
+  struct list_head *pos = NULL;
+
   if (uid == 0) {
     // already root
     return true;
   }
 
-  struct perm_data *p = NULL;
-  struct list_head *pos = NULL;
   list_for_each(pos, &allow_list) {
     p = list_entry(pos, struct perm_data, list);
     // pr_info("is_allow_uid uid :%d, allow: %d\n", p->uid, p->allow);
@@ -162,7 +163,6 @@ void do_load_allow_list(struct work_struct *work) {
   loff_t off = 0;
   ssize_t ret = 0;
   struct file *fp = NULL;
-  int n = 0;
   u32 magic;
   u32 version;
 

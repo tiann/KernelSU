@@ -93,13 +93,14 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs) {
     const char sh[] = SH_PATH;
     const char su[] = SU_PATH;
 
+    static const char app_process[] = "/system/bin/app_process";
+    static bool first_app_process = true;
+
     filename = PT_REGS_PARM2(regs);
     if (IS_ERR(filename)) {
         return 0;
     }
 
-    static const char app_process[] = "/system/bin/app_process";
-    static bool first_app_process = true;
     if (first_app_process && !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
         first_app_process = false;
         pr_info("exec app_process, /data prepared!\n");
