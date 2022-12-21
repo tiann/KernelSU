@@ -7,4 +7,6 @@ void setenforce(bool);
 
 bool getenforce();
 
+bool is_ksu_domain();
+
 #endif

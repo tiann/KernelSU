@@ -91,8 +91,8 @@ bool ksu_is_allow_uid(uid_t uid) {
   struct list_head *pos = NULL;
 
   if (uid == 0) {
-    // already root
-    return true;
+    // already root, but only allow our domain.
+    return is_ksu_domain();
   }
 
   list_for_each(pos, &allow_list) {
