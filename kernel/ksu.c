@@ -25,7 +25,7 @@
 #include "allowlist.h"
 #include "arch.h"
 
-#define KERNEL_SU_VERSION 3
+#define KERNEL_SU_VERSION 4
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
 
