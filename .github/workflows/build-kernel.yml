@@ -1,0 +1,43 @@
+name: Build Kernel
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - version: android12-5.10-81
+            tag: android12-5.10-2022-03
+          - version: android12-5.10-101
+            tag: android12-5.10-2022-05
+          - version: android12-5.10-110
+            tag: android12-5.10-2022-07
+          - version: android12-5.10-136
+            tag: android12-5.10-2022-11
+
+    name: Build aarch64-${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download kernel source
+      run: |
+        git clone https://gerrit.googlesource.com/git-repo
+        mkdir android-kernel && cd android-kernel
+        ../git-repo/repo init -u https://android.googlesource.com/kernel/manifest -b common-${{ matrix.tag }}
+        ../git-repo/repo sync
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+        curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-${{ matrix.tag }}_r1.zip
+        unzip gki-kernel.zip
+        tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")
+    
+    - name: Build kernel
+      working-directory: android-kernel
+      run: BUILD_BOOT_IMG=1 SKIP_VENDOR_BOOT=1 KERNEL_BINARY=Image GKI_RAMDISK_PREBUILT_BINARY=out/ramdisk AVB_SIGN_BOOT_IMG=1 AVB_BOOT_PARTITION_SIZE=$((64*1024*1024)) AVB_BOOT_ALGORITHM=SHA256_RSA2048 AVB_BOOT_KEY=prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem BOOT_IMAGE_HEADER_VERSION=4 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
+      
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: kernel-aarch64-${{ matrix.version }}
+        path: android-kernel/out/*/dist/boot.img
