@@ -1,0 +1,14 @@
+*.swp
+*.gcda
+*.gcno
+*.o
+*.a
+src/cil_lexer.c
+unit_tests
+cov
+secilc
+docs/pdf/
+docs/html/
+docs/man8/
+policy.*
+file_contexts

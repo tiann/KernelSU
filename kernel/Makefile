@@ -5,6 +5,7 @@ obj-y += module_api.o
 obj-y += sucompat.o
 
 obj-y += selinux/
+obj-y += libsepol/
 
 EXPECTED_SIZE := 0x033b
 EXPECTED_HASH := 0xb0b91415

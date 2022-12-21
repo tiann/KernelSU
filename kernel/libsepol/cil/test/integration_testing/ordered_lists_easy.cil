@@ -1,0 +1,38 @@
+; Minimum policy
+; ****************************
+
+(class foo (read))
+
+(type bar)
+(allow bar self (foo (read)))
+
+; ****************************
+
+(sensitivity s0)
+(sensitivity s1)
+(sensitivity s2)
+(sensitivity s3)
+(sensitivity s4)
+(sensitivity s5)
+(sensitivity s6)
+(sensitivity s7)
+(sensitivity s8)
+(sensitivity s9)
+(dominance (s0 s1 s2 s3 s4 s5 s6 s7 s8 s9))
+
+(category c0)
+(category c1)
+(category c2)
+(category c3)
+(category c4)
+(category c5)
+(category c6)
+(category c7)
+(category c8)
+(category c9)
+
+(categoryorder (c2 c3 c4 c5))
+(categoryorder (c0 c1 c2 c3))
+(categoryorder (c5 c6 c7))
+(categoryorder (c7 c8 c9))
+

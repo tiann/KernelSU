@@ -1,0 +1,115 @@
+(class testing (read open close write exec))
+(class fooclass (read open close write exec))
+
+(category c0)
+(category c1)
+(category c2)
+(category c3)
+(category c4)
+(categoryalias c0 cat)
+(categoryorder (c0 c1 c2 c3 c4))
+(categoryset catset (c0 c2 c3))
+(sensitivity s0)
+(sensitivity s1)
+(sensitivity s2)
+(sensitivity s3)
+(sensitivityalias s3 sens)
+(dominance (s0 s1 s2 s3))
+(sensitivitycategory s0 (c0 c2 c3))
+(sensitivitycategory s0 (cat))
+; the following causes a segfault
+;(sensitivitycategory sens (c2))
+(type foo_t)
+(type typea_t)
+(type typeb_t)
+(type typec_t)
+(role foo_r)
+(role rolea_r)
+(role roleb_r)
+(user foo_u)
+(user user_u)
+(userrole foo_u foo_r)
+(level low (s0 catset))
+(level high (s0 (c0)))
+(level test_l (s0 (cat)))
+
+(sid test_sid)
+(sidcontext test_sid (foo_u foo_r foo_t (s0 (c0)) (s0 (c0))))
+(sid test_sid_anon_l)
+(sidcontext test_sid_anon_l (foo_u foo_r foo_t low high))
+
+(context con (foo_u foo_r foo_t low high))
+(context con_anon_l (foo_u foo_r foo_t (s0 (c0)) high))
+(fsuse xattr ext3 con)
+(fsuse xattr ext3 con_anon_l)
+
+(netifcon eth0 con con_anon_l)
+
+(ipaddr ip_v4 192.25.35.200)
+(ipaddr netmask 192.168.1.1)
+(ipaddr ip_v6 2001:0DB8:AC10:FE01::)
+(ipaddr netmask_v6 2001:0DE0:DA88:2222::)
+; will need anon levels
+(nodecon ip_v4 netmask con)
+(nodecon ip_v6 netmask_v6 con_anon_l)
+
+;needs anon levels
+(portcon type 25 con)
+
+(filecon root path file con)
+
+(genfscon type path con)
+
+(netifcon eth0 con con_anon_l)
+
+(typemember typea_t typeb_t testing typec_t)
+(typechange typea_t typeb_t testing typec_t)
+(typetransition typea_t typeb_t testing typec_t)
+
+(permissionset permset (open close))
+(allow typea_t typeb_t testing (write))
+(allow typea_t typeb_t testing permset)
+
+(roleallow rolea_r roleb_r)
+
+(rolebounds rolea_r roleb_r)
+
+(roletransition foo_r foo_t testing rolea_r)
+
+(level l2 (s0 (c0)))
+(level h2 (s0 (c0)))
+(mlsconstrain (fooclass testing)(open close)(eq l2 h2))
+
+(common fooclass (open))
+(classcommon fooclass fooclass)
+
+(rangetransition typea_t typeb_t fooclass low high)
+
+(nametypetransition string typea_t typeb_t fooclass foo_t)
+
+(typepermissive foo_t)
+
+(typebounds typea_t typeb_t)
+
+(block test_b
+ 	(typealias .test_b.test typea_t)
+	(type test))
+
+(attribute attrs)
+(attributetypes attrs (foo_t))
+
+(roletype foo_r foo_t)
+
+(userbounds user_u foo_u)
+
+(userrole user_u foo_r)
+
+(bool foo_b true)
+(bool baz_b false)
+(booleanif (&& foo_b baz_b)
+ 	(allow typea_t typeb_t fooclass(read)))
+;(class baz (read))
+;(booleanif (&& foo_b baz_b)
+;	(allow foo_b baz_b fooclass (read)))
+
+

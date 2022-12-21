@@ -1,0 +1,23 @@
+
+########################################
+#
+# Helper macros
+#
+
+########################################
+#
+# gen_user(username, prefix, role_set, mls_defaultlevel, mls_range, [mcs_categories])
+#
+define(`gen_user',`dnl
+ifdef(`users_extra',`dnl
+ifelse(`$2',,,`user $1 prefix $2;')
+',`dnl
+user $1 roles { $3 }`'ifdef(`enable_mls', ` level $4 range $5')`'ifdef(`enable_mcs',` level s0 range s0`'ifelse(`$6',,,` - s0:$6')');
+')dnl
+')
+
+########################################
+#
+# gen_context(context,mls_sensitivity,[mcs_categories])
+#
+define(`gen_context',`$1`'ifdef(`enable_mls',`:$2')`'ifdef(`enable_mcs',`:s0`'ifelse(`$3',,,`:$3')')') dnl

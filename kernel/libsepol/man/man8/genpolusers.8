@@ -1,0 +1,42 @@
+.\" Hey, Emacs! This is an -*- nroff -*- source file.
+.\" Copyright (c) 1997 Manoj Srivastava <srivasta@debian.org>
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, write to the Free
+.\" Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
+.\" USA.
+.\"
+.TH GENPOLUSERS 8 "Mar 12 2005" "SELinux" "SELinux Command Line documentation"
+.SH NAME
+genpolusers \- Generate new binary policy with updated user configuration
+.SH SYNOPSIS
+genpolusers in-policy usersdir out-policy
+.SH DESCRIPTION
+Given an existing binary policy file 
+.I in\-policy, 
+generate a new binary policy 
+.I out\-policy 
+with an updated user configuration based on any 
+.B system.users 
+and
+.B local.users 
+files in the specified 
+.I usersdir.
+.SH AUTHOR
+This manual page (and just the manual page) was written by Manoj
+Srivastava <srivasta@debian.org>.

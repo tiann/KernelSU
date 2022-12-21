@@ -1,0 +1,16 @@
+.TH "genpolbools" "8" "11 August 2004" "sds@tycho.nsa.gov" "SELinux Command Line documentation"
+.SH "NAME"
+genpolbools \- Rewrite a binary policy with different boolean settings
+.SH "SYNOPSIS"
+.B genpolbools oldpolicy booleans newpolicy
+
+.SH "DESCRIPTION"
+.B genpolbools
+rewrites an existing binary policy with different boolean settings,
+generating a new binary policy.  The booleans file specifies the 
+different boolean settings using name=value lines, where value
+can be 0 or false to disable the boolean or 1 or true to enable it.
+
+
+
+

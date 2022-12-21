@@ -1,0 +1,5 @@
+(class foo (read))
+
+(type bar)
+(allow bar self (foo (read)))
+
