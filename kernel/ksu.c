@@ -94,6 +94,12 @@ static bool become_manager() {
  	char *buf;
 	bool result = false;
 
+	// must be zygote's direct child, otherwise any app can fork a new process and open manager's apk
+	if (task_uid(current->real_parent) != 0) {
+		pr_info("parent is not zygote!\n");
+		return false;
+	}
+
 	if (__manager_uid != 0) {
 		pr_info("manager already exist: %d\n", __manager_uid);
 		return true;
