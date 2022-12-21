@@ -3,6 +3,7 @@ on:
   push:
     branches: [ "main" ]
     paths: 
+      - '.github/workflows/build-manager.yml'
       - 'manager/**'
   pull_request:
     branches: [ "main" ]

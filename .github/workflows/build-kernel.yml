@@ -3,6 +3,7 @@ on:
   push:
     branches: [ "main" ]
     paths: 
+      - '.github/workflows/build-kernel.yml'
       - 'kernel/**'
   pull_request:
     branches: [ "main" ]
