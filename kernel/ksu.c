@@ -60,7 +60,7 @@ void escape_to_root() {
 #ifdef CONFIG_GENERIC_ENTRY
 	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
 #else
-	current_thread_info()->flags &= ~TIF_SECCOMP;
+	current_thread_info()->flags &= ~(TIF_SECCOMP | SYSCALL_ENTER_WORK);
 #endif
 	current->seccomp.mode = 0;
 	current->seccomp.filter = NULL;
