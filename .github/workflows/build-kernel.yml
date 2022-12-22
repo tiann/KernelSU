@@ -14,6 +14,10 @@ jobs:
     strategy:
       matrix:
         include:
+          - version: android12-5.10-66
+            tag: android12-5.10-2021-11
+            os_version: 12.0.0
+            os_patch_level: 2021-11
           - version: android12-5.10-81
             tag: android12-5.10-2022-03
             os_version: 12.0.0
