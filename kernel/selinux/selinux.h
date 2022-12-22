@@ -9,4 +9,6 @@ bool getenforce();
 
 bool is_ksu_domain();
 
+void apply_kernelsu_rules();
+
 #endif

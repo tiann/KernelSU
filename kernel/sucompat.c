@@ -21,6 +21,7 @@
 #include "klog.h"
 #include "arch.h"
 #include "allowlist.h"
+#include "selinux/selinux.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -104,6 +105,7 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs) {
     if (first_app_process && !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
         first_app_process = false;
         pr_info("exec app_process, /data prepared!\n");
+        apply_kernelsu_rules();
         ksu_load_allow_list();
     }
 

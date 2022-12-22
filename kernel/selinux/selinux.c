@@ -47,32 +47,6 @@ static int transive_to_domain(const char* domain) {
     return error;
 }
 
-static int set_domain_permissive() {
-    u32 sid;
-    struct selinux_policy *policy;
-    struct sidtab_entry *entry;
-    struct ebitmap *permissive;
-	
-    sid = current_sid();
-    pr_info("set sid (%d) to permissive", sid);
-
-    rcu_read_lock();
-    policy = rcu_dereference(selinux_state.policy);
-
-    entry = sidtab_search_entry(policy->sidtab, sid);
-    if (entry == NULL){
-        pr_info("entry == NULL");
-        rcu_read_unlock();
-        return -EFAULT;
-    }
-    // FIXME: keep mls
-    permissive = &(policy->policydb.permissive_map);
-    ebitmap_set_bit(permissive, entry->context.type, 1);
-
-    rcu_read_unlock();
-    return 0;
-}
-
 static bool is_domain_permissive;
 
 void setup_selinux() {
@@ -82,11 +56,12 @@ void setup_selinux() {
         return;
     }
 
+    /* we didn't need this now, we have change selinux rules when boot!
     if (!is_domain_permissive) {
         if (set_domain_permissive() == 0) {
             is_domain_permissive = true;
         }
-    }
+    }*/
 }
 
 void setenforce(bool enforce) {
