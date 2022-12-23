@@ -41,16 +41,6 @@ static struct work_struct ksu_load_work;
 
 bool persistent_allow_list(void);
 
-struct file *permissive_filp_open(const char * path, int flags, umode_t mode) {
-  struct file* fp;
-  // fixme: u:r:kernel:s0 don't have permission to write /data/adb...
-  bool enforcing = getenforce();
-  if (enforcing) setenforce(false);
-  fp = filp_open(path, flags, mode);
-  if (enforcing) setenforce(true);
-  return fp;
-}
-
 bool ksu_allow_uid(uid_t uid, bool allow) {
 
   // find the node first!
@@ -129,7 +119,7 @@ void do_persistent_allow_list(struct work_struct *work) {
   struct list_head *pos = NULL;
   loff_t off = 0;
 
-  struct file *fp = permissive_filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
+  struct file *fp = filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
 
   if (IS_ERR(fp)) {
     pr_err("save_allow_list creat file failed: %d\n", PTR_ERR(fp));
@@ -181,9 +171,8 @@ void do_load_allow_list(struct work_struct *work) {
     filp_close(fp, 0);
   }
 
-#if 1
   // load allowlist now!
-  fp = permissive_filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
+  fp = filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 
   if (IS_ERR(fp)) {
     pr_err("load_allow_list open file failed: %d\n", PTR_ERR(fp));
@@ -221,7 +210,6 @@ void do_load_allow_list(struct work_struct *work) {
 exit:
 
   filp_close(fp, 0);
-#endif
 }
 
 static int init_work(void) {

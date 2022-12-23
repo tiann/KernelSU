@@ -20,6 +20,10 @@ void apply_kernelsu_rules() {
     // allow all!
     allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
 
+    // we need to save allowlist in /data/adb
+    allow(db, "kernel", "adb_data_file", "dir", ALL);
+    allow(db, "kernel", "adb_data_file", "file", ALL);
+
     // copied from Magisk rules
     // suRights
     allow(db, "servicemanager", KERNEL_SU_DOMAIN, "dir", "search");
