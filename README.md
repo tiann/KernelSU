@@ -4,7 +4,7 @@ A Kernel based root solution for Android GKI.
 
 ## Usage
 
-1. Flash a custom kernel with KernelSU, you can build it yourself or use prebuilt boot.img.
+1. Flash a custom kernel with KernelSU, you can build it yourself or [download it from CI](https://github.com/tiann/KernelSU/actions/workflows/build-kernel.yml).
 2. Install Manager App and enjoy :)
 
 ## Build
@@ -18,7 +18,11 @@ A Kernel based root solution for Android GKI.
 
 ### Build the Manager App
 
-Just open Android Studio and import the project.
+Android Studio / Gradle
+
+### Discussion
+
+[@KernelSU](https://t.me/KernelSU)
 
 ## License
 
@@ -26,6 +30,7 @@ Just open Android Studio and import the project.
 
 ## Credits
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)
-- [genuine](https://github.com/brevent/genuine/)
-- [Diamorphine](https://github.com/m0nad/Diamorphine)
+- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): the KernelSU idea.
+- [genuine](https://github.com/brevent/genuine/): apk v2 signature validation.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): some rootkit skills.
+- [Magisk](https://github.com/topjohnwu/Magisk): the sepolicy implementation.
