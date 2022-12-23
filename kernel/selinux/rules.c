@@ -10,7 +10,7 @@ void apply_kernelsu_rules() {
     struct policydb *db;
 
     if (!getenforce()) {
-        pr_info("SELinux permissive or disabled, don't apply rules.")
+        pr_info("SELinux permissive or disabled, don't apply rules.");
         return;
     }
 
