@@ -11,7 +11,7 @@ public final class Natives {
     }
 
     // become root manager, return true if success.
-    public static native boolean becomeManager();
+    public static native boolean becomeManager(String pkg);
 
     public static native int getVersion();
 

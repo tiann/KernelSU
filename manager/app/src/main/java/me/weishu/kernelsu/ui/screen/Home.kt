@@ -46,7 +46,7 @@ fun Home() {
     val secondaryText: String
 
     val kernelVersion = getKernelVersion()
-    val isManager = Natives.becomeManager()
+    val isManager = Natives.becomeManager(LocalContext.current.packageName)
 
     if (kernelVersion.isGKI()) {
         // GKI kernel

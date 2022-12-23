@@ -5,7 +5,7 @@
 #ifndef KERNELSU_KSU_H
 #define KERNELSU_KSU_H
 
-bool become_manager();
+bool become_manager(const char*);
 
 int get_version();
 

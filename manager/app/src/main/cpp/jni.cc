@@ -11,8 +11,11 @@
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_becomeManager(JNIEnv *env, jclass clazz) {
-    return become_manager();
+Java_me_weishu_kernelsu_Natives_becomeManager(JNIEnv *env, jclass clazz, jstring pkg) {
+    auto cpkg = env->GetStringUTFChars(pkg, nullptr);
+    auto result = become_manager(cpkg);
+    env->ReleaseStringUTFChars(pkg, cpkg);
+    return result;
 }
 
 extern "C"

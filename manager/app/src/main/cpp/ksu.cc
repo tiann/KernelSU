@@ -4,6 +4,8 @@
 
 #include <sys/prctl.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "ksu.h"
 
@@ -24,8 +26,10 @@ static bool ksuctl(int cmd, void* arg1, void* arg2) {
     return result == KERNEL_SU_OPTION;
 }
 
-bool become_manager() {
-    return ksuctl(CMD_BECOME_MANAGER, nullptr, nullptr);
+bool become_manager(const char* pkg) {
+    char param[128];
+    sprintf(param, "/data/data/%s", pkg);
+    return ksuctl(CMD_BECOME_MANAGER, param, nullptr);
 }
 
 int get_version() {
