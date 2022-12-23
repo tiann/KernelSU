@@ -207,6 +207,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 		}
 		if (path.dentry->d_inode->i_uid.val != current_uid().val) {
 			pr_err("become_manager: path uid != current uid\n");
+			path_put(&path);
 			return 0;
 		}
 		char* pkg = param + strlen(prefix);
@@ -218,6 +219,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs) {
 				pr_err("become_manager: prctl reply error\n");
 			}
 		}
+		path_put(&path);
 		return 0;
 	}
 
