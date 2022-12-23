@@ -1,4 +1,5 @@
 #include "sepolicy.h"
+#include "selinux.h"
 
 #define KERNEL_SU_DOMAIN "su"
 #define ALL NULL
@@ -7,6 +8,11 @@ void apply_kernelsu_rules() {
 
     struct selinux_policy *policy;
     struct policydb *db;
+
+    if (!getenforce()) {
+        pr_info("SELinux permissive or disabled, don't apply rules.")
+        return;
+    }
 
     rcu_read_lock();
     policy = rcu_dereference(selinux_state.policy);

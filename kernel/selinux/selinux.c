@@ -71,6 +71,12 @@ void setenforce(bool enforce) {
 }
 
 bool getenforce() {
+#ifdef CONFIG_SECURITY_SELINUX_DISABLE
+    if (selinux_state.disabled) {
+        return false;
+    }
+#endif
+
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
 	return selinux_state.enforcing;
 #else
