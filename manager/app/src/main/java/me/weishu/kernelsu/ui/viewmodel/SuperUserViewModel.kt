@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.util.HanziToPinyin
 import java.text.Collator
 import java.util.*
 
@@ -49,7 +50,7 @@ class SuperUserViewModel : ViewModel() {
 
     val appList by derivedStateOf {
         sortedList.filter {
-            it.label.contains(search) || it.packageName.contains(search)
+            it.label.contains(search) || it.packageName.contains(search) || HanziToPinyin.getInstance().toPinyinString(it.label).contains(search)
         }
     }
 
