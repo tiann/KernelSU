@@ -1,6 +1,18 @@
 <resources>
     <string name="app_name">KernelSU</string>
+
     <string name="home">Home</string>
+    <string name="home_not_installed">Not installed</string>
+    <string name="home_click_to_install">Click to install</string>
+    <string name="home_working">Working</string>
+    <string name="home_working_version">Version: %d</string>
+    <string name="home_unsupported">Unsupported</string>
+    <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
+    <string name="home_copied_to_clipboard">Copied to clipboard</string>
+    <string name="home_support">Support</string>
+
     <string name="superuser">Superuser</string>
+    <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
+
     <string name="module">Module</string>
 </resources>

@@ -1,191 +1,107 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+package me.weishu.kernelsu.ui.screen
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.drawable.Drawable
-import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.ramcosta.composedestinations.annotation.Destination
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.SearchAppBar
+import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import java.util.*
 
-private const val TAG = "SuperUser"
-
-class SuperUserData(
-    val name: () -> CharSequence,
-    val description: String,
-    val icon: () -> Drawable,
-    val uid: Int,
-    initialChecked: Boolean = false
-) {
-    var checked: Boolean by mutableStateOf(initialChecked)
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
+@Destination
 @Composable
-fun SuperUserItem(
-    superUserData: SuperUserData,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    onItemClick: () -> Unit
-) {
+fun SuperUserScreen() {
+    val viewModel = viewModel<SuperUserViewModel>()
+    val snackbarHost = LocalSnackbarHost.current
+    val scope = rememberCoroutineScope()
 
-    Column {
-        ListItem(
-            headlineText = { Text(superUserData.name().toString()) },
-            supportingText = { Text(superUserData.description) },
-            leadingContent = {
-                Image(
-                    painter = rememberDrawablePainter(drawable = superUserData.icon()),
-                    contentDescription = superUserData.name.toString(),
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .width(48.dp)
-                        .height(48.dp)
-                )
+    LaunchedEffect(Unit) {
+        if (viewModel.appList.isEmpty()) {
+            viewModel.fetchAppList()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            SearchAppBar(
+                title = { Text(stringResource(R.string.module)) },
+                searchText = viewModel.search,
+                onSearchTextChange = { viewModel.search = it },
+                onClearClick = { viewModel.search = "" }
+            )
+        }
+    ) { innerPadding ->
+        val failMessage = stringResource(R.string.superuser_failed_to_grant_root)
+
+        // TODO: Replace SwipeRefresh with RefreshIndicator when it's ready
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(viewModel.isRefreshing),
+            onRefresh = {
+                scope.launch { viewModel.fetchAppList() }
             },
-            trailingContent = {
-                Switch(
-                    checked = checked,
-                    onCheckedChange = onCheckedChange,
-                    modifier = Modifier.padding(4.dp)
-                )
-            }
-        )
-        Divider(thickness = Dp.Hairline)
-    }
-}
-
-private fun getAppList(context: Context): List<SuperUserData> {
-    val pm = context.packageManager
-    val allowList = Natives.getAllowList()
-    val denyList = Natives.getDenyList();
-
-    Log.i(TAG, "allowList: ${Arrays.toString(allowList)}")
-    Log.i(TAG, "denyList: ${Arrays.toString(denyList)}")
-
-    val result = mutableListOf<SuperUserData>()
-
-    // add allow list
-    for (uid in allowList) {
-        val packagesForUid = pm.getPackagesForUid(uid)
-        if (packagesForUid == null || packagesForUid.isEmpty()) {
-            Log.w(TAG, "uid $uid has no package")
-            continue
-        }
-
-        packagesForUid.forEach { packageName ->
-            val applicationInfo = pm.getApplicationInfo(packageName, 0)
-            result.add(
-                SuperUserData(
-                    name = { applicationInfo.loadLabel(pm) },
-                    description = applicationInfo.packageName,
-                    icon = { applicationInfo.loadIcon(pm) },
-                    uid = uid,
-                    initialChecked = true
-                )
-            )
-        }
-    }
-
-    // add deny list
-    for (uid in denyList) {
-        val packagesForUid = pm.getPackagesForUid(uid)
-        if (packagesForUid == null || packagesForUid.isEmpty()) {
-            Log.w(TAG, "uid $uid has no package")
-            continue
-        }
-
-        packagesForUid.forEach { packageName ->
-            val applicationInfo = pm.getApplicationInfo(packageName, 0)
-            result.add(
-                SuperUserData(
-                    name = { applicationInfo.loadLabel(pm) },
-                    description = applicationInfo.packageName,
-                    icon = { applicationInfo.loadIcon(pm) },
-                    uid = uid,
-                    initialChecked = false
-                )
-            )
-        }
-    }
-
-    // todo: use root to get all uids if possible
-    val apps = pm.getInstalledApplications(0)
-    // add other apps
-    for (app in apps) {
-        if (allowList.contains(app.uid) || denyList.contains(app.uid)) {
-            continue
-        }
-        result.add(
-            SuperUserData(
-                name = { app.loadLabel(pm) },
-                description = app.packageName,
-                icon = { app.loadIcon(pm) },
-                uid = app.uid,
-                initialChecked = false
-            )
-        )
-    }
-
-    return result
-}
-
-@SuppressLint("QueryPermissionsNeeded")
-@Composable
-fun SuperUser() {
-
-    val context = LocalContext.current
-
-    val list = getAppList(context)
-    val apps = remember { list.toMutableStateList() }
-
-    if (apps.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No apps request superuser")
-        }
-        return
-    }
-
-    LazyColumn() {
-        items(apps, key = { it.description }) { app ->
-            SuperUserItem(
-                superUserData = app,
-                checked = app.checked,
-                onCheckedChange = { checked ->
-                    val success = Natives.allowRoot(app.uid, checked)
-                    if (success) {
-                        app.checked = checked
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "Failed to allow root: ${app.uid}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            LazyColumn {
+                items(viewModel.appList) { app ->
+                    var isChecked by rememberSaveable(app) { mutableStateOf(app.onAllowList) }
+                    AppItem(app, isChecked) { checked ->
+                        val success = Natives.allowRoot(app.uid, checked)
+                        if (success) {
+                            isChecked = checked
+                        } else scope.launch {
+                            snackbarHost.showSnackbar(failMessage.format(app.uid))
+                        }
                     }
-                },
-                onItemClick = {
-                    // TODO
                 }
-            )
+            }
         }
     }
 }
 
-@Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Preview_SuperUser() {
-    SuperUser()
+private fun AppItem(
+    app: SuperUserViewModel.AppInfo,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    ListItem(
+        headlineText = { Text(app.label) },
+        supportingText = { Text(app.packageName) },
+        leadingContent = {
+            Image(
+                painter = rememberDrawablePainter(app.icon),
+                contentDescription = app.label,
+                modifier = Modifier
+                    .padding(4.dp)
+                    .width(48.dp)
+                    .height(48.dp)
+            )
+        },
+        trailingContent = {
+            Switch(
+                checked = isChecked,
+                onCheckedChange = onCheckedChange,
+                modifier = Modifier.padding(4.dp)
+            )
+        }
+    )
 }
