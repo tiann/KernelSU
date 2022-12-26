@@ -1,3 +1,4 @@
+#include "linux/gfp.h"
 #include "linux/uidgid.h"
 #include <linux/cpu.h>
 #include <linux/memory.h>
@@ -105,7 +106,7 @@ static bool become_manager(char* pkg) {
 		return true;
 	}
 
- 	buf = (char *) kmalloc(GFP_KERNEL, PATH_MAX);
+ 	buf = (char *) kmalloc(PATH_MAX, GFP_ATOMIC);
 	if (!buf) {
 		pr_err("kalloc path failed.\n");
 		return false;
