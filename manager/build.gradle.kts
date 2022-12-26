@@ -46,10 +46,10 @@ fun Project.configureBaseExtension() {
             consumerProguardFiles("proguard-rules.pro")
         }
 
-        val signFile = file("sign.properties")
+        val signFile = rootProject.file("sign.properties")
         val config = if (signFile.canRead()) {
             val prop = Properties()
-            prop.load(file("sign.properties").inputStream())
+            prop.load(signFile.inputStream())
             signingConfigs.create("config") {
                 storeFile = file(prop.getProperty("KEYSTORE_FILE"))
                 storePassword = prop.getProperty("KEYSTORE_PASSWORD")
