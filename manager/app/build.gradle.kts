@@ -72,6 +72,10 @@ dependencies {
     implementation("com.google.accompanist:accompanist-swiperefresh:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
     implementation("io.github.raamcosta.compose-destinations:animations-core:$composeDestinationsVersion")
+
+    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
+
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion")
 
     testImplementation("junit:junit:4.13.2")

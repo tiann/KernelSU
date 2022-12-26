@@ -1,6 +1,9 @@
 package me.weishu.kernelsu.ui.viewmodel
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.graphics.drawable.Drawable
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,7 +28,7 @@ class SuperUserViewModel : ViewModel() {
     class AppInfo(
         val label: String,
         val packageName: String,
-        val icon: Drawable,
+        val icon: PackageInfo,
         val uid: Int,
         val onAllowList: Boolean,
         val onDenyList: Boolean
@@ -62,16 +65,20 @@ class SuperUserViewModel : ViewModel() {
             val denyList = Natives.getDenyList().toSet()
             Log.i(TAG, "allowList: $allowList")
             Log.i(TAG, "denyList: $denyList")
-            apps = pm.getInstalledApplications(0).map {
+            val start = SystemClock.elapsedRealtime()
+            apps = pm.getInstalledPackages(0).map {
+                val appInfo = it.applicationInfo
+                val uid = appInfo.uid
                 AppInfo(
-                    label = it.loadLabel(pm).toString(),
+                    label = appInfo.loadLabel(pm).toString(),
                     packageName = it.packageName,
-                    icon = it.loadIcon(pm),
-                    uid = it.uid,
-                    onAllowList = it.uid in allowList,
-                    onDenyList = it.uid in denyList
+                    icon = it,
+                    uid = uid,
+                    onAllowList = uid in allowList,
+                    onDenyList = uid in denyList
                 )
             }
+            Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
         }
     }
 }

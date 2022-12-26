@@ -1,5 +1,10 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,10 +13,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import coil.decode.DataSource
+import coil.fetch.DrawableResult
+import coil.fetch.FetchResult
+import coil.fetch.Fetcher
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import coil.request.Options
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.ramcosta.composedestinations.annotation.Destination
@@ -21,6 +37,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,8 +104,11 @@ private fun AppItem(
         headlineText = { Text(app.label) },
         supportingText = { Text(app.packageName) },
         leadingContent = {
-            Image(
-                painter = rememberDrawablePainter(app.icon),
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(app.icon)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = app.label,
                 modifier = Modifier
                     .padding(4.dp)
