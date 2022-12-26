@@ -57,7 +57,7 @@ fun SuperUserScreen() {
     Scaffold(
         topBar = {
             SearchAppBar(
-                title = { Text(stringResource(R.string.module)) },
+                title = { Text(stringResource(R.string.superuser)) },
                 searchText = viewModel.search,
                 onSearchTextChange = { viewModel.search = it },
                 onClearClick = { viewModel.search = "" }
