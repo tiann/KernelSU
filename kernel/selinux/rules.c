@@ -4,8 +4,8 @@
 #define KERNEL_SU_DOMAIN "su"
 #define ALL NULL
 
-void apply_kernelsu_rules() {
-
+void apply_kernelsu_rules()
+{
 	struct selinux_policy *policy;
 	struct policydb *db;
 
@@ -25,14 +25,14 @@ void apply_kernelsu_rules() {
 
 	// allow all!
 	allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
-	
+
 	// allow us do any ioctl
 	if (db->policyvers >= POLICYDB_VERSION_XPERMS_IOCTL) {
 		allowxperm(db, KERNEL_SU_DOMAIN, ALL, "blk_file", ALL);
 		allowxperm(db, KERNEL_SU_DOMAIN, ALL, "fifo_file", ALL);
 		allowxperm(db, KERNEL_SU_DOMAIN, ALL, "chr_file", ALL);
 	}
-	
+
 	// we need to save allowlist in /data/adb
 	allow(db, "kernel", "adb_data_file", "dir", ALL);
 	allow(db, "kernel", "adb_data_file", "file", ALL);

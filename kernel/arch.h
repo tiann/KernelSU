@@ -1,7 +1,6 @@
 #ifndef __KSU_H_ARCH
 #define __KSU_H_ARCH
 
-
 #if defined(__aarch64__)
 
 #define __PT_PARM1_REG regs[0]
@@ -10,7 +9,7 @@
 #define __PT_PARM4_REG regs[3]
 #define __PT_PARM5_REG regs[4]
 #define __PT_RET_REG regs[30]
-#define __PT_FP_REG regs[29]	/* Works only with CONFIG_FRAME_POINTER */
+#define __PT_FP_REG regs[29] /* Works only with CONFIG_FRAME_POINTER */
 #define __PT_RC_REG regs[0]
 #define __PT_SP_REG sp
 #define __PT_IP_REG pc
@@ -53,6 +52,5 @@
 #define PT_REGS_RC(x) (__PT_REGS_CAST(x)->__PT_RC_REG)
 #define PT_REGS_SP(x) (__PT_REGS_CAST(x)->__PT_SP_REG)
 #define PT_REGS_IP(x) (__PT_REGS_CAST(x)->__PT_IP_REG)
-
 
 #endif
