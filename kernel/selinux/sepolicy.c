@@ -55,6 +55,16 @@ struct avtab_node* get_avtab_node(struct policydb* db, struct avtab_key *key, st
         avdatum.u.data = key->specified == AVTAB_AUDITDENY ? ~0U : 0U;
         /* this is used to get the node - insertion is actually unique */
         node = avtab_insert_nonunique(&db->te_avtab, key, &avdatum);
+
+	int grow_size = sizeof(u16) * 4;
+	if (key->specified & AVTAB_XPERMS) {
+		grow_size += sizeof(u8);
+		grow_size += sizeof(u8);
+		grow_size += sizeof(u32) * ARRAY_SIZE(avdatum.u.xperms->perms.p);
+	} else {
+		grow_size += sizeof(u32) * 1;
+	}
+	db->len += grow_size;
     }
 
     return node;
