@@ -1,4 +1,5 @@
 #include "sepolicy.h"
+#include "../klog.h"
 
 // Invert is adding rules for auditdeny; in other cases, invert is removing rules
 #define strip_av(effect, invert) ((effect == AVTAB_AUDITDENY) == !invert)
@@ -52,7 +53,11 @@ struct avtab_node* get_avtab_node(struct policydb* db, struct avtab_key *key, st
          * AUDITDENY, aka DONTAUDIT, are &= assigned, versus |= for
          * others. Initialize the data accordingly.
          */
-        avdatum.u.data = key->specified == AVTAB_AUDITDENY ? ~0U : 0U;
+	if (key->specified & AVTAB_XPERMS) {
+		avdatum.u.xperms = xperms;
+	} else {
+        	avdatum.u.data = key->specified == AVTAB_AUDITDENY ? ~0U : 0U;
+	}
         /* this is used to get the node - insertion is actually unique */
         node = avtab_insert_nonunique(&db->te_avtab, key, &avdatum);
 
@@ -174,11 +179,136 @@ void add_rule_raw(struct policydb* db, struct type_datum *src, struct type_datum
     }
 }
 
-void add_xperm_rule_raw(struct type_datum *src, struct type_datum *tgt,
-        struct class_datum *cls, uint16_t low, uint16_t high, int effect, bool invert) {
+#define ioctl_driver(x) (x>>8 & 0xFF)
+#define ioctl_func(x) (x & 0xFF)
+
+#define xperm_test(x, p) (1 & (p[x >> 5] >> (x & 0x1f)))
+#define xperm_set(x, p) (p[x >> 5] |= (1 << (x & 0x1f)))
+#define xperm_clear(x, p) (p[x >> 5] &= ~(1 << (x & 0x1f)))
+
+void add_xperm_rule_raw(struct policydb* db, struct type_datum *src, struct type_datum *tgt,
+	struct class_datum *cls, uint16_t low, uint16_t high, int effect, bool invert) {
+
+    if (src == NULL) {
+	struct hashtab_node* node;
+        hashtab_for_each(db->p_types.table, node) {
+		struct type_datum* type = (struct type_datum*)(node->datum);
+		if (type->attribute) {
+            		add_xperm_rule_raw(db, type, tgt, cls, low, high, effect, invert);
+		}
+        };
+    } else if (tgt == NULL) {
+	struct hashtab_node* node;
+        hashtab_for_each(db->p_types.table, node) {
+		struct type_datum* type = (struct type_datum*)(node->datum);
+		if (type->attribute) {
+            		add_xperm_rule_raw(db, src, type, cls, low, high, effect, invert);
+		}
+        };
+    } else if (cls == NULL) {
+	struct hashtab_node* node;
+        hashtab_for_each(db->p_classes.table, node) {
+            add_xperm_rule_raw(db, src, tgt, (struct class_datum*)(node->datum), low, high, effect, invert);
+        };
+    } else {
+        struct avtab_key key;
+        key.source_type = src->value;
+        key.target_type = tgt->value;
+        key.target_class = cls->value;
+        key.specified = effect;
+
+        struct avtab_datum *datum;
+	struct avtab_node *node;
+        struct avtab_extended_perms xperms;
+
+        memset(&xperms, 0, sizeof(xperms));
+        if (ioctl_driver(low) != ioctl_driver(high)) {
+            xperms.specified = AVTAB_XPERMS_IOCTLDRIVER;
+            xperms.driver = 0;
+        } else {
+            xperms.specified = AVTAB_XPERMS_IOCTLFUNCTION;
+            xperms.driver = ioctl_driver(low);
+        }
+
+        if (xperms.specified == AVTAB_XPERMS_IOCTLDRIVER) {
+            for (int i = ioctl_driver(low); i <= ioctl_driver(high); ++i) {
+                if (invert)
+                    xperm_clear(i, xperms.perms.p);
+                else
+                    xperm_set(i, xperms.perms.p);
+            }
+        } else {
+            for (int i = ioctl_func(low); i <= ioctl_func(high); ++i) {
+                if (invert)
+                    xperm_clear(i, xperms.perms.p);
+                else
+                    xperm_set(i, xperms.perms.p);
+            }
+        }
+
+        node = get_avtab_node(db, &key, &xperms);
+	if (!node) {
+		pr_warn("add_xperm_rule_raw cannot found node!\n");
+		return;
+	}
+	datum = &node->datum;
+
+        if (datum->u.xperms == NULL) {
+		datum->u.xperms = (struct avtab_extended_perms*)(kmalloc(sizeof(xperms), GFP_KERNEL));
+		if (!datum->u.xperms) {
+			pr_err("alloc xperms failed\n");
+			return;
+		}
+        	memcpy(datum->u.xperms, &xperms, sizeof(xperms));
+	}
+
+    }
 }
-bool add_xperm_rule(const char *s, const char *t, const char *c, const char *range, int effect, bool invert) {
-    return false;
+
+bool add_xperm_rule(struct policydb* db, const char *s, const char *t, const char *c, const char *range, int effect, bool invert) {
+	struct type_datum *src = NULL, *tgt = NULL;
+    	struct class_datum *cls = NULL;
+
+    	if (s) {
+        	src = symtab_search(&db->p_types, s);
+        	if (src == NULL) {
+         	   	pr_info("source type %s does not exist\n", s);
+          	  	return false;
+        	}
+    	}
+
+	if (t) {
+		tgt = symtab_search(&db->p_types, t);
+		if (tgt == NULL) {
+			pr_info("target type %s does not exist\n", t);
+			return false;
+		}
+	}
+
+	if (c) {
+		cls = symtab_search(&db->p_classes, c);
+		if (cls == NULL) {
+			pr_info("class %s does not exist\n", c);
+			return false;
+		}
+	}
+
+	u16 low, high;
+
+	if (range) {
+		if (strchr(range, '-')){
+			sscanf(range, "%hx-%hx", &low, &high);
+		} else {
+			sscanf(range, "%hx", &low);
+			high = low;
+		}
+	} else {
+		low = 0;
+		high = 0xFFFF;
+	}
+
+	add_xperm_rule_raw(db, src, tgt, cls, low, high, effect, invert);
+	return true;
 }
 
 bool add_type_rule(struct policydb* db, const char *s, const char *t, const char *c, const char *d, int effect) {
@@ -338,15 +468,15 @@ bool dontaudit(struct policydb* db, const char* src, const char* tgt, const char
 
 // Extended permissions access vector rules
 bool allowxperm(struct policydb* db, const char* src, const char* tgt, const char* cls, const char* range) {
-    return add_xperm_rule(src, tgt, cls, range, AVTAB_XPERMS_ALLOWED, false);
+    return add_xperm_rule(db, src, tgt, cls, range, AVTAB_XPERMS_ALLOWED, false);
 }
 
 bool auditallowxperm(struct policydb* db, const char* src, const char* tgt, const char* cls, const char* range) {
-    return add_xperm_rule(src, tgt, cls, range, AVTAB_XPERMS_AUDITALLOW, false);
+    return add_xperm_rule(db, src, tgt, cls, range, AVTAB_XPERMS_AUDITALLOW, false);
 }
 
 bool dontauditxperm(struct policydb* db, const char* src, const char* tgt, const char* cls, const char* range) {
-    return add_xperm_rule(src, tgt, cls, range, AVTAB_XPERMS_DONTAUDIT, false);
+    return add_xperm_rule(db, src, tgt, cls, range, AVTAB_XPERMS_DONTAUDIT, false);
 }
 
 // Type rules

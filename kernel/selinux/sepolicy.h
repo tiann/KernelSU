@@ -42,9 +42,9 @@ struct avtab_node* get_avtab_node(struct policydb* db, struct avtab_key *key, st
 bool add_rule(struct policydb* db, const char *s, const char *t, const char *c, const char *p, int effect, bool invert);
 void add_rule_raw(struct policydb* db, struct type_datum *src, struct type_datum *tgt, struct class_datum *cls, struct perm_datum *perm, int effect, bool invert);
 
-void add_xperm_rule_raw(struct type_datum *src, struct type_datum *tgt,
+void add_xperm_rule_raw(struct policydb* db, struct type_datum *src, struct type_datum *tgt,
         struct class_datum *cls, uint16_t low, uint16_t high, int effect, bool invert);
-bool add_xperm_rule(const char *s, const char *t, const char *c, const char *range, int effect, bool invert);
+bool add_xperm_rule(struct policydb* db, const char *s, const char *t, const char *c, const char *range, int effect, bool invert);
 
 bool add_type_rule(struct policydb* db, const char *s, const char *t, const char *c, const char *d, int effect);
 
