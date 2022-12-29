@@ -108,7 +108,7 @@ static bool become_manager(char *pkg)
 
 	if (__manager_uid != 0) {
 		pr_info("manager already exist: %d\n", __manager_uid);
-		return true;
+		return is_manager();
 	}
 
 	buf = (char *)kmalloc(PATH_MAX, GFP_ATOMIC);
