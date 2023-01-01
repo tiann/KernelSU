@@ -63,7 +63,6 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 
             StatusCard(kernelVersion, ksuVersion)
             InfoCard()
-            SupportCard()
             Spacer(Modifier)
         }
     }
@@ -251,30 +250,5 @@ private fun StatusCardPreview() {
         StatusCard(KernelVersion(5, 10, 101), 1)
         StatusCard(KernelVersion(5, 10, 101), null)
         StatusCard(KernelVersion(4, 10, 101), null)
-    }
-}
-
-@Preview
-@Composable
-private fun SupportCard() {
-    ElevatedCard {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.home_support),
-                fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(Modifier.height(8.dp))
-            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
-                LinkifyText("Author: weishu")
-                LinkifyText("Github: https://github.com/tiann/KernelSU")
-                LinkifyText("Telegram: https://t.me/KernelSU")
-                LinkifyText("QQ: https://pd.qq.com/s/8lipl1brp")
-            }
-        }
     }
 }

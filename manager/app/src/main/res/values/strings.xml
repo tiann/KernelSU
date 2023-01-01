@@ -28,4 +28,7 @@
     <string name="reboot_bootloader">Reboot to Bootloader</string>
     <string name="reboot_download">Reboot to Download</string>
     <string name="reboot_edl">Reboot to EDL</string>
+    <string name="settings_system_rw">Make system writable</string>
+    <string name="settings_system_rw_summary">Use overlayfs to make system partition writable, reboot to take effect.</string>
+    <string name="about">About</string>
 </resources>

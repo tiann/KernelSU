@@ -1,16 +1,21 @@
 package me.weishu.kernelsu.ui.screen
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.alorma.compose.settings.ui.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.util.LinkifyText
 
 /**
  * @author weishu
@@ -21,7 +26,7 @@ import me.weishu.kernelsu.R
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopBar(onBack = {
                 navigator.popBackStack()
@@ -29,8 +34,48 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     ) { paddingValues ->
 
+        var openDialog by remember { mutableStateOf(false) }
+
+        if (openDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    openDialog = false
+                },
+                title = {
+                    Text(text = stringResource(id = R.string.about))
+                },
+                text = {
+                    SupportCard()
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            openDialog = false
+                        }
+                    ) {
+                        Text(stringResource(id = android.R.string.ok))
+                    }
+                },
+            )
+        }
+
         Column(modifier = Modifier.padding(paddingValues)) {
-            Text(text = stringResource(id = R.string.settings))
+
+            SettingsSwitch(
+                title = {
+                    Text(stringResource(id = R.string.settings_system_rw))
+                },
+                subtitle = {
+                    Text(stringResource(id = R.string.settings_system_rw_summary))
+                }
+            )
+            SettingsMenuLink(title = {
+                Text(stringResource(id = R.string.about))
+            },
+                onClick = {
+                    openDialog = true
+                }
+            )
         }
     }
 }
@@ -46,4 +91,20 @@ private fun TopBar(onBack: () -> Unit = {}) {
             ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
         },
     )
+}
+
+@Preview
+@Composable
+private fun SupportCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
+            LinkifyText("Author: weishu")
+            LinkifyText("Github: https://github.com/tiann/KernelSU")
+            LinkifyText("Telegram: https://t.me/KernelSU")
+            LinkifyText("QQ: https://pd.qq.com/s/8lipl1brp")
+        }
+    }
 }
