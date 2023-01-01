@@ -24,15 +24,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.toggleModule
+import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
-fun ModuleScreen() {
+fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
     val snackBarHost = LocalSnackbarHost.current
 
@@ -59,9 +63,8 @@ fun ModuleScreen() {
                 val data = it.data ?: return@rememberLauncherForActivityResult
                 val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                scope.launch {
-                    viewModel.installModule(uri)
-                }
+                navigator.navigate(InstallScreenDestination(uri))
+
                 Log.i("ModuleScreen", "select zip result: ${it.data}")
             }
 
@@ -104,11 +107,11 @@ fun ModuleScreen() {
                             isChecked,
                             onUninstall = {
                                 scope.launch {
-                                    val result = viewModel.uninstallModule(module.id)
+                                    val result = uninstallModule(module.id)
                                 }
                             },
                             onCheckChanged = {
-                                val success = viewModel.toggleModule(module.id, isChecked)
+                                val success = toggleModule(module.id, isChecked)
                                 if (success) {
                                     isChecked = it
                                 } else scope.launch {

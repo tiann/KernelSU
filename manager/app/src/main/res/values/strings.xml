@@ -20,4 +20,5 @@
     <string name="module">Module</string>
     <string name="uninstall">Uninstall</string>
     <string name="module_install">Install</string>
+    <string name="install">Install</string>
 </resources>
