@@ -69,12 +69,11 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
     }
 }
 
-fun rebootUserSpace() {
-    val pm = ksuApp.getSystemService(Context.POWER_SERVICE) as PowerManager
+fun reboot(reason: String = "") {
     val shell = ksuApp.createRootShell()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm.isRebootingUserspaceSupported) {
-        ShellUtils.fastCmdResult(shell, "svc power reboot userspace")
-    } else {
-        ShellUtils.fastCmdResult(shell, "reboot")
+    if (reason == "recovery") {
+        // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
+        ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
     }
+    ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
 }

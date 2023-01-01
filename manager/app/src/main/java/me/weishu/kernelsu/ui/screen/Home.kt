@@ -4,19 +4,21 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
+import android.os.PowerManager
 import android.system.Os
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,19 +29,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.*
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.LinkifyText
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.reboot
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
 @Destination
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navigator: DestinationsNavigator) {
     Scaffold(
-        topBar = { TopBar() }
+        topBar = {
+            TopBar(onSettingsClick = {
+                navigator.navigate(SettingScreenDestination)
+            })
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -60,11 +69,54 @@ fun HomeScreen() {
     }
 }
 
+@Composable
+fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
+    DropdownMenuItem(text = {
+        Text(stringResource(id))
+    }, onClick = {
+        reboot(reason)
+    })
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar() {
+private fun TopBar(onSettingsClick: () -> Unit) {
     TopAppBar(
-        title = { Text(stringResource(R.string.app_name)) }
+        title = { Text(stringResource(R.string.app_name)) },
+        actions = {
+            var showDropdown by remember { mutableStateOf(false) }
+            IconButton(onClick = {
+                showDropdown = true
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = stringResource(id = R.string.reboot)
+                )
+
+                DropdownMenu(expanded = showDropdown, onDismissRequest = {
+                    showDropdown = false
+                }) {
+
+                    RebootDropdownItem(id = R.string.reboot)
+
+                    val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
+                        RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
+                    }
+                    RebootDropdownItem(id = R.string.reboot_recovery, reason = "recovery")
+                    RebootDropdownItem(id = R.string.reboot_bootloader, reason = "bootloader")
+                    RebootDropdownItem(id = R.string.reboot_download, reason = "download")
+                    RebootDropdownItem(id = R.string.reboot_edl, reason = "edl")
+                }
+            }
+
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = stringResource(id = R.string.settings)
+                )
+            }
+        }
     )
 }
 

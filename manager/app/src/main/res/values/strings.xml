@@ -22,4 +22,10 @@
     <string name="module_install">Install</string>
     <string name="install">Install</string>
     <string name="reboot">Reboot</string>
+    <string name="settings">Settings</string>
+    <string name="reboot_userspace">Soft reboot</string>
+    <string name="reboot_recovery">Reboot to recovery</string>
+    <string name="reboot_bootloader">Reboot to Bootloader</string>
+    <string name="reboot_download">Reboot to Download</string>
+    <string name="reboot_edl">Reboot to EDL</string>
 </resources>
