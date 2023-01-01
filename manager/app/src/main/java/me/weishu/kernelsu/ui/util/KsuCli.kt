@@ -1,12 +1,11 @@
 package me.weishu.kernelsu.ui.util
 
-import android.content.Context
 import android.net.Uri
-import android.os.Build
-import android.os.PowerManager
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
+import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.ksuApp
 import java.io.File
 
@@ -17,10 +16,36 @@ import java.io.File
  */
 private const val TAG = "KsuCli"
 
+private fun getKsuDaemonPath(): String {
+    return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
+}
+
+fun createRootShell(): Shell {
+    Shell.enableVerboseLogging = BuildConfig.DEBUG
+    val su = ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksu.so"
+    val builder = Shell.Builder.create()
+    return try {
+        builder.build(su)
+    } catch (e: Throwable) {
+        builder.build("sh")
+    }
+}
+
 fun execKsud(args: String): Boolean {
-    val shell = ksuApp.createRootShell()
-    val ksduLib = ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
-    return ShellUtils.fastCmdResult(shell, "$ksduLib $args")
+    val shell = createRootShell()
+    return ShellUtils.fastCmdResult(shell, "${getKsuDaemonPath()} $args")
+}
+
+fun install() {
+    val result = execKsud("install")
+    Log.w("KernelSU", "install ksud result: $result")
+}
+
+fun listModules(): String {
+    val shell = createRootShell()
+
+    val out = shell.newJob().add("${getKsuDaemonPath()} module list").to(ArrayList(), null).exec().out
+    return out.joinToString("\n")
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {
@@ -50,8 +75,7 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
         }
         val cmd = "module install ${file.absolutePath}"
 
-        val shell = ksuApp.createRootShell()
-        val ksduLib = ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
+        val shell = createRootShell()
 
         val callbackList: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
@@ -59,7 +83,7 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
             }
         }
 
-        val result = shell.newJob().add("$ksduLib $cmd").to(callbackList, callbackList).exec()
+        val result = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(callbackList, callbackList).exec()
         Log.i("KernelSU", "install module $uri result: $result")
 
         file.delete()
@@ -70,7 +94,7 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
 }
 
 fun reboot(reason: String = "") {
-    val shell = ksuApp.createRootShell()
+    val shell = createRootShell()
     if (reason == "recovery") {
         // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
         ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
