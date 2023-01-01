@@ -58,21 +58,26 @@ class ModuleViewModel : ViewModel() {
 
             Log.i(TAG, "result: $result")
 
-            val array = JSONArray(result)
-            modules = (0 until array.length())
-                .asSequence()
-                .map { array.getJSONObject(it) }
-                .map { obj ->
-                    ModuleInfo(
-                        obj.getString("id"),
-                        obj.getString("name"),
-                        obj.getString("author"),
-                        obj.getString("version"),
-                        obj.getInt("versionCode"),
-                        obj.getString("description"),
-                        obj.getBoolean("enabled")
-                    )
-                }.toList()
+            kotlin.runCatching {
+                val array = JSONArray(result)
+                modules = (0 until array.length())
+                    .asSequence()
+                    .map { array.getJSONObject(it) }
+                    .map { obj ->
+                        ModuleInfo(
+                            obj.getString("id"),
+                            obj.getString("name"),
+                            obj.getString("author"),
+                            obj.getString("version"),
+                            obj.getInt("versionCode"),
+                            obj.getString("description"),
+                            obj.getBoolean("enabled")
+                        )
+                    }.toList()
+            }.onFailure { e ->
+                Log.e(TAG, "fetchModuleList: ", e)
+            }
+
 
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: $modules")
         }
