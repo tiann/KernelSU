@@ -1,6 +1,9 @@
 package me.weishu.kernelsu.ui.util
 
+import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
@@ -38,7 +41,7 @@ fun uninstallModule(id: String) : Boolean {
     return result
 }
 
-fun installModule(uri: Uri, onOutput: (String) -> Unit) : Boolean {
+fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Unit) : Boolean {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
         val file = File(ksuApp.cacheDir, "module.zip")
@@ -61,6 +64,17 @@ fun installModule(uri: Uri, onOutput: (String) -> Unit) : Boolean {
 
         file.delete()
 
+        onFinish(result.isSuccess)
         return result.isSuccess
+    }
+}
+
+fun rebootUserSpace() {
+    val pm = ksuApp.getSystemService(Context.POWER_SERVICE) as PowerManager
+    val shell = ksuApp.createRootShell()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm.isRebootingUserspaceSupported) {
+        ShellUtils.fastCmdResult(shell, "svc power reboot userspace")
+    } else {
+        ShellUtils.fastCmdResult(shell, "reboot")
     }
 }

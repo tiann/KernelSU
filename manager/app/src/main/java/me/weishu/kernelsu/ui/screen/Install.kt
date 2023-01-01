@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +29,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.installModule
+import me.weishu.kernelsu.ui.util.rebootUserSpace
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,13 +44,20 @@ import java.util.*
 fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
 
     var text by remember { mutableStateOf("") }
+    var showFloatAction by remember {
+        mutableStateOf(false)
+    }
 
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            installModule(uri) {
+            installModule(uri, onFinish = { success ->
+                if (success) {
+                    showFloatAction = true
+                }
+            }) {
                 text += "$it\n"
             }
         }
@@ -62,13 +73,33 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                     scope.launch {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
                         val date = format.format(Date())
-                        val file = File(ksuApp.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "KernelSU_install_log_${date}.log")
+                        val file = File(
+                            ksuApp.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                            "KernelSU_install_log_${date}.log"
+                        )
                         file.writeText(text)
                         snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
                     }
                 }
             )
         },
+        floatingActionButton = {
+            if (showFloatAction) {
+                val reboot = stringResource(id = R.string.reboot)
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                rebootUserSpace()
+                            }
+                        }
+                    },
+                    icon = { Icon(Icons.Filled.Refresh, reboot) },
+                    text = { Text(text = reboot) },
+                )
+            }
+
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
