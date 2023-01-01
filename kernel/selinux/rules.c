@@ -39,6 +39,10 @@ void apply_kernelsu_rules()
 	// we may need to do mount on shell
 	allow(db, "kernel", "shell_data_file", "file", ALL);
 
+	// our ksud triggered by init
+	allow(db, "init", "adb_data_file", "file", "execute");
+	allow(db, "init", KERNEL_SU_DOMAIN, ALL, ALL);
+
 	// copied from Magisk rules
 	// suRights
 	allow(db, "servicemanager", KERNEL_SU_DOMAIN, "dir", "search");
