@@ -1,4 +1,5 @@
 
+#include "linux/workqueue.h"
 #include <asm/current.h>
 #include <linux/cred.h>
 #include <linux/dcache.h>
@@ -161,7 +162,8 @@ static const char KERNEL_SU_RC[] =
 "\n"
 ;
 
-static void unregister_read_kp();
+static void unregister_vfs_read_kp();
+static struct work_struct unregister_vfs_read_work;
 
 static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -185,7 +187,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 	const char *short_name = file->f_path.dentry->d_name.name;
 	if (strcmp(short_name, "vold.rc")) {
-		// we are only interest `init.rc` file name file
+		// we are only interest `vold.rc` file name file
 		return 0;
 	}
 	char path[PATH_MAX];
@@ -202,12 +204,12 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	static bool rc_inserted = false;
 	if (rc_inserted) {
 		// we don't need this kprobe, unregister it!
-		unregister_read_kp();
+		unregister_vfs_read_kp();
 		return 0;
 	}
 	rc_inserted = true;
 
-	// now we can sure that the init process is reading `/system/etc/init/hw/init.rc`
+	// now we can sure that the init process is reading `/system/etc/init/vold.rc`
 	buf = PT_REGS_PARM2(regs);
 	count = PT_REGS_PARM3(regs);
 	size_t rc_count = strlen(KERNEL_SU_RC);
@@ -250,10 +252,13 @@ static struct kprobe vfs_read_kp = {
 	.pre_handler = read_handler_pre,
 };
 
-static void unregister_read_kp() {
-	// todo: add it to kernel worker
-	// unregister_kprobe(&vfs_read_kp);
-	pr_info("unregister vfs_read kprobe!\n");
+static void do_unregister_vfs_read_kp(struct work_struct *work) {
+	unregister_kprobe(&vfs_read_kp);
+}
+
+static void unregister_vfs_read_kp() {
+	bool ret = schedule_work(&unregister_vfs_read_work);
+	pr_info("unregister vfs_read kprobe: %d!\n", ret);
 }
 
 // sucompat: permited process can execute 'su' to gain root access.
@@ -270,4 +275,6 @@ void enable_sucompat()
 
 	ret = register_kprobe(&vfs_read_kp);
 	pr_info("vfs_read_kp: %d\n", ret);
+
+	INIT_WORK(&unregister_vfs_read_work, do_unregister_vfs_read_kp);
 }
