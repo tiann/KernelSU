@@ -147,36 +147,17 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
-#define RC_SERVICE_NAME_LENGTH 8
 static const char KERNEL_SU_RC[] = 
 "\n"
 
-"service %s /data/adb/ksud post-fs-data\n"
-"    user root\n"
-"    seclabel u:r:su:s0\n"
-"    oneshot\n"
-"\n"
-
-"\n"
 "on post-fs-data\n"
-"    start %s\n"
+"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
 "\n"
 "\n"
 ;
 
 static void unregister_vfs_read_kp();
 static struct work_struct unregister_vfs_read_work;
-
-static void fill_random_name(char* rc) {
-	int i = 0;
-	char name[RC_SERVICE_NAME_LENGTH];
-	get_random_bytes(name, RC_SERVICE_NAME_LENGTH);
-	for (i = 0; i < RC_SERVICE_NAME_LENGTH; i++) {
-		u32 remainder = (name[i] & 0xFF) % 26; // 'a' - 'z' 26 character
-		name[i] = 'a' + remainder;
-	}
-	sprintf(rc, KERNEL_SU_RC, name, name);
-}
 
 static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -226,12 +207,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	buf = PT_REGS_PARM2(regs);
 	count = PT_REGS_PARM3(regs);
 
-	// generate a random service name and fill it to rc bytes
-	char rc[sizeof(KERNEL_SU_RC) + RC_SERVICE_NAME_LENGTH * 2];
-	fill_random_name(rc);
-	pr_info("random rc: %s\n", rc);
-
-	size_t rc_count = strlen(rc);
+	size_t rc_count = strlen(KERNEL_SU_RC);
 
 	pr_info("vfs_read: %s, comm: %s, count: %d, rc_count: %d\n", dpath, current->comm, count, rc_count);
 
@@ -240,7 +216,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-	size_t ret = copy_to_user(buf, rc, rc_count);
+	size_t ret = copy_to_user(buf, KERNEL_SU_RC, rc_count);
 	if (ret) {
 		pr_err("copy ksud.rc failed: %d\n", ret);
 		return 0;
