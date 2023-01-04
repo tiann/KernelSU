@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">KernelSU</string>
     <string name="home">主頁</string>
     <string name="home_not_installed">未安装</string>
     <string name="home_click_to_install">点击安装</string>

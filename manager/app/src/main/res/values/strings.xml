@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KernelSU</string>
+    <string name="app_name" translatable="false">KernelSU</string>
 
     <string name="home">Home</string>
     <string name="home_not_installed">Not installed</string>
