@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KernelSU</string>
+    <string name="app_name" translatable="false">KernelSU</string>
 
     <string name="home">Home</string>
     <string name="home_not_installed">Not installed</string>
@@ -10,6 +10,14 @@
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
     <string name="home_copied_to_clipboard">Copied to clipboard</string>
     <string name="home_support">Support</string>
+
+    <string name="home_kernel">Kernel</string>
+    <string name="home_arch">Arch</string>
+    <string name="home_version">Version</string>
+    <string name="home_api">API Level</string>
+    <string name="home_abi">ABI</string>
+    <string name="home_fingerprint">Fingerprint</string>
+    <string name="home_securitypatch">Security Patch</string>
 
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
@@ -32,4 +40,5 @@
     <string name="settings_system_rw_summary">Use overlayfs to make system partition writable, reboot to take effect.</string>
     <string name="about">About</string>
     <string name="require_kernel_version_8">Require KernelSU version 8+</string>
+
 </resources>
