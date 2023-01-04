@@ -13,13 +13,18 @@ pub fn on_post_data_fs() -> Result<()> {
     // modules.img is the default image
     let mut target_update_img = &module_img;
 
-    if Path::new(module_update_img).exists() && module_update_flag.exists() {
-        // if modules_update.img exists, and the the flag indicate this is an update
-        // this make sure that if the update failed, we will fallback to the old image
-        // if we boot succeed, we will rename the modules_update.img to modules.img #on_boot_complete
-        target_update_img = &module_update_img;
-        // And we should delete the flag immediately
-        std::fs::remove_file(module_update_flag)?;
+    if Path::new(module_update_img).exists() {
+        if module_update_flag.exists() {
+            // if modules_update.img exists, and the the flag indicate this is an update
+            // this make sure that if the update failed, we will fallback to the old image
+            // if we boot succeed, we will rename the modules_update.img to modules.img #on_boot_complete
+            target_update_img = &module_update_img;
+            // And we should delete the flag immediately
+            std::fs::remove_file(module_update_flag)?;
+        } else {
+            // if modules_update.img exists, but the flag not exist, we should delete it
+            std::fs::remove_file(module_update_img)?;
+        }
     }
 
     if !Path::new(target_update_img).exists() {
