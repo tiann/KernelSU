@@ -421,6 +421,7 @@ dependencies = [
  "anyhow",
  "clap",
  "const_format",
+ "encoding",
  "env_logger",
  "java-properties",
  "log",

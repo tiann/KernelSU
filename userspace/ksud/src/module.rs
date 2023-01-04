@@ -374,9 +374,11 @@ fn do_list_modules(path: &str) -> Vec<HashMap<String, String>> {
             continue;
         };
         let mut module_prop_map = HashMap::new();
-        let result = PropertiesIter::new(Cursor::new(content)).read_into(|k, v| {
-            module_prop_map.insert(k, v);
-        });
+        let encoding = encoding::all::UTF_8;
+        let result =
+            PropertiesIter::new_with_encoding(Cursor::new(content), encoding).read_into(|k, v| {
+                module_prop_map.insert(k, v);
+            });
 
         // Add enabled, update, remove flags
         let enabled = !path.join(defs::DISABLE_FILE_NAME).exists();

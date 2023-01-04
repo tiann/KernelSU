@@ -19,6 +19,7 @@ env_logger = "0.10.0"
 serde = { version = "1.0" }
 serde_json = "1.0"
 regex = "1.5.4"
+encoding = "0.2.33"
 
 [profile.release]
 strip = true
