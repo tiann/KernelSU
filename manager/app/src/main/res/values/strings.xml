@@ -11,6 +11,14 @@
     <string name="home_copied_to_clipboard">Copied to clipboard</string>
     <string name="home_support">Support</string>
 
+    <string name="home_kernel">Kernel</string>
+    <string name="home_arch">Arch</string>
+    <string name="home_version">Version</string>
+    <string name="home_api">API Level</string>
+    <string name="home_abi">ABI</string>
+    <string name="home_fingerprint">Fingerprint</string>
+    <string name="home_securitypatch">Security Patch</string>
+
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
@@ -32,4 +40,5 @@
     <string name="settings_system_rw_summary">Use overlayfs to make system partition writable, reboot to take effect.</string>
     <string name="about">About</string>
     <string name="require_kernel_version_8">Require KernelSU version 8+</string>
+
 </resources>
