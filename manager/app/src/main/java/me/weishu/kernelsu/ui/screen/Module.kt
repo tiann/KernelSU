@@ -27,6 +27,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
@@ -85,6 +86,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         val failedDisable = stringResource(R.string.module_failed_to_disable)
         val swipeState = rememberSwipeRefreshState(viewModel.isRefreshing)
         // TODO: Replace SwipeRefresh with RefreshIndicator when it's ready
+        if (Natives.getVersion() < 8) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.require_kernel_version_8))
+            }
+            return@Scaffold
+        }
         SwipeRefresh(
             state = swipeState,
             onRefresh = {

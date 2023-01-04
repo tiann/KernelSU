@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.util
 
 import android.net.Uri
+import android.os.SystemClock
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
@@ -37,8 +38,9 @@ fun execKsud(args: String): Boolean {
 }
 
 fun install() {
+    val start = SystemClock.elapsedRealtime()
     val result = execKsud("install")
-    Log.w(TAG, "install ksud result: $result")
+    Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 
 fun listModules(): String {

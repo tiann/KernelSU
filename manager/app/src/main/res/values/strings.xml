@@ -31,4 +31,5 @@
     <string name="settings_system_rw">Make system writable</string>
     <string name="settings_system_rw_summary">Use overlayfs to make system partition writable, reboot to take effect.</string>
     <string name="about">About</string>
+    <string name="require_kernel_version_8">Require KernelSU version 8+</string>
 </resources>
