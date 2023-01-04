@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -111,7 +112,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 }
                             },
                             onCheckChanged = {
-                                val success = toggleModule(module.id, isChecked)
+                                val success = toggleModule(module.id, !isChecked)
                                 if (success) {
                                     isChecked = it
                                 } else scope.launch {
@@ -149,28 +150,34 @@ private fun ModuleItem(
         colors =
         CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
+
+        val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
+
         Column(modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 0.dp)) {
             Row {
                 Column {
                     Text(
+                        text = module.name,
                         fontSize = MaterialTheme.typography.titleLarge.fontSize,
                         fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
-                        text = module.name,
+                        textDecoration = textDecoration,
                     )
 
                     Row {
                         Text(
+                            text = module.version,
                             fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
                             fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                            text = module.version
+                            textDecoration = textDecoration
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
+                            text = module.author,
                             fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
                             fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                            text = module.author
+                            textDecoration = textDecoration
                         )
 
                     }
@@ -178,17 +185,24 @@ private fun ModuleItem(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Switch(checked = isChecked, onCheckedChange = onCheckChanged)
+                Switch(
+                    enabled = !module.update,
+                    checked = isChecked,
+                    onCheckedChange = onCheckChanged
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
+                text = module.description,
                 fontFamily = MaterialTheme.typography.bodyMedium.fontFamily,
                 fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                text = module.description,
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
+                fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 4,
+                textDecoration = textDecoration
             )
 
 
@@ -203,6 +217,7 @@ private fun ModuleItem(
                 Spacer(modifier = Modifier.weight(1f, true))
 
                 TextButton(
+                    enabled = !module.update && !module.remove,
                     onClick = { onUninstall(module) },
                 ) {
                     Text(
@@ -225,8 +240,10 @@ fun ModuleItemPreview() {
         version = "version",
         versionCode = 1,
         author = "author",
-        description = "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ",
-        enabled = true
+        description = "I am a test module and i do nothing but show a very long description",
+        enabled = true,
+        update = true,
+        remove = true,
     )
     ModuleItem(module, true, {}, {})
 }

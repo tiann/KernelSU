@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.viewmodel
 
+import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
@@ -28,7 +29,9 @@ class ModuleViewModel : ViewModel() {
         val version: String,
         val versionCode: Int,
         val description: String,
-        val enabled: Boolean
+        val enabled: Boolean,
+        val update: Boolean,
+        val remove: Boolean,
     )
 
     var isRefreshing by mutableStateOf(false)
@@ -64,7 +67,9 @@ class ModuleViewModel : ViewModel() {
                             obj.getString("version"),
                             obj.getInt("versionCode"),
                             obj.getString("description"),
-                            obj.getBoolean("enabled")
+                            obj.getBoolean("enabled"),
+                            obj.getBoolean("update"),
+                            obj.getBoolean("remove"),
                         )
                     }.toList()
             }.onFailure { e ->

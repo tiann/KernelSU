@@ -38,7 +38,7 @@ fun execKsud(args: String): Boolean {
 
 fun install() {
     val result = execKsud("install")
-    Log.w("KernelSU", "install ksud result: $result")
+    Log.w(TAG, "install ksud result: $result")
 }
 
 fun listModules(): String {
@@ -55,7 +55,7 @@ fun toggleModule(id: String, enable: Boolean): Boolean {
         "module disable $id"
     }
     val result = execKsud(cmd)
-    Log.i(TAG, "toggle module $id result: $result")
+    Log.i(TAG, "$cmd result: $result")
     return result
 }
 
