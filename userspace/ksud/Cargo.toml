@@ -1,0 +1,26 @@
+[package]
+name = "ksud"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.65"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.68"
+clap = { version = "4.0.32", features = ["derive"] }
+const_format = "0.2.30"
+subprocess = "0.2.9"
+zip = "0.6.3"
+zip-extensions = "0.6.1"
+java-properties = "1.4.1"
+log = "0.4.17"
+env_logger = "0.10.0"
+serde = { version = "1.0" }
+serde_json = "1.0"
+regex = "1.5.4"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
