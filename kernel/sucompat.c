@@ -186,8 +186,8 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	}
 
 	const char *short_name = file->f_path.dentry->d_name.name;
-	if (strcmp(short_name, "vold.rc")) {
-		// we are only interest `vold.rc` file name file
+	if (strcmp(short_name, "atrace.rc")) {
+		// we are only interest `atrace.rc` file name file
 		return 0;
 	}
 	char path[PATH_MAX];
@@ -196,7 +196,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-	if (strcmp(dpath, "/system/etc/init/vold.rc")) {
+	if (strcmp(dpath, "/system/etc/init/atrace.rc")) {
 		return 0;
 	}
 
@@ -209,7 +209,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	}
 	rc_inserted = true;
 
-	// now we can sure that the init process is reading `/system/etc/init/vold.rc`
+	// now we can sure that the init process is reading `/system/etc/init/atrace.rc`
 	buf = PT_REGS_PARM2(regs);
 	count = PT_REGS_PARM3(regs);
 
