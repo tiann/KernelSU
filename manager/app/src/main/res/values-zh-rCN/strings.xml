@@ -1,0 +1,41 @@
+<resources>
+    <string name="home">主页</string>
+    <string name="home_not_installed">KernelSU 未安装</string>
+    <string name="home_click_to_install">点击安装 KernelSU</string>
+    <string name="home_working">KernelSU 已安装</string>
+    <string name="home_working_version">当前版本: %d</string>
+    <string name="home_unsupported">不支持</string>
+    <string name="home_unsupported_reason">KernelSU 目前只支持 GKI 内核</string>
+    <string name="home_copied_to_clipboard">已复制到剪贴板</string>
+    <string name="home_support">支持</string>
+
+    <string name="superuser">超级用户</string>
+    <string name="superuser_failed_to_grant_root">为 %d 授予 Root 失败</string>
+    <string name="module_failed_to_enable">启用模块失败: %s</string>
+    <string name="module_failed_to_disable">禁用模块失败: %s</string>
+    <string name="module_empty">没有已安装的模块</string>
+
+    <string name="module">模块</string>
+    <string name="uninstall">移除</string>
+    <string name="module_install">本地安装</string>
+    <string name="install">安装</string>
+    <string name="reboot">重启</string>
+    <string name="settings">首选项</string>
+    <string name="reboot_userspace">软重启</string>
+    <string name="reboot_recovery">重启到 recovery</string>
+    <string name="reboot_bootloader">重启到 Bootloader</string>
+    <string name="reboot_download">重启到 Download</string>
+    <string name="reboot_edl">重启到 EDL</string>
+    <string name="settings_system_rw">使系统分区可写</string>
+    <string name="settings_system_rw_summary">使用 overlayfs 使系统分区可写，重启后生效。</string>
+    <string name="about">关于</string>
+    <string name="require_kernel_version_8">需要 KernelSU 8+ 以上版本</string>
+
+    <string name="kernel">内核版本</string>
+    <string name="arch">系统架构</string>
+    <string name="version">构建信息</string>
+    <string name="api_level">API 等级</string>
+    <string name="api_support">API 支持</string>
+    <string name="fingerpoint">指纹信息</string>
+    <string name="security_patch">安全补丁</string>
+</resources>

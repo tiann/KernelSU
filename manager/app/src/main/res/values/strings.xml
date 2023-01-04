@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KernelSU</string>
+    <string name="app_name" translatable="false">KernelSU</string>
 
     <string name="home">Home</string>
     <string name="home_not_installed">Not installed</string>
@@ -32,4 +32,12 @@
     <string name="settings_system_rw_summary">Use overlayfs to make system partition writable, reboot to take effect.</string>
     <string name="about">About</string>
     <string name="require_kernel_version_8">Require KernelSU version 8+</string>
+    
+    <string name="kernel">kernel</string>
+    <string name="arch">Arch</string>
+    <string name="version">Version</string>
+    <string name="api_level">API Level</string>
+    <string name="api_support">API Support</string>
+    <string name="fingerpoint">Fingerpoint</string>
+    <string name="security_patch">Security Patch</string>
 </resources>

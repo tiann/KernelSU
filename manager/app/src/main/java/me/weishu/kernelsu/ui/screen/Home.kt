@@ -209,25 +209,25 @@ private fun InfoCard() {
                 Text(text = content, style = MaterialTheme.typography.bodyMedium)
             }
 
-            InfoCardItem("Kernel", uname.release)
+            InfoCardItem(stringResource(R.string.kernel), uname.release)
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem("Arch", uname.machine)
+            InfoCardItem(stringResource(R.string.arch), uname.machine)
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem("Version", uname.version)
+            InfoCardItem(stringResource(R.string.version), uname.version)
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem("API Level", Build.VERSION.SDK_INT.toString())
+            InfoCardItem(stringResource(R.string.api_level), Build.VERSION.SDK_INT.toString())
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem("ABI", Build.SUPPORTED_ABIS.joinToString(", "))
+            InfoCardItem(stringResource(R.string.api_support), Build.SUPPORTED_ABIS.joinToString(", "))
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem("Fingerprint", Build.FINGERPRINT)
+            InfoCardItem(stringResource(R.string.fingerpoint), Build.FINGERPRINT)
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem("Security Patch", Build.VERSION.SECURITY_PATCH)
+            InfoCardItem(stringResource(R.string.security_patch), Build.VERSION.SECURITY_PATCH)
 
             val copiedMessage = stringResource(R.string.home_copied_to_clipboard)
             TextButton(
