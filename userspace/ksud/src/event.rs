@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::{defs, utils::mount_image};
+use crate::{defs, utils::{mount_image, ensure_clean_dir}};
 use anyhow::{bail, Result};
 use subprocess::Exec;
 
@@ -32,10 +32,8 @@ pub fn on_post_data_fs() -> Result<()> {
         return Ok(());
     }
 
-    let module_path = Path::new(module_dir);
-    if !module_path.exists() {
-        std::fs::create_dir_all(module_path)?;
-    }
+    // we should clean the module mount point if it exists
+    ensure_clean_dir(module_dir)?;
 
     println!("mount {} to {}", target_update_img, module_dir);
     mount_image(target_update_img, module_dir)?;
