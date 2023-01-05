@@ -13,6 +13,9 @@ pub fn on_post_data_fs() -> Result<()> {
     // modules.img is the default image
     let mut target_update_img = &module_img;
 
+    // we should clean the module mount point if it exists
+    ensure_clean_dir(module_dir)?;
+
     if Path::new(module_update_img).exists() {
         if module_update_flag.exists() {
             // if modules_update.img exists, and the the flag indicate this is an update
@@ -31,9 +34,6 @@ pub fn on_post_data_fs() -> Result<()> {
         // no image exist, do nothing for module!
         return Ok(());
     }
-
-    // we should clean the module mount point if it exists
-    ensure_clean_dir(module_dir)?;
 
     println!("mount {} to {}", target_update_img, module_dir);
     mount_image(target_update_img, module_dir)?;
