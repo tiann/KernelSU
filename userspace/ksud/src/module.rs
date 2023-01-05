@@ -29,6 +29,7 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .args(["-c", INSTALL_MODULE_SCRIPT])
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
+        .stderr(Stdio::null())
         .status()?;
     ensure!(result.success(), "install module script failed!");
     Ok(())
