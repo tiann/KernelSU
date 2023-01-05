@@ -95,11 +95,8 @@ fn get_minimal_image_size(img: &str) -> Result<u64> {
     Ok(result)
 }
 
-fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
-    let minimal_size = get_minimal_image_size(img)?;
-    let target_size = minimal_size + extra_size;
-
-    // trim image
+fn check_image(img: &str) -> Result<()> {
+        // trim image
     let result = Command::new("e2fsck")
         .args(["-yf", img])
         .stdout(Stdio::null())
@@ -107,6 +104,15 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
         .status()
         .with_context(|| format!("Failed exec e2fsck {}", img))?;
     ensure!(result.success(), "f2fsck exec failed.");
+    Ok(())
+}
+
+fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
+    let minimal_size = get_minimal_image_size(img)?;
+    let target_size = minimal_size + extra_size;
+
+    // check image
+    check_image(img)?;
 
     let target_size = target_size / 1024 + 1;
     println!("- Target size: {}K", target_size);
@@ -198,6 +204,8 @@ pub fn install_module(zip: String) -> Result<()> {
             .stderr(subprocess::Redirection::Merge)
             .join()?;
         ensure!(result.success(), "format ext4 image failed!");
+
+        check_image(tmp_module_img)?;
     } else if modules_update_exist {
         // modules_update.img exists, we should use it as tmp img
         std::fs::copy(modules_update_img, tmp_module_img)?;
