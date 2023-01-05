@@ -40,5 +40,7 @@
     <string name="settings_system_rw_summary">Use overlayfs to make system partition writable, reboot to take effect.</string>
     <string name="about">About</string>
     <string name="require_kernel_version_8">Require KernelSU version 8+</string>
+    <string name="module_uninstall_success">%s uninstalled</string>
+    <string name="module_uninstall_failed">Failed to uninstall: %s</string>
 
 </resources>

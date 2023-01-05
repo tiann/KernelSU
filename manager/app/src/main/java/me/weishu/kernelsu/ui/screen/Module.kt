@@ -84,6 +84,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     ) { innerPadding ->
         val failedEnable = stringResource(R.string.module_failed_to_enable)
         val failedDisable = stringResource(R.string.module_failed_to_disable)
+        val failedUninstall = stringResource(R.string.module_uninstall_failed)
+        val successUninstall = stringResource(R.string.module_uninstall_success)
         val swipeState = rememberSwipeRefreshState(viewModel.isRefreshing)
         // TODO: Replace SwipeRefresh with RefreshIndicator when it's ready
         if (Natives.getVersion() < 8) {
@@ -116,6 +118,13 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                             onUninstall = {
                                 scope.launch {
                                     val result = uninstallModule(module.id)
+                                    snackBarHost.showSnackbar(
+                                        if (result) {
+                                            successUninstall.format(module.name)
+                                        } else {
+                                            failedUninstall.format(module.name)
+                                        }
+                                    )
                                 }
                             },
                             onCheckChanged = {
@@ -224,7 +233,7 @@ private fun ModuleItem(
                 Spacer(modifier = Modifier.weight(1f, true))
 
                 TextButton(
-                    enabled = !module.update && !module.remove,
+                    enabled = !module.remove,
                     onClick = { onUninstall(module) },
                 ) {
                     Text(
