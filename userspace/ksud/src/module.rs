@@ -223,7 +223,7 @@ pub fn install_module(zip: String) -> Result<()> {
     zip_extract_file_to_memory(&zip_path, &entry_path, &mut buffer)?;
 
     let mut module_prop = HashMap::new();
-    PropertiesIter::new(Cursor::new(buffer)).read_into(|k, v| {
+    PropertiesIter::new_with_encoding(Cursor::new(buffer), encoding::all::UTF_8).read_into(|k, v| {
         module_prop.insert(k, v);
     })?;
 
@@ -399,7 +399,33 @@ where
 
 pub fn uninstall_module(id: String) -> Result<()> {
     do_module_update(defs::MODULE_UPDATE_TMP_DIR, &id, |mid, update_dir| {
-        // found it in modules_update/enabled
+        let dir = Path::new(update_dir);
+        if !dir.exists() {
+            bail!("No module installed");
+        }
+
+        // iterate the modules_update dir, find the module to be removed
+        let dir = std::fs::read_dir(dir)?;
+        for entry in dir.flatten() {
+            let path = entry.path();
+            let module_prop = path.join("module.prop");
+            if !module_prop.exists() {
+                continue;
+            }
+            let content = std::fs::read(module_prop)?;
+            let mut module_id: String = String::new();
+            PropertiesIter::new_with_encoding(Cursor::new(content), encoding::all::UTF_8).read_into(|k, v| {
+                if k.eq("id") {
+                    module_id = v;
+                }
+            })?;
+            if module_id.eq(mid) {
+                remove_dir_all(path)?;
+                break;
+            }
+        }
+
+        // santity check
         let target_module_path = format!("{}/{}", update_dir, mid);
         let target_module = Path::new(&target_module_path);
         if target_module.exists() {
