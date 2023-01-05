@@ -92,7 +92,8 @@ pub fn on_post_data_fs() -> Result<()> {
 
     // module mounted, exec modules post-fs-data scripts
     // todo: Add timeout
-    crate::module::exec_post_fs_data()?;
+    let _ = crate::module::exec_post_fs_data();
+    let _ = crate::module::load_system_prop();
 
     Ok(())
 }

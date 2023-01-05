@@ -7,7 +7,7 @@ use std::{
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    str::FromStr,
+    str::FromStr, os::unix::prelude::PermissionsExt,
 };
 use subprocess::Exec;
 use zip_extensions::*;
@@ -150,6 +150,50 @@ pub fn exec_post_fs_data() -> Result<()> {
             .env("KSU", "1")
             .status()
             .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
+    }
+
+    Ok(())
+}
+
+const RESETPROP: &[u8] = include_bytes!("./magisk64");
+const RESETPROP_PATH: &str = concatcp!(defs::WORKING_DIR, "/magisk64");
+
+fn ensure_resetprop() -> Result<()> {
+    if Path::new(RESETPROP_PATH).exists() {
+        return Ok(());
+    }
+    std::fs::write(RESETPROP_PATH, RESETPROP)?;
+    std::fs::set_permissions(RESETPROP_PATH, std::fs::Permissions::from_mode(0o755))?;
+    Ok(())
+}
+
+pub fn load_system_prop() -> Result<()> {
+
+    ensure_resetprop()?;
+
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let disabled = path.join(defs::DISABLE_FILE_NAME);
+        if disabled.exists() {
+            println!("{} is disabled, skip", path.display());
+            continue;
+        }
+
+        let system_prop = path.join("system.prop");
+        if !system_prop.exists() {
+            continue;
+        }
+        println!("load {} system.prop", path.display());
+
+        // resetprop --file system.prop
+        Command::new(RESETPROP_PATH)
+            .arg("resetprop")
+            .arg("--file")
+            .arg(&system_prop)
+            .status()
+            .with_context(|| format!("Failed to exec {}", system_prop.display()))?;
     }
 
     Ok(())
