@@ -91,9 +91,13 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // module mounted, exec modules post-fs-data scripts
-    // todo: Add timeout
-    let _ = crate::module::exec_post_fs_data();
-    let _ = crate::module::load_system_prop();
+    if !crate::utils::is_safe_mode().unwrap_or(false) {
+        // todo: Add timeout
+        let _ = crate::module::exec_post_fs_data();
+        let _ = crate::module::load_system_prop();
+    } else {
+        println!("safe mode, skip module post-fs-data scripts");
+    }
 
     Ok(())
 }
