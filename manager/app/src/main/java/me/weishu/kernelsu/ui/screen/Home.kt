@@ -142,7 +142,6 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(
                             text = stringResource(R.string.home_working),
-                            fontFamily = FontFamily.Serif,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(4.dp))
@@ -157,7 +156,6 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(
                             text = stringResource(R.string.home_not_installed),
-                            fontFamily = FontFamily.Serif,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(4.dp))
