@@ -118,6 +118,9 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                             onUninstall = {
                                 scope.launch {
                                     val result = uninstallModule(module.id)
+                                    if (result) {
+                                        viewModel.fetchModuleList()
+                                    }
                                     snackBarHost.showSnackbar(
                                         if (result) {
                                             successUninstall.format(module.name)
@@ -131,6 +134,9 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 val success = toggleModule(module.id, !isChecked)
                                 if (success) {
                                     isChecked = it
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
                                 } else scope.launch {
                                     val message = if (isChecked) failedDisable else failedEnable
                                     snackBarHost.showSnackbar(message.format(module.name))
