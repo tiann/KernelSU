@@ -4,7 +4,7 @@ use anyhow::{Result, ensure};
 use subprocess::Exec;
 
 pub fn mount_image(src: &str, target: &str) -> Result<()> {
-    let result = Exec::shell(format!("mount {} {}", src, target)).join()?;
+    let result = Exec::shell(format!("mount -t ext4 {} {}", src, target)).join()?;
     ensure!(result.success(), "mount: {} -> {} failed.", src, target);
     Ok(())
 }
