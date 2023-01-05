@@ -63,9 +63,9 @@ class ModuleViewModel : ViewModel() {
                         ModuleInfo(
                             obj.getString("id"),
                             obj.getString("name"),
-                            obj.getString("author"),
-                            obj.getString("version"),
-                            obj.getInt("versionCode"),
+                            obj.optString("author", "Unknown"),
+                            obj.optString("version", "Unknown"),
+                            obj.optInt("versionCode", 0),
                             obj.getString("description"),
                             obj.getBoolean("enabled"),
                             obj.getBoolean("update"),
