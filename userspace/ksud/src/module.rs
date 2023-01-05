@@ -12,7 +12,7 @@ use std::{
 use subprocess::Exec;
 use zip_extensions::*;
 
-use crate::utils::*;
+use crate::{utils::*, restorecon::setsyscon};
 use crate::{defs, restorecon};
 
 use anyhow::{bail, ensure, Context, Result};
@@ -308,6 +308,8 @@ pub fn install_module(zip: String) -> Result<()> {
     println!("- Mounting image");
 
     mount_image(tmp_module_img, module_update_tmp_dir)?;
+
+    setsyscon(module_update_tmp_dir)?;
 
     let result = {
         let module_dir = format!("{}/{}", module_update_tmp_dir, module_id);
