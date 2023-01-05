@@ -25,8 +25,8 @@ val androidCompileSdk = 33
 val androidBuildToolsVersion = "33.0.1"
 val androidSourceCompatibility = JavaVersion.VERSION_11
 val androidTargetCompatibility = JavaVersion.VERSION_11
-val managerVersionCode = 10301
-val managerVersionName = "0.3.1"
+val managerVersionCode = 10302
+val managerVersionName = "0.3.2"
 
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
