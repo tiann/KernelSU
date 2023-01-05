@@ -96,14 +96,13 @@ fn get_minimal_image_size(img: &str) -> Result<u64> {
 }
 
 fn check_image(img: &str) -> Result<()> {
-        // trim image
     let result = Command::new("e2fsck")
         .args(["-yf", img])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
         .with_context(|| format!("Failed exec e2fsck {}", img))?;
-    ensure!(result.success(), "f2fsck exec failed.");
+    ensure!(result.success(), "check image f2sck exec failed.");
     Ok(())
 }
 
@@ -123,6 +122,35 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
         .join()
         .with_context(|| format!("Failed to resize2fs {}", img))?;
     ensure!(result.success(), "resize2fs exec failed.");
+
+    Ok(())
+}
+
+/// execute every modules' post-fs-data.sh
+pub fn exec_post_fs_data() -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let disabled = path.join(defs::DISABLE_FILE_NAME);
+        if disabled.exists() {
+            println!("{} is disabled, skip", path.display());
+            continue;
+        }
+
+        let post_fs_data = path.join("post-fs-data.sh");
+        if !post_fs_data.exists() {
+            continue;
+        }
+        println!("exec {} post-fs-data.sh", path.display());
+
+        Command::new("/system/bin/sh")
+            .arg(&post_fs_data)
+            .current_dir(path)
+            .env("KSU", "1")
+            .status()
+            .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
+    }
 
     Ok(())
 }
@@ -161,7 +189,6 @@ pub fn install_module(zip: String) -> Result<()> {
     info!("module id: {}", module_id);
 
     let modules_img = Path::new(defs::MODULE_IMG);
-    let modules_dir = Path::new(defs::MODULE_DIR);
     let modules_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_update_tmp_dir = defs::MODULE_UPDATE_TMP_DIR;
 
@@ -172,8 +199,8 @@ pub fn install_module(zip: String) -> Result<()> {
 
     let img_size_per_m = current_img_size / 1024 / 1024 + 256;
 
-    let modules_exist = modules_dir.exists();
-    let modules_update_exist = modules_update_img.exists();
+    let modules_img_exist = modules_img.exists();
+    let modules_update_img_exist = modules_update_img.exists();
 
     // prepare the tmp module img
     let tmp_module_img = defs::MODULE_UPDATE_TMP_IMG;
@@ -186,7 +213,7 @@ pub fn install_module(zip: String) -> Result<()> {
 
     println!("- Preparing image");
 
-    if !modules_exist && !modules_update_exist {
+    if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
         let result = Exec::shell(format!(
@@ -206,14 +233,26 @@ pub fn install_module(zip: String) -> Result<()> {
         ensure!(result.success(), "format ext4 image failed!");
 
         check_image(tmp_module_img)?;
-    } else if modules_update_exist {
+    } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
-        std::fs::copy(modules_update_img, tmp_module_img)?;
+        std::fs::copy(modules_update_img, tmp_module_img).with_context(|| {
+            format!(
+                "Failed to copy {} to {}",
+                modules_update_img.display(),
+                tmp_module_img
+            )
+        })?;
         // grow size of the tmp image
         grow_image_size(tmp_module_img, default_grow_size)?;
     } else {
         // modules.img exists, we should use it as tmp img
-        std::fs::copy(modules_img, tmp_module_img)?;
+        std::fs::copy(modules_img, tmp_module_img).with_context(|| {
+            format!(
+                "Failed to copy {} to {}",
+                modules_img.display(),
+                tmp_module_img
+            )
+        })?;
         // grow size of the tmp image
         grow_image_size(tmp_module_img, default_grow_size)?;
     }
@@ -222,6 +261,8 @@ pub fn install_module(zip: String) -> Result<()> {
     ensure_clean_dir(module_update_tmp_dir)?;
 
     // mount the modules_update.img to mountpoint
+    println!("- Mounting image");
+
     mount_image(tmp_module_img, module_update_tmp_dir)?;
 
     let result = {
@@ -253,10 +294,12 @@ pub fn install_module(zip: String) -> Result<()> {
     let _ = remove_dir_all(module_update_tmp_dir);
 
     // return if exec script failed
-    result?;
+    result.with_context(|| format!("Failed to execute install script for {}", module_id))?;
 
     // all done, rename the tmp image to modules_update.img
-    std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG)?;
+    if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
+        let _ = std::fs::remove_file(tmp_module_img);
+    }
 
     mark_update()?;
 
