@@ -38,7 +38,8 @@ jobs:
         toolchain: stable
         target: aarch64-linux-android
         override: true
-    - uses: actions-rs/cargo@v1
+    - name: setup cargo
+      uses: actions-rs/cargo@v1
       working-directory: ./userspace/ksud
       with:
         use-cross: true
