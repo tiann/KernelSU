@@ -54,7 +54,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew clean assembleRelease
     - name: Upload build artifact
       uses: actions/upload-artifact@v2
       with:
