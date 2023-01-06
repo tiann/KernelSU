@@ -1,0 +1,35 @@
+name: Build KSUD
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - '.github/workflows/build-ksud.yml'
+      - 'userspace/ksud/**'
+  pull_request:
+    branches: [ "main" ]
+    paths: 
+      - 'userspace/ksud/**'
+jobs:
+  build:
+    name: Build KSUD
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build arm64 ksud
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Build x86_64 ksud
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --target x86_64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Upload ksud Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ksud
+        path: ./userspace/ksud/target/**/release/ksud
+
