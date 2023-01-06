@@ -1,7 +1,7 @@
 name: Build Manager
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "fix-ci"]
     paths: 
       - '.github/workflows/build-manager.yml'
       - 'manager/**'
@@ -33,6 +33,22 @@ jobs:
           echo KEYSTORE_FILE='../key.jks' >> sign.properties
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
+    - name: Build arm64 ksud
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Build x86_64 ksud
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --target x86_64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Copy ksud to app jniLibs
+      run: |
+        cp ./userspace/ksud/target/aarch64-linux-android/release/ksud ./manager/app/src/main/jniLibs/arm64-v8a/libksud.so
+        cp ./userspace/ksud/target/x86_64-linux-android/release/ksud ./manager/app/src/main/jniLibs/x86_64/libksud.so
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle

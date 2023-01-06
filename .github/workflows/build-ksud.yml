@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build arm64
+    - name: Build arm64 ksud
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
         command: build
         args: --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
-    - name: Build x86_64
+    - name: Build x86_64 ksud
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
@@ -30,6 +30,6 @@ jobs:
     - name: Upload ksud Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ksud-arm64
+        name: ksud
         path: ./userspace/ksud/target/**/release/ksud
 
