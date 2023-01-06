@@ -10,7 +10,8 @@ on:
     paths: 
       - 'userspace/**'
 jobs:
-  build:
+  build-su:
+    name: Build userspace su
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -26,6 +27,11 @@ jobs:
       with:
         name: su
         path: ./userspace/su/libs
+  build-arm64-ksud:
+    name: Build ksud for arm64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
     - name: Build aarch64 ksud
       uses: actions-rs/toolchain@v1
       with: 
@@ -33,6 +39,7 @@ jobs:
         target: aarch64-linux-android
         override: true
     - uses: actions-rs/cargo@v1
+      working-directory: ./userspace/ksud
       with:
         use-cross: true
         command: build
