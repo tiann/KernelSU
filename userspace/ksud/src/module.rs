@@ -148,7 +148,7 @@ pub fn exec_post_fs_data() -> Result<()> {
         Command::new("/system/bin/sh")
             .arg(&post_fs_data)
             .current_dir(path)
-            .env("KSU", "1")
+            .env("KSU", "true")
             .status()
             .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
     }
