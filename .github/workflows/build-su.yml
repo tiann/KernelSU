@@ -1,4 +1,4 @@
-name: Build Userspace
+name: Build su
 on:
   push:
     branches: [ "main", "fix-ci" ]
