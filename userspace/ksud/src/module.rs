@@ -3,17 +3,18 @@ use java_properties::PropertiesIter;
 use log::{info, warn};
 use std::{
     collections::HashMap,
-    fs::{create_dir_all, remove_dir_all, File},
-    io::Cursor,
+    fs::{create_dir_all, remove_dir_all, File, OpenOptions},
+    io::{Cursor, Write},
+    os::unix::{prelude::PermissionsExt, process::CommandExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    str::FromStr, os::unix::prelude::PermissionsExt,
+    str::FromStr,
 };
 use subprocess::Exec;
 use zip_extensions::*;
 
-use crate::{utils::*, restorecon::setsyscon};
 use crate::{defs, restorecon};
+use crate::{restorecon::setsyscon, utils::*};
 
 use anyhow::{bail, ensure, Context, Result};
 
@@ -127,6 +128,30 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     Ok(())
 }
 
+fn switch_cgroup(grp: &str, pid: u32) {
+    let path = Path::new(grp).join("cgroup.procs");
+    if !path.exists() {
+        return;
+    }
+
+    let fp = OpenOptions::new().append(true).open(path);
+    if let Ok(mut fp) = fp {
+        let _ = writeln!(fp, "{}", pid);
+    }
+}
+
+fn switch_cgroups() -> Result<()> {
+    let pid = std::process::id();
+    switch_cgroup("/acct", pid);
+    switch_cgroup("/dev/cg2_bpf", pid);
+    switch_cgroup("/sys/fs/cgroup", pid);
+    if getprop("ro.config.per_app_memcg")? != "false" {
+        switch_cgroup("/dev/memcg/apps", pid);
+    }
+
+    Ok(())
+}
+
 /// execute every modules' post-fs-data.sh
 pub fn exec_post_fs_data() -> Result<()> {
     let modules_dir = Path::new(defs::MODULE_DIR);
@@ -145,12 +170,21 @@ pub fn exec_post_fs_data() -> Result<()> {
         }
         println!("exec {} post-fs-data.sh", path.display());
 
-        Command::new("/system/bin/sh")
-            .arg(&post_fs_data)
-            .current_dir(path)
-            .env("KSU", "true")
-            .status()
-            .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
+        // pre_exec is unsafe!
+        unsafe {
+            Command::new("/system/bin/sh")
+                .arg(&post_fs_data)
+                .process_group(0)
+                .pre_exec(|| {
+                    // ignore the error?
+                    let _ = switch_cgroups();
+                    Ok(())
+                })
+                .current_dir(path)
+                .env("KSU", "true")
+                .status()
+                .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
+        }
     }
 
     Ok(())
@@ -169,7 +203,6 @@ fn ensure_resetprop() -> Result<()> {
 }
 
 pub fn load_system_prop() -> Result<()> {
-
     ensure_resetprop()?;
 
     let modules_dir = Path::new(defs::MODULE_DIR);
@@ -224,9 +257,11 @@ pub fn install_module(zip: String) -> Result<()> {
     zip_extract_file_to_memory(&zip_path, &entry_path, &mut buffer)?;
 
     let mut module_prop = HashMap::new();
-    PropertiesIter::new_with_encoding(Cursor::new(buffer), encoding::all::UTF_8).read_into(|k, v| {
-        module_prop.insert(k, v);
-    })?;
+    PropertiesIter::new_with_encoding(Cursor::new(buffer), encoding::all::UTF_8).read_into(
+        |k, v| {
+            module_prop.insert(k, v);
+        },
+    )?;
 
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
@@ -417,11 +452,12 @@ pub fn uninstall_module(id: String) -> Result<()> {
             }
             let content = std::fs::read(module_prop)?;
             let mut module_id: String = String::new();
-            PropertiesIter::new_with_encoding(Cursor::new(content), encoding::all::UTF_8).read_into(|k, v| {
-                if k.eq("id") {
-                    module_id = v;
-                }
-            })?;
+            PropertiesIter::new_with_encoding(Cursor::new(content), encoding::all::UTF_8)
+                .read_into(|k, v| {
+                    if k.eq("id") {
+                        module_id = v;
+                    }
+                })?;
             if module_id.eq(mid) {
                 remove_dir_all(path)?;
                 break;
