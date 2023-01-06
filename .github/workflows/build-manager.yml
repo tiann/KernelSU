@@ -47,13 +47,10 @@ jobs:
         args: --target x86_64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
     - name: Copy ksud to app jniLibs
       run: |
-        ls .
-        ls ./userspace
-        ls ./userspace/ksud
         mkdir -p manager/app/src/main/jniLibs/arm64-v8a
         mkdir -p manager/app/src/main/jniLibs/x86_64
-        cp ./userspace/ksud/target/aarch64-linux-android/release/ksud ./manager/app/src/main/jniLibs/arm64-v8a/libksud.so
-        cp ./userspace/ksud/target/x86_64-linux-android/release/ksud ./manager/app/src/main/jniLibs/x86_64/libksud.so
+        cp -f ../userspace/ksud/target/aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud.so
+        cp -f ../userspace/ksud/target/x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
