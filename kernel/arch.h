@@ -8,6 +8,7 @@
 #define __PT_PARM3_REG regs[2]
 #define __PT_PARM4_REG regs[3]
 #define __PT_PARM5_REG regs[4]
+#define __PT_PARM6_REG regs[5]
 #define __PT_RET_REG regs[30]
 #define __PT_FP_REG regs[29] /* Works only with CONFIG_FRAME_POINTER */
 #define __PT_RC_REG regs[0]
@@ -25,6 +26,7 @@
 #define __PT_PARM4_REG r10
 // #define __PT_PARM4_REG cx
 #define __PT_PARM5_REG r8
+#define __PT_PARM5_REG r9
 #define __PT_RET_REG sp
 #define __PT_FP_REG bp
 #define __PT_RC_REG ax
@@ -47,6 +49,7 @@
 #define PT_REGS_PARM3(x) (__PT_REGS_CAST(x)->__PT_PARM3_REG)
 #define PT_REGS_PARM4(x) (__PT_REGS_CAST(x)->__PT_PARM4_REG)
 #define PT_REGS_PARM5(x) (__PT_REGS_CAST(x)->__PT_PARM5_REG)
+#define PT_REGS_PARM6(x) (__PT_REGS_CAST(x)->__PT_PARM6_REG)
 #define PT_REGS_RET(x) (__PT_REGS_CAST(x)->__PT_RET_REG)
 #define PT_REGS_FP(x) (__PT_REGS_CAST(x)->__PT_FP_REG)
 #define PT_REGS_RC(x) (__PT_REGS_CAST(x)->__PT_RC_REG)
