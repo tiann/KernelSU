@@ -49,8 +49,6 @@ static int transive_to_domain(const char *domain)
 	return error;
 }
 
-static bool is_domain_permissive;
-
 void setup_selinux()
 {
 	if (transive_to_domain(KERNEL_SU_DOMAIN)) {

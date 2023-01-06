@@ -15,18 +15,6 @@
 	hash_for_each (avtab.htable, avtab.nslot, cur)                         \
 		;
 
-static bool is_redundant(struct avtab_node *node)
-{
-	switch (node->key.specified) {
-	case AVTAB_AUDITDENY:
-		return node->datum.u.data == ~0U;
-	case AVTAB_XPERMS:
-		return node->datum.u.xperms == NULL;
-	default:
-		return node->datum.u.data == 0U;
-	}
-}
-
 struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
 				  struct avtab_extended_perms *xperms)
 {
@@ -267,9 +255,9 @@ void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 			xperms.specified = AVTAB_XPERMS_IOCTLFUNCTION;
 			xperms.driver = ioctl_driver(low);
 		}
-
+		int i;
 		if (xperms.specified == AVTAB_XPERMS_IOCTLDRIVER) {
-			for (int i = ioctl_driver(low); i <= ioctl_driver(high);
+			for (i = ioctl_driver(low); i <= ioctl_driver(high);
 			     ++i) {
 				if (invert)
 					xperm_clear(i, xperms.perms.p);
@@ -277,7 +265,7 @@ void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 					xperm_set(i, xperms.perms.p);
 			}
 		} else {
-			for (int i = ioctl_func(low); i <= ioctl_func(high);
+			for (i = ioctl_func(low); i <= ioctl_func(high);
 			     ++i) {
 				if (invert)
 					xperm_clear(i, xperms.perms.p);
