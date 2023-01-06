@@ -33,10 +33,10 @@ jobs:
         target: aarch64-linux-android
         override: true
     - uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: build
-          args: --target aarch64-linux-android --release
+      with:
+        use-cross: true
+        command: build
+        args: --target aarch64-linux-android --release
     - name: Upload aarch64 ksud Artifact
       uses: actions/upload-artifact@v3
       with:
