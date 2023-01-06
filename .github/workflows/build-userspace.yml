@@ -40,11 +40,10 @@ jobs:
         override: true
     - name: setup cargo
       uses: actions-rs/cargo@v1
-      working-directory: ./userspace/ksud
       with:
         use-cross: true
         command: build
-        args: --target aarch64-linux-android --release
+        args: --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
     - name: Upload aarch64 ksud Artifact
       uses: actions/upload-artifact@v3
       with:
