@@ -1,9 +1,9 @@
-name: Build Kernel
+name: Build Kernel 5.10
 on:
   push:
     branches: [ "main" ]
     paths: 
-      - '.github/workflows/build-kernel.yml'
+      - '.github/workflows/build-kernel-5.10.yml'
       - 'kernel/**'
   pull_request:
     branches: [ "main" ]
@@ -46,8 +46,8 @@ jobs:
         cd $GITHUB_WORKSPACE
         git clone https://gerrit.googlesource.com/git-repo
         mkdir android-kernel && cd android-kernel
-        ../git-repo/repo init -u https://android.googlesource.com/kernel/manifest -b common-${{ matrix.tag }}
-        ../git-repo/repo sync
+        ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ matrix.tag }}
+        ../git-repo/repo sync -j$(nproc --all)
         echo "[+] KernelSU setup"
         GKI_ROOT=$(pwd)
         echo "[+] GKI_ROOT: $GKI_ROOT"
@@ -77,7 +77,6 @@ jobs:
         cat out/android12-5.10/dist/Image | ./prebuilts/build-tools/path/linux-x86/gzip -n -f -9 > out/android12-5.10/dist/Image.gz
         tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android12-5.10/dist/Image.gz --ramdisk out/ramdisk --output ./out/android12-5.10/dist/boot-gz.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
         ./build/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/android12-5.10/dist/boot-gz.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
-
     - name: Upload Image.gz
       uses: actions/upload-artifact@v3
       with:
