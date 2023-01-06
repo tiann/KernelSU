@@ -1,4 +1,4 @@
-name: Build ksud
+name: Build Ksud
 on:
   push:
     branches: [ "main", "fix-ci" ]
@@ -19,7 +19,7 @@ jobs:
           - arch: x86_64
             target: x86_64-linux-android
 
-    name: Build ksud-${{ matrix.aarch }}
+    name: Build ksud-${{ matrix.arch }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -29,13 +29,13 @@ jobs:
         toolchain: stable
         target: ${{ matrix.target }}
         override: true
-    - name: setup cargo
+    - name: Build for-${{ matrix.arch }}
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
         command: build
         args: --target ${{ matrix.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
-    - name: Upload ${{ matrix.arch }} ksud Artifact
+    - name: Upload-${{ matrix.arch }} ksud Artifact
       uses: actions/upload-artifact@v3
       with:
         name: ksud-${{ matrix.arch }}

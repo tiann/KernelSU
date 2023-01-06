@@ -1,4 +1,4 @@
-name: Build su
+name: Build SU
 on:
   push:
     branches: [ "main", "fix-ci" ]
