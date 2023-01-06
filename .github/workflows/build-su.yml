@@ -1,7 +1,7 @@
 name: Build SU
 on:
   push:
-    branches: [ "main", "fix-ci" ]
+    branches: [ "main" ]
     paths: 
       - '.github/workflows/build-userspace.yml'
       - 'userspace/**'
