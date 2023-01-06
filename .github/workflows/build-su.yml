@@ -1,14 +1,14 @@
-name: Build Userspace
+name: Build SU
 on:
   push:
     branches: [ "main" ]
     paths: 
-      - '.github/workflows/build-userspace.yml'
-      - 'userspace/**'
+      - '.github/workflows/build-su.yml'
+      - 'userspace/su/**'
   pull_request:
     branches: [ "main" ]
     paths: 
-      - 'userspace/**'
+      - 'userspace/su/**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,11 +19,11 @@ jobs:
         ndk-version: r25b
         local-cache: true
     - name: Build with NDK
-      working-directory: ./userspace
+      working-directory: ./userspace/su
       run: ndk-build
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3
       with:
         name: su
-        path: ./userspace/libs
+        path: ./userspace/su/libs
       
