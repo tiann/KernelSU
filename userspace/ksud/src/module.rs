@@ -87,7 +87,7 @@ fn get_minimal_image_size(img: &str) -> Result<u64> {
         .output()?;
 
     let output = String::from_utf8_lossy(&output.stdout);
-    println!("- {}", output);
+    println!("- {}", output.trim());
     let regex = regex::Regex::new(r"filesystem: (\d+)")?;
     let result = regex
         .captures(output.as_ref())
