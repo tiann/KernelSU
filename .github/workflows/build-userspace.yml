@@ -26,4 +26,20 @@ jobs:
       with:
         name: su
         path: ./userspace/su/libs
-      
+    - name: Build aarch64 ksud
+      uses: actions-rs/toolchain@v1
+      with: 
+        toolchain: stable
+        target: aarch64-linux-android
+        override: true
+    - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --target aarch64-linux-android --release
+    - name: Upload aarch64 ksud Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ksud-arm64
+        path: ./userspace/ksud/target/aarch64-linux-android/release/ksud
+
