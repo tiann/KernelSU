@@ -49,4 +49,26 @@ jobs:
       with:
         name: ksud-arm64
         path: ./userspace/ksud/target/aarch64-linux-android/release/ksud
+  build-x86_64-ksud:
+    name: Build ksud for x86_64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build x86_64 ksud
+      uses: actions-rs/toolchain@v1
+      with: 
+        toolchain: stable
+        target: x86_64-linux-android
+        override: true
+    - name: setup cargo
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --target x86_64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Upload aarch64 ksud Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ksud-arm64
+        path: ./userspace/ksud/target/x86_64-linux-android/release/ksud
 

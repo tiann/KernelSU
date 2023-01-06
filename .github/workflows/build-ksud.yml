@@ -1,0 +1,43 @@
+name: Build KernelSU userspace daemon
+on:
+  push:
+    branches: [ "main", "fix-ci" ]
+    paths: 
+      - '.github/workflows/build-ksud.yml'
+      - 'userspace/ksud/**'
+  pull_request:
+    branches: [ "main" ]
+    paths: 
+      - 'userspace/ksud/**'
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            target: aarch64-linux-android
+          - arch: x86_64
+            target: x86_64-linux-android
+
+    name: Build ksud-${{ matrix.aarch }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build {{ matrix.arch }} ksud
+      uses: actions-rs/toolchain@v1
+      with: 
+        toolchain: stable
+        target: {{ matrix.target }}
+        override: true
+    - name: setup cargo
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --target {{ matrix.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Upload {{ matrix.arch }} ksud Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ksud-{{ matrix.arch }}
+        path: ./userspace/ksud/target/{{ matrix.target }}/release/ksud
+
