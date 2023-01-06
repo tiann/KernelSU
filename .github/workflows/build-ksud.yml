@@ -15,14 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build aarch64 ksud
-      uses: actions-rs/toolchain@v1
-      with: 
-        toolchain: stable
-        target: 
-          - aarch64-linux-android
-          - x86_64-linux-android
-        override: true
     - name: setup cargo
       uses: actions-rs/cargo@v1
       with:
