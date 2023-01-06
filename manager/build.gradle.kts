@@ -2,6 +2,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.gradle.BaseExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.konan.properties.Properties
+import java.io.ByteArrayOutputStream
 
 plugins {
     id("com.android.application") apply false
@@ -25,11 +26,39 @@ val androidCompileSdk = 33
 val androidBuildToolsVersion = "33.0.1"
 val androidSourceCompatibility = JavaVersion.VERSION_11
 val androidTargetCompatibility = JavaVersion.VERSION_11
-val managerVersionCode = 10302
-val managerVersionName = "0.3.2"
+val managerVersionCode = getVersionCode()
+val managerVersionName = getVersionName()
 
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
+}
+
+fun getGitCommitCount(): Int {
+    val out = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-list", "--count", "HEAD")
+        standardOutput = out
+    }
+    return out.toString().trim().toInt()
+}
+
+fun getGitDescribe(): String {
+    val out = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "describe", "--tags", "--always")
+        standardOutput = out
+    }
+    return out.toString().trim()
+}
+
+fun getVersionCode(): Int {
+    val commitCount = getGitCommitCount()
+    val major = 1
+    return major * 10000 + commitCount
+}
+
+fun getVersionName(): String {
+    return getGitDescribe()
 }
 
 fun Project.configureBaseExtension() {
