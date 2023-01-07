@@ -1,5 +1,5 @@
-#include "linux/gfp.h"
-#include "linux/uidgid.h"
+#include <linux/gfp.h>
+#include <linux/uidgid.h>
 #include <linux/cpu.h>
 #include <linux/memory.h>
 #include <linux/uaccess.h>
@@ -9,6 +9,7 @@
 #include <linux/printk.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/slab.h>
 #include <asm-generic/errno-base.h>
 
@@ -59,7 +60,7 @@ void escape_to_root()
 	memset(&cred->cap_ambient, 0xff, sizeof(cred->cap_ambient));
 
 	// disable seccomp
-#ifdef CONFIG_GENERIC_ENTRY
+#if defined(CONFIG_GENERIC_ENTRY) && LINUX_VERSION_CODE > KERNEL_VERSION(5, 10, 0)
 	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
 #else
 	current_thread_info()->flags &= ~(TIF_SECCOMP | _TIF_SECCOMP);
