@@ -190,8 +190,8 @@ pub fn exec_post_fs_data() -> Result<()> {
     Ok(())
 }
 
-const RESETPROP: &[u8] = include_bytes!("./magisk64");
-const RESETPROP_PATH: &str = concatcp!(defs::WORKING_DIR, "/magisk64");
+const RESETPROP: &[u8] = include_bytes!("./resetprop");
+const RESETPROP_PATH: &str = concatcp!(defs::WORKING_DIR, "/resetprop");
 
 fn ensure_resetprop() -> Result<()> {
     if Path::new(RESETPROP_PATH).exists() {
@@ -223,7 +223,7 @@ pub fn load_system_prop() -> Result<()> {
 
         // resetprop --file system.prop
         Command::new(RESETPROP_PATH)
-            .arg("resetprop")
+            .arg("-n")
             .arg("--file")
             .arg(&system_prop)
             .status()
