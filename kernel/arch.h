@@ -26,7 +26,7 @@
 #define __PT_PARM4_REG r10
 // #define __PT_PARM4_REG cx
 #define __PT_PARM5_REG r8
-#define __PT_PARM5_REG r9
+#define __PT_PARM6_REG r9
 #define __PT_RET_REG sp
 #define __PT_FP_REG bp
 #define __PT_RC_REG ax
