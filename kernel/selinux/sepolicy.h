@@ -1,9 +1,9 @@
 #ifndef __KSU_H_SEPOLICY
 #define __KSU_H_SEPOLICY
 
-#include "../../../security/selinux/ss/sidtab.h"
-#include "../../../security/selinux/ss/services.h"
-#include "../../../security/selinux/include/objsec.h"
+#include <ss/sidtab.h>
+#include <ss/services.h>
+#include <objsec.h>
 
 // Operation on types
 bool type(struct policydb* db, const char* name, const char* attr);

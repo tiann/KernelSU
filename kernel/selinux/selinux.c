@@ -9,9 +9,9 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 
-#include "../../../security/selinux/ss/sidtab.h"
-#include "../../../security/selinux/ss/services.h"
-#include "../../../security/selinux/include/objsec.h"
+#include <ss/sidtab.h>
+#include <ss/services.h>
+#include <objsec.h>
 
 #include "selinux.h"
 #include "../klog.h"
