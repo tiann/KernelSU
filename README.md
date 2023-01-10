@@ -2,6 +2,13 @@
 
 A Kernel based root solution for Android GKI.
 
+## Before Reading
+
+Now KernelSU supports old kernel under 5.10, but **THERE WILL NEVER** be a CI for old kernels, because they are not generic.
+ANY ISSUES ABOUT HOW TO COMPILE A OLD KERNEL WILL BE CLOSED.
+
+KernelSU is in a early development stage and you should not put it into production enviroment. If you face any issue, feel free to tell us about it!
+
 ## Usage
 
 1. Flash a custom kernel with KernelSU, you can build it yourself or [download it from CI](https://github.com/tiann/KernelSU/actions/workflows/build-kernel.yml).
