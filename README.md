@@ -1,11 +1,35 @@
+**English** | [中文](README_CN.md)
+
 # KernelSU
 
 A Kernel based root solution for Android GKI.
+
+## Before Reading
+
+Now KernelSU supports old kernel under 5.10, but **THERE WILL NEVER** be a CI for old kernels, because they are not generic.
+ANY ISSUES ABOUT HOW TO COMPILE A OLD KERNEL WILL NOT BE ANSWERED AND WILL BE CLOSED.
+
+KernelSU is in a early development stage and you should not put it into production enviroment. KernelSU developers will not be responsible for any of your losses.
+
+If you face any issue, feel free to open a [issue](https://github.com/tiann/KernelSU/issues) and tell us about it!
+
+## Compatibility State
+
+Now KernelSU will work on these version of kernels without any modification：
+
+- `5.15`
+- `5.10`
+- `5.4`
+- `4.19`
+
+If you confirm KernelSU works on other version, open a [issue](https://github.com/tiann/KernelSU/issues) tell us about it!
 
 ## Usage
 
 1. Flash a custom kernel with KernelSU, you can build it yourself or [download it from CI](https://github.com/tiann/KernelSU/actions/workflows/build-kernel.yml).
 2. Install Manager App and enjoy :)
+
+For old kernels under 5.10, you must build custom kernels by yourself.
 
 ## Build
 
