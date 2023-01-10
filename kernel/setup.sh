@@ -2,7 +2,7 @@
 
 set -x
 
-git clone https://github.com/tiann/KernelSU
+git clone -b backport-4.19 https://github.com/tiann/KernelSU
 
 GKI_ROOT=$(pwd)
 
