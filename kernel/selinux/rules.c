@@ -1,12 +1,20 @@
+#include <linux/version.h>
 #include "sepolicy.h"
 #include "selinux.h"
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+#define SELINUX_POLICY_INSTEAD_SELINUX_SS
+#endif
+
+#ifndef SELINUX_POLICY_INSTEAD_SELINUX_SS
+#include <ss/services.h>
+#endif
 
 #define KERNEL_SU_DOMAIN "su"
 #define ALL NULL
 
 void apply_kernelsu_rules()
 {
-	struct selinux_policy *policy;
 	struct policydb *db;
 
 	if (!getenforce()) {
@@ -15,8 +23,13 @@ void apply_kernelsu_rules()
 	}
 
 	rcu_read_lock();
-	policy = rcu_dereference(selinux_state.policy);
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
+	struct selinux_policy *policy = rcu_dereference(selinux_state.policy);
 	db = &policy->policydb;
+#else
+	struct selinux_ss *ss = rcu_dereference(selinux_state.ss);
+	db = &ss->policydb;
+#endif
 
 	permissive(db, KERNEL_SU_DOMAIN);
 	typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");

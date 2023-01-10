@@ -1,3 +1,4 @@
+#include <linux/version.h>
 #include "sepolicy.h"
 #include "../klog.h"
 
@@ -9,7 +10,18 @@
 	for (i = 0; i < n_slot; ++i)                                           \
 		for (cur = node_ptr[i]; cur; cur = cur->next)
 
+
+// htable is a struct instead of pointer above 5.8.0: https://elixir.bootlin.com/linux/v5.8-rc1/source/security/selinux/ss/symtab.h
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 #define hashtab_for_each(htab, cur) hash_for_each (htab.htable, htab.size, cur)
+#else
+#define hashtab_for_each(htab, cur) hash_for_each (htab->htable, htab->size, cur)
+#endif
+
+// symtab_search is introduced on 5.9.0: https://elixir.bootlin.com/linux/v5.9-rc1/source/security/selinux/ss/symtab.h
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+#define symtab_search(s, name) hashtab_search((s)->table, name)
+#endif
 
 #define avtab_for_each(avtab, cur)                                             \
 	hash_for_each (avtab.htable, avtab.nslot, cur)                         \
@@ -428,8 +440,12 @@ bool set_type_state(struct policydb *db, const char *type_name, bool permissive)
 void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 			   struct type_datum *attr)
 {
-	ebitmap_set_bit(&db->type_attr_map_array[type->value - 1],
-			attr->value - 1, 1);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+	struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
+#else
+	struct ebitmap *sattr = flex_array_get(db->type_attr_map_array, type->value -1);
+#endif
+	ebitmap_set_bit(sattr, attr->value - 1, 1);
 
 	struct hashtab_node *node;
 	struct constraint_node *n;
