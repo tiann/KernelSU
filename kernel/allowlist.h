@@ -1,6 +1,8 @@
 #ifndef __KSU_H_ALLOWLIST
 #define __KSU_H_ALLOWLIST
 
+#include <linux/types.h>
+
 bool ksu_allowlist_init();
 
 bool ksu_allowlist_exit();
