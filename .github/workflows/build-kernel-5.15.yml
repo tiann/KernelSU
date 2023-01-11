@@ -55,3 +55,20 @@ jobs:
       with:
         name: kernel-aarch64-${{ matrix.version }}-boot.img
         path: android-kernel/out/*/dist/boot.img
+    
+    - name: Upload to telegram
+      env:
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_URL: ${{ github.event.head_commit.url }}
+      run: |
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          OUTDIR=android-kernel/out/android13-5.15/dist
+          BOOT=kernel-aarch64-${{ matrix.version }}-boot.img.zip
+          zip $BOOT -j -r $OUTDIR/boot.img 
+          pip3 install python-telegram-bot
+          python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $BOOT
+        fi

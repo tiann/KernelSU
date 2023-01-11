@@ -82,22 +82,45 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: kernel-aarch64-${{ matrix.version }}-Image.gz
-        path: android-kernel/out/*/dist/Image.gz
+        path: android-kernel/out/android12-5.10/dist/Image.gz
 
     - name: Upload boot.img
       uses: actions/upload-artifact@v3
       with:
         name: kernel-aarch64-${{ matrix.version }}-boot.img
-        path: android-kernel/out/*/dist/boot.img
+        path: android-kernel/out/android12-5.10/dist/boot.img
 
     - name: Upload boot-lz4.img
       uses: actions/upload-artifact@v3
       with:
         name: kernel-aarch64-${{ matrix.version }}-boot-lz4.img
-        path: android-kernel/out/*/dist/boot-lz4.img
+        path: android-kernel/out/android12-5.10/dist/boot-lz4.img
 
     - name: Upload boot-gz.img
       uses: actions/upload-artifact@v3
       with:
         name: kernel-aarch64-${{ matrix.version }}-boot-gz.img
-        path: android-kernel/out/*/dist/boot-gz.img
+        path: android-kernel/out/android12-5.10/dist/boot-gz.img
+
+    - name: Upload to telegram
+      env:
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_URL: ${{ github.event.head_commit.url }}
+      run: |
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          OUTDIR=android-kernel/out/android12-5.10/dist
+          IMAGE_GZ=kernel-aarch64-${{ matrix.version }}-Image.gz
+          BOOT=kernel-aarch64-${{ matrix.version }}-boot.img.zip
+          BOOT_LZ4=kernel-aarch64-${{ matrix.version }}-boot-lz4.img.zip
+          BOOT_GZ=kernel-aarch64-${{ matrix.version }}-boot-gz.img.zip
+          mv $OUTDIR/Image.gz $IMAGE_GZ
+          zip $BOOT -j -r $OUTDIR/boot.img
+          zip $BOOT_LZ4 -j -r $OUTDIR/boot-gz.img
+          zip $BOOT_GZ -j -r $OUTDIR/boot-lz4.img
+          pip3 install python-telegram-bot
+          python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $IMAGE_GZ $BOOT $BOOT_LZ4 $BOOT_GZ
+        fi
