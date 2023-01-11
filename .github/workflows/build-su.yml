@@ -3,7 +3,7 @@ on:
   push:
     branches: [ "main" ]
     paths: 
-      - '.github/workflows/build-userspace.yml'
+      - '.github/workflows/build-su.yml'
       - 'userspace/**'
   pull_request:
     branches: [ "main" ]
