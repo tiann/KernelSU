@@ -7,6 +7,7 @@ import telegram
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 CACHE_CHAT_ID = os.environ.get("CACHE_CHAT_ID")
+MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
 COMMIT_URL = os.environ.get("COMMIT_URL")
 COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 
@@ -60,7 +61,7 @@ async def main():
             files.append(telegram.InputMediaDocument(msg.document))
         await bot.delete_message(CACHE_CHAT_ID, msg.message_id)
     print("[+] Sending")
-    await bot.send_media_group(CHAT_ID, files)
+    await bot.send_media_group(CHAT_ID, files, message_thread_id=MESSAGE_THREAD_ID)
     print("[+] Done!")
 
 
