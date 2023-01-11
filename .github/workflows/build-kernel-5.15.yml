@@ -61,6 +61,7 @@ jobs:
         CHAT_ID: ${{ secrets.CHAT_ID }}
         CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         COMMIT_URL: ${{ github.event.head_commit.url }}
       run: |
