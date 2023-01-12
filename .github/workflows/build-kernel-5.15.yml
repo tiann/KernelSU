@@ -45,6 +45,8 @@ jobs:
         DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
         grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
         echo "[+] KernelSU setup Done."
+        cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.15/*.patch
+        cd -
 
     - name: Build boot.img
       working-directory: android-kernel
