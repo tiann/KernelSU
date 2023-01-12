@@ -64,6 +64,8 @@ jobs:
         echo "[+] 添加 kernel su driver 到文件：$DRIVER_MAKEFILE"
         grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
         echo "[+] KernelSU 导入完成"
+        cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+        cd -
     
     - name: Build x86_64 Kernel
       working-directory: WSA-Linux-Kernel
