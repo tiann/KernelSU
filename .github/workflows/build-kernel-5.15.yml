@@ -64,10 +64,12 @@ jobs:
         MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: kernel-aarch64-${{ matrix.version }}
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
           OUTDIR=android-kernel/out/android13-5.15/dist
-          BOOT=kernel-aarch64-${{ matrix.version }}-boot.img.zip
+          BOOT=${{ matrix.version }}-boot.img.zip
           zip $BOOT -j -r $OUTDIR/boot.img 
           pip3 install python-telegram-bot
           python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $BOOT
