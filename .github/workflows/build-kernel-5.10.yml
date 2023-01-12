@@ -57,6 +57,8 @@ jobs:
         DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
         grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
         echo "[+] KernelSU setup Done."
+        cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+        cd -
         curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-${{ matrix.tag }}_r1.zip
         unzip gki-kernel.zip
         tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")

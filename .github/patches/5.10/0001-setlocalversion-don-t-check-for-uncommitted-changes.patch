@@ -1,0 +1,43 @@
+From dbdd2906c0b3a967ca28c6b870b46f905c170661 Mon Sep 17 00:00:00 2001
+From: Park Ju Hyung <qkrwngud825@gmail.com>
+Date: Wed, 13 Mar 2019 13:36:37 +0900
+Subject: [PATCH] setlocalversion: don't check for uncommitted changes
+
+I ofter push after the build is done and I hate seeing "-dirty"
+
+Signed-off-by: Park Ju Hyung <qkrwngud825@gmail.com>
+Signed-off-by: Danny Lin <danny@kdrag0n.dev>
+Signed-off-by: Divyanshu-Modi <divyan.m05@gmail.com>
+Change-Id: I240c516520879da680794fd144b1f273f9e21e13
+Signed-off-by: Divyanshu-Modi <divyan.m05@gmail.com>
+---
+ scripts/setlocalversion | 13 -------------
+ 1 file changed, 13 deletions(-)
+
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index 842936656b84..ef27a273ebf5 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -107,19 +107,6 @@ scm_version()
+ 			printf -- '-svn%s' "$(git svn find-rev $head)"
+ 		fi
+ 
+-		# Check for uncommitted changes.
+-		# First, with git-status, but --no-optional-locks is only
+-		# supported in git >= 2.14, so fall back to git-diff-index if
+-		# it fails. Note that git-diff-index does not refresh the
+-		# index, so it may give misleading results. See
+-		# git-update-index(1), git-diff-index(1), and git-status(1).
+-		if {
+-			git --no-optional-locks status -uno --porcelain 2>/dev/null ||
+-			git diff-index --name-only HEAD
+-		} | grep -qvE '^(.. )?scripts/package'; then
+-			printf '%s' -dirty
+-		fi
+-
+ 		# All done with git
+ 		return
+ 	fi
+-- 
+2.37.2
+
