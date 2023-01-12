@@ -29,11 +29,20 @@ jobs:
 
     name: Build WSA-Kernel-${{ matrix.version }}
     runs-on: ubuntu-18.04
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_MAXSIZE: "2G"
+      CCACHE_HARDLINK: "true"
     steps:
+    - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ccache-WSA-Kernel-${{ matrix.version }}
+        append-timestamp: false
     - uses: actions/checkout@v3
       with:
         path: KernelSU
-    
+
     - name: Install LLVM
       run: |
         sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
@@ -79,7 +88,7 @@ jobs:
         cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
         echo "[+] 复制配置文件 configs/wsa/${{ matrix.make_config }}-5.10 到 $KERNEL_ROOT/.config"
         echo "执行: make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}"
-        make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}
+        make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }} CCACHE="/usr/bin/ccache" 
 
     - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
       uses: actions/upload-artifact@v3
