@@ -110,13 +110,15 @@ jobs:
         MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: kernel-aarch64-${{ matrix.version }}
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
           OUTDIR=android-kernel/out/android12-5.10/dist
-          IMAGE_GZ=kernel-aarch64-${{ matrix.version }}-Image.gz
-          BOOT=kernel-aarch64-${{ matrix.version }}-boot.img.zip
-          BOOT_LZ4=kernel-aarch64-${{ matrix.version }}-boot-lz4.img.zip
-          BOOT_GZ=kernel-aarch64-${{ matrix.version }}-boot-gz.img.zip
+          IMAGE_GZ=${{ matrix.version }}-Image.gz
+          BOOT=${{ matrix.version }}-boot.img.zip
+          BOOT_LZ4=${{ matrix.version }}-boot-lz4.img.zip
+          BOOT_GZ=${{ matrix.version }}-boot-gz.img.zip
           mv $OUTDIR/Image.gz $IMAGE_GZ
           zip $BOOT -j -r $OUTDIR/boot.img
           zip $BOOT_LZ4 -j -r $OUTDIR/boot-gz.img

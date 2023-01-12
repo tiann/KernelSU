@@ -2,6 +2,7 @@ import os
 import sys
 import asyncio
 import telegram
+from telegram import helpers
 
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
@@ -10,10 +11,25 @@ CACHE_CHAT_ID = os.environ.get("CACHE_CHAT_ID")
 MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
 COMMIT_URL = os.environ.get("COMMIT_URL")
 COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
+RUN_URL = os.environ.get("RUN_URL")
+TITLE = os.environ.get("TITLE")
+MSG_TEMPLATE = """
+*{title}*
+```
+{commit_message}
+```
+[Commit]({commit_url})
+[Workflow run]({run_url})
+""".strip()
 
 
 def get_caption():
-    msg = COMMIT_MESSAGE + "\n" + COMMIT_URL
+    msg = MSG_TEMPLATE.format(
+        title=helpers.escape_markdown(TITLE, 2),
+        commit_message=helpers.escape_markdown(COMMIT_MESSAGE, 2, telegram.MessageEntity.PRE),
+        commit_url=helpers.escape_markdown(COMMIT_URL, 2, telegram.MessageEntity.TEXT_LINK),
+        run_url=helpers.escape_markdown(RUN_URL, 2, telegram.MessageEntity.TEXT_LINK)
+    )
     if len(msg) > telegram.constants.MessageLimit.CAPTION_LENGTH:
         return COMMIT_URL
     return msg
@@ -34,6 +50,12 @@ def check_environ():
         exit(1)
     if COMMIT_MESSAGE is None:
         print("[-] Invalid COMMIT_MESSAGE")
+        exit(1)
+    if RUN_URL is None:
+        print("[-] Invalid RUN_URL")
+        exit(1)
+    if TITLE is None:
+        print("[-] Invalid TITLE")
         exit(1)
 
 
@@ -56,7 +78,9 @@ async def main():
         print("[+] Upload: " + one)
         msg = await bot.send_document(CACHE_CHAT_ID, one)
         if one == paths[-1]:
-            files.append(telegram.InputMediaDocument(msg.document, caption=caption))
+            files.append(telegram.InputMediaDocument(msg.document,
+                                                     caption=caption,
+                                                     parse_mode=telegram.constants.ParseMode.MARKDOWN_V2))
         else:
             files.append(telegram.InputMediaDocument(msg.document))
         await bot.delete_message(CACHE_CHAT_ID, msg.message_id)

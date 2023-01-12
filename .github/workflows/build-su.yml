@@ -5,6 +5,7 @@ on:
     paths: 
       - '.github/workflows/build-su.yml'
       - 'userspace/**'
+      - 'scripts/ksubot.py'
   pull_request:
     branches: [ "main" ]
     paths: 
@@ -35,6 +36,8 @@ jobs:
         MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: SU
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
           pip3 install python-telegram-bot
