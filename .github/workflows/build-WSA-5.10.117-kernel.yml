@@ -1,9 +1,9 @@
-name: Build WSA-android12-5.10.117-Kernel
+name: Build WSA-5.10.117-Kernel
 on:
   push:
     branches: [ "main" ]
     paths: 
-      - '.github/workflows/build-WSA-android12-5.10.117-kernel.yml'
+      - '.github/workflows/build-WSA-5.10.117-kernel.yml'
       - 'kernel/**'
   pull_request:
     branches: [ "main" ]
@@ -15,55 +15,15 @@ jobs:
       matrix:
         include:
           - version: 5.10.117.4
-            arch: x86_64
-            out_file: "arch/x86/boot/bzImage"
-            kernel_make_cmd: "bzImage"
-            make_config: "config-wsa"
-            date: "20221110"
-          - version: 5.10.117.4
-            arch: arm64
-            out_file: "arch/arm64/boot/Image"
-            kernel_make_cmd: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
-            make_config: "config-wsa-arm64"
             date: "20221110"
           - version: 5.10.117.3
-            arch: x86_64
-            out_file: "arch/x86/boot/bzImage"
-            kernel_make_cmd: "bzImage"
-            make_config: "config-wsa"
-            date: "20221104"
-          - version: 5.10.117.3
-            arch: arm64
-            out_file: "arch/arm64/boot/Image"
-            kernel_make_cmd: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
-            make_config: "config-wsa-arm64"
             date: "20221104"
           - version: 5.10.117.2
-            arch: x86_64
-            out_file: "arch/x86/boot/bzImage"
-            kernel_make_cmd: "bzImage"
-            make_config: "config-wsa"
-            date: "20220906"
-          - version: 5.10.117.2
-            arch: arm64
-            out_file: "arch/arm64/boot/Image"
-            kernel_make_cmd: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
-            make_config: "config-wsa-arm64"
             date: "20220906"
           - version: 5.10.117.1
-            arch: x86_64
-            out_file: "arch/x86/boot/bzImage"
-            kernel_make_cmd: "bzImage"
-            make_config: "config-wsa"
-            date: "20220804"
-          - version: 5.10.117.1
-            arch: arm64
-            out_file: "arch/arm64/boot/Image"
-            kernel_make_cmd: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
-            make_config: "config-wsa-arm64"
             date: "20220804"
 
-    name: Build ${{ matrix.arch }}-android12-${{ matrix.version }}
+    name: Build WSA-Kernel-${{ matrix.version }}
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v3
@@ -106,20 +66,35 @@ jobs:
         echo "[+] KernelSU 导入完成"
         cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
         cd -
-
     
-    - name: Build Kernel
+    - name: Build x86_64 Kernel
       working-directory: WSA-Linux-Kernel
       run: |
         KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
         echo "[+] 构建 kernel"
-        cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
-        echo "[+] 复制配置文件 configs/wsa/${{ matrix.make_config }}-5.10 到 $KERNEL_ROOT/.config"
-        echo "执行: make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}"
-        make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}
+        cp configs/wsa/config-wsa-5.10 $KERNEL_ROOT/.config
+        echo "[+] 复制配置文件 configs/wsa/config-wsa-5.10 到 $KERNEL_ROOT/.config"
+        echo "执行: make -j`nproc` LLVM=1 bzImage"
+        make -j`nproc` LLVM=1 bzImage
+    
+    - name: Build arm64 Kernel
+      working-directory: WSA-Linux-Kernel
+      run: |
+        KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
+        echo "[+] 构建 kernel"
+        cp configs/wsa/config-wsa-arm64-5.10 $KERNEL_ROOT/.config
+        echo "[+] 复制配置文件 configs/wsa/config-wsa-arm64-5.10 到 $KERNEL_ROOT/.config"
+        echo "执行: make -j`nproc` LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
+        make -j`nproc` LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image
 
-    - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
+    - name: Upload kernel-x86_64-${{ matrix.version }}
       uses: actions/upload-artifact@v3
       with:
-        name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}-${{ matrix.date }}
-        path: WSA-Linux-Kernel/${{ matrix.out_file }}
+        name: kernel-WSA-x86_64-${{ matrix.version }}-${{ matrix.date }}
+        path: WSA-Linux-Kernel/arch/x86/boot/bzImage
+
+    - name: Upload kernel-arm64-${{ matrix.version }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: kernel-WSA-arm64-${{ matrix.version }}-${{ matrix.date }}
+        path: WSA-Linux-Kernel/arch/arm64/boot/Image
