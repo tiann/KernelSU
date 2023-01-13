@@ -42,5 +42,6 @@
     <string name="require_kernel_version_8">Require KernelSU version 8+</string>
     <string name="module_uninstall_success">%s uninstalled</string>
     <string name="module_uninstall_failed">Failed to uninstall: %s</string>
+    <string name="author">Author</string>
 
 </resources>
