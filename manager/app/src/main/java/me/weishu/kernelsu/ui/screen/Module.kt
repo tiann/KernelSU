@@ -181,10 +181,10 @@ private fun ModuleItem(
         Column(modifier = Modifier.padding(24.dp, 16.dp, 24.dp, 0.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                val author = stringResource(id = R.string.author)
+                val moduleVersion = stringResource(id = R.string.module_version)
+                val moduleAuthor = stringResource(id = R.string.module_author)
 
                 Column(modifier = Modifier.fillMaxWidth(0.8f)) {
                     Text(
@@ -197,7 +197,15 @@ private fun ModuleItem(
                     )
 
                     Text(
-                        text = "${module.version}, $author: ${module.author}",
+                        text = "$moduleVersion: ${module.version}",
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                        fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                        textDecoration = textDecoration
+                    )
+
+                    Text(
+                        text = "$moduleAuthor: ${module.author}",
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
                         lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                         fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
@@ -207,11 +215,16 @@ private fun ModuleItem(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Switch(
-                    enabled = !module.update,
-                    checked = isChecked,
-                    onCheckedChange = onCheckChanged
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Switch(
+                        enabled = !module.update,
+                        checked = isChecked,
+                        onCheckedChange = onCheckChanged
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))

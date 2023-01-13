@@ -38,5 +38,6 @@
     <string name="require_kernel_version_8">需要 KernelSU 版本 8+</string>
     <string name="module_uninstall_success">%s 已卸載</string>
     <string name="module_uninstall_failed">卸載失敗: %s</string>
-    <string name="author">作者</string>
+    <string name="module_version">版本</string>
+    <string name="module_author">作者</string>
 </resources>
