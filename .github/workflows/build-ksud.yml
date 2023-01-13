@@ -11,25 +11,36 @@ on:
       - 'userspace/ksud/**'
 jobs:
   build:
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-linux-android
+          - target: x86_64-linux-android
     name: Build KSUD
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build arm64 ksud
+    - name: Set up cargo cache
+      uses: actions/cache@v3
+      continue-on-error: false
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/            
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: ${{ runner.os }}-cargo-
+    - name: Build ksud
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
         command: build
-        args: --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
-    - name: Build x86_64 ksud
-      uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: build
-        args: --target x86_64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
-    - name: Upload ksud Artifact
+        args: --target ${{ matrix.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Upload ksud artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ksud
+        name: ksud-${{ matrix.target }}
         path: ./userspace/ksud/target/**/release/ksud
 
