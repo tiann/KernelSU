@@ -123,8 +123,8 @@ jobs:
           BOOT_GZ=${{ matrix.version }}-boot-gz.img.zip
           mv $OUTDIR/Image.gz $IMAGE_GZ
           zip $BOOT -j -r $OUTDIR/boot.img
-          zip $BOOT_LZ4 -j -r $OUTDIR/boot-gz.img
-          zip $BOOT_GZ -j -r $OUTDIR/boot-lz4.img
+          zip $BOOT_LZ4 -j -r $OUTDIR/boot-lz4.img
+          zip $BOOT_GZ -j -r $OUTDIR/boot-gz.img
           pip3 install python-telegram-bot
           python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $IMAGE_GZ $BOOT $BOOT_LZ4 $BOOT_GZ
         fi
