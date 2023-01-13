@@ -9,6 +9,8 @@ plugins {
 android {
     namespace = "me.weishu.kernelsu"
 
+    ndkVersion = "25.1.8937393"
+
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
