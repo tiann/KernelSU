@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -101,6 +102,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             },
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(16.dp)
                 .fillMaxSize()
         ) {
             val isEmpty = viewModel.moduleList.isEmpty()
@@ -110,7 +112,9 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     Text(stringResource(R.string.module_empty))
                 }
             } else {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         ModuleItem(module,
@@ -141,11 +145,13 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     val message = if (isChecked) failedDisable else failedEnable
                                     snackBarHost.showSnackbar(message.format(module.name))
                                 }
-                            })
+                            }
+                        )
+                        // fix last item shadow incomplete in LazyColumn
+                        Spacer(Modifier.height(1.dp))
                     }
                 }
             }
-
         }
     }
 }
@@ -166,62 +172,69 @@ private fun ModuleItem(
     onCheckChanged: (Boolean) -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors =
-        CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
 
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
 
-        Column(modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 0.dp)) {
-            Row {
-                Column {
+        Column(modifier = Modifier.padding(24.dp, 16.dp, 24.dp, 0.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                val moduleVersion = stringResource(id = R.string.module_version)
+                val moduleAuthor = stringResource(id = R.string.module_author)
+
+                Column(modifier = Modifier.fillMaxWidth(0.8f)) {
                     Text(
                         text = module.name,
-                        fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                        fontFamily = MaterialTheme.typography.titleLarge.fontFamily,
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontWeight = FontWeight.SemiBold,
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                        fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
                         textDecoration = textDecoration,
                     )
 
-                    Row {
-                        Text(
-                            text = module.version,
-                            fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
-                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                            textDecoration = textDecoration
-                        )
+                    Text(
+                        text = "$moduleVersion: ${module.version}",
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                        fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                        textDecoration = textDecoration
+                    )
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = module.author,
-                            fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
-                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                            textDecoration = textDecoration
-                        )
-
-                    }
+                    Text(
+                        text = "$moduleAuthor: ${module.author}",
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                        fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                        textDecoration = textDecoration
+                    )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Switch(
-                    enabled = !module.update,
-                    checked = isChecked,
-                    onCheckedChange = onCheckChanged
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Switch(
+                        enabled = !module.update,
+                        checked = isChecked,
+                        onCheckedChange = onCheckChanged
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = module.description,
-                fontFamily = MaterialTheme.typography.bodyMedium.fontFamily,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
-                fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
+                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 4,
                 textDecoration = textDecoration

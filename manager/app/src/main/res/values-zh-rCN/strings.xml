@@ -36,4 +36,8 @@
     <string name="settings_system_rw_summary">使用 overlayfs 使系统分区可写, 重启生效</string>
     <string name="about">关于</string>
     <string name="require_kernel_version_8">需要 KernelSU 版本 8+</string>
+    <string name="module_uninstall_success">%s 已卸载</string>
+    <string name="module_uninstall_failed">卸载失败: %s</string>
+    <string name="module_version">版本</string>
+    <string name="module_author">作者</string>
 </resources>

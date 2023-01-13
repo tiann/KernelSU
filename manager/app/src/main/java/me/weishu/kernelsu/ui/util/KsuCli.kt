@@ -47,7 +47,7 @@ fun listModules(): String {
     val shell = createRootShell()
 
     val out = shell.newJob().add("${getKsuDaemonPath()} module list").to(ArrayList(), null).exec().out
-    return out.joinToString("\n")
+    return out.joinToString("\n").ifBlank { "[]" }
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {
