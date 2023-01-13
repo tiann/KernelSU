@@ -9,12 +9,18 @@ plugins {
 android {
     namespace = "me.weishu.kernelsu"
 
+    ndkVersion = "25.1.8937393"
+
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
+    }
+
+    lint {
+        checkReleaseBuilds = false
     }
 
     buildFeatures {

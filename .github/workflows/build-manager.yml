@@ -10,7 +10,10 @@ on:
     paths: 
       - 'manager/**'
 jobs:
-  build:
+  build-ksud:
+      uses: ./.github/workflows/build-ksud.yml
+  build-manager:
+    needs: build-ksud
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,6 +28,10 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: gradle
+    - uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r25b
+        local-cache: true
     - name: Extract keystore
       if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
       run: |
@@ -35,24 +42,22 @@ jobs:
           echo KEYSTORE_FILE='../key.jks' >> sign.properties
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
-    - name: Build arm64 ksud
-      uses: actions-rs/cargo@v1
+    - name: Download arm64 ksud
+      uses: actions/download-artifact@v3
       with:
-        use-cross: true
-        command: build
-        args: --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
-    - name: Build x86_64 ksud
-      uses: actions-rs/cargo@v1
+        name: ksud-aarch64-linux-android
+        path: .
+    - name: Download x86_64 ksud
+      uses: actions/download-artifact@v3
       with:
-        use-cross: true
-        command: build
-        args: --target x86_64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+        name: ksud-x86_64-linux-android
+        path: .
     - name: Copy ksud to app jniLibs
       run: |
         mkdir -p app/src/main/jniLibs/arm64-v8a
         mkdir -p app/src/main/jniLibs/x86_64
-        cp -f ../userspace/ksud/target/aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud.so
-        cp -f ../userspace/ksud/target/x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
+        cp -f ../aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud.so
+        cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
@@ -62,4 +67,19 @@ jobs:
       with:
         name: manager
         path: manager/app/build/outputs/apk/release/*.apk
-    
+    - name: Upload to telegram
+      env:
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: Manager
+      run: |
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          APK=$(find ./app/build/outputs/apk/release -name "*.apk")
+          pip3 install python-telegram-bot
+          python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
+        fi
