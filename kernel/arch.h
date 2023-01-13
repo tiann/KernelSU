@@ -15,7 +15,7 @@
 #define __PT_SP_REG sp
 #define __PT_IP_REG pc
 
-#define PRCTL_SYMBOL "__arm64_sys_prctl"
+#define PRCTL_SYMBOL "sys_prctl"
 
 #elif defined(__x86_64__)
 
