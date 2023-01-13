@@ -10,6 +10,7 @@ static void help(int status){
     printf("KernelSU\n"
            "Usage: su [options] [argument...]\n\n"
            "Options: \n"
+           "-c Pass command to invoked shell\n"
            "-v Print version code and exit\n"
            "-h Display this message and exit\n"
           );
@@ -48,6 +49,14 @@ int su_shell(char *envp[]){
     return 0;
 }
 
+void su_command(char *command){
+
+    elevate();
+    int status = system(command);
+
+    exit(status);
+}
+
 int main(int argc, char *argv[], char *envp[]){
 
     if(argc == 1) {
@@ -56,12 +65,20 @@ int main(int argc, char *argv[], char *envp[]){
     }
 
     int opt;
+    char *command;
 
-    while ((opt = getopt(argc, argv, "vh")) != -1) {
+    while ((opt = getopt(argc, argv, "vch")) != -1) {
            switch (opt) {
            case 'v':
                 printf("%s:KernelSU\n", VERSION);
                 exit(EXIT_SUCCESS);
+           case 'c':
+                if (argc < 3) {
+                    printf("ERROR: -c requires an argument\n\n");
+                    help(EXIT_FAILURE);
+                }
+                command = argv[2];
+                su_command(command);
            case 'h':
                 help(EXIT_SUCCESS);
            }
