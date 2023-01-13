@@ -175,7 +175,7 @@ extern void enable_sucompat();
 
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
+	struct pt_regs *real_regs = regs;
 	int option = (int)PT_REGS_PARM1(real_regs);
 	unsigned long arg2 = (unsigned long)PT_REGS_PARM2(real_regs);
 	unsigned long arg3 = (unsigned long)PT_REGS_PARM3(real_regs);
