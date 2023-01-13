@@ -1,5 +1,6 @@
 name: Build KSUD
 on:
+  workflow_call:
   push:
     branches: [ "main" ]
     paths: 
