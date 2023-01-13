@@ -102,6 +102,17 @@ pub fn on_post_data_fs() -> Result<()> {
     Ok(())
 }
 
+pub fn on_services() -> Result<()> {
+    if !crate::utils::is_safe_mode().unwrap_or(false) {
+        // todo: Add timeout
+        let _ = crate::module::exec_service();
+    } else {
+        println!("safe mode, skip module service scripts");
+    }
+
+    Ok(())
+}
+
 pub fn on_boot_completed() -> Result<()> {
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);

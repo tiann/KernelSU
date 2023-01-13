@@ -89,7 +89,7 @@ pub fn run() -> Result<()> {
         }
         Commands::Install => event::install(),
         Commands::Sepolicy => todo!(),
-        Commands::Services => todo!(),
+        Commands::Services => event::on_services(),
     };
 
     if let Err(e) = &result {
