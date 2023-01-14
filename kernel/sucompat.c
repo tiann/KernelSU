@@ -156,6 +156,13 @@ static const char KERNEL_SU_RC[] =
 "    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
 "\n"
 
+"service ksu_ls /data/adb/ksud services\n"
+"    class late_start\n"
+"    user root\n"
+"    seclabel u:r:root:s0\n"
+"    oneshot\n"
+"\n"
+
 "on property:sys.boot_completed=1\n"
 "    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
 "\n"
