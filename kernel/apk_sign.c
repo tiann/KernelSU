@@ -1,4 +1,3 @@
-#include "linux/export.h"
 #include <linux/fs.h>
 
 #include "apk_sign.h"
