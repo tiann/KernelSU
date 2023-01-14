@@ -1,3 +1,4 @@
+#include <linux/moduleparam.h>
 #include <linux/fs.h>
 
 #include "apk_sign.h"
@@ -126,12 +127,16 @@ clean:
 unsigned ksu_expected_size = EXPECTED_SIZE;
 unsigned ksu_expected_hash = EXPECTED_HASH;
 
+module_param(ksu_expected_size, uint, S_IRUSR | S_IWUSR);
+module_param(ksu_expected_hash, uint, S_IRUSR | S_IWUSR);
+
 int is_manager_apk(char *path)
 {
 	return check_v2_signature(path, ksu_expected_size, ksu_expected_hash);
 }
 
 #else
+
 
 int is_manager_apk(char *path)
 {
