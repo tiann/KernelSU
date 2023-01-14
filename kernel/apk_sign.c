@@ -3,7 +3,7 @@
 #include "apk_sign.h"
 #include "klog.h"
 
-static int check_v2_signature(char *path, unsigned expected_size,
+static __always_inline int check_v2_signature(char *path, unsigned expected_size,
 			      unsigned expected_hash)
 {
 	unsigned char buffer[0x11] = { 0 };
@@ -121,7 +121,21 @@ clean:
 	return sign;
 }
 
+#ifdef CONFIG_KSU_DEBUG
+
+unsigned ksu_expected_size = EXPECTED_SIZE;
+unsigned ksu_expected_hash = EXPECTED_HASH;
+
+int is_manager_apk(char *path)
+{
+	return check_v2_signature(path, ksu_expected_size, ksu_expected_hash);
+}
+
+#else
+
 int is_manager_apk(char *path)
 {
 	return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
 }
+
+#endif
