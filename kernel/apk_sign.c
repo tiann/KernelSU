@@ -1,3 +1,4 @@
+#include "linux/export.h"
 #include <linux/fs.h>
 
 #include "apk_sign.h"
@@ -121,7 +122,10 @@ clean:
 	return sign;
 }
 
+unsigned ksu_expected_size = EXPECTED_SIZE;
+unsigned ksu_expected_hash = EXPECTED_HASH;
+
 int is_manager_apk(char *path)
 {
-	return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
+	return check_v2_signature(path, ksu_expected_size, ksu_expected_hash);
 }
