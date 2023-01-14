@@ -236,7 +236,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 }
 
 static struct kprobe faccessat_kp = {
-	.symbol_name = "do_faccessat",
+	.symbol_name = "sys_faccessat",
 	.pre_handler = faccessat_handler_pre,
 };
 
