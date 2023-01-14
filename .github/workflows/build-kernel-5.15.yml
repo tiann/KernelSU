@@ -29,13 +29,23 @@ jobs:
     - uses: actions/checkout@v3
       with:
         path: KernelSU
-    - name: Download Kernel Source
+
+    - name: Setup kernel source
       run: |
         cd $GITHUB_WORKSPACE
         git clone https://gerrit.googlesource.com/git-repo
         mkdir android-kernel && cd android-kernel
         ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ matrix.tag }}
         ../git-repo/repo sync -j$(nproc --all)
+        curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-${{ matrix.tag }}_r1.zip
+        unzip gki-kernel.zip
+        tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")
+    
+    - name: Setup KernelSU
+      env: 
+        PATCH_PATH: "5.15"
+      run: |
+        cd $GITHUB_WORKSPACE/android-kernel
         echo "[+] KernelSU setup"
         GKI_ROOT=$(pwd)
         echo "[+] GKI_ROOT: $GKI_ROOT"
@@ -44,9 +54,21 @@ jobs:
         echo "[+] Add kernel su driver to Makefile"
         DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
         grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
-        echo "[+] KernelSU setup Done."
-        cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.15/*.patch
+        echo "[+] Apply KernelSU patches"
+        cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
         cd -
+        echo "[+] KernelSU setup Done."
+    
+    - name: Symbol magic
+      run: |
+        echo "[+] Export all symbol from abi_gki_aarch64.xml"
+        COMMON_ROOT=$GITHUB_WORKSPACE/android-kernel/common
+        KSU_ROOT=$GITHUB_WORKSPACE/KernelSU
+        ABI_XML=$COMMON_ROOT/android/abi_gki_aarch64.xml
+        SYMBOL_LIST=$COMMON_ROOT/android/abi_gki_aarch64
+        # python3 $KSU_ROOT/scripts/abi_gki_all.py $ABI_XML > $SYMBOL_LIST
+        echo "[+] Add KernelSU symbols"
+        cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
 
     - name: Build boot.img
       working-directory: android-kernel
