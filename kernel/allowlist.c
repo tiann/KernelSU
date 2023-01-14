@@ -185,7 +185,7 @@ void do_load_allow_list(struct work_struct *work)
 		int errno = PTR_ERR(fp);
 		if (errno == -ENOENT) {
 			ksu_allow_uid(2000, true); // allow adb shell by default
-		}else{
+		} else {
 			pr_err("load_allow_list open file failed: %d\n", PTR_ERR(fp));
 		}
 #else
