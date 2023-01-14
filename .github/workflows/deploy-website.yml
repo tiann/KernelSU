@@ -6,7 +6,7 @@ on:
       - main
       - website
     paths:
-      - '.github/workflows/build-website.yml'
+      - '.github/workflows/deploy-website.yml'
       - 'website/**'
 
 jobs:
