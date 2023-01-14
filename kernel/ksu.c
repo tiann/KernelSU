@@ -299,6 +299,10 @@ int kernelsu_init(void)
 {
 	int rc = 0;
 
+#ifdef CONFIG_KSU_DEBUG
+	pr_alert("You are running DEBUG version of KernelSU");
+#endif
+	
 	ksu_allowlist_init();
 
 	rc = register_kprobe(&kp);
