@@ -246,11 +246,7 @@ static struct kprobe newfstatat_kp = {
 };
 
 static struct kprobe execve_kp = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
-#else
-	.symbol_name = "__do_execve_file",
-#endif
 	.pre_handler = execve_handler_pre,
 };
 
