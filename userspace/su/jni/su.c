@@ -21,20 +21,20 @@ static void help(int status) {
 
 }
 
-static bool ksuctl(int cmd, void * arg1, void * arg2) {
+void ksuctl(int cmd, void * arg1, void * arg2) {
 
     int32_t result = 0;
     prctl(0xDEADBEEF, cmd, arg1, arg2, & result);
-    return result == 0xDEADBEEF;
+
 
 }
 
 void elevate() {
 
     // Talk to Daemon in Kernel Space
-    bool status = ksuctl(CMD_GRANT_ROOT, 0, NULL);
+    ksuctl(CMD_GRANT_ROOT, 0, NULL);
 
-    if (!status) {
+    if (getuid() != 0) {
         fprintf(stderr, "Permission denied\n");
         exit(EXIT_FAILURE);
     }
