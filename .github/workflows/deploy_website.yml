@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 16
           cache: yarn
-      - run: yarn install --frozen-lockfile
+      - run: cd website && yarn install --frozen-lockfile
 
       - name: Build
         run: yarn docs:build
