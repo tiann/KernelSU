@@ -1,6 +1,7 @@
 obj-y += ksu.o
 obj-y += allowlist.o
-obj-y += apk_sign.o
+kernelsu-objs := apk_sign.o
+obj-y += kernelsu.o
 obj-y += module_api.o
 obj-y += sucompat.o
 
