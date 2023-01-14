@@ -63,8 +63,8 @@ static struct kernel_param_ops expected_size_ops = {
 module_param_cb(expected_hash, &expected_hash_ops, &expected_hash, S_IRUSR | S_IWUSR);
 module_param_cb(expected_size, &expected_size_ops, &expected_size, S_IRUSR | S_IWUSR);
 
-int example_init(void){
-	pr_info("Example init");
+int ksu_config_init(void){
+	pr_info("ksu_config init");
 	ksu_expected_hash_ptr = (unsigned *)kprobe_get_addr("ksu_expected_hash");
 	ksu_expected_size_ptr = (unsigned *)kprobe_get_addr("ksu_expected_size");
 
@@ -85,12 +85,12 @@ int example_init(void){
 	return 0;
 }
 
-void example_exit(void){
-	pr_info("Example exit");
+void ksu_config_exit(void){
+	pr_info("ksu_config exit");
 }
 
-module_init(example_init);
-module_exit(example_exit);
+module_init(ksu_config_init);
+module_exit(ksu_config_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Ylarod");
-MODULE_DESCRIPTION("KSU Example module");
+MODULE_DESCRIPTION("A module to modify ksu_expected_*");
