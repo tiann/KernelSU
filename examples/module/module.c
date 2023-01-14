@@ -32,6 +32,7 @@ out:
 
 static unsigned *ksu_expected_hash_ptr;
 static unsigned *ksu_expected_size_ptr;
+static unsigned *ksu_manager_uid_ptr;
 
 static unsigned expected_hash = 0;
 static unsigned expected_size = 0;
@@ -39,6 +40,7 @@ static unsigned expected_size = 0;
 static int set_expected_hash(const char *val, const struct kernel_param *kp){
 	int rv = param_set_uint(val, kp);
 	*ksu_expected_hash_ptr = expected_hash;
+	*ksu_manager_uid_ptr = 0;
 	pr_info("ksu_expected_hash set to %x", expected_hash);
 	return rv;
 }
@@ -46,6 +48,7 @@ static int set_expected_hash(const char *val, const struct kernel_param *kp){
 static int set_expected_size(const char *val, const struct kernel_param *kp){
 	int rv = param_set_uint(val, kp);
 	*ksu_expected_size_ptr = expected_size;
+	*ksu_manager_uid_ptr = 0;
 	pr_info("ksu_expected_size set to %x", expected_size);
 	return rv;
 }
@@ -67,12 +70,14 @@ int ksu_config_init(void){
 	pr_info("ksu_config init");
 	ksu_expected_hash_ptr = (unsigned *)kprobe_get_addr("ksu_expected_hash");
 	ksu_expected_size_ptr = (unsigned *)kprobe_get_addr("ksu_expected_size");
+	ksu_manager_uid_ptr = (unsigned *)kprobe_get_addr("__manager_uid");
 
 	pr_info("ksu_expected_hash_ptr: 0x%lX", ksu_expected_hash_ptr);
 	pr_info("ksu_expected_size_ptr: 0x%lX", ksu_expected_size_ptr);
+	pr_info("ksu_manager_uid_ptr: 0x%lX", ksu_manager_uid_ptr);
 
 	if (ksu_expected_hash_ptr == 0 || ksu_expected_size_ptr == 0) {
-		pr_err("Cannot find address of ksu_expected_*");
+		pr_err("Cannot find all the address of ksu internal variables");
 		return ENOENT;
 	}
 
@@ -81,6 +86,7 @@ int ksu_config_init(void){
 
 	pr_info("ksu_expected_hash: 0x%X", expected_hash);
 	pr_info("ksu_expected_size: 0x%X", expected_size);
+	pr_info("ksu_manager_uid: 0x%X", *ksu_manager_uid_ptr);
 	
 	return 0;
 }
