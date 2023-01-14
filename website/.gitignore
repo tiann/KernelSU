@@ -128,3 +128,21 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# from: https://github.com/vuejs/vitepress/blob/main/.gitignore
+/coverage
+/src/client/shared.ts
+/src/node/shared.ts
+*.log
+*.tgz
+.DS_Store
+.idea
+.temp
+.vite_opt_cache
+.vscode
+dist
+cache
+examples-temp
+node_modules
+pnpm-global
+TODOs.md
