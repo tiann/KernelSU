@@ -11,7 +11,7 @@
 
 #ifdef pr_fmt
 #undef pr_fmt
-#define pr_fmt(fmt) "KSU_EXAMPLE: " fmt
+#define pr_fmt(fmt) "KSU_CONFIG: " fmt
 #endif
 
 uintptr_t kprobe_get_addr(const char *symbol_name) {
@@ -65,8 +65,8 @@ module_param_cb(expected_size, &expected_size_ops, &expected_size, S_IRUSR | S_I
 
 int example_init(void){
 	pr_info("Example init");
-	ksu_expected_hash_ptr = kprobe_get_addr("ksu_expected_hash");
-	ksu_expected_size_ptr = kprobe_get_addr("ksu_expected_size");
+	ksu_expected_hash_ptr = (unsigned *)kprobe_get_addr("ksu_expected_hash");
+	ksu_expected_size_ptr = (unsigned *)kprobe_get_addr("ksu_expected_size");
 
 	pr_info("ksu_expected_hash_ptr: 0x%lX", ksu_expected_hash_ptr);
 	pr_info("ksu_expected_size_ptr: 0x%lX", ksu_expected_size_ptr);
@@ -76,8 +76,11 @@ int example_init(void){
 		return ENOENT;
 	}
 
-	pr_info("ksu_expected_hash: 0x%X", *ksu_expected_hash_ptr);
-	pr_info("ksu_expected_size: 0x%X", *ksu_expected_size_ptr);
+	expected_hash = *ksu_expected_hash_ptr;
+	expected_size = *ksu_expected_size_ptr;
+
+	pr_info("ksu_expected_hash: 0x%X", expected_hash);
+	pr_info("ksu_expected_size: 0x%X", expected_size);
 	
 	return 0;
 }
