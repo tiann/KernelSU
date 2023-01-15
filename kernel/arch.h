@@ -15,7 +15,11 @@
 #define __PT_SP_REG sp
 #define __PT_IP_REG pc
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
+#define PRCTL_SYMBOL "__arm64_sys_prctl"
+#else
 #define PRCTL_SYMBOL "sys_prctl"
+#endif
 
 #elif defined(__x86_64__)
 
