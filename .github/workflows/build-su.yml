@@ -30,7 +30,9 @@ jobs:
         path: ./userspace/su/libs
     - name: Setup mutex for uploading
       uses: ben-z/gh-action-mutex@v1.0-alpha-7
+      if: github.event_name != 'pull_request'
     - name: Upload to telegram
+      if: github.event_name != 'pull_request'
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}
         CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
