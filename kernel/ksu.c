@@ -240,6 +240,9 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 		if (is_allow_su()) {
 			pr_info("allow root for: %d\n", current_uid());
 			escape_to_root();
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("grant_root: prctl reply error\n");
+			}
 		} else {
 			pr_info("deny root for: %d\n", current_uid());
 			// add it to deny list!
