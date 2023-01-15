@@ -129,7 +129,7 @@ static bool become_manager(char *pkg)
 		}
 		cwd = d_path(&files_path, buf, PATH_MAX);
 		if (startswith(cwd, "/data/app/") == 0 &&
-		    endswith(cwd, "/base.apk") == 0) {
+			endswith(cwd, "/base.apk") == 0) {
 			// we have found the apk!
 			pr_info("found apk: %s", cwd);
 			if (!strstr(cwd, pkg)) {
@@ -178,7 +178,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
 #else
-        struct pt_regs *real_regs = regs;
+	struct pt_regs *real_regs = regs;
 #endif
 	int option = (int)PT_REGS_PARM1(real_regs);
 	unsigned long arg2 = (unsigned long)PT_REGS_PARM2(real_regs);
@@ -285,12 +285,12 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 		if (success) {
 			if (!copy_to_user(arg4, &array_length,
 					  sizeof(array_length)) &&
-			    !copy_to_user(arg3, array,
+				!copy_to_user(arg3, array,
 					  sizeof(u32) * array_length)) {
 				if (!copy_to_user(result, &reply_ok,
 						  sizeof(reply_ok))) {
 					pr_err("prctl reply error, cmd: %d\n",
-					       arg2);
+						   arg2);
 				}
 			} else {
 				pr_err("prctl copy allowlist error\n");
@@ -313,7 +313,7 @@ int kernelsu_init(void)
 #ifdef CONFIG_KSU_DEBUG
 	pr_alert("You are running DEBUG version of KernelSU");
 #endif
-	
+
 	ksu_allowlist_init();
 
 	rc = register_kprobe(&kp);
