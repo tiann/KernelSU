@@ -244,6 +244,18 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
+
+	// Both root manager and root processes should be allowed to get version
+	if (arg2 == CMD_GET_VERSION) {
+		if (is_manager() || 0 == current_uid().val) {
+			u32 version = KERNEL_SU_VERSION;
+			if (copy_to_user(arg3, & version, sizeof(version))) {
+				pr_err("prctl reply error, cmd: %d\n", arg2);
+				return 0;
+			}
+		}
+	}
+
 	// all other cmds are for 'root manager'
 	if (!is_manager()) {
 		pr_info("Only manager can do cmd: %d\n", arg2);
@@ -280,11 +292,6 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 				pr_err("prctl copy allowlist error\n");
 			}
 		}
-	} else if (arg2 == CMD_GET_VERSION) {
-		u32 version = KERNEL_SU_VERSION;
-		if (copy_to_user(arg3, &version, sizeof(version))) {
-			pr_err("prctl reply error, cmd: %d\n", arg2);
-		}
 	}
 
 	return 0;
@@ -299,6 +306,10 @@ int kernelsu_init(void)
 {
 	int rc = 0;
 
+#ifdef CONFIG_KSU_DEBUG
+	pr_alert("You are running DEBUG version of KernelSU");
+#endif
+	
 	ksu_allowlist_init();
 
 	rc = register_kprobe(&kp);
