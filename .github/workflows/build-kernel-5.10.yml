@@ -123,6 +123,8 @@ jobs:
         name: kernel-aarch64-${{ matrix.version }}-boot-gz.img
         path: android-kernel/out/android12-5.10/dist/boot-gz.img
 
+    - name: Setup mutex for uploading
+      uses: ben-z/gh-action-mutex@v1.0-alpha-7
     - name: Upload to telegram
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}

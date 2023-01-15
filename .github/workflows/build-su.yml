@@ -28,6 +28,8 @@ jobs:
       with:
         name: su
         path: ./userspace/su/libs
+    - name: Setup mutex for uploading
+      uses: ben-z/gh-action-mutex@v1.0-alpha-7
     - name: Upload to telegram
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}
