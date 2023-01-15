@@ -137,7 +137,7 @@ void do_persistent_allow_list(struct work_struct *work)
 	}
 
 	if (kernel_write(fp, &version, sizeof(version), &off) !=
-	    sizeof(version)) {
+		sizeof(version)) {
 		pr_err("save_allow_list write version failed.\n");
 		goto exit;
 	}
@@ -196,13 +196,13 @@ void do_load_allow_list(struct work_struct *work)
 
 	// verify magic
 	if (kernel_read(fp, &magic, sizeof(magic), &off) != sizeof(magic) ||
-	    magic != FILE_MAGIC) {
+		magic != FILE_MAGIC) {
 		pr_err("allowlist file invalid: %d!\n", magic);
 		goto exit;
 	}
 
 	if (kernel_read(fp, &version, sizeof(version), &off) !=
-	    sizeof(version)) {
+		sizeof(version)) {
 		pr_err("allowlist read version: %d failed\n", version);
 		goto exit;
 	}

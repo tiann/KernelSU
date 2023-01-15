@@ -21,6 +21,9 @@ KernelSU 还处于早期开发阶段，你不应该生产环境中使用它。Ke
 - `5.10`
 - `5.4`
 - `4.19`
+- `4.14`
+
+目前支持架构 : `arm64-v8a` & `x86_64`
 
 如果你确认 KernelSU 能在其他版本上工作，请打开一个 [issue](https://github.com/tiann/KernelSU/issues) 告诉我们！
 
