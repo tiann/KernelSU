@@ -67,6 +67,8 @@ jobs:
       with:
         name: manager
         path: manager/app/build/outputs/apk/release/*.apk
+    - name: Setup mutex for uploading
+      uses: ben-z/gh-action-mutex@v1.0-alpha-7
     - name: Upload to telegram
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}
