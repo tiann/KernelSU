@@ -13,8 +13,10 @@ COMMIT_URL = os.environ.get("COMMIT_URL")
 COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 RUN_URL = os.environ.get("RUN_URL")
 TITLE = os.environ.get("TITLE")
+VERSION = os.environ.get("VERSION")
 MSG_TEMPLATE = """
 *{title}*
+_{version}_
 ```
 {commit_message}
 ```
@@ -26,6 +28,7 @@ MSG_TEMPLATE = """
 def get_caption():
     msg = MSG_TEMPLATE.format(
         title=helpers.escape_markdown(TITLE, 2),
+        version=helpers.escape_markdown(VERSION, 2),
         commit_message=helpers.escape_markdown(COMMIT_MESSAGE, 2, telegram.MessageEntity.PRE),
         commit_url=helpers.escape_markdown(COMMIT_URL, 2, telegram.MessageEntity.TEXT_LINK),
         run_url=helpers.escape_markdown(RUN_URL, 2, telegram.MessageEntity.TEXT_LINK)
@@ -56,6 +59,9 @@ def check_environ():
         exit(1)
     if TITLE is None:
         print("[-] Invalid TITLE")
+        exit(1)
+    if VERSION is None:
+        print("[-] Invalid VERSION")
         exit(1)
 
 
