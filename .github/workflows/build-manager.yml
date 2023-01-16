@@ -84,7 +84,7 @@ jobs:
         TITLE: Manager
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
-          export VERSION=$(git describe --tags --always)
+          export VERSION=$(git rev-list --count HEAD)
           APK=$(find ./app/build/outputs/apk/release -name "*.apk")
           pip3 install python-telegram-bot
           python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
