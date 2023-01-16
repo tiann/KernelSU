@@ -110,7 +110,7 @@ pub fn on_services() -> Result<()> {
     if !crate::utils::is_safe_mode().unwrap_or(false) {
         let _ = crate::module::exec_services();
     } else {
-        println!("safe mode, skip module post-fs-data scripts");
+        println!("safe mode, skip module service scripts");
     }
 
     Ok(())
