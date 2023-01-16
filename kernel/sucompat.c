@@ -156,6 +156,14 @@ static const char KERNEL_SU_RC[] =
 "    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
 "\n"
 
+"on nonencrypted\n"
+"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+"\n"
+
+"on property:vold.decrypt=trigger_restart_framework\n"
+"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+"\n"
+
 "on property:sys.boot_completed=1\n"
 "    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
 "\n"
@@ -191,9 +199,12 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		// we are only interest `atrace.rc` file name file
 		return 0;
 	}
-	const int MAX = 256;
-	char path[MAX];
-	char* dpath = d_path(&file->f_path, path, MAX);
+	#define RC_PATH_MAX 256;
+	char path[RC_PATH_MAX];
+	char* dpath = d_path(&file->f_path, path, RC_PATH_MAX);
+
+	#undef RC_PATH_MAX
+
 	if (IS_ERR(dpath)) {
 		return 0;
 	}
