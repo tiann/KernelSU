@@ -1,3 +1,4 @@
+#include <linux/cred.h>
 #include <linux/gfp.h>
 #include <linux/uidgid.h>
 #include <linux/cpu.h>
@@ -67,6 +68,9 @@ void escape_to_root()
 #endif
 	current->seccomp.mode = 0;
 	current->seccomp.filter = NULL;
+
+	// setgroup to root
+	cred->group_info = &init_groups;
 
 	setup_selinux();
 }
