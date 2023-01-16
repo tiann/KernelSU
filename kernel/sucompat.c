@@ -191,8 +191,9 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		// we are only interest `atrace.rc` file name file
 		return 0;
 	}
-	char path[PATH_MAX];
-	char* dpath = d_path(&file->f_path, path, PATH_MAX);
+	const int MAX = 256;
+	char path[MAX];
+	char* dpath = d_path(&file->f_path, path, MAX);
 	if (IS_ERR(dpath)) {
 		return 0;
 	}
