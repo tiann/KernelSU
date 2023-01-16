@@ -36,6 +36,9 @@ enum Commands {
 
     /// SELinux policy Patch tool
     Sepolicy,
+
+    /// For test
+    Test,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -90,6 +93,7 @@ pub fn run() -> Result<()> {
         Commands::Install => event::install(),
         Commands::Sepolicy => todo!(),
         Commands::Services => event::on_services(),
+        Commands::Test => event::do_systemless_mount("/data/adb/ksu/modules"),
     };
 
     if let Err(e) = &result {

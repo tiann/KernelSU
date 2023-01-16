@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::{collections::HashMap, path::Path};
 
 use crate::{
     defs,
@@ -6,6 +6,87 @@ use crate::{
 };
 use anyhow::{bail, Result};
 use subprocess::Exec;
+
+fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) {
+    if lowerdir.is_empty() {
+        println!("partition: {} lowerdir is empty", partition);
+        return;
+    }
+
+    // add /partition as the lowerest dir
+    let lowest_dir = format!("/{}", partition);
+    lowerdir.push(lowest_dir.clone());
+
+    let lowerdir = lowerdir.join(":");
+    println!("partition: {} lowerdir: {}", partition, lowerdir);
+
+    let mount_args = format!(
+        "mount -t overlay overlay -o ro,lowerdir={} {}",
+        lowerdir, lowest_dir
+    );
+    if let Ok(result) = Exec::shell(mount_args).join() {
+        if !result.success() {
+            println!("mount partition: {} overlay failed", partition);
+        }
+    } else {
+        println!("mount partition: {} overlay failed", partition);
+    }
+}
+
+pub fn do_systemless_mount(module_dir: &str) -> Result<()> {
+    // construct overlay mount params
+    let dir = std::fs::read_dir(module_dir);
+    let Ok(dir) = dir else {
+            bail!("open {} failed", defs::MODULE_DIR);
+        };
+
+    let mut system_lowerdir: Vec<String> = Vec::new();
+
+    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
+    let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
+    for ele in &partition {
+        partition_lowerdir.insert(ele.to_string(), Vec::new());
+    }
+
+    for entry in dir.flatten() {
+        let module = entry.path();
+        if !module.is_dir() {
+            continue;
+        }
+        let disabled = module.join(defs::DISABLE_FILE_NAME).exists();
+        if disabled {
+            println!("module: {} is disabled, ignore!", module.display());
+            continue;
+        }
+
+        let module_system = Path::new(&module).join("system");
+        if !module_system.as_path().exists() {
+            println!("module: {} has no system overlay.", module.display());
+            continue;
+        }
+        system_lowerdir.push(format!("{}", module_system.display()));
+
+        for part in &partition {
+            let part_path = Path::new(&module_system).join(part);
+            if !part_path.exists() {
+                continue;
+            }
+            if let Some(v) = partition_lowerdir.get_mut(*part) {
+                v.push(format!("{}", part_path.display()));
+            }
+        }
+    }
+
+    // mount /system first
+    mount_partition("system", &mut system_lowerdir);
+
+    // mount other partitions
+    for (k, mut v) in partition_lowerdir {
+        mount_partition(&k, &mut v);
+    }
+
+    Ok(())
+}
 
 pub fn on_post_data_fs() -> Result<()> {
     let module_update_img = defs::MODULE_UPDATE_IMG;
@@ -41,56 +122,9 @@ pub fn on_post_data_fs() -> Result<()> {
     println!("mount {} to {}", target_update_img, module_dir);
     mount_image(target_update_img, module_dir)?;
 
-    // construct overlay mount params
-    let dir = std::fs::read_dir(module_dir);
-    let Ok(dir) = dir else {
-        bail!("open {} failed", defs::MODULE_DIR);
-    };
-
-    let mut lowerdir: Vec<String> = Vec::new();
-    for entry in dir.flatten() {
-        let module = entry.path();
-        if !module.is_dir() {
-            continue;
-        }
-        let disabled = module.join(defs::DISABLE_FILE_NAME).exists();
-        if disabled {
-            println!("module: {} is disabled, ignore!", module.display());
-            continue;
-        }
-
-        let mut module_system = PathBuf::new();
-        module_system.push(&module);
-        module_system.push("system");
-
-        if !module_system.as_path().exists() {
-            println!(
-                "module: {} has no system overlay, ignore!",
-                module.display()
-            );
-            continue;
-        }
-        lowerdir.push(format!("{}", module_system.display()));
-    }
-
-    if lowerdir.is_empty() {
-        println!("lowerdir is empty, ignore!");
-        return Ok(());
-    }
-
-    // add /system as the last lowerdir
-    lowerdir.push(String::from("/system"));
-
-    let lowerdir = lowerdir.join(":");
-    println!("lowerdir: {}", lowerdir);
-
-    let mount_args = format!(
-        "mount -t overlay overlay -o ro,lowerdir={} /system",
-        lowerdir
-    );
-    let result = Exec::shell(mount_args).join()?;
-    if !result.success() {
-        println!("mount overlay failed");
+    // mount systemless overlay
+    if let Err(e) = do_systemless_mount(module_dir) {
+        println!("do systemless mount failed: {}", e);
     }
 
     // module mounted, exec modules post-fs-data scripts
