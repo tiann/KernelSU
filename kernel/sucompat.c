@@ -199,7 +199,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		// we are only interest `atrace.rc` file name file
 		return 0;
 	}
-	#define RC_PATH_MAX 256;
+	#define RC_PATH_MAX 256
 	char path[RC_PATH_MAX];
 	char* dpath = d_path(&file->f_path, path, RC_PATH_MAX);
 
