@@ -139,6 +139,7 @@ jobs:
         TITLE: kernel-aarch64-${{ matrix.version }}
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          export VERSION=$(git describe --tags --always)
           OUTDIR=android-kernel/out/android12-5.10/dist
           IMAGE_GZ=${{ matrix.version }}-Image.gz
           BOOT=${{ matrix.version }}-boot.img.zip
