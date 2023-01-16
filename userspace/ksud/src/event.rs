@@ -1,6 +1,9 @@
 use std::path::{Path, PathBuf};
 
-use crate::{defs, utils::{mount_image, ensure_clean_dir}};
+use crate::{
+    defs,
+    utils::{ensure_clean_dir, mount_image},
+};
 use anyhow::{bail, Result};
 use subprocess::Exec;
 
@@ -95,6 +98,17 @@ pub fn on_post_data_fs() -> Result<()> {
         // todo: Add timeout
         let _ = crate::module::exec_post_fs_data();
         let _ = crate::module::load_system_prop();
+    } else {
+        println!("safe mode, skip module post-fs-data scripts");
+    }
+
+    Ok(())
+}
+
+pub fn on_services() -> Result<()> {
+    // exec modules service.sh scripts
+    if !crate::utils::is_safe_mode().unwrap_or(false) {
+        let _ = crate::module::exec_services();
     } else {
         println!("safe mode, skip module post-fs-data scripts");
     }

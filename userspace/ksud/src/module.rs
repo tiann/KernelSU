@@ -190,6 +190,44 @@ pub fn exec_post_fs_data() -> Result<()> {
     Ok(())
 }
 
+/// execute every modules' service.sh
+pub fn exec_services() -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let disabled = path.join(defs::DISABLE_FILE_NAME);
+        if disabled.exists() {
+            println!("{} is disabled, skip", path.display());
+            continue;
+        }
+
+        let service = path.join("service.sh");
+        if !service.exists() {
+            continue;
+        }
+        println!("exec {} service.sh", path.display());
+
+        // pre_exec is unsafe!
+        unsafe {
+            Command::new("/system/bin/sh")
+                .arg(&service)
+                .process_group(0)
+                .pre_exec(|| {
+                    // ignore the error?
+                    let _ = switch_cgroups();
+                    Ok(())
+                })
+                .current_dir(path)
+                .env("KSU", "true")
+                .spawn() // don't wait
+                .with_context(|| format!("Failed to exec {}", service.display()))?;
+        }
+    }
+
+    Ok(())
+}
+
 const RESETPROP: &[u8] = include_bytes!("./resetprop");
 const RESETPROP_PATH: &str = concatcp!(defs::WORKING_DIR, "/resetprop");
 
