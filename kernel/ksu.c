@@ -41,6 +41,8 @@
 #define CMD_GET_ALLOW_LIST 5
 #define CMD_GET_DENY_LIST 6
 
+static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+
 void escape_to_root()
 {
 	struct cred *cred;
@@ -70,7 +72,7 @@ void escape_to_root()
 	current->seccomp.filter = NULL;
 
 	// setgroup to root
-	cred->group_info = &init_groups;
+	cred->group_info = &root_groups;
 
 	setup_selinux();
 }
