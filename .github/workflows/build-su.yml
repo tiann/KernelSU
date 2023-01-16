@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - uses: nttld/setup-ndk@v1
       with:
         ndk-version: r25b
@@ -44,7 +46,7 @@ jobs:
         TITLE: SU
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
-          export VERSION=$(git describe --tags --always)
+          export VERSION=$(git rev-list --count HEAD)
           pip3 install python-telegram-bot
           mv ./userspace/su/libs/arm64-v8a/su su-arm64
           mv ./userspace/su/libs/x86_64/su su-x86_64

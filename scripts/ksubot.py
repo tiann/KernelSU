@@ -16,7 +16,7 @@ TITLE = os.environ.get("TITLE")
 VERSION = os.environ.get("VERSION")
 MSG_TEMPLATE = """
 *{title}*
-_{version}_
+\#ci\_{version}
 ```
 {commit_message}
 ```
