@@ -53,7 +53,8 @@ class SuperUserViewModel : ViewModel() {
 
     val appList by derivedStateOf {
         sortedList.filter {
-            it.label.contains(search) || it.packageName.contains(search) || HanziToPinyin.getInstance().toPinyinString(it.label).contains(search)
+            it.label.contains(search) || it.packageName.contains(search) || HanziToPinyin.getInstance()
+                .toPinyinString(it.label).contains(search)
         }
     }
 
@@ -77,7 +78,7 @@ class SuperUserViewModel : ViewModel() {
                     onAllowList = uid in allowList,
                     onDenyList = uid in denyList
                 )
-            }
+            }.filter { it.packageName != ksuApp.packageName }
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
         }
     }
