@@ -5,6 +5,7 @@ on:
     paths: 
       - '.github/workflows/build-manager.yml'
       - 'manager/**'
+      - 'userspace/ksud/**'
   pull_request:
     branches: [ "main" ]
     paths: 
