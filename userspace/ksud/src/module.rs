@@ -104,7 +104,12 @@ fn check_image(img: &str) -> Result<()> {
         .stderr(Stdio::null())
         .status()
         .with_context(|| format!("Failed exec e2fsck {}", img))?;
-    ensure!(result.success(), "check image f2sck exec failed.");
+    let code = result.code();
+    // 0 or 1 is ok
+    // 0: no error
+    // 1: file system errors corrected
+    // https://man7.org/linux/man-pages/man8/e2fsck.8.html
+    ensure!(code == Some(0) || code == Some(1), "check image e2fsck exec failed: {}", code.unwrap_or(-1));
     Ok(())
 }
 
