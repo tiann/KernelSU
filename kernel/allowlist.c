@@ -233,7 +233,7 @@ exit:
 	filp_close(fp, 0);
 }
 
-void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void* data)
+void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 {
 	struct perm_data *np = NULL;
 	struct perm_data *n = NULL;

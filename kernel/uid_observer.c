@@ -15,11 +15,10 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h"
+#include "ksu.h"
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 static struct work_struct ksu_update_uid_work;
-
-extern uid_t ksu_manager_uid;
 
 struct uid_data {
 	struct list_head list;
@@ -100,15 +99,15 @@ static void do_update_uid(struct work_struct *work)
 	// first, check if manager_uid exist!
 	bool manager_exist = false;
 	list_for_each_entry (np, &uid_list, list) {
-		if (np->uid == ksu_manager_uid) {
+		if (np->uid == ksu_get_manager_uid()) {
 			manager_exist = true;
 			break;
 		}
 	}
 
-	if (!manager_exist) {
-		pr_info("manager is uninstalled, reset it!\n");
-		ksu_manager_uid = 0;
+	if (!manager_exist && ksu_is_manager_uid_valid()) {
+		pr_info("manager is uninstalled, invalidate it!\n");
+		ksu_invalidate_manager_uid();
 	}
 
 	// then prune the allowlist

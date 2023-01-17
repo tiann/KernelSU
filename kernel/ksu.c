@@ -1,50 +1,38 @@
+#include <asm-generic/errno-base.h>
+#include <linux/cpu.h>
 #include <linux/cred.h>
 #include <linux/gfp.h>
-#include <linux/uidgid.h>
-#include <linux/cpu.h>
-#include <linux/memory.h>
-#include <linux/uaccess.h>
 #include <linux/init.h>
-#include <linux/module.h>
-#include <linux/kprobes.h>
-#include <linux/printk.h>
-#include <linux/string.h>
 #include <linux/kernel.h>
-#include <linux/version.h>
+#include <linux/kprobes.h>
+#include <linux/memory.h>
+#include <linux/module.h>
+#include <linux/printk.h>
 #include <linux/slab.h>
-#include <asm-generic/errno-base.h>
+#include <linux/string.h>
+#include <linux/uaccess.h>
+#include <linux/uidgid.h>
+#include <linux/version.h>
 
-#include <linux/rcupdate.h>
 #include <linux/fdtable.h>
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/namei.h>
+#include <linux/rcupdate.h>
 
-#include <linux/delay.h> // mslepp
+#include <linux/delay.h> // msleep
 
-#include "selinux/selinux.h"
-#include "klog.h"
-#include "apk_sign.h"
 #include "allowlist.h"
+#include "apk_sign.h"
 #include "arch.h"
+#include "klog.h"
+#include "ksu.h"
+#include "selinux/selinux.h"
 #include "uid_observer.h"
-
-#define KERNEL_SU_VERSION 9
-
-#define KERNEL_SU_OPTION 0xDEADBEEF
-
-#define CMD_GRANT_ROOT 0
-
-#define CMD_BECOME_MANAGER 1
-#define CMD_GET_VERSION 2
-#define CMD_ALLOW_SU 3
-#define CMD_DENY_SU 4
-#define CMD_GET_ALLOW_LIST 5
-#define CMD_GET_DENY_LIST 6
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
 
-uid_t ksu_manager_uid;
+uid_t ksu_manager_uid = INVALID_UID;
 
 void escape_to_root()
 {
@@ -66,7 +54,8 @@ void escape_to_root()
 	memset(&cred->cap_ambient, 0xff, sizeof(cred->cap_ambient));
 
 	// disable seccomp
-#if defined(CONFIG_GENERIC_ENTRY) && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if defined(CONFIG_GENERIC_ENTRY) &&                                           \
+	LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
 #else
 	current_thread_info()->flags &= ~(TIF_SECCOMP | _TIF_SECCOMP);
@@ -94,7 +83,6 @@ int endswith(const char *s, const char *t)
 	return strcmp(s + slen - tlen, t);
 }
 
-
 static bool is_manager()
 {
 	return ksu_manager_uid == current_uid().val;
@@ -109,13 +97,14 @@ static bool become_manager(char *pkg)
 	char *buf;
 	bool result = false;
 
-	// must be zygote's direct child, otherwise any app can fork a new process and open manager's apk
+	// must be zygote's direct child, otherwise any app can fork a new process and
+	// open manager's apk
 	if (task_uid(current->real_parent).val != 0) {
 		pr_info("parent is not zygote!\n");
 		return false;
 	}
 
-	if (ksu_manager_uid != 0) {
+	if (ksu_is_manager_uid_valid()) {
 		pr_info("manager already exist: %d\n", ksu_manager_uid);
 		return is_manager();
 	}
@@ -137,7 +126,7 @@ static bool become_manager(char *pkg)
 		}
 		cwd = d_path(&files_path, buf, PATH_MAX);
 		if (startswith(cwd, "/data/app/") == 0 &&
-			endswith(cwd, "/base.apk") == 0) {
+		    endswith(cwd, "/base.apk") == 0) {
 			// we have found the apk!
 			pr_info("found apk: %s", cwd);
 			if (!strstr(cwd, pkg)) {
@@ -150,7 +139,7 @@ static bool become_manager(char *pkg)
 				uid_t uid = current_uid().val;
 				pr_info("manager uid: %d\n", uid);
 
-				ksu_manager_uid = uid;
+				ksu_set_manager_uid(uid);
 
 				result = true;
 				goto clean;
@@ -259,12 +248,11 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-
 	// Both root manager and root processes should be allowed to get version
 	if (arg2 == CMD_GET_VERSION) {
 		if (is_manager() || 0 == current_uid().val) {
 			u32 version = KERNEL_SU_VERSION;
-			if (copy_to_user(arg3, & version, sizeof(version))) {
+			if (copy_to_user(arg3, &version, sizeof(version))) {
 				pr_err("prctl reply error, cmd: %d\n", arg2);
 				return 0;
 			}
@@ -296,12 +284,12 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 		if (success) {
 			if (!copy_to_user(arg4, &array_length,
 					  sizeof(array_length)) &&
-				!copy_to_user(arg3, array,
+			    !copy_to_user(arg3, array,
 					  sizeof(u32) * array_length)) {
 				if (!copy_to_user(result, &reply_ok,
 						  sizeof(reply_ok))) {
 					pr_err("prctl reply error, cmd: %d\n",
-						   arg2);
+					       arg2);
 				}
 			} else {
 				pr_err("prctl copy allowlist error\n");
@@ -361,5 +349,6 @@ MODULE_AUTHOR("weishu");
 MODULE_DESCRIPTION("Android GKI KernelSU");
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
-MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver); // 5+才需要导出命名空间
+MODULE_IMPORT_NS(
+	VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver); // 5+才需要导出命名空间
 #endif
