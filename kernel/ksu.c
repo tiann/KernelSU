@@ -64,7 +64,7 @@ void escape_to_root()
 	current->seccomp.filter = NULL;
 
 	// setgroup to root
-	cred->group_info = &root_groups;
+	cred->group_info = get_group_info(&root_groups);
 
 	setup_selinux();
 }
