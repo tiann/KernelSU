@@ -39,6 +39,7 @@ jobs:
       with:
         key: ccache-WSA-Kernel-${{ matrix.version }}
         append-timestamp: false
+        save: ${{ github.event_name != 'pull_request' }}
     - uses: actions/checkout@v3
       with:
         path: KernelSU

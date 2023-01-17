@@ -39,6 +39,7 @@ jobs:
       with:
         key: ccache-aarch64-${{ matrix.version }}
         append-timestamp: false
+        save: ${{ github.event_name != 'pull_request' }}
 
     - name: Setup need_upload
       id: need_upload
