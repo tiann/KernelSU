@@ -134,10 +134,10 @@ jobs:
         path: android-kernel/out/android12-5.10/dist/boot-gz.img
 
     - name: Setup mutex for uploading
-      if: github.event_name != 'pull_request' && steps.need_upload.output == 'true'
+      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
       uses: ben-z/gh-action-mutex@v1.0-alpha-7
     - name: Upload to telegram
-      if: github.event_name != 'pull_request' && steps.need_upload.output == 'true'
+      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}
         CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
