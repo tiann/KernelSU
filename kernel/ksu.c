@@ -27,6 +27,7 @@
 #include "apk_sign.h"
 #include "allowlist.h"
 #include "arch.h"
+#include "uid_observer.h"
 
 #define KERNEL_SU_VERSION 9
 
@@ -42,6 +43,8 @@
 #define CMD_GET_DENY_LIST 6
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+
+uid_t ksu_manager_uid;
 
 void escape_to_root()
 {
@@ -91,11 +94,10 @@ int endswith(const char *s, const char *t)
 	return strcmp(s + slen - tlen, t);
 }
 
-static uid_t __manager_uid;
 
 static bool is_manager()
 {
-	return __manager_uid == current_uid().val;
+	return ksu_manager_uid == current_uid().val;
 }
 
 static bool become_manager(char *pkg)
@@ -113,8 +115,8 @@ static bool become_manager(char *pkg)
 		return false;
 	}
 
-	if (__manager_uid != 0) {
-		pr_info("manager already exist: %d\n", __manager_uid);
+	if (ksu_manager_uid != 0) {
+		pr_info("manager already exist: %d\n", ksu_manager_uid);
 		return is_manager();
 	}
 
@@ -148,7 +150,7 @@ static bool become_manager(char *pkg)
 				uid_t uid = current_uid().val;
 				pr_info("manager uid: %d\n", uid);
 
-				__manager_uid = uid;
+				ksu_manager_uid = uid;
 
 				result = true;
 				goto clean;
@@ -169,7 +171,7 @@ clean:
 static bool is_allow_su()
 {
 	uid_t uid = current_uid().val;
-	if (uid == __manager_uid) {
+	if (uid == ksu_manager_uid) {
 		// we are manager, allow!
 		return true;
 	}
@@ -331,6 +333,8 @@ int kernelsu_init(void)
 			rc);
 		return rc;
 	}
+
+	ksu_uid_observer_init();
 
 	enable_sucompat();
 
