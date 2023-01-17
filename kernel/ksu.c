@@ -30,7 +30,9 @@
 #include "selinux/selinux.h"
 #include "uid_observer.h"
 
-static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+	static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+#endif
 
 uid_t ksu_manager_uid = INVALID_UID;
 
@@ -64,7 +66,11 @@ void escape_to_root()
 	current->seccomp.filter = NULL;
 
 	// setgroup to root
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 	cred->group_info = &root_groups;
+#else
+	cred->group_info = &init_groups;
+#endif
 
 	setup_selinux();
 }
