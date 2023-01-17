@@ -26,6 +26,14 @@ jobs:
     name: Build aarch64-${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
+    - name: Setup need_upload
+      id: need_upload
+      run: |
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          echo "UPLOAD=true" >> $GITHUB_OUTPUT
+        else
+          echo "UPLOAD=false" >> $GITHUB_OUTPUT
+        fi
     - uses: actions/checkout@v3
       with:
         path: KernelSU
@@ -83,9 +91,9 @@ jobs:
     
     - name: Setup mutex for uploading
       uses: ben-z/gh-action-mutex@v1.0-alpha-7
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && steps.need_upload.output == 'true'
     - name: Upload to telegram
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && steps.need_upload.output == 'true'
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}
         CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
