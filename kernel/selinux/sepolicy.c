@@ -1,3 +1,5 @@
+#include <linux/gfp.h>
+#include <ss/symtab.h>
 #include <linux/version.h>
 #include "sepolicy.h"
 #include "../klog.h"
@@ -22,7 +24,7 @@ static bool add_filename_trans(const char *s, const char *t, const char *c, cons
 
 static bool add_genfscon(const char *fs_name, const char *path, const char *context);
 
-static bool add_type(struct policydb* db, const char *type_name, bool attr);
+static bool add_type(struct policydb* db, const char *type_name, unsigned char attr);
 
 static bool set_type_state(struct policydb* db, const char *type_name, bool permissive);
 
@@ -436,9 +438,31 @@ static bool add_genfscon(const char *fs_name, const char *path, const char *cont
 	return false;
 }
 
-static bool add_type(struct policydb *db, const char *type_name, bool attr)
+static bool add_type(struct policydb *db, const char *type_name, unsigned char attr)
 {
-	return false;
+	struct type_datum *type = symtab_search(&db->p_types, type_name);
+	if (type) {
+		pr_info("Type %s already exists\n", type);
+		return false;
+	}
+
+	type = kzalloc(sizeof(*type), GFP_KERNEL);
+	if (!type){
+		pr_err("alloc type failed\n");
+		return false;
+	}
+	
+	type->primary = 1;
+	type->attribute = attr;
+
+	char* key = strdup(type_name);
+	if (symtab_insert(&db->p_types, key, type)) {
+		kfree(key);
+		kfree(type);
+		pr_err("symtab_insert failed\n");
+		return false;
+	}
+	return true;
 }
 
 static bool set_type_state(struct policydb *db, const char *type_name, bool permissive)
