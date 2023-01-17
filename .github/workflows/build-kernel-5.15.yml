@@ -26,6 +26,10 @@ jobs:
     name: Build aarch64-${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
+      with:
+        path: KernelSU
+        fetch-depth: 0
     - name: Setup need_upload
       id: need_upload
       run: |
@@ -34,10 +38,6 @@ jobs:
         else
           echo "UPLOAD=false" >> $GITHUB_OUTPUT
         fi
-    - uses: actions/checkout@v3
-      with:
-        path: KernelSU
-        fetch-depth: 0
 
     - name: Setup kernel source
       run: |

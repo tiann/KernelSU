@@ -15,6 +15,9 @@ jobs:
     name: Build userspace su
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - name: Setup need_upload
       id: need_upload
       run: |
@@ -23,10 +26,6 @@ jobs:
         else
           echo "UPLOAD=false" >> $GITHUB_OUTPUT
         fi
-
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     - uses: nttld/setup-ndk@v1
       with:
         ndk-version: r25b
