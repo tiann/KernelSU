@@ -13,6 +13,7 @@
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
+#include <linux/workqueue.h>
 
 #include <linux/fdtable.h>
 #include <linux/fs.h>
@@ -32,7 +33,13 @@
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
 
+static struct workqueue_struct *ksu_workqueue;
+
 uid_t ksu_manager_uid = INVALID_UID;
+
+void ksu_queue_work(struct work_struct *work) {
+    queue_work(ksu_workqueue, work);
+}
 
 void escape_to_root()
 {
@@ -315,6 +322,8 @@ int kernelsu_init(void)
 	pr_alert("You are running DEBUG version of KernelSU");
 #endif
 
+	ksu_workqueue = alloc_workqueue("kernelsu_work_queue", 0, 0);
+
 	ksu_allowlist_init();
 
 	rc = register_kprobe(&kp);
@@ -337,6 +346,8 @@ void kernelsu_exit(void)
 	unregister_kprobe(&kp);
 
 	ksu_allowlist_exit();
+
+    destroy_workqueue(ksu_workqueue);
 }
 
 module_init(kernelsu_init);

@@ -38,7 +38,6 @@ static struct list_head allow_list;
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/.ksu_allowlist"
 
-static struct workqueue_struct *ksu_workqueue;
 static struct work_struct ksu_save_work;
 static struct work_struct ksu_load_work;
 
@@ -171,7 +170,7 @@ void do_load_allow_list(struct work_struct *work)
 		pr_err("load_allow_list open '/data/adb': %d\n", PTR_ERR(fp));
 		if (errno == -ENOENT) {
 			msleep(2000);
-			queue_work(ksu_workqueue, &ksu_load_work);
+			ksu_queue_work(&ksu_load_work);
 			return;
 		} else {
 			pr_info("load_allow list dir exist now!");
@@ -259,7 +258,6 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 
 static int init_work(void)
 {
-	ksu_workqueue = alloc_workqueue("kernelsu_work_queue", 0, 0);
 	INIT_WORK(&ksu_save_work, do_persistent_allow_list);
 	INIT_WORK(&ksu_load_work, do_load_allow_list);
 	return 0;
@@ -268,13 +266,13 @@ static int init_work(void)
 // make sure allow list works cross boot
 bool persistent_allow_list(void)
 {
-	queue_work(ksu_workqueue, &ksu_save_work);
+	ksu_queue_work(&ksu_save_work);
 	return true;
 }
 
 bool ksu_load_allow_list(void)
 {
-	queue_work(ksu_workqueue, &ksu_load_work);
+	ksu_queue_work(&ksu_load_work);
 	return true;
 }
 
@@ -292,7 +290,5 @@ bool ksu_allowlist_init(void)
 
 bool ksu_allowlist_exit(void)
 {
-	destroy_workqueue(ksu_workqueue);
-
 	return true;
 }

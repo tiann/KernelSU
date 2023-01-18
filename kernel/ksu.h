@@ -1,7 +1,9 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
-#include "linux/uidgid.h"
+#include <linux/uidgid.h>
+#include <linux/workqueue.h>
+
 #define KERNEL_SU_VERSION 9
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
@@ -34,5 +36,7 @@ static inline void ksu_set_manager_uid(uid_t uid) {
 static inline void ksu_invalidate_manager_uid() {
     ksu_manager_uid = INVALID_UID;
 }
+
+void ksu_queue_work(struct work_struct *work);
 
 #endif
