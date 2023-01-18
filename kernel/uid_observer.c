@@ -123,7 +123,7 @@ out:
 
 static void update_uid()
 {
-	ksu_queuework(&ksu_update_uid_work);
+	ksu_queue_work(&ksu_update_uid_work);
 }
 
 static int renameat_handler_pre(struct kprobe *p, struct pt_regs *regs)
