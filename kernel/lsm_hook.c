@@ -28,7 +28,7 @@ static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 };
 
-void ksu_lsm_hook_init(void)
+void __init ksu_lsm_hook_init(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 	security_add_hooks(ksu_hooks, ARRAY_SIZE(ksu_hooks), "ksu");

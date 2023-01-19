@@ -300,7 +300,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	return 0;
 }
 
-int kernelsu_init(void)
+int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
 	pr_alert("You are running DEBUG version of KernelSU");
