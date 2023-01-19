@@ -200,6 +200,26 @@ private fun InfoCard() {
             val contents = StringBuilder()
             val uname = Os.uname()
 
+            val GetSELinuxStatus = Runtime.getRuntime().exec("getenforce")
+            GetSELinuxStatus.waitFor()
+            val GetSELinuxStatusOut = GetSELinuxStatus.errorStream.bufferedReader().readLine() ?: GetSELinuxStatus.inputStream.bufferedReader().readLine()
+            var GetSELinuxStatusisSuccessful: Boolean = false
+            GetSELinuxStatusisSuccessful = (GetSELinuxStatus.exitValue() == 0)
+            val SELinuxStatus = if (GetSELinuxStatusisSuccessful) {
+                when (GetSELinuxStatusOut) {
+                    "Enforcing" -> context.getString(R.string.selinux_status_enforcing)
+                    "Permissive" -> context.getString(R.string.selinux_status_permissive)
+                    "Disabled" -> context.getString(R.string.selinux_status_disabled)
+                    else -> context.getString(R.string.selinux_status_unknown)
+                }
+            } else {
+                if (GetSELinuxStatusOut?.endsWith("Permission denied") == true) {
+                    context.getString(R.string.selinux_status_enforcing)
+                } else {
+                    context.getString(R.string.selinux_status_unknown)
+                }
+            }
+
             @Composable
             fun InfoCardItem(label: String, content: String) {
                 contents.appendLine(label).appendLine(content).appendLine()
@@ -226,6 +246,9 @@ private fun InfoCard() {
 
             Spacer(Modifier.height(24.dp))
             InfoCardItem(stringResource(R.string.home_securitypatch), Build.VERSION.SECURITY_PATCH)
+
+            Spacer(Modifier.height(24.dp))
+            InfoCardItem(stringResource(R.string.home_selinux_status), SELinuxStatus)
 
             val copiedMessage = stringResource(R.string.home_copied_to_clipboard)
             TextButton(
