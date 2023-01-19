@@ -27,7 +27,7 @@ jobs:
             make_config: "config-wsa-arm64"
             date: "20220906"
 
-    name: Build WSA-Kernel-${{ matrix.version }}
+    name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-18.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
@@ -37,7 +37,7 @@ jobs:
     steps:
     - uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: ccache-WSA-Kernel-${{ matrix.version }}
+        key: ccache-WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
         append-timestamp: false
         save: ${{ github.event_name != 'pull_request' }}
     - uses: actions/checkout@v3
