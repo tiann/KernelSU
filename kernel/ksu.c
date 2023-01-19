@@ -37,8 +37,9 @@ static struct workqueue_struct *ksu_workqueue;
 
 uid_t ksu_manager_uid = INVALID_UID;
 
-void ksu_queue_work(struct work_struct *work) {
-    queue_work(ksu_workqueue, work);
+void ksu_queue_work(struct work_struct *work)
+{
+	queue_work(ksu_workqueue, work);
 }
 
 void escape_to_root()
@@ -179,19 +180,9 @@ static bool is_allow_su()
 
 extern void enable_sucompat();
 
-static int handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
+			unsigned long arg4, unsigned long arg5)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
-	int option = (int)PT_REGS_PARM1(real_regs);
-	unsigned long arg2 = (unsigned long)PT_REGS_PARM2(real_regs);
-	unsigned long arg3 = (unsigned long)PT_REGS_PARM3(real_regs);
-	unsigned long arg4 = (unsigned long)PT_REGS_PARM4(real_regs);
-	unsigned long arg5 = (unsigned long)PT_REGS_PARM5(real_regs);
-
 	// if success, we modify the arg5 as result!
 	u32 *result = (u32 *)arg5;
 	u32 reply_ok = KERNEL_SU_OPTION;
@@ -309,11 +300,6 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
-static struct kprobe kp = {
-	.symbol_name = PRCTL_SYMBOL,
-	.pre_handler = handler_pre,
-};
-
 int kernelsu_init(void)
 {
 	int rc = 0;
@@ -322,16 +308,11 @@ int kernelsu_init(void)
 	pr_alert("You are running DEBUG version of KernelSU");
 #endif
 
+	ksu_lsm_hook_init(); // use ksu_kprobe_init if compiled as module
+
 	ksu_workqueue = alloc_workqueue("kernelsu_work_queue", 0, 0);
 
 	ksu_allowlist_init();
-
-	rc = register_kprobe(&kp);
-	if (rc) {
-		pr_info("prctl kprobe failed: %d, please check your kernel config.\n",
-			rc);
-		return rc;
-	}
 
 	ksu_uid_observer_init();
 
@@ -342,12 +323,9 @@ int kernelsu_init(void)
 
 void kernelsu_exit(void)
 {
-	// should never happen...
-	unregister_kprobe(&kp);
-
 	ksu_allowlist_exit();
 
-    destroy_workqueue(ksu_workqueue);
+	destroy_workqueue(ksu_workqueue);
 }
 
 module_init(kernelsu_init);

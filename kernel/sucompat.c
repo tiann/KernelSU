@@ -1,4 +1,4 @@
-
+#include <linux/types.h>
 #include <linux/gfp.h>
 #include <linux/workqueue.h>
 #include <asm/current.h>
@@ -51,7 +51,8 @@ static char __user *sh_user_path(void)
 	return userspace_stack_buffer(sh_path, sizeof(sh_path));
 }
 
-static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
+			 int *flags)
 {
 	struct filename *filename;
 	const char su[] = SU_PATH;
@@ -60,14 +61,14 @@ static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-	filename = getname(PT_REGS_PARM2(regs));
+	filename = getname(*filename_user);
 
 	if (IS_ERR(filename)) {
 		return 0;
 	}
 	if (!memcmp(filename->name, su, sizeof(su))) {
 		pr_info("faccessat su->sh!\n");
-		PT_REGS_PARM2(regs) = sh_user_path();
+		*filename_user = sh_user_path();
 	}
 
 	putname(filename);
@@ -75,7 +76,7 @@ static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
-static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
 	// const char sh[] = SH_PATH;
 	struct filename *filename;
@@ -85,14 +86,18 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-	filename = getname(PT_REGS_PARM2(regs));
+	if (!filename_user) {
+		return 0;
+	}
+
+	filename = getname(*filename_user);
 
 	if (IS_ERR(filename)) {
 		return 0;
 	}
 	if (!memcmp(filename->name, su, sizeof(su))) {
 		pr_info("newfstatat su->sh!\n");
-		PT_REGS_PARM2(regs) = sh_user_path();
+		*filename_user = sh_user_path();
 	}
 
 	putname(filename);
@@ -100,8 +105,8 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
-// https://elixir.bootlin.com/linux/v5.10.158/source/fs/exec.c#L1864
-static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
+			void *envp, int *flags)
 {
 	struct filename *filename;
 	const char sh[] = SH_PATH;
@@ -112,12 +117,16 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	static const char system_bin_init[] = "/system/bin/init";
 	static int init_count = 0;
 
-	filename = PT_REGS_PARM2(regs);
+	if (!filename_ptr)
+		return 0;
+
+	filename = *filename_ptr;
 	if (IS_ERR(filename)) {
 		return 0;
 	}
 
-	if (!memcmp(filename->name, system_bin_init, sizeof(system_bin_init) - 1)) {
+	if (!memcmp(filename->name, system_bin_init,
+		    sizeof(system_bin_init) - 1)) {
 		// /system/bin/init executed
 		if (++init_count == 2) {
 			// 1: /system/bin/init selinux_setup
@@ -128,7 +137,7 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	}
 
 	if (first_app_process &&
-		!memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
+	    !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared!\n");
 		ksu_load_allow_list();
@@ -149,32 +158,32 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 }
 
 static const char KERNEL_SU_RC[] =
-"\n"
+	"\n"
 
-"on post-fs-data\n"
-// We should wait for the post-fs-data finish
-"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
-"\n"
+	"on post-fs-data\n"
+	// We should wait for the post-fs-data finish
+	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
+	"\n"
 
-"on nonencrypted\n"
-"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
-"\n"
+	"on nonencrypted\n"
+	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"\n"
 
-"on property:vold.decrypt=trigger_restart_framework\n"
-"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
-"\n"
+	"on property:vold.decrypt=trigger_restart_framework\n"
+	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"\n"
 
-"on property:sys.boot_completed=1\n"
-"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
-"\n"
+	"on property:sys.boot_completed=1\n"
+	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
+	"\n"
 
-"\n"
-;
+	"\n";
 
 static void unregister_vfs_read_kp();
 static struct work_struct unregister_vfs_read_work;
 
-static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
+			size_t *count_ptr, loff_t **pos)
 {
 	struct file *file;
 	char __user *buf;
@@ -185,7 +194,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-	file = PT_REGS_PARM1(regs);
+	file = *file_ptr;
 	if (IS_ERR(file)) {
 		return 0;
 	}
@@ -199,11 +208,8 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		// we are only interest `atrace.rc` file name file
 		return 0;
 	}
-	#define RC_PATH_MAX 256
-	char path[RC_PATH_MAX];
-	char* dpath = d_path(&file->f_path, path, RC_PATH_MAX);
-
-	#undef RC_PATH_MAX
+	char path[256];
+	char *dpath = d_path(&file->f_path, path, sizeof(path));
 
 	if (IS_ERR(dpath)) {
 		return 0;
@@ -223,12 +229,13 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	rc_inserted = true;
 
 	// now we can sure that the init process is reading `/system/etc/init/atrace.rc`
-	buf = PT_REGS_PARM2(regs);
-	count = PT_REGS_PARM3(regs);
+	buf = *buf_ptr;
+	count = *count_ptr;
 
 	size_t rc_count = strlen(KERNEL_SU_RC);
 
-	pr_info("vfs_read: %s, comm: %s, count: %d, rc_count: %d\n", dpath, current->comm, count, rc_count);
+	pr_info("vfs_read: %s, comm: %s, count: %d, rc_count: %d\n", dpath,
+		current->comm, count, rc_count);
 
 	if (count < rc_count) {
 		pr_err("count: %d < rc_count: %d", count, rc_count);
@@ -241,10 +248,52 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-	PT_REGS_PARM2(regs) = buf + rc_count;
-	PT_REGS_PARM3(regs) = count - rc_count;
+	*buf_ptr = buf + rc_count;
+	*count_ptr = count - rc_count;
 
 	return 0;
+}
+
+static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	int *dfd = (int *)PT_REGS_PARM1(regs);
+	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
+	int *mode = (int *)&PT_REGS_PARM3(regs);
+	int *flags = (int *)&PT_REGS_PARM4(regs);
+
+	return ksu_handle_faccessat(dfd, filename_user, mode, flags);
+}
+
+static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	int *dfd = (int *)PT_REGS_PARM1(regs);
+	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
+	int *flags = (int *)&PT_REGS_PARM3(regs);
+
+	return ksu_handle_stat(dfd, filename_user, flags);
+}
+
+// https://elixir.bootlin.com/linux/v5.10.158/source/fs/exec.c#L1864
+static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	int *fd = (int *)&PT_REGS_PARM1(regs);
+	struct filename **filename_ptr =
+		(struct filename **)&PT_REGS_PARM2(regs);
+	void *argv = (void *)&PT_REGS_PARM3(regs);
+	void *envp = (void *)&PT_REGS_PARM4(regs);
+	int *flags = (int *)&PT_REGS_PARM5(regs);
+
+	return ksu_handle_execveat(fd, filename_ptr, argv, envp, flags);
+}
+
+static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
+	char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
+	size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
+	loff_t **pos_ptr = (loff_t **)&PT_REGS_PARM4(regs);
+
+	return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
 }
 
 static struct kprobe faccessat_kp = {
@@ -264,9 +313,11 @@ static struct kprobe newfstatat_kp = {
 static struct kprobe execve_kp = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) &&  LINUX_VERSION_CODE < KERNEL_VERSION(5,9,0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) &&                        \
+	LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "__do_execve_file",
-#elif  LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0) &&  LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) &&                        \
+	LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
 	.symbol_name = "do_execveat_common",
 #endif
 	.pre_handler = execve_handler_pre,
@@ -277,11 +328,13 @@ static struct kprobe vfs_read_kp = {
 	.pre_handler = read_handler_pre,
 };
 
-static void do_unregister_vfs_read_kp(struct work_struct *work) {
+static void do_unregister_vfs_read_kp(struct work_struct *work)
+{
 	unregister_kprobe(&vfs_read_kp);
 }
 
-static void unregister_vfs_read_kp() {
+static void unregister_vfs_read_kp()
+{
 	bool ret = schedule_work(&unregister_vfs_read_work);
 	pr_info("unregister vfs_read kprobe: %d!\n", ret);
 }

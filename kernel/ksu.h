@@ -21,22 +21,35 @@
 
 extern uid_t ksu_manager_uid;
 
-static inline bool ksu_is_manager_uid_valid() {
-    return ksu_manager_uid != INVALID_UID;
+static inline bool ksu_is_manager_uid_valid()
+{
+	return ksu_manager_uid != INVALID_UID;
 }
 
-static inline uid_t ksu_get_manager_uid() {
-    return ksu_manager_uid;
+static inline uid_t ksu_get_manager_uid()
+{
+	return ksu_manager_uid;
 }
 
-static inline void ksu_set_manager_uid(uid_t uid) {
-    ksu_manager_uid = uid;
+static inline void ksu_set_manager_uid(uid_t uid)
+{
+	ksu_manager_uid = uid;
 }
 
-static inline void ksu_invalidate_manager_uid() {
-    ksu_manager_uid = INVALID_UID;
+static inline void ksu_invalidate_manager_uid()
+{
+	ksu_manager_uid = INVALID_UID;
 }
 
 void ksu_queue_work(struct work_struct *work);
+
+void ksu_lsm_hook_init(void);
+
+int ksu_kprobe_init(void);
+int ksu_kprobe_exit(void);
+
+/// KernelSU hooks
+int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
+		     unsigned long arg4, unsigned long arg5);
 
 #endif
