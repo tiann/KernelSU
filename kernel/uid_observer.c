@@ -126,7 +126,7 @@ static void update_uid()
 	ksu_queue_work(&ksu_update_uid_work);
 }
 
-static int renameat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 {
 	if (!current->mm) {
 		// skip kernel threads
@@ -138,27 +138,17 @@ static int renameat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
-	// https://elixir.bootlin.com/linux/v5.12-rc1/source/include/linux/fs.h
-	struct renamedata *rd = PT_REGS_PARM1(regs);
-	struct dentry *old_entry = rd->old_dentry;
-	struct dentry *new_entry = rd->new_dentry;
-#else
-	struct dentry *old_entry = PT_REGS_PARM2(regs);
-	struct dentry *new_entry = PT_REGS_PARM4(regs);
-#endif
-
-	if (!old_entry || !new_entry) {
+	if (!old_dentry || !new_dentry) {
 		return 0;
 	}
 
 	// /data/system/packages.list.tmp -> /data/system/packages.list
-	if (strcmp(new_entry->d_iname, "packages.list")) {
+	if (strcmp(new_dentry->d_iname, "packages.list")) {
 		return 0;
 	}
 
 	char path[128];
-	char *buf = dentry_path_raw(new_entry, path, sizeof(path));
+	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
 	if (IS_ERR(buf)) {
 		pr_err("dentry_path_raw failed.\n");
 		return 0;
@@ -167,30 +157,21 @@ static int renameat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	if (strcmp(buf, "/system/packages.list")) {
 		return 0;
 	}
-	pr_info("renameat: %s -> %s\n, new path: %s", old_entry->d_iname,
-		new_entry->d_iname, buf);
+	pr_info("renameat: %s -> %s\n, new path: %s", old_dentry->d_iname,
+		new_dentry->d_iname, buf);
 
 	update_uid();
 
 	return 0;
 }
 
-static struct kprobe renameat_kp = {
-	.symbol_name = "vfs_rename",
-	.pre_handler = renameat_handler_pre,
-};
-
 int ksu_uid_observer_init()
 {
 	INIT_WORK(&ksu_update_uid_work, do_update_uid);
-
-	int rc = register_kprobe(&renameat_kp);
-	pr_info("renameat kp: %d\n", rc);
-	return rc;
+	return 0;
 }
 
 int ksu_uid_observer_exit()
 {
-	unregister_kprobe(&renameat_kp);
 	return 0;
 }

@@ -1,5 +1,6 @@
-#include "asm-generic/errno.h"
-#include "linux/kernel.h"
+#include <linux/err.h>
+#include <linux/cred.h>
+#include <linux/kernel.h>
 #include <linux/printk.h>
 #include <linux/security.h>
 #include <linux/lsm_hooks.h>
@@ -16,8 +17,15 @@ static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 	return -ENOSYS;
 }
 
+static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
+			    struct inode *new_inode, struct dentry *new_dentry)
+{
+	return ksu_handle_rename(old_dentry, new_dentry);
+}
+
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
+	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 };
 
 void ksu_lsm_hook_init(void)

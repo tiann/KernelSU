@@ -1,6 +1,7 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
+#include <linux/dcache.h>
 #include <linux/uidgid.h>
 #include <linux/workqueue.h>
 
@@ -51,5 +52,7 @@ int ksu_kprobe_exit(void);
 /// KernelSU hooks
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		     unsigned long arg4, unsigned long arg5);
+
+int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry);
 
 #endif
