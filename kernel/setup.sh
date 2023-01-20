@@ -31,4 +31,8 @@ echo "[+] Add kernel su driver to Makefile"
 DRIVER_MAKEFILE=$DRIVER_DIR/Makefile
 grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
 
+echo "Modify the kernel source code for support KernelSu"
+
+patch -p0< KernelSU_support.patch
+
 echo "[+] Done."
