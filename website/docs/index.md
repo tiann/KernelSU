@@ -1,9 +1,10 @@
 ---
 layout: home
+title: A kernel-based root solution for Android
 
 hero:
   name: KernelSU
-  text: A kernel-based root solution for Android GKI devices
+  text: A kernel-based root solution for Android
   tagline: ""
   image:
     src: /logo.png

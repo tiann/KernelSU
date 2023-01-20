@@ -1,16 +1,17 @@
 ---
 layout: home
+title: Android 上的内核级的 root 方案
 
 hero:
   name: KernelSU
-  text: 一个基于内核，为安卓 GKI 准备的 root 方案。
+  text: Android 上的内核级的 root 方案
   tagline: ""
   image:
     src: /logo.png
     alt: KernelSU
   actions:
     - theme: brand
-      text: 开始
+      text: 开始了解
       link: /zh_CN/guide/what-is-kernelsu
     - theme: alt
       text: 在 GitHub 中查看
