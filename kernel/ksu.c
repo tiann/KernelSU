@@ -178,7 +178,7 @@ static bool is_allow_su()
 	return ksu_is_allow_uid(uid);
 }
 
-extern void enable_sucompat();
+// extern void enable_sucompat();
 
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			unsigned long arg4, unsigned long arg5)
@@ -314,7 +314,7 @@ int __init kernelsu_init(void)
 
 	ksu_uid_observer_init();
 
-	enable_sucompat();
+// 	enable_sucompat();
 
 	return 0;
 }
@@ -329,9 +329,9 @@ void kernelsu_exit(void)
 module_init(kernelsu_init);
 module_exit(kernelsu_exit);
 
-#ifndef CONFIG_KPROBES
-#error("`CONFIG_KPROBES` must be enabled for KernelSU!")
-#endif
+//#ifndef CONFIG_KPROBES
+//#error("`CONFIG_KPROBES` must be enabled for KernelSU!")
+// #endif
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("weishu");
