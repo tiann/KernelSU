@@ -12,7 +12,8 @@ fun SELinuxStatus(): String {
     getSELinuxStatus.waitFor()
     var getSELinuxStatusisSuccessful: Boolean = false
     getSELinuxStatusisSuccessful = (getSELinuxStatus.exitValue() == 0)
-    val getSELinuxStatusOut = getSELinuxStatus.errorStream.bufferedReader().readLine() ?: getSELinuxStatus.inputStream.bufferedReader().readLine()
+
+    val getSELinuxStatusOut = getSELinuxStatus.errorStream.bufferedReader().use { it.readLine() } ?: getSELinuxStatus.inputStream.bufferedReader().use { it.readLine() }
     val checkSELinuxStatus = if (getSELinuxStatusisSuccessful) {
         when (getSELinuxStatusOut) {
             "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
