@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 import en from './en'
 import zh_CN from './zh_CN'
+import vi_VN from './vi_VN'
 
 export default defineConfig({
   locales: {
@@ -15,6 +16,12 @@ export default defineConfig({
       lang: zh_CN.lang,
       themeConfig: zh_CN.themeConfig,
       description: zh_CN.description
+    },
+    vi_VN: {
+      label: 'Tiếng Việt',
+      lang: vi_VN.lang,
+      themeConfig: vi_VN.themeConfig,
+      description: vi_VN.description
     }
   }
 })
