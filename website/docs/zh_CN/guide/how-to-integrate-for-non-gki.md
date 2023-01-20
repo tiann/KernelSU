@@ -134,7 +134,7 @@ index 376543199b5a..82adcef03ecc 100644
 主要是要改四个地方：
 
 1. do_faccessat，通常位于 `fs/open.c`
-2. do_execveat_common，通常位于 `fs/exec.`
+2. do_execveat_common，通常位于 `fs/exec.c`
 3. vfs_read，通常位于 `fs/read_write.c`
 4. vfs_statx，通常位于 `fs/stat.c`
 

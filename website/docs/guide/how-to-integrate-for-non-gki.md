@@ -131,7 +131,7 @@ index 376543199b5a..82adcef03ecc 100644
 You should found the four functions in kernel source:
 
 1. do_faccessat, usually in `fs/open.c`
-2. do_execveat_common, usually in `fs/exec.`
+2. do_execveat_common, usually in `fs/exec.c`
 3. vfs_read, usually in `fs/read_write.c`
 4. vfs_statx, usually in `fs/stat.c`
 
