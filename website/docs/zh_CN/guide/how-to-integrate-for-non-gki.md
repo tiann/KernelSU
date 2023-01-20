@@ -33,7 +33,10 @@ CONFIG_KPROBE_EVENTS=y
 
 如果你在集成 KernelSU 之后手机无法启动，那么很可能你的内核中 **kprobe 工作不正常**，你需要修复这个 bug 或者用第二种方法。
 
-## Manully modify the kernel source
+> 如何验证是否是 kprobe 的问题？
+> 注释掉 `KernelSU/kernel/ksu.c` 中 `enable_sucompat()`，如果正常开机，那么就是 kprobe 的问题；或者你可以手动尝试使用 kprobe 功能，如果不正常，手机会直接重启。
+
+## 手动修改内核源码
 
 如果 kprobe 工作不正常（通常是上游的 bug 或者内核版本过低），那你可以尝试这种方法：
 
