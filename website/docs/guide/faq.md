@@ -32,6 +32,13 @@ We don't think so and it's not our goal. Magisk is good enough for userspace roo
 
 It is possible. But you should download the kernel source and intergrate KernelSU to the source tree and compile the kernel yourself.
 
+## Can KernelSU support devices below Android 12?
+
+It is device's kernel that affect KernelSU's compatability and it has nothing to do with Android version.The only restriction is that devices launched with Android 12 must be kernel 5.10+(GKI devices). So:
+
+1. Devices launched with Android 12 must be supported.
+2. Devices with has an old kernel (Some Android 12 devices is also old kernel) is compatable (You should be kernel yourself)
+
 ## Can KernelSU support old kernel?
 
 It is possible, but you need to backport it manully and PRs welcome!

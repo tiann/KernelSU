@@ -4,8 +4,8 @@
 
 Download the KernelSU manager app from [github releases](https://github.com/tiann/KernelSU/releases) or [github actions](https://github.com/tiann/KernelSU/actions/workflows/build-manager.yml), and then install the app to device and open the app:
 
-- If the app shows `Unsupported`, it means KernelSU is not supported for your device.
-- If the app shows `Not installed`, then your devices is supported by KernelSU.
+- If the app shows `Unsupported`, it means **You should compile the kernel yourself**, KernelSU won't and never provide a boot image for you to flash.
+- If the app shows `Not installed`, then your devices is officially supported by KernelSU.
 
 ## Find proper boot.img
 

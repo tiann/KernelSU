@@ -5,6 +5,8 @@
 1. [构建内核](https://source.android.com/docs/setup/build/building-kernels)
 2. [通用内核映像 (GKI) 发布构建](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
 
+> 本文档适用于 GKI 设备，如果你是旧内核，请参考[如何为非GKI设备集成 KernelSU](how-to-integrate-for-non-gki)
+
 ## 构建内核
 
 ### 同步内核源码
