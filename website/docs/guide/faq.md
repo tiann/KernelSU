@@ -41,7 +41,7 @@ It is device's kernel that affect KernelSU's compatability and it has nothing to
 
 ## Can KernelSU support old kernel?
 
-It is possible, but you need to backport it manully and PRs welcome!
+It is possible, KernelSU is backported to kernel 4.14 now, for older kernel, you need to backport it manully and PRs welcome!
 
 ## How to integrate KernelSU for old kernel?
 
