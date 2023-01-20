@@ -35,3 +35,7 @@ It is possible. But you should download the kernel source and intergrate KernelS
 ## Can KernelSU support old kernel?
 
 It is possible, but you need to backport it manully and PRs welcome!
+
+## How to integrate KernelSU for old kernel?
+
+Please refer [guide](how-to-integrate-for-non-gki)
