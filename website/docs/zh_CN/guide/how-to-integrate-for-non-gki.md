@@ -23,7 +23,7 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 然后，你需要检查你的内核是否开启了 *kprobe* 相关的配置，如果没有开启，需要添加以下配置：
 
-```txt
+```
 CONFIG_KPROBES=y
 CONFIG_HAVE_KPROBES=y
 CONFIG_KPROBE_EVENTS=y
@@ -133,9 +133,9 @@ index 376543199b5a..82adcef03ecc 100644
 
 主要是要改四个地方：
 
-1. do_faccessat, usually in `fs/open.c`
-2. do_execveat_common, usually in `fs/exec.`
-3. vfs_read, usually in `fs/read_write.c`
-4. vfs_statx, usually in `fs/stat.c`
+1. do_faccessat，通常位于 `fs/open.c`
+2. do_execveat_common，通常位于 `fs/exec.`
+3. vfs_read，通常位于 `fs/read_write.c`
+4. vfs_statx，通常位于 `fs/stat.c`
 
 改完之后，打开 `KernelSU/kernel/ksu.c`，注释 `enable_sucompat()`调用，然后重新编译内核即可。

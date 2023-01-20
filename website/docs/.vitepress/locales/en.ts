@@ -48,6 +48,7 @@ function sidebarGuide() {
           { text: 'What is KernelSU?', link: '/guide/what-is-kernelsu' },
           { text: 'Installation', link: '/guide/installation' },
           { text: 'How to build?', link: '/guide/how-to-build' },
+          { text: 'Intergrate for non-GKI devices', link: '/guide/how-to-integrate-for-non-gki'},
           { text: 'FAQ', link: '/guide/faq' },
         ]
     }

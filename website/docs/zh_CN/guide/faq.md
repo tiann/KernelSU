@@ -36,6 +36,6 @@ KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU �
 
 可以，但你需要手动移植它，欢迎 PR ！
 
-## 如何为旧内核基础 KernelSU？
+## 如何为旧内核集成 KernelSU？
 
 参考[教程](how-to-integrate-for-non-gki)
