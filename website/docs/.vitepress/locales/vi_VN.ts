@@ -35,7 +35,7 @@ export default defineConfig({
 
 function nav() {
   return [
-    { text: 'Guide', link: '/vi_VN/guide/what-is-kernelsu' },
+    { text: 'hướng dẫn', link: '/vi_VN/guide/what-is-kernelsu' },
     { text: 'Github', link: 'https://github.com/tiann/KernelSU' }
   ]
 }
