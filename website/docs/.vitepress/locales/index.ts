@@ -22,6 +22,12 @@ export default defineConfig({
       lang: vi_VN.lang,
       themeConfig: vi_VN.themeConfig,
       description: vi_VN.description
+    },
+    id_ID: {
+      label: 'Bahasa',
+      lang: id_ID.lang,
+      themeConfig: id_ID.themeConfig,
+      description: id_ID.description
     }
   }
 })
