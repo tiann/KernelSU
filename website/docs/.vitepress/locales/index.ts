@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import en from './en'
 import zh_CN from './zh_CN'
 import vi_VN from './vi_VN'
+import id_ID from './id_ID'
 
 export default defineConfig({
   locales: {
