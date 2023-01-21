@@ -12,7 +12,7 @@ hero:
   actions:
     - theme: brand
       text: Permulaan
-      link: /guide/what-is-kernelsu
+      link: /id_ID/guide/what-is-kernelsu
     - theme: alt
       text: Lihat di GitHub
       link: https://github.com/tiann/KernelSU
