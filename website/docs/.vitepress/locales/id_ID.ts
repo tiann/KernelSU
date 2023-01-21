@@ -14,7 +14,7 @@ export default defineConfig({
     lastUpdatedText: 'Update Terakhir',
 
     sidebar: {
-      '/guide/': sidebarGuide()
+      '/id_ID/guide/': sidebarGuide()
     },
 
     socialLinks: [
@@ -35,7 +35,7 @@ export default defineConfig({
 
 function nav() {
   return [
-    { text: 'Guide', link: '/guide/what-is-kernelsu' },
+    { text: 'Guide', link: '/id_ID/guide/what-is-kernelsu' },
     { text: 'Github', link: 'https://github.com/tiann/KernelSU' }
   ]
 }
@@ -45,11 +45,11 @@ function sidebarGuide() {
     {
         text: 'Petunjuk',
         items: [
-          { text: 'Apa itu KernelSU?', link: '/guide/what-is-kernelsu' },
-          { text: 'Instalasi', link: '/guide/installation' },
-          { text: 'Bagaimana cara buildnya?', link: '/guide/how-to-build' },
-          { text: 'Integrasi untuk perangkat non-GKI', link: '/guide/how-to-integrate-for-non-gki'},
-          { text: 'FAQ', link: '/guide/faq' },
+          { text: 'Apa itu KernelSU?', link: '/id_ID/guide/what-is-kernelsu' },
+          { text: 'Instalasi', link: '/id_ID/guide/installation' },
+          { text: 'Bagaimana cara buildnya?', link: '/id_ID/guide/how-to-build' },
+          { text: 'Integrasi untuk perangkat non-GKI', link: '/id_ID/guide/how-to-integrate-for-non-gki'},
+          { text: 'FAQ', link: '/id_ID/guide/faq' },
         ]
     }
   ]
