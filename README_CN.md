@@ -29,7 +29,7 @@ KernelSU 还处于早期开发阶段，你不应该生产环境中使用它。Ke
 
 ## 使用方法
 
-1. 用 KernelSU 刷入一个自定义的内核，你可以自己构建它或者[从 CI 下载](https://github.com/tiann/KernelSU/actions/workflows/build-kernel.yml)。
+1. 用 KernelSU 刷入一个自定义的内核，你可以自己构建它或者[从 CI 下载](https://github.com/tiann/KernelSU/actions)。
 2. 安装管理器应用, 然后享受吧 :)
 
 对于 5.10 以下的旧内核, 你必须自己构建。

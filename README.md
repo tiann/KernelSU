@@ -29,7 +29,7 @@ If you confirm KernelSU works on other version, open a [issue](https://github.co
 
 ## Usage
 
-1. Flash a custom kernel with KernelSU, you can build it yourself or [download it from CI](https://github.com/tiann/KernelSU/actions/workflows/build-kernel.yml).
+1. Flash a custom kernel with KernelSU, you can build it yourself or [download it from CI](https://github.com/tiann/KernelSU/actions).
 2. Install Manager App and enjoy :)
 
 For old kernels under 5.10, you must build custom kernels by yourself.
