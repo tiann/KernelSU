@@ -19,6 +19,11 @@
     <string name="home_fingerprint">Fingerprint</string>
     <string name="home_securitypatch">Security Patch</string>
 
+    <string name="home_selinux_status">SELinux status</string>
+    <string name="selinux_status_disabled">Disabled</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_unknown">Unknown</string>
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>

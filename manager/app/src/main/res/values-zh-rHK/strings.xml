@@ -16,6 +16,11 @@
     <string name="home_abi">ABI 支持</string>
     <string name="home_fingerprint">系统指纹</string>
     <string name="home_securitypatch">安全补丁</string>
+    <string name="home_selinux_status">SELinux 狀態</string>
+    <string name="selinux_status_disabled">被禁用</string>
+    <string name="selinux_status_enforcing">強制執行</string>
+    <string name="selinux_status_permissive">寬容模式</string>
+    <string name="selinux_status_unknown">未知</string>
     <string name="superuser">超級用戶</string>
     <string name="superuser_failed_to_grant_root">无法为 %d 授予 Root</string>
     <string name="module_failed_to_enable">无法启用模块: %s</string>

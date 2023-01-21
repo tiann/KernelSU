@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
@@ -34,9 +33,9 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.*
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
-import me.weishu.kernelsu.ui.util.LinkifyText
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.reboot
+import me.weishu.kernelsu.ui.util.getSELinuxStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
@@ -226,6 +225,9 @@ private fun InfoCard() {
 
             Spacer(Modifier.height(24.dp))
             InfoCardItem(stringResource(R.string.home_securitypatch), Build.VERSION.SECURITY_PATCH)
+
+            Spacer(Modifier.height(24.dp))
+            InfoCardItem(stringResource(R.string.home_selinux_status), getSELinuxStatus())
 
             val copiedMessage = stringResource(R.string.home_copied_to_clipboard)
             TextButton(
