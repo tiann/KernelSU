@@ -15,9 +15,13 @@
 #include <linux/printk.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
-#include <linux/sched/task_stack.h>
 #include <linux/slab.h>
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
+#include <linux/sched/task_stack.h>
+#else
+#include <linux/sched.h>
+#endif
 #include <asm-generic/errno-base.h>
 
 #include <linux/rcupdate.h>
