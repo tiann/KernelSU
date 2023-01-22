@@ -21,7 +21,11 @@ Now KernelSU will work on these version of kernels without any modification：
 - `5.10`
 - `5.4`
 - `4.19`
+
+Moreover, KernelSU will work on these version of kernels with the modification of kernel source code:
+
 - `4.14`
+- `4.9`
 
 And the current supported ABIs are : `arm64-v8a` & `x86_64`
 
