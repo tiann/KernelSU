@@ -25,6 +25,7 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 Sau đó, bạn nên kiểm tra xem *kprobe* có được bật trong config của bạn hay không, nếu không, vui lòng thêm các cấu hình sau vào:
 
 ```
+CONFIG_MODULES=y
 CONFIG_KPROBES=y
 CONFIG_HAVE_KPROBES=y
 CONFIG_KPROBE_EVENTS=y
