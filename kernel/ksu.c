@@ -1,3 +1,4 @@
+#include "linux/export.h"
 #include <asm-generic/errno-base.h>
 #include <linux/cpu.h>
 #include <linux/cred.h>
@@ -306,7 +307,11 @@ int __init kernelsu_init(void)
 	pr_alert("You are running DEBUG version of KernelSU");
 #endif
 
-	ksu_lsm_hook_init(); // use ksu_kprobe_init if compiled as module
+#ifndef MODULE
+	ksu_lsm_hook_init();
+#else
+	ksu_kprobe_init();
+#endif
 
 	ksu_workqueue = alloc_workqueue("kernelsu_work_queue", 0, 0);
 
