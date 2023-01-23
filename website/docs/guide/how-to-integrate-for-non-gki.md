@@ -31,6 +31,8 @@ CONFIG_KPROBE_EVENTS=y
 
 And build your kernel again, KernelSU should works well.
 
+If you find that KPROBES is still not enabled,it is possible that `CONFIG_MODULES` is not enabled.(If it is still not enabled, use `make menuconfig` to search for other dependencies of KPROBES)
+
 But if you encounter a boot loop when integrated KernelSU, it is maybe *kprobe is broken in your kernel*, you should fix the kprobe bug or use the second way.
 
 ## Manully modify the kernel source
