@@ -24,7 +24,6 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 Then, you should check if *kprobe* is enabled in your kernel config, if it is not, please add these configs to it:
 
 ```
-CONFIG_MODULES=y
 CONFIG_KPROBES=y
 CONFIG_HAVE_KPROBES=y
 CONFIG_KPROBE_EVENTS=y
