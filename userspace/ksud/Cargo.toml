@@ -23,6 +23,9 @@ encoding = "0.2.33"
 retry = "2.0.0"
 humansize = "2.0.0"
 
+[build-dependencies]
+cc = "1.0"
+
 [profile.release]
 strip = true
 opt-level = "z"

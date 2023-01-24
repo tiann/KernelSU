@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{event, module};
+use crate::{event, module, debug};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -39,6 +39,19 @@ enum Commands {
 
     /// For test
     Test,
+
+    /// For KSU_DEBUG
+    Debug {
+        #[command(subcommand)]
+        command: Debug,
+    },
+}
+#[derive(clap::Subcommand, Debug)]
+enum Debug {
+    SetManager {
+        /// manager apk path or package name
+        apk: String,
+    }
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -94,6 +107,12 @@ pub fn run() -> Result<()> {
         Commands::Sepolicy => todo!(),
         Commands::Services => event::on_services(),
         Commands::Test => event::do_systemless_mount("/data/adb/ksu/modules"),
+
+        Commands::Debug { command } => {
+            match command {
+                Debug::SetManager { apk } => debug::set_manager(&apk),
+            }
+        }
     };
 
     if let Err(e) = &result {
