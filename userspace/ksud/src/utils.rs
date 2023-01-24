@@ -16,13 +16,18 @@ fn do_mount_image(src: &str, target: &str) -> Result<()> {
 pub fn mount_image(src: &str, target: &str) -> Result<()> {
     // umount target first.
     let _ = umount_dir(target);
-    let a = retry::retry(NoDelay.take(3), || do_mount_image(src, target));
-    ensure!(a.is_ok(), "mount: {} -> {} failed.", src, target);
+    let result = retry::retry(NoDelay.take(3), || {
+        do_mount_image(src, target)
+    });
+    ensure!(result.is_ok(), "mount: {} -> {} failed.", src, target);
     Ok(())
 }
 
 pub fn umount_dir(src: &str) -> Result<()> {
-    let result = Exec::shell(format!("umount {}", src)).join()?;
+    let result = Exec::shell(format!("umount {}", src))
+        .stdout(subprocess::NullFile)
+        .stderr(subprocess::Redirection::Merge)
+        .join()?;
     ensure!(result.success(), "umount: {} failed", src);
     Ok(())
 }
