@@ -8,7 +8,10 @@ use retry::delay::NoDelay;
 use subprocess::Exec;
 
 fn do_mount_image(src: &str, target: &str) -> Result<()> {
-    let result = Exec::shell(format!("mount -t ext4 {} {}", src, target)).join()?;
+    let result = Exec::shell(format!("mount -t ext4 {} {}", src, target))
+        .stdout(subprocess::NullFile)
+        .stderr(subprocess::Redirection::Merge)
+        .join()?;
     ensure!(result.success(), "do mount: {} -> {} failed.", src, target);
     Ok(())
 }
