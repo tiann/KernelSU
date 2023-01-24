@@ -120,8 +120,8 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     // check image
     check_image(img)?;
 
+    println!("- Target image size: {}", humansize::format_size(target_size, humansize::DECIMAL));
     let target_size = target_size / 1024 + 1;
-    println!("- Target size: {}K", target_size);
 
     let result = Exec::shell(format!("resize2fs {} {}K", img, target_size))
         .stdout(subprocess::NullFile)
@@ -315,13 +315,6 @@ pub fn install_module(zip: String) -> Result<()> {
     let modules_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_update_tmp_dir = defs::MODULE_UPDATE_TMP_DIR;
 
-    let current_img_size = std::cmp::max(
-        modules_img.metadata().map_or(0, |meta| meta.len()),
-        modules_update_img.metadata().map_or(0, |meta| meta.len()),
-    );
-
-    let img_size_per_m = current_img_size / 1024 / 1024 + 256;
-
     let modules_img_exist = modules_img.exists();
     let modules_update_img_exist = modules_update_img.exists();
 
@@ -332,16 +325,20 @@ pub fn install_module(zip: String) -> Result<()> {
         std::fs::remove_file(tmp_module_path)?;
     }
 
-    let default_grow_size = 128 * 1024 * 1024;
+    let default_reserve_size = 64 * 1024 * 1024;
+    let zip_uncompressed_size = get_zip_uncompressed_size(&zip)?;
+    let grow_size = default_reserve_size + zip_uncompressed_size;
+    let grow_size_per_m = grow_size / 1024 / 1024 + 1;
 
     println!("- Preparing image");
+    println!("- Module size: {}", humansize::format_size(zip_uncompressed_size, humansize::DECIMAL));
 
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
         let result = Exec::shell(format!(
             "dd if=/dev/zero of={} bs=1M count={}",
-            tmp_module_img, img_size_per_m
+            tmp_module_img, grow_size_per_m
         ))
         .stdout(subprocess::NullFile)
         .stderr(subprocess::Redirection::Merge)
@@ -366,7 +363,7 @@ pub fn install_module(zip: String) -> Result<()> {
             )
         })?;
         // grow size of the tmp image
-        grow_image_size(tmp_module_img, default_grow_size)?;
+        grow_image_size(tmp_module_img, grow_size)?;
     } else {
         // modules.img exists, we should use it as tmp img
         std::fs::copy(modules_img, tmp_module_img).with_context(|| {
@@ -377,7 +374,7 @@ pub fn install_module(zip: String) -> Result<()> {
             )
         })?;
         // grow size of the tmp image
-        grow_image_size(tmp_module_img, default_grow_size)?;
+        grow_image_size(tmp_module_img, grow_size)?;
     }
 
     // ensure modules_update exists

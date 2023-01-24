@@ -16,9 +16,7 @@ fn do_mount_image(src: &str, target: &str) -> Result<()> {
 pub fn mount_image(src: &str, target: &str) -> Result<()> {
     // umount target first.
     let _ = umount_dir(target);
-    let result = retry::retry(NoDelay.take(3), || {
-        do_mount_image(src, target)
-    });
+    let result = retry::retry(NoDelay.take(3), || do_mount_image(src, target));
     ensure!(result.is_ok(), "mount: {} -> {} failed.", src, target);
     Ok(())
 }
@@ -51,4 +49,12 @@ pub fn getprop(prop: &str) -> Result<String> {
 
 pub fn is_safe_mode() -> Result<bool> {
     Ok(getprop("persist.sys.safemode")?.eq("1") || getprop("ro.sys.safemode")?.eq("1"))
+}
+
+pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
+    let mut zip = zip::ZipArchive::new(std::fs::File::open(zip_path)?)?;
+    let total: u64 = (0..zip.len())
+        .map(|i| zip.by_index(i).unwrap().size())
+        .sum();
+    Ok(total)
 }
