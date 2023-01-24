@@ -4,11 +4,20 @@ use std::{
 };
 
 use anyhow::{ensure, Result};
+use retry::delay::NoDelay;
 use subprocess::Exec;
 
-pub fn mount_image(src: &str, target: &str) -> Result<()> {
+fn do_mount_image(src: &str, target: &str) -> Result<()> {
     let result = Exec::shell(format!("mount -t ext4 {} {}", src, target)).join()?;
-    ensure!(result.success(), "mount: {} -> {} failed.", src, target);
+    ensure!(result.success(), "do mount: {} -> {} failed.", src, target);
+    Ok(())
+}
+
+pub fn mount_image(src: &str, target: &str) -> Result<()> {
+    // umount target first.
+    let _ = umount_dir(target);
+    let a = retry::retry(NoDelay.take(3), || do_mount_image(src, target));
+    ensure!(a.is_ok(), "mount: {} -> {} failed.", src, target);
     Ok(())
 }
 

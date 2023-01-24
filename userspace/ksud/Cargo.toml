@@ -20,6 +20,7 @@ serde = { version = "1.0" }
 serde_json = "1.0"
 regex = "1.5.4"
 encoding = "0.2.33"
+retry = "2.0.0"
 
 [profile.release]
 strip = true
