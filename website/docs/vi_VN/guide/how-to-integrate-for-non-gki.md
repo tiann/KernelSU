@@ -32,6 +32,8 @@ CONFIG_KPROBE_EVENTS=y
 
 Rồi build lại kernel của bạn, KernelSU sẽ hoạt động ok.
 
+Nếu bạn thấy rằng KPROBES vẫn chưa được kích hoạt, bạn có thể thử bật `CONFIG_MODULES`. (Nếu nó vẫn không có hiệu lực, hãy sử dụng `make menuconfig` để tìm kiếm các phần phụ thuộc khác của KPROBES)
+
 Nhưng nếu bạn gặp bootloop khi tích hợp KernelSU thì có thể *kprobe bị hỏng trong kernel*, bạn nên fix lỗi kprobe trong mã nguồn hoặc dùng cách 2.
 
 ## Chỉnh sửa mã nguồn kernel thủ công

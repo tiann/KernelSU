@@ -31,6 +31,8 @@ CONFIG_KPROBE_EVENTS=y
 
 最后，重新编译你的内核即可。
 
+如果你发现KPROBES仍未生效，很有可能是因为它的依赖项`CONFIG_MODULES`没有被启用（如果还是未生效请键入`make menuconfig`搜索KPROBES 的其它依赖并启用 ）
+
 如果你在集成 KernelSU 之后手机无法启动，那么很可能你的内核中 **kprobe 工作不正常**，你需要修复这个 bug 或者用第二种方法。
 
 > 如何验证是否是 kprobe 的问题？
