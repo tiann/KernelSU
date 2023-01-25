@@ -14,8 +14,8 @@ bool ksu_queue_work(struct work_struct *work)
 	return queue_work(ksu_workqueue, work);
 }
 
-extern void enable_sucompat();
-extern void enable_ksud();
+extern void ksu_enable_sucompat();
+extern void ksu_enable_ksud();
 
 int __init kernelsu_init(void)
 {
@@ -40,8 +40,8 @@ int __init kernelsu_init(void)
 	ksu_uid_observer_init();
 
 #ifdef CONFIG_KPROBES
-	enable_sucompat();
-	enable_ksud();
+	ksu_enable_sucompat();
+	ksu_enable_ksud();
 #else
 #warning("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html")
 #endif

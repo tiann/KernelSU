@@ -244,7 +244,7 @@ static void stop_execve_hook(){
 }
 
 // ksud: module support
-void enable_ksud()
+void ksu_enable_ksud()
 {
 #ifdef CONFIG_KPROBES
 	int ret;
