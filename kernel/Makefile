@@ -6,7 +6,7 @@ obj-y += module_api.o
 obj-y += sucompat.o
 obj-y += uid_observer.o
 obj-y += manager.o
-obj-y += core.o
+obj-y += core_hook.o
 obj-y += ksud.o
 
 obj-y += selinux/

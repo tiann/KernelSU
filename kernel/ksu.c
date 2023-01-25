@@ -3,7 +3,7 @@
 
 #include "allowlist.h"
 #include "arch.h"
-#include "core.h"
+#include "core_hook.h"
 #include "ksu.h"
 #include "uid_observer.h"
 
@@ -54,7 +54,7 @@ void kernelsu_exit(void)
 	ksu_allowlist_exit();
 
 	ksu_uid_observer_exit();
-	
+
 	destroy_workqueue(ksu_workqueue);
 
 	ksu_core_exit();

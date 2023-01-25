@@ -15,7 +15,7 @@
 
 #include "allowlist.h"
 #include "arch.h"
-#include "core.h"
+#include "core_hook.h"
 #include "ksu.h"
 #include "manager.h"
 #include "selinux/selinux.h"
