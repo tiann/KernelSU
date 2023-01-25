@@ -4,6 +4,7 @@
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
 #include "linux/lsm_hooks.h"
+#include "linux/printk.h"
 #include "linux/uaccess.h"
 #include "linux/uidgid.h"
 #include "linux/version.h"
@@ -197,6 +198,32 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 				pr_err("prctl reply error, cmd: %d\n", arg2);
 				return 0;
 			}
+		}
+	}
+
+	if (arg2 == CMD_REPORT_EVENT) {
+		if (0 == current_uid().val) {
+			switch (arg3) {
+			case EVENT_POST_FS_DATA: {
+				static bool post_fs_data_lock = false;
+				if (!post_fs_data_lock) {
+					post_fs_data_lock = true;
+					pr_info("post-fs-data triggered");
+				}
+				break;
+			}
+			case EVENT_BOOT_COMPLETED: {
+				static bool boot_complete_lock = false;
+				if (!boot_complete_lock) {
+					boot_complete_lock = true;
+					pr_info("boot_complete triggered");
+				}
+				break;
+			}
+			default:
+				break;
+			}
+			return 0;
 		}
 	}
 
