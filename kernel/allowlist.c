@@ -268,7 +268,7 @@ void ksu_allowlist_exit(void)
 
 	// free allowlist
 	mutex_lock(&allowlist_mutex);
-	list_for_each_entry_safe(np, n, &allow_list, list) {
+	list_for_each_entry_safe (np, n, &allow_list, list) {
 		list_del(&np->list);
 		kfree(np);
 	}

@@ -18,7 +18,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 
 // For ksud and sucompat
 
-int ksu_handle_execveat(int *fd, struct filename **filename_ptr,
-				 void *argv, void *envp, int *flags);
+int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
+			void *envp, int *flags);
 
 #endif

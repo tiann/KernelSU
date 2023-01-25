@@ -234,7 +234,8 @@ static void stop_vfs_read_hook()
 #endif
 }
 
-static void stop_execve_hook(){
+static void stop_execve_hook()
+{
 #ifdef CONFIG_KPROBES
 	bool ret = schedule_work(&stop_execve_hook_work);
 	pr_info("unregister execve kprobe: %d!\n", ret);

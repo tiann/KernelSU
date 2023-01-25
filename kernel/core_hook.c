@@ -130,7 +130,8 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 		if (ksu_is_manager_uid_valid()) {
-			pr_info("manager already exist: %d\n", ksu_get_manager_uid());
+			pr_info("manager already exist: %d\n",
+				ksu_get_manager_uid());
 			return 0;
 		}
 
