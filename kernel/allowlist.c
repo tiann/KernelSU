@@ -26,7 +26,7 @@ static struct work_struct ksu_load_work;
 
 bool persistent_allow_list(void);
 
-bool ksu_allow_uid(uid_t uid, bool allow)
+bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 {
 	// find the node first!
 	struct perm_data *p = NULL;
@@ -55,8 +55,8 @@ bool ksu_allow_uid(uid_t uid, bool allow)
 	result = true;
 
 exit:
-
-	persistent_allow_list();
+	if (persist)
+		persistent_allow_list();
 
 	return result;
 }
@@ -169,7 +169,7 @@ void do_load_allow_list(struct work_struct *work)
 #ifdef CONFIG_KSU_DEBUG
 		int errno = PTR_ERR(fp);
 		if (errno == -ENOENT) {
-			ksu_allow_uid(2000, true); // allow adb shell by default
+			ksu_allow_uid(2000, true, true); // allow adb shell by default
 		} else {
 			pr_err("load_allow_list open file failed: %d\n",
 			       PTR_ERR(fp));
@@ -207,7 +207,7 @@ void do_load_allow_list(struct work_struct *work)
 
 		pr_info("load_allow_uid: %d, allow: %d\n", uid, allow);
 
-		ksu_allow_uid(uid, allow);
+		ksu_allow_uid(uid, allow, false);
 	}
 
 exit:
