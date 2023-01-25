@@ -11,6 +11,7 @@
 #include "ksu.h"
 #include "manager.h"
 #include "uid_observer.h"
+#include "klog.h" // IWYU pragma: keep
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 static struct work_struct ksu_update_uid_work;

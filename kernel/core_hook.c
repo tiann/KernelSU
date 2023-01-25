@@ -4,7 +4,6 @@
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
 #include "linux/lsm_hooks.h"
-#include "linux/printk.h"
 #include "linux/uaccess.h"
 #include "linux/uidgid.h"
 #include "linux/version.h"
@@ -20,6 +19,7 @@
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
+#include "klog.h" // IWYU pragma: keep
 
 static inline bool is_allow_su()
 {

@@ -1,6 +1,5 @@
 #include "linux/cred.h"
 #include "linux/gfp.h"
-#include "linux/printk.h"
 #include "linux/slab.h"
 #include "linux/uidgid.h"
 #include "linux/version.h"
@@ -12,6 +11,7 @@
 #include "apk_sign.h"
 #include "ksu.h"
 #include "manager.h"
+#include "klog.h" // IWYU pragma: keep
 
 uid_t ksu_manager_uid = INVALID_UID;
 

@@ -4,7 +4,6 @@
 #include "linux/err.h"
 #include "linux/fs.h"
 #include "linux/kprobes.h"
-#include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
@@ -13,6 +12,7 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "selinux/selinux.h"
+#include "klog.h" // IWYU pragma: keep
 
 static const char KERNEL_SU_RC[] =
 	"\n"

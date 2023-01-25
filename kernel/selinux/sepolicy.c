@@ -1,8 +1,9 @@
 #include "sepolicy.h"
 #include "linux/gfp.h"
-#include "linux/printk.h"
 #include "linux/slab.h"
 #include "linux/version.h"
+
+#include "../klog.h" // IWYU pragma: keep
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 // TODO: backport to lower kernel

@@ -3,6 +3,7 @@
 #include "selinux.h"
 #include "sepolicy.h"
 #include "ss/services.h"
+#include "../klog.h" // IWYU pragma: keep
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS

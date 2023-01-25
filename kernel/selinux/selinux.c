@@ -1,7 +1,7 @@
-#include "linux/printk.h"
-
 #include "objsec.h"
 #include "selinux.h"
+
+#include "../klog.h" // IWYU pragma: keep
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
 
