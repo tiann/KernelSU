@@ -217,6 +217,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 				pr_err("prctl reply error, cmd: %d\n", arg2);
 			}
 		}
+		ksu_show_allow_list();
 	} else if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
 		u32 array[128];
 		u32 array_length;

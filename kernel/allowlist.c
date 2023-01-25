@@ -2,6 +2,7 @@
 #include "linux/fs.h"
 #include "linux/kernel.h"
 #include "linux/list.h"
+#include "linux/printk.h"
 #include "linux/slab.h"
 
 #include "selinux/selinux.h"
@@ -26,6 +27,16 @@ static struct work_struct ksu_load_work;
 
 bool persistent_allow_list(void);
 
+void ksu_show_allow_list(void){
+	struct perm_data *p = NULL;
+	struct list_head *pos = NULL;
+	pr_info("ksu_show_allow_list");
+	list_for_each (pos, &allow_list) {
+		p = list_entry(pos, struct perm_data, list);
+		pr_info("uid :%d, allow: %d\n", p->uid, p->allow);
+	}
+}
+
 bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 {
 	// find the node first!
@@ -34,7 +45,6 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 	bool result = false;
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
-		pr_info("ksu_allow_uid :%d, allow: %d\n", p->uid, p->allow);
 		if (uid == p->uid) {
 			p->allow = allow;
 			result = true;
@@ -211,7 +221,7 @@ void do_load_allow_list(struct work_struct *work)
 	}
 
 exit:
-
+	ksu_show_allow_list();
 	filp_close(fp, 0);
 }
 
