@@ -53,6 +53,8 @@ void kernelsu_exit(void)
 {
 	ksu_allowlist_exit();
 
+	ksu_uid_observer_exit();
+	
 	destroy_workqueue(ksu_workqueue);
 
 	ksu_core_exit();
