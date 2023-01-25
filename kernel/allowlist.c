@@ -2,11 +2,10 @@
 #include "linux/fs.h"
 #include "linux/kernel.h"
 #include "linux/list.h"
-#include "linux/printk.h"
 #include "linux/slab.h"
 
 #include "selinux/selinux.h"
-
+#include "klog.h" // IWYU pragma: keep
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 1 // u32
 

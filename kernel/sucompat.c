@@ -3,7 +3,6 @@
 #include "linux/err.h"
 #include "linux/fs.h"
 #include "linux/kprobes.h"
-#include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
@@ -15,6 +14,7 @@
 
 #include "allowlist.h"
 #include "arch.h"
+#include "klog.h" // IWYU pragma: keep
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"

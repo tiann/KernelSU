@@ -7,6 +7,7 @@
 #include "core_hook.h"
 #include "ksu.h"
 #include "uid_observer.h"
+#include "klog.h" // IWYU pragma: keep
 
 static struct workqueue_struct *ksu_workqueue;
 

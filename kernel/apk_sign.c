@@ -2,6 +2,7 @@
 #include "linux/moduleparam.h"
 
 #include "apk_sign.h"
+#include "klog.h" // IWYU pragma: keep
 
 static __always_inline int
 check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
