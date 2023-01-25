@@ -1,9 +1,8 @@
-#include <linux/gfp.h>
-#include <linux/version.h>
-#include <linux/printk.h>
-#include <linux/slab.h>
 #include "sepolicy.h"
-#include "../klog.h"
+#include "linux/gfp.h"
+#include "linux/printk.h"
+#include "linux/slab.h"
+#include "linux/version.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 // TODO: backport to lower kernel
@@ -57,7 +56,8 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // Implementation
 //////////////////////////////////////////////////////
 
-// Invert is adding rules for auditdeny; in other cases, invert is removing rules
+// Invert is adding rules for auditdeny; in other cases, invert is removing
+// rules
 #define strip_av(effect, invert) ((effect == AVTAB_AUDITDENY) == !invert)
 
 #define hash_for_each(node_ptr, n_slot, cur)                                   \
@@ -65,7 +65,8 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 	for (i = 0; i < n_slot; ++i)                                           \
 		for (cur = node_ptr[i]; cur; cur = cur->next)
 
-// htable is a struct instead of pointer above 5.8.0: https://elixir.bootlin.com/linux/v5.8-rc1/source/security/selinux/ss/symtab.h
+// htable is a struct instead of pointer above 5.8.0:
+// https://elixir.bootlin.com/linux/v5.8-rc1/source/security/selinux/ss/symtab.h
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 #define hashtab_for_each(htab, cur) hash_for_each (htab.htable, htab.size, cur)
 #else
@@ -73,7 +74,8 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 	hash_for_each (htab->htable, htab->size, cur)
 #endif
 
-// symtab_search is introduced on 5.9.0: https://elixir.bootlin.com/linux/v5.9-rc1/source/security/selinux/ss/symtab.h
+// symtab_search is introduced on 5.9.0:
+// https://elixir.bootlin.com/linux/v5.9-rc1/source/security/selinux/ss/symtab.h
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
 #define symtab_search(s, name) hashtab_search((s)->table, name)
 #endif
@@ -110,9 +112,9 @@ static struct avtab_node *get_avtab_node(struct policydb *db,
 	if (!node) {
 		struct avtab_datum avdatum = {};
 		/*
-         * AUDITDENY, aka DONTAUDIT, are &= assigned, versus |= for
-         * others. Initialize the data accordingly.
-         */
+     * AUDITDENY, aka DONTAUDIT, are &= assigned, versus |= for
+     * others. Initialize the data accordingly.
+     */
 		if (key->specified & AVTAB_XPERMS) {
 			avdatum.u.xperms = xperms;
 		} else {

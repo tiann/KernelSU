@@ -1,9 +1,7 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
-#include <linux/dcache.h>
-#include <linux/uidgid.h>
-#include <linux/workqueue.h>
+#include "linux/workqueue.h"
 
 #define KERNEL_SU_VERSION 10
 
@@ -18,45 +16,20 @@
 #define CMD_GET_ALLOW_LIST 5
 #define CMD_GET_DENY_LIST 6
 
-#define INVALID_UID -1
+bool ksu_queue_work(struct work_struct *work);
 
-extern uid_t ksu_manager_uid;
-
-static inline bool ksu_is_manager_uid_valid()
+static inline int startswith(char *s, char *prefix)
 {
-#ifndef CONFIG_KSU_DEBUG
-	return ksu_manager_uid != INVALID_UID;
-#else
-	return false; // always allow in debug mode
-#endif
+	return strncmp(s, prefix, strlen(prefix));
 }
 
-static inline uid_t ksu_get_manager_uid()
+static inline int endswith(const char *s, const char *t)
 {
-	return ksu_manager_uid;
+	size_t slen = strlen(s);
+	size_t tlen = strlen(t);
+	if (tlen > slen)
+		return 1;
+	return strcmp(s + slen - tlen, t);
 }
-
-static inline void ksu_set_manager_uid(uid_t uid)
-{
-	ksu_manager_uid = uid;
-}
-
-static inline void ksu_invalidate_manager_uid()
-{
-	ksu_manager_uid = INVALID_UID;
-}
-
-void ksu_queue_work(struct work_struct *work);
-
-void ksu_lsm_hook_init(void);
-
-int ksu_kprobe_init(void);
-int ksu_kprobe_exit(void);
-
-/// KernelSU hooks
-int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
-		     unsigned long arg4, unsigned long arg5);
-
-int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry);
 
 #endif
