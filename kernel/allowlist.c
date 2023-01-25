@@ -264,7 +264,7 @@ void ksu_allowlist_exit(void)
 	struct perm_data *np = NULL;
 	struct perm_data *n = NULL;
 
-	persistent_allow_list();
+	do_persistent_allow_list(NULL);
 
 	// free allowlist
 	mutex_lock(&allowlist_mutex);
