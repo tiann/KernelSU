@@ -1,6 +1,6 @@
 const KERNEL_SU_OPTION: u32 = 0xDEADBEEF;
 
-const CMD_GRANT_ROOT: u64 = 0;
+// const CMD_GRANT_ROOT: u64 = 0;
 // const CMD_BECOME_MANAGER: u64 = 1;
 const CMD_GET_VERSION: u64 = 2;
 // const CMD_ALLOW_SU: u64 = 3;
