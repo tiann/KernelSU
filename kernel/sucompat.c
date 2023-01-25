@@ -185,9 +185,9 @@ void enable_sucompat()
 {
 	int ret;
 	ret = register_kprobe(&execve_kp);
-	pr_info("execve_kp: %d\n", ret);
+	pr_info("sucompat: execve_kp: %d\n", ret);
 	ret = register_kprobe(&newfstatat_kp);
-	pr_info("newfstatat_kp: %d\n", ret);
+	pr_info("sucompat: newfstatat_kp: %d\n", ret);
 	ret = register_kprobe(&faccessat_kp);
-	pr_info("faccessat_kp: %d\n", ret);
+	pr_info("sucompat: faccessat_kp: %d\n", ret);
 }

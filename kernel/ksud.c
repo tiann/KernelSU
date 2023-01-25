@@ -223,10 +223,10 @@ void enable_ksud()
 	int ret;
 
 	ret = register_kprobe(&execve_kp);
-	pr_info("execve_kp: %d\n", ret);
+	pr_info("ksud: execve_kp: %d\n", ret);
 
 	ret = register_kprobe(&vfs_read_kp);
-	pr_info("vfs_read_kp: %d\n", ret);
+	pr_info("ksud: vfs_read_kp: %d\n", ret);
 
 	INIT_WORK(&unregister_vfs_read_work, do_unregister_vfs_read_kp);
 	INIT_WORK(&unregister_execve_kp_work, do_unregister_execve_kp);

@@ -21,13 +21,14 @@ int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
 	pr_alert(
-		"********************************************************************\n"
-		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE           **\n"
-		"**                                                                **\n"
-		"**         You are running DEBUG version of KernelSU              **\n"
-		"**                                                                **\n"
-		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE           **\n"
-		"********************************************************************\n");
+		"*************************************************************\n"
+		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **\n"
+		"**                                                         **\n"
+		"**         You are running DEBUG version of KernelSU       **\n"
+		"**                                                         **\n"
+		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **\n"
+		"*************************************************************\n"
+	);
 #endif
 
 	ksu_core_init();
