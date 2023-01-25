@@ -1,6 +1,6 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{ensure, Result};
 
 pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
     let mut buffer = [0u8; 0x10];
@@ -42,9 +42,7 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
     f.read_exact(&mut size8)?;
     f.read_exact(&mut buffer)?;
 
-    if &buffer != b"APK Sig Block 42" {
-        bail!("Can not found sig block");
-    }
+    ensure!(&buffer == b"APK Sig Block 42", "Can not found sig block");
 
     let pos = u32::from_le_bytes(size4) as u64 - (u64::from_le_bytes(size8) + 0x8);
     f.seek(SeekFrom::Start(pos))?;
