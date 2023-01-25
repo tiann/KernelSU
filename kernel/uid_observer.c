@@ -13,6 +13,7 @@
 
 #include "uid_observer.h"
 #include "allowlist.h"
+#include "manager.h"
 #include "arch.h"
 #include "klog.h"
 #include "ksu.h"
@@ -121,48 +122,9 @@ out:
 	filp_close(fp, 0);
 }
 
-static void update_uid()
+void update_uid()
 {
 	ksu_queue_work(&ksu_update_uid_work);
-}
-
-int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
-{
-	if (!current->mm) {
-		// skip kernel threads
-		return 0;
-	}
-
-	if (current_uid().val != 1000) {
-		// skip non system uid
-		return 0;
-	}
-
-	if (!old_dentry || !new_dentry) {
-		return 0;
-	}
-
-	// /data/system/packages.list.tmp -> /data/system/packages.list
-	if (strcmp(new_dentry->d_iname, "packages.list")) {
-		return 0;
-	}
-
-	char path[128];
-	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
-	if (IS_ERR(buf)) {
-		pr_err("dentry_path_raw failed.\n");
-		return 0;
-	}
-
-	if (strcmp(buf, "/system/packages.list")) {
-		return 0;
-	}
-	pr_info("renameat: %s -> %s\n, new path: %s", old_dentry->d_iname,
-		new_dentry->d_iname, buf);
-
-	update_uid();
-
-	return 0;
 }
 
 int ksu_uid_observer_init()

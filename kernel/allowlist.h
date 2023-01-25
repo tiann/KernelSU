@@ -15,6 +15,6 @@ bool ksu_get_allow_list(int *array, int *length, bool allow);
 
 bool ksu_load_allow_list(void);
 
-void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void* data);
+void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data);
 
 #endif

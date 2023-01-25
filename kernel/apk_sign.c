@@ -4,8 +4,8 @@
 #include "apk_sign.h"
 #include "klog.h"
 
-static __always_inline int check_v2_signature(char *path, unsigned expected_size,
-				  unsigned expected_hash)
+static __always_inline int
+check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 {
 	unsigned char buffer[0x11] = { 0 };
 	u32 size4;
@@ -67,23 +67,23 @@ static __always_inline int check_v2_signature(char *path, unsigned expected_size
 		offset = 4;
 		pr_info("id: 0x%08x\n", id);
 		if ((id ^ 0xdeadbeefu) == 0xafa439f5u ||
-			(id ^ 0xdeadbeefu) == 0x2efed62f) {
+		    (id ^ 0xdeadbeefu) == 0x2efed62f) {
 			kernel_read(fp, &size4, 0x4,
-					&pos); // signer-sequence length
+				    &pos); // signer-sequence length
 			kernel_read(fp, &size4, 0x4, &pos); // signer length
 			kernel_read(fp, &size4, 0x4,
-					&pos); // signed data length
+				    &pos); // signed data length
 			offset += 0x4 * 3;
 
 			kernel_read(fp, &size4, 0x4,
-					&pos); // digests-sequence length
+				    &pos); // digests-sequence length
 			pos += size4;
 			offset += 0x4 + size4;
 
 			kernel_read(fp, &size4, 0x4,
-					&pos); // certificates length
+				    &pos); // certificates length
 			kernel_read(fp, &size4, 0x4,
-					&pos); // certificate length
+				    &pos); // certificate length
 			offset += 0x4 * 2;
 #if 0
 			int hash = 1;
@@ -104,7 +104,7 @@ static __always_inline int check_v2_signature(char *path, unsigned expected_size
 				}
 				offset += size4;
 				if ((((unsigned)hash) ^ 0x14131211u) ==
-					expected_hash) {
+				    expected_hash) {
 					sign = 0;
 					break;
 				}
@@ -136,7 +136,6 @@ int is_manager_apk(char *path)
 }
 
 #else
-
 
 int is_manager_apk(char *path)
 {
