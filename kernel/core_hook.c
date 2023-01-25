@@ -17,6 +17,7 @@
 #include "arch.h"
 #include "core_hook.h"
 #include "ksu.h"
+#include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
@@ -209,6 +210,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 				if (!post_fs_data_lock) {
 					post_fs_data_lock = true;
 					pr_info("post-fs-data triggered");
+					on_post_fs_data();
 				}
 				break;
 			}
