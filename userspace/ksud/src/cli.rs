@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{event, module, debug};
+use crate::{event, module, debug, apk_sign};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -37,10 +37,7 @@ enum Commands {
     /// SELinux policy Patch tool
     Sepolicy,
 
-    /// For test
-    Test,
-
-    /// For KSU_DEBUG
+    /// For developers
     Debug {
         #[command(subcommand)]
         command: Debug,
@@ -48,10 +45,20 @@ enum Commands {
 }
 #[derive(clap::Subcommand, Debug)]
 enum Debug {
+    /// Set the manager app, kernel CONFIG_KSU_DEBUG should be enabled.
     SetManager {
         /// manager apk path or package name
         apk: String,
-    }
+    },
+
+    /// Get apk size and hash
+    GetSign {
+        /// apk path
+        apk: String,
+    },
+
+    /// For testing
+    Test,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -106,11 +113,16 @@ pub fn run() -> Result<()> {
         Commands::Install => event::install(),
         Commands::Sepolicy => todo!(),
         Commands::Services => event::on_services(),
-        Commands::Test => event::do_systemless_mount("/data/adb/ksu/modules"),
 
         Commands::Debug { command } => {
             match command {
                 Debug::SetManager { apk } => debug::set_manager(&apk),
+                Debug::GetSign { apk } => { 
+                    let sign = apk_sign::get_apk_signature(&apk)?;
+                    println!("size: {:#x}, hash: {:#x}", sign.0, sign.1);
+                    Ok(())
+                },
+                Debug::Test => todo!(),
             }
         }
     };

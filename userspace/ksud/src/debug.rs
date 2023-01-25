@@ -1,54 +1,61 @@
-use anyhow::{Result, Ok};
-use std::{ffi::c_int, process::Command};
+use anyhow::{ensure, Context, Ok, Result};
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
 
-extern {
-    fn get_signature(input: *const u8,
-        out_size: *mut u32,
-        out_hash: *mut u32) -> c_int;
+use crate::apk_sign::get_apk_signature;
 
-    fn set_kernel_param(size: u32, hash: u32) -> c_int;
+const KERNEL_PARAM_PATH: &str = "/sys/module/kernelsu";
+
+fn read_u32(path: &PathBuf) -> Result<u32> {
+    let content = std::fs::read_to_string(path)?;
+    let content = content.trim();
+    let content = content.parse::<u32>()?;
+    Ok(content)
 }
 
-fn get_apk_signature(apk: &str) -> (u32, u32){
-    let mut out_size: u32 = 0;
-    let mut out_hash: u32 = 0;
-    unsafe{
-        get_signature(apk.as_ptr(), &mut out_size, &mut out_hash);
-    }
-    (out_size, out_hash)
+fn set_kernel_param(size: u32, hash: u32) -> Result<()> {
+    let kernel_param_path = Path::new(KERNEL_PARAM_PATH).join("parameters");
+    let expeced_size_path = kernel_param_path.join("ksu_expected_size");
+    let expeced_hash_path = kernel_param_path.join("ksu_expected_hash");
+
+    println!(
+        "before size: {:#x} hash: {:#x}",
+        read_u32(&expeced_size_path)?,
+        read_u32(&expeced_hash_path)?
+    );
+
+    std::fs::write(&expeced_size_path, size.to_string())?;
+    std::fs::write(&expeced_hash_path, hash.to_string())?;
+
+    println!(
+        "after size: {:#x} hash: {:#x}",
+        read_u32(&expeced_size_path)?,
+        read_u32(&expeced_hash_path)?
+    );
+
+    Ok(())
 }
 
-fn get_apk_path(package_name: &str) -> String {
-    let mut cmd = "pm path ".to_string();
-    cmd += package_name;
-    cmd += &" | sed 's/package://g'".to_string();
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
-        .output()
-        .unwrap();
-    let out = String::from_utf8(output.stdout).unwrap();
-    return out;
+fn get_apk_path(package_name: &str) -> Result<String> {
+    let cmd = format!("pm path {}", package_name);
+    let output = Command::new("sh").arg("-c").arg(cmd).output()?;
+
+    // package:/data/app/<xxxx>/base.apk
+    let output = String::from_utf8_lossy(&output.stdout);
+    let path = output.trim().replace("package:", "");
+    Ok(path)
 }
 
-pub fn set_manager(apk: &str) -> Result<()> {
-    if apk.ends_with(".apk") {
-        let sign = get_apk_signature(apk);
-        unsafe{
-            set_kernel_param(sign.0, sign.1);
-        }
-    } else {
-        let path = get_apk_path(apk);
-        let path = String::from(path.trim());
-        println!("path: {}", path);
-        if path.ends_with(".apk") {
-            let sign = get_apk_signature(path.as_str());
-            unsafe{
-                set_kernel_param(sign.0, sign.1);
-            }
-        }else{
-            println!("Invalid argument!");
-        }
-    }
+pub fn set_manager(pkg: &str) -> Result<()> {
+    ensure!(
+        Path::new(KERNEL_PARAM_PATH).exists(),
+        "CONFIG_KSU_DEBUG is not enabled"
+    );
+
+    let path = get_apk_path(pkg).with_context(|| format!("{} not exist!", pkg))?;
+    let sign = get_apk_signature(path.as_str())?;
+    set_kernel_param(sign.0, sign.1)?;
     Ok(())
 }
