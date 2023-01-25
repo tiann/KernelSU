@@ -24,7 +24,11 @@ extern uid_t ksu_manager_uid;
 
 static inline bool ksu_is_manager_uid_valid()
 {
+#ifndef CONFIG_KSU_DEBUG
 	return ksu_manager_uid != INVALID_UID;
+#else
+	return false; // always allow in debug mode
+#endif
 }
 
 static inline uid_t ksu_get_manager_uid()
