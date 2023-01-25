@@ -1,9 +1,9 @@
+#include "linux/delay.h"
 #include "linux/fs.h"
 #include "linux/kernel.h"
 #include "linux/list.h"
 #include "linux/printk.h"
 #include "linux/slab.h"
-#include "linux/delay.h"
 
 #include "selinux/selinux.h"
 
@@ -240,39 +240,37 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 	}
 }
 
-static int init_work(void)
-{
-	INIT_WORK(&ksu_save_work, do_persistent_allow_list);
-	INIT_WORK(&ksu_load_work, do_load_allow_list);
-	return 0;
-}
-
 // make sure allow list works cross boot
 bool persistent_allow_list(void)
 {
-	ksu_queue_work(&ksu_save_work);
-	return true;
+	return ksu_queue_work(&ksu_save_work);
 }
 
 bool ksu_load_allow_list(void)
 {
-	ksu_queue_work(&ksu_load_work);
-	return true;
+	return ksu_queue_work(&ksu_load_work);
 }
 
-bool ksu_allowlist_init(void)
+void ksu_allowlist_init(void)
 {
 	INIT_LIST_HEAD(&allow_list);
 
-	init_work();
-
-	// start load allow list, we load it before app_process exec now, refer:
-	// sucompat#execve_handler_pre ksu_load_allow_list();
-
-	return true;
+	INIT_WORK(&ksu_save_work, do_persistent_allow_list);
+	INIT_WORK(&ksu_load_work, do_load_allow_list);
 }
 
-bool ksu_allowlist_exit(void)
+void ksu_allowlist_exit(void)
 {
-	return true;
+	struct perm_data *np = NULL;
+	struct perm_data *n = NULL;
+
+	persistent_allow_list();
+
+	// free allowlist
+	mutex_lock(&allowlist_mutex);
+	list_for_each_entry_safe(np, n, &allow_list, list) {
+		list_del(&np->list);
+		kfree(np);
+	}
+	mutex_unlock(&allowlist_mutex);
 }

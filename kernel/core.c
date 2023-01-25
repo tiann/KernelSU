@@ -332,15 +332,15 @@ void __init ksu_lsm_hook_init(void)
 	// https://elixir.bootlin.com/linux/v4.10.17/source/include/linux/lsm_hooks.h#L1892
 	security_add_hooks(ksu_hooks, ARRAY_SIZE(ksu_hooks));
 #endif
-
-	pr_info("security_add_hooks\n");
 }
 
 void __init ksu_core_init(void)
 {
 #ifndef MODULE
+	pr_info("ksu_lsm_hook_init\n");
 	ksu_lsm_hook_init();
 #else
+	pr_info("ksu_kprobe_init\n");
 	ksu_kprobe_init();
 #endif
 }
@@ -348,6 +348,7 @@ void __init ksu_core_init(void)
 void ksu_core_exit(void)
 {
 #ifndef MODULE
+	pr_info("ksu_kprobe_exit\n");
 	ksu_kprobe_exit();
 #endif
 }

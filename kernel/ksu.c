@@ -9,9 +9,9 @@
 
 static struct workqueue_struct *ksu_workqueue;
 
-void ksu_queue_work(struct work_struct *work)
+bool ksu_queue_work(struct work_struct *work)
 {
-	queue_work(ksu_workqueue, work);
+	return queue_work(ksu_workqueue, work);
 }
 
 extern void enable_sucompat();
@@ -20,7 +20,14 @@ extern void enable_ksud();
 int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
-	pr_alert("You are running DEBUG version of KernelSU");
+	pr_alert(
+		"********************************************************************\n"
+		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE           **\n"
+		"**                                                                **\n"
+		"**         You are running DEBUG version of KernelSU              **\n"
+		"**                                                                **\n"
+		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE           **\n"
+		"********************************************************************\n");
 #endif
 
 	ksu_core_init();
@@ -58,6 +65,5 @@ MODULE_AUTHOR("weishu");
 MODULE_DESCRIPTION("Android KernelSU");
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
-MODULE_IMPORT_NS(
-	VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver); // 5+才需要导出命名空间
+MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
 #endif

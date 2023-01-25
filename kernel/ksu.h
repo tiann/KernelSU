@@ -16,7 +16,7 @@
 #define CMD_GET_ALLOW_LIST 5
 #define CMD_GET_DENY_LIST 6
 
-void ksu_queue_work(struct work_struct *work);
+bool ksu_queue_work(struct work_struct *work);
 
 static inline int startswith(char *s, char *prefix)
 {
