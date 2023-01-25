@@ -213,8 +213,10 @@ static void unregister_vfs_read_kp()
 }
 
 static void unregister_execve_kp(){
+#ifdef CONFIG_KPROBES
 	bool ret = schedule_work(&unregister_execve_kp_work);
 	pr_info("unregister execve kprobe: %d!\n", ret);
+#endif
 }
 
 // ksud: module support
