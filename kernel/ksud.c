@@ -14,12 +14,47 @@
 #include "arch.h"
 #include "selinux/selinux.h"
 
-static void unregister_execve_kp();
-static struct work_struct unregister_execve_kp_work;
+static const char KERNEL_SU_RC[] =
+	"\n"
+
+	"on post-fs-data\n"
+	// We should wait for the post-fs-data finish
+	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
+	"\n"
+
+	"on nonencrypted\n"
+	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"\n"
+
+	"on property:vold.decrypt=trigger_restart_framework\n"
+	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"\n"
+
+	"on property:sys.boot_completed=1\n"
+	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
+	"\n"
+
+	"\n";
+
+static void stop_vfs_read_hook();
+static void stop_execve_hook();
+
+#ifdef CONFIG_KPROBES
+static struct work_struct stop_vfs_read_work;
+static struct work_struct stop_execve_hook_work;
+#else
+static bool vfs_read_hook = true;
+static bool execveat_hook = true;
+#endif
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     void *argv, void *envp, int *flags)
 {
+#ifndef CONFIG_KPROBES
+	if (!execveat_hook) {
+		return 0;
+	}
+#endif
 	struct filename *filename;
 
 	static const char app_process[] = "/system/bin/app_process";
@@ -51,40 +86,20 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared!\n");
 		ksu_load_allow_list();
-		unregister_execve_kp();
+		stop_execve_hook();
 	}
 
 	return 0;
 }
 
-static const char KERNEL_SU_RC[] =
-	"\n"
-
-	"on post-fs-data\n"
-	// We should wait for the post-fs-data finish
-	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
-	"\n"
-
-	"on nonencrypted\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
-	"\n"
-
-	"on property:vold.decrypt=trigger_restart_framework\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
-	"\n"
-
-	"on property:sys.boot_completed=1\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
-	"\n"
-
-	"\n";
-
-static void unregister_vfs_read_kp();
-static struct work_struct unregister_vfs_read_work;
-
 int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 			size_t *count_ptr, loff_t **pos)
 {
+#ifndef CONFIG_KPROBES
+	if (!vfs_read_hook) {
+		return 0;
+	}
+#endif
 	struct file *file;
 	char __user *buf;
 	size_t count;
@@ -123,7 +138,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	static bool rc_inserted = false;
 	if (rc_inserted) {
 		// we don't need this kprobe, unregister it!
-		unregister_vfs_read_kp();
+		stop_vfs_read_hook();
 		return 0;
 	}
 	rc_inserted = true;
@@ -154,6 +169,8 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 
 	return 0;
 }
+
+#ifdef CONFIG_KPROBES
 
 // https://elixir.bootlin.com/linux/v5.10.158/source/fs/exec.c#L1864
 static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -196,32 +213,40 @@ static struct kprobe vfs_read_kp = {
 	.pre_handler = read_handler_pre,
 };
 
-static void do_unregister_vfs_read_kp(struct work_struct *work)
+static void do_stop_vfs_read_hook(struct work_struct *work)
 {
 	unregister_kprobe(&vfs_read_kp);
 }
 
-static void do_unregister_execve_kp(struct work_struct *work)
+static void do_stop_execve_hook(struct work_struct *work)
 {
 	unregister_kprobe(&execve_kp);
 }
+#endif
 
-static void unregister_vfs_read_kp()
+static void stop_vfs_read_hook()
 {
-	bool ret = schedule_work(&unregister_vfs_read_work);
+#ifdef CONFIG_KPROBES
+	bool ret = schedule_work(&stop_vfs_read_work);
 	pr_info("unregister vfs_read kprobe: %d!\n", ret);
+#else
+	vfs_read_hook = false;
+#endif
 }
 
-static void unregister_execve_kp(){
+static void stop_execve_hook(){
 #ifdef CONFIG_KPROBES
-	bool ret = schedule_work(&unregister_execve_kp_work);
+	bool ret = schedule_work(&stop_execve_hook_work);
 	pr_info("unregister execve kprobe: %d!\n", ret);
+#else
+	execveat_hook = false;
 #endif
 }
 
 // ksud: module support
 void enable_ksud()
 {
+#ifdef CONFIG_KPROBES
 	int ret;
 
 	ret = register_kprobe(&execve_kp);
@@ -230,6 +255,7 @@ void enable_ksud()
 	ret = register_kprobe(&vfs_read_kp);
 	pr_info("ksud: vfs_read_kp: %d\n", ret);
 
-	INIT_WORK(&unregister_vfs_read_work, do_unregister_vfs_read_kp);
-	INIT_WORK(&unregister_execve_kp_work, do_unregister_execve_kp);
+	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
+	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
+#endif
 }
