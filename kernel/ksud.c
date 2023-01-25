@@ -14,6 +14,9 @@
 #include "arch.h"
 #include "selinux/selinux.h"
 
+static void unregister_execve_kp();
+static struct work_struct unregister_execve_kp_work;
+
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     void *argv, void *envp, int *flags)
 {
@@ -48,6 +51,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared!\n");
 		ksu_load_allow_list();
+		unregister_execve_kp();
 	}
 
 	return 0;
@@ -197,10 +201,20 @@ static void do_unregister_vfs_read_kp(struct work_struct *work)
 	unregister_kprobe(&vfs_read_kp);
 }
 
+static void do_unregister_execve_kp(struct work_struct *work)
+{
+	unregister_kprobe(&execve_kp);
+}
+
 static void unregister_vfs_read_kp()
 {
 	bool ret = schedule_work(&unregister_vfs_read_work);
 	pr_info("unregister vfs_read kprobe: %d!\n", ret);
+}
+
+static void unregister_execve_kp(){
+	bool ret = schedule_work(&unregister_execve_kp_work);
+	pr_info("unregister execve kprobe: %d!\n", ret);
 }
 
 // ksud: module support
@@ -215,4 +229,5 @@ void enable_ksud()
 	pr_info("vfs_read_kp: %d\n", ret);
 
 	INIT_WORK(&unregister_vfs_read_work, do_unregister_vfs_read_kp);
+	INIT_WORK(&unregister_execve_kp_work, do_unregister_execve_kp);
 }
