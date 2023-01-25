@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, Ok};
 use clap::Parser;
 
 use crate::{event, module, debug, apk_sign};
@@ -57,6 +57,9 @@ enum Debug {
         /// apk path
         apk: String,
     },
+
+    /// Get kernel version
+    Version,
 
     /// For testing
     Test,
@@ -123,6 +126,10 @@ pub fn run() -> Result<()> {
                     println!("size: {:#x}, hash: {:#x}", sign.0, sign.1);
                     Ok(())
                 },
+                Debug::Version => {
+                    println!("Kernel Version: {}", crate::ksu::get_version());
+                    Ok(())
+                }
                 Debug::Test => todo!(),
             }
         }
