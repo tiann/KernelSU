@@ -47,7 +47,8 @@ enum Commands {
 enum Debug {
     /// Set the manager app, kernel CONFIG_KSU_DEBUG should be enabled.
     SetManager {
-        /// manager apk path or package name
+        /// manager package name
+        #[arg(default_value_t = String::from("me.weishu.kernelsu"))]
         apk: String,
     },
 
