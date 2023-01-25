@@ -1,22 +1,16 @@
-#include "linux/kprobes.h"
-#include <linux/list.h>
-#include <linux/types.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-#include <linux/err.h>
-#include <linux/workqueue.h>
-#include <linux/string.h>
-#include <linux/version.h>
-#include <linux/slab.h>
-#include <linux/mutex.h>
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/list.h"
+#include "linux/slab.h"
+#include "linux/string.h"
+#include "linux/types.h"
+#include "linux/version.h"
+#include "linux/workqueue.h"
 
-#include "uid_observer.h"
 #include "allowlist.h"
-#include "manager.h"
-#include "arch.h"
-#include "klog.h"
 #include "ksu.h"
+#include "manager.h"
+#include "uid_observer.h"
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 static struct work_struct ksu_update_uid_work;

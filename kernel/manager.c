@@ -1,36 +1,16 @@
-#include "linux/export.h"
-#include <asm-generic/errno-base.h>
-#include <linux/cpu.h>
-#include <linux/cred.h>
-#include <linux/gfp.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/kprobes.h>
-#include <linux/memory.h>
-#include <linux/module.h>
-#include <linux/printk.h>
-#include <linux/slab.h>
-#include <linux/string.h>
-#include <linux/uaccess.h>
-#include <linux/uidgid.h>
-#include <linux/version.h>
-#include <linux/workqueue.h>
+#include "linux/cred.h"
+#include "linux/gfp.h"
+#include "linux/printk.h"
+#include "linux/slab.h"
+#include "linux/uidgid.h"
+#include "linux/version.h"
 
-#include <linux/fdtable.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-#include <linux/rcupdate.h>
+#include "linux/fdtable.h"
+#include "linux/fs.h"
+#include "linux/rcupdate.h"
 
-#include <linux/delay.h> // msleep
-
-#include "allowlist.h"
 #include "apk_sign.h"
-#include "arch.h"
-#include "klog.h"
 #include "ksu.h"
-#include "selinux/selinux.h"
-#include "uid_observer.h"
 #include "manager.h"
 
 uid_t ksu_manager_uid = INVALID_UID;

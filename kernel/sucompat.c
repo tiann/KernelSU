@@ -1,39 +1,20 @@
-#include <linux/types.h>
-#include <linux/gfp.h>
-#include <linux/workqueue.h>
-#include <asm/current.h>
-#include <linux/cred.h>
-#include <linux/dcache.h>
-#include <linux/err.h>
-#include <linux/limits.h>
-#include <linux/cpu.h>
-#include <linux/memory.h>
-#include <linux/uaccess.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/kprobes.h>
-#include <linux/printk.h>
-#include <linux/string.h>
-#include <linux/kernel.h>
-#include <linux/slab.h>
-#include <linux/version.h>
+#include "asm/current.h"
+#include "linux/cred.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/kprobes.h"
+#include "linux/printk.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "linux/version.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
-#include <linux/sched/task_stack.h>
+#include "linux/sched/task_stack.h"
 #else
-#include <linux/sched.h>
+#include "linux/sched.h"
 #endif
-#include <asm-generic/errno-base.h>
 
-#include <linux/rcupdate.h>
-#include <linux/fdtable.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-
-#include "klog.h"
-#include "arch.h"
 #include "allowlist.h"
-#include "selinux/selinux.h"
+#include "arch.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -42,7 +23,8 @@ extern void escape_to_root();
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
 {
-	/* To avoid having to mmap a page in userspace, just write below the stack pointer. */
+	/* To avoid having to mmap a page in userspace, just write below the stack
+   * pointer. */
 	char __user *p = (void __user *)current_user_stack_pointer() - len;
 
 	return copy_to_user(p, d, len) ? NULL : p;

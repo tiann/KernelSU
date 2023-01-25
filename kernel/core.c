@@ -1,47 +1,25 @@
-#include <linux/err.h>
-#include <linux/cred.h>
-#include <linux/kernel.h>
-#include <linux/printk.h>
-#include <linux/security.h>
-#include <linux/lsm_hooks.h>
-#include <linux/module.h>
-#include <linux/version.h>
-#include <linux/kprobes.h>
-#include "linux/export.h"
-#include <asm-generic/errno-base.h>
-#include <linux/cpu.h>
-#include <linux/cred.h>
-#include <linux/gfp.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/kprobes.h>
-#include <linux/memory.h>
-#include <linux/module.h>
-#include <linux/printk.h>
-#include <linux/slab.h>
-#include <linux/string.h>
-#include <linux/uaccess.h>
-#include <linux/uidgid.h>
-#include <linux/version.h>
-#include <linux/workqueue.h>
+#include "linux/cred.h"
+#include "linux/err.h"
+#include "linux/init.h"
+#include "linux/kernel.h"
+#include "linux/kprobes.h"
+#include "linux/lsm_hooks.h"
+#include "linux/printk.h"
+#include "linux/uaccess.h"
+#include "linux/uidgid.h"
+#include "linux/version.h"
 
-#include <linux/fdtable.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-#include <linux/rcupdate.h>
-
-#include <linux/delay.h> // msleep
+#include "linux/fs.h"
+#include "linux/namei.h"
+#include "linux/rcupdate.h"
 
 #include "allowlist.h"
-#include "apk_sign.h"
 #include "arch.h"
-#include "klog.h"
+#include "core.h"
 #include "ksu.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
-#include "core.h"
 
 static inline bool is_allow_su()
 {

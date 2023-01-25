@@ -1,38 +1,17 @@
-#include <linux/types.h>
-#include <linux/gfp.h>
-#include <linux/workqueue.h>
-#include <asm/current.h>
-#include <linux/cred.h>
-#include <linux/dcache.h>
-#include <linux/err.h>
-#include <linux/limits.h>
-#include <linux/cpu.h>
-#include <linux/memory.h>
-#include <linux/uaccess.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/kprobes.h>
-#include <linux/printk.h>
-#include <linux/string.h>
-#include <linux/kernel.h>
-#include <linux/slab.h>
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
-#include <linux/sched/task_stack.h>
-#else
-#include <linux/sched.h>
-#endif
-#include <asm-generic/errno-base.h>
+#include "asm/current.h"
+#include "linux/cred.h"
+#include "linux/dcache.h"
+#include "linux/err.h"
+#include "linux/fs.h"
+#include "linux/kprobes.h"
+#include "linux/printk.h"
+#include "linux/types.h"
+#include "linux/uaccess.h"
+#include "linux/version.h"
+#include "linux/workqueue.h"
 
-#include <linux/rcupdate.h>
-#include <linux/fdtable.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-
-#include "klog.h"
-#include "arch.h"
 #include "allowlist.h"
+#include "arch.h"
 #include "selinux/selinux.h"
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
@@ -145,7 +124,8 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	}
 	rc_inserted = true;
 
-	// now we can sure that the init process is reading `/system/etc/init/atrace.rc`
+	// now we can sure that the init process is reading
+	// `/system/etc/init/atrace.rc`
 	buf = *buf_ptr;
 	count = *count_ptr;
 

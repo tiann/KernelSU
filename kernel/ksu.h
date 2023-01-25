@@ -1,7 +1,7 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
-#include <linux/workqueue.h>
+#include "linux/workqueue.h"
 
 #define KERNEL_SU_VERSION 10
 

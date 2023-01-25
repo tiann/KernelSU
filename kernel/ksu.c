@@ -1,15 +1,11 @@
-
-#include <asm-generic/errno-base.h>
-
-#include <linux/workqueue.h>
-#include <linux/module.h>
+#include "linux/module.h"
+#include "linux/workqueue.h"
 
 #include "allowlist.h"
 #include "arch.h"
-#include "klog.h"
+#include "core.h"
 #include "ksu.h"
 #include "uid_observer.h"
-#include "core.h"
 
 static struct workqueue_struct *ksu_workqueue;
 

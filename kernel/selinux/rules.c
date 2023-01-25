@@ -1,13 +1,11 @@
-#include <linux/version.h>
-#include "sepolicy.h"
+#include "linux/version.h"
+
 #include "selinux.h"
+#include "sepolicy.h"
+#include "ss/services.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
-#endif
-
-#ifndef SELINUX_POLICY_INSTEAD_SELINUX_SS
-#include <ss/services.h>
 #endif
 
 #define KERNEL_SU_DOMAIN "su"
@@ -37,10 +35,10 @@ void apply_kernelsu_rules()
 	ksu_typeattribute(db, KERNEL_SU_DOMAIN, "netdomain");
 	ksu_typeattribute(db, KERNEL_SU_DOMAIN, "bluetoothdomain");
 
-    // Create unconstrained file type
-    ksu_type(db, KERNEL_SU_FILE, "file_type");
-    ksu_typeattribute(db, KERNEL_SU_FILE, "mlstrustedobject");
-    ksu_allow(db, ALL, KERNEL_SU_FILE, ALL, ALL);
+	// Create unconstrained file type
+	ksu_type(db, KERNEL_SU_FILE, "file_type");
+	ksu_typeattribute(db, KERNEL_SU_FILE, "mlstrustedobject");
+	ksu_allow(db, ALL, KERNEL_SU_FILE, ALL, ALL);
 
 	// allow all!
 	ksu_allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
@@ -59,9 +57,11 @@ void apply_kernelsu_rules()
 	ksu_allow(db, "kernel", "shell_data_file", "file", ALL);
 	// we need to read /data/system/packages.list
 	ksu_allow(db, "kernel", "kernel", "capability", "dac_override");
-	// Android 10+: http://aospxref.com/android-12.0.0_r3/xref/system/sepolicy/private/file_contexts#512
+	// Android 10+:
+	// http://aospxref.com/android-12.0.0_r3/xref/system/sepolicy/private/file_contexts#512
 	ksu_allow(db, "kernel", "packages_list_file", "file", ALL);
-	// Android 9-: http://aospxref.com/android-9.0.0_r61/xref/system/sepolicy/private/file_contexts#360
+	// Android 9-:
+	// http://aospxref.com/android-9.0.0_r61/xref/system/sepolicy/private/file_contexts#360
 	ksu_allow(db, "kernel", "system_data_file", "file", ALL);
 
 	// our ksud triggered by init
@@ -94,14 +94,17 @@ void apply_kernelsu_rules()
 	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "dir", "search");
 	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "file", "read");
 	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "file", "open");
-	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "process", "getattr");
+	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "process",
+		  "getattr");
 
 	// Allow all binder transactions
 	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "binder", ALL);
 
 	// Allow system server devpts
-	ksu_allow(db, "system_server", "untrusted_app_all_devpts", "chr_file", "read");
-	ksu_allow(db, "system_server", "untrusted_app_all_devpts", "chr_file", "write");
+	ksu_allow(db, "system_server", "untrusted_app_all_devpts", "chr_file",
+		  "read");
+	ksu_allow(db, "system_server", "untrusted_app_all_devpts", "chr_file",
+		  "write");
 
 	rcu_read_unlock();
 }

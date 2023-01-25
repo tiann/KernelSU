@@ -1,26 +1,10 @@
-#include <linux/list.h>
-#include <linux/cpu.h>
-#include <linux/errno.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/kprobes.h>
-#include <linux/memory.h>
-#include <linux/module.h>
-#include <linux/printk.h>
-#include <linux/slab.h>
-#include <linux/string.h>
-#include <linux/uaccess.h>
-#include <linux/uidgid.h>
+#include "linux/fs.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/slab.h"
+#include "linux/delay.h"
 
-#include <linux/fdtable.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-#include <linux/rcupdate.h>
-
-#include <linux/delay.h> // msleep
-
-#include "klog.h"
 #include "selinux/selinux.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
@@ -282,8 +266,8 @@ bool ksu_allowlist_init(void)
 
 	init_work();
 
-	// start load allow list, we load it before app_process exec now, refer: sucompat#execve_handler_pre
-	// ksu_load_allow_list();
+	// start load allow list, we load it before app_process exec now, refer:
+	// sucompat#execve_handler_pre ksu_load_allow_list();
 
 	return true;
 }
