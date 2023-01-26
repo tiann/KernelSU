@@ -32,6 +32,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import me.weishu.kernelsu.ui.util.toggleModule
 import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -105,6 +106,14 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
+            val isOverlayAvailable = overlayFsAvailable()
+            if (!isOverlayAvailable) {
+                swipeState.isRefreshing = false
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.module_overlay_fs_not_available))
+                }
+                return@SwipeRefresh
+            }
             val isEmpty = viewModel.moduleList.isEmpty()
             if (isEmpty) {
                 swipeState.isRefreshing = false

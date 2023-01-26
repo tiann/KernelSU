@@ -45,4 +45,5 @@
     <string name="module_uninstall_failed">卸载失败: %s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
+    <string name="module_overlay_fs_not_available">内核不支持 overlayfs，模块功能无法运作！</string>
 </resources>

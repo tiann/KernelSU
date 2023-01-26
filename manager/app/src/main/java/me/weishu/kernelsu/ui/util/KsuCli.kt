@@ -103,3 +103,9 @@ fun reboot(reason: String = "") {
     }
     ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
 }
+
+fun overlayFsAvailable(): Boolean {
+    val shell = createRootShell()
+    // check /proc/filesystems
+    return ShellUtils.fastCmdResult(shell, "cat /proc/filesystems | grep overlay")
+}
