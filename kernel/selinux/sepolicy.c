@@ -36,11 +36,12 @@ static bool add_xperm_rule(struct policydb *db, const char *s, const char *t,
 static bool add_type_rule(struct policydb *db, const char *s, const char *t,
 			  const char *c, const char *d, int effect);
 
-static bool add_filename_trans(const char *s, const char *t, const char *c,
-			       const char *d, const char *o);
+static bool add_filename_trans(struct policydb *db, const char *s,
+			       const char *t, const char *c, const char *d,
+			       const char *o);
 
-static bool add_genfscon(const char *fs_name, const char *path,
-			 const char *context);
+static bool add_genfscon(struct policydb *db, const char *fs_name,
+			 const char *path, const char *context);
 
 static bool add_type(struct policydb *db, const char *type_name, bool attr);
 
@@ -453,14 +454,15 @@ static bool add_type_rule(struct policydb *db, const char *s, const char *t,
 	return true;
 }
 
-static bool add_filename_trans(const char *s, const char *t, const char *c,
-			       const char *d, const char *o)
+static bool add_filename_trans(struct policydb *db, const char *s,
+			       const char *t, const char *c, const char *d,
+			       const char *o)
 {
 	return false;
 }
 
-static bool add_genfscon(const char *fs_name, const char *path,
-			 const char *context)
+static bool add_genfscon(struct policydb *db, const char *fs_name,
+			 const char *path, const char *context)
 {
 	return false;
 }
@@ -713,23 +715,28 @@ bool ksu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
 bool ksu_type_transition(struct policydb *db, const char *src, const char *tgt,
 			 const char *cls, const char *def, const char *obj)
 {
-	return false;
+	if (obj) {
+		return add_filename_trans(db, src, tgt, cls, def, obj);
+	} else {
+		return add_type_rule(db, src, tgt, cls, def, AVTAB_TRANSITION);
+	}
 }
 
 bool ksu_type_change(struct policydb *db, const char *src, const char *tgt,
 		     const char *cls, const char *def)
 {
-	return false;
+	return add_type_rule(db, src, tgt, cls, def, AVTAB_CHANGE);
 }
+
 bool ksu_type_member(struct policydb *db, const char *src, const char *tgt,
 		     const char *cls, const char *def)
 {
-	return false;
+	return add_type_rule(db, src, tgt, cls, def, AVTAB_MEMBER);
 }
 
 // File system labeling
 bool ksu_genfscon(struct policydb *db, const char *fs_name, const char *path,
 		  const char *ctx)
 {
-	return false;
+	return add_genfscon(db, fs_name, path, ctx);
 }
