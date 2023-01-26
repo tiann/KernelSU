@@ -23,10 +23,9 @@ private fun getKsuDaemonPath(): String {
 
 fun createRootShell(): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
-    val su = ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksu.so"
     val builder = Shell.Builder.create()
     return try {
-        builder.build(su)
+        builder.build(getKsuDaemonPath(), "debug", "su")
     } catch (e: Throwable) {
         builder.build("sh")
     }
