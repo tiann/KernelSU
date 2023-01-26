@@ -1,11 +1,12 @@
-mod cli;
-mod event;
-mod module;
-mod defs;
-mod utils;
-mod restorecon;
-mod debug;
 mod apk_sign;
+mod cli;
+mod debug;
+mod defs;
+mod event;
+mod ksu;
+mod module;
+mod restorecon;
+mod utils;
 
 fn main() -> anyhow::Result<()> {
     cli::run()

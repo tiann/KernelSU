@@ -109,7 +109,11 @@ fn check_image(img: &str) -> Result<()> {
     // 0: no error
     // 1: file system errors corrected
     // https://man7.org/linux/man-pages/man8/e2fsck.8.html
-    ensure!(code == Some(0) || code == Some(1), "check image e2fsck exec failed: {}", code.unwrap_or(-1));
+    ensure!(
+        code == Some(0) || code == Some(1),
+        "check image e2fsck exec failed: {}",
+        code.unwrap_or(-1)
+    );
     Ok(())
 }
 
@@ -120,7 +124,10 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     // check image
     check_image(img)?;
 
-    println!("- Target image size: {}", humansize::format_size(target_size, humansize::DECIMAL));
+    println!(
+        "- Target image size: {}",
+        humansize::format_size(target_size, humansize::DECIMAL)
+    );
     let target_size = target_size / 1024 + 1;
 
     let result = Exec::shell(format!("resize2fs {} {}K", img, target_size))
@@ -331,7 +338,10 @@ pub fn install_module(zip: String) -> Result<()> {
     let grow_size_per_m = grow_size / 1024 / 1024 + 1;
 
     println!("- Preparing image");
-    println!("- Module size: {}", humansize::format_size(zip_uncompressed_size, humansize::DECIMAL));
+    println!(
+        "- Module size: {}",
+        humansize::format_size(zip_uncompressed_size, humansize::DECIMAL)
+    );
 
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img

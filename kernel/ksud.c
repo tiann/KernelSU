@@ -4,6 +4,7 @@
 #include "linux/err.h"
 #include "linux/fs.h"
 #include "linux/kprobes.h"
+#include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
@@ -11,8 +12,8 @@
 
 #include "allowlist.h"
 #include "arch.h"
-#include "selinux/selinux.h"
 #include "klog.h" // IWYU pragma: keep
+#include "selinux/selinux.h"
 
 static const char KERNEL_SU_RC[] =
 	"\n"
@@ -46,6 +47,18 @@ static struct work_struct stop_execve_hook_work;
 static bool vfs_read_hook = true;
 static bool execveat_hook = true;
 #endif
+
+void on_post_fs_data(void)
+{
+	static bool done = false;
+	if (done) {
+		pr_info("on_post_fs_data already done");
+		return;
+	}
+	done = true;
+	pr_info("ksu_load_allow_list");
+	ksu_load_allow_list();
+}
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     void *argv, void *envp, int *flags)
@@ -85,7 +98,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	    !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared!\n");
-		ksu_load_allow_list();
+		on_post_fs_data(); // we keep this for old ksud
 		stop_execve_hook();
 	}
 
