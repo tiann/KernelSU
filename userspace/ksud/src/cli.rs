@@ -58,6 +58,9 @@ enum Debug {
         apk: String,
     },
 
+    /// Root Shell
+    Su,
+
     /// Get kernel version
     Version,
 
@@ -129,6 +132,7 @@ pub fn run() -> Result<()> {
                 println!("Kernel Version: {}", crate::ksu::get_version());
                 Ok(())
             }
+            Debug::Su => crate::ksu::grant_root(),
             Debug::Test => todo!(),
         },
     };
