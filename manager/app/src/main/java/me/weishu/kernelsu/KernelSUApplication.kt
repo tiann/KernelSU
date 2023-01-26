@@ -3,7 +3,6 @@ package me.weishu.kernelsu
 import android.app.Application
 import coil.Coil
 import coil.ImageLoader
-import me.weishu.kernelsu.ui.util.install
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 
@@ -25,8 +24,6 @@ class KernelSUApplication : Application() {
                 }
                 .build()
         )
-
-        install()
     }
 
 

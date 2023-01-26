@@ -27,6 +27,7 @@ fun createRootShell(): Shell {
     return try {
         builder.build(getKsuDaemonPath(), "debug", "su")
     } catch (e: Throwable) {
+        Log.e(TAG, "su failed: ", e)
         builder.build("sh")
     }
 }
