@@ -140,4 +140,4 @@ index 376543199b5a..82adcef03ecc 100644
 3. vfs_read，通常位于 `fs/read_write.c`
 4. vfs_statx，通常位于 `fs/stat.c`
 
-改完之后，打开 `KernelSU/kernel/ksu.c`，注释 `enable_sucompat()`调用，然后重新编译内核即可。
+改完之后重新编译内核即可。

@@ -137,4 +137,4 @@ You should found the four functions in kernel source:
 3. vfs_read, usually in `fs/read_write.c`
 4. vfs_statx, usually in `fs/stat.c`
 
-Finally, edit `KernelSU/kernel/ksu.c` and comment out `enable_sucompat()` then build your kernel again, KernelSU should works well.
+Finally, build your kernel again, KernelSU should works well.
