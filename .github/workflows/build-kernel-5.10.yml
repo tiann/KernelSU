@@ -102,12 +102,6 @@ jobs:
         echo "[+] Add KernelSU symbols"
         cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
 
-    - name: Set boot sign key
-      if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
-      working-directory: android-kernel
-      run:
-        echo ${{ secrets.BOOT_SIGN_KEY }} >> prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
-
     - name: Build boot.img
       working-directory: android-kernel
       run: CCACHE="/usr/bin/ccache" BUILD_BOOT_IMG=1 SKIP_VENDOR_BOOT=1 KERNEL_BINARY=Image GKI_RAMDISK_PREBUILT_BINARY=out/ramdisk AVB_SIGN_BOOT_IMG=1 AVB_BOOT_PARTITION_SIZE=$((64*1024*1024)) AVB_BOOT_ALGORITHM=SHA256_RSA2048 AVB_BOOT_KEY=prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem BOOT_IMAGE_HEADER_VERSION=4 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
