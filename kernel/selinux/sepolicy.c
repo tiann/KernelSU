@@ -1,9 +1,11 @@
 #include "sepolicy.h"
 #include "linux/gfp.h"
+#include "linux/printk.h"
 #include "linux/slab.h"
 #include "linux/version.h"
 
 #include "../klog.h" // IWYU pragma: keep
+#include "ss/symtab.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 // TODO: backport to lower kernel
@@ -454,11 +456,112 @@ static bool add_type_rule(struct policydb *db, const char *s, const char *t,
 	return true;
 }
 
+#ifdef KSU_SUPPORT_ADD_TYPE
+static u32 filenametr_hash(const void *k)
+{
+	const struct filename_trans_key *ft = k;
+	unsigned long hash;
+	unsigned int byte_num;
+	unsigned char focus;
+
+	hash = ft->ttype ^ ft->tclass;
+
+	byte_num = 0;
+	while ((focus = ft->name[byte_num++]))
+		hash = partial_name_hash(focus, hash);
+	return hash;
+}
+
+static int filenametr_cmp(const void *k1, const void *k2)
+{
+	const struct filename_trans_key *ft1 = k1;
+	const struct filename_trans_key *ft2 = k2;
+	int v;
+
+	v = ft1->ttype - ft2->ttype;
+	if (v)
+		return v;
+
+	v = ft1->tclass - ft2->tclass;
+	if (v)
+		return v;
+
+	return strcmp(ft1->name, ft2->name);
+
+}
+
+static const struct hashtab_key_params filenametr_key_params = {
+	.hash = filenametr_hash,
+	.cmp = filenametr_cmp,
+};
+#endif
+
 static bool add_filename_trans(struct policydb *db, const char *s,
 			       const char *t, const char *c, const char *d,
 			       const char *o)
 {
+#ifdef KSU_SUPPORT_ADD_TYPE
+	struct type_datum *src, *tgt, *def;
+	struct class_datum *cls;
+
+	src = symtab_search(&db->p_types, s);
+	if (src == NULL) {
+		pr_warn("source type %s does not exist\n", s);
+		return false;
+	}
+	tgt = symtab_search(&db->p_types, t);
+	if (tgt == NULL) {
+		pr_warn("target type %s does not exist\n", t);
+		return false;
+	}
+	cls = symtab_search(&db->p_classes, c);
+	if (cls == NULL) {
+		pr_warn("class %s does not exist\n", c);
+		return false;
+	}
+	def = symtab_search(&db->p_types, d);
+	if (def == NULL) {
+		pr_warn("default type %s does not exist\n", d);
+		return false;
+	}
+
+	struct filename_trans_key key;
+	key.ttype = tgt->value;
+	key.tclass = cls->value;
+	key.name = (char *)o;
+
+	struct filename_trans_datum *last = NULL;
+	struct filename_trans_datum *trans =
+		policydb_filenametr_search(db, &key);
+	while (trans) {
+		if (ebitmap_get_bit(&trans->stypes, src->value - 1)) {
+			// Duplicate, overwrite existing data and return
+			trans->otype = def->value;
+			return true;
+		}
+		if (trans->otype == def->value)
+			break;
+		last = trans;
+		trans = trans->next;
+	}
+
+	if (trans == NULL) {
+		trans = (struct filename_trans_datum*) kcalloc(sizeof(*trans), 1, GFP_ATOMIC);
+		struct filename_trans_key *new_key =
+			(struct filename_trans_key*) kmalloc(sizeof(*new_key), GFP_ATOMIC);
+		*new_key = key;
+		new_key->name = kstrdup(key.name, GFP_ATOMIC);
+		trans->next = last;
+		trans->otype = def->value;
+		hashtab_insert(&db->filename_trans, new_key,
+			       trans, filenametr_key_params);
+	}
+
+	db->compat_filename_trans_count++;
+	return ebitmap_set_bit(&trans->stypes, src->value - 1, 1) == 0;
+#else
 	return false;
+#endif
 }
 
 static bool add_genfscon(struct policydb *db, const char *fs_name,
