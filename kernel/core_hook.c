@@ -102,7 +102,7 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 	if (strcmp(buf, "/system/packages.list")) {
 		return 0;
 	}
-	pr_info("renameat: %s -> %s\n, new path: %s", old_dentry->d_iname,
+	pr_info("renameat: %s -> %s, new path: %s", old_dentry->d_iname,
 		new_dentry->d_iname, buf);
 
 	update_uid();
