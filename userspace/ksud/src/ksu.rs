@@ -35,6 +35,11 @@ pub fn grant_root() -> Result<()> {
     Ok(())
 }
 
+#[cfg(not(target_os = "android"))]
+pub fn grant_root() -> Result<()> {
+    unimplemented!("grant_root is only available on android");
+}
+
 pub fn get_version() -> i32 {
     let mut result: i32 = 0;
     #[cfg(target_os = "android")]
