@@ -36,14 +36,13 @@ extern void ksu_enable_ksud();
 int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
-	pr_alert(
-		"*************************************************************\n"
-		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **\n"
-		"**                                                         **\n"
-		"**         You are running DEBUG version of KernelSU       **\n"
-		"**                                                         **\n"
-		"**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **\n"
-		"*************************************************************\n");
+	pr_alert("*************************************************************");
+	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+	pr_alert("**                                                         **");
+	pr_alert("**         You are running DEBUG version of KernelSU       **");
+	pr_alert("**                                                         **");
+	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+	pr_alert("*************************************************************");
 #endif
 
 	ksu_core_init();
