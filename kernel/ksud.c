@@ -12,8 +12,8 @@
 
 #include "allowlist.h"
 #include "arch.h"
-#include "selinux/selinux.h"
 #include "klog.h" // IWYU pragma: keep
+#include "selinux/selinux.h"
 
 static const char KERNEL_SU_RC[] =
 	"\n"
@@ -48,7 +48,8 @@ static bool vfs_read_hook = true;
 static bool execveat_hook = true;
 #endif
 
-void on_post_fs_data(void){
+void on_post_fs_data(void)
+{
 	static bool done = false;
 	if (done) {
 		pr_info("on_post_fs_data already done");

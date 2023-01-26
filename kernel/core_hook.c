@@ -16,12 +16,12 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "core_hook.h"
+#include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
-#include "klog.h" // IWYU pragma: keep
 
 static inline bool is_allow_su()
 {

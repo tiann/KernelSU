@@ -1,5 +1,5 @@
-#include "objsec.h"
 #include "selinux.h"
+#include "objsec.h"
 
 #include "../klog.h" // IWYU pragma: keep
 
