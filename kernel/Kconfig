@@ -1,10 +1,19 @@
 config KSU
 	bool "KernelSU module"
 	default y
-	depends on KPROBES
+	depends on KPROBES || KSU_NO_KPROBE
 	select OVERLAY_FS
 	help
 	This is the KSU privilege driver for android system.
+
+config KSU_NO_KPROBE
+	bool "don't use kprobe for KernelSU"
+	default n
+	help
+	  Say Y if you don't want to use the kprobe hooking
+	  method for KSU.
+
+	  When unsure, say N.
 
 config KSU_DEBUG
 	bool "KernelSU module debug mode"
