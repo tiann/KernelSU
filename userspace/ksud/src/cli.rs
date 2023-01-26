@@ -1,7 +1,7 @@
-use anyhow::{Result, Ok};
+use anyhow::{Ok, Result};
 use clap::Parser;
 
-use crate::{event, module, debug, apk_sign};
+use crate::{apk_sign, debug, event, module};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -118,21 +118,19 @@ pub fn run() -> Result<()> {
         Commands::Sepolicy => todo!(),
         Commands::Services => event::on_services(),
 
-        Commands::Debug { command } => {
-            match command {
-                Debug::SetManager { apk } => debug::set_manager(&apk),
-                Debug::GetSign { apk } => { 
-                    let sign = apk_sign::get_apk_signature(&apk)?;
-                    println!("size: {:#x}, hash: {:#x}", sign.0, sign.1);
-                    Ok(())
-                },
-                Debug::Version => {
-                    println!("Kernel Version: {}", crate::ksu::get_version());
-                    Ok(())
-                }
-                Debug::Test => todo!(),
+        Commands::Debug { command } => match command {
+            Debug::SetManager { apk } => debug::set_manager(&apk),
+            Debug::GetSign { apk } => {
+                let sign = apk_sign::get_apk_signature(&apk)?;
+                println!("size: {:#x}, hash: {:#x}", sign.0, sign.1);
+                Ok(())
             }
-        }
+            Debug::Version => {
+                println!("Kernel Version: {}", crate::ksu::get_version());
+                Ok(())
+            }
+            Debug::Test => todo!(),
+        },
     };
 
     if let Err(e) = &result {
