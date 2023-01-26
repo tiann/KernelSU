@@ -35,6 +35,11 @@ If you find that KPROBES is still not activated, you can try enabling `CONFIG_MO
 
 But if you encounter a boot loop when integrated KernelSU, it is maybe *kprobe is broken in your kernel*, you should fix the kprobe bug or use the second way.
 
+:::tip How to check if kprobe is broken？
+
+comment out `ksu_enable_sucompat()` and `ksu_enable_ksud()` in `KernelSU/kernel/ksu.c`, the the device boot normally, then kprobe may be broken.
+:::
+
 ## Manully modify the kernel source
 
 If kprobe can not work in your kernel (maybe a upstream bug or kernel below 4.8), then you can try this way:
