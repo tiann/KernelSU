@@ -52,6 +52,11 @@ jobs:
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
+      OUTPUT_IMAGE_GZ: ${{ matrix.version }}-Image.gz
+      OUTPUT_BOOT: ${{ matrix.version }}-boot.img.zip
+      OUTPUT_BOOT_GZ: ${{ matrix.version }}-boot-gz.img.zip
+      OUTPUT_BOOT_LZ4_LG: ${{ matrix.version }}-boot-lz4_lg.img.zip
+      OUTPUT_BOOT_LZ4_LEGACY: ${{ matrix.version }}-boot-lz4_legacy.img.zip
     steps:
     - uses: actions/checkout@v3
       with:
@@ -138,46 +143,66 @@ jobs:
         tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.out_dir }}/dist/Image.lz4 --ramdisk out/ramdisk --output ./out/${{ inputs.out_dir }}/dist/boot-lz4_legacy.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
         ./build/kernel/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.out_dir }}/dist/boot-lz4_legacy.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
+    - name: Prepare artifacts
+      id: prepareArtifacts
+      run: |
+        OUTDIR=android-kernel/out/${{ inputs.out_dir }}/dist
+        cp $OUTDIR/Image.gz $OUTPUT_IMAGE_GZ
+        zip $OUTPUT_BOOT -j -r $OUTDIR/boot.img
+        zip $OUTPUT_BOOT_GZ -j -r $OUTDIR/boot-gz.img
+        zip $OUTPUT_BOOT_LZ4_LG -j -r $OUTDIR/boot-lz4_lg.img
+        zip $OUTPUT_BOOT_LZ4_LEGACY -j -r $OUTDIR/boot-lz4_legacy.img
+
     - name: Upload Image.gz
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.version }}-Image.gz
-        path: android-kernel/out/${{ inputs.out_dir }}/dist/Image.gz
+        path: ${{ env.OUTPUT_IMAGE_GZ }}
 
     - name: Upload boot.img
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.version }}-boot.img
-        path: android-kernel/out/${{ inputs.out_dir }}/dist/boot.img
+        path: ${{ env.OUTPUT_BOOT }}
 
     - name: Upload boot-gz.img
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.version }}-boot-gz.img
-        path: android-kernel/out/${{ inputs.out_dir }}/dist/boot-gz.img
+        path: ${{ env.OUTPUT_BOOT_GZ }}
 
     - name: Upload boot-lz4_lg.img
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.version }}-boot-lz4_lg.img
-        path: android-kernel/out/${{ inputs.out_dir }}/dist/boot-lz4_lg.img
+        path: ${{ env.OUTPUT_BOOT_LZ4_LG }}
 
     - name: Upload boot-lz4_legacy.img
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.version }}-boot-lz4_legacy.img
-        path: android-kernel/out/${{ inputs.out_dir }}/dist/boot-lz4_legacy.img
+        path: ${{ env.OUTPUT_BOOT_LZ4_LEGACY }}
 
-    - name: Set output
+    - name: Setup mutex for uploading
+      uses: ben-z/gh-action-mutex@v1.0-alpha-7
+      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+
+    - name: Upload to telegram
+      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
       env:
-        BOOT_GZ: ${{ inputs.version }}-Image.gz
-        BOOT_IMG: ${{ inputs.version }}-boot.img
-        BOOT_GZ_IMG: ${{ inputs.version }}-boot-gz.img
-        BOOT_LZ4_LG_IMG: ${{ inputs.version }}-boot-lz4_lg.img
-        BOOT_LZ4_LEGACY_IMG: ${{ inputs.version }}-boot-lz4_legacy.img
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: kernel-aarch64-${{ matrix.version }}
       run: |
-        echo "BOOT_GZ=$BOOT_GZ" >> $GITHUB_OUTPUT
-        echo "BOOT_IMG=$BOOT_IMG" >> $GITHUB_OUTPUT
-        echo "BOOT_GZ_IMG=$BOOT_GZ_IMG" >> $GITHUB_OUTPUT
-        echo "BOOT_LZ4_LG_IMG=$BOOT_LZ4_LG_IMG" >> $GITHUB_OUTPUT
-        echo "BOOT_LZ4_LEGACY_IMG=$BOOT_LZ4_LEGACY_IMG" >> $GITHUB_OUTPUT
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          cd $GITHUB_WORKSPACE/KernelSU
+          export VERSION=$(git rev-list --count HEAD)
+          cd -
+          pip3 install python-telegram-bot
+          python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $OUTPUT_IMAGE_GZ $OUTPUT_BOOT $OUTPUT_BOOT_GZ $OUTPUT_BOOT_LZ4_LG $OUTPUT_BOOT_LZ4_LEGACY
+        fi
