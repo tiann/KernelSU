@@ -77,26 +77,6 @@ jobs:
           append-timestamp: false
           save: ${{ github.event_name != 'pull_request' }}
 
-      - name: Setup version related environment
-        run: |
-          case ${{ inputs.version }} in
-            android12-5.10)
-              export AVBTOOL=./build/build-tools/path/linux-x86/avbtool
-              ;;
-            android13-5.10);&
-            android12-5.15)
-              export AVBTOOL=./build/kernel/build-tools/path/linux-x86/avbtool
-              ;;
-            *)
-              export AVBTOOL=$(find ./build -name "avbtool")
-              echo "find result: $AVBTOOL"
-              ;;
-          esac
-          if [ ! -f $AVBTOOL ]; then
-            echo "Don't find AVBTOOL, please fixup this script"
-            exit
-          fi
-
       - name: Setup kernel source
         run: |
           cd $GITHUB_WORKSPACE
@@ -108,6 +88,24 @@ jobs:
           unzip gki-kernel.zip
           tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")
 
+      - name: Setup version related environment
+        run: |
+          case ${{ inputs.version }} in
+            android12-5.10)
+              export AVBTOOL=./build/build-tools/path/linux-x86/avbtool
+              ;;
+            android13-5.10 | android13-5.15 )
+              export AVBTOOL=./build/kernel/build-tools/path/linux-x86/avbtool
+              ;;
+            *)
+              export AVBTOOL=$(find ./build -name "avbtool")
+              echo "find result: $AVBTOOL"
+              ;;
+          esac
+          if [ ! -f $AVBTOOL ]; then
+            echo "Don't find AVBTOOL, please fixup this script"
+            crash_this_workflow
+          fi
       - name: Setup KernelSU
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
