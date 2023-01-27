@@ -1,7 +1,7 @@
 name: Build KSUD
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths: 
       - '.github/workflows/build-ksud.yml'
       - 'userspace/ksud/**'
