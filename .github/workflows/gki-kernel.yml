@@ -49,7 +49,7 @@ on:
       BOT_TOKEN:
         required: true
       MESSAGE_THREAD_ID:
-        required: true
+        required: false
 
 jobs:
   build:
