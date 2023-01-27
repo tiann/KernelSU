@@ -16,9 +16,9 @@ jobs:
       matrix:
         include:
           - version: 41
-            os_version_level: 2022-11
+            os_patch_level: 2022-11
           - version: 74
-            os_version_level: 2022-12
+            os_patch_level: 2022-12
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
