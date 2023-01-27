@@ -1,7 +1,7 @@
 name: Build Kernel android13-5.10
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths: 
       - '.github/workflows/build-kernel-android13-5.10.yml'
       - 'kernel/**'
