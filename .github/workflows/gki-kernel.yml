@@ -89,6 +89,7 @@ jobs:
           tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")
 
       - name: Setup version related environment
+        working-directory: android-kernel
         run: |
           case ${{ inputs.version }} in
             android12-5.10)
@@ -102,7 +103,8 @@ jobs:
               echo "find result: $AVBTOOL"
               ;;
           esac
-          if [ ! -f $AVBTOOL ]; then
+          echo "AVBTOOL: $AVBTOOL"
+          if [ ! -f "$AVBTOOL" ]; then
             echo "Don't find AVBTOOL, please fixup this script"
             crash_this_workflow
           fi
