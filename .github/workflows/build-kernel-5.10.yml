@@ -25,6 +25,8 @@ jobs:
           - version: 136
             os_patch_level: 2022-11
     uses: ./.github/workflows/gki-kernel.yml
+    secrets:
+        BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
     with:
       out_dir: android12-5.10
       version: android12-5.10-${{ matrix.version }}
@@ -32,5 +34,3 @@ jobs:
       os_version: 12.0.0
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: 5.10
-      secrets:
-        BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
