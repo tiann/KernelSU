@@ -1,9 +1,9 @@
-name: Build Kernel 5.10
+name: Build Kernel android12-5.10
 on:
   push:
     branches: [ "main" ]
     paths: 
-      - '.github/workflows/build-kernel-5.10.yml'
+      - '.github/workflows/build-kernel-android12-5.10.yml'
       - 'kernel/**'
   pull_request:
     branches: [ "main" ]

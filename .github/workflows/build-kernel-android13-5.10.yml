@@ -1,0 +1,133 @@
+name: Build Kernel android13-5.10
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - '.github/workflows/build-kernel-android13-5.10.yml'
+      - 'kernel/**'
+  pull_request:
+    branches: [ "main" ]
+    paths: 
+      - 'kernel/**'
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - version: "android13-5.10-107"
+            tag: "android13-5.10-2022-11"
+            os_version: 13.0.0
+            os_version_level: "2022-11"
+
+    name: Build aarch64-${{ matrix.version }}
+    runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_MAXSIZE: "2G"
+      CCACHE_HARDLINK: "true"
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: KernelSU
+        fetch-depth: 0
+    - uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ccache-aarch64-${{ matrix.version }}
+        append-timestamp: false
+        save: ${{ github.event_name != 'pull_request' }}
+
+    - name: Setup need_upload
+      id: need_upload
+      run: |
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          echo "UPLOAD=true" >> $GITHUB_OUTPUT
+        else
+          echo "UPLOAD=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Setup kernel source
+      run: |
+        cd $GITHUB_WORKSPACE
+        git clone https://gerrit.googlesource.com/git-repo
+        mkdir android-kernel && cd android-kernel
+        ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ matrix.tag }}
+        ../git-repo/repo sync -j$(nproc --all)
+        curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-${{ matrix.tag }}_r1.zip
+        unzip gki-kernel.zip
+        tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")
+    
+    - name: Setup KernelSU
+      env: 
+        PATCH_PATH: "5.10"
+      run: |
+        cd $GITHUB_WORKSPACE/android-kernel
+        echo "[+] KernelSU setup"
+        GKI_ROOT=$(pwd)
+        echo "[+] GKI_ROOT: $GKI_ROOT"
+        echo "[+] Copy kernel su driver to $GKI_ROOT/common/drivers"
+        ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
+        echo "[+] Add kernel su driver to Makefile"
+        DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
+        grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+        echo "[+] Apply KernelSU patches"
+        cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
+        cd -
+        echo "[+] KernelSU setup Done."
+    
+    - name: Symbol magic
+      run: |
+        echo "[+] Export all symbol from abi_gki_aarch64.xml"
+        COMMON_ROOT=$GITHUB_WORKSPACE/android-kernel/common
+        KSU_ROOT=$GITHUB_WORKSPACE/KernelSU
+        ABI_XML=$COMMON_ROOT/android/abi_gki_aarch64.xml
+        SYMBOL_LIST=$COMMON_ROOT/android/abi_gki_aarch64
+        # python3 $KSU_ROOT/scripts/abi_gki_all.py $ABI_XML > $SYMBOL_LIST
+        echo "[+] Add KernelSU symbols"
+        cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
+
+    - name: Set boot sign key
+      if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+      working-directory: android-kernel
+      env:
+        BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+      run: |
+        if [ ! -z "$BOOT_SIGN_KEY" ]; then
+          echo "$BOOT_SIGN_KEY" > prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+        fi
+
+    - name: Build boot.img
+      working-directory: android-kernel
+      run: CCACHE="/usr/bin/ccache" BUILD_BOOT_IMG=1 SKIP_VENDOR_BOOT=1 KERNEL_BINARY=Image AVB_SIGN_BOOT_IMG=1 AVB_BOOT_PARTITION_SIZE=$((64*1024*1024)) AVB_BOOT_ALGORITHM=SHA256_RSA2048 AVB_BOOT_KEY=prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem BOOT_IMAGE_HEADER_VERSION=4 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
+
+    - name: Upload boot.img
+      uses: actions/upload-artifact@v3
+      with:
+        name: kernel-aarch64-${{ matrix.version }}-boot.img
+        path: android-kernel/out/*/dist/boot.img
+    
+    - name: Setup mutex for uploading
+      uses: ben-z/gh-action-mutex@v1.0-alpha-7
+      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+    - name: Upload to telegram
+      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+      env:
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_URL: ${{ github.event.head_commit.url }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        TITLE: kernel-aarch64-${{ matrix.version }}
+      run: |
+        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+          cd $GITHUB_WORKSPACE/KernelSU
+          export VERSION=$(git rev-list --count HEAD)
+          cd -
+          OUTDIR=android-kernel/out/android13-5.15/dist
+          BOOT=${{ matrix.version }}-boot.img.zip
+          zip $BOOT -j -r $OUTDIR/boot.img 
+          pip3 install python-telegram-bot
+          python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $BOOT
+        fi
