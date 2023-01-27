@@ -28,8 +28,8 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
-      out_dir: android12-5.10
-      version: android12-5.10-${{ matrix.version }}
+      version: android12-5.10
+      version_name: android12-5.10-${{ matrix.version }}
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_version: 12.0.0
       os_patch_level: ${{ matrix.os_patch_level }}
