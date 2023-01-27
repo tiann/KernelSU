@@ -4,6 +4,7 @@ on:
     branches: [ "main", "ci" ]
     paths: 
       - '.github/workflows/build-ksud.yml'
+      - '.github/workflows/ksud.yml'
       - 'userspace/ksud/**'
   pull_request:
     branches: [ "main" ]
@@ -16,7 +17,6 @@ jobs:
         include:
           - target: aarch64-linux-android
           - target: x86_64-linux-android
-    name: Build ksud
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
