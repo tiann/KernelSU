@@ -1,7 +1,7 @@
 name: Build Kernel 5.10
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths: 
       - '.github/workflows/build-kernel-5.10.yml'
       - 'kernel/**'
