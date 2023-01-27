@@ -33,4 +33,4 @@ jobs:
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_version: 12.0.0
       os_patch_level: ${{ matrix.os_patch_level }}
-      patch_path: 5.10
+      patch_path: "5.10"
