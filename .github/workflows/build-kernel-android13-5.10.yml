@@ -103,8 +103,9 @@ jobs:
     - name: Build boot-lz4.img
       working-directory: android-kernel
       run: |
+        truncate --size=-4 ./out/android13-5.10/dist/Image.lz4
         tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android13-5.10/dist/Image.lz4 --ramdisk out/ramdisk --output ./out/android13-5.10/dist/boot-lz4.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
-        ./build/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/android13-5.10/dist/boot-lz4.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+        ./build/kernel/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/android13-5.10/dist/boot-lz4.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
     - name: Upload Image.gz
       uses: actions/upload-artifact@v3
