@@ -1,7 +1,7 @@
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use clap::Parser;
 
-use crate::{event, module};
+use crate::{apk_sign, debug, event, module};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -37,7 +37,34 @@ enum Commands {
     /// SELinux policy Patch tool
     Sepolicy,
 
-    /// For test
+    /// For developers
+    Debug {
+        #[command(subcommand)]
+        command: Debug,
+    },
+}
+#[derive(clap::Subcommand, Debug)]
+enum Debug {
+    /// Set the manager app, kernel CONFIG_KSU_DEBUG should be enabled.
+    SetManager {
+        /// manager package name
+        #[arg(default_value_t = String::from("me.weishu.kernelsu"))]
+        apk: String,
+    },
+
+    /// Get apk size and hash
+    GetSign {
+        /// apk path
+        apk: String,
+    },
+
+    /// Root Shell
+    Su,
+
+    /// Get kernel version
+    Version,
+
+    /// For testing
     Test,
 }
 
@@ -93,7 +120,21 @@ pub fn run() -> Result<()> {
         Commands::Install => event::install(),
         Commands::Sepolicy => todo!(),
         Commands::Services => event::on_services(),
-        Commands::Test => event::do_systemless_mount("/data/adb/ksu/modules"),
+
+        Commands::Debug { command } => match command {
+            Debug::SetManager { apk } => debug::set_manager(&apk),
+            Debug::GetSign { apk } => {
+                let sign = apk_sign::get_apk_signature(&apk)?;
+                println!("size: {:#x}, hash: {:#x}", sign.0, sign.1);
+                Ok(())
+            }
+            Debug::Version => {
+                println!("Kernel Version: {}", crate::ksu::get_version());
+                Ok(())
+            }
+            Debug::Su => crate::ksu::grant_root(),
+            Debug::Test => todo!(),
+        },
     };
 
     if let Err(e) = &result {

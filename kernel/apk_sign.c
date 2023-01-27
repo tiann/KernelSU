@@ -1,11 +1,11 @@
-#include <linux/moduleparam.h>
-#include <linux/fs.h>
+#include "linux/fs.h"
+#include "linux/moduleparam.h"
 
 #include "apk_sign.h"
-#include "klog.h"
+#include "klog.h" // IWYU pragma: keep
 
-static __always_inline int check_v2_signature(char *path, unsigned expected_size,
-				  unsigned expected_hash)
+static __always_inline int
+check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 {
 	unsigned char buffer[0x11] = { 0 };
 	u32 size4;
@@ -67,23 +67,23 @@ static __always_inline int check_v2_signature(char *path, unsigned expected_size
 		offset = 4;
 		pr_info("id: 0x%08x\n", id);
 		if ((id ^ 0xdeadbeefu) == 0xafa439f5u ||
-			(id ^ 0xdeadbeefu) == 0x2efed62f) {
+		    (id ^ 0xdeadbeefu) == 0x2efed62f) {
 			kernel_read(fp, &size4, 0x4,
-					&pos); // signer-sequence length
+				    &pos); // signer-sequence length
 			kernel_read(fp, &size4, 0x4, &pos); // signer length
 			kernel_read(fp, &size4, 0x4,
-					&pos); // signed data length
+				    &pos); // signed data length
 			offset += 0x4 * 3;
 
 			kernel_read(fp, &size4, 0x4,
-					&pos); // digests-sequence length
+				    &pos); // digests-sequence length
 			pos += size4;
 			offset += 0x4 + size4;
 
 			kernel_read(fp, &size4, 0x4,
-					&pos); // certificates length
+				    &pos); // certificates length
 			kernel_read(fp, &size4, 0x4,
-					&pos); // certificate length
+				    &pos); // certificate length
 			offset += 0x4 * 2;
 #if 0
 			int hash = 1;
@@ -104,7 +104,7 @@ static __always_inline int check_v2_signature(char *path, unsigned expected_size
 				}
 				offset += size4;
 				if ((((unsigned)hash) ^ 0x14131211u) ==
-					expected_hash) {
+				    expected_hash) {
 					sign = 0;
 					break;
 				}
@@ -127,8 +127,38 @@ clean:
 unsigned ksu_expected_size = EXPECTED_SIZE;
 unsigned ksu_expected_hash = EXPECTED_HASH;
 
-module_param(ksu_expected_size, uint, S_IRUSR | S_IWUSR);
-module_param(ksu_expected_hash, uint, S_IRUSR | S_IWUSR);
+#include "manager.h"
+
+static int set_expected_size(const char *val, const struct kernel_param *kp)
+{
+	int rv = param_set_uint(val, kp);
+	ksu_invalidate_manager_uid();
+	pr_info("ksu_expected_size set to %x", ksu_expected_size);
+	return rv;
+}
+
+static int set_expected_hash(const char *val, const struct kernel_param *kp)
+{
+	int rv = param_set_uint(val, kp);
+	ksu_invalidate_manager_uid();
+	pr_info("ksu_expected_hash set to %x", ksu_expected_hash);
+	return rv;
+}
+
+static struct kernel_param_ops expected_size_ops = {
+	.set = set_expected_size,
+	.get = param_get_uint,
+};
+
+static struct kernel_param_ops expected_hash_ops = {
+	.set = set_expected_hash,
+	.get = param_get_uint,
+};
+
+module_param_cb(ksu_expected_size, &expected_size_ops, &ksu_expected_size,
+		S_IRUSR | S_IWUSR);
+module_param_cb(ksu_expected_hash, &expected_hash_ops, &ksu_expected_hash,
+		S_IRUSR | S_IWUSR);
 
 int is_manager_apk(char *path)
 {
@@ -136,7 +166,6 @@ int is_manager_apk(char *path)
 }
 
 #else
-
 
 int is_manager_apk(char *path)
 {

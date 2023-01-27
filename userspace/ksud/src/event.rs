@@ -89,6 +89,7 @@ pub fn do_systemless_mount(module_dir: &str) -> Result<()> {
 }
 
 pub fn on_post_data_fs() -> Result<()> {
+    crate::ksu::report_post_fs_data();
     let module_update_img = defs::MODULE_UPDATE_IMG;
     let module_img = defs::MODULE_IMG;
     let module_dir = defs::MODULE_DIR;
@@ -151,6 +152,7 @@ pub fn on_services() -> Result<()> {
 }
 
 pub fn on_boot_completed() -> Result<()> {
+    crate::ksu::report_boot_complete();
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);
     if module_update_img.exists() {

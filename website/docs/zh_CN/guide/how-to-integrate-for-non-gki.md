@@ -9,7 +9,7 @@ KernelSU 可以被集成到非 GKI 内核中，现在它最低支持到内核 4.
 如果你已经做好了上述准备，那有两个方法来集成 KernelSU 到你的内核之中。
 
 1. 借助 `kprobe` 自动集成
-2. 手动
+2. 手动修改内核源码
 
 ## 使用 kprobe 集成
 
@@ -35,8 +35,10 @@ CONFIG_KPROBE_EVENTS=y
 
 如果你在集成 KernelSU 之后手机无法启动，那么很可能你的内核中 **kprobe 工作不正常**，你需要修复这个 bug 或者用第二种方法。
 
-> 如何验证是否是 kprobe 的问题？
-> 注释掉 `KernelSU/kernel/ksu.c` 中 `enable_sucompat()`，如果正常开机，那么就是 kprobe 的问题；或者你可以手动尝试使用 kprobe 功能，如果不正常，手机会直接重启。
+:::tip 如何验证是否是 kprobe 的问题？
+
+注释掉 `KernelSU/kernel/ksu.c` 中 `ksu_enable_sucompat()` 和 `ksu_enable_ksud()`，如果正常开机，那么就是 kprobe 的问题；或者你可以手动尝试使用 kprobe 功能，如果不正常，手机会直接重启。
+:::
 
 ## 手动修改内核源码
 
@@ -140,4 +142,4 @@ index 376543199b5a..82adcef03ecc 100644
 3. vfs_read，通常位于 `fs/read_write.c`
 4. vfs_statx，通常位于 `fs/stat.c`
 
-改完之后，打开 `KernelSU/kernel/ksu.c`，注释 `enable_sucompat()`调用，然后重新编译内核即可。
+改完之后重新编译内核即可。

@@ -1,20 +1,7 @@
-#include <linux/cpu.h>
-#include <linux/memory.h>
-#include <linux/uaccess.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/kprobes.h>
-#include <linux/printk.h>
-#include <linux/string.h>
-#include <linux/kernel.h>
-#include <linux/slab.h>
-
-#include <ss/sidtab.h>
-#include <ss/services.h>
-#include <objsec.h>
-
 #include "selinux.h"
-#include "../klog.h"
+#include "objsec.h"
+
+#include "../klog.h" // IWYU pragma: keep
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
 
@@ -57,11 +44,11 @@ void setup_selinux()
 	}
 
 	/* we didn't need this now, we have change selinux rules when boot!
-    if (!is_domain_permissive) {
-        if (set_domain_permissive() == 0) {
-            is_domain_permissive = true;
-        }
-    }*/
+if (!is_domain_permissive) {
+  if (set_domain_permissive() == 0) {
+      is_domain_permissive = true;
+  }
+}*/
 }
 
 void setenforce(bool enforce)

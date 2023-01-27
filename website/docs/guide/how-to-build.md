@@ -5,7 +5,9 @@ First, you should read the Android Official docs for kernel build:
 1. [Building Kernels](https://source.android.com/docs/setup/build/building-kernels)
 2. [GKI Release Builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
 
-> This page is for GKI devices, if you use an old kernel, please refer [how to integrate KernelSU for old kernel](how-to-integrate-for-non-gki)
+::: warning
+This page is for GKI devices, if you use an old kernel, please refer [how to integrate KernelSU for old kernel](how-to-integrate-for-non-gki)
+:::
 
 ## Build Kernel
 

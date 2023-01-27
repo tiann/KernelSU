@@ -23,11 +23,11 @@ private fun getKsuDaemonPath(): String {
 
 fun createRootShell(): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
-    val su = ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksu.so"
     val builder = Shell.Builder.create()
     return try {
-        builder.build(su)
+        builder.build(getKsuDaemonPath(), "debug", "su")
     } catch (e: Throwable) {
+        Log.e(TAG, "su failed: ", e)
         builder.build("sh")
     }
 }
@@ -102,4 +102,10 @@ fun reboot(reason: String = "") {
         ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
     }
     ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
+}
+
+fun overlayFsAvailable(): Boolean {
+    val shell = createRootShell()
+    // check /proc/filesystems
+    return ShellUtils.fastCmdResult(shell, "cat /proc/filesystems | grep overlay")
 }

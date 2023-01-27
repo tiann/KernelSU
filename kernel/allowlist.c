@@ -1,26 +1,11 @@
-#include <linux/list.h>
-#include <linux/cpu.h>
-#include <linux/errno.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/kprobes.h>
-#include <linux/memory.h>
-#include <linux/module.h>
-#include <linux/printk.h>
-#include <linux/slab.h>
-#include <linux/string.h>
-#include <linux/uaccess.h>
-#include <linux/uidgid.h>
+#include "linux/delay.h"
+#include "linux/fs.h"
+#include "linux/kernel.h"
+#include "linux/list.h"
+#include "linux/printk.h"
+#include "linux/slab.h"
 
-#include <linux/fdtable.h>
-#include <linux/fs.h>
-#include <linux/fs_struct.h>
-#include <linux/namei.h>
-#include <linux/rcupdate.h>
-
-#include <linux/delay.h> // msleep
-
-#include "klog.h"
+#include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
@@ -43,7 +28,18 @@ static struct work_struct ksu_load_work;
 
 bool persistent_allow_list(void);
 
-bool ksu_allow_uid(uid_t uid, bool allow)
+void ksu_show_allow_list(void)
+{
+	struct perm_data *p = NULL;
+	struct list_head *pos = NULL;
+	pr_info("ksu_show_allow_list");
+	list_for_each (pos, &allow_list) {
+		p = list_entry(pos, struct perm_data, list);
+		pr_info("uid :%d, allow: %d\n", p->uid, p->allow);
+	}
+}
+
+bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 {
 	// find the node first!
 	struct perm_data *p = NULL;
@@ -51,7 +47,6 @@ bool ksu_allow_uid(uid_t uid, bool allow)
 	bool result = false;
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
-		pr_info("ksu_allow_uid :%d, allow: %d\n", p->uid, p->allow);
 		if (uid == p->uid) {
 			p->allow = allow;
 			result = true;
@@ -72,8 +67,8 @@ bool ksu_allow_uid(uid_t uid, bool allow)
 	result = true;
 
 exit:
-
-	persistent_allow_list();
+	if (persist)
+		persistent_allow_list();
 
 	return result;
 }
@@ -186,7 +181,8 @@ void do_load_allow_list(struct work_struct *work)
 #ifdef CONFIG_KSU_DEBUG
 		int errno = PTR_ERR(fp);
 		if (errno == -ENOENT) {
-			ksu_allow_uid(2000, true); // allow adb shell by default
+			ksu_allow_uid(2000, true,
+				      true); // allow adb shell by default
 		} else {
 			pr_err("load_allow_list open file failed: %d\n",
 			       PTR_ERR(fp));
@@ -224,11 +220,11 @@ void do_load_allow_list(struct work_struct *work)
 
 		pr_info("load_allow_uid: %d, allow: %d\n", uid, allow);
 
-		ksu_allow_uid(uid, allow);
+		ksu_allow_uid(uid, allow, false);
 	}
 
 exit:
-
+	ksu_show_allow_list();
 	filp_close(fp, 0);
 }
 
@@ -256,39 +252,37 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 	}
 }
 
-static int init_work(void)
-{
-	INIT_WORK(&ksu_save_work, do_persistent_allow_list);
-	INIT_WORK(&ksu_load_work, do_load_allow_list);
-	return 0;
-}
-
 // make sure allow list works cross boot
 bool persistent_allow_list(void)
 {
-	ksu_queue_work(&ksu_save_work);
-	return true;
+	return ksu_queue_work(&ksu_save_work);
 }
 
 bool ksu_load_allow_list(void)
 {
-	ksu_queue_work(&ksu_load_work);
-	return true;
+	return ksu_queue_work(&ksu_load_work);
 }
 
-bool ksu_allowlist_init(void)
+void ksu_allowlist_init(void)
 {
 	INIT_LIST_HEAD(&allow_list);
 
-	init_work();
-
-	// start load allow list, we load it before app_process exec now, refer: sucompat#execve_handler_pre
-	// ksu_load_allow_list();
-
-	return true;
+	INIT_WORK(&ksu_save_work, do_persistent_allow_list);
+	INIT_WORK(&ksu_load_work, do_load_allow_list);
 }
 
-bool ksu_allowlist_exit(void)
+void ksu_allowlist_exit(void)
 {
-	return true;
+	struct perm_data *np = NULL;
+	struct perm_data *n = NULL;
+
+	do_persistent_allow_list(NULL);
+
+	// free allowlist
+	mutex_lock(&allowlist_mutex);
+	list_for_each_entry_safe (np, n, &allow_list, list) {
+		list_del(&np->list);
+		kfree(np);
+	}
+	mutex_unlock(&allowlist_mutex);
 }

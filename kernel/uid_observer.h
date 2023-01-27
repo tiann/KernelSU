@@ -5,4 +5,6 @@ int ksu_uid_observer_init();
 
 int ksu_uid_observer_exit();
 
+void update_uid();
+
 #endif

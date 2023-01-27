@@ -36,6 +36,7 @@ import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.getSELinuxStatus
+import me.weishu.kernelsu.ui.util.install
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
@@ -58,6 +59,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
         ) {
             val kernelVersion = getKernelVersion()
             val isManager = Natives.becomeManager(ksuApp.packageName)
+            SideEffect {
+                if (isManager) install()
+            }
             val ksuVersion = if (isManager) Natives.getVersion() else null
 
             StatusCard(kernelVersion, ksuVersion)
