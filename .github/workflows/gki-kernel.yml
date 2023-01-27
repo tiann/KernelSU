@@ -108,6 +108,7 @@ jobs:
             echo "Don't find AVBTOOL, please fixup this script"
             crash_this_workflow
           fi
+          echo "AVBTOOL=$AVBTOOL" >> $GITHUB_ENV
       - name: Setup KernelSU
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
@@ -156,20 +157,20 @@ jobs:
         run: |
           cat out/${{ inputs.version }}/dist/Image | ./prebuilts/build-tools/path/linux-x86/gzip -n -f -9 > out/${{ inputs.version }}/dist/Image.gz
           tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.version }}/dist/Image.gz --ramdisk out/ramdisk --output ./out/${{ inputs.version }}/dist/boot-gz.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
-          $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-gz.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+          ${{ env.AVBTOOL }} add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-gz.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
       - name: Build boot-lz4_lg.img
         working-directory: android-kernel
         run: |
           tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.version }}/dist/Image.lz4 --ramdisk out/ramdisk --output ./out/${{ inputs.version }}/dist/boot-lz4_lg.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
-          $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-lz4_lg.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+          ${{ env.AVBTOOL }} add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-lz4_lg.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
       - name: Build boot-lz4_legacy.img
         working-directory: android-kernel
         run: |
           truncate --size=-4 ./out/${{ inputs.version }}/dist/Image.lz4
           tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.version }}/dist/Image.lz4 --ramdisk out/ramdisk --output ./out/${{ inputs.version }}/dist/boot-lz4_legacy.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
-          $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-lz4_legacy.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+          ${{ env.AVBTOOL }} add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-lz4_legacy.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
       - name: Prepare artifacts
         id: prepareArtifacts
