@@ -95,7 +95,7 @@ jobs:
           if [ ! -f $AVBTOOL ]; then
             echo "Don't find AVBTOOL, please fixup this script"
             exit
-          elif
+          fi
 
       - name: Setup kernel source
         run: |
