@@ -4,6 +4,7 @@ on:
     branches: [ "main", "ci" ]
     paths: 
       - '.github/workflows/build-kernel-5.10.yml'
+      - '.github/workflows/gki-kernel.yml'
       - 'kernel/**'
   pull_request:
     branches: [ "main" ]
@@ -26,7 +27,6 @@ jobs:
             os_patch_level: 2022-11
     uses: ./.github/workflows/gki-kernel.yml
     secrets:
-        BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
     with:
       out_dir: android12-5.10
       version: android12-5.10-${{ matrix.version }}
