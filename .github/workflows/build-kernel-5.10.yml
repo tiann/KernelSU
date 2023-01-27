@@ -1,15 +1,15 @@
 name: Build Kernel 5.10
 on:
   push:
-    branches: [ "main", "ci" ]
-    paths: 
-      - '.github/workflows/build-kernel-5.10.yml'
-      - '.github/workflows/gki-kernel.yml'
-      - 'kernel/**'
+    branches: ["main", "ci"]
+    paths:
+      - ".github/workflows/build-kernel-5.10.yml"
+      - ".github/workflows/gki-kernel.yml"
+      - "kernel/**"
   pull_request:
-    branches: [ "main" ]
-    paths: 
-      - 'kernel/**'
+    branches: ["main"]
+    paths:
+      - "kernel/**"
 jobs:
   build:
     strategy:
@@ -26,7 +26,7 @@ jobs:
           - version: 136
             os_patch_level: 2022-11
     uses: ./.github/workflows/gki-kernel.yml
-    secrets:
+    secrets: inherit
     with:
       out_dir: android12-5.10
       version: android12-5.10-${{ matrix.version }}
