@@ -17,6 +17,6 @@ jobs:
           - target: aarch64-linux-android
           - target: x86_64-linux-android
     name: Build ksud
-    uses: ./.github/workflows/build/ksud.yml
+    uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
