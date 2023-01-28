@@ -5,7 +5,7 @@ on:
     paths:
       - ".github/workflows/build-kernel-a12.yml"
       - ".github/workflows/gki-kernel.yml"
-      - ".github/scripts/build-a12.sh"
+      - ".github/scripts/build_a12.sh"
       - "kernel/**"
       - "userspace/ksud/**"
   pull_request:
