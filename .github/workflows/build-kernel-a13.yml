@@ -80,7 +80,7 @@ jobs:
           if [ ! -z "$BOOT_SIGN_KEY" ]; then
             echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
           fi
-          
+
       - name: Setup mutex for uploading
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
@@ -96,7 +96,7 @@ jobs:
           export VERSION=$(git rev-list --count HEAD)
           echo "VERSION: $VERSION"
           cd -
-          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/buiild_a13.sh
+          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
 
   check-build-kernel:
     needs: build-ksud

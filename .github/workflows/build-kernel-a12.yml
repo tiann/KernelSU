@@ -89,7 +89,7 @@ jobs:
           export VERSION=$(git rev-list --count HEAD)
           echo "VERSION: $VERSION"
           cd -
-          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/buiild_a12.sh
+          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a12.sh
 
   check-build-kernel:
     needs: build-ksud
