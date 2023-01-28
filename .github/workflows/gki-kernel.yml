@@ -14,7 +14,7 @@ on:
         type: string
         description: >
           With SUBLEVEL of kernel,
-          for example: android12-5.10-66
+          for example: android12-5.10.66
       tag:
         required: true
         type: string
@@ -39,6 +39,9 @@ on:
         description: >
           Directory name of .github/patches/<patch_path>
           for example: 5.10
+      use_cache:
+        required: false
+        default: true
     secrets:
       BOOT_SIGN_KEY:
         required: true
@@ -52,7 +55,12 @@ on:
         required: false
 
 jobs:
-  build:
+  build-ksud:
+      uses: ./.github/workflows/ksud.yml
+      with:
+        target: aarch64-linux-android
+        use_cache: ${{ inputs.use_cache }}
+  build-kernel:
     name: Build aarch64-${{ inputs.version_name }}
     runs-on: ubuntu-latest
     env:
@@ -72,6 +80,7 @@ jobs:
           fetch-depth: 0
 
       - uses: hendrikmuhs/ccache-action@v1.2
+        if: inputs.use_cache == true
         with:
           key: ccache-aarch64-${{ inputs.version_name }}
           append-timestamp: false
@@ -85,7 +94,7 @@ jobs:
           else
             echo "UPLOAD=false" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Setup kernel source
         run: |
           cd $GITHUB_WORKSPACE
@@ -118,7 +127,13 @@ jobs:
             crash_this_workflow
           fi
           echo "AVBTOOL=$AVBTOOL" >> $GITHUB_ENV
-      
+
+      - name: Download arm64 ksud
+        uses: actions/download-artifact@v3
+        with:
+          name: ksud-aarch64-linux-android
+          path: .
+
       - name: Setup KernelSU
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
@@ -127,15 +142,17 @@ jobs:
           echo "[+] KernelSU setup"
           GKI_ROOT=$(pwd)
           echo "[+] GKI_ROOT: $GKI_ROOT"
-          echo "[+] Copy kernel su driver to $GKI_ROOT/common/drivers"
+          echo "[+] Copy KernelSU driver to $GKI_ROOT/common/drivers"
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
-          echo "[+] Add kernel su driver to Makefile"
+          echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
-          cd -
-          echo "[+] KernelSU setup Done."
+          cd $GITHUB_WORKSPACE
+          echo "[+] Build embed_ksud.c"
+          python3 ./KernelSU/scripts/bin2c.py ./aarch64-linux-android/release/ksud ksud > ./KernelSU/kernel/embed_ksud.c
+          echo "[+] KernelSU setup done."
 
       - name: Symbol magic
         run: |

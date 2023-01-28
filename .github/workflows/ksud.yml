@@ -5,12 +5,17 @@ on:
       target:
         required: true
         type: string
+      use_cache:
+        required: false
+        default: true
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up cargo cache
+      if: inputs.use_cache == true
       uses: actions/cache@v3
       continue-on-error: false
       with:
@@ -21,19 +26,23 @@ jobs:
           ~/.cargo/git/db/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: ${{ runner.os }}-cargo-
+
     - name: Set up ksud build cache
+      if: inputs.use_cache == true
       uses: actions/cache@v3
       continue-on-error: false
       with:
         path: ./userspace/ksud/target/
         key: ${{ runner.os }}-ksud-${{ hashFiles('**/Cargo.lock') }}-${{ inputs.target }}
         restore-keys: ${{ runner.os }}-ksud-
+
     - name: Build ksud
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
         command: build
         args: --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+
     - name: Upload ksud artifact
       uses: actions/upload-artifact@v3
       with:
