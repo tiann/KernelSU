@@ -49,6 +49,7 @@ function sidebarGuide() {
           { text: 'Installation', link: '/guide/installation' },
           { text: 'How to build?', link: '/guide/how-to-build' },
           { text: 'Intergrate for non-GKI devices', link: '/guide/how-to-integrate-for-non-gki'},
+          { text: 'Unofficially supported devices', link: '/guide/unofficially-support-devices.md' },
           { text: 'FAQ', link: '/guide/faq' },
         ]
     }
