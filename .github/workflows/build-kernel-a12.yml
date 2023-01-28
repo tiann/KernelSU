@@ -42,6 +42,7 @@ jobs:
       patch_path: "5.10"
   upload-artifacts:
     needs: build-kernel
+    runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
