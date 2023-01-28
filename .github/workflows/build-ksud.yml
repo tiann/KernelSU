@@ -46,5 +46,5 @@ jobs:
         git add ksud-x86_64-linux-android
         git commit -m "Update ksud <${{ github.run_id }}>" --quiet
         set +e # allow errors
-        git push --set-upstream origin ksud --quiet
+        git push --set-upstream origin $BRANCH --quiet
         set -e
