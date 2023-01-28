@@ -7,7 +7,7 @@ on:
         type: string
       use_cache:
         required: false
-        type: bool
+        type: boolean
         default: true
 jobs:
   build:
