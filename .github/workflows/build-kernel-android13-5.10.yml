@@ -100,13 +100,19 @@ jobs:
       working-directory: android-kernel
       run: CCACHE="/usr/bin/ccache" BUILD_BOOT_IMG=1 SKIP_VENDOR_BOOT=1 KERNEL_BINARY=Image GKI_RAMDISK_PREBUILT_BINARY=out/ramdisk AVB_SIGN_BOOT_IMG=1 AVB_BOOT_PARTITION_SIZE=$((64*1024*1024)) AVB_BOOT_ALGORITHM=SHA256_RSA2048 AVB_BOOT_KEY=prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem BOOT_IMAGE_HEADER_VERSION=4 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
     
-    - name: Build boot-lz4.img
+    - name: Build boot-kernel-lz4l_ramdisk-lz4l.img
       working-directory: android-kernel
       run: |
         cat ./out/android13-5.10/dist/Image | ./prebuilts/kernel-build-tools/linux-x86/bin/lz4 -l -12 --favor-decSpeed stdin stdout > ./out/android13-5.10/Image.lz4-legacy
+        tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android13-5.10/Image.lz4-legacy --ramdisk out/ramdisk --output ./out/android13-5.10/dist/boot_lz4-ramdisk_lz4.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
+        ./build/kernel/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/android13-5.10/dist/boot-lz4.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+
+    - name: Build boot-kernel-lz4l_ramdisk-gz.img
+      working-directory: android-kernel
+      run: |
         ./prebuilts/kernel-build-tools/linux-x86/bin/lz4 -df ./out/ramdisk ./out/ramdisk.raw
         gzip -k ./out/ramdisk.raw ./out/ramdisk.gz
-        tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android13-5.10/Image.lz4-legacy --ramdisk out/ramdisk.gz --output ./out/android13-5.10/dist/boot-lz4.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
+        tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android13-5.10/Image.lz4-legacy --ramdisk out/ramdisk.gz --output ./out/android13-5.10/dist/boot_lz4-ramdisk_gz.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
         ./build/kernel/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/android13-5.10/dist/boot-lz4.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
     - name: Upload Image.gz
@@ -121,11 +127,17 @@ jobs:
         name: kernel-aarch64-${{ matrix.version }}-boot.img
         path: android-kernel/out/android13-5.10/dist/boot.img
 
-    - name: Upload boot-lz4.img
+    - name: Upload boot_lz4-ramdisk_lz4.img
       uses: actions/upload-artifact@v3
       with:
-        name: kernel-aarch64-${{ matrix.version }}-boot-lz4.img
-        path: android-kernel/out/android13-5.10/dist/boot-lz4.img
+        name: kernel-aarch64-${{ matrix.version }}-boot_lz4-ramdisk_lz4.img
+        path: android-kernel/out/android13-5.10/dist/boot_lz4-ramdisk_lz4.img
+
+    - name: Upload boot_lz4-ramdisk_gz.img
+      uses: actions/upload-artifact@v3
+      with:
+        name: kernel-aarch64-${{ matrix.version }}-boot_lz4-ramdisk_gz.img
+        path: android-kernel/out/android13-5.10/dist/boot_lz4-ramdisk_gz.img
 
     - name: Upload boot-gz.img
       uses: actions/upload-artifact@v3
@@ -155,12 +167,14 @@ jobs:
           OUTDIR=android-kernel/out/android13-5.10/dist
           IMAGE_GZ=${{ matrix.version }}-Image.gz
           BOOT=${{ matrix.version }}-boot.img.zip
-          BOOT_LZ4=${{ matrix.version }}-boot-lz4.img.zip
+          BOOT_LZ4_RAMDISK_LZ4=${{ matrix.version }}-boot_lz4-ramdisk_lz4.img.zip
+          BOOT_LZ4_RAMDISK_GZ=${{ matrix.version }}-boot_lz4-ramdisk_gz.img.zip
           BOOT_GZ=${{ matrix.version }}-boot-gz.img.zip
           mv $OUTDIR/Image.gz $IMAGE_GZ
           zip $BOOT -j -r $OUTDIR/boot.img
-          zip $BOOT_LZ4 -j -r $OUTDIR/boot-lz4.img
+          zip $BOOT_LZ4_RAMDISK_LZ4 -j -r $OUTDIR/boot-lz4_ramdisk-lz4.img
+          zip $BOOT_LZ4_RAMDISK_GZ -j -r $OUTDIR/boot-lz4_ramdisk-gz.img
           zip $BOOT_GZ -j -r $OUTDIR/boot-gz.img
           pip3 install python-telegram-bot
-          python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $IMAGE_GZ $BOOT $BOOT_LZ4 $BOOT_GZ
+          python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $IMAGE_GZ $BOOT $BOOT_LZ4_RAMDISK_LZ4 $BOOT_LZ4_RAMDISK_GZ $BOOT_GZ
         fi
