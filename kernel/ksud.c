@@ -3,7 +3,9 @@
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/fs.h"
+#include "linux/kernel.h"
 #include "linux/kprobes.h"
+#include "linux/moduleparam.h"
 #include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
@@ -15,24 +17,26 @@
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 
-static const char KERNEL_SU_RC[] =
+static char LEGACY_KSUD_PATH[] = "/data/adb/ksud";
+static char KERNEL_SU_RC[1024];
+static char KERNEL_SU_RC_TEMPLATE[] =
 	"\n"
 
 	"on post-fs-data\n"
 	// We should wait for the post-fs-data finish
-	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
+	"    exec u:r:su:s0 root -- %s post-fs-data\n"
 	"\n"
 
 	"on nonencrypted\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- %s services\n"
 	"\n"
 
 	"on property:vold.decrypt=trigger_restart_framework\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- %s services\n"
 	"\n"
 
 	"on property:sys.boot_completed=1\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
+	"    exec u:r:su:s0 root -- %s boot-completed\n"
 	"\n"
 
 	"\n";
@@ -58,6 +62,70 @@ void on_post_fs_data(void)
 	done = true;
 	pr_info("ksu_load_allow_list");
 	ksu_load_allow_list();
+}
+
+static struct work_struct extract_ksud_work;
+extern unsigned int ksud_size;
+extern const char ksud[];
+
+static char ksu_random_path[64];
+
+
+// get random string
+static void get_random_string(char *buf, int len)
+{
+	static char *hex = "0123456789abcdef";
+	int i;
+	for (i = 0; i < len; i++) {
+		buf[i] = hex[get_random_int() % 16];
+	}
+}
+
+// static int call_usermod(const char *path, char **argv, char **envp, int wait)
+// {
+// 	struct subprocess_info *info;
+// 	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+// 	info = call_usermodehelper_setup(path, argv, envp, gfp_mask, NULL, NULL,
+// 					 NULL);
+// 	info->path = path;
+// 	if (info == NULL)
+// 		return -ENOMEM;
+// 	return call_usermodehelper_exec(info, wait);
+// }
+
+static void do_extract_ksud(struct work_struct *work)
+{
+	if (ksud_size > 0) {
+		pr_info("extract_ksud");
+		char buf[64];
+		get_random_string(buf, 32);
+		snprintf(ksu_random_path, sizeof(ksu_random_path),
+			 "/dev/ksud_%s", buf);
+		struct file *fp =
+			filp_open(ksu_random_path, O_CREAT | O_RDWR, 0700);
+		if (IS_ERR(fp)) {
+			pr_info("extract_ksud open failed, error: %d",
+				PTR_ERR(fp));
+			return;
+		}
+		pr_info("random ksud: %s", ksu_random_path);
+		snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, ksu_random_path,
+			 ksu_random_path, ksu_random_path, ksu_random_path);
+		pr_info("KERNEL_SU_RC:");
+		pr_info("%s", KERNEL_SU_RC);
+		kernel_write(fp, ksud, ksud_size, NULL);
+		filp_close(fp, NULL);
+	}
+}
+
+void extract_ksud()
+{
+#ifdef CONFIG_KPROBES
+	bool ret = schedule_work(&extract_ksud_work);
+	pr_info("extract_ksud kprobe: %d!\n", ret);
+#else
+	do_extract_ksud(NULL);
+#endif
 }
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
@@ -86,8 +154,13 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	if (!memcmp(filename->name, system_bin_init,
 		    sizeof(system_bin_init) - 1)) {
 		// /system/bin/init executed
-		if (++init_count == 2) {
+		init_count++;
+		if (init_count == 1) {
 			// 1: /system/bin/init selinux_setup
+			// we extract ksud here so that we don't need to modify selinux rules
+			extract_ksud();
+		}
+		if (init_count == 2) {
 			// 2: /system/bin/init second_stage
 			pr_info("/system/bin/init second_stage executed\n");
 			apply_kernelsu_rules();
@@ -260,6 +333,11 @@ static void stop_execve_hook()
 // ksud: module support
 void ksu_enable_ksud()
 {
+	// use legacy path for fallback
+	snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, LEGACY_KSUD_PATH,
+			 LEGACY_KSUD_PATH, LEGACY_KSUD_PATH, LEGACY_KSUD_PATH);
+	pr_info("KERNEL_SU_RC:");
+	pr_info("%s", KERNEL_SU_RC);
 #ifdef CONFIG_KPROBES
 	int ret;
 
@@ -271,5 +349,6 @@ void ksu_enable_ksud()
 
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
+	INIT_WORK(&extract_ksud_work, do_extract_ksud);
 #endif
 }
