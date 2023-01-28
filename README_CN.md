@@ -2,54 +2,32 @@
 
 # KernelSU
 
-一个基于内核，为安卓 GKI 准备的 root 方案。
+一个 Android 上基于内核的 root 方案。
 
-## 阅读之前
+## 特性
 
-现在 KernelSU 已经支持 5.10 以下的旧内核，但**永远不会**有旧内核的 CI，因为它们不是通用的。
-**任何关于如何编译旧内核的问题都不会得到任何答复并将被关闭。**
-
-KernelSU 还处于早期开发阶段，你不应该生产环境中使用它。KernelSU 的开发者将不对你的任何损失负责。
-
-如果你遇到任何问题，请打开 [issue](https://github.com/tiann/KernelSU/issues) 告诉我们！ (最好使用英语)
+- 基于内核的 su 和权限管理。
+- 基于 overlayfs 的模块系统。
 
 ## 兼容状态
 
-现在，KernelSU 可以在这些版本的内核上正常工作，不需要任何修改。
+KernelSU 官方支持 GKI 2.0 的设备（内核版本5.10以上）；旧内核也是兼容的（最低4.14+），不过需要自己编译内核。
 
-- `5.15`
-- `5.10`
-- `5.4`
-- `4.19`
-- `4.14`
+WSA 和运行在容器上的 Android 也可以与 KernelSU 一起工作。
 
-目前支持架构 : `arm64-v8a` & `x86_64`
-
-如果你确认 KernelSU 能在其他版本上工作，请打开一个 [issue](https://github.com/tiann/KernelSU/issues) 告诉我们！
+目前支持架构 : `arm64-v8a` 和 `x86_64`
 
 ## 使用方法
 
-1. 用 KernelSU 刷入一个自定义的内核，你可以自己构建它或者[从 CI 下载](https://github.com/tiann/KernelSU/actions)。
-2. 安装管理器应用, 然后享受吧 :)
-
-对于 5.10 以下的旧内核, 你必须自己构建。
+[安装教程](https://kernelsu.org/zh_CN/guide/installation.html)
 
 ## 构建
 
-### 构建GKI内核
-
-1. 首先下载 GKI 源代码，你可以参考[ GKI 构建说明](https://source.android.com/docs/setup/build/building-kernels)。
-2. cd `< GKI 内核源代码目录 >`。
-3. `curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -`。
-4. 构建内核。
-
-### 构建管理器应用
-
-Android Studio / Gradle
+[如何构建？](https://kernelsu.org/zh_CN/guide/how-to-build.html)
 
 ### 讨论
 
-[@KernelSU](https://t.me/KernelSU)
+- Telegram: [@KernelSU](https://t.me/KernelSU)
 
 ## 许可证
 
