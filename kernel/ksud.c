@@ -75,9 +75,11 @@ static char ksu_random_path[64];
 static void get_random_string(char *buf, int len)
 {
 	static char *hex = "0123456789abcdef";
+	static char byte;
 	int i;
 	for (i = 0; i < len; i++) {
-		buf[i] = hex[get_random_int() % 16];
+		get_random_bytes(&byte, 1);
+		buf[i] = hex[byte % 16];
 	}
 }
 
