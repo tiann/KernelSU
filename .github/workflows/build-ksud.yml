@@ -30,11 +30,11 @@ jobs:
     - name: Push to GitHub
       run: |
         mkdir ksud && cd ksud
-        git init
+        git init --quiet
         git config --local user.name "github-bot" --quiet
         git config --local user.email "github-bot@users.noreply.github.com" --quiet
         git remote remove origin 2>/dev/null || true
-        git remote add origin https://x-access-token:${{ github.token }}@github.com/$(github.repository) --quiet
+        git remote add origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} --quiet
         git switch --orphan ksud/temp-branch-$(date +%s) --quiet
         git branch -D ksud --quiet 2>/dev/null || true
         git fetch origin ksud --quiet 2>/dev/null || true
