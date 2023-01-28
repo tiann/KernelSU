@@ -78,7 +78,6 @@ jobs:
           pip3 install python-telegram-bot
 
       - name: Set boot sign key
-        working-directory: android-kernel
         env:
           BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
         run: |
