@@ -42,6 +42,14 @@ jobs:
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
+    env:
+      CHAT_ID: ${{ secrets.CHAT_ID }}
+      CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      COMMIT_URL: ${{ github.event.head_commit.url }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -54,25 +62,32 @@ jobs:
       - name: List artifacts
         run: |
           tree
-
-      - name: Upload to telegram
-        env:
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TITLE: kernel-${{ inputs.version_name }}
+      
+      - name: Download prebuilt toolchain
         run: |
-          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
-            cd $GITHUB_WORKSPACE/KernelSU
-            export VERSION=$(git rev-list --count HEAD)
-            cd -
-            pip3 install python-telegram-bot
-            find . -type f -name "Image-" | xargs python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py
-          fi
+          AOSP_MIRROR=https://android.googlesource.com
+          BRANCH=master-kernel-build-2022
+          git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
+          git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
+          git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
+      
+      - name: Setup mutex for uploading
+        uses: ben-z/gh-action-mutex@v1.0-alpha-7
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
+      
+      - name: Build boot images
+        run: |
+          AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
+          GZIP=$GITHUB_WORKSPACE/build-tools/path/linux-x86/gzip
+          LZ4=$GITHUB_WORKSPACE/build-tools/path/linux-x86/lz4
+          MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py
+          UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py
+          cd $GITHUB_WORKSPACE/KernelSU
+          export VERSION=$(git rev-list --count HEAD)
+          echo "VERSION: $VERSION"
+          cd -
+          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/buiild_a13.sh
+
   check-build-kernel:
     needs: build-ksud
     if: github.event_name == 'pull_request'
