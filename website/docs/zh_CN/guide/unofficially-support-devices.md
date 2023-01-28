@@ -10,4 +10,5 @@
 
 | 维护者 | 仓库地址 | 支持设备 |
 | --- | --- | --- |
-| [SpectreDev-007](https://github.com/SpectreDev-007) | https://github.com/XperiaBrickers/kernel_sony_sm8250 | 索尼 骁龙865 |
+| [SpectreDev-007](https://github.com/SpectreDev-007) | [kernel_sony_sm8250](https://github.com/XperiaBrickers/kernel_sony_sm8250) | 索尼 骁龙865 |
+| [akash07k](https://github.com/akash07k) | [nexus_kernel_xiaomi_sm8250](https://github.com/akash07k/nexus_kernel_xiaomi_sm8250/tree/lychee) | Poco F4: munch |
