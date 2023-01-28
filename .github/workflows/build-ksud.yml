@@ -29,16 +29,17 @@ jobs:
       uses: actions/download-artifact@v3
     - name: Push to GitHub
       run: |
+        BRANCH=gh-ksud
         mkdir ksud && cd ksud
         git init --quiet
         git config --local user.name "github-bot" --quiet
         git config --local user.email "github-bot@users.noreply.github.com" --quiet
         git remote remove origin 2>/dev/null || true
         git remote add origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
-        git switch --orphan ksud/temp-branch-$(date +%s) --quiet
-        git branch -D ksud --quiet 2>/dev/null || true
-        git fetch origin ksud --quiet 2>/dev/null || true
-        git checkout ksud --quiet || git switch --orphan ksud --quiet
+        git switch --orphan gh-ksud/temp-branch-$(date +%s) --quiet
+        git branch -D $BRANCH --quiet 2>/dev/null || true
+        git fetch origin $BRANCH --quiet 2>/dev/null || true
+        git checkout $BRANCH --quiet || git switch --orphan $BRANCH --quiet
         mv ../ksud-aarch64-linux-android/aarch64-linux-android/release/ksud ksud-aarch64-linux-android
         mv ../ksud-x86_64-linux-android/x86_64-linux-android/release/ksud ksud-x86_64-linux-android
         git add ksud-aarch64-linux-android
