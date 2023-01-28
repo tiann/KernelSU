@@ -1,5 +1,5 @@
 build_from_image(){
-	TITLE=kernel-aarch64-$(echo $1 | sed 's/Image-//g')
+	export TITLE=kernel-aarch64-$(echo $1 | sed 's/Image-//g')
 	echo "[+] title: $TITLE"
 	echo "[+] Download prebuilt ramdisk"
 	curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-2021-11_r1.zip

@@ -1,5 +1,5 @@
 build_from_image(){
-	TITLE=kernel-aarch64-$(echo $1 | sed 's/Image-//g')
+	export TITLE=kernel-aarch64-$(echo $1 | sed 's/Image-//g')
 	echo "[+] title: $TITLE"
 	echo "[+] Building Image.gz"
 	cat Image | $GZIP -n -f -9 > Image.gz
