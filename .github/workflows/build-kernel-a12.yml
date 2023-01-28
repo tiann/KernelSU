@@ -5,13 +5,17 @@ on:
     paths:
       - ".github/workflows/build-kernel-a12.yml"
       - ".github/workflows/gki-kernel.yml"
+      - ".github/scripts/build-a12.sh"
       - "kernel/**"
+      - "userspace/ksud/**"
   pull_request:
     branches: ["main"]
     paths:
       - ".github/workflows/build-kernel-a12.yml"
       - ".github/workflows/gki-kernel.yml"
+      - ".github/scripts/build-a12.sh"
       - "kernel/**"
+      - "userspace/ksud/**"
 jobs:
   build-ksud:
     uses: ./.github/workflows/ksud.yml
