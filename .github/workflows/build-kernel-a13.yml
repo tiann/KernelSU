@@ -41,8 +41,8 @@ jobs:
       patch_path: ${{ matrix.version }}
   upload-artifacts:
     needs: build-kernel
-    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
+    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
     env:
       CHAT_ID: ${{ secrets.CHAT_ID }}
       CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
