@@ -38,9 +38,16 @@ jobs:
       version: android13-${{ matrix.version }}
       version_name: android13-${{ matrix.version }}.${{ matrix.sub_level }}
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
-      os_version: 13.0.0
-      os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
+  upload-artifacts:
+    needs: build-kernel
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: List artifacts
+        run: |
+          tree
   check-build-kernel:
     needs: build-ksud
     if: github.event_name == 'pull_request'
@@ -58,6 +65,4 @@ jobs:
       version: android13-${{ matrix.version }}
       version_name: android13-${{ matrix.version }}.${{ matrix.sub_level }}
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
-      os_version: 13.0.0
-      os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
