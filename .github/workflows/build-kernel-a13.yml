@@ -71,6 +71,16 @@ jobs:
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
       
+      - name: Set boot sign key
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        working-directory: android-kernel
+        env:
+          BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+        run: |
+          if [ ! -z "$BOOT_SIGN_KEY" ]; then
+            echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+          fi
+          
       - name: Setup mutex for uploading
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
