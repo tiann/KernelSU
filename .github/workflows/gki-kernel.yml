@@ -1,0 +1,267 @@
+name: GKI Kernel Build
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: >
+          Output directory of gki,
+          for example: android12-5.10
+      version_name:
+        required: true
+        type: string
+        description: >
+          With SUBLEVEL of kernel,
+          for example: android12-5.10.66
+      tag:
+        required: true
+        type: string
+        description: >
+          Part of branch name of common kernel manifest,
+          for example: android12-5.10-2021-11
+      os_version:
+        required: true
+        type: string
+        description: >
+          Android version,
+          for example: 12.0.0
+      os_patch_level:
+        required: true
+        type: string
+        description: >
+          Part of branch name of common kernel manifest,
+          for example: 2021-11
+      patch_path:
+        required: true
+        type: string
+        description: >
+          Directory name of .github/patches/<patch_path>
+          for example: 5.10
+      use_cache:
+        required: false
+        type: boolean
+        default: true
+      embed_ksud:
+        required: false
+        type: string
+        default: ksud-aarch64-linux-android
+        description: >
+          Artifact name of prebuilt ksud to be embedded
+          for example: 5.10
+    secrets:
+      BOOT_SIGN_KEY:
+        required: false
+      CHAT_ID:
+        required: false
+      CACHE_CHAT_ID:
+        required: false
+      BOT_TOKEN:
+        required: false
+      MESSAGE_THREAD_ID:
+        required: false
+
+jobs:
+  build:
+    name: Build ${{ inputs.version_name }}
+    runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_MAXSIZE: "2G"
+      CCACHE_HARDLINK: "true"
+      OUTPUT_IMAGE_GZ: ${{ inputs.version_name }}-Image.gz
+      OUTPUT_BOOT: ${{ inputs.version_name }}-boot.img.zip
+      OUTPUT_BOOT_GZ: ${{ inputs.version_name }}-boot-gz.img.zip
+      OUTPUT_BOOT_LZ4_LG: ${{ inputs.version_name }}-boot-lz4_lg.img.zip
+      OUTPUT_BOOT_LZ4_LEGACY: ${{ inputs.version_name }}-boot-lz4_legacy.img.zip
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: KernelSU
+          fetch-depth: 0
+
+      - uses: hendrikmuhs/ccache-action@v1.2
+        if: inputs.use_cache == true
+        with:
+          key: ccache-aarch64-${{ inputs.version_name }}
+          append-timestamp: false
+          save: ${{ github.event_name != 'pull_request' }}
+
+      - name: Setup need_upload
+        id: need_upload
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "UPLOAD=true" >> $GITHUB_OUTPUT
+          else
+            echo "UPLOAD=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup kernel source
+        run: |
+          cd $GITHUB_WORKSPACE
+          git clone https://gerrit.googlesource.com/git-repo
+          mkdir android-kernel && cd android-kernel
+          ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
+          ../git-repo/repo sync -j$(nproc --all)
+          curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-${{ inputs.tag }}_r1.zip
+          unzip gki-kernel.zip
+          tools/mkbootimg/unpack_bootimg.py --boot_img=$(find . -maxdepth 1 -name "*.img")
+
+      - name: Setup version related environment
+        working-directory: android-kernel
+        run: |
+          case ${{ inputs.version }} in
+            android12-5.10)
+              export AVBTOOL=./build/build-tools/path/linux-x86/avbtool
+              ;;
+            android13-5.10 | android13-5.15 )
+              export AVBTOOL=./build/kernel/build-tools/path/linux-x86/avbtool
+              ;;
+            *)
+              export AVBTOOL=$(find ./build -name "avbtool")
+              echo "find result: $AVBTOOL"
+              ;;
+          esac
+          echo "AVBTOOL: $AVBTOOL"
+          if [ ! -f "$AVBTOOL" ]; then
+            echo "Don't find AVBTOOL, please fixup this script"
+            crash_this_workflow
+          fi
+          echo "AVBTOOL=$AVBTOOL" >> $GITHUB_ENV
+
+      - name: Download prebuilt ksud from artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.embed_ksud }}
+          path: .
+
+      - name: Setup KernelSU
+        env:
+          PATCH_PATH: ${{ inputs.patch_path }}
+        run: |
+          cd $GITHUB_WORKSPACE/android-kernel
+          echo "[+] KernelSU setup"
+          GKI_ROOT=$(pwd)
+          echo "[+] GKI_ROOT: $GKI_ROOT"
+          echo "[+] Copy KernelSU driver to $GKI_ROOT/common/drivers"
+          ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
+          echo "[+] Add KernelSU driver to Makefile"
+          DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
+          grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          echo "[+] Apply KernelSU patches"
+          cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
+          cd $GITHUB_WORKSPACE
+          echo "[+] Build embed_ksud.c"
+          python3 ./KernelSU/scripts/bin2c.py ./aarch64-linux-android/release/ksud ksud > ./KernelSU/kernel/embed_ksud.c
+          echo "[+] KernelSU setup done."
+
+      - name: Symbol magic
+        run: |
+          echo "[+] Export all symbol from abi_gki_aarch64.xml"
+          COMMON_ROOT=$GITHUB_WORKSPACE/android-kernel/common
+          KSU_ROOT=$GITHUB_WORKSPACE/KernelSU
+          ABI_XML=$COMMON_ROOT/android/abi_gki_aarch64.xml
+          SYMBOL_LIST=$COMMON_ROOT/android/abi_gki_aarch64
+          # python3 $KSU_ROOT/scripts/abi_gki_all.py $ABI_XML > $SYMBOL_LIST
+          echo "[+] Add KernelSU symbols"
+          cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
+
+      - name: Setup boot sign key
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        working-directory: android-kernel
+        env:
+          BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+        run: |
+          if [ ! -z "$BOOT_SIGN_KEY" ]; then
+            echo "$BOOT_SIGN_KEY" > prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+          fi
+
+      - name: Build boot.img
+        working-directory: android-kernel
+        run: CCACHE="/usr/bin/ccache" BUILD_BOOT_IMG=1 SKIP_VENDOR_BOOT=1 KERNEL_BINARY=Image GKI_RAMDISK_PREBUILT_BINARY=out/ramdisk AVB_SIGN_BOOT_IMG=1 AVB_BOOT_PARTITION_SIZE=$((64*1024*1024)) AVB_BOOT_ALGORITHM=SHA256_RSA2048 AVB_BOOT_KEY=prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem BOOT_IMAGE_HEADER_VERSION=4 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
+
+      - name: Build boot-gz.img
+        working-directory: android-kernel
+        run: |
+          cat out/${{ inputs.version }}/dist/Image | ./prebuilts/build-tools/path/linux-x86/gzip -n -f -9 > out/${{ inputs.version }}/dist/Image.gz
+          tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.version }}/dist/Image.gz --ramdisk out/ramdisk --output ./out/${{ inputs.version }}/dist/boot-gz.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
+          ${{ env.AVBTOOL }} add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-gz.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+
+      - name: Build boot-lz4_lg.img
+        working-directory: android-kernel
+        run: |
+          tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.version }}/dist/Image.lz4 --ramdisk out/ramdisk --output ./out/${{ inputs.version }}/dist/boot-lz4_lg.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
+          ${{ env.AVBTOOL }} add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-lz4_lg.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+
+      - name: Build boot-lz4_legacy.img
+        working-directory: android-kernel
+        run: |
+          cat ./out/${{ inputs.version }}/dist/Image | ./prebuilts/kernel-build-tools/linux-x86/bin/lz4 -l -12 --favor-decSpeed stdin stdout > ./out/${{ inputs.version }}/dist/Image.lz4-legacy
+          tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/${{ inputs.version }}/dist/Image.lz4-legacy --ramdisk out/ramdisk --output ./out/${{ inputs.version }}/dist/boot-lz4_legacy.img --os_version ${{ inputs.os_version }} --os_patch_level ${{ inputs.os_patch_level }}
+          ${{ env.AVBTOOL }} add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/${{ inputs.version }}/dist/boot-lz4_legacy.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+
+      - name: Prepare artifacts
+        id: prepareArtifacts
+        run: |
+          OUTDIR=android-kernel/out/${{ inputs.version }}/dist
+          cp $OUTDIR/Image.gz $OUTPUT_IMAGE_GZ
+          zip $OUTPUT_BOOT -j -r $OUTDIR/boot.img
+          zip $OUTPUT_BOOT_GZ -j -r $OUTDIR/boot-gz.img
+          zip $OUTPUT_BOOT_LZ4_LG -j -r $OUTDIR/boot-lz4_lg.img
+          zip $OUTPUT_BOOT_LZ4_LEGACY -j -r $OUTDIR/boot-lz4_legacy.img
+
+      - name: Upload Image.gz
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.version_name }}-Image.gz
+          path: ${{ env.OUTPUT_IMAGE_GZ }}
+
+      - name: Upload boot.img
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.version_name }}-boot.img
+          path: ${{ env.OUTPUT_BOOT }}
+
+      - name: Upload boot-gz.img
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.version_name }}-boot-gz.img
+          path: ${{ env.OUTPUT_BOOT_GZ }}
+
+      - name: Upload boot-lz4_lg.img
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.version_name }}-boot-lz4_lg.img
+          path: ${{ env.OUTPUT_BOOT_LZ4_LG }}
+
+      - name: Upload boot-lz4_legacy.img
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.version_name }}-boot-lz4_legacy.img
+          path: ${{ env.OUTPUT_BOOT_LZ4_LEGACY }}
+
+      - name: Setup mutex for uploading
+        uses: ben-z/gh-action-mutex@v1.0-alpha-7
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
+
+      - name: Upload to telegram
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TITLE: kernel-${{ inputs.version_name }}
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            cd $GITHUB_WORKSPACE/KernelSU
+            export VERSION=$(git rev-list --count HEAD)
+            cd -
+            pip3 install python-telegram-bot
+            python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py $OUTPUT_IMAGE_GZ $OUTPUT_BOOT $OUTPUT_BOOT_GZ $OUTPUT_BOOT_LZ4_LG $OUTPUT_BOOT_LZ4_LEGACY
+          fi

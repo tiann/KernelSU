@@ -8,6 +8,7 @@ obj-y += uid_observer.o
 obj-y += manager.o
 obj-y += core_hook.o
 obj-y += ksud.o
+obj-y += embed_ksud.o
 
 obj-y += selinux/
 
