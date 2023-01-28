@@ -9,9 +9,17 @@ on:
   pull_request:
     branches: ["main"]
     paths:
+      - ".github/workflows/build-kernel-a12.yml"
+      - ".github/workflows/gki-kernel.yml"
       - "kernel/**"
 jobs:
-  build:
+  build-ksud:
+    uses: ./.github/workflows/ksud.yml
+    with:
+      target: aarch64-linux-android
+      use_cache: ${{ inputs.use_cache }}
+  build-kernel:
+    if: github.event_name != 'pull_request'
     strategy:
       matrix:
         include:
@@ -33,4 +41,14 @@ jobs:
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_version: 12.0.0
       os_patch_level: ${{ matrix.os_patch_level }}
+      patch_path: "5.10"
+  check-build-kernel:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/gki-kernel.yml
+    with:
+      version: android12-5.10
+      version_name: android12-5.10.101
+      tag: android12-5.10-2022-05
+      os_version: 12.0.0
+      os_patch_level: 2022-05
       patch_path: "5.10"

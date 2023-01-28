@@ -43,26 +43,28 @@ on:
         required: false
         type: boolean
         default: true
+      embed_ksud:
+        required: false
+        type: string
+        default: ksud-aarch64-linux-android
+        description: >
+          Artifact name of prebuilt ksud to be embedded
+          for example: 5.10
     secrets:
       BOOT_SIGN_KEY:
-        required: true
+        required: false
       CHAT_ID:
-        required: true
+        required: false
       CACHE_CHAT_ID:
-        required: true
+        required: false
       BOT_TOKEN:
-        required: true
+        required: false
       MESSAGE_THREAD_ID:
         required: false
 
 jobs:
-  build-ksud:
-      uses: ./.github/workflows/ksud.yml
-      with:
-        target: aarch64-linux-android
-        use_cache: ${{ inputs.use_cache }}
-  build-kernel:
-    name: Build aarch64-${{ inputs.version_name }}
+  build:
+    name: Build ${{ inputs.version_name }}
     runs-on: ubuntu-latest
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
@@ -129,10 +131,10 @@ jobs:
           fi
           echo "AVBTOOL=$AVBTOOL" >> $GITHUB_ENV
 
-      - name: Download arm64 ksud
+      - name: Download prebuilt ksud from artifacts
         uses: actions/download-artifact@v3
         with:
-          name: ksud-aarch64-linux-android
+          name: ${{ inputs.embed_ksud }}
           path: .
 
       - name: Setup KernelSU
@@ -254,7 +256,7 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TITLE: kernel-aarch64-${{ inputs.version_name }}
+          TITLE: kernel-${{ inputs.version_name }}
         run: |
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             cd $GITHUB_WORKSPACE/KernelSU
