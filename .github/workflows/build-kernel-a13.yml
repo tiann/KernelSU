@@ -46,9 +46,33 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
       
+      - uses: actions/checkout@v3
+        with:
+          path: KernelSU
+          fetch-depth: 0
+
       - name: List artifacts
         run: |
           tree
+
+      - name: Upload to telegram
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TITLE: kernel-${{ inputs.version_name }}
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            cd $GITHUB_WORKSPACE/KernelSU
+            export VERSION=$(git rev-list --count HEAD)
+            cd -
+            pip3 install python-telegram-bot
+            find . -type f -name "Image-" | xargs python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py
+          fi
   check-build-kernel:
     needs: build-ksud
     if: github.event_name == 'pull_request'
