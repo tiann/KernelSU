@@ -104,7 +104,9 @@ jobs:
       working-directory: android-kernel
       run: |
         cat ./out/android13-5.10/dist/Image | ./prebuilts/kernel-build-tools/linux-x86/bin/lz4 -l -12 --favor-decSpeed stdin stdout > ./out/android13-5.10/Image.lz4-legacy
-        tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android13-5.10/Image.lz4-legacy --ramdisk out/ramdisk --output ./out/android13-5.10/dist/boot-lz4.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
+        ./prebuilts/kernel-build-tools/linux-x86/bin/lz4 -df ./out/ramdisk ./out/ramdisk.raw
+        gzip -k ./out/ramdisk.raw ./out/ramdisk.gz
+        tools/mkbootimg/mkbootimg.py --header_version 4 --kernel ./out/android13-5.10/Image.lz4-legacy --ramdisk out/ramdisk.gz --output ./out/android13-5.10/dist/boot-lz4.img --os_version ${{ matrix.os_version }} --os_patch_level ${{ matrix.os_patch_level }}
         ./build/kernel/build-tools/path/linux-x86/avbtool add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image out/android13-5.10/dist/boot-lz4.img --algorithm SHA256_RSA2048 --key ./prebuilts/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
 
     - name: Upload Image.gz
