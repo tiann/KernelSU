@@ -15,7 +15,7 @@ build_from_image(){
 	echo "[+] Building boot-lz4.img"
 	$MKBOOTIMG --header_version 4 --kernel Image.lz4 --output boot-lz4.img
 	$AVBTOOL add_hash_footer --partition_name boot --partition_size $((64*1024*1024)) --image boot-lz4.img --algorithm SHA256_RSA2048 --key ../kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
-    
+
     echo "[+] Compress images"
     for image in boot*.img; do
         $GZIP -n -f -9 $image
