@@ -41,6 +41,7 @@ on:
           for example: 5.10
       use_cache:
         required: false
+        type: bool
         default: true
     secrets:
       BOOT_SIGN_KEY:
