@@ -6,4 +6,4 @@
 
 | 维护者 | 仓库地址 | 支持设备 |
 | --- | --- | --- |
-| [SpectreDev-007](https://github.com/SpectreDev-007) | https://github.com/XperiaBrickers/kernel_sony_sm8250) | 索尼 骁龙865 |
+| [SpectreDev-007](https://github.com/SpectreDev-007) | https://github.com/XperiaBrickers/kernel_sony_sm8250 | 索尼 骁龙865 |
