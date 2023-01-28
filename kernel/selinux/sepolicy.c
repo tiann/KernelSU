@@ -487,7 +487,6 @@ static int filenametr_cmp(const void *k1, const void *k2)
 		return v;
 
 	return strcmp(ft1->name, ft2->name);
-
 }
 
 static const struct hashtab_key_params filenametr_key_params = {
@@ -546,15 +545,17 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 	}
 
 	if (trans == NULL) {
-		trans = (struct filename_trans_datum*) kcalloc(sizeof(*trans), 1, GFP_ATOMIC);
+		trans = (struct filename_trans_datum *)kcalloc(sizeof(*trans),
+							       1, GFP_ATOMIC);
 		struct filename_trans_key *new_key =
-			(struct filename_trans_key*) kmalloc(sizeof(*new_key), GFP_ATOMIC);
+			(struct filename_trans_key *)kmalloc(sizeof(*new_key),
+							     GFP_ATOMIC);
 		*new_key = key;
 		new_key->name = kstrdup(key.name, GFP_ATOMIC);
 		trans->next = last;
 		trans->otype = def->value;
-		hashtab_insert(&db->filename_trans, new_key,
-			       trans, filenametr_key_params);
+		hashtab_insert(&db->filename_trans, new_key, trans,
+			       filenametr_key_params);
 	}
 
 	db->compat_filename_trans_count++;

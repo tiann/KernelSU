@@ -3,7 +3,7 @@
 
 #include "embed_ksud.lock.h"
 
-// If you see `embed_ksud.lock.h` not found, please 
+// If you see `embed_ksud.lock.h` not found, please
 // embed ksud using bin2c.py and run
 // `touch embed_ksud.lock.h`
 

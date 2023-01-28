@@ -3,6 +3,7 @@
 #include "linux/err.h"
 #include "linux/fs.h"
 #include "linux/kprobes.h"
+#include "linux/namei.h"
 #include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
@@ -11,8 +12,8 @@
 
 #include "allowlist.h"
 #include "arch.h"
-#include "klog.h" // IWYU pragma: keep
 #include "embed_ksud.h"
+#include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 
 static char KERNEL_SU_RC[1024];
@@ -77,6 +78,29 @@ static void get_random_string(char *buf, int len)
 	}
 }
 
+#ifdef CONFIG_KSU_DEBUG
+#define LOOKUP_REVAL 0x0020
+static long kern_symlinkat(const char *oldname, int newdfd, const char *newname)
+{
+	int error;
+	struct dentry *dentry;
+	struct path path;
+	unsigned int lookup_flags = 0;
+retry:
+	dentry = kern_path_create(newdfd, newname, &path, lookup_flags);
+	error = PTR_ERR(dentry);
+	if (IS_ERR(dentry))
+		return error;
+	error = vfs_symlink(path.dentry->d_inode, dentry, oldname);
+	done_path_create(&path, dentry);
+	if (retry_estale(error, lookup_flags)) {
+		lookup_flags |= LOOKUP_REVAL;
+		goto retry;
+	}
+	return error;
+}
+#endif
+
 static void do_extract_ksud(struct work_struct *work)
 {
 	if (__ksud_size <= 0) {
@@ -86,22 +110,31 @@ static void do_extract_ksud(struct work_struct *work)
 	char buf[64];
 	get_random_string(buf, 32);
 	snprintf(ksu_random_path, sizeof(ksu_random_path), "/dev/ksud_%s", buf);
+#ifndef CONFIG_KSU_DEBUG
 	struct file *fp = filp_open(ksu_random_path, O_CREAT | O_RDWR, 0700);
 	if (IS_ERR(fp)) {
 		pr_info("extract_ksud open failed, error: %d", PTR_ERR(fp));
 		return;
 	}
-	pr_info("random ksud: %s", ksu_random_path);
-	snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, ksu_random_path,
-		 ksu_random_path, ksu_random_path, ksu_random_path);
-	pr_info("KERNEL_SU_RC:");
-	pr_info("%s", KERNEL_SU_RC);
 	ssize_t write_size = kernel_write(fp, __ksud, __ksud_size, NULL);
 	if (write_size != __ksud_size) {
 		pr_err("write ksud size error: %d (should be %d)", write_size,
 		       __ksud_size);
 	}
 	filp_close(fp, NULL);
+#else
+	int error = kern_symlinkat("/data/adb/ksud", AT_FDCWD, ksu_random_path);
+	if (IS_ERR(ERR_PTR(error))) {
+		pr_err("cannot symlink file %s error: %d", ksu_random_path,
+		       error);
+		return;
+	}
+#endif
+	pr_info("random ksud: %s", ksu_random_path);
+	snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, ksu_random_path,
+		 ksu_random_path, ksu_random_path, ksu_random_path);
+	pr_info("KERNEL_SU_RC:");
+	pr_info("%s", KERNEL_SU_RC);
 }
 
 void extract_ksud()
