@@ -113,6 +113,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           echo "[+] Build embed_ksud.c"
           python3 ./KernelSU/scripts/bin2c.py ./aarch64-linux-android/release/ksud ksud > ./KernelSU/kernel/embed_ksud.c
+          touch ./KernelSU/kernel/embed_ksud.lock.h
           echo "[+] KernelSU setup done."
 
       - name: Symbol magic

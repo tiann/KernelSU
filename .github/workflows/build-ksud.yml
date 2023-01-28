@@ -20,3 +20,31 @@ jobs:
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
+  push-to-github:
+    needs: build
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+        uses: actions/download-artifact@v3
+    - name: Push to GitHub
+      run: |
+        mkdir ksud && cd ksud
+        git init
+        git config --local user.name "github-bot" --quiet
+        git config --local user.email "github-bot@users.noreply.github.com" --quiet
+        git remote remove origin 2>/dev/null || true
+        git remote add origin https://x-access-token:${{ github.token }}@github.com/tiann/KernelSU
+        git switch --orphan ksud/temp-branch-$(date +%s) --quiet
+        git branch -D ksud --quiet 2>/dev/null || true
+        git fetch origin ksud --quiet 2>/dev/null || true
+        git checkout ksud --quiet || git switch --orphan ksud --quiet
+        mv ../ksud-aarch64-linux-android/aarch64-linux-android/release/ksud ksud-aarch64-linux-android
+        mv ../ksud-x86_64-linux-android/x86_64-linux-android/release/ksud ksud-x86_64-linux-android
+        git add ksud-aarch64-linux-android
+        git add ksud-x86_64-linux-android
+        git commit -m "Update ksud <${{ github.run_id }}>" --quiet
+        set +e # allow errors
+        git push --set-upstream origin ksud --quiet
+        __has_error=$((__has_error + $?))
+        set -e
