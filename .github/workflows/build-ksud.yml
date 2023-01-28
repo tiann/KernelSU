@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Download artifacts
-        uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v3
     - name: Push to GitHub
       run: |
         mkdir ksud && cd ksud
@@ -46,5 +46,4 @@ jobs:
         git commit -m "Update ksud <${{ github.run_id }}>" --quiet
         set +e # allow errors
         git push --set-upstream origin ksud --quiet
-        __has_error=$((__has_error + $?))
         set -e
