@@ -27,9 +27,9 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
-      version: android13-5.15
-      version_name: android13-5.15.${{ matrix.sub_level }}
-      tag: android13-5.15-${{ matrix.os_patch_level }}
+      version: ${{ matrix.version }}
+      version_name: ${{ matrix.version }}.${{ matrix.sub_level }}
+      tag: ${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_version: 13.0.0
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: 5.15
