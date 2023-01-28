@@ -59,7 +59,6 @@ jobs:
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
-      OUTPUT_IMAGE: Image-${{ inputs.version_name }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -135,13 +134,15 @@ jobs:
         id: prepareArtifacts
         run: |
           OUTDIR=android-kernel/out/${{ inputs.version }}/dist
-          cp $OUTDIR/Image $OUTPUT_IMAGE
+          mkdir output
+          cp $OUTDIR/Image ./output/
+          cp $OUTDIR/Image.lz4 ./output/
 
-      - name: Upload Image
+      - name: Upload Image and Image.gz
         uses: actions/upload-artifact@v3
         with:
           name: Image-${{ inputs.version_name }}
-          path: ${{ env.OUTPUT_IMAGE }}
+          path: ./output/*
 
       - name: Setup mutex for uploading
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
