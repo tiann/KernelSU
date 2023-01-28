@@ -63,6 +63,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
+          pip3 install python-telegram-bot
       
       - name: Set boot sign key
         if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
@@ -80,11 +81,11 @@ jobs:
 
       - name: Build boot images
         run: |
-          AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
-          GZIP=$GITHUB_WORKSPACE/build-tools/path/linux-x86/gzip
-          LZ4=$GITHUB_WORKSPACE/build-tools/path/linux-x86/lz4
-          MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py
-          UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py
+          export AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
+          export GZIP=$GITHUB_WORKSPACE/build-tools/path/linux-x86/gzip
+          export LZ4=$GITHUB_WORKSPACE/build-tools/path/linux-x86/lz4
+          export MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py
+          export UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py
           cd $GITHUB_WORKSPACE/KernelSU
           export VERSION=$(git rev-list --count HEAD)
           echo "VERSION: $VERSION"
