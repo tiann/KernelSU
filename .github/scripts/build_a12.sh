@@ -30,7 +30,10 @@ build_from_image(){
         $GZIP -n -f -9 $image
     done
 
-	python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py
+    echo "[+] Images to upload"
+    find . -type f -name "*.gz"
+
+	find . -type f -name "*.gz" | xargs python3 $GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py
 }
 
 for dir in Image*; do
