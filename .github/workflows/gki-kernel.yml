@@ -77,6 +77,15 @@ jobs:
           append-timestamp: false
           save: ${{ github.event_name != 'pull_request' }}
 
+      - name: Setup need_upload
+        id: need_upload
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "UPLOAD=true" >> $GITHUB_OUTPUT
+          else
+            echo "UPLOAD=false" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Setup kernel source
         run: |
           cd $GITHUB_WORKSPACE
@@ -109,6 +118,7 @@ jobs:
             crash_this_workflow
           fi
           echo "AVBTOOL=$AVBTOOL" >> $GITHUB_ENV
+      
       - name: Setup KernelSU
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
@@ -214,10 +224,10 @@ jobs:
 
       - name: Setup mutex for uploading
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
-        if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
 
       - name: Upload to telegram
-        if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.need_upload.outputs.UPLOAD == 'true'
         env:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
