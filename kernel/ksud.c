@@ -1,11 +1,8 @@
 #include "asm/current.h"
-#include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/fs.h"
-#include "linux/kernel.h"
 #include "linux/kprobes.h"
-#include "linux/moduleparam.h"
 #include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
@@ -15,9 +12,9 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
+#include "embed_ksud.h"
 #include "selinux/selinux.h"
 
-static char LEGACY_KSUD_PATH[] = "/data/adb/ksud";
 static char KERNEL_SU_RC[1024];
 static char KERNEL_SU_RC_TEMPLATE[] =
 	"\n"
@@ -65,11 +62,8 @@ void on_post_fs_data(void)
 }
 
 static struct work_struct extract_ksud_work;
-extern unsigned int ksud_size;
-extern const char ksud[];
 
 static char ksu_random_path[64];
-
 
 // get random string
 static void get_random_string(char *buf, int len)
@@ -83,41 +77,31 @@ static void get_random_string(char *buf, int len)
 	}
 }
 
-// static int call_usermod(const char *path, char **argv, char **envp, int wait)
-// {
-// 	struct subprocess_info *info;
-// 	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
-// 	info = call_usermodehelper_setup(path, argv, envp, gfp_mask, NULL, NULL,
-// 					 NULL);
-// 	info->path = path;
-// 	if (info == NULL)
-// 		return -ENOMEM;
-// 	return call_usermodehelper_exec(info, wait);
-// }
-
 static void do_extract_ksud(struct work_struct *work)
 {
-	if (ksud_size > 0) {
-		pr_info("extract_ksud");
-		char buf[64];
-		get_random_string(buf, 32);
-		snprintf(ksu_random_path, sizeof(ksu_random_path),
-			 "/dev/ksud_%s", buf);
-		struct file *fp =
-			filp_open(ksu_random_path, O_CREAT | O_RDWR, 0700);
-		if (IS_ERR(fp)) {
-			pr_info("extract_ksud open failed, error: %d",
-				PTR_ERR(fp));
-			return;
-		}
-		pr_info("random ksud: %s", ksu_random_path);
-		snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, ksu_random_path,
-			 ksu_random_path, ksu_random_path, ksu_random_path);
-		pr_info("KERNEL_SU_RC:");
-		pr_info("%s", KERNEL_SU_RC);
-		kernel_write(fp, ksud, ksud_size, NULL);
-		filp_close(fp, NULL);
+	if (__ksud_size <= 0) {
+		return;
 	}
+	pr_info("extract_ksud");
+	char buf[64];
+	get_random_string(buf, 32);
+	snprintf(ksu_random_path, sizeof(ksu_random_path), "/dev/ksud_%s", buf);
+	struct file *fp = filp_open(ksu_random_path, O_CREAT | O_RDWR, 0700);
+	if (IS_ERR(fp)) {
+		pr_info("extract_ksud open failed, error: %d", PTR_ERR(fp));
+		return;
+	}
+	pr_info("random ksud: %s", ksu_random_path);
+	snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, ksu_random_path,
+		 ksu_random_path, ksu_random_path, ksu_random_path);
+	pr_info("KERNEL_SU_RC:");
+	pr_info("%s", KERNEL_SU_RC);
+	ssize_t write_size = kernel_write(fp, __ksud, __ksud_size, NULL);
+	if (write_size != __ksud_size) {
+		pr_err("write ksud size error: %d (should be %d)", write_size,
+		       __ksud_size);
+	}
+	filp_close(fp, NULL);
 }
 
 void extract_ksud()
@@ -335,11 +319,6 @@ static void stop_execve_hook()
 // ksud: module support
 void ksu_enable_ksud()
 {
-	// use legacy path for fallback
-	snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, LEGACY_KSUD_PATH,
-			 LEGACY_KSUD_PATH, LEGACY_KSUD_PATH, LEGACY_KSUD_PATH);
-	pr_info("KERNEL_SU_RC:");
-	pr_info("%s", KERNEL_SU_RC);
 #ifdef CONFIG_KPROBES
 	int ret;
 
