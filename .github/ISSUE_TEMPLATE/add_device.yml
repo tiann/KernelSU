@@ -8,19 +8,11 @@ body:
       value: |
         Thanks for supporting KernelSU !
   - type: input
-    id: username
+    id: repo-url
     attributes:
-      label: Username
-      description: Your github username
-      placeholder: tiann
-    validations:
-      required: true
-  - type: input
-    id: repository
-    attributes:
-      label: Repository
-      description: Your repository name
-      placeholder: KernelSU
+      label: Repository URL
+      description: Your repository URL
+      placeholder: https://github.com/tiann/KernelSU
     validations:
       required: true
   - type: input
