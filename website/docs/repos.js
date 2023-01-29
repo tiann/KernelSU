@@ -44,6 +44,13 @@ const repos = [
         kernel_link: 'https://github.com/169163-Network/kernel_xiaomi_cepheus',
         devices: 'cepheus for pixel experience' 
     },
+    { 
+        maintainer: 'SakuraNotStupid', 
+        maintainer_link: 'https://github.com/SakuraNotStupid', 
+        kernel_name: 'android_kernel_xiaomi_sdm710', 
+        kernel_link: 'https://github.com/SakuraNotStupid/android_kernel_xiaomi_sdm710',
+        devices: 'MI8SE(sirius) for LineageOS' 
+    },
 ];
 
 export default repos;
