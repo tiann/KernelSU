@@ -23,6 +23,11 @@ encoding = "0.2.33"
 retry = "2.0.0"
 humansize = "2.0.0"
 libc = "0.2"
+sys-mount = "2.0.1"
+android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
+extattr = "1.0.0"
+jwalk = "0.8.1"
+is_executable = "1.0.1"
 
 [profile.release]
 strip = true

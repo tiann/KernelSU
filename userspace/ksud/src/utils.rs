@@ -1,18 +1,14 @@
-use std::{
-    path::Path,
-    process::{Command, Stdio},
-};
+use std::path::Path;
 
-use anyhow::{ensure, Result};
+use anyhow::{ensure, Context, Result};
 use retry::delay::NoDelay;
-use subprocess::Exec;
+use sys_mount::{unmount, FilesystemType, Mount, UnmountFlags};
 
 fn do_mount_image(src: &str, target: &str) -> Result<()> {
-    let result = Exec::shell(format!("mount -t ext4 {} {}", src, target))
-        .stdout(subprocess::NullFile)
-        .stderr(subprocess::Redirection::Merge)
-        .join()?;
-    ensure!(result.success(), "do mount: {} -> {} failed.", src, target);
+    Mount::builder()
+        .fstype(FilesystemType::from("ext4"))
+        .mount(src, target)
+        .with_context(|| format!("Failed to do mount: {src} -> {target}"))?;
     Ok(())
 }
 
@@ -20,16 +16,12 @@ pub fn mount_image(src: &str, target: &str) -> Result<()> {
     // umount target first.
     let _ = umount_dir(target);
     let result = retry::retry(NoDelay.take(3), || do_mount_image(src, target));
-    ensure!(result.is_ok(), "mount: {} -> {} failed.", src, target);
+    ensure!(result.is_ok(), "Failed to mount {} -> {}", src, target);
     Ok(())
 }
 
 pub fn umount_dir(src: &str) -> Result<()> {
-    let result = Exec::shell(format!("umount {}", src))
-        .stdout(subprocess::NullFile)
-        .stderr(subprocess::Redirection::Merge)
-        .join()?;
-    ensure!(result.success(), "umount: {} failed", src);
+    unmount(src, UnmountFlags::empty()).with_context(|| format!("Failed to umount {src}"))?;
     Ok(())
 }
 
@@ -41,17 +33,17 @@ pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     Ok(std::fs::create_dir_all(path)?)
 }
 
-pub fn getprop(prop: &str) -> Result<String> {
-    let output = Command::new("getprop")
-        .arg(prop)
-        .stdout(Stdio::piped())
-        .output()?;
-    let output = String::from_utf8_lossy(&output.stdout);
-    Ok(output.trim().to_string())
+pub fn getprop(prop: &str) -> Option<String> {
+    android_properties::getprop(prop).value()
 }
 
-pub fn is_safe_mode() -> Result<bool> {
-    Ok(getprop("persist.sys.safemode")?.eq("1") || getprop("ro.sys.safemode")?.eq("1"))
+pub fn is_safe_mode() -> bool {
+    getprop("persist.sys.safemode")
+        .filter(|prop| prop == "1")
+        .is_some()
+        || getprop("ro.sys.safemode")
+            .filter(|prop| prop == "1")
+            .is_some()
 }
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {

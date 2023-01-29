@@ -1,20 +1,19 @@
+use crate::{defs, restorecon};
+use crate::{restorecon::setsyscon, utils::*};
+
 use const_format::concatcp;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 use std::{
     collections::HashMap,
     fs::{create_dir_all, remove_dir_all, File, OpenOptions},
-    io::{Cursor, Write},
+    io::{Cursor, Read, Write},
     os::unix::{prelude::PermissionsExt, process::CommandExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     str::FromStr,
 };
-use subprocess::Exec;
-use zip_extensions::*;
-
-use crate::{defs, restorecon};
-use crate::{restorecon::setsyscon, utils::*};
+use zip_extensions::zip_extract_file_to_memory;
 
 use anyhow::{bail, ensure, Context, Result};
 
@@ -24,15 +23,15 @@ const INSTALL_MODULE_SCRIPT: &str =
 
 fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
-        .with_context(|| format!("realpath: {} failed", module_file))?;
+        .with_context(|| format!("realpath: {module_file} failed"))?;
 
-    let result = Command::new("/system/bin/sh")
+    let result = Command::new("sh")
         .args(["-c", INSTALL_MODULE_SCRIPT])
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
         .stderr(Stdio::null())
         .status()?;
-    ensure!(result.success(), "install module script failed!");
+    ensure!(result.success(), "Failed to install module script");
     Ok(())
 }
 
@@ -41,13 +40,8 @@ fn exec_install_script(module_file: &str) -> Result<()> {
 // if someone(such as the module) install a module before the boot_completed
 // then it may cause some problems, just forbid it
 fn ensure_boot_completed() -> Result<()> {
-    // ensure getprop sys.boot_completed = 1
-    let output = Command::new("getprop")
-        .arg("sys.boot_completed")
-        .stdout(Stdio::piped())
-        .output()?;
-    let output = String::from_utf8_lossy(&output.stdout);
-    if output.trim() != "1" {
+    // ensure getprop sys.boot_completed == 1
+    if getprop("sys.boot_completed").as_deref() != Some("1") {
         bail!("Android is Booting!");
     }
     Ok(())
@@ -103,7 +97,7 @@ fn check_image(img: &str) -> Result<()> {
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
-        .with_context(|| format!("Failed exec e2fsck {}", img))?;
+        .with_context(|| format!("Failed to exec e2fsck {img}"))?;
     let code = result.code();
     // 0 or 1 is ok
     // 0: no error
@@ -111,7 +105,7 @@ fn check_image(img: &str) -> Result<()> {
     // https://man7.org/linux/man-pages/man8/e2fsck.8.html
     ensure!(
         code == Some(0) || code == Some(1),
-        "check image e2fsck exec failed: {}",
+        "Failed to check image, e2fsck exit code: {}",
         code.unwrap_or(-1)
     );
     Ok(())
@@ -130,12 +124,12 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     );
     let target_size = target_size / 1024 + 1;
 
-    let result = Exec::shell(format!("resize2fs {} {}K", img, target_size))
-        .stdout(subprocess::NullFile)
-        .stderr(subprocess::Redirection::Merge)
-        .join()
-        .with_context(|| format!("Failed to resize2fs {}", img))?;
-    ensure!(result.success(), "resize2fs exec failed.");
+    let result = Command::new("resize2fs")
+        .args([img, &format!("{target_size}K")])
+        .stdout(Stdio::null())
+        .status()
+        .with_context(|| format!("Failed to exec resize2fs {img}"))?;
+    ensure!(result.success(), "Failed to resize2fs: {}", result);
 
     Ok(())
 }
@@ -148,20 +142,33 @@ fn switch_cgroup(grp: &str, pid: u32) {
 
     let fp = OpenOptions::new().append(true).open(path);
     if let Ok(mut fp) = fp {
-        let _ = writeln!(fp, "{}", pid);
+        let _ = writeln!(fp, "{pid}");
     }
 }
 
-fn switch_cgroups() -> Result<()> {
+fn switch_cgroups() {
     let pid = std::process::id();
     switch_cgroup("/acct", pid);
     switch_cgroup("/dev/cg2_bpf", pid);
     switch_cgroup("/sys/fs/cgroup", pid);
-    if getprop("ro.config.per_app_memcg")? != "false" {
+
+    if getprop("ro.config.per_app_memcg")
+        .filter(|prop| prop == "false")
+        .is_none()
+    {
         switch_cgroup("/dev/memcg/apps", pid);
     }
+}
 
-    Ok(())
+fn is_executable(path: &Path) -> bool {
+    let mut buffer: [u8; 2] = [0; 2];
+    is_executable::is_executable(path)
+        && File::open(path).unwrap().read_exact(&mut buffer).is_ok()
+        && (
+            buffer == [0x23, 0x21] // shebang #!
+            || buffer == [0x7f, 0x45]
+            // ELF magic number 0x7F 'E'
+        )
 }
 
 /// execute every modules' post-fs-data.sh
@@ -182,21 +189,30 @@ pub fn exec_post_fs_data() -> Result<()> {
         }
         println!("exec {} post-fs-data.sh", path.display());
 
-        // pre_exec is unsafe!
+        let mut command_new;
+        let mut command;
+        if is_executable(&post_fs_data) {
+            command_new = Command::new("sh");
+            command = command_new.arg(&post_fs_data);
+        } else {
+            command_new = Command::new(&post_fs_data);
+            command = &mut command_new;
+        };
+
+        command = command
+            .process_group(0)
+            .current_dir(path)
+            .env("KSU", "true");
         unsafe {
-            Command::new("/system/bin/sh")
-                .arg(&post_fs_data)
-                .process_group(0)
-                .pre_exec(|| {
-                    // ignore the error?
-                    let _ = switch_cgroups();
-                    Ok(())
-                })
-                .current_dir(path)
-                .env("KSU", "true")
-                .status()
-                .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
+            command = command.pre_exec(|| {
+                // ignore the error?
+                switch_cgroups();
+                Ok(())
+            });
         }
+        command
+            .status()
+            .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
     }
 
     Ok(())
@@ -220,21 +236,29 @@ pub fn exec_services() -> Result<()> {
         }
         println!("exec {} service.sh", path.display());
 
-        // pre_exec is unsafe!
+        let mut command_new;
+        let mut command;
+        if is_executable(&service) {
+            command_new = Command::new("sh");
+            command = command_new.arg(&service);
+        } else {
+            command_new = Command::new(&service);
+            command = &mut command_new;
+        };
+        command = command
+            .process_group(0)
+            .current_dir(path)
+            .env("KSU", "true");
         unsafe {
-            Command::new("/system/bin/sh")
-                .arg(&service)
-                .process_group(0)
-                .pre_exec(|| {
-                    // ignore the error?
-                    let _ = switch_cgroups();
-                    Ok(())
-                })
-                .current_dir(path)
-                .env("KSU", "true")
-                .spawn() // don't wait
-                .with_context(|| format!("Failed to exec {}", service.display()))?;
+            command = command.pre_exec(|| {
+                // ignore the error?
+                switch_cgroups();
+                Ok(())
+            });
         }
+        command
+            .spawn() // don't wait
+            .with_context(|| format!("Failed to exec {}", service.display()))?;
     }
 
     Ok(())
@@ -271,7 +295,7 @@ pub fn load_system_prop() -> Result<()> {
         }
         println!("load {} system.prop", path.display());
 
-        // resetprop --file system.prop
+        // resetprop -n --file system.prop
         Command::new(RESETPROP_PATH)
             .arg("-n")
             .arg("--file")
@@ -335,7 +359,6 @@ pub fn install_module(zip: String) -> Result<()> {
     let default_reserve_size = 64 * 1024 * 1024;
     let zip_uncompressed_size = get_zip_uncompressed_size(&zip)?;
     let grow_size = default_reserve_size + zip_uncompressed_size;
-    let grow_size_per_m = grow_size / 1024 / 1024 + 1;
 
     println!("- Preparing image");
     println!(
@@ -346,21 +369,21 @@ pub fn install_module(zip: String) -> Result<()> {
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
-        let result = Exec::shell(format!(
-            "dd if=/dev/zero of={} bs=1M count={}",
-            tmp_module_img, grow_size_per_m
-        ))
-        .stdout(subprocess::NullFile)
-        .stderr(subprocess::Redirection::Merge)
-        .join()?;
-        ensure!(result.success(), "create ext4 image failed!");
+        File::create(tmp_module_img)
+            .context("Failed to create ext4 image file")?
+            .set_len(grow_size)
+            .context("Failed to extend ext4 image")?;
 
         // format the img to ext4 filesystem
-        let result = Exec::shell(format!("mkfs.ext4 {}", tmp_module_img))
-            .stdout(subprocess::NullFile)
-            .stderr(subprocess::Redirection::Merge)
-            .join()?;
-        ensure!(result.success(), "format ext4 image failed!");
+        let result = Command::new("mkfs.ext4")
+            .arg(tmp_module_img)
+            .stdout(Stdio::null())
+            .output()?;
+        ensure!(
+            result.status.success(),
+            "Failed to format ext4 image: {}",
+            String::from_utf8(result.stderr).unwrap()
+        );
 
         check_image(tmp_module_img)?;
     } else if modules_update_img_exist {
