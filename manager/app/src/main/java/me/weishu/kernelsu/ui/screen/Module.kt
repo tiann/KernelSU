@@ -83,6 +83,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 text = { Text(text = moduleInstall) },
             )
         },
+        floatingActionButtonPosition = FabPosition.Center,
     ) { innerPadding ->
         val failedEnable = stringResource(R.string.module_failed_to_enable)
         val failedDisable = stringResource(R.string.module_failed_to_disable)
