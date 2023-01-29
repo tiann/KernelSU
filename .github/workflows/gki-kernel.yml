@@ -113,7 +113,6 @@ jobs:
           cd $GITHUB_WORKSPACE
           echo "[+] Build embed_ksud.c"
           python3 ./KernelSU/scripts/bin2c.py ./aarch64-linux-android/release/ksud ksud > ./KernelSU/kernel/embed_ksud.c
-          touch ./KernelSU/kernel/embed_ksud.lock.h
           echo "[+] KernelSU setup done."
 
       - name: Symbol magic
@@ -142,5 +141,5 @@ jobs:
       - name: Upload Image and Image.gz
         uses: actions/upload-artifact@v3
         with:
-          name: Image-${{ inputs.version_name }}
+          name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./output/*

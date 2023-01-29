@@ -1,8 +1,12 @@
 build_from_image(){
 	export TITLE=kernel-aarch64-$(echo $1 | sed 's/Image-//g')
 	echo "[+] title: $TITLE"
+
+	export PATCH_LEVEL=$(echo $1 | awk -F_ '{ print $2}')
+	echo "[+] patch level: $PATCH_LEVEL"
+
 	echo "[+] Download prebuilt ramdisk"
-	curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-2021-11_r1.zip
+	curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-$(PATCH_LEVEL_r1).zip
 	unzip gki-kernel.zip && rm gki-kernel.zip
 
 	echo "[+] Unpack prebuilt boot.img"
