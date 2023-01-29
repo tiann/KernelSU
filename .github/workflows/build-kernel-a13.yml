@@ -5,13 +5,17 @@ on:
     paths:
       - ".github/workflows/build-kernel-a13.yml"
       - ".github/workflows/gki-kernel.yml"
+      - ".github/scripts/build_a13.sh"
       - "kernel/**"
+      - "userspace/ksud/**"
   pull_request:
     branches: ["main"]
     paths:
       - ".github/workflows/build-kernel-a13.yml"
       - ".github/workflows/gki-kernel.yml"
+      - ".github/scripts/build-a13.sh"
       - "kernel/**"
+      - "userspace/ksud/**"
 jobs:
   build-ksud:
     uses: ./.github/workflows/ksud.yml
@@ -38,9 +42,65 @@ jobs:
       version: android13-${{ matrix.version }}
       version_name: android13-${{ matrix.version }}.${{ matrix.sub_level }}
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
-      os_version: 13.0.0
-      os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
+  upload-artifacts:
+    needs: build-kernel
+    runs-on: ubuntu-latest
+    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+    env:
+      CHAT_ID: ${{ secrets.CHAT_ID }}
+      CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      COMMIT_URL: ${{ github.event.head_commit.url }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - uses: actions/checkout@v3
+        with:
+          path: KernelSU
+          fetch-depth: 0
+
+      - name: List artifacts
+        run: |
+          tree
+
+      - name: Download prebuilt toolchain
+        run: |
+          AOSP_MIRROR=https://android.googlesource.com
+          BRANCH=master-kernel-build-2022
+          git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
+          git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
+          git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
+          pip3 install python-telegram-bot
+
+      - name: Set boot sign key
+        env:
+          BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
+        run: |
+          if [ ! -z "$BOOT_SIGN_KEY" ]; then
+            echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
+          fi
+
+      - name: Setup mutex for uploading
+        uses: ben-z/gh-action-mutex@v1.0-alpha-7
+
+      - name: Build boot images
+        run: |
+          export AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
+          export GZIP=$GITHUB_WORKSPACE/build-tools/path/linux-x86/gzip
+          export LZ4=$GITHUB_WORKSPACE/build-tools/path/linux-x86/lz4
+          export MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py
+          export UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py
+          cd $GITHUB_WORKSPACE/KernelSU
+          export VERSION=$(git rev-list --count HEAD)
+          echo "VERSION: $VERSION"
+          cd -
+          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
+
   check-build-kernel:
     needs: build-ksud
     if: github.event_name == 'pull_request'
@@ -58,6 +118,4 @@ jobs:
       version: android13-${{ matrix.version }}
       version_name: android13-${{ matrix.version }}.${{ matrix.sub_level }}
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
-      os_version: 13.0.0
-      os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}

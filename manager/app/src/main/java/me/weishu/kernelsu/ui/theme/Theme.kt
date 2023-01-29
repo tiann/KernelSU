@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -46,6 +47,12 @@ fun KernelSUTheme(
         systemUiController.setStatusBarColor(
             color = colorScheme.surface,
             darkIcons = !darkTheme
+        )
+
+        // To match the App Navbar color
+        systemUiController.setNavigationBarColor(
+            color = colorScheme.surfaceColorAtElevation(8.dp),
+            darkIcons = !darkTheme,
         )
     }
 
