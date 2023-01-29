@@ -65,6 +65,13 @@ const repos = [
         kernel_link: 'https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu',
         devices: 'MIX 2 (chiron) for LineageOS' 
     },
+    { 
+        maintainer: 'SlackerState', 
+        maintainer_link: 'https://github.com/SlackerState', 
+        kernel_name: 'android_kernel_xiaomi_sm6150', 
+        kernel_link: 'https://github.com/SlackerState/android_kernel_xiaomi_sm6150',
+        devices: 'Redmi K30 4G (phoenix)' 
+    },
 ];
 
 export default repos;
