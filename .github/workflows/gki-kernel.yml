@@ -27,7 +27,7 @@ on:
         description: >
           Patch level of common kernel manifest,
           for example: 2021-11
-        default: latest
+        default: 2022-05
       patch_path:
         required: true
         type: string
