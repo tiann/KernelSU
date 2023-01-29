@@ -24,8 +24,8 @@ import data from '../../repos'
    </thead>
    <tbody>
     <tr v-for="repo in data" :key="repo.devices">
-        <td><a href="{{ repo.maintainer_link }}" target="_blank" rel="noreferrer">{{ repo.maintainer }}</a></td>
-        <td><a href="{{ repo.kernel_link }}" target="_blank" rel="noreferrer">{{ repo.kernel_name }}</a></td>
+        <td><a :href="repo.maintainer_link" target="_blank" rel="noreferrer">{{ repo.maintainer }}</a></td>
+        <td><a :href="repo.kernel_link" target="_blank" rel="noreferrer">{{ repo.kernel_name }}</a></td>
         <td>{{ repo.devices }}</td>
     </tr>
    </tbody>
