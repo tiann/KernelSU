@@ -21,6 +21,12 @@ on:
         description: >
           Part of branch name of common kernel manifest,
           for example: android12-5.10-2021-11
+      os_patch_level:
+        required: false
+        type: string
+        description: >
+          Patch level of common kernel manifest,
+          for example: 2021-11
       patch_path:
         required: true
         type: string
@@ -139,7 +145,15 @@ jobs:
           cp $OUTDIR/Image.lz4 ./output/
 
       - name: Upload Image and Image.gz
+        if: inputs.os_patch_level != ""
         uses: actions/upload-artifact@v3
         with:
           name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
+          path: ./output/*
+      
+      - name: Upload Image and Image.gz
+        if: inputs.os_patch_level == ""
+        uses: actions/upload-artifact@v3
+        with:
+          name: Image-${{ inputs.version_name }}
           path: ./output/*
