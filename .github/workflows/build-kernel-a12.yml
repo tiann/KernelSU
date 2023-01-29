@@ -43,6 +43,7 @@ jobs:
       version: android12-5.10
       version_name: android12-5.10.${{ matrix.sub_level }}
       tag: android12-5.10-${{ matrix.os_patch_level }}
+      os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: "5.10"
   upload-artifacts:
     needs: build-kernel
@@ -110,4 +111,5 @@ jobs:
       version: android12-5.10
       version_name: android12-5.10.101
       tag: android12-5.10-2022-05
+      os_patch_level: 2022-05
       patch_path: "5.10"

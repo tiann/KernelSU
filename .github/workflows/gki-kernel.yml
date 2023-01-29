@@ -21,6 +21,13 @@ on:
         description: >
           Part of branch name of common kernel manifest,
           for example: android12-5.10-2021-11
+      os_patch_level:
+        required: false
+        type: string
+        description: >
+          Patch level of common kernel manifest,
+          for example: 2021-11
+        default: 2022-05
       patch_path:
         required: true
         type: string
