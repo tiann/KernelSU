@@ -27,6 +27,7 @@ on:
         description: >
           Patch level of common kernel manifest,
           for example: 2021-11
+        default: latest
       patch_path:
         required: true
         type: string
@@ -145,15 +146,7 @@ jobs:
           cp $OUTDIR/Image.lz4 ./output/
 
       - name: Upload Image and Image.gz
-        if: ${{ inputs.os_patch_level != "" }}
         uses: actions/upload-artifact@v3
         with:
           name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
-          path: ./output/*
-      
-      - name: Upload Image and Image.gz
-        if: ${{ inputs.os_patch_level == "" }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: Image-${{ inputs.version_name }}
           path: ./output/*
