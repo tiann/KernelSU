@@ -51,6 +51,20 @@ const repos = [
         kernel_link: 'https://github.com/SakuraNotStupid/android_kernel_xiaomi_sdm710',
         devices: 'MI8SE(sirius) for LineageOS' 
     },
+    { 
+        maintainer: 'Aquarius223(paper)', 
+        maintainer_link: 'https://github.com/Aquarius223', 
+        kernel_name: 'android_kernel_xiaomi_msm8998', 
+        kernel_link: 'https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu',
+        devices: 'MI 6 (sagit) for LineageOS' 
+    },
+    { 
+        maintainer: 'Aquarius223(paper)', 
+        maintainer_link: 'https://github.com/Aquarius223', 
+        kernel_name: 'android_kernel_xiaomi_msm8998', 
+        kernel_link: 'https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu',
+        devices: 'MIX 2 (chiron) for LineageOS' 
+    },
 ];
 
 export default repos;
