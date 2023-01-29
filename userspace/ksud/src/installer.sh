@@ -281,6 +281,22 @@ is_legacy_script() {
   return $?
 }
 
+handle_partition() {
+    # if /system/vendor is a symlink, we need to move it out of $MODPATH/system, otherwise it will be overlayed
+    # if /system/vendor is a normal directory, it is ok to overlay it and we don't need to overlay it separately.
+    if [ ! -e $MODPATH/system/$1 ]; then
+        # no partition found
+        return;
+    fi
+
+    if [ -L "/system/$1" ] && [ "$(readlink -f /system/$1)" = "/$1" ]; then
+        ui_print "- Handle partition /$1"
+        # we create a symlink if module want to access $MODPATH/system/$1
+        # but it doesn't always work(ie. write it in post-fs-data.sh would fail because it is readonly)
+        mv -f $MODPATH/system/$1 $MODPATH/$1 && ln -sf /$1 $MODPATH/system/$1
+    fi
+}
+
 # Require OUTFD, ZIPFILE to be set
 install_module() {
   rm -rf $TMPDIR
@@ -354,6 +370,10 @@ install_module() {
     # Load customization script
     [ -f $MODPATH/customize.sh ] && . $MODPATH/customize.sh
   fi
+
+  handle_partition vendor
+  handle_partition system_ext
+  handle_partition product
 
   # Handle replace folders
   for TARGET in $REPLACE; do

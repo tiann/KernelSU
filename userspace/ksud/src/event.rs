@@ -13,6 +13,11 @@ fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) {
         return;
     }
 
+    // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
+    if Path::new(&format!("/{}", partition)).read_link().is_ok() {
+        println!("partition: {} is a symlink", partition);
+        return;
+    }
     // add /partition as the lowerest dir
     let lowest_dir = format!("/{}", partition);
     lowerdir.push(lowest_dir.clone());
@@ -67,7 +72,9 @@ pub fn do_systemless_mount(module_dir: &str) -> Result<()> {
         system_lowerdir.push(format!("{}", module_system.display()));
 
         for part in &partition {
-            let part_path = Path::new(&module_system).join(part);
+            // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
+            // otherwise it must be a symlink and we don't need to overlay!
+            let part_path = Path::new(&module).join(part);
             if !part_path.exists() {
                 continue;
             }
