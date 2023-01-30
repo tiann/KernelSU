@@ -11,7 +11,7 @@ Trang này chỉ để cho bạn tìm thấy source cho thiết bị của bạn
 :::
 
 <script setup>
-import data from '../../repos'
+import data from '../../repos.json'
 </script>
 
 <table>

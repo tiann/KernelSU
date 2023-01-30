@@ -9,7 +9,7 @@ This page is only for you to find the source code corresponding to your device, 
 :::
 
 <script setup>
-import data from '../repos'
+import data from '../repos.json'
 </script>
 
 <table>
