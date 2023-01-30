@@ -136,6 +136,7 @@ jobs:
           cp $OUTDIR/Image ./output/
           cp $OUTDIR/Image.lz4 ./output/
           git clone https://github.com/Kernel-SU/AnyKernel3
+          rm -rf ./AnyKernel3/.git
           cp $OUTDIR/Image.lz4 ./AnyKernel3/
 
       - name: Upload Image and Image.gz
