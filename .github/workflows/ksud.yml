@@ -28,15 +28,6 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: ${{ runner.os }}-cargo-
 
-    - name: Set up ksud build cache
-      if: inputs.use_cache == true
-      uses: actions/cache@v3
-      continue-on-error: false
-      with:
-        path: ./userspace/ksud/target/
-        key: ${{ runner.os }}-ksud-${{ hashFiles('**/Cargo.lock') }}-${{ inputs.target }}
-        restore-keys: ${{ runner.os }}-ksud-
-
     - name: Build ksud
       uses: actions-rs/cargo@v1
       with:
