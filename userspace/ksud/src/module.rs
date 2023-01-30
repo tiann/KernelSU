@@ -1,14 +1,19 @@
-use crate::{defs, restorecon, sepolicy};
-use crate::{restorecon::setsyscon, utils::*};
+use crate::{
+    defs,
+    restorecon::{restore_syscon, setsyscon},
+    sepolicy,
+    utils::*,
+};
 
 use const_format::concatcp;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 use std::{
     collections::HashMap,
-    fs::{create_dir_all, remove_dir_all, File, OpenOptions},
+    env::var as env_var,
+    fs::{remove_dir_all, File, OpenOptions},
     io::{Cursor, Read, Write},
-    os::unix::{prelude::PermissionsExt, process::CommandExt},
+    os::unix::process::CommandExt,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     str::FromStr,
@@ -27,6 +32,10 @@ fn exec_install_script(module_file: &str) -> Result<()> {
 
     let result = Command::new("sh")
         .args(["-c", INSTALL_MODULE_SCRIPT])
+        .env(
+            "PATH",
+            format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+        )
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
         .stderr(Stdio::null())
@@ -48,30 +57,19 @@ fn ensure_boot_completed() -> Result<()> {
 }
 
 fn mark_update() -> Result<()> {
-    let update_file = Path::new(defs::WORKING_DIR).join(defs::UPDATE_FILE_NAME);
-    if update_file.exists() {
-        return Ok(());
-    }
-
-    std::fs::File::create(update_file)?;
-    Ok(())
+    ensure_file_exists(concatcp!(defs::WORKING_DIR, defs::UPDATE_FILE_NAME))
 }
 
 fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> Result<()> {
     let module_state_file = Path::new(defs::MODULE_DIR).join(module).join(flag_file);
     if create_or_delete {
-        if module_state_file.exists() {
-            return Ok(());
-        }
-        std::fs::File::create(module_state_file)?;
+        ensure_file_exists(module_state_file)
     } else {
-        if !module_state_file.exists() {
-            return Ok(());
+        if module_state_file.exists() {
+            std::fs::remove_file(module_state_file)?;
         }
-        std::fs::remove_file(module_state_file)?;
+        Ok(())
     }
-
-    Ok(())
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
@@ -84,8 +82,8 @@ fn get_minimal_image_size(img: &str) -> Result<u64> {
     println!("- {}", output.trim());
     let regex = regex::Regex::new(r"filesystem: (\d+)")?;
     let result = regex
-        .captures(output.as_ref())
-        .ok_or_else(|| anyhow::anyhow!("regex not match"))?;
+        .captures(&output)
+        .ok_or(anyhow::anyhow!("regex not match"))?;
     let result = &result[1];
     let result = u64::from_str(result)?;
     Ok(result)
@@ -161,7 +159,7 @@ fn switch_cgroups() {
 }
 
 fn is_executable(path: &Path) -> bool {
-    let mut buffer: [u8; 2] = [0; 2];
+    let mut buffer = [0u8; 2];
     is_executable::is_executable(path)
         && File::open(path).unwrap().read_exact(&mut buffer).is_ok()
         && (
@@ -227,6 +225,10 @@ pub fn exec_post_fs_data() -> Result<()> {
         command = command
             .process_group(0)
             .current_dir(path)
+            .env(
+                "PATH",
+                format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+            )
             .env("KSU", "true");
         unsafe {
             command = command.pre_exec(|| {
@@ -273,6 +275,10 @@ pub fn exec_services() -> Result<()> {
         command = command
             .process_group(0)
             .current_dir(path)
+            .env(
+                "PATH",
+                format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+            )
             .env("KSU", "true");
         unsafe {
             command = command.pre_exec(|| {
@@ -289,20 +295,21 @@ pub fn exec_services() -> Result<()> {
     Ok(())
 }
 
-const RESETPROP: &[u8] = include_bytes!("./resetprop");
-const RESETPROP_PATH: &str = concatcp!(defs::WORKING_DIR, "/resetprop");
+const RESETPROP_PATH: &str = concatcp!(defs::BINARY_DIR, "resetprop");
+#[cfg(target_arch = "aarch64")]
+const RESETPROP: &[u8] = include_bytes!("../bin/aarch64/resetprop");
+#[cfg(target_arch = "x86_64")]
+const RESETPROP: &[u8] = include_bytes!("../bin/x86_64/resetprop");
 
-fn ensure_resetprop() -> Result<()> {
-    if Path::new(RESETPROP_PATH).exists() {
-        return Ok(());
-    }
-    std::fs::write(RESETPROP_PATH, RESETPROP)?;
-    std::fs::set_permissions(RESETPROP_PATH, std::fs::Permissions::from_mode(0o755))?;
-    Ok(())
-}
+const BUSYBOX_PATH: &str = concatcp!(defs::BINARY_DIR, "busybox");
+#[cfg(target_arch = "aarch64")]
+const BUSYBOX: &[u8] = include_bytes!("../bin/aarch64/busybox");
+#[cfg(target_arch = "x86_64")]
+const BUSYBOX: &[u8] = include_bytes!("../bin/x86_64/busybox");
 
 pub fn load_system_prop() -> Result<()> {
-    ensure_resetprop()?;
+    ensure_binary(RESETPROP_PATH, RESETPROP)?;
+    ensure_binary(BUSYBOX_PATH, BUSYBOX)?;
 
     let modules_dir = Path::new(defs::MODULE_DIR);
     let dir = std::fs::read_dir(modules_dir)?;
@@ -339,15 +346,8 @@ pub fn install_module(zip: String) -> Result<()> {
     println!(include_str!("banner"));
 
     // first check if workding dir is usable
-    let working_dir = Path::new(defs::WORKING_DIR);
-    if !working_dir.exists() {
-        create_dir_all(working_dir)?;
-    }
-
-    ensure!(
-        working_dir.is_dir(),
-        "working dir exists but it is not a regular directory!"
-    );
+    ensure_dir_exists(defs::WORKING_DIR)?;
+    ensure_dir_exists(defs::BINARY_DIR)?;
 
     // read the module_id from zip, if faild if will return early.
     let mut buffer: Vec<u8> = Vec::new();
@@ -460,8 +460,8 @@ pub fn install_module(zip: String) -> Result<()> {
         module_system_dir.push("system");
         let module_system_dir = module_system_dir.as_path();
         if module_system_dir.exists() {
-            let path = format!("{}", module_system_dir.display());
-            restorecon::restore_syscon(&path)?;
+            let path = module_system_dir.to_str().unwrap();
+            restore_syscon(&path)?;
         }
 
         exec_install_script(&zip)
@@ -589,8 +589,8 @@ fn do_enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
                 format!("Failed to remove disable file: {}", &disable_path.display())
             })?;
         }
-    } else if !disable_path.exists() {
-        std::fs::File::create(disable_path)?;
+    } else {
+        ensure_file_exists(disable_path)?;
     }
 
     let _ = mark_module_state(mid, defs::DISABLE_FILE_NAME, !enable);

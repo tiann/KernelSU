@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::Path};
 
 use crate::{
     defs,
-    utils::{ensure_clean_dir, mount_image},
+    utils::{ensure_clean_dir, ensure_dir_exists, mount_image},
 };
 use anyhow::{bail, Result};
 use sys_mount::{FilesystemType, Mount, MountFlags};
@@ -176,9 +176,8 @@ pub fn daemon() -> Result<()> {
 }
 
 pub fn install() -> Result<()> {
-    let src = "/proc/self/exe";
-    let dst = defs::DAEMON_PATH;
-
-    std::fs::copy(src, dst)?;
-    Ok(())
+    ensure_dir_exists(defs::ADB_DIR)?;
+    std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)
+        .map(|_| ())
+        .map_err(anyhow::Error::from)
 }
