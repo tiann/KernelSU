@@ -25,7 +25,8 @@ jobs:
           git commit -m "add device: ${{ steps.handle-add-device.outputs.device }}"
       - name: Make pull request
         if: steps.handle-add-device.outputs.success == 'true'
-        uses: peter-evans/create-pull-request@v3
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[add device]: ${{ steps.handle-add-device.outputs.device }}"
