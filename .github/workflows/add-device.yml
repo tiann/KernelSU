@@ -8,8 +8,6 @@ jobs:
   handle-add-device:
     if: github.event.label.name == 'add-device'
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     env:
       ISSUE_CONTENT: ${{ github.event.issue.body }}
     steps:
