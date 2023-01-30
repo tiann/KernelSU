@@ -79,6 +79,13 @@ const repos = [
         kernel_link: 'https://github.com/OnlyTomInSecond/android_kernel_xiaomi_sdm845',
         device: 'Xiaomi 8 (dipper) for LineageOS',
     },
+    { 
+        maintainer: 'ajugeorge98', 
+        maintainer_link: 'https://github.com/ajugeorge98', 
+        kernel_name: 'kernelsu_asus_sdm660-4.19', 
+        kernel_link: 'https://github.com/ajugeorge98/kernelsu_asus_sdm660-4.19',
+        devices: 'Asus Zenfone Max Pro M1(X00TD)' 
+    },
 ];
 
 export default repos;
