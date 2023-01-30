@@ -33,6 +33,7 @@ jobs:
           title: "[add device]: ${{ steps.handle-add-device.outputs.device }}"
           body: |
             ${{ steps.handle-add-device.outputs.device }} has been added to the website.
+            Related issue: ${{ github.event.issue.html_url }}
           branch: "add-device-${{ github.event.issue.number }}"
           labels: add-device
           delete-branch: true
@@ -45,6 +46,11 @@ jobs:
         if: ${{ steps.cpr.outputs.pull-request-number }}
         with:
           message: "Automatically created pull request: ${{ steps.cpr.outputs.pull-request-url }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ben-z/actions-comment-on-issue@1.0.2
+        if: steps.handle-add-device.outputs.success != 'true'
+        with:
+          message: "Cannot create pull request. Please check the issue content. Or you can create a pull request manually."
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: close issue
         if: steps.handle-add-device.outputs.success == 'true'
