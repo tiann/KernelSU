@@ -147,5 +147,5 @@ jobs:
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v3
         with:
-          name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
+          name: AnyKernel3-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./AnyKernel3/*
