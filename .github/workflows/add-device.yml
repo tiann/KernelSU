@@ -40,5 +40,14 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-      
-          
+      - uses: ben-z/actions-comment-on-issue@1.0.2
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        with:
+          message: "Automatically created pull request: ${{ steps.cpr.outputs.pull-request-url }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: close issue
+        if: steps.handle-add-device.outputs.success == 'true'
+        uses: peter-evans/close-issue@v1
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
