@@ -29,5 +29,5 @@ body:
       label: Code of Conduct
       description: By submitting this issue, you should be the maintainer of the repository.
       options:
-        - label: I'am the maintainer of this repository
+        - label: I'm the maintainer of this repository
           required: true
