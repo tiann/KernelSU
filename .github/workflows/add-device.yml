@@ -34,8 +34,6 @@ jobs:
             ${{ steps.handle-add-device.outputs.device }} has been added to the website.
           branch: "add-device-${{ github.event.issue.number }}"
           labels: add-device
-          reviewers: nttld
-          assignees: nttld
           delete-branch: true
       - name: Check outputs
         if: ${{ steps.cpr.outputs.pull-request-number }}
