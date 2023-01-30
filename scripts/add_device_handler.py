@@ -36,7 +36,7 @@ def main():
                 "maintainer_link": maintainer_link,
                 "kernel_name": kernel_name,
                 "kernel_link": kernel_link,
-                "device": device,
+                "devices": device,
             }
         )
     os.remove(file_name)
