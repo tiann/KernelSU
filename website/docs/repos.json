@@ -74,6 +74,6 @@
         "maintainer_link": "https://github.com/onlyTomInSecond/",
         "kernel_name": "android_kernel_xiaomi_sdm845",
         "kernel_link": "https://github.com/OnlyTomInSecond/android_kernel_xiaomi_sdm845",
-        "device": "Mi 8 (dipper) for LOS"
+        "devices": "Mi 8 (dipper) for LineageOS"
     }
 ]
