@@ -53,7 +53,6 @@ jobs:
           message: "Cannot create pull request. Please check the issue content. Or you can create a pull request manually."
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: close issue
-        if: steps.handle-add-device.outputs.success == 'true'
         uses: peter-evans/close-issue@v1
         with:
           issue-number: ${{ github.event.issue.number }}
