@@ -97,7 +97,6 @@ jobs:
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
 
   check-build-kernel:
-    needs: build-ksud
     if: github.event_name == 'pull_request'
     strategy:
       matrix:
