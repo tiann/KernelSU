@@ -82,8 +82,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 icon = { Icon(Icons.Filled.Add, moduleInstall) },
                 text = { Text(text = moduleInstall) },
             )
-        },
-        floatingActionButtonPosition = FabPosition.Center,
+        }
     ) { innerPadding ->
         val failedEnable = stringResource(R.string.module_failed_to_enable)
         val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -123,7 +122,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 }
             } else {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(15.dp)
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                    contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */ ) }
                 ) {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
