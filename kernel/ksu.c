@@ -36,13 +36,13 @@ extern void ksu_enable_ksud();
 int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
-	pr_alert("*************************************************************");
-	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-	pr_alert("**                                                         **");
-	pr_alert("**         You are running DEBUG version of KernelSU       **");
-	pr_alert("**                                                         **");
-	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-	pr_alert("*************************************************************");
+	pr_alert("***********************************************************");
+	pr_alert("**    NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **");
+	pr_alert("**                                                       **");
+	pr_alert("**        You are running DEBUG version of KernelSU      **");
+	pr_alert("**                                                       **");
+	pr_alert("**    NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **");
+	pr_alert("***********************************************************");
 #endif
 
 	ksu_core_init();
@@ -53,10 +53,10 @@ int __init kernelsu_init(void)
 
 	ksu_uid_observer_init();
 
-#ifdef CONFIG_KPROBES
 	ksu_enable_sucompat();
 	ksu_enable_ksud();
-#else
+
+#ifndef CONFIG_KPROBES
 #warning("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html")
 #endif
 

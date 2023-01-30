@@ -1,9 +1,9 @@
 #include "asm/current.h"
-#include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/fs.h"
 #include "linux/kprobes.h"
+#include "linux/namei.h"
 #include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
@@ -12,27 +12,29 @@
 
 #include "allowlist.h"
 #include "arch.h"
+#include "embed_ksud.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 
-static const char KERNEL_SU_RC[] =
+static char KERNEL_SU_RC[1024];
+static char KERNEL_SU_RC_TEMPLATE[] =
 	"\n"
 
 	"on post-fs-data\n"
 	// We should wait for the post-fs-data finish
-	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
+	"    exec u:r:su:s0 root -- %s post-fs-data\n"
 	"\n"
 
 	"on nonencrypted\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- %s services\n"
 	"\n"
 
 	"on property:vold.decrypt=trigger_restart_framework\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- %s services\n"
 	"\n"
 
 	"on property:sys.boot_completed=1\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
+	"    exec u:r:su:s0 root -- %s boot-completed\n"
 	"\n"
 
 	"\n";
@@ -58,6 +60,91 @@ void on_post_fs_data(void)
 	done = true;
 	pr_info("ksu_load_allow_list");
 	ksu_load_allow_list();
+}
+
+static struct work_struct extract_ksud_work;
+
+static char ksu_random_path[64];
+
+// get random string
+static void get_random_string(char *buf, int len)
+{
+	static char *hex = "0123456789abcdef";
+	static char byte;
+	int i;
+	for (i = 0; i < len; i++) {
+		get_random_bytes(&byte, 1);
+		buf[i] = hex[byte % 16];
+	}
+}
+
+#ifdef CONFIG_KSU_DEBUG
+#define LOOKUP_REVAL 0x0020
+static long kern_symlinkat(const char *oldname, int newdfd, const char *newname)
+{
+	int error;
+	struct dentry *dentry;
+	struct path path;
+	unsigned int lookup_flags = 0;
+retry:
+	dentry = kern_path_create(newdfd, newname, &path, lookup_flags);
+	error = PTR_ERR(dentry);
+	if (IS_ERR(dentry))
+		return error;
+	error = vfs_symlink(path.dentry->d_inode, dentry, oldname);
+	done_path_create(&path, dentry);
+	if (retry_estale(error, lookup_flags)) {
+		lookup_flags |= LOOKUP_REVAL;
+		goto retry;
+	}
+	return error;
+}
+#endif
+
+static void do_extract_ksud(struct work_struct *work)
+{
+	if (__ksud_size <= 0) {
+		return;
+	}
+	pr_info("extract_ksud");
+	char buf[64];
+	get_random_string(buf, 32);
+	snprintf(ksu_random_path, sizeof(ksu_random_path), "/dev/ksud_%s", buf);
+#ifndef CONFIG_KSU_DEBUG
+	struct file *fp = filp_open(ksu_random_path, O_CREAT | O_RDWR, 0700);
+	if (IS_ERR(fp)) {
+		pr_info("extract_ksud open failed, error: %d", PTR_ERR(fp));
+		return;
+	}
+	ssize_t write_size = kernel_write(fp, __ksud, __ksud_size, NULL);
+	if (write_size != __ksud_size) {
+		pr_err("write ksud size error: %d (should be %d)", write_size,
+		       __ksud_size);
+	}
+	filp_close(fp, NULL);
+#else
+	int error = kern_symlinkat("/data/adb/ksud", AT_FDCWD, ksu_random_path);
+	if (IS_ERR(ERR_PTR(error))) {
+		pr_err("cannot symlink file %s error: %d", ksu_random_path,
+		       error);
+		return;
+	}
+#endif
+	pr_info("random ksud: %s", ksu_random_path);
+	snprintf(KERNEL_SU_RC, 1024, KERNEL_SU_RC_TEMPLATE, ksu_random_path,
+		 ksu_random_path, ksu_random_path, ksu_random_path);
+	pr_info("KERNEL_SU_RC:");
+	pr_info("%s", KERNEL_SU_RC);
+}
+
+void extract_ksud()
+{
+#ifdef CONFIG_KPROBES
+	bool ret = schedule_work(&extract_ksud_work);
+	pr_info("extract_ksud kprobe: %d!\n", ret);
+#else
+	do_extract_ksud(NULL);
+#endif
 }
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
@@ -86,8 +173,13 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	if (!memcmp(filename->name, system_bin_init,
 		    sizeof(system_bin_init) - 1)) {
 		// /system/bin/init executed
-		if (++init_count == 2) {
+		init_count++;
+		if (init_count == 1) {
 			// 1: /system/bin/init selinux_setup
+			// we extract ksud here so that we don't need to modify selinux rules
+			extract_ksud();
+		}
+		if (init_count == 2) {
 			// 2: /system/bin/init second_stage
 			pr_info("/system/bin/init second_stage executed\n");
 			apply_kernelsu_rules();
@@ -271,5 +363,6 @@ void ksu_enable_ksud()
 
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
+	INIT_WORK(&extract_ksud_work, do_extract_ksud);
 #endif
 }
