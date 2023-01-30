@@ -77,7 +77,7 @@ const repos = [
         maintainer_link: 'https://github.com/onlyTomInSecond/',
         kernel_name: 'android_kernel_xiaomi_sdm845',
         kernel_link: 'https://github.com/OnlyTomInSecond/android_kernel_xiaomi_sdm845',
-        device: 'Xiaomi 8 (dipper) for LineageOS',
+        device: 'Xiaomi 8 (dipper) for LineageOS'
     },
 ];
 
