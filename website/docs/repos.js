@@ -65,6 +65,13 @@ const repos = [
         kernel_link: 'https://github.com/SlackerState/android_kernel_xiaomi_sm6150',
         devices: 'Redmi K30 4G (phoenix)' 
     },
+    { 
+        maintainer: 'RooGhz720', 
+        maintainer_link: 'https://github.com/RooGhz720', 
+        kernel_name: 'Aghisna_Sweet_Kernel', 
+        kernel_link: 'https://github.com/RooGhz720/Aghisna_Sweet_Kernel',
+        devices: 'REDMI NOTE 10 PRO (sweet)' 
+    },
 ];
 
 export default repos;
