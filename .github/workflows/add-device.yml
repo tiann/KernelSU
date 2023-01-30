@@ -1,0 +1,15 @@
+name: handle-add-device-issue
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  handle-add-device:
+    if: github.event.label.name == 'add-device'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: debug
+        run: echo ${{ toJson(github) }}
