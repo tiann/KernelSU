@@ -15,7 +15,7 @@ jobs:
       - name: Parse issue body
         id: handle-add-device
         run: |
-          python3 scripts/add_device_handler.py website/docs/repos.json
+          python3 scripts/add_device_handler.py website/docs/repos.json || true
       - name: Commit
         if: steps.handle-add-device.outputs.success == 'true'
         run: |
