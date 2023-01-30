@@ -5,11 +5,11 @@ use crate::{
     utils::{ensure_clean_dir, mount_image},
 };
 use anyhow::{bail, Result};
-use subprocess::Exec;
+use sys_mount::{FilesystemType, Mount, MountFlags};
 
 fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) {
     if lowerdir.is_empty() {
-        println!("partition: {} lowerdir is empty", partition);
+        println!("partition: {partition} lowerdir is empty");
         return;
     }
 
@@ -19,22 +19,19 @@ fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) {
         return;
     }
     // add /partition as the lowerest dir
-    let lowest_dir = format!("/{}", partition);
+    let lowest_dir = format!("/{partition}");
     lowerdir.push(lowest_dir.clone());
 
     let lowerdir = lowerdir.join(":");
-    println!("partition: {} lowerdir: {}", partition, lowerdir);
+    println!("partition: {partition} lowerdir: {lowerdir}");
 
-    let mount_args = format!(
-        "mount -t overlay overlay -o ro,lowerdir={} {}",
-        lowerdir, lowest_dir
-    );
-    if let Ok(result) = Exec::shell(mount_args).join() {
-        if !result.success() {
-            println!("mount partition: {} overlay failed", partition);
-        }
-    } else {
-        println!("mount partition: {} overlay failed", partition);
+    if let Err(err) = Mount::builder()
+        .fstype(FilesystemType::from("overlay"))
+        .flags(MountFlags::RDONLY)
+        .data(&format!("lowerdir={lowerdir}"))
+        .mount("overlay", lowest_dir)
+    {
+        println!("mount partition: {partition} overlay failed: {err}");
     }
 }
 
@@ -136,7 +133,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // module mounted, exec modules post-fs-data scripts
-    if !crate::utils::is_safe_mode().unwrap_or(false) {
+    if !crate::utils::is_safe_mode() {
         // todo: Add timeout
         let _ = crate::module::exec_post_fs_data();
         let _ = crate::module::load_system_prop();
@@ -149,7 +146,7 @@ pub fn on_post_data_fs() -> Result<()> {
 
 pub fn on_services() -> Result<()> {
     // exec modules service.sh scripts
-    if !crate::utils::is_safe_mode().unwrap_or(false) {
+    if !crate::utils::is_safe_mode() {
         let _ = crate::module::exec_services();
     } else {
         println!("safe mode, skip module service scripts");

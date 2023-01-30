@@ -1,7 +1,7 @@
 #![allow(dead_code, unused_mut, unused_variables, unused_imports)]
 
+use anyhow::{ensure, Result};
 use std::os::unix::process::CommandExt;
-use anyhow::{Result, ensure};
 
 const KERNEL_SU_OPTION: u32 = 0xDEADBEEF;
 
@@ -31,8 +31,7 @@ pub fn grant_root() -> Result<()> {
     }
 
     ensure!(result == KERNEL_SU_OPTION, "grant root failed");
-    std::process::Command::new("/system/bin/sh").exec();
-    Ok(())
+    return Err(std::process::Command::new("sh").exec().into());
 }
 
 #[cfg(not(target_os = "android"))]
@@ -56,11 +55,7 @@ pub fn get_version() -> i32 {
 fn report_event(event: u64) {
     #[cfg(target_os = "android")]
     unsafe {
-        libc::prctl(
-            KERNEL_SU_OPTION as i32,
-            CMD_REPORT_EVENT,
-            event,
-        );
+        libc::prctl(KERNEL_SU_OPTION as i32, CMD_REPORT_EVENT, event);
     }
 }
 

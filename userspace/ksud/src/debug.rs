@@ -39,8 +39,8 @@ fn set_kernel_param(size: u32, hash: u32) -> Result<()> {
 }
 
 fn get_apk_path(package_name: &str) -> Result<String> {
-    let cmd = format!("pm path {}", package_name);
-    let output = Command::new("sh").arg("-c").arg(cmd).output()?;
+    // `cmd package path` is not available below Android 9
+    let output = Command::new("pm").args(["path", package_name]).output()?;
 
     // package:/data/app/<xxxx>/base.apk
     let output = String::from_utf8_lossy(&output.stdout);
@@ -54,7 +54,7 @@ pub fn set_manager(pkg: &str) -> Result<()> {
         "CONFIG_KSU_DEBUG is not enabled"
     );
 
-    let path = get_apk_path(pkg).with_context(|| format!("{} not exist!", pkg))?;
+    let path = get_apk_path(pkg).with_context(|| format!("{pkg} does not exist!"))?;
     let sign = get_apk_signature(path.as_str())?;
     set_kernel_param(sign.0, sign.1)?;
     Ok(())

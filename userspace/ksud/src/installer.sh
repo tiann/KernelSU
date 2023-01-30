@@ -1,3 +1,4 @@
+#!/system/bin/sh
 ############################################
 # KernelSU installer script
 # Credit to Magisk!!!
@@ -89,14 +90,15 @@ setup_flashable() {
 }
 
 ensure_bb() {
+  :
 }
 
 recovery_actions() {
-
+  :
 }
 
 recovery_cleanup() {
-
+  :
 }
 
 #######################
