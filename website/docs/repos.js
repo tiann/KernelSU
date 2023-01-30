@@ -56,14 +56,7 @@ const repos = [
         maintainer_link: 'https://github.com/Aquarius223', 
         kernel_name: 'android_kernel_xiaomi_msm8998', 
         kernel_link: 'https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu',
-        devices: 'MI 6 (sagit) for LineageOS' 
-    },
-    { 
-        maintainer: 'Aquarius223(paper)', 
-        maintainer_link: 'https://github.com/Aquarius223', 
-        kernel_name: 'android_kernel_xiaomi_msm8998', 
-        kernel_link: 'https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu',
-        devices: 'MIX 2 (chiron) for LineageOS' 
+        devices: 'MI 6 (sagit) and MIX 2 (chiron) for LineageOS' 
     },
     { 
         maintainer: 'SlackerState', 
