@@ -10,7 +10,6 @@ rust-version = "1.65"
 anyhow = "1.0.68"
 clap = { version = "4.0.32", features = ["derive"] }
 const_format = "0.2.30"
-subprocess = "0.2.9"
 zip = "0.6.3"
 zip-extensions = "0.6.1"
 java-properties = "1.4.1"
