@@ -96,12 +96,6 @@ jobs:
           ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
           ../git-repo/repo sync -j$(nproc --all)
 
-      - name: Download prebuilt ksud from artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.embed_ksud }}
-          path: .
-
       - name: Setup KernelSU
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
@@ -117,9 +111,6 @@ jobs:
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
-          cd $GITHUB_WORKSPACE
-          echo "[+] Build embed_ksud.c"
-          python3 ./KernelSU/scripts/bin2c.py ./aarch64-linux-android/release/ksud ksud > ./KernelSU/kernel/embed_ksud.c
           echo "[+] KernelSU setup done."
 
       - name: Symbol magic

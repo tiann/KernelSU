@@ -17,12 +17,7 @@ on:
       - "kernel/**"
       - "userspace/ksud/**"
 jobs:
-  build-ksud:
-    uses: ./.github/workflows/ksud.yml
-    with:
-      target: aarch64-linux-android
   build-kernel:
-    needs: build-ksud
     if: github.event_name != 'pull_request'
     strategy:
       matrix:
