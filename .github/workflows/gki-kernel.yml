@@ -144,9 +144,17 @@ jobs:
           mkdir output
           cp $OUTDIR/Image ./output/
           cp $OUTDIR/Image.lz4 ./output/
+          git clone https://github.com/Kernel-SU/AnyKernel3
+          cp $OUTDIR/Image.lz4 ./AnyKernel3/
 
       - name: Upload Image and Image.gz
         uses: actions/upload-artifact@v3
         with:
           name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./output/*
+
+      - name: Upload AnyKernel3
+        uses: actions/upload-artifact@v3
+        with:
+          name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
+          path: ./AnyKernel3/*
