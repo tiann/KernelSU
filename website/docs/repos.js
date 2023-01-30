@@ -72,6 +72,13 @@ const repos = [
         kernel_link: 'https://github.com/RooGhz720/Aghisna_Sweet_Kernel',
         devices: 'REDMI NOTE 10 PRO (sweet)' 
     },
+    {
+        maintainer: 'OnlyTomInSecond',
+        maintainer_link: 'https://github.com/onlyTomInSecond/',
+        kernel_name: 'android_kernel_xiaomi_sdm845',
+        kernel_link: 'https://github.com/OnlyTomInSecond/android_kernel_xiaomi_sdm845',
+        device: 'Xiaomi 8 (dipper) for LineageOS',
+    },
 ];
 
 export default repos;
