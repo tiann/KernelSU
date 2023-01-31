@@ -1,8 +1,8 @@
 #ifndef __KSU_H_ALLOWLIST
 #define __KSU_H_ALLOWLIST
 
-#include "linux/types.h"
 #include "linux/capability.h"
+#include "linux/types.h"
 
 extern const struct perm_data NO_PERM;
 

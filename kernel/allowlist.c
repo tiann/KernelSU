@@ -7,10 +7,10 @@
 #include "linux/printk.h"
 #include "linux/slab.h"
 
-#include "klog.h" // IWYU pragma: keep
-#include "selinux/selinux.h"
 #include "allowlist.h"
+#include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
+#include "selinux/selinux.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 2 // u32
@@ -51,8 +51,8 @@ void ksu_show_perm_data(struct perm_data data)
 
 void ksu_show_perm_list_node(struct perm_list_node data)
 {
-	pr_info("uid: %d allow: %d, cap: %08x | %08x", data.uid, data.data.allow,
-		data.data.cap.cap[0], data.data.cap.cap[1]);
+	pr_info("uid: %d allow: %d, cap: %08x | %08x", data.uid,
+		data.data.allow, data.data.cap.cap[0], data.data.cap.cap[1]);
 }
 
 void ksu_show_allow_list(void)
