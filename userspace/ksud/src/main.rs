@@ -7,6 +7,7 @@ mod ksu;
 mod module;
 mod restorecon;
 mod utils;
+mod sepolicy;
 
 fn main() -> anyhow::Result<()> {
     cli::run()

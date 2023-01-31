@@ -35,7 +35,10 @@ enum Commands {
     Install,
 
     /// SELinux policy Patch tool
-    Sepolicy,
+    Sepolicy {
+        #[command(subcommand)]
+        command: Sepolicy,
+    },
 
     /// For developers
     Debug {
@@ -66,6 +69,21 @@ enum Debug {
 
     /// For testing
     Test,
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum Sepolicy {
+    /// Patch sepolicy
+    Patch {
+        /// sepolicy statements
+        sepolicy: String,
+    },
+
+    /// Apply sepolicy from file
+    Apply {
+        /// sepolicy file path
+        file: String,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -118,7 +136,10 @@ pub fn run() -> Result<()> {
             }
         }
         Commands::Install => event::install(),
-        Commands::Sepolicy => todo!(),
+        Commands::Sepolicy { command } => match command {
+            Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
+            Sepolicy::Apply { file } => crate::sepolicy::apply_file(&file),
+        },
         Commands::Services => event::on_services(),
 
         Commands::Debug { command } => match command {
@@ -133,7 +154,7 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su => crate::ksu::grant_root(),
-            Debug::Test => todo!(),
+            Debug::Test => todo!()
         },
     };
 
