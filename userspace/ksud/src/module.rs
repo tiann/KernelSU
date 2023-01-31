@@ -1,4 +1,4 @@
-use crate::{defs, restorecon};
+use crate::{defs, restorecon, sepolicy};
 use crate::{restorecon::setsyscon, utils::*};
 
 use const_format::concatcp;
@@ -169,6 +169,31 @@ fn is_executable(path: &Path) -> bool {
             || buffer == [0x7f, 0x45]
             // ELF magic number 0x7F 'E'
         )
+}
+
+pub fn load_sepolicy_rule() -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let disabled = path.join(defs::DISABLE_FILE_NAME);
+        if disabled.exists() {
+            println!("{} is disabled, skip", path.display());
+            continue;
+        }
+
+        let rule_file = path.join("sepolicy.rule");
+        if !rule_file.exists() {
+            continue;
+        }
+        println!("load policy: {}", &rule_file.display());
+
+        if sepolicy::apply_file(&rule_file).is_err() {
+            println!("Failed to load sepolicy.rule for {}", &rule_file.display());
+        }
+    }
+
+    Ok(())
 }
 
 /// execute every modules' post-fs-data.sh

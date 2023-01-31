@@ -11,7 +11,7 @@ use nom::{
     sequence::Tuple,
     IResult, Parser,
 };
-use std::vec;
+use std::{vec, path::Path};
 
 type SeObject<'a> = Vec<&'a str>;
 
@@ -725,7 +725,7 @@ pub fn live_patch(policy: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn apply_file(path: &str) -> Result<()> {
+pub fn apply_file<P: AsRef<Path>>(path: P) -> Result<()> {
     let input = std::fs::read_to_string(path)?;
     live_patch(&input)
 }
