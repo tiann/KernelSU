@@ -19,7 +19,7 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
-extern void escape_to_root();
+extern void escape_to_root(struct perm_data data);
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
 {
@@ -43,7 +43,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	if (!ksu_is_allow_uid(current_uid().val)) {
+	if (!ksu_get_uid_data(current_uid().val).allow) {
 		return 0;
 	}
 
@@ -68,7 +68,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	if (!ksu_is_allow_uid(current_uid().val)) {
+	if (!ksu_get_uid_data(current_uid().val).allow) {
 		return 0;
 	}
 
@@ -97,6 +97,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	struct filename *filename;
 	const char sh[] = SH_PATH;
 	const char su[] = SU_PATH;
+	struct perm_data data;
 
 	if (!filename_ptr)
 		return 0;
@@ -106,7 +107,8 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	if (!ksu_is_allow_uid(current_uid().val)) {
+	data = ksu_get_uid_data(current_uid().val);
+	if (!data.allow) {
 		return 0;
 	}
 
@@ -114,7 +116,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 		pr_info("do_execveat_common su found\n");
 		memcpy((void *)filename->name, sh, sizeof(sh));
 
-		escape_to_root();
+		escape_to_root(data);
 	}
 
 	return 0;
@@ -185,7 +187,7 @@ static struct kprobe execve_kp = {
 #endif
 
 // sucompat: permited process can execute 'su' to gain root access.
-void ksu_enable_sucompat()
+void ksu_enable_sucompat(void)
 {
 #ifdef CONFIG_KPROBES
 	int ret;

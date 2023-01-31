@@ -14,7 +14,7 @@
 #define KERNEL_EXEC_TYPE "ksu_exec"
 #define ALL NULL
 
-void apply_kernelsu_rules()
+void apply_kernelsu_rules(void)
 {
 	struct policydb *db;
 

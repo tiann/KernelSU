@@ -3,19 +3,31 @@
 
 #include "linux/workqueue.h"
 
-#define KERNEL_SU_VERSION 12
+#define KERNEL_SU_VERSION 13
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
 
-#define CMD_GRANT_ROOT 0
-#define CMD_BECOME_MANAGER 1
-#define CMD_GET_VERSION 2
-#define CMD_ALLOW_SU 3
-#define CMD_DENY_SU 4
-#define CMD_GET_ALLOW_LIST 5
-#define CMD_GET_DENY_LIST 6
-#define CMD_REPORT_EVENT 7
+// KERNEL_SU_OPTION is ignored in comment, but it's needed
 
+// prctl(CMD_GRANT_ROOT)
+#define CMD_GRANT_ROOT 100
+// prctl(CMD_GET_VERSION, buf)
+#define CMD_GET_VERSION 101
+// prctl(CMD_REPORT_EVENT, buf)
+#define CMD_REPORT_EVENT 102
+
+// require manager
+#define CMD_BECOME_MANAGER 200
+// prctl(CMD_SET_UID_DATA, uid, data)
+#define CMD_SET_UID_DATA 201
+// prctl(CMD_GET_UID_DATA, uid, data)
+#define CMD_GET_UID_DATA 202
+// prctl(CMD_COUNT_UID_DATA, buf)
+#define CMD_COUNT_UID_DATA 203
+// prctl(CMD_LIST_UID_DATA, buf, buf_size, out_count)
+#define CMD_LIST_UID_DATA 204
+
+// evnets triggered by init
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
 

@@ -117,18 +117,18 @@ out:
 	filp_close(fp, 0);
 }
 
-void update_uid()
+void update_uid(void)
 {
 	ksu_queue_work(&ksu_update_uid_work);
 }
 
-int ksu_uid_observer_init()
+int ksu_uid_observer_init(void)
 {
 	INIT_WORK(&ksu_update_uid_work, do_update_uid);
 	return 0;
 }
 
-int ksu_uid_observer_exit()
+int ksu_uid_observer_exit(void)
 {
 	return 0;
 }

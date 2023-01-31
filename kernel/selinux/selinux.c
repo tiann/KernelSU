@@ -36,7 +36,7 @@ static int transive_to_domain(const char *domain)
 	return error;
 }
 
-void setup_selinux()
+void setup_selinux(void)
 {
 	if (transive_to_domain(KERNEL_SU_DOMAIN)) {
 		pr_err("transive domain failed.");
@@ -58,7 +58,7 @@ void setenforce(bool enforce)
 #endif
 }
 
-bool getenforce()
+bool getenforce(void)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
 	if (selinux_state.disabled) {
@@ -73,7 +73,7 @@ bool getenforce()
 #endif
 }
 
-bool is_ksu_domain()
+bool is_ksu_domain(void)
 {
 	return ksu_sid && current_sid() == ksu_sid;
 }

@@ -3,14 +3,14 @@
 
 #include "linux/types.h"
 
-void setup_selinux();
+void setup_selinux(void);
 
 void setenforce(bool);
 
-bool getenforce();
+bool getenforce(void);
 
-bool is_ksu_domain();
+bool is_ksu_domain(void);
 
-void apply_kernelsu_rules();
+void apply_kernelsu_rules(void);
 
 #endif

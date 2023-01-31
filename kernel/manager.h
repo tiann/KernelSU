@@ -15,6 +15,10 @@ static inline bool ksu_is_manager_uid_valid()
 
 static inline bool is_manager()
 {
+#ifdef CONFIG_KSU_DEBUG
+	if(current_uid().val == 0)
+		return true;
+#endif
 	return ksu_manager_uid == current_uid().val;
 }
 

@@ -37,8 +37,8 @@ static const char KERNEL_SU_RC[] =
 
 	"\n";
 
-static void stop_vfs_read_hook();
-static void stop_execve_hook();
+static void stop_vfs_read_hook(void);
+static void stop_execve_hook(void);
 
 #ifdef CONFIG_KPROBES
 static struct work_struct stop_vfs_read_work;
@@ -258,7 +258,7 @@ static void stop_execve_hook()
 }
 
 // ksud: module support
-void ksu_enable_ksud()
+void ksu_enable_ksud(void)
 {
 #ifdef CONFIG_KPROBES
 	int ret;

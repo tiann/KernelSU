@@ -23,19 +23,22 @@
 #include "selinux/selinux.h"
 #include "uid_observer.h"
 
-static inline bool is_allow_su()
+static inline struct perm_data is_allow_su()
 {
 	if (is_manager()) {
 		// we are manager, allow!
-		return true;
+		return ALL_PERM;
 	}
-	return ksu_is_allow_uid(current_uid().val);
+	return ksu_get_uid_data(current_uid().val);
 }
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
 
-void escape_to_root(void)
+void escape_to_root(struct perm_data data)
 {
+	if (!data.allow) {
+		return;
+	}
 	struct cred *cred;
 
 	cred = (struct cred *)__task_cred(current);
@@ -47,11 +50,11 @@ void escape_to_root(void)
 	memset(&cred->egid, 0, sizeof(cred->egid));
 	memset(&cred->fsuid, 0, sizeof(cred->fsuid));
 	memset(&cred->fsgid, 0, sizeof(cred->fsgid));
-	memset(&cred->cap_inheritable, 0xff, sizeof(cred->cap_inheritable));
-	memset(&cred->cap_permitted, 0xff, sizeof(cred->cap_permitted));
-	memset(&cred->cap_effective, 0xff, sizeof(cred->cap_effective));
-	memset(&cred->cap_bset, 0xff, sizeof(cred->cap_bset));
-	memset(&cred->cap_ambient, 0xff, sizeof(cred->cap_ambient));
+	cred->cap_inheritable = data.cap;
+	cred->cap_permitted = data.cap;
+	cred->cap_effective = data.cap;
+	cred->cap_bset = data.cap;
+	cred->cap_ambient = data.cap;
 
 	// disable seccomp
 #if defined(CONFIG_GENERIC_ENTRY) &&                                           \
@@ -177,16 +180,17 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (arg2 == CMD_GRANT_ROOT) {
-		if (is_allow_su()) {
+		struct perm_data data = is_allow_su();
+		if (data.allow) {
 			pr_info("allow root for: %d\n", current_uid());
-			escape_to_root();
+			escape_to_root(data);
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("grant_root: prctl reply error\n");
 			}
 		} else {
 			pr_info("deny root for: %d\n", current_uid());
 			// add it to deny list!
-			ksu_allow_uid(current_uid().val, false, true);
+			ksu_set_uid_data(current_uid().val, NO_PERM, true);
 		}
 		return 0;
 	}
@@ -237,35 +241,44 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	// we are already manager
-	if (arg2 == CMD_ALLOW_SU || arg2 == CMD_DENY_SU) {
-		bool allow = arg2 == CMD_ALLOW_SU;
+	if (arg2 == CMD_SET_UID_DATA) {
 		bool success = false;
 		uid_t uid = (uid_t)arg3;
-		success = ksu_allow_uid(uid, allow, true);
+		struct perm_data data;
+		if (copy_from_user(&data, arg4, sizeof(data))) {
+			success = ksu_set_uid_data(uid, data, true);
+			if (success) {
+				if (copy_to_user(result, &reply_ok,
+						 sizeof(reply_ok))) {
+					pr_err("prctl reply error, cmd: %d\n",
+					       arg2);
+				}
+			}
+			ksu_show_allow_list();
+		}
+	} else if (arg2 == CMD_GET_UID_DATA) {
+		struct perm_data data = ksu_get_uid_data((uid_t)arg3);
+		if (copy_to_user(arg4, &data, sizeof(data))) {
+			pr_err("prctl reply error, cmd: %d\n", arg2);
+		}
+	} else if (arg2 == CMD_COUNT_UID_DATA) {
+		return ksu_get_uid_data_list_count();
+	} else if (arg2 == CMD_LIST_UID_DATA) {
+		u32 array_length;
+		if (!copy_from_user(&array_length, arg4,
+				    sizeof(array_length))) {
+			pr_err("prctl copy allowlist error, cannot get length\n");
+			return 0;
+		}
+		bool success =
+			ksu_get_uid_data_list(arg3, &array_length, false);
 		if (success) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("prctl reply error, cmd: %d\n", arg2);
 			}
-		}
-		ksu_show_allow_list();
-	} else if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
-		u32 array[128];
-		u32 array_length;
-		bool success = ksu_get_allow_list(array, &array_length,
-						  arg2 == CMD_GET_ALLOW_LIST);
-		if (success) {
-			if (!copy_to_user(arg4, &array_length,
-					  sizeof(array_length)) &&
-			    !copy_to_user(arg3, array,
-					  sizeof(u32) * array_length)) {
-				if (copy_to_user(result, &reply_ok,
-						  sizeof(reply_ok))) {
-					pr_err("prctl reply error, cmd: %d\n",
-					       arg2);
-				}
-			} else {
-				pr_err("prctl copy allowlist error\n");
-			}
+		} else {
+			copy_to_user(arg4, &array_length, sizeof(array_length));
+			pr_err("prctl copy allowlist error\n");
 		}
 	}
 

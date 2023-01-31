@@ -30,8 +30,8 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 					    flags);
 }
 
-extern void ksu_enable_sucompat();
-extern void ksu_enable_ksud();
+extern void ksu_enable_sucompat(void);
+extern void ksu_enable_ksud(void);
 
 int __init kernelsu_init(void)
 {

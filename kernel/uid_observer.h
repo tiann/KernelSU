@@ -1,10 +1,10 @@
 #ifndef __KSU_H_UID_OBSERVER
 #define __KSU_H_UID_OBSERVER
 
-int ksu_uid_observer_init();
+int ksu_uid_observer_init(void);
 
-int ksu_uid_observer_exit();
+int ksu_uid_observer_exit(void);
 
-void update_uid();
+void update_uid(void);
 
 #endif
