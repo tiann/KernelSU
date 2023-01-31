@@ -27,6 +27,8 @@ android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
 extattr = "1.0.0"
 jwalk = "0.8.1"
 is_executable = "1.0.1"
+nom = "7"
+derive-new = "0.5"
 
 [profile.release]
 strip = true

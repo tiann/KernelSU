@@ -3,7 +3,7 @@
 use anyhow::{ensure, Result};
 use std::os::unix::process::CommandExt;
 
-const KERNEL_SU_OPTION: u32 = 0xDEADBEEF;
+pub const KERNEL_SU_OPTION: u32 = 0xDEADBEEF;
 
 const CMD_GRANT_ROOT: u64 = 0;
 // const CMD_BECOME_MANAGER: u64 = 1;
@@ -13,6 +13,7 @@ const CMD_GET_VERSION: u64 = 2;
 // const CMD_GET_ALLOW_LIST: u64 = 5;
 // const CMD_GET_DENY_LIST: u64 = 6;
 const CMD_REPORT_EVENT: u64 = 7;
+pub const CMD_SET_SEPOLICY: u64 = 8;
 
 const EVENT_POST_FS_DATA: u64 = 1;
 const EVENT_BOOT_COMPLETED: u64 = 2;
