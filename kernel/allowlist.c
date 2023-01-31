@@ -49,9 +49,9 @@ void ksu_show_perm_data(struct perm_data data)
 		data.cap.cap[1]);
 }
 
-void ksu_show_perm_list_node(struct perm_list_node data)
+void ksu_show_perm_list_node(const char* str, struct perm_list_node data)
 {
-	pr_info("uid: %d allow: %d, cap: %08x | %08x", data.uid,
+	pr_info("%s uid: %d allow: %d, cap: %08x | %08x", str, data.uid,
 		data.data.allow, data.data.cap.cap[0], data.data.cap.cap[1]);
 }
 
@@ -62,7 +62,7 @@ void ksu_show_allow_list(void)
 	pr_info("ksu_show_allow_list");
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
-		ksu_show_perm_list_node(*p);
+		ksu_show_perm_list_node(">", *p);
 	}
 }
 
@@ -114,12 +114,6 @@ struct perm_data ksu_get_uid_data(uid_t uid)
 		}
 	}
 
-#ifdef CONFIG_KSU_DEBUG
-	if (current_uid().val == 2000) {
-		return ALL_PERM;
-	}
-#endif
-
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
 		// pr_info("ksu_get_uid_data uid :%d ", p->uid);
@@ -140,11 +134,10 @@ bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf)
 	int max = *length;
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
-		pr_info("get_allow_list uid :%d, data: ", p->uid);
-		ksu_show_perm_data(p->data);
+		ksu_show_perm_list_node("ksu_get_uid_data_list", *p);
 		if (i > max) {
 			*length = i;
-			pr_err("get_allow_list array too small.\n");
+			pr_err("ksu_get_uid_data_list array too small.\n");
 			return false;
 		}
 		i++;
@@ -152,8 +145,12 @@ bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf)
 			array[i].uid = p->uid;
 			array[i].data = p->data;
 		} else {
-			if (copy_to_user(&array[i], p, sizeof(*p))) {
-				pr_err("get_allow_list copy_to_user failed.\n");
+			struct perm_uid_data tmp = {
+				.uid = p->uid,
+				.data = p->data,
+			};
+			if (copy_to_user(&array[i], &tmp, sizeof(tmp))) {
+				pr_err("ksu_get_uid_data_list copy_to_user failed.\n");
 				return false;
 			}
 		}

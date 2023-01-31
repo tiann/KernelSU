@@ -245,7 +245,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		bool success = false;
 		uid_t uid = (uid_t)arg3;
 		struct perm_data data;
-		if (copy_from_user(&data, arg4, sizeof(data))) {
+		if (!copy_from_user(&data, arg4, sizeof(data))) {
 			success = ksu_set_uid_data(uid, data, true);
 			if (success) {
 				if (copy_to_user(result, &reply_ok,
@@ -265,19 +265,18 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return ksu_get_uid_data_list_count();
 	} else if (arg2 == CMD_LIST_UID_DATA) {
 		u32 array_length;
-		if (!copy_from_user(&array_length, arg4,
-				    sizeof(array_length))) {
+		if (copy_from_user(&array_length, arg4, sizeof(array_length))) {
 			pr_err("prctl copy allowlist error, cannot get length\n");
 			return 0;
 		}
 		bool success =
 			ksu_get_uid_data_list(arg3, &array_length, false);
+		copy_to_user(arg4, &array_length, sizeof(array_length));
 		if (success) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("prctl reply error, cmd: %d\n", arg2);
 			}
 		} else {
-			copy_to_user(arg4, &array_length, sizeof(array_length));
 			pr_err("prctl copy allowlist error\n");
 		}
 	}
