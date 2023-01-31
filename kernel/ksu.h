@@ -7,24 +7,16 @@
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
 
-// KERNEL_SU_OPTION is ignored in comment, but it's needed
 
-// prctl(CMD_GRANT_ROOT)
 #define CMD_GRANT_ROOT 100
-// prctl(CMD_GET_VERSION, buf)
 #define CMD_GET_VERSION 101
-// prctl(CMD_REPORT_EVENT, buf)
 #define CMD_REPORT_EVENT 102
 
 // require manager
 #define CMD_BECOME_MANAGER 200
-// prctl(CMD_SET_UID_DATA, uid, data)
 #define CMD_SET_UID_DATA 201
-// prctl(CMD_GET_UID_DATA, uid, data)
 #define CMD_GET_UID_DATA 202
-// prctl(CMD_COUNT_UID_DATA, buf)
 #define CMD_COUNT_UID_DATA 203
-// prctl(CMD_LIST_UID_DATA, buf, buf_size, out_count)
 #define CMD_LIST_UID_DATA 204
 
 // evnets triggered by init
