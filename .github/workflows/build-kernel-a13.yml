@@ -17,12 +17,7 @@ on:
       - "kernel/**"
       - "userspace/ksud/**"
 jobs:
-  build-ksud:
-    uses: ./.github/workflows/ksud.yml
-    with:
-      target: aarch64-linux-android
   build-kernel:
-    needs: build-ksud
     if: github.event_name != 'pull_request'
     strategy:
       matrix:
@@ -102,7 +97,6 @@ jobs:
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
 
   check-build-kernel:
-    needs: build-ksud
     if: github.event_name == 'pull_request'
     strategy:
       matrix:
@@ -110,6 +104,9 @@ jobs:
           - version: "5.10"
             sub_level: 107
             os_patch_level: 2022-11
+          - version: "5.10"
+            sub_level: 149
+            os_patch_level: 2023-01
           - version: "5.15"
             sub_level: 41
             os_patch_level: 2022-11
