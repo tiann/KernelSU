@@ -5,14 +5,15 @@ use std::os::unix::process::CommandExt;
 
 const KERNEL_SU_OPTION: u32 = 0xDEADBEEF;
 
-const CMD_GRANT_ROOT: u64 = 0;
-// const CMD_BECOME_MANAGER: u64 = 1;
-const CMD_GET_VERSION: u64 = 2;
-// const CMD_ALLOW_SU: u64 = 3;
-// const CMD_DENY_SU: u64 = 4;
-// const CMD_GET_ALLOW_LIST: u64 = 5;
-// const CMD_GET_DENY_LIST: u64 = 6;
-const CMD_REPORT_EVENT: u64 = 7;
+const CMD_GRANT_ROOT: u64 = 100;
+const CMD_GET_VERSION: u64 = 101;
+const CMD_REPORT_EVENT: u64 = 102;
+
+const CMD_BECOME_MANAGER: u64 = 200
+const CMD_SET_UID_DATA: u64 = 201
+const CMD_GET_UID_DATA: u64 = 202
+const CMD_COUNT_UID_DATA: u64 = 203
+const CMD_LIST_UID_DATA: u64 = 204
 
 const EVENT_POST_FS_DATA: u64 = 1;
 const EVENT_BOOT_COMPLETED: u64 = 2;

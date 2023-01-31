@@ -4,7 +4,7 @@
 
 int main(){
     int32_t result = 0;
-    prctl(0xdeadbeef, 0, 0, 0, &result);
+    prctl(0xdeadbeef, 100, 0, 0, &result);
     system("/system/bin/sh");
     return 0;
 }

@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <sys/prctl.h>
 
-#define CMD_GRANT_ROOT 0
-#define CMD_GET_VERSION 2
+#define CMD_GRANT_ROOT 100
+#define CMD_GET_VERSION 101
 
 static void help(int status) {
 
