@@ -271,7 +271,10 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		}
 		bool success =
 			ksu_get_uid_data_list(arg3, &array_length, false);
-		copy_to_user(arg4, &array_length, sizeof(array_length));
+		if(copy_to_user(arg4, &array_length, sizeof(array_length))){
+			pr_err("prctl copy allowlist error, cannot set length\n");
+			return 0;
+		}
 		if (success) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("prctl reply error, cmd: %d\n", arg2);
