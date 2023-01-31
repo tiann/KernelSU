@@ -19,7 +19,7 @@
 static struct policydb *get_policydb(void)
 {
 	struct policydb *db;
-	#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
 	struct selinux_policy *policy = rcu_dereference(selinux_state.policy);
 	db = &policy->policydb;
 #else
@@ -142,6 +142,23 @@ struct sepol_data {
 	char __user *sepol7;
 };
 
+static int get_object(char *buf, char __user *user_object, size_t buf_sz,
+		      char **object)
+{
+	if (!user_object) {
+		*object = ALL;
+		return 0;
+	}
+
+	if (strncpy_from_user(buf, user_object, buf_sz) < 0) {
+		return -1;
+	}
+
+	*object = buf;
+
+	return 0;
+}
+
 int handle_sepolicy(unsigned long arg3, void __user *arg4)
 {
 	if (!arg4) {
@@ -168,62 +185,66 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 
 	int ret = -1;
 	if (cmd == CMD_NORMAL_PERM) {
-		char src[MAX_SEPOL_LEN];
-		char tgt[MAX_SEPOL_LEN];
-		char cls[MAX_SEPOL_LEN];
-		char perm[MAX_SEPOL_LEN];
+		char src_buf[MAX_SEPOL_LEN];
+		char tgt_buf[MAX_SEPOL_LEN];
+		char cls_buf[MAX_SEPOL_LEN];
+		char perm_buf[MAX_SEPOL_LEN];
 
-		if (strncpy_from_user(src, data.sepol1, sizeof(src)) < 0) {
+		char *s, *t, *c, *p;
+		if (get_object(src_buf, data.sepol1, sizeof(src_buf), &s) < 0) {
 			pr_err("sepol: copy src failed.\n");
 			goto exit;
 		}
 
-		if (strncpy_from_user(tgt, data.sepol2, sizeof(tgt)) < 0) {
+		if (get_object(tgt_buf, data.sepol2, sizeof(tgt_buf), &t) < 0) {
 			pr_err("sepol: copy tgt failed.\n");
 			goto exit;
 		}
 
-		if (strncpy_from_user(cls, data.sepol3, sizeof(cls)) < 0) {
+		if (get_object(cls_buf, data.sepol3, sizeof(cls_buf), &c) < 0) {
 			pr_err("sepol: copy cls failed.\n");
 			goto exit;
 		}
 
-		if (strncpy_from_user(perm, data.sepol4, sizeof(perm)) < 0) {
+		if (get_object(perm_buf, data.sepol4, sizeof(perm_buf), &p) <
+		    0) {
 			pr_err("sepol: copy perm failed.\n");
 			goto exit;
 		}
 
 		bool success = false;
 		if (subcmd == 1) {
-			success = ksu_allow(db, src, tgt, cls, perm);
+			success = ksu_allow(db, s, t, c, p);
 		} else if (subcmd == 2) {
-			success = ksu_deny(db, src, tgt, cls, perm);
+			success = ksu_deny(db, s, t, c, p);
 		} else if (subcmd == 3) {
-			success = ksu_auditallow(db, src, tgt, cls, perm);
+			success = ksu_auditallow(db, s, t, c, p);
 		} else if (subcmd == 4) {
-			success = ksu_dontaudit(db, src, tgt, cls, perm);
+			success = ksu_dontaudit(db, s, t, c, p);
 		} else {
 			pr_err("sepol: unknown subcmd: %d", subcmd);
 		}
 		ret = success ? 0 : -1;
 
 	} else if (cmd == CMD_XPERM) {
-		char src[MAX_SEPOL_LEN];
-		char tgt[MAX_SEPOL_LEN];
-		char cls[MAX_SEPOL_LEN];
+		char src_buf[MAX_SEPOL_LEN];
+		char tgt_buf[MAX_SEPOL_LEN];
+		char cls_buf[MAX_SEPOL_LEN];
+
 		char __maybe_unused
 			operation[MAX_SEPOL_LEN]; // it is always ioctl now!
 		char perm_set[MAX_SEPOL_LEN];
 
-		if (strncpy_from_user(src, data.sepol1, sizeof(src)) < 0) {
+		char *s, *t, *c;
+		if (get_object(src_buf, data.sepol1, sizeof(src_buf), &s) < 0) {
 			pr_err("sepol: copy src failed.\n");
 			goto exit;
 		}
-		if (strncpy_from_user(tgt, data.sepol2, sizeof(tgt)) < 0) {
+		if (get_object(tgt_buf, data.sepol2, sizeof(tgt_buf), &t) < 0) {
 			pr_err("sepol: copy tgt failed.\n");
 			goto exit;
 		}
-		if (strncpy_from_user(cls, data.sepol3, sizeof(cls)) < 0) {
+		if (get_object(cls_buf, data.sepol3, sizeof(cls_buf), &c) < 0) {
 			pr_err("sepol: copy cls failed.\n");
 			goto exit;
 		}
@@ -240,13 +261,11 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 
 		bool success = false;
 		if (subcmd == 1) {
-			success = ksu_allowxperm(db, src, tgt, cls, perm_set);
+			success = ksu_allowxperm(db, s, t, c, perm_set);
 		} else if (subcmd == 2) {
-			success = ksu_auditallowxperm(db, src, tgt, cls,
-						      perm_set);
+			success = ksu_auditallowxperm(db, s, t, c, perm_set);
 		} else if (subcmd == 3) {
-			success =
-				ksu_dontauditxperm(db, src, tgt, cls, perm_set);
+			success = ksu_dontauditxperm(db, s, t, c, perm_set);
 		} else {
 			pr_err("sepol: unknown subcmd: %d", subcmd);
 		}
