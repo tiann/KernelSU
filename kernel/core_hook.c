@@ -23,6 +23,8 @@
 #include "selinux/selinux.h"
 #include "uid_observer.h"
 
+extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
+
 static inline bool is_allow_su()
 {
 	if (is_manager()) {
@@ -227,6 +229,16 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		default:
 			break;
 		}
+		return 0;
+	}
+
+	if (arg2 == CMD_SET_SEPOLICY) {
+		if (!handle_sepolicy(arg3, arg4)) {
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("sepolicy: prctl reply error\n");
+			}
+		}
+
 		return 0;
 	}
 
