@@ -672,7 +672,7 @@ fn to_c_ptr(pol: &PolicyObject) -> *const libc::c_char {
     match pol {
         PolicyObject::None => std::ptr::null(),
         PolicyObject::All => std::ptr::null(),
-        PolicyObject::One(s) => s.as_ptr(),
+        PolicyObject::One(s) => s.as_ptr() as *const libc::c_char,
     }
 }
 
