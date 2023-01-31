@@ -1,6 +1,7 @@
 obj-y += selinux.o
 obj-y += sepolicy.o
 obj-y += rules.o
+obj-y += kernel_compat.o
 
 
 ccflags-y += -Wno-implicit-function-declaration -Wno-strict-prototypes -Wno-int-conversion

@@ -1,6 +1,7 @@
 #include "linux/fs.h"
 #include "linux/module.h"
 #include "linux/workqueue.h"
+#include "linux/version.h"
 
 #include "allowlist.h"
 #include "arch.h"
@@ -32,6 +33,9 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 
 extern void ksu_enable_sucompat();
 extern void ksu_enable_ksud();
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+extern void ksu_enable_selinux_compat();
+#endif
 
 int __init kernelsu_init(void)
 {
@@ -56,6 +60,9 @@ int __init kernelsu_init(void)
 #ifdef CONFIG_KPROBES
 	ksu_enable_sucompat();
 	ksu_enable_ksud();
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+	ksu_enable_selinux_compat();
+#endif
 #else
 #warning("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html")
 #endif

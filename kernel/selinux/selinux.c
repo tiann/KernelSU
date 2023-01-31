@@ -3,8 +3,6 @@
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
 
-#define KERNEL_SU_DOMAIN "u:r:su:s0"
-
 static u32 ksu_sid;
 
 static int transive_to_domain(const char *domain)

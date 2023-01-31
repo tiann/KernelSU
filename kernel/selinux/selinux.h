@@ -3,6 +3,9 @@
 
 #include "linux/types.h"
 
+#define KERNEL_SU_DOMAIN	"u:r:su:s0"
+#define INIT_DOMAIN		"u:r:init:s0"
+
 void setup_selinux();
 
 void setenforce(bool);
