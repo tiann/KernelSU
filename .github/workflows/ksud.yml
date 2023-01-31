@@ -29,11 +29,7 @@ jobs:
         restore-keys: ${{ runner.os }}-cargo-
 
     - name: Build ksud
-      uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: build
-        args: --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+      run: cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
       uses: actions/upload-artifact@v3
