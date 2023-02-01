@@ -122,7 +122,7 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
         "- Target image size: {}",
         humansize::format_size(target_size, humansize::DECIMAL)
     );
-    let target_size = target_size / 1024 + 1;
+    let target_size = target_size / 1024 + 1024;
 
     let result = Command::new("resize2fs")
         .args([img, &format!("{target_size}K")])
@@ -327,7 +327,7 @@ pub fn load_system_prop() -> Result<()> {
     Ok(())
 }
 
-pub fn install_module(zip: String) -> Result<()> {
+fn do_install_module(zip: String) -> Result<()> {
     ensure_boot_completed()?;
 
     // print banner
@@ -435,36 +435,31 @@ pub fn install_module(zip: String) -> Result<()> {
 
     setsyscon(module_update_tmp_dir)?;
 
-    let result = {
-        let module_dir = format!("{module_update_tmp_dir}/{module_id}");
-        ensure_clean_dir(&module_dir)?;
-        info!("module dir: {}", module_dir);
+    let module_dir = format!("{module_update_tmp_dir}/{module_id}");
+    ensure_clean_dir(&module_dir)?;
+    info!("module dir: {}", module_dir);
 
-        // unzip the image and move it to modules_update/<id> dir
-        let file = File::open(&zip)?;
-        let mut archive = zip::ZipArchive::new(file)?;
-        archive.extract(&module_dir)?;
+    // unzip the image and move it to modules_update/<id> dir
+    let file = File::open(&zip)?;
+    let mut archive = zip::ZipArchive::new(file)?;
+    archive.extract(&module_dir)?;
 
-        // set selinux for module/system dir
-        let mut module_system_dir = PathBuf::from(module_dir);
-        module_system_dir.push("system");
-        let module_system_dir = module_system_dir.as_path();
-        if module_system_dir.exists() {
-            let path = module_system_dir.to_str().unwrap();
-            restore_syscon(path)?;
-        }
+    // set selinux for module/system dir
+    let mut module_system_dir = PathBuf::from(module_dir);
+    module_system_dir.push("system");
+    let module_system_dir = module_system_dir.as_path();
+    if module_system_dir.exists() {
+        let path = module_system_dir.to_str().unwrap();
+        restore_syscon(path)?;
+    }
 
-        exec_install_script(&zip)
-    };
+    exec_install_script(&zip)?;
 
     // umount the modules_update.img
-    let _ = mount::umount_dir(module_update_tmp_dir);
+    mount::umount_dir(module_update_tmp_dir)?;
 
     // remove modules_update dir, ignore the error
-    let _ = remove_dir_all(module_update_tmp_dir);
-
-    // return if exec script failed
-    result.with_context(|| format!("Failed to execute install script for {module_id}"))?;
+    remove_dir_all(module_update_tmp_dir)?;
 
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
@@ -474,6 +469,17 @@ pub fn install_module(zip: String) -> Result<()> {
     mark_update()?;
 
     Ok(())
+}
+
+pub fn install_module(zip: String) -> Result<()> { 
+    let result = do_install_module(zip);
+    if result.is_err() {
+        // error happened, do some cleanup!
+        let _ = std::fs::remove_file(defs::MODULE_UPDATE_TMP_IMG);
+        let _ = mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
+        let _ = std::fs::remove_dir_all(defs::MODULE_UPDATE_TMP_DIR);
+    }
+    result
 }
 
 fn do_module_update<F>(update_dir: &str, id: &str, func: F) -> Result<()>
