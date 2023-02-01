@@ -204,7 +204,7 @@ pub fn exec_post_fs_data() -> Result<()> {
         let path = entry.path();
         let disabled = path.join(defs::DISABLE_FILE_NAME);
         if disabled.exists() {
-            println!("{} is disabled, skip", path.display());
+            warn!("{} is disabled, skip", path.display());
             continue;
         }
 
@@ -212,7 +212,7 @@ pub fn exec_post_fs_data() -> Result<()> {
         if !post_fs_data.exists() {
             continue;
         }
-        println!("exec {} post-fs-data.sh", path.display());
+        info!("exec {} post-fs-data.sh", path.display());
 
         let mut command_new;
         let mut command;
@@ -255,7 +255,7 @@ pub fn exec_services() -> Result<()> {
         let path = entry.path();
         let disabled = path.join(defs::DISABLE_FILE_NAME);
         if disabled.exists() {
-            println!("{} is disabled, skip", path.display());
+            warn!("{} is disabled, skip", path.display());
             continue;
         }
 
@@ -263,7 +263,7 @@ pub fn exec_services() -> Result<()> {
         if !service.exists() {
             continue;
         }
-        println!("exec {} service.sh", path.display());
+        info!("exec {} service.sh", path.display());
 
         let mut command_new;
         let mut command;
@@ -305,7 +305,7 @@ pub fn load_system_prop() -> Result<()> {
         let path = entry.path();
         let disabled = path.join(defs::DISABLE_FILE_NAME);
         if disabled.exists() {
-            println!("{} is disabled, skip", path.display());
+            info!("{} is disabled, skip", path.display());
             continue;
         }
 
@@ -313,7 +313,7 @@ pub fn load_system_prop() -> Result<()> {
         if !system_prop.exists() {
             continue;
         }
-        println!("load {} system.prop", path.display());
+        info!("load {} system.prop", path.display());
 
         // resetprop -n --file system.prop
         Command::new(assets::RESETPROP_PATH)
@@ -355,7 +355,6 @@ fn do_install_module(zip: String) -> Result<()> {
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
     };
-    info!("module id: {}", module_id);
 
     let modules_img = Path::new(defs::MODULE_IMG);
     let modules_update_img = Path::new(defs::MODULE_UPDATE_IMG);
@@ -532,9 +531,7 @@ where
 pub fn uninstall_module(id: String) -> Result<()> {
     do_module_update(defs::MODULE_UPDATE_TMP_DIR, &id, |mid, update_dir| {
         let dir = Path::new(update_dir);
-        if !dir.exists() {
-            bail!("No module installed");
-        }
+        ensure!(dir.exists(), "No module installed");
 
         // iterate the modules_update dir, find the module to be removed
         let dir = std::fs::read_dir(dir)?;
@@ -574,9 +571,7 @@ pub fn uninstall_module(id: String) -> Result<()> {
 fn do_enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
     let src_module_path = format!("{module_dir}/{mid}");
     let src_module = Path::new(&src_module_path);
-    if !src_module.exists() {
-        bail!("module: {} not found!", mid);
-    }
+    ensure!(src_module.exists(), "module: {} not found!", mid);
 
     let disable_path = src_module.join(defs::DISABLE_FILE_NAME);
     if enable {

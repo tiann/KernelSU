@@ -1,5 +1,8 @@
 use anyhow::{Ok, Result};
 use clap::Parser;
+#[cfg(target_os="android")]
+use android_logger::Config;
+use log::LevelFilter;
 
 use crate::{apk_sign, debug, event, module};
 
@@ -117,7 +120,19 @@ enum Module {
 }
 
 pub fn run() -> Result<()> {
+    #[cfg(target_os="android")]
+    android_logger::init_once(
+        Config::default()
+            .with_max_level(LevelFilter::Trace) // limit log level
+            .with_tag("KernelSU") // logs will show under mytag tag
+    );
+
+    #[cfg(not(target_os="android"))]
+    env_logger::init();
+
     let cli = Args::parse();
+
+    log::info!("command: {:?}", cli.command);
 
     let result = match cli.command {
         Commands::Daemon => event::daemon(),
@@ -125,7 +140,6 @@ pub fn run() -> Result<()> {
         Commands::BootCompleted => event::on_boot_completed(),
 
         Commands::Module { command } => {
-            env_logger::init();
 
             match command {
                 Module::Install { zip } => module::install_module(zip),
@@ -138,7 +152,7 @@ pub fn run() -> Result<()> {
         Commands::Install => event::install(),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
-            Sepolicy::Apply { file } => crate::sepolicy::apply_file(&file),
+            Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
         },
         Commands::Services => event::on_services(),
 
