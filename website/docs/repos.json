@@ -75,5 +75,12 @@
         "kernel_name": "android_kernel_xiaomi_sdm845",
         "kernel_link": "https://github.com/OnlyTomInSecond/android_kernel_xiaomi_sdm845",
         "devices": "Mi 8 (dipper) for LineageOS"
+    },
+    {
+        "maintainer": "WeeAris",
+        "maintainer_link": "https://github.com/WeeAris",
+        "kernel_name": "Realking_su_xiaomi_sm8250",
+        "kernel_link": "https://github.com/WeeAris/Realking_su_xiaomi_sm8250",
+        "devices": "non-GKI devices, 4.19.x kernel, sm8250, repo for AOSP only."
     }
 ]
