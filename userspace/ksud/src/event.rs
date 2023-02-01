@@ -1,10 +1,10 @@
 use std::{collections::HashMap, path::Path};
 
 use crate::{
-    defs,
+    assets, defs,
     utils::{ensure_clean_dir, ensure_dir_exists, mount_image},
 };
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use sys_mount::{FilesystemType, Mount, MountFlags};
 
 fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) {
@@ -105,6 +105,8 @@ pub fn on_post_data_fs() -> Result<()> {
     // we should clean the module mount point if it exists
     ensure_clean_dir(module_dir)?;
 
+    assets::ensure_bin_assets().with_context(|| "Failed to extract bin assets")?;
+
     if Path::new(module_update_img).exists() {
         if module_update_flag.exists() {
             // if modules_update.img exists, and the the flag indicate this is an update
@@ -177,7 +179,8 @@ pub fn daemon() -> Result<()> {
 
 pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
-    std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)
-        .map(|_| ())
-        .map_err(anyhow::Error::from)
+    std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
+
+    // install binary assets also!
+    assets::ensure_bin_assets().with_context(|| "Failed to extract assets")
 }

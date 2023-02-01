@@ -3,6 +3,7 @@ use crate::{
     restorecon::{restore_syscon, setsyscon},
     sepolicy,
     utils::*,
+    assets,
 };
 
 use const_format::concatcp;
@@ -295,21 +296,7 @@ pub fn exec_services() -> Result<()> {
     Ok(())
 }
 
-const RESETPROP_PATH: &str = concatcp!(defs::BINARY_DIR, "resetprop");
-#[cfg(target_arch = "aarch64")]
-const RESETPROP: &[u8] = include_bytes!("../bin/aarch64/resetprop");
-#[cfg(target_arch = "x86_64")]
-const RESETPROP: &[u8] = include_bytes!("../bin/x86_64/resetprop");
-
-const BUSYBOX_PATH: &str = concatcp!(defs::BINARY_DIR, "busybox");
-#[cfg(target_arch = "aarch64")]
-const BUSYBOX: &[u8] = include_bytes!("../bin/aarch64/busybox");
-#[cfg(target_arch = "x86_64")]
-const BUSYBOX: &[u8] = include_bytes!("../bin/x86_64/busybox");
-
 pub fn load_system_prop() -> Result<()> {
-    ensure_binary(RESETPROP_PATH, RESETPROP)?;
-    ensure_binary(BUSYBOX_PATH, BUSYBOX)?;
 
     let modules_dir = Path::new(defs::MODULE_DIR);
     let dir = std::fs::read_dir(modules_dir)?;
@@ -328,7 +315,7 @@ pub fn load_system_prop() -> Result<()> {
         println!("load {} system.prop", path.display());
 
         // resetprop -n --file system.prop
-        Command::new(RESETPROP_PATH)
+        Command::new(assets::RESETPROP_PATH)
             .arg("-n")
             .arg("--file")
             .arg(&system_prop)
@@ -345,9 +332,11 @@ pub fn install_module(zip: String) -> Result<()> {
     // print banner
     println!(include_str!("banner"));
 
+    assets::ensure_bin_assets().with_context(|| "Failed to extract assets")?;
+
     // first check if workding dir is usable
-    ensure_dir_exists(defs::WORKING_DIR)?;
-    ensure_dir_exists(defs::BINARY_DIR)?;
+    ensure_dir_exists(defs::WORKING_DIR).with_context(|| "Failed to create working dir")?;
+    ensure_dir_exists(defs::BINARY_DIR).with_context(|| "Failed to create bin dir")?;
 
     // read the module_id from zip, if faild if will return early.
     let mut buffer: Vec<u8> = Vec::new();
