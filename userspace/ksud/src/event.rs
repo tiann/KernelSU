@@ -155,7 +155,9 @@ pub fn on_post_data_fs() -> Result<()> {
 pub fn on_services() -> Result<()> {
     // exec modules service.sh scripts
     if !crate::utils::is_safe_mode() {
-        let _ = crate::module::exec_services();
+        if let Err(e) = crate::module::exec_services() {
+            warn!("exec service scripts failed: {}", e);
+        }
     } else {
         warn!("safe mode, skip module service scripts");
     }

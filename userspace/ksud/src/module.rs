@@ -9,7 +9,7 @@ use crate::{
 
 use const_format::concatcp;
 use java_properties::PropertiesIter;
-use log::{info, warn};
+use log::{info, warn, debug};
 use std::{
     collections::HashMap,
     env::var as env_var,
@@ -216,10 +216,12 @@ pub fn exec_post_fs_data() -> Result<()> {
 
         let mut command_new;
         let mut command;
-        if is_executable(&post_fs_data) {
+        if !is_executable(&post_fs_data) {
+            debug!("{} is not executable, use /system/bin/sh!", post_fs_data.display());
             command_new = Command::new("sh");
             command = command_new.arg(&post_fs_data);
         } else {
+            debug!("{} is executable, exec directly!", post_fs_data.display());
             command_new = Command::new(&post_fs_data);
             command = &mut command_new;
         };
@@ -267,10 +269,12 @@ pub fn exec_services() -> Result<()> {
 
         let mut command_new;
         let mut command;
-        if is_executable(&service) {
+        if !is_executable(&service) {
+            debug!("{} is not executable, use /system/bin/sh!", service.display());
             command_new = Command::new("sh");
             command = command_new.arg(&service);
         } else {
+            debug!("{} is executable, exec directly!", service.display());
             command_new = Command::new(&service);
             command = &mut command_new;
         };
