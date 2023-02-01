@@ -29,7 +29,7 @@ static inline struct perm_data is_allow_su()
 		// we are manager, allow!
 		return ALL_PERM;
 	}
-	return ksu_get_uid_data(current_uid().val);
+	return ksu_get_uid_perm(current_uid().val);
 }
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
@@ -190,7 +190,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		} else {
 			pr_info("deny root for: %d\n", current_uid());
 			// add it to deny list!
-			ksu_set_uid_data(current_uid().val, NO_PERM, true);
+			ksu_set_uid_perm(current_uid().val, NO_PERM, true);
 		}
 		return 0;
 	}
@@ -246,7 +246,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		uid_t uid = (uid_t)arg3;
 		struct perm_data data;
 		if (!copy_from_user(&data, arg4, sizeof(data))) {
-			success = ksu_set_uid_data(uid, data, true);
+			success = ksu_set_uid_perm(uid, data, true);
 			if (success) {
 				if (copy_to_user(result, &reply_ok,
 						 sizeof(reply_ok))) {
@@ -257,12 +257,12 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			ksu_show_allow_list();
 		}
 	} else if (arg2 == CMD_GET_UID_DATA) {
-		struct perm_data data = ksu_get_uid_data((uid_t)arg3);
+		struct perm_data data = ksu_get_uid_perm((uid_t)arg3);
 		if (copy_to_user(arg4, &data, sizeof(data))) {
 			pr_err("prctl reply error, cmd: %d\n", arg2);
 		}
 	} else if (arg2 == CMD_COUNT_UID_DATA) {
-		return ksu_get_uid_data_list_count();
+		return ksu_get_uid_perm_list_count();
 	} else if (arg2 == CMD_LIST_UID_DATA) {
 		u32 array_length;
 		if (copy_from_user(&array_length, arg4, sizeof(array_length))) {
@@ -270,7 +270,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 		bool success =
-			ksu_get_uid_data_list(arg3, &array_length, false);
+			ksu_get_uid_perm_list(arg3, &array_length, false);
 		if(copy_to_user(arg4, &array_length, sizeof(array_length))){
 			pr_err("prctl copy allowlist error, cannot set length\n");
 			return 0;

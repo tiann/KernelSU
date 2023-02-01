@@ -1,4 +1,3 @@
-#include "asm-generic/int-ll64.h"
 #include "linux/capability.h"
 #include "linux/delay.h"
 #include "linux/fs.h"
@@ -30,7 +29,7 @@ const struct perm_data ALL_PERM = {
 struct perm_list_node {
 	struct list_head list;
 	uid_t uid;
-	struct perm_data data;
+	struct perm_data perm;
 };
 
 static struct list_head allow_list;
@@ -43,16 +42,10 @@ static struct work_struct ksu_load_work;
 
 bool persistent_allow_list(void);
 
-void ksu_show_perm_data(struct perm_data data)
+static void ksu_show_perm_list_node(const char* str, struct perm_list_node* node)
 {
-	pr_cont("allow: %d, cap: %08x | %08x", data.allow, data.cap.cap[0],
-		data.cap.cap[1]);
-}
-
-void ksu_show_perm_list_node(const char* str, struct perm_list_node data)
-{
-	pr_info("%s uid: %d allow: %d, cap: %08x | %08x", str, data.uid,
-		data.data.allow, data.data.cap.cap[0], data.data.cap.cap[1]);
+	pr_info("%s uid: %d allow: %d, cap: %08x | %08x", str, node->uid,
+		node->perm.allow, node->perm.cap.cap[0], node->perm.cap.cap[1]);
 }
 
 void ksu_show_allow_list(void)
@@ -62,11 +55,11 @@ void ksu_show_allow_list(void)
 	pr_info("ksu_show_allow_list");
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
-		ksu_show_perm_list_node(">", *p);
+		ksu_show_perm_list_node(">", p);
 	}
 }
 
-bool ksu_set_uid_data(uid_t uid, struct perm_data data, bool persist)
+bool ksu_set_uid_perm(uid_t uid, struct perm_data data, bool persist)
 {
 	// find the node first!
 	struct perm_list_node *p = NULL;
@@ -75,7 +68,7 @@ bool ksu_set_uid_data(uid_t uid, struct perm_data data, bool persist)
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
 		if (uid == p->uid) {
-			p->data = data;
+			p->perm = data;
 			result = true;
 			goto exit;
 		}
@@ -89,7 +82,7 @@ bool ksu_set_uid_data(uid_t uid, struct perm_data data, bool persist)
 		return false;
 	}
 	p->uid = uid;
-	p->data = data;
+	p->perm = data;
 
 	list_add_tail(&p->list, &allow_list);
 	allow_list_count++;
@@ -102,7 +95,7 @@ exit:
 	return result;
 }
 
-struct perm_data ksu_get_uid_data(uid_t uid)
+struct perm_data ksu_get_uid_perm(uid_t uid)
 {
 	struct perm_list_node *p = NULL;
 	struct list_head *pos = NULL;
@@ -116,17 +109,15 @@ struct perm_data ksu_get_uid_data(uid_t uid)
 
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
-		// pr_info("ksu_get_uid_data uid :%d ", p->uid);
-		// ksu_show_perm_data(p->data);
 		if (uid == p->uid) {
-			return p->data;
+			return p->perm;
 		}
 	}
 
 	return NO_PERM;
 }
 
-bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf)
+bool ksu_get_uid_perm_list(struct perm_uid_data *array, int *length, bool kbuf)
 {
 	struct perm_list_node *p = NULL;
 	struct list_head *pos = NULL;
@@ -134,7 +125,7 @@ bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf)
 	int max = *length;
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
-		ksu_show_perm_list_node("ksu_get_uid_data_list", *p);
+		ksu_show_perm_list_node("ksu_get_uid_data_list", p);
 		if (i > max) {
 			*length = i;
 			pr_err("ksu_get_uid_data_list array too small.\n");
@@ -143,11 +134,11 @@ bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf)
 		i++;
 		if (kbuf) {
 			array[i].uid = p->uid;
-			array[i].data = p->data;
+			array[i].perm = p->perm;
 		} else {
 			struct perm_uid_data tmp = {
 				.uid = p->uid,
-				.data = p->data,
+				.perm = p->perm,
 			};
 			if (copy_to_user(&array[i], &tmp, sizeof(tmp))) {
 				pr_err("ksu_get_uid_data_list copy_to_user failed.\n");
@@ -160,7 +151,7 @@ bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf)
 	return true;
 }
 
-unsigned int ksu_get_uid_data_list_count(void)
+unsigned int ksu_get_uid_perm_list_count(void)
 {
 	return allow_list_count;
 }
@@ -196,9 +187,9 @@ void do_persistent_allow_list(struct work_struct *work)
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_list_node, list);
 		pr_info("save allow list uid :%d, allow: %d\n", p->uid,
-			p->data.allow);
+			p->perm.allow);
 		kernel_write(fp, &p->uid, sizeof(p->uid), &off);
-		kernel_write(fp, &p->data, sizeof(p->data), &off);
+		kernel_write(fp, &p->perm, sizeof(p->perm), &off);
 	}
 
 exit:
@@ -236,7 +227,7 @@ void do_load_allow_list(struct work_struct *work)
 		int errno = PTR_ERR(fp);
 		if (errno == -ENOENT) {
 			// allow adb shell by default
-			ksu_set_uid_data(2000, ALL_PERM, true);
+			ksu_set_uid_perm(2000, ALL_PERM, true);
 		} else {
 			pr_err("load_allow_list open file failed: %d\n",
 			       PTR_ERR(fp));
@@ -265,7 +256,7 @@ void do_load_allow_list(struct work_struct *work)
 		pr_info("allowlist version too old");
 #ifdef CONFIG_KSU_DEBUG
 		// allow adb shell by default
-		ksu_set_uid_data(2000, ALL_PERM, true);
+		ksu_set_uid_perm(2000, ALL_PERM, true);
 #endif
 		return;
 	}
@@ -282,7 +273,7 @@ void do_load_allow_list(struct work_struct *work)
 
 		pr_info("load_allow_uid: %d, allow: %d\n", uid, data.allow);
 
-		ksu_set_uid_data(uid, data, false);
+		ksu_set_uid_perm(uid, data, false);
 	}
 
 exit:

@@ -14,7 +14,7 @@ struct perm_data {
 
 struct perm_uid_data {
 	uid_t uid;
-	struct perm_data data;
+	struct perm_data perm;
 };
 
 void ksu_allowlist_init(void);
@@ -25,13 +25,13 @@ bool ksu_load_allow_list(void);
 
 void ksu_show_allow_list(void);
 
-struct perm_data ksu_get_uid_data(uid_t uid);
+struct perm_data ksu_get_uid_perm(uid_t uid);
 
-bool ksu_set_uid_data(uid_t uid, struct perm_data data, bool persist);
+bool ksu_set_uid_perm(uid_t uid, struct perm_data data, bool persist);
 
-bool ksu_get_uid_data_list(struct perm_uid_data *array, int *length, bool kbuf);
+bool ksu_get_uid_perm_list(struct perm_uid_data *array, int *length, bool kbuf);
 
-unsigned int ksu_get_uid_data_list_count(void);
+unsigned int ksu_get_uid_perm_list_count(void);
 
 void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data);
 

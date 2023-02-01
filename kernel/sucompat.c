@@ -43,7 +43,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	if (!ksu_get_uid_data(current_uid().val).allow) {
+	if (!ksu_get_uid_perm(current_uid().val).allow) {
 		return 0;
 	}
 
@@ -68,7 +68,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	if (!ksu_get_uid_data(current_uid().val).allow) {
+	if (!ksu_get_uid_perm(current_uid().val).allow) {
 		return 0;
 	}
 
@@ -107,7 +107,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	data = ksu_get_uid_data(current_uid().val);
+	data = ksu_get_uid_perm(current_uid().val);
 	if (!data.allow) {
 		return 0;
 	}
