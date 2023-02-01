@@ -32,9 +32,12 @@ rust-embed = { version = "6.4.2", features = [
     "compression", # must clean build after updating binaries
 ] }
 
-[target.'cfg(target_os = "android")'.dependencies]
+[target.'cfg(unix)'.dependencies]
 sys-mount = "2.0.1"
+# some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.12"
 
 [profile.release]

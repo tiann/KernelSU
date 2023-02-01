@@ -1,11 +1,11 @@
+use anyhow::{bail, Context, Result};
+use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
 use crate::{
     assets, defs, mount,
     utils::{ensure_clean_dir, ensure_dir_exists},
 };
-use anyhow::{bail, Context, Result};
-use log::{info, warn};
 
 fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
     if lowerdir.is_empty() {
@@ -28,7 +28,7 @@ fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
     mount::mount_overlay(&lowerdir, &lowest_dir)
 }
 
-pub fn do_systemless_mount(module_dir: &str) -> Result<()> {
+pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
     // construct overlay mount params
     let dir = std::fs::read_dir(module_dir);
     let Ok(dir) = dir else {
@@ -40,7 +40,7 @@ pub fn do_systemless_mount(module_dir: &str) -> Result<()> {
     let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
     let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
     for ele in &partition {
-        partition_lowerdir.insert(ele.to_string(), Vec::new());
+        partition_lowerdir.insert((*ele).to_string(), Vec::new());
     }
 
     for entry in dir.flatten() {
@@ -55,7 +55,7 @@ pub fn do_systemless_mount(module_dir: &str) -> Result<()> {
         }
 
         let module_system = Path::new(&module).join("system");
-        if !module_system.as_path().exists() {
+        if !module_system.exists() {
             info!("module: {} has no system overlay.", module.display());
             continue;
         }
@@ -133,12 +133,14 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // mount systemless overlay
-    if let Err(e) = do_systemless_mount(module_dir) {
+    if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
 
     // module mounted, exec modules post-fs-data scripts
-    if !crate::utils::is_safe_mode() {
+    if crate::utils::is_safe_mode() {
+        warn!("safe mode, skip module post-fs-data scripts");
+    } else {
         // todo: Add timeout
         if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
             warn!("exec common post-fs-data scripts failed: {}", e);
@@ -149,8 +151,6 @@ pub fn on_post_data_fs() -> Result<()> {
         if let Err(e) = crate::module::load_system_prop() {
             warn!("load system.prop failed: {}", e);
         }
-    } else {
-        warn!("safe mode, skip module post-fs-data scripts");
     }
 
     Ok(())
@@ -158,15 +158,15 @@ pub fn on_post_data_fs() -> Result<()> {
 
 pub fn on_services() -> Result<()> {
     // exec modules service.sh scripts
-    if !crate::utils::is_safe_mode() {
+    if crate::utils::is_safe_mode() {
+        warn!("safe mode, skip module service scripts");
+    } else {
         if let Err(e) = crate::module::exec_common_scripts("service.d", false) {
             warn!("exec common service scripts failed: {}", e);
         }
         if let Err(e) = crate::module::exec_services() {
             warn!("exec service scripts failed: {}", e);
         }
-    } else {
-        warn!("safe mode, skip module service scripts");
     }
 
     Ok(())

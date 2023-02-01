@@ -1,10 +1,14 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{create_dir_all, set_permissions, write, File, Permissions},
+    fs::{create_dir_all, write, File},
     io::ErrorKind::AlreadyExists,
-    os::unix::prelude::PermissionsExt,
     path::Path,
 };
+
+#[allow(unused_imports)]
+use std::fs::{set_permissions, Permissions};
+#[cfg(unix)]
+use std::os::unix::prelude::PermissionsExt;
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
@@ -23,9 +27,8 @@ pub fn ensure_file_exists<T: AsRef<Path>>(file: T) -> Result<()> {
             if err.kind() == AlreadyExists && file.as_ref().is_file() {
                 Ok(())
             } else {
-                Err(Error::from(err)).with_context(|| {
-                    format!("{} is not a regular file", file.as_ref().to_str().unwrap())
-                })
+                Err(Error::from(err))
+                    .with_context(|| format!("{} is not a regular file", file.as_ref().display()))
             }
         }
     }
@@ -36,10 +39,7 @@ pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
     if dir.as_ref().is_dir() {
         result
     } else if result.is_ok() {
-        bail!(
-            "{} is not a regular directory",
-            dir.as_ref().to_str().unwrap()
-        )
+        bail!("{} is not a regular directory", dir.as_ref().display())
     } else {
         result
     }
@@ -58,16 +58,17 @@ pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8]) -> Result<()> {
     })?)?;
 
     write(&path, contents)?;
+    #[cfg(unix)]
     set_permissions(&path, Permissions::from_mode(0o755))?;
     Ok(())
 }
 
-#[cfg(target_os = "android")]
+#[cfg(unix)]
 pub fn getprop(prop: &str) -> Option<String> {
     android_properties::getprop(prop).value()
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(not(unix))]
 pub fn getprop(_prop: &str) -> Option<String> {
     unimplemented!()
 }
