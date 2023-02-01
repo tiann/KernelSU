@@ -53,33 +53,36 @@ if (!is_domain_permissive) {
 
 void setenforce(bool enforce)
 {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 14, 0)
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	selinux_state.enforcing = enforce;
-#endif
 #else
-    selinux_enabled = enforce;
+	selinux_enabled = enforce;
+#endif
 #endif
 }
 
 bool getenforce()
 {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 14, 0)
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	if (selinux_state.disabled) {
+#else
+	if (selinux_disabled) {
+#endif
 		return false;
 	}
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	return selinux_state.enforcing;
 #else
-	return false;
+	return selinux_enabled;
 #endif
 #else
-    return selinux_enabled;
+	return true;
 #endif
-
 }
 
 bool is_ksu_domain()
