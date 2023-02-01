@@ -49,6 +49,7 @@ function sidebarGuide() {
           { text: 'Instalasi', link: '/id_ID/guide/installation' },
           { text: 'Bagaimana cara buildnya?', link: '/id_ID/guide/how-to-build' },
           { text: 'Integrasi untuk perangkat non-GKI', link: '/id_ID/guide/how-to-integrate-for-non-gki'},
+          { text: 'Perangkat yang didukung secara tidak resmi', link: '/id_ID/unofficially-support-devices.md' },
           { text: 'FAQ', link: '/id_ID/guide/faq' },
         ]
     }
