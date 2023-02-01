@@ -7,7 +7,6 @@ on:
       - ".github/workflows/gki-kernel.yml"
       - ".github/scripts/build_a13.sh"
       - "kernel/**"
-      - "userspace/ksud/**"
   pull_request:
     branches: ["main"]
     paths:
@@ -15,7 +14,6 @@ on:
       - ".github/workflows/gki-kernel.yml"
       - ".github/scripts/build-a13.sh"
       - "kernel/**"
-      - "userspace/ksud/**"
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request'
