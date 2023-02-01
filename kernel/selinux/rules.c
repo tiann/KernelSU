@@ -19,12 +19,17 @@
 static struct policydb *get_policydb(void)
 {
 	struct policydb *db;
+// selinux_state does not exists before 4.19
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 14, 0)
 #ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
 	struct selinux_policy *policy = rcu_dereference(selinux_state.policy);
 	db = &policy->policydb;
 #else
 	struct selinux_ss *ss = rcu_dereference(selinux_state.ss);
 	db = &ss->policydb;
+#endif
+#else
+    db = &policydb;
 #endif
 	return db;
 }
@@ -69,12 +74,14 @@ void apply_kernelsu_rules()
 	// Android 10+:
 	// http://aospxref.com/android-12.0.0_r3/xref/system/sepolicy/private/file_contexts#512
 	ksu_allow(db, "kernel", "packages_list_file", "file", ALL);
+	// Kernel 4.4
+	ksu_allow(db, "kernel", "packages_list_file", "dir", ALL);
 	// Android 9-:
 	// http://aospxref.com/android-9.0.0_r61/xref/system/sepolicy/private/file_contexts#360
 	ksu_allow(db, "kernel", "system_data_file", "file", ALL);
-
+	ksu_allow(db, "kernel", "system_data_file", "dir", ALL);
 	// our ksud triggered by init
-	ksu_allow(db, "init", "adb_data_file", "file", "execute");
+	ksu_allow(db, "init", "adb_data_file", "file", ALL);
 	ksu_allow(db, "init", KERNEL_SU_DOMAIN, ALL, ALL);
 
 	// copied from Magisk rules

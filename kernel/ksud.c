@@ -215,7 +215,7 @@ static struct kprobe execve_kp = {
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) &&                        \
 	LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "__do_execve_file",
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) &&                        \
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) &&                        \
 	LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
 	.symbol_name = "do_execveat_common",
 #endif

@@ -1,6 +1,6 @@
 #include "selinux.h"
 #include "objsec.h"
-
+#include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
@@ -53,13 +53,18 @@ if (!is_domain_permissive) {
 
 void setenforce(bool enforce)
 {
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 14, 0)
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
 	selinux_state.enforcing = enforce;
+#endif
+#else
+    selinux_enabled = enforce;
 #endif
 }
 
 bool getenforce()
 {
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 14, 0)
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
 	if (selinux_state.disabled) {
 		return false;
@@ -71,6 +76,10 @@ bool getenforce()
 #else
 	return false;
 #endif
+#else
+    return selinux_enabled;
+#endif
+
 }
 
 bool is_ksu_domain()
