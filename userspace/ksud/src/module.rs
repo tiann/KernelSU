@@ -4,6 +4,7 @@ use crate::{
     sepolicy,
     utils::*,
     assets,
+    mount,
 };
 
 use const_format::concatcp;
@@ -430,7 +431,7 @@ pub fn install_module(zip: String) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    mount_image(tmp_module_img, module_update_tmp_dir)?;
+    mount::mount_ext4(tmp_module_img, module_update_tmp_dir)?;
 
     setsyscon(module_update_tmp_dir)?;
 
@@ -457,7 +458,7 @@ pub fn install_module(zip: String) -> Result<()> {
     };
 
     // umount the modules_update.img
-    let _ = umount_dir(module_update_tmp_dir);
+    let _ = mount::umount_dir(module_update_tmp_dir);
 
     // remove modules_update dir, ignore the error
     let _ = remove_dir_all(module_update_tmp_dir);
@@ -506,13 +507,13 @@ where
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    mount_image(defs::MODULE_UPDATE_TMP_IMG, update_dir)?;
+    mount::mount_ext4(defs::MODULE_UPDATE_TMP_IMG, update_dir)?;
 
     // call the operation func
     let result = func(id, update_dir);
 
     // umount modules_update.img
-    let _ = umount_dir(update_dir);
+    let _ = mount::umount_dir(update_dir);
     let _ = remove_dir_all(update_dir);
 
     std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)?;

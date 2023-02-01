@@ -11,7 +11,7 @@ use nom::{
     sequence::Tuple,
     IResult, Parser,
 };
-use std::{vec, path::Path};
+use std::{path::Path, vec};
 
 type SeObject<'a> = Vec<&'a str>;
 
@@ -692,6 +692,7 @@ impl From<AtomicStatement> for FfiPolicy {
     }
 }
 
+#[cfg(target_os = "android")]
 fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
     let policies: Vec<AtomicStatement> = statement.try_into()?;
 
@@ -714,6 +715,11 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(not(target_os = "android"))]
+fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
+    unimplemented!()
 }
 
 pub fn live_patch(policy: &str) -> Result<()> {

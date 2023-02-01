@@ -23,7 +23,7 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
 
             if u32::from_le_bytes(size4) ^ 0xcafebabeu32 == 0xccfbf1eeu32 {
                 if i > 0 {
-                    println!("warning: comment length is {}", i);
+                    println!("warning: comment length is {i}");
                 }
                 break;
             }

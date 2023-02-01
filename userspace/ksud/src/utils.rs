@@ -1,33 +1,10 @@
-use anyhow::{bail, ensure, Context, Error, Ok, Result};
-use retry::delay::NoDelay;
+use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
     fs::{create_dir_all, set_permissions, write, File, Permissions},
     io::ErrorKind::AlreadyExists,
     os::unix::prelude::PermissionsExt,
     path::Path,
 };
-use sys_mount::{unmount, FilesystemType, Mount, UnmountFlags};
-
-fn do_mount_image(src: &str, target: &str) -> Result<()> {
-    Mount::builder()
-        .fstype(FilesystemType::from("ext4"))
-        .mount(src, target)
-        .with_context(|| format!("Failed to do mount: {src} -> {target}"))?;
-    Ok(())
-}
-
-pub fn mount_image(src: &str, target: &str) -> Result<()> {
-    // umount target first.
-    let _ = umount_dir(target);
-    let result = retry::retry(NoDelay.take(3), || do_mount_image(src, target));
-    ensure!(result.is_ok(), "Failed to mount {} -> {}", src, target);
-    Ok(())
-}
-
-pub fn umount_dir(src: &str) -> Result<()> {
-    unmount(src, UnmountFlags::empty()).with_context(|| format!("Failed to umount {src}"))?;
-    Ok(())
-}
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
@@ -83,8 +60,14 @@ pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8]) -> Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "android")]
 pub fn getprop(prop: &str) -> Option<String> {
     android_properties::getprop(prop).value()
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn getprop(prop: &str) -> Option<String> {
+    unimplemented!()
 }
 
 pub fn is_safe_mode() -> bool {
