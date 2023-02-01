@@ -12,6 +12,7 @@
 #include "ksu.h"
 #include "manager.h"
 #include "uid_observer.h"
+#include "kernel_compat.h"
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 static struct work_struct ksu_update_uid_work;
@@ -54,13 +55,13 @@ static void do_update_uid(struct work_struct *work)
 	loff_t line_start = 0;
 	char buf[128];
 	for (;;) {
-		ssize_t count = kernel_read(fp, &chr, sizeof(chr), &pos);
+		ssize_t count = kernel_read_compat(fp, &chr, sizeof(chr), &pos);
 		if (count != sizeof(chr))
 			break;
 		if (chr != '\n')
 			continue;
 
-		count = kernel_read(fp, buf, sizeof(buf), &line_start);
+		count = kernel_read_compat(fp, buf, sizeof(buf), &line_start);
 
 		struct uid_data *data =
 			kmalloc(sizeof(struct uid_data), GFP_ATOMIC);
