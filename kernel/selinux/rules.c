@@ -59,7 +59,7 @@ void apply_kernelsu_rules()
 		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "chr_file", ALL);
 	}
 
-	// we need to save allowlist in /data/adb
+	// we need to save allowlist in /data/adb/ksu
 	ksu_allow(db, "kernel", "adb_data_file", "dir", ALL);
 	ksu_allow(db, "kernel", "adb_data_file", "file", ALL);
 	// we may need to do mount on shell

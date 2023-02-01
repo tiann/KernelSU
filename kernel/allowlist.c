@@ -21,7 +21,7 @@ struct perm_data {
 
 static struct list_head allow_list;
 
-#define KERNEL_SU_ALLOWLIST "/data/adb/.ksu_allowlist"
+#define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
 static struct work_struct ksu_save_work;
 static struct work_struct ksu_load_work;
@@ -159,7 +159,7 @@ void do_load_allow_list(struct work_struct *work)
 	u32 magic;
 	u32 version;
 
-	fp = filp_open("/data/adb/", O_RDONLY, 0);
+	fp = filp_open("/data/adb", O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		int errno = PTR_ERR(fp);
 		pr_err("load_allow_list open '/data/adb': %d\n", PTR_ERR(fp));

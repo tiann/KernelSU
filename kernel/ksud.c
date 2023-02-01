@@ -13,6 +13,7 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
+#include "ksud.h"
 #include "selinux/selinux.h"
 
 static const char KERNEL_SU_RC[] =
@@ -20,19 +21,19 @@ static const char KERNEL_SU_RC[] =
 
 	"on post-fs-data\n"
 	// We should wait for the post-fs-data finish
-	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" post-fs-data\n"
 	"\n"
 
 	"on nonencrypted\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" services\n"
 	"\n"
 
 	"on property:vold.decrypt=trigger_restart_framework\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" services\n"
 	"\n"
 
 	"on property:sys.boot_completed=1\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" boot-completed\n"
 	"\n"
 
 	"\n";
