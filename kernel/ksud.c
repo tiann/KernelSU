@@ -114,7 +114,9 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	    !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared!\n");
+#ifdef FILP_OPEN_WORKS_IN_WORKER
 		on_post_fs_data(); // we keep this for old ksud
+#endif
 		stop_execve_hook();
 	}
 

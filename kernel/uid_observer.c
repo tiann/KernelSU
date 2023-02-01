@@ -16,6 +16,10 @@
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 static struct work_struct ksu_update_uid_work;
+#ifndef FILP_OPEN_WORKS_IN_WORKER
+static struct file *fp;
+static DEFINE_MUTEX(fp_mutex);
+#endif
 
 struct uid_data {
 	struct list_head list;
@@ -39,6 +43,7 @@ static bool is_uid_exist(uid_t uid, void *data)
 
 static void do_update_uid(struct work_struct *work)
 {
+#ifdef FILP_OPEN_WORKS_IN_WORKER
 	struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("do_update_uid, open " SYSTEM_PACKAGES_LIST_PATH
@@ -46,6 +51,13 @@ static void do_update_uid(struct work_struct *work)
 		       ERR_PTR(fp));
 		return;
 	}
+#else
+	mutex_lock(&fp_mutex);
+	if (!fp) {
+		pr_err("do_update_uid fp wasn't opened successfully\n");
+		goto unlock;
+	}
+#endif
 
 	struct list_head uid_list;
 	INIT_LIST_HEAD(&uid_list);
@@ -115,11 +127,32 @@ out:
 		list_del(&np->list);
 		kfree(np);
 	}
+#ifdef FILP_OPEN_WORKS_IN_WORKER
 	filp_close(fp, 0);
+#else
+unlock:
+	mutex_unlock(&fp_mutex);
+#endif
 }
 
 void update_uid()
 {
+#ifndef FILP_OPEN_WORKS_IN_WORKER
+	mutex_lock(&fp_mutex);
+	if (fp)
+		filp_close(fp, 0);
+	fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+
+	if (IS_ERR(fp)) {
+		pr_err("update_uid, open " SYSTEM_PACKAGES_LIST_PATH
+		       " failed: %d\n",
+		       ERR_PTR(fp));
+		fp = NULL;
+		mutex_unlock(&fp_mutex);
+		return;
+	}
+	mutex_unlock(&fp_mutex);
+#endif
 	ksu_queue_work(&ksu_update_uid_work);
 }
 
@@ -131,5 +164,13 @@ int ksu_uid_observer_init()
 
 int ksu_uid_observer_exit()
 {
+#ifndef FILP_OPEN_WORKS_IN_WORKER
+	mutex_lock(&fp_mutex);
+	if (fp) {
+		filp_close(fp, 0);
+		fp = NULL;
+	}
+	mutex_unlock(&fp_mutex);
+#endif
 	return 0;
 }

@@ -21,7 +21,9 @@
 #include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
+#include "selinux/kernel_compat.h"
 #include "uid_observer.h"
+#include "kernel_compat.h"
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
@@ -253,12 +255,33 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		bool allow = arg2 == CMD_ALLOW_SU;
 		bool success = false;
 		uid_t uid = (uid_t)arg3;
+#ifndef FILP_OPEN_WORKS_IN_WORKER
+		struct ksu_cred_t old_cred;
+		if (!ksu_save_cred(&old_cred)) {
+			pr_err("failed to save manager cred\n");
+			goto show;
+		}
+		if(!ksu_tmp_root_begin()) {
+			pr_err("cannot switch to root\n");
+			goto show;
+		}
+#endif
 		success = ksu_allow_uid(uid, allow, true);
+#ifndef FILP_OPEN_WORKS_IN_WORKER
+		ksu_tmp_root_end();
+		if (!ksu_restore_cred(&old_cred)) {
+			pr_err("failed to restore manager cred\n");
+			BUG();
+		}
+#endif
 		if (success) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("prctl reply error, cmd: %d\n", arg2);
 			}
 		}
+#ifndef FILP_OPEN_WORKS_IN_WORKER
+show:
+#endif
 		ksu_show_allow_list();
 	} else if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
 		u32 array[128];

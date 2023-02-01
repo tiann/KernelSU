@@ -69,6 +69,7 @@ void apply_kernelsu_rules()
 	ksu_allow(db, "kernel", "adb_data_file", "file", ALL);
 	// we may need to do mount on shell
 	ksu_allow(db, "kernel", "shell_data_file", "file", ALL);
+	ksu_allow(db, "kernel", "system_server", "fd", "use");
 	// we need to read /data/system/packages.list
 	ksu_allow(db, "kernel", "kernel", "capability", "dac_override");
 	// Android 10+:
