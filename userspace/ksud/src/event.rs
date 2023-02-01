@@ -127,6 +127,11 @@ pub fn on_post_data_fs() -> Result<()> {
     println!("mount {} to {}", target_update_img, module_dir);
     mount_image(target_update_img, module_dir)?;
 
+    // load sepolicy.rule
+    if (crate::module::load_sepolicy_rule().is_err()) {
+        println!("load sepolicy.rule failed");
+    }
+
     // mount systemless overlay
     if let Err(e) = do_systemless_mount(module_dir) {
         println!("do systemless mount failed: {}", e);

@@ -3,7 +3,7 @@
 
 #include "linux/workqueue.h"
 
-#define KERNEL_SU_VERSION 13
+#define KERNEL_SU_VERSION 15
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
 
@@ -11,6 +11,7 @@
 #define CMD_GRANT_ROOT 100
 #define CMD_GET_VERSION 101
 #define CMD_REPORT_EVENT 102
+#define CMD_SET_SEPOLICY 103
 
 // require manager
 #define CMD_BECOME_MANAGER 200
