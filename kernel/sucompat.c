@@ -141,7 +141,7 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *flags = (int *)&PT_REGS_PARM3(regs);
 #else
 // int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
-    int *flags = (int *)&PT_REGS_PARM4(regs);
+	int *flags = (int *)&PT_REGS_PARM4(regs);
 #endif
 	
 
