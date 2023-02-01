@@ -128,7 +128,7 @@ pub fn on_post_data_fs() -> Result<()> {
     mount_image(target_update_img, module_dir)?;
 
     // load sepolicy.rule
-    if (crate::module::load_sepolicy_rule().is_err()) {
+    if crate::module::load_sepolicy_rule().is_err() {
         println!("load sepolicy.rule failed");
     }
 
