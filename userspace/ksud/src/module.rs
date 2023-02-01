@@ -436,7 +436,7 @@ pub fn install_module(zip: String) -> Result<()> {
     setsyscon(module_update_tmp_dir)?;
 
     let result = {
-        let module_dir = format!("{}/{}", module_update_tmp_dir, module_id);
+        let module_dir = format!("{module_update_tmp_dir}/{module_id}");
         ensure_clean_dir(&module_dir)?;
         info!("module dir: {}", module_dir);
 
@@ -451,7 +451,7 @@ pub fn install_module(zip: String) -> Result<()> {
         let module_system_dir = module_system_dir.as_path();
         if module_system_dir.exists() {
             let path = module_system_dir.to_str().unwrap();
-            restore_syscon(&path)?;
+            restore_syscon(path)?;
         }
 
         exec_install_script(&zip)
@@ -464,7 +464,7 @@ pub fn install_module(zip: String) -> Result<()> {
     let _ = remove_dir_all(module_update_tmp_dir);
 
     // return if exec script failed
-    result.with_context(|| format!("Failed to execute install script for {}", module_id))?;
+    result.with_context(|| format!("Failed to execute install script for {module_id}"))?;
 
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
@@ -553,7 +553,7 @@ pub fn uninstall_module(id: String) -> Result<()> {
         }
 
         // santity check
-        let target_module_path = format!("{}/{}", update_dir, mid);
+        let target_module_path = format!("{update_dir}/{mid}");
         let target_module = Path::new(&target_module_path);
         if target_module.exists() {
             remove_dir_all(target_module)?;
@@ -566,7 +566,7 @@ pub fn uninstall_module(id: String) -> Result<()> {
 }
 
 fn do_enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
-    let src_module_path = format!("{}/{}", module_dir, mid);
+    let src_module_path = format!("{module_dir}/{mid}");
     let src_module = Path::new(&src_module_path);
     if !src_module.exists() {
         bail!("module: {} not found!", mid);

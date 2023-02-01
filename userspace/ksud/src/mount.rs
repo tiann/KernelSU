@@ -43,16 +43,16 @@ pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
 }
 
 #[cfg(not(target_os = "android"))]
-pub fn mount_ext4(src: &str, target: &str) -> Result<()> {
+pub fn mount_ext4(_src: &str, _target: &str) -> Result<()> {
     unimplemented!()
 }
 
 #[cfg(not(target_os = "android"))]
-pub fn umount_dir(src: &str) -> Result<()> {
+pub fn umount_dir(_src: &str) -> Result<()> {
     unimplemented!()
 }
 
 #[cfg(not(target_os = "android"))]
-pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
+pub fn mount_overlay(_lowerdir: &str, _mnt: &str) -> Result<()> {
     unimplemented!()
 }

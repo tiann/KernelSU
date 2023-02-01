@@ -718,7 +718,7 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
 }
 
 #[cfg(not(target_os = "android"))]
-fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
+fn apply_one_rule<'a>(_statement: &'a PolicyStatement<'a>) -> Result<()> {
     unimplemented!()
 }
 
