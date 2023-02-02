@@ -35,6 +35,7 @@ class SuperUserViewModel : ViewModel() {
     )
 
     var search by mutableStateOf("")
+    var showSystemApps by mutableStateOf(false)
     var isRefreshing by mutableStateOf(false)
         private set
 
@@ -55,6 +56,9 @@ class SuperUserViewModel : ViewModel() {
         sortedList.filter {
             it.label.contains(search) || it.packageName.contains(search) || HanziToPinyin.getInstance()
                 .toPinyinString(it.label).contains(search)
+        }.filter {
+            it.uid == 2000 // Always show shell
+                    || showSystemApps || it.icon.applicationInfo.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
         }
     }
 

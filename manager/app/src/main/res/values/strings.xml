@@ -50,5 +50,8 @@
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
     <string name="module_overlay_fs_not_available">overlayfs is not available, module cannot work!</string>
+    <string name="refresh">Refresh</string>
+    <string name="show_system_apps">Show system apps</string>
+    <string name="hide_system_apps">Hide system apps</string>
 
 </resources>
