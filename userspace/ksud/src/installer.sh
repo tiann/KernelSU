@@ -4,6 +4,8 @@
 # Credit to Magisk!!!
 ############################################
 
+umask 022
+
 ui_print() {
   if $BOOTMODE; then
     echo "$1"
