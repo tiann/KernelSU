@@ -142,4 +142,31 @@ You should found the four functions in kernel source:
 3. vfs_read, usually in `fs/read_write.c`
 4. vfs_statx, usually in `fs/stat.c`
 
+If your kernel does not have the `vfs_statx`, use `vfs_fstatat` instead:
+
+```diff
+diff --git a/fs/stat.c b/fs/stat.c
+index 068fdbcc9e26..5348b7bb9db2 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -87,6 +87,8 @@ int vfs_fstat(unsigned int fd, struct kstat *stat)
+ }
+ EXPORT_SYMBOL(vfs_fstat);
+ 
++extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
++
+ int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
+ 		int flag)
+ {
+@@ -94,6 +96,8 @@ int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
+ 	int error = -EINVAL;
+ 	unsigned int lookup_flags = 0;
+ 
++	ksu_handle_stat(&dfd, &filename, &flag);
++
+ 	if ((flag & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
+ 		      AT_EMPTY_PATH)) != 0)
+ 		goto out;
+```
+
 Finally, build your kernel again, KernelSU should works well.
