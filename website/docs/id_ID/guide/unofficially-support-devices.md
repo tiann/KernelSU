@@ -9,7 +9,7 @@ Halaman ini hanya untuk Anda yang ingin menemukan kode sumber yang sesuai dengan
 :::
 
 <script setup>
-import data from '../repos.json'
+import data from '../../repos.json'
 </script>
 
 <table>
