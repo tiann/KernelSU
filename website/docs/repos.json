@@ -81,6 +81,6 @@
         "maintainer_link": "https://github.com/WeeAris",
         "kernel_name": "Realking_su_xiaomi_sm8250",
         "kernel_link": "https://github.com/WeeAris/Realking_su_xiaomi_sm8250",
-        "devices": "non-GKI devices, 4.19.x kernel, sm8250, repo for AOSP only."
+        "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)，Alioth(Redmi K40/POCO F3/Mi 11X)，Munch(Redmi K40S/POCO F4), repo for AOSP only."
     }
 ]
