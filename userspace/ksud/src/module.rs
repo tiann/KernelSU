@@ -35,7 +35,7 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
-            format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+            format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
         )
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
@@ -225,7 +225,7 @@ pub fn exec_post_fs_data() -> Result<()> {
             .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
-                format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+                format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
             )
             .env("KSU", "true");
         let command = unsafe {
@@ -327,7 +327,7 @@ pub fn exec_services() -> Result<()> {
             .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
-                format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+                format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
             )
             .env("KSU", "true");
         let command = unsafe {
