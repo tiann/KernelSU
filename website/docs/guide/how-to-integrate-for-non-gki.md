@@ -1,6 +1,6 @@
 # How to integrate KernelSU for non GKI kernel?
 
-KernelSU can be integrate to non GKI kernel, and it is backported to 4.14 now, it is also possible to run on kernel below 4.14.
+KernelSU can be integrate to non GKI kernel, and it is backported to 4.4 now, it is also possible to run on kernel below 4.4.
 
 Since the fragmentization of non GKI kernels, we don't have a uniform way to build it, so we can not provide non GKI boot images. But you can build the kernel yourself with KernelSU integrated.
 

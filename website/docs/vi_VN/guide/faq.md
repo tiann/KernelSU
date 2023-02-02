@@ -41,7 +41,7 @@ Kernel của thiết bị ảnh hưởng đến khả năng tương thích của
 
 ## KernelSU có thể hỗ trợ kernel cũ không?
 
-Có thể, KernelSU hiện đã được backport xuống kernel 4.14, đối với kernel cũ hơn, bạn cần backport một cách thủ công và các Pull-Requests luôn được hoan nghênh!
+Có thể, KernelSU hiện đã được backport xuống kernel 4.4, đối với kernel cũ hơn, bạn cần backport một cách thủ công và các Pull-Requests luôn được hoan nghênh!
 
 ## Làm cách nào để tích hợp KernelSU cho kernel cũ?
 

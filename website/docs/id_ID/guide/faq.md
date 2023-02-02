@@ -41,7 +41,7 @@ Kernel perangkatlah yang mempengaruhi kompatibilitas KernelSU dan tidak ada hubu
 
 ## Dapatkah KernelSU mendukung kernel lama?
 
-Ada kemungkinan, KernelSU sudah di-backport ke kernel 4.14 sekarang, untuk kernel yang lebih lama, Anda harus melakukan backport secara manual dan menyambut baik PR darimu!
+Ada kemungkinan, KernelSU sudah di-backport ke kernel 4.4 sekarang, untuk kernel yang lebih lama, Anda harus melakukan backport secara manual dan menyambut baik PR darimu!
 
 ## Cara mengintegrasikan KernelSU untuk kernel lama?
 

@@ -41,7 +41,7 @@ KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU �
 
 ## KernelSU 可以支持旧内核吗？
 
-可以，目前最低支持到 4.14；更低的版本你需要手动移植它，欢迎 PR ！
+可以，目前最低支持到 4.4；更低的版本你需要手动移植它，欢迎 PR ！
 
 ## 如何为旧内核集成 KernelSU？
 
