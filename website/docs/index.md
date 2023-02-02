@@ -19,7 +19,7 @@ hero:
 
 features:
   - title: Kernel-based
-    details: KernslSU is working in Linux kernel mode, it has more control over userspace applications.
+    details: KernelSU is working in Linux kernel mode, it has more control over userspace applications.
   - title: Whitelist access control
     details: Only App that is granted root permission can access `su`, other apps cannot perceive su.
   - title: Module support
