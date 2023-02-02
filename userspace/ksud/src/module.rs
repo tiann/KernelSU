@@ -11,9 +11,9 @@ use log::{debug, info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, File, OpenOptions, set_permissions, Permissions},
+    fs::{remove_dir_all, set_permissions, File, OpenOptions, Permissions},
     io::{Cursor, Read, Write},
-    os::unix::{process::CommandExt, prelude::PermissionsExt},
+    os::unix::{prelude::PermissionsExt, process::CommandExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     str::FromStr,
@@ -490,7 +490,7 @@ fn do_install_module(zip: String) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir)?;
+    let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
 
     info!("mounted {} to {}", tmp_module_img, module_update_tmp_dir);
 
@@ -573,7 +573,7 @@ where
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    let _dontdrop = mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir)?;
+    let _dontdrop = mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
 
     // call the operation func
     let result = func(id, update_dir);

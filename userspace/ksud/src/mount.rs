@@ -12,12 +12,13 @@ pub struct AutoMountExt4 {
     mnt: String,
     #[cfg(target_os = "android")]
     mount: Option<Mount>,
+    auto_umount: bool,
 }
 
 #[allow(dead_code)]
 impl AutoMountExt4 {
     #[cfg(target_os = "android")]
-    pub fn try_new(src: &str, mnt: &str) -> Result<Self> {
+    pub fn try_new(src: &str, mnt: &str, auto_umount: bool) -> Result<Self> {
         let result = Mount::builder()
             .fstype(FilesystemType::from("ext4"))
             .flags(MountFlags::empty())
@@ -26,6 +27,7 @@ impl AutoMountExt4 {
                 Ok(Self {
                     mnt: mnt.to_string(),
                     mount: Some(mount),
+                    auto_umount
                 })
             });
         if let Err(e) = result {
@@ -44,6 +46,7 @@ impl AutoMountExt4 {
                 Ok(Self {
                     mnt: mnt.to_string(),
                     mount: None,
+                    auto_umount
                 })
             }
         } else {
@@ -52,7 +55,7 @@ impl AutoMountExt4 {
     }
 
     #[cfg(not(target_os = "android"))]
-    pub fn try_new(_src: &str, _mnt: &str) -> Result<Self> {
+    pub fn try_new(_src: &str, _mnt: &str, _auto_umount: bool) -> Result<Self> {
         unimplemented!()
     }
 
@@ -77,8 +80,10 @@ impl AutoMountExt4 {
 #[cfg(target_os = "android")]
 impl Drop for AutoMountExt4 {
     fn drop(&mut self) {
-        log::info!("AutoMountExt4 drop: {}", self.mnt);
-        let _ = self.umount();
+        log::info!("AutoMountExt4 drop: {}, auto_umount: {}", self.mnt, self.auto_umount);
+        if self.auto_umount {
+            let _ = self.umount();
+        }
     }
 }
 
