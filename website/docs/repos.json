@@ -81,6 +81,13 @@
         "maintainer_link": "https://github.com/WeeAris",
         "kernel_name": "Realking_su_xiaomi_sm8250",
         "kernel_link": "https://github.com/WeeAris/Realking_su_xiaomi_sm8250",
-        "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)，Alioth(Redmi K40/POCO F3/Mi 11X)，Munch(Redmi K40S/POCO F4), repo for AOSP only."
+        "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), repo for AOSP only."
+    },
+    {
+        "maintainer": "lateautumn233",
+        "maintainer_link": "https://github.com/lateautumn233",
+        "kernel_name": "android_kernel_oneplus_sm8250",
+        "kernel_link": "https://github.com/lateautumn233/android_kernel_oneplus_sm8250",
+        "devices": "OnePlus 8 Serials"
     }
 ]

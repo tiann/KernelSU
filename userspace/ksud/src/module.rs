@@ -11,9 +11,9 @@ use log::{debug, info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, File, OpenOptions},
+    fs::{remove_dir_all, set_permissions, File, OpenOptions, Permissions},
     io::{Cursor, Read, Write},
-    os::unix::process::CommandExt,
+    os::unix::{prelude::PermissionsExt, process::CommandExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     str::FromStr,
@@ -30,11 +30,12 @@ fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
         .with_context(|| format!("realpath: {module_file} failed"))?;
 
-    let result = Command::new("sh")
-        .args(["-c", INSTALL_MODULE_SCRIPT])
+    let result = Command::new(assets::BUSYBOX_PATH)
+        .args(["sh", "-c", INSTALL_MODULE_SCRIPT])
+        .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
-            format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+            format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
         )
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
@@ -214,36 +215,26 @@ pub fn exec_post_fs_data() -> Result<()> {
         }
         info!("exec {} post-fs-data.sh", path.display());
 
-        let mut command_new;
-        let mut command;
-        if !is_executable(&post_fs_data) {
-            debug!(
-                "{} is not executable, use /system/bin/sh!",
-                post_fs_data.display()
-            );
-            command_new = Command::new("sh");
-            command = command_new.arg(&post_fs_data);
-        } else {
-            debug!("{} is executable, exec directly!", post_fs_data.display());
-            command_new = Command::new(&post_fs_data);
-            command = &mut command_new;
-        };
+        let mut command = Command::new(assets::BUSYBOX_PATH);
+        let command = command.arg("sh");
+        let command = command.arg(&post_fs_data);
 
-        command = command
+        let command = command
             .process_group(0)
             .current_dir(path)
+            .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
-                format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+                format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
             )
             .env("KSU", "true");
-        unsafe {
-            command = command.pre_exec(|| {
+        let command = unsafe {
+            command.pre_exec(|| {
                 // ignore the error?
                 switch_cgroups();
                 Ok(())
-            });
-        }
+            })
+        };
         command
             .status()
             .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
@@ -274,10 +265,13 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
 
         info!("exec {}", path.display());
 
-        let mut command = Command::new(&path);
+        let mut command = Command::new(assets::BUSYBOX_PATH);
+        let command = command.arg("sh");
+        let command = command.arg(&path);
         let command = command
             .process_group(0)
             .current_dir(&script_dir)
+            .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
                 format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
@@ -323,35 +317,26 @@ pub fn exec_services() -> Result<()> {
         }
         info!("exec {} service.sh", path.display());
 
-        let mut command_new;
-        let mut command;
-        if !is_executable(&service) {
-            debug!(
-                "{} is not executable, use /system/bin/sh!",
-                service.display()
-            );
-            command_new = Command::new("sh");
-            command = command_new.arg(&service);
-        } else {
-            debug!("{} is executable, exec directly!", service.display());
-            command_new = Command::new(&service);
-            command = &mut command_new;
-        };
-        command = command
+        let mut command = Command::new(assets::BUSYBOX_PATH);
+        let command = command.arg("sh");
+        let command = command.arg(&service);
+
+        let command = command
             .process_group(0)
             .current_dir(path)
+            .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
-                format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
+                format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
             )
             .env("KSU", "true");
-        unsafe {
-            command = command.pre_exec(|| {
+        let command = unsafe {
+            command.pre_exec(|| {
                 // ignore the error?
                 switch_cgroups();
                 Ok(())
-            });
-        }
+            })
+        };
         command
             .spawn() // don't wait
             .with_context(|| format!("Failed to exec {}", service.display()))?;
@@ -505,42 +490,43 @@ fn do_install_module(zip: String) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    {
-        // we need auto drop, so we use a block here
-        mount::mount_ext4(tmp_module_img, module_update_tmp_dir, true)?;
+    let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
 
-        setsyscon(module_update_tmp_dir)?;
+    info!("mounted {} to {}", tmp_module_img, module_update_tmp_dir);
 
-        let module_dir = format!("{module_update_tmp_dir}/{module_id}");
-        ensure_clean_dir(&module_dir)?;
-        info!("module dir: {}", module_dir);
+    setsyscon(module_update_tmp_dir)?;
 
-        // unzip the image and move it to modules_update/<id> dir
-        let file = File::open(&zip)?;
-        let mut archive = zip::ZipArchive::new(file)?;
-        archive.extract(&module_dir)?;
+    let module_dir = format!("{module_update_tmp_dir}/{module_id}");
+    ensure_clean_dir(&module_dir)?;
+    info!("module dir: {}", module_dir);
 
-        // set selinux for module/system dir
-        let mut module_system_dir = PathBuf::from(module_dir);
-        module_system_dir.push("system");
-        let module_system_dir = module_system_dir.as_path();
-        if module_system_dir.exists() {
-            let path = module_system_dir.to_str().unwrap();
-            restore_syscon(path)?;
-        }
+    // unzip the image and move it to modules_update/<id> dir
+    let file = File::open(&zip)?;
+    let mut archive = zip::ZipArchive::new(file)?;
+    archive.extract(&module_dir)?;
 
-        exec_install_script(&zip)?;
+    exec_install_script(&zip)?;
+
+    // set permission and selinux context for $MOD/system
+    let module_system_dir = PathBuf::from(module_dir).join("system");
+    if module_system_dir.exists() {
+        let path = module_system_dir.to_str().unwrap();
+        set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
+        restore_syscon(path)?;
     }
 
-    // remove modules_update dir, ignore the error
-    remove_dir_all(module_update_tmp_dir)?;
-
+    info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
+        warn!("Rename image failed, try copy it.");
+        std::fs::copy(tmp_module_img, defs::MODULE_UPDATE_IMG)
+            .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(tmp_module_img);
     }
 
     mark_update()?;
+
+    info!("Module install successfully!");
 
     Ok(())
 }
@@ -551,7 +537,6 @@ pub fn install_module(zip: String) -> Result<()> {
         // error happened, do some cleanup!
         let _ = std::fs::remove_file(defs::MODULE_UPDATE_TMP_IMG);
         let _ = mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
-        let _ = std::fs::remove_dir_all(defs::MODULE_UPDATE_TMP_DIR);
         println!("- Error: {e}");
     }
     result
@@ -588,13 +573,11 @@ where
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    mount::mount_ext4(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
+    let _dontdrop = mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
 
     // call the operation func
     let result = func(id, update_dir);
 
-    // umount modules_update.img
-    let _ = mount::umount_dir(update_dir);
     let _ = remove_dir_all(update_dir);
 
     std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)?;

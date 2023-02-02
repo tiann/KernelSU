@@ -7,16 +7,18 @@ use retry::delay::NoDelay;
 #[cfg(target_os = "android")]
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
-#[cfg(target_os = "android")]
-struct AutoMountExt4 {
+#[allow(dead_code)]
+pub struct AutoMountExt4 {
     mnt: String,
+    #[cfg(target_os = "android")]
     mount: Option<Mount>,
+    auto_umount: bool,
 }
 
-#[cfg(target_os = "android")]
 #[allow(dead_code)]
 impl AutoMountExt4 {
-    pub fn try_new(src: &str, mnt: &str) -> Result<Self> {
+    #[cfg(target_os = "android")]
+    pub fn try_new(src: &str, mnt: &str, auto_umount: bool) -> Result<Self> {
         let result = Mount::builder()
             .fstype(FilesystemType::from("ext4"))
             .flags(MountFlags::empty())
@@ -25,6 +27,7 @@ impl AutoMountExt4 {
                 Ok(Self {
                     mnt: mnt.to_string(),
                     mount: Some(mount),
+                    auto_umount
                 })
             });
         if let Err(e) = result {
@@ -43,6 +46,7 @@ impl AutoMountExt4 {
                 Ok(Self {
                     mnt: mnt.to_string(),
                     mount: None,
+                    auto_umount
                 })
             }
         } else {
@@ -50,6 +54,12 @@ impl AutoMountExt4 {
         }
     }
 
+    #[cfg(not(target_os = "android"))]
+    pub fn try_new(_src: &str, _mnt: &str, _auto_umount: bool) -> Result<Self> {
+        unimplemented!()
+    }
+
+    #[cfg(target_os = "android")]
     pub fn umount(&self) -> Result<()> {
         match self.mount {
             Some(ref mount) => mount
@@ -70,7 +80,10 @@ impl AutoMountExt4 {
 #[cfg(target_os = "android")]
 impl Drop for AutoMountExt4 {
     fn drop(&mut self) {
-        let _ = self.umount();
+        log::info!("AutoMountExt4 drop: {}, auto_umount: {}", self.mnt, self.auto_umount);
+        if self.auto_umount {
+            let _ = self.umount();
+        }
     }
 }
 
@@ -118,7 +131,7 @@ pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
 }
 
 #[cfg(not(target_os = "android"))]
-pub fn mount_ext4(_src: &str, _target: &str, autodrop: bool) -> Result<()> {
+pub fn mount_ext4(_src: &str, _target: &str, _autodrop: bool) -> Result<()> {
     unimplemented!()
 }
 

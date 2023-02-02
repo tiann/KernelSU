@@ -124,7 +124,8 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     info!("mount {target_update_img} to {module_dir}");
-    mount::mount_ext4(target_update_img, module_dir, false)?;
+    mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
+        .with_context(|| "mount module image failed".to_string())?;
 
     // load sepolicy.rule
     if crate::module::load_sepolicy_rule().is_err() {
