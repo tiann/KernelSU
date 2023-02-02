@@ -110,8 +110,8 @@ fn check_image(img: &str) -> Result<()> {
 }
 
 fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
-    let minimal_size = get_minimal_image_size(img)?;
-    let target_size = minimal_size + extra_size;
+    let minimal_size = get_minimal_image_size(img)?; // the minimal size is in KB
+    let target_size = minimal_size * 1024 + extra_size;
 
     // check image
     check_image(img)?;
