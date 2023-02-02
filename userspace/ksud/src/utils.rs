@@ -8,7 +8,9 @@ use std::{
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
+    log::debug!("ensure_clean_dir: {}", path.display());
     if path.exists() {
+        log::debug!("ensure_clean_dir: {} exists, remove it", path.display());
         std::fs::remove_dir_all(path)?;
     }
     Ok(std::fs::create_dir_all(path)?)

@@ -505,7 +505,9 @@ fn do_install_module(zip: String) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir)?;
+    let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir)?;
+
+    info!("mounted {} to {}", tmp_module_img, module_update_tmp_dir);
 
     setsyscon(module_update_tmp_dir)?;
 
@@ -529,14 +531,18 @@ fn do_install_module(zip: String) -> Result<()> {
 
     exec_install_script(&zip)?;
 
+    info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
+        warn!("Rename image failed, try copy it.");
         std::fs::copy(tmp_module_img, defs::MODULE_UPDATE_IMG)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(tmp_module_img);
     }
 
     mark_update()?;
+
+    info!("Module install successfully!");
 
     Ok(())
 }
@@ -583,7 +589,7 @@ where
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir)?;
+    let _dontdrop = mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir)?;
 
     // call the operation func
     let result = func(id, update_dir);
