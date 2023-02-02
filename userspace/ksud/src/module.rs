@@ -129,6 +129,8 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
         .with_context(|| format!("Failed to exec resize2fs {img}"))?;
     ensure!(result.success(), "Failed to resize2fs: {}", result);
 
+    check_image(img)?;
+
     Ok(())
 }
 
@@ -435,8 +437,14 @@ fn do_install_module(zip: String) -> Result<()> {
     let zip_uncompressed_size = get_zip_uncompressed_size(&zip)?;
     let grow_size = default_reserve_size + zip_uncompressed_size;
 
-    info!("zip uncompressed size: {}", humansize::format_size(zip_uncompressed_size, humansize::DECIMAL));
-    info!("grow size: {}", humansize::format_size(grow_size, humansize::DECIMAL));
+    info!(
+        "zip uncompressed size: {}",
+        humansize::format_size(zip_uncompressed_size, humansize::DECIMAL)
+    );
+    info!(
+        "grow size: {}",
+        humansize::format_size(grow_size, humansize::DECIMAL)
+    );
 
     println!("- Preparing image");
     println!(
@@ -497,32 +505,32 @@ fn do_install_module(zip: String) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    mount::mount_ext4(tmp_module_img, module_update_tmp_dir)?;
+    {
+        // we need auto drop, so we use a block here
+        mount::mount_ext4(tmp_module_img, module_update_tmp_dir, true)?;
 
-    setsyscon(module_update_tmp_dir)?;
+        setsyscon(module_update_tmp_dir)?;
 
-    let module_dir = format!("{module_update_tmp_dir}/{module_id}");
-    ensure_clean_dir(&module_dir)?;
-    info!("module dir: {}", module_dir);
+        let module_dir = format!("{module_update_tmp_dir}/{module_id}");
+        ensure_clean_dir(&module_dir)?;
+        info!("module dir: {}", module_dir);
 
-    // unzip the image and move it to modules_update/<id> dir
-    let file = File::open(&zip)?;
-    let mut archive = zip::ZipArchive::new(file)?;
-    archive.extract(&module_dir)?;
+        // unzip the image and move it to modules_update/<id> dir
+        let file = File::open(&zip)?;
+        let mut archive = zip::ZipArchive::new(file)?;
+        archive.extract(&module_dir)?;
 
-    // set selinux for module/system dir
-    let mut module_system_dir = PathBuf::from(module_dir);
-    module_system_dir.push("system");
-    let module_system_dir = module_system_dir.as_path();
-    if module_system_dir.exists() {
-        let path = module_system_dir.to_str().unwrap();
-        restore_syscon(path)?;
+        // set selinux for module/system dir
+        let mut module_system_dir = PathBuf::from(module_dir);
+        module_system_dir.push("system");
+        let module_system_dir = module_system_dir.as_path();
+        if module_system_dir.exists() {
+            let path = module_system_dir.to_str().unwrap();
+            restore_syscon(path)?;
+        }
+
+        exec_install_script(&zip)?;
     }
-
-    exec_install_script(&zip)?;
-
-    // umount the modules_update.img
-    mount::umount_dir(module_update_tmp_dir)?;
 
     // remove modules_update dir, ignore the error
     remove_dir_all(module_update_tmp_dir)?;
@@ -580,7 +588,7 @@ where
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    mount::mount_ext4(defs::MODULE_UPDATE_TMP_IMG, update_dir)?;
+    mount::mount_ext4(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
 
     // call the operation func
     let result = func(id, update_dir);
