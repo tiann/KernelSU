@@ -169,4 +169,30 @@ index 068fdbcc9e26..5348b7bb9db2 100644
  		goto out;
 ```
 
+对于早于 4.14 的内核，你可能需要在 `security/selinux/ss/services.c` 中做一个额外的修改：
+
+```diff
+diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+index bfc4ffa1fa1a..ffaf7b51a6ff 100644
+--- a/security/selinux/ss/services.c
++++ b/security/selinux/ss/services.c
+@@ -838,6 +838,8 @@ int security_validate_transition(u32 oldsid, u32 newsid, u32 tasksid,
+ 						orig_tclass, false);
+ }
+ 
++extern int ksu_handle_security_bounded_transition(u32 *old_sid, u32 *new_sid);
++
+ /*
+  * security_bounded_transition - check whether the given
+  * transition is directed to bounded, or not.
+@@ -854,6 +856,8 @@ int security_bounded_transition(u32 old_sid, u32 new_sid)
+ 	int index;
+ 	int rc;
+ 
++	ksu_handle_security_bounded_transition(&old_sid, &new_sid);
++
+ 	if (!ss_initialized)
+ 		return 0;
+```
+
 改完之后重新编译内核即可。
