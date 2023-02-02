@@ -30,8 +30,9 @@ fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
         .with_context(|| format!("realpath: {module_file} failed"))?;
 
-    let result = Command::new("sh")
-        .args(["-c", INSTALL_MODULE_SCRIPT])
+    let result = Command::new(assets::BUSYBOX_PATH)
+        .args(["sh", "-c", INSTALL_MODULE_SCRIPT])
+        .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
             format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
@@ -214,36 +215,26 @@ pub fn exec_post_fs_data() -> Result<()> {
         }
         info!("exec {} post-fs-data.sh", path.display());
 
-        let mut command_new;
-        let mut command;
-        if !is_executable(&post_fs_data) {
-            debug!(
-                "{} is not executable, use /system/bin/sh!",
-                post_fs_data.display()
-            );
-            command_new = Command::new("sh");
-            command = command_new.arg(&post_fs_data);
-        } else {
-            debug!("{} is executable, exec directly!", post_fs_data.display());
-            command_new = Command::new(&post_fs_data);
-            command = &mut command_new;
-        };
+        let mut command = Command::new(assets::BUSYBOX_PATH);
+        let command = command.arg("sh");
+        let command = command.arg(&post_fs_data);
 
-        command = command
+        let command = command
             .process_group(0)
             .current_dir(path)
+            .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
                 format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
             )
             .env("KSU", "true");
-        unsafe {
-            command = command.pre_exec(|| {
+        let command = unsafe {
+            command.pre_exec(|| {
                 // ignore the error?
                 switch_cgroups();
                 Ok(())
-            });
-        }
+            })
+        };
         command
             .status()
             .with_context(|| format!("Failed to exec {}", post_fs_data.display()))?;
@@ -274,10 +265,13 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
 
         info!("exec {}", path.display());
 
-        let mut command = Command::new(&path);
+        let mut command = Command::new(assets::BUSYBOX_PATH);
+        let command = command.arg("sh");
+        let command = command.arg(&path);
         let command = command
             .process_group(0)
             .current_dir(&script_dir)
+            .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
                 format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
@@ -323,35 +317,26 @@ pub fn exec_services() -> Result<()> {
         }
         info!("exec {} service.sh", path.display());
 
-        let mut command_new;
-        let mut command;
-        if !is_executable(&service) {
-            debug!(
-                "{} is not executable, use /system/bin/sh!",
-                service.display()
-            );
-            command_new = Command::new("sh");
-            command = command_new.arg(&service);
-        } else {
-            debug!("{} is executable, exec directly!", service.display());
-            command_new = Command::new(&service);
-            command = &mut command_new;
-        };
-        command = command
+        let mut command = Command::new(assets::BUSYBOX_PATH);
+        let command = command.arg("sh");
+        let command = command.arg(&service);
+
+        let command = command
             .process_group(0)
             .current_dir(path)
+            .env("ASH_STANDALONE", "1")
             .env(
                 "PATH",
                 format!("{}:{}", env_var("PATH").unwrap(), defs::MODULE_DIR),
             )
             .env("KSU", "true");
-        unsafe {
-            command = command.pre_exec(|| {
+        let command = unsafe {
+            command.pre_exec(|| {
                 // ignore the error?
                 switch_cgroups();
                 Ok(())
-            });
-        }
+            })
+        };
         command
             .spawn() // don't wait
             .with_context(|| format!("Failed to exec {}", service.display()))?;
