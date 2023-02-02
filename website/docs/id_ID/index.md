@@ -19,7 +19,7 @@ hero:
 
 features:
   - title: Kernel-based
-    details: KernslSU bekerja dalam mode Linux kernel, dan mempunyai kelebihan diatas aplikasi userspace.
+    details: KernelSU bekerja dalam mode Linux kernel, dan mempunyai kelebihan diatas aplikasi userspace.
   - title: Kontrol akses daftar putih
     details: Hanya aplikasi yang diberikan izin root yang bisa mengakses `su`, aplikasi lain tidak bisa mengakses su.
   - title: Dukungan modul
