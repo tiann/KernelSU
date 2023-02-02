@@ -7,15 +7,16 @@ use retry::delay::NoDelay;
 #[cfg(target_os = "android")]
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
-#[cfg(target_os = "android")]
-struct AutoMountExt4 {
+#[allow(dead_code)]
+pub struct AutoMountExt4 {
     mnt: String,
+    #[cfg(target_os = "android")]
     mount: Option<Mount>,
 }
 
-#[cfg(target_os = "android")]
 #[allow(dead_code)]
 impl AutoMountExt4 {
+    #[cfg(target_os = "android")]
     pub fn try_new(src: &str, mnt: &str) -> Result<Self> {
         let result = Mount::builder()
             .fstype(FilesystemType::from("ext4"))
@@ -50,6 +51,12 @@ impl AutoMountExt4 {
         }
     }
 
+    #[cfg(not(target_os = "android"))]
+    pub fn try_new(_src: &str, _mnt: &str) -> Result<Self> {
+        unimplemented!()
+    }
+
+    #[cfg(target_os = "android")]
     pub fn umount(&self) -> Result<()> {
         match self.mount {
             Some(ref mount) => mount
