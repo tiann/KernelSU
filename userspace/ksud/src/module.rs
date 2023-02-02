@@ -11,9 +11,9 @@ use log::{debug, info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, File, OpenOptions},
+    fs::{remove_dir_all, File, OpenOptions, set_permissions, Permissions},
     io::{Cursor, Read, Write},
-    os::unix::process::CommandExt,
+    os::unix::{process::CommandExt, prelude::PermissionsExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     str::FromStr,
@@ -520,16 +520,15 @@ fn do_install_module(zip: String) -> Result<()> {
     let mut archive = zip::ZipArchive::new(file)?;
     archive.extract(&module_dir)?;
 
-    // set selinux for module/system dir
-    let mut module_system_dir = PathBuf::from(module_dir);
-    module_system_dir.push("system");
-    let module_system_dir = module_system_dir.as_path();
+    exec_install_script(&zip)?;
+
+    // set permission and selinux context for $MOD/system
+    let module_system_dir = PathBuf::from(module_dir).join("system");
     if module_system_dir.exists() {
         let path = module_system_dir.to_str().unwrap();
+        set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
         restore_syscon(path)?;
     }
-
-    exec_install_script(&zip)?;
 
     info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
