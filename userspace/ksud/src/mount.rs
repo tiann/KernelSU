@@ -125,7 +125,7 @@ pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
 }
 
 #[cfg(not(target_os = "android"))]
-pub fn mount_ext4(_src: &str, _target: &str, autodrop: bool) -> Result<()> {
+pub fn mount_ext4(_src: &str, _target: &str, _autodrop: bool) -> Result<()> {
     unimplemented!()
 }
 

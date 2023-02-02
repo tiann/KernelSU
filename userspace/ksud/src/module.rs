@@ -531,6 +531,8 @@ fn do_install_module(zip: String) -> Result<()> {
 
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
+        std::fs::copy(tmp_module_img, defs::MODULE_UPDATE_IMG)
+            .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(tmp_module_img);
     }
 
