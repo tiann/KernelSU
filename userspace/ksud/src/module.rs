@@ -411,6 +411,7 @@ fn do_install_module(zip: String) -> Result<()> {
             module_prop.insert(k, v);
         },
     )?;
+    info!("module prop: {:?}", module_prop);
 
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
@@ -434,6 +435,9 @@ fn do_install_module(zip: String) -> Result<()> {
     let zip_uncompressed_size = get_zip_uncompressed_size(&zip)?;
     let grow_size = default_reserve_size + zip_uncompressed_size;
 
+    info!("zip uncompressed size: {}", humansize::format_size(zip_uncompressed_size, humansize::DECIMAL));
+    info!("grow size: {}", humansize::format_size(grow_size, humansize::DECIMAL));
+
     println!("- Preparing image");
     println!(
         "- Module size: {}",
@@ -443,6 +447,7 @@ fn do_install_module(zip: String) -> Result<()> {
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
+        info!("Creating brand new module image");
         File::create(tmp_module_img)
             .context("Failed to create ext4 image file")?
             .set_len(grow_size)
@@ -462,6 +467,7 @@ fn do_install_module(zip: String) -> Result<()> {
         check_image(tmp_module_img)?;
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
+        info!("Using existing modules_update.img as tmp image");
         std::fs::copy(modules_update_img, tmp_module_img).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
@@ -473,6 +479,7 @@ fn do_install_module(zip: String) -> Result<()> {
         grow_image_size(tmp_module_img, grow_size)?;
     } else {
         // modules.img exists, we should use it as tmp img
+        info!("Using existing modules.img as tmp image");
         std::fs::copy(modules_img, tmp_module_img).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
@@ -532,11 +539,12 @@ fn do_install_module(zip: String) -> Result<()> {
 
 pub fn install_module(zip: String) -> Result<()> {
     let result = do_install_module(zip);
-    if result.is_err() {
+    if let Err(ref e) = result {
         // error happened, do some cleanup!
         let _ = std::fs::remove_file(defs::MODULE_UPDATE_TMP_IMG);
         let _ = mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
         let _ = std::fs::remove_dir_all(defs::MODULE_UPDATE_TMP_DIR);
+        println!("- Error: {e}");
     }
     result
 }
