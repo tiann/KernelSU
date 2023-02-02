@@ -19,7 +19,7 @@ hero:
 
 features:
   - title: 基于内核
-    details: KernslSU 运行在内核空间，对用户空间应用有更强的掌控。
+    details: KernelSU 运行在内核空间，对用户空间应用有更强的掌控。
   - title: 白名单访问控制
     details: 只有被授权的 App 才可以访问 `su`，而其他 App 无法感知其存在。
   - title: 模块支持
