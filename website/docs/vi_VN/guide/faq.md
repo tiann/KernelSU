@@ -16,7 +16,7 @@ Có, nhưng ở những phiên bản thử nghiệm này có thể có rất nhi
 
 ## KernelSU có hỗ trợ Xposed không?
 
-Có, [Dreamland](https://github.com/canyie/Dreamland) và [TaiChi](https::/taichi.cool) hiện đã hoạt động được một phần nào đó và chúng tôi đang cố gắng làm cho các Xposed Framework khác có thể hoạt động.
+Có, [Dreamland](https://github.com/canyie/Dreamland) và [TaiChi](https::/taichi.cool) hiện đã hoạt động được một phần nào đó. Với Lsposed, bạn có thể thử [Zygisk trên KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 
 
 ## KernelSU có tương thích với Magisk không?
 
@@ -46,3 +46,19 @@ Có thể, KernelSU hiện đã được backport xuống kernel 4.14, đối v�
 ## Làm cách nào để tích hợp KernelSU cho kernel cũ?
 
 Vui lòng tham khảo [hướng dẫn này](how-to-integrate-for-non-gki)
+
+## Tại sao tôi đang chạy Android 13 nhưng kernel lại ghi "android12-5.10" ?
+
+Phiên bản kernel hoàn toàn không liên quan gì đến phiên bản Android, nếu bạn muốn flash kernel thì hãy luôn để ý đến **phiên bản kernel**, phiên bản Android ở phần đầu (VD : android12-\*) thường không quan trọng lắm.
+
+## Đã có mount namespace --mount-master/global trên KernelSU chưa ?
+
+Hiện tại chưa có (hoặc có thể sẽ có trong tương lại), nhưng bạn có thể dùng `nsenter -t 1 -m sh` để vào global mount namespace.
+
+## KernelSU có hỗ trợ Zygisk không ?
+
+KernelSU không có Zygisk bên trong, nhưng bạn có thể dùng [Zygisk trên KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+
+## Tôi đang ở GKI 1.0, tôi dùng được cái này chứ ?
+
+GKI1 khác hoàn toàn với GKI2 nên bạn sẽ phải tự compile kernel cho mình.
