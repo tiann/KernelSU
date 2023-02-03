@@ -89,5 +89,12 @@
         "kernel_name": "android_kernel_oneplus_sm8250",
         "kernel_link": "https://github.com/lateautumn233/android_kernel_oneplus_sm8250",
         "devices": "OnePlus 8 Serials"
+    },
+    {
+        "maintainer": "Molyuu",
+        "maintainer_link": "https://github.com/Molyuu",
+        "kernel_name": "neko_kernel_xiaomi_gauguin",
+        "kernel_link": "https://github.com/Molyuu/neko_kernel_xiaomi_gauguin",
+        "devices": "Redmi Note 9 Pro/ Mi 10T Lite/ Mi 10i "
     }
 ]
