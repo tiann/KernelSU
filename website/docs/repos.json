@@ -103,5 +103,12 @@
         "kernel_name": "android_kernel_oppo_sm8150",
         "kernel_link": "https://github.com/guh0613/android_kernel_oppo_sm8150",
         "devices": "OPPO Reno Ace (OP4A89)"
+    },
+    {
+        "maintainer": "LeviMarvin",
+        "maintainer_link": "https://github.com/LeviMarvin",
+        "kernel_name": "kernel_xiaomi_alioth",
+        "kernel_link": "https://github.com/LeviMarvin/kernel_xiaomi_alioth",
+        "devices": "Redmi K40 / POCO F3"
     }
 ]
