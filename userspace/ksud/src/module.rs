@@ -240,7 +240,7 @@ pub fn exec_post_fs_data() -> Result<()> {
             continue;
         }
 
-        exec_script(path, true)?;
+        exec_script(&post_fs_data, true)?;
     }
 
     Ok(())
@@ -289,7 +289,7 @@ pub fn exec_services() -> Result<()> {
             continue;
         }
 
-        exec_script(path, false)?;
+        exec_script(&service, false)?;
     }
 
     Ok(())
