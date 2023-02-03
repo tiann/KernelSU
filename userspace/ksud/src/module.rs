@@ -40,6 +40,7 @@ fn exec_install_script(module_file: &str) -> Result<()> {
             "PATH",
             format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
         )
+        .env("KSU", "true")
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
         .stderr(Stdio::null())
