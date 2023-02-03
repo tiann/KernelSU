@@ -6,11 +6,11 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, debug, event, module};
+use crate::{apk_sign, debug, defs, event, module};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version = defs::VERSION_NAME, about, long_about = None)]
 struct Args {
     #[command(subcommand)]
     command: Commands,

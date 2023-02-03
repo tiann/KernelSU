@@ -209,6 +209,8 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .arg("sh")
         .arg(path.as_ref())
         .env("ASH_STANDALONE", "1")
+        .env("KSU_VER_CODE", defs::VERSION_CODE)
+        .env("KSU_VER", defs::VERSION_NAME)
         .env(
             "PATH",
             format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
