@@ -1,7 +1,9 @@
 use anyhow::{Ok, Result};
 use clap::Parser;
-#[cfg(target_os="android")]
+
+#[cfg(target_os = "android")]
 use android_logger::Config;
+#[cfg(target_os = "android")]
 use log::LevelFilter;
 
 use crate::{apk_sign, debug, event, module};
@@ -120,14 +122,14 @@ enum Module {
 }
 
 pub fn run() -> Result<()> {
-    #[cfg(target_os="android")]
+    #[cfg(target_os = "android")]
     android_logger::init_once(
         Config::default()
             .with_max_level(LevelFilter::Trace) // limit log level
-            .with_tag("KernelSU") // logs will show under mytag tag
+            .with_tag("KernelSU"), // logs will show under mytag tag
     );
 
-    #[cfg(not(target_os="android"))]
+    #[cfg(not(target_os = "android"))]
     env_logger::init();
 
     let cli = Args::parse();
@@ -139,16 +141,13 @@ pub fn run() -> Result<()> {
         Commands::PostFsData => event::on_post_data_fs(),
         Commands::BootCompleted => event::on_boot_completed(),
 
-        Commands::Module { command } => {
-
-            match command {
-                Module::Install { zip } => module::install_module(zip),
-                Module::Uninstall { id } => module::uninstall_module(id),
-                Module::Enable { id } => module::enable_module(id),
-                Module::Disable { id } => module::disable_module(id),
-                Module::List => module::list_modules(),
-            }
-        }
+        Commands::Module { command } => match command {
+            Module::Install { zip } => module::install_module(&zip),
+            Module::Uninstall { id } => module::uninstall_module(&id),
+            Module::Enable { id } => module::enable_module(&id),
+            Module::Disable { id } => module::disable_module(&id),
+            Module::List => module::list_modules(),
+        },
         Commands::Install => event::install(),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
@@ -168,7 +167,7 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su => crate::ksu::grant_root(),
-            Debug::Test => todo!()
+            Debug::Test => todo!(),
         },
     };
 
