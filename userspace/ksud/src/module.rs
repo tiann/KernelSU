@@ -528,9 +528,12 @@ where
     // call the operation func
     let result = func(id, update_dir);
 
-    let _ = remove_dir_all(update_dir);
-
-    std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)?;
+    if let Err(e) = std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG) {
+        warn!("Rename image failed, try copy it.");
+        std::fs::copy(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)
+            .with_context(|| "Failed to copy image.".to_string())?;
+        let _ = std::fs::remove_file(modules_update_tmp_img);
+    }
 
     mark_update()?;
 
