@@ -20,7 +20,7 @@ pub const CMD_SET_SEPOLICY: u64 = 8;
 const EVENT_POST_FS_DATA: u64 = 1;
 const EVENT_BOOT_COMPLETED: u64 = 2;
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 pub fn grant_root() -> Result<()> {
     let mut result: u32 = 0;
     unsafe {
@@ -38,14 +38,14 @@ pub fn grant_root() -> Result<()> {
     Err(std::process::Command::new("sh").exec().into())
 }
 
-#[cfg(not(unix))]
+#[cfg(not(target_os = "linux"))]
 pub fn grant_root() -> Result<()> {
     unimplemented!("grant_root is only available on android");
 }
 
 pub fn get_version() -> i32 {
     let mut result: i32 = 0;
-    #[cfg(unix)]
+    #[cfg(target_os = "linux")]
     unsafe {
         #[allow(clippy::cast_possible_wrap)]
         libc::prctl(
@@ -58,7 +58,7 @@ pub fn get_version() -> i32 {
 }
 
 fn report_event(event: u64) {
-    #[cfg(unix)]
+    #[cfg(target_os = "linux")]
     unsafe {
         #[allow(clippy::cast_possible_wrap)]
         libc::prctl(

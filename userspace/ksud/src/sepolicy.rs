@@ -691,7 +691,7 @@ impl From<AtomicStatement> for FfiPolicy {
     }
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Result<()> {
     let policies: Vec<AtomicStatement> = statement.try_into()?;
 
@@ -720,7 +720,7 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
     Ok(())
 }
 
-#[cfg(not(unix))]
+#[cfg(not(target_os = "linux"))]
 fn apply_one_rule<'a>(_statement: &'a PolicyStatement<'a>, _strict: bool) -> Result<()> {
     unimplemented!()
 }
