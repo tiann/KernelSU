@@ -5,11 +5,13 @@
 #include "linux/list.h"
 #include "linux/printk.h"
 #include "linux/slab.h"
+#include "linux/version.h"
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "selinux/selinux.h"
+#include "kernel_compat.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 2 // u32
@@ -35,7 +37,12 @@ struct perm_list_node {
 static struct list_head allow_list;
 static unsigned int allow_list_count;
 
-#define KERNEL_SU_ALLOWLIST "/data/adb/.ksu_allowlist"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
+#define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
+#else
+// filp_open return error if under encryption dir on Kernel4.4
+#define KERNEL_SU_ALLOWLIST "/data/user_de/.ksu_allowlist"
+#endif
 
 static struct work_struct ksu_save_work;
 static struct work_struct ksu_load_work;
@@ -173,12 +180,12 @@ void do_persistent_allow_list(struct work_struct *work)
 	}
 
 	// store magic and version
-	if (kernel_write(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
+	if (kernel_write_compat(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
 		pr_err("save_allow_list write magic failed.\n");
 		goto exit;
 	}
 
-	if (kernel_write(fp, &version, sizeof(version), &off) !=
+	if (kernel_write_compat(fp, &version, sizeof(version), &off) !=
 	    sizeof(version)) {
 		pr_err("save_allow_list write version failed.\n");
 		goto exit;
@@ -188,8 +195,8 @@ void do_persistent_allow_list(struct work_struct *work)
 		p = list_entry(pos, struct perm_list_node, list);
 		pr_info("save allow list uid :%d, allow: %d\n", p->uid,
 			p->perm.allow);
-		kernel_write(fp, &p->uid, sizeof(p->uid), &off);
-		kernel_write(fp, &p->perm, sizeof(p->perm), &off);
+		kernel_write_compat(fp, &p->uid, sizeof(p->uid), &off);
+		kernel_write_compat(fp, &p->perm, sizeof(p->perm), &off);
 	}
 
 exit:
@@ -204,7 +211,7 @@ void do_load_allow_list(struct work_struct *work)
 	u32 magic;
 	u32 version;
 
-	fp = filp_open("/data/adb/", O_RDONLY, 0);
+	fp = filp_open("/data/adb", O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		int errno = PTR_ERR(fp);
 		pr_err("load_allow_list open '/data/adb': %d\n", PTR_ERR(fp));
@@ -239,13 +246,13 @@ void do_load_allow_list(struct work_struct *work)
 	}
 
 	// verify magic
-	if (kernel_read(fp, &magic, sizeof(magic), &off) != sizeof(magic) ||
+	if (kernel_read_compat(fp, &magic, sizeof(magic), &off) != sizeof(magic) ||
 	    magic != FILE_MAGIC) {
 		pr_err("allowlist file invalid: %d!\n", magic);
 		goto exit;
 	}
 
-	if (kernel_read(fp, &version, sizeof(version), &off) !=
+	if (kernel_read_compat(fp, &version, sizeof(version), &off) !=
 	    sizeof(version)) {
 		pr_err("allowlist read version: %d failed\n", version);
 		goto exit;
@@ -264,12 +271,12 @@ void do_load_allow_list(struct work_struct *work)
 	while (true) {
 		u32 uid;
 		struct perm_data data = NO_PERM;
-		ret = kernel_read(fp, &uid, sizeof(uid), &off);
+		ret = kernel_read_compat(fp, &uid, sizeof(uid), &off);
 		if (ret <= 0) {
 			pr_info("load_allow_list read err: %d\n", ret);
 			break;
 		}
-		ret = kernel_read(fp, &data, sizeof(data), &off);
+		ret = kernel_read_compat(fp, &data, sizeof(data), &off);
 
 		pr_info("load_allow_uid: %d, allow: %d\n", uid, data.allow);
 

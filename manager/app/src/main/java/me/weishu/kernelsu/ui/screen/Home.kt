@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -130,11 +131,14 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
             else MaterialTheme.colorScheme.errorContainer
         })
     ) {
+        val uriHandler = LocalUriHandler.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    // TODO: Install kernel
+                    if (kernelVersion.isGKI() && ksuVersion == null) {
+                        uriHandler.openUri("https://kernelsu.org/guide/installation.html")
+                    }
                 }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically

@@ -31,7 +31,8 @@ WSA 和运行在容器上的 Android 也可以与 KernelSU 一起工作。
 
 ## 许可证
 
-[GPL-3](http://www.gnu.org/copyleft/gpl.html)
+- 目录 `kernel` 下所有文件为 [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- 除 `kernel` 目录的其他部分均为 [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## 鸣谢
 

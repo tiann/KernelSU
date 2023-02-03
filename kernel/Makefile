@@ -8,6 +8,7 @@ obj-y += uid_observer.o
 obj-y += manager.o
 obj-y += core_hook.o
 obj-y += ksud.o
+obj-y += kernel_compat.o
 
 obj-y += selinux/
 

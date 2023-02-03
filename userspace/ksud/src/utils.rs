@@ -1,40 +1,76 @@
-use std::path::Path;
+use anyhow::{bail, Context, Error, Ok, Result};
+use std::{
+    fs::{create_dir_all, write, File},
+    io::ErrorKind::AlreadyExists,
+    path::Path,
+};
 
-use anyhow::{ensure, Context, Result};
-use retry::delay::NoDelay;
-use sys_mount::{unmount, FilesystemType, Mount, UnmountFlags};
-
-fn do_mount_image(src: &str, target: &str) -> Result<()> {
-    Mount::builder()
-        .fstype(FilesystemType::from("ext4"))
-        .mount(src, target)
-        .with_context(|| format!("Failed to do mount: {src} -> {target}"))?;
-    Ok(())
-}
-
-pub fn mount_image(src: &str, target: &str) -> Result<()> {
-    // umount target first.
-    let _ = umount_dir(target);
-    let result = retry::retry(NoDelay.take(3), || do_mount_image(src, target));
-    ensure!(result.is_ok(), "Failed to mount {} -> {}", src, target);
-    Ok(())
-}
-
-pub fn umount_dir(src: &str) -> Result<()> {
-    unmount(src, UnmountFlags::empty()).with_context(|| format!("Failed to umount {src}"))?;
-    Ok(())
-}
+#[allow(unused_imports)]
+use std::fs::{set_permissions, Permissions};
+#[cfg(unix)]
+use std::os::unix::prelude::PermissionsExt;
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
+    log::debug!("ensure_clean_dir: {}", path.display());
     if path.exists() {
+        log::debug!("ensure_clean_dir: {} exists, remove it", path.display());
         std::fs::remove_dir_all(path)?;
     }
     Ok(std::fs::create_dir_all(path)?)
 }
 
+pub fn ensure_file_exists<T: AsRef<Path>>(file: T) -> Result<()> {
+    match File::options().write(true).create_new(true).open(&file) {
+        std::result::Result::Ok(_) => Ok(()),
+        Err(err) => {
+            if err.kind() == AlreadyExists && file.as_ref().is_file() {
+                Ok(())
+            } else {
+                Err(Error::from(err))
+                    .with_context(|| format!("{} is not a regular file", file.as_ref().display()))
+            }
+        }
+    }
+}
+
+pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
+    let result = create_dir_all(&dir).map_err(Error::from);
+    if dir.as_ref().is_dir() {
+        result
+    } else if result.is_ok() {
+        bail!("{} is not a regular directory", dir.as_ref().display())
+    } else {
+        result
+    }
+}
+
+pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8]) -> Result<()> {
+    if path.as_ref().exists() {
+        return Ok(());
+    }
+
+    ensure_dir_exists(path.as_ref().parent().ok_or_else(|| {
+        anyhow::anyhow!(
+            "{} does not have parent directory",
+            path.as_ref().to_string_lossy()
+        )
+    })?)?;
+
+    write(&path, contents)?;
+    #[cfg(unix)]
+    set_permissions(&path, Permissions::from_mode(0o755))?;
+    Ok(())
+}
+
+#[cfg(unix)]
 pub fn getprop(prop: &str) -> Option<String> {
     android_properties::getprop(prop).value()
+}
+
+#[cfg(not(unix))]
+pub fn getprop(_prop: &str) -> Option<String> {
+    unimplemented!()
 }
 
 pub fn is_safe_mode() -> bool {

@@ -1,6 +1,6 @@
 #include "selinux.h"
 #include "objsec.h"
-
+#include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
@@ -54,24 +54,48 @@ if (!is_domain_permissive) {
 void setenforce(bool enforce)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	selinux_state.enforcing = enforce;
+#else
+	selinux_enabled = enforce;
+#endif
 #endif
 }
 
 bool getenforce(void)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	if (selinux_state.disabled) {
+#else
+	if (selinux_disabled) {
+#endif
 		return false;
 	}
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	return selinux_state.enforcing;
 #else
-	return false;
+	return selinux_enabled;
+#endif
+#else
+	return true;
 #endif
 }
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0)
+/*
+ * get the subjective security ID of the current task
+ */
+static inline u32 current_sid(void)
+{
+	const struct task_security_struct *tsec = current_security();
+
+	return tsec->sid;
+}
+#endif
 
 bool is_ksu_domain(void)
 {

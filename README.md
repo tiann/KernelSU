@@ -31,7 +31,8 @@ And the current supported ABIs are : `arm64-v8a` and `x86_64`
 
 ## License
 
-[GPL-3](http://www.gnu.org/copyleft/gpl.html)
+- Files under `kernel` directory are [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- All other parts except `kernel` directory are [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## Credits
 

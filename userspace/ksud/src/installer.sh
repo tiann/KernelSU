@@ -4,6 +4,8 @@
 # Credit to Magisk!!!
 ############################################
 
+umask 022
+
 ui_print() {
   if $BOOTMODE; then
     echo "$1"
@@ -366,7 +368,7 @@ install_module() {
       set_perm_recursive $MODPATH/system/bin 0 2000 0755 0755
       set_perm_recursive $MODPATH/system/xbin 0 2000 0755 0755
       set_perm_recursive $MODPATH/system/system_ext/bin 0 2000 0755 0755
-      set_perm_recursive $MODPATH/system/vendor/bin 0 2000 0755 0755 u:object_r:vendor_file:s0
+      set_perm_recursive $MODPATH/system/vendor 0 2000 0755 0755 u:object_r:vendor_file:s0
     fi
 
     # Load customization script

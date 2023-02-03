@@ -10,8 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,9 +21,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import me.weishu.kernelsu.R
 
 private const val TAG = "SearchBar"
 
@@ -36,7 +37,8 @@ fun SearchAppBar(
     onSearchTextChange: (String) -> Unit,
     onClearClick: () -> Unit,
     onBackClick: (() -> Unit)? = null,
-    onConfirm: (() -> Unit)? = null
+    onConfirm: (() -> Unit)? = null,
+    dropdownContent: @Composable (() -> Unit)? = null,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
@@ -116,6 +118,11 @@ fun SearchAppBar(
                     content = { Icon(Icons.Filled.Search, null) }
                 )
             }
+
+            if (dropdownContent != null) {
+                dropdownContent()
+            }
+
         }
     )
 }

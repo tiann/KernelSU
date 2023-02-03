@@ -13,6 +13,7 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
+#include "ksud.h"
 #include "selinux/selinux.h"
 
 static const char KERNEL_SU_RC[] =
@@ -20,19 +21,19 @@ static const char KERNEL_SU_RC[] =
 
 	"on post-fs-data\n"
 	// We should wait for the post-fs-data finish
-	"    exec u:r:su:s0 root -- /data/adb/ksud post-fs-data\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" post-fs-data\n"
 	"\n"
 
 	"on nonencrypted\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" services\n"
 	"\n"
 
 	"on property:vold.decrypt=trigger_restart_framework\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud services\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" services\n"
 	"\n"
 
 	"on property:sys.boot_completed=1\n"
-	"    exec u:r:su:s0 root -- /data/adb/ksud boot-completed\n"
+	"    exec u:r:su:s0 root -- "KSUD_PATH" boot-completed\n"
 	"\n"
 
 	"\n";
@@ -211,11 +212,9 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 static struct kprobe execve_kp = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) &&                        \
-	LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 	.symbol_name = "__do_execve_file",
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) &&                        \
-	LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
 	.symbol_name = "do_execveat_common",
 #endif
 	.pre_handler = execve_handler_pre,
