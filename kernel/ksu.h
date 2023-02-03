@@ -3,7 +3,11 @@
 
 #include "linux/workqueue.h"
 
-#define KERNEL_SU_VERSION 15
+#ifndef KSU_GIT_VERSION
+#error "KSU_GIT_VERSION not defined! Please check Makefile."
+#else
+#define KERNEL_SU_VERSION (10000 + KSU_GIT_VERSION + 200) // major * 10000 + git version + 200 for historical reasons
+#endif
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
 
