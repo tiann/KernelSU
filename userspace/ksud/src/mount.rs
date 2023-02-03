@@ -1,21 +1,21 @@
 use anyhow::Result;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::{Context, Ok};
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use retry::delay::NoDelay;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
 pub struct AutoMountExt4 {
     mnt: String,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     mount: Option<Mount>,
     auto_umount: bool,
 }
 
 impl AutoMountExt4 {
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn try_new(src: &str, mnt: &str, auto_umount: bool) -> Result<Self> {
         let result = Mount::builder()
             .fstype(FilesystemType::from("ext4"))
@@ -52,12 +52,12 @@ impl AutoMountExt4 {
         }
     }
 
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "android")))]
     pub fn try_new(_src: &str, _mnt: &str, _auto_umount: bool) -> Result<Self> {
         unimplemented!()
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn umount(&self) -> Result<()> {
         if let Some(ref mount) = self.mount {
             mount
@@ -74,7 +74,7 @@ impl AutoMountExt4 {
     }
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 impl Drop for AutoMountExt4 {
     fn drop(&mut self) {
         log::info!(
@@ -89,7 +89,7 @@ impl Drop for AutoMountExt4 {
 }
 
 #[allow(dead_code)]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn mount_image(src: &str, target: &str, autodrop: bool) -> Result<()> {
     if autodrop {
         Mount::builder()
@@ -106,7 +106,7 @@ fn mount_image(src: &str, target: &str, autodrop: bool) -> Result<()> {
 }
 
 #[allow(dead_code)]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_ext4(src: &str, target: &str, autodrop: bool) -> Result<()> {
     // umount target first.
     let _ = umount_dir(target);
@@ -116,13 +116,13 @@ pub fn mount_ext4(src: &str, target: &str, autodrop: bool) -> Result<()> {
         .map(|_| ())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn umount_dir(src: &str) -> Result<()> {
     unmount(src, UnmountFlags::empty()).with_context(|| format!("Failed to umount {src}"))?;
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
     Mount::builder()
         .fstype(FilesystemType::from("overlay"))
@@ -133,17 +133,17 @@ pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
         .map_err(|e| anyhow::anyhow!("mount partition: {mnt} overlay failed: {e}"))
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn mount_ext4(_src: &str, _target: &str, _autodrop: bool) -> Result<()> {
     unimplemented!()
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn umount_dir(_src: &str) -> Result<()> {
     unimplemented!()
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn mount_overlay(_lowerdir: &str, _mnt: &str) -> Result<()> {
     unimplemented!()
 }
