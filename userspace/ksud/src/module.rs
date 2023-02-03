@@ -455,16 +455,15 @@ fn _install_module(zip: &str) -> Result<()> {
     let mut archive = zip::ZipArchive::new(file)?;
     archive.extract(&module_dir)?;
 
-    exec_install_script(zip)?;
-
     // set permission and selinux context for $MOD/system
     let module_system_dir = PathBuf::from(module_dir).join("system");
     if module_system_dir.exists() {
-        let path = module_system_dir.to_str().unwrap();
         #[cfg(unix)]
         set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
-        restore_syscon(path)?;
+        restore_syscon(&module_system_dir)?;
     }
+
+    exec_install_script(zip)?;
 
     info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
