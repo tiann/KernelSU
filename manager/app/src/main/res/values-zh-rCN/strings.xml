@@ -49,4 +49,5 @@
     <string name="refresh">刷新</string>
     <string name="show_system_apps">显示系统应用</string>
     <string name="hide_system_apps">隐藏系统应用</string>
+    <string name="send_log">发送日志</string>
 </resources>

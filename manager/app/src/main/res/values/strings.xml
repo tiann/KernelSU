@@ -53,5 +53,6 @@
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
+    <string name="send_log">Send Log</string>
 
 </resources>
