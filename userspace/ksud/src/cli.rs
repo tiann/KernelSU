@@ -89,6 +89,12 @@ enum Sepolicy {
         /// sepolicy file path
         file: String,
     },
+
+    /// Check if sepolicy statement is supported/valid
+    Check {
+        /// sepolicy statements
+        sepolicy: String,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -152,6 +158,7 @@ pub fn run() -> Result<()> {
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
+            Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
         Commands::Services => event::on_services(),
 

@@ -692,7 +692,7 @@ impl From<AtomicStatement> for FfiPolicy {
 }
 
 #[cfg(unix)]
-fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
+fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Result<()> {
     let policies: Vec<AtomicStatement> = statement.try_into()?;
 
     for policy in policies {
@@ -710,7 +710,10 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
         }
 
         if result != crate::ksu::KERNEL_SU_OPTION {
-            log::warn!("apply rule failed: {result}");
+            log::warn!("apply rule: {:?} failed.", statement);
+            if strict {
+                return Err(anyhow::anyhow!("apply rule {:?} failed.", statement));
+            }
         }
     }
 
@@ -718,7 +721,7 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>) -> Result<()> {
 }
 
 #[cfg(not(unix))]
-fn apply_one_rule<'a>(_statement: &'a PolicyStatement<'a>) -> Result<()> {
+fn apply_one_rule<'a>(_statement: &'a PolicyStatement<'a>, _strict: bool) -> Result<()> {
     unimplemented!()
 }
 
@@ -726,7 +729,7 @@ pub fn live_patch(policy: &str) -> Result<()> {
     let result = parse_sepolicy(policy.trim());
     for statement in result {
         println!("{statement:?}");
-        apply_one_rule(&statement)?;
+        apply_one_rule(&statement, false)?;
     }
     Ok(())
 }
@@ -734,4 +737,12 @@ pub fn live_patch(policy: &str) -> Result<()> {
 pub fn apply_file<P: AsRef<Path>>(path: P) -> Result<()> {
     let input = std::fs::read_to_string(path)?;
     live_patch(&input)
+}
+
+pub fn check_rule(policy: &str) -> Result<()> {
+    let result = parse_sepolicy(policy.trim());
+    for statement in result {
+        apply_one_rule(&statement, true)?;
+    }
+    Ok(())
 }
