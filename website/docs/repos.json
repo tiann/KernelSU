@@ -96,5 +96,12 @@
         "kernel_name": "neko_kernel_xiaomi_gauguin",
         "kernel_link": "https://github.com/Molyuu/neko_kernel_xiaomi_gauguin",
         "devices": "Redmi Note 9 Pro/ Mi 10T Lite/ Mi 10i "
+    },
+    {
+        "maintainer": "guh0613",
+        "maintainer_link": "https://github.com/guh0613",
+        "kernel_name": "android_kernel_oppo_sm8150",
+        "kernel_link": "https://github.com/guh0613/android_kernel_oppo_sm8150",
+        "devices": "OPPO Reno Ace (OP4A89)"
     }
 ]
