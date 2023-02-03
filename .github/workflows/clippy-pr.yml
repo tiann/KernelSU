@@ -1,0 +1,22 @@
+name: Clippy check for pull request
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+    paths:
+      - '.github/workflows/clippy-pr.yml'
+      - 'userspace/ksud/**'
+
+permissions:
+  checks: write
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: giraffate/clippy-action@v1
+        with:
+          workdir: userspace/ksud
