@@ -1,22 +1,28 @@
 use anyhow::Result;
 use const_format::concatcp;
-use crate::{utils, defs};
+use rust_embed::RustEmbed;
 
-pub const RESETPROP_PATH: &str = concatcp!(defs::BINARY_DIR, "resetprop");
+use crate::{defs::BINARY_DIR, utils};
+
+pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
+pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
 
 #[cfg(target_arch = "aarch64")]
-const RESETPROP: &[u8] = include_bytes!("../bin/aarch64/resetprop");
-#[cfg(target_arch = "x86_64")]
-const RESETPROP: &[u8] = include_bytes!("../bin/x86_64/resetprop");
+#[derive(RustEmbed)]
+#[folder = "bin/aarch64"]
+struct Asset;
 
-pub const BUSYBOX_PATH: &str = concatcp!(defs::BINARY_DIR, "busybox");
-#[cfg(target_arch = "aarch64")]
-const BUSYBOX: &[u8] = include_bytes!("../bin/aarch64/busybox");
 #[cfg(target_arch = "x86_64")]
-const BUSYBOX: &[u8] = include_bytes!("../bin/x86_64/busybox");
+#[derive(RustEmbed)]
+#[folder = "bin/x86_64"]
+struct Asset;
 
-pub fn ensure_bin_assets() -> Result<()> {
-    utils::ensure_binary(RESETPROP_PATH, RESETPROP)?;
-    utils::ensure_binary(BUSYBOX_PATH, BUSYBOX)?;
+pub fn ensure_binaries() -> Result<()> {
+    for file in Asset::iter() {
+        utils::ensure_binary(
+            format!("{BINARY_DIR}{file}"),
+            &Asset::get(&file).unwrap().data,
+        )?
+    }
     Ok(())
 }

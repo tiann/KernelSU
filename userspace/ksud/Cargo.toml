@@ -27,6 +27,10 @@ jwalk = "0.8.1"
 is_executable = "1.0.1"
 nom = "7"
 derive-new = "0.5"
+rust-embed = { version = "6.4.2", features = [
+    "debug-embed",
+    "compression", # must clean build after updating binaries
+] }
 
 [target.'cfg(target_os = "android")'.dependencies]
 sys-mount = "2.0.1"

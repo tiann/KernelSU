@@ -102,7 +102,7 @@ pub fn on_post_data_fs() -> Result<()> {
     // we should clean the module mount point if it exists
     ensure_clean_dir(module_dir)?;
 
-    assets::ensure_bin_assets().with_context(|| "Failed to extract bin assets")?;
+    assets::ensure_binaries().with_context(|| "Failed to extract bin assets")?;
 
     if Path::new(module_update_img).exists() {
         if module_update_flag.exists() {
@@ -191,6 +191,6 @@ pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
 
-    // install binary assets also!
-    assets::ensure_bin_assets().with_context(|| "Failed to extract assets")
+    // install binary assets
+    assets::ensure_binaries().with_context(|| "Failed to extract assets")
 }

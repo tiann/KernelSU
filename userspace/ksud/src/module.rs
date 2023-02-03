@@ -380,7 +380,7 @@ fn do_install_module(zip: String) -> Result<()> {
     // print banner
     println!(include_str!("banner"));
 
-    assets::ensure_bin_assets().with_context(|| "Failed to extract assets")?;
+    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
 
     // first check if workding dir is usable
     ensure_dir_exists(defs::WORKING_DIR).with_context(|| "Failed to create working dir")?;
