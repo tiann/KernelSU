@@ -15,18 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up cargo cache
-      if: inputs.use_cache == true
-      uses: actions/cache@v3
-      continue-on-error: false
+    - uses: Swatinem/rust-cache@v2
       with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: ${{ runner.os }}-cargo-
+        workspaces: userspace/ksud
+        cache-targets: false
+
+    - name: Install cross
+      run: cargo install cross
 
     - name: Build ksud
       run: cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
@@ -35,5 +30,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ksud-${{ inputs.target }}
-        path: ./userspace/ksud/target/**/release/ksud
+        path: userspace/ksud/target/**/release/ksud
 

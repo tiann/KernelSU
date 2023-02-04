@@ -13,7 +13,10 @@ fn get_git_version() -> (u32, String) {
             .stdout,
     )
     .expect("Failed to read git count stdout");
-    let version_code: u32 = version_code.trim().parse().expect("Failed to parse git count");
+    let version_code: u32 = version_code
+        .trim()
+        .parse()
+        .expect("Failed to parse git count");
     let version_code = 10000 + 200 + version_code; // For historical reasons
 
     let version_name = String::from_utf8(
@@ -28,7 +31,7 @@ fn get_git_version() -> (u32, String) {
 }
 
 fn main() {
-    let (code, name)= get_git_version();
+    let (code, name) = get_git_version();
     let out_dir = env::var("OUT_DIR").expect("Failed to get $OUT_DIR");
     let out_dir = Path::new(&out_dir);
     File::create(Path::new(out_dir).join("VERSION_CODE"))
