@@ -37,8 +37,8 @@
     <string name="reboot_bootloader">Reboot ke Bootloader</string>
     <string name="reboot_download">Reboot ke Download</string>
     <string name="reboot_edl">Reboot ke EDL</string>
-    <string name="settings_system_rw">Buat system agar dapat ditulis</string>
-    <string name="settings_system_rw_summary">Gunakan overlayfs untuk membuat partisi yang dapat ditulis, reboot untuk menerapkan fitur</string>
+    <string name="settings_system_rw">Buat system agar dapat ditulis RW</string>
+    <string name="settings_system_rw_summary">fitur ini memungkinkan anda dapat melakukan edit system, lakukan reboot setelah mengaktifkan</string>
     <string name="about">Tentang</string>
     <string name="require_kernel_version_8">Membutuhkan KernelSU Versi 8+</string>
     <string name="module_uninstall_success">%s tercopot</string>
@@ -49,4 +49,5 @@
     <string name="refresh">Segarkan</string>
     <string name="show_system_apps">Tampilkan system apps</string>
     <string name="hide_system_apps">Sembunyikan system apps</string>
+    <string name="send_log">Kirim logs</string>
 </resources>
