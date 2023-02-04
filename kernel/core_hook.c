@@ -22,6 +22,7 @@
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
+#include "kernel_compat.h"
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
@@ -356,7 +357,26 @@ static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 	ksu_handle_prctl(option, arg2, arg3, arg4, arg5);
 	return -ENOSYS;
 }
-
+// kernel 4.4 and 4.9
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+static int ksu_key_permission(key_ref_t key_ref,
+				  const struct cred *cred,
+				  unsigned perm)
+{
+	if (init_session_keyring != NULL)
+	{
+		return 0;
+	}
+	if (strcmp(current->comm, "init"))
+	{
+		// we are only interested in `init` process
+		return 0;
+	}
+	init_session_keyring = cred->session_keyring;
+	pr_info("kernel_compat: got init_session_keyring");
+	return 0;
+}
+#endif
 static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
 			    struct inode *new_inode, struct dentry *new_dentry)
 {
@@ -366,6 +386,9 @@ static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+	LSM_HOOK_INIT(key_permission, ksu_key_permission)
+#endif
 };
 
 void __init ksu_lsm_hook_init(void)
