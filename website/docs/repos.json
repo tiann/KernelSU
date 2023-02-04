@@ -117,5 +117,12 @@
         "kernel_name": "kernel_xiaomi_alioth",
         "kernel_link": "https://github.com/LeviMarvin/kernel_xiaomi_alioth",
         "devices": "Redmi K40 / POCO F3"
+    },
+    {
+        "maintainer": "cibimo",
+        "maintainer_link": "https://github.com/cibimo",
+        "kernel_name": "kernel_xiaomi_raphael_ksu",
+        "kernel_link": "https://github.com/cibimo/kernel_xiaomi_raphael_ksu",
+        "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
     }
 ]
