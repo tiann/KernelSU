@@ -25,9 +25,9 @@ use zip_extensions::zip_extract_file_to_memory;
 #[cfg(unix)]
 use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
 
-const UTIL_FUNCTIONS: &str = include_str!("./installer.sh");
+const INSTALLER_CONTENT: &str = include_str!("./installer.sh");
 const INSTALL_MODULE_SCRIPT: &str =
-    concatcp!(UTIL_FUNCTIONS, "\n", "install_module", "\n", "exit 0", "\n");
+    concatcp!(INSTALLER_CONTENT, "\n", "install_module", "\n", "exit 0", "\n");
 
 fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
@@ -41,6 +41,8 @@ fn exec_install_script(module_file: &str) -> Result<()> {
             format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
         )
         .env("KSU", "true")
+        .env("KSU_VER", defs::VERSION_NAME)
+        .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
         .stderr(Stdio::null())
@@ -172,7 +174,7 @@ pub fn load_sepolicy_rule() -> Result<()> {
         let path = entry.path();
         let disabled = path.join(defs::DISABLE_FILE_NAME);
         if disabled.exists() {
-            println!("{} is disabled, skip", path.display());
+            info!("{} is disabled, skip", path.display());
             continue;
         }
 
@@ -180,10 +182,10 @@ pub fn load_sepolicy_rule() -> Result<()> {
         if !rule_file.exists() {
             continue;
         }
-        println!("load policy: {}", &rule_file.display());
+        info!("load policy: {}", &rule_file.display());
 
         if sepolicy::apply_file(&rule_file).is_err() {
-            println!("Failed to load sepolicy.rule for {}", &rule_file.display());
+            warn!("Failed to load sepolicy.rule for {}", &rule_file.display());
         }
     }
 
