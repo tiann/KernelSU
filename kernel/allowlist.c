@@ -22,12 +22,7 @@ struct perm_data {
 
 static struct list_head allow_list;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
-#else
-// filp_open return error if under encryption dir on Kernel4.4
-#define KERNEL_SU_ALLOWLIST "/data/user_de/.ksu_allowlist"
-#endif
 
 static struct work_struct ksu_save_work;
 static struct work_struct ksu_load_work;
@@ -124,7 +119,7 @@ void do_persistent_allow_list(struct work_struct *work)
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 	loff_t off = 0;
-
+	KWORKER_INSTALL_KEYRING();
 	struct file *fp =
 		filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
 
@@ -164,7 +159,7 @@ void do_load_allow_list(struct work_struct *work)
 	struct file *fp = NULL;
 	u32 magic;
 	u32 version;
-
+	KWORKER_INSTALL_KEYRING();
 	fp = filp_open("/data/adb", O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		int errno = PTR_ERR(fp);
