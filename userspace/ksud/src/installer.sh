@@ -1,7 +1,8 @@
 #!/system/bin/sh
 ############################################
 # KernelSU installer script
-# Credit to Magisk!!!
+# mostly from module_installer.sh
+# and util_functions.sh in Magisk
 ############################################
 
 umask 022
@@ -418,8 +419,5 @@ NVBASE=/data/adb/ksu
 TMPDIR=/dev/tmp
 
 # Some modules dependents on this
-MAGISK_VER=25.2
-MAGISK_VER_CODE=25200
-
-# KSU to recognize 
-KSU=true
+export MAGISK_VER=25.2
+export MAGISK_VER_CODE=25200

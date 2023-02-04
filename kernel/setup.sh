@@ -1,6 +1,5 @@
-#! /bin/bash
-
-set -x
+#!/bin/sh
+set -eux
 
 GKI_ROOT=$(pwd)
 
@@ -11,8 +10,8 @@ if test -d "$GKI_ROOT/common/drivers"; then
 elif test -d "$GKI_ROOT/drivers"; then
      DRIVER_DIR="$GKI_ROOT/drivers"
 else
-     echo "[ERROR] "drivers/" directory is not found."
-     echo "[+] You should modify this scrpit by yourself."
+     echo '[ERROR] "drivers/" directory is not found.'
+     echo '[+] You should modify this scrpit by yourself.'
      exit 127
 fi
 
@@ -26,9 +25,9 @@ echo "[+] Copy kernel su driver to $DRIVER_DIR"
 
 test -e "$DRIVER_DIR/kernelsu" || ln -sf "$GKI_ROOT/KernelSU/kernel" "$DRIVER_DIR/kernelsu"
 
-echo "[+] Add kernel su driver to Makefile"
+echo '[+] Add kernel su driver to Makefile'
 
 DRIVER_MAKEFILE=$DRIVER_DIR/Makefile
-grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+grep -q "kernelsu" "$DRIVER_MAKEFILE" || echo "obj-y += kernelsu/" >>"$DRIVER_MAKEFILE"
 
-echo "[+] Done."
+echo '[+] Done.'
