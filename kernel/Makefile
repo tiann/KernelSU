@@ -12,11 +12,16 @@ obj-y += embed_ksud.o
 obj-y += kernel_compat.o
 
 obj-y += selinux/
+
 # We must use the absolute path to git, otherwise the build will fail if git is not in the PATH
 KSU_GIT_VERSION := $(shell cd $(srctree)/$(src);/usr/bin/git rev-list --count HEAD)
 ifeq ($(KSU_GIT_VERSION),)
 $(error Get git version failed, please make sure git is installed in /usr/bin/git)
 endif
+ifeq ($(shell test $(KSU_GIT_VERSION) -gt 10000; echo $$?),0)
+$(error The way you configure KernelSU is wrong, please use submodule and make sure it is a single git repo)
+endif
+
 ccflags-y += -DKSU_GIT_VERSION=$(KSU_GIT_VERSION)
 
 ifndef EXPECTED_SIZE
