@@ -131,5 +131,12 @@
         "kernel_name": "kernel_xiaomi_sm7250",
         "kernel_link": "https://github.com/EndCredits/kernel_xiaomi_sm7250",
         "devices": "Redmi K30 5G ( picasso ) , Redmi K30i 5G ( picasso_48m)"
+    },
+    {
+        "maintainer": "msnx",
+        "maintainer_link": "https://github.com/msnx",
+        "kernel_name": "android-msm-coral-4.14-android13",
+        "kernel_link": "https://github.com/msnx/KernelSU-Pixel4XL",
+        "devices": "Pixel 4 XL"
     }
 ]
