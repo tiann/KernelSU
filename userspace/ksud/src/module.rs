@@ -26,8 +26,14 @@ use zip_extensions::zip_extract_file_to_memory;
 use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
 
 const INSTALLER_CONTENT: &str = include_str!("./installer.sh");
-const INSTALL_MODULE_SCRIPT: &str =
-    concatcp!(INSTALLER_CONTENT, "\n", "install_module", "\n", "exit 0", "\n");
+const INSTALL_MODULE_SCRIPT: &str = concatcp!(
+    INSTALLER_CONTENT,
+    "\n",
+    "install_module",
+    "\n",
+    "exit 0",
+    "\n"
+);
 
 fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
