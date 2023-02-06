@@ -22,7 +22,7 @@ ifeq ($(shell test -d $(srctree)/$(src)/../.git; echo $$?),1)
 # Use remote git version
 # KSU_GIT_VERSION := $(shell /usr/bin/python3 $(srctree)/$(src)/get_commits.py tiann KernelSU main)
 # ifeq ($(KSU_GIT_VERSION),)
-# $(error Get git version failed, please make sure git is installed in /usr/bin/git)
+# $(error Get git version failed, please make sure python3 is installed in /usr/bin/python3 and requests is installed by pip3)
 # endif
 
 ifeq ($(KSU_GIT_VERSION),)
