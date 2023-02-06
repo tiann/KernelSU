@@ -20,7 +20,7 @@ ifeq ($(shell test -d $(srctree)/$(src)/../.git; echo $$?),1)
 # KSU_GIT_VERSION := 123
 
 # Use remote git version
-# KSU_GIT_VERSION := $(shell /usr/bin/python3 $(srctree)/$(src)/../scripts/get_commits.py tiann KernelSU main)
+# KSU_GIT_VERSION := $(shell /usr/bin/python3 $(srctree)/$(src)/get_commits.py tiann KernelSU main)
 # ifeq ($(KSU_GIT_VERSION),)
 # $(error Get git version failed, please make sure git is installed in /usr/bin/git)
 # endif
@@ -34,6 +34,10 @@ else
 KSU_GIT_VERSION := $(shell cd $(srctree)/$(src);/usr/bin/git rev-list --count HEAD)
 ifeq ($(KSU_GIT_VERSION),)
 $(error Get git version failed, please make sure git is installed in /usr/bin/git)
+endif
+
+ifeq ($(shell test $(KSU_GIT_VERSION) -gt 10000; echo $$?),0)
+$(error The way you configure KernelSU is wrong, please use submodule and make sure it is a single git repo)
 endif
 
 endif
