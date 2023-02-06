@@ -13,9 +13,31 @@ obj-y += kernel_compat.o
 
 obj-y += selinux/
 
-KSU_GIT_VERSION := $(shell /usr/bin/python3 $(src)/../scripts/get_commits.py)
+ifeq ($(shell test -d $(srctree)/$(src)/../.git; echo $$?),1)
+# not single git repo
+
+# Set mannually
+# KSU_GIT_VERSION := 123
+
+# Use remote git version
+# KSU_GIT_VERSION := $(shell /usr/bin/python3 $(src)/../scripts/get_commits.py tiann KernelSU main)
+
 ifeq ($(KSU_GIT_VERSION),)
-$(error Get git version failed, please make sure python3 is installed in /usr/bin/python3 and request is installed)
+$(error Please set KSU_GIT_VERSION in your Makefile)
+endif
+
+else
+
+KSU_GIT_VERSION := $(shell cd $(srctree)/$(src);/usr/bin/git rev-list --count HEAD)
+ifeq ($(KSU_GIT_VERSION),)
+$(error Get git version failed, please make sure git is installed in /usr/bin/git)
+endif
+
+endif
+
+
+ifeq ($(KSU_GIT_VERSION),)
+$(error Get git version failed)
 endif
 
 ccflags-y += -DKSU_GIT_VERSION=$(KSU_GIT_VERSION)

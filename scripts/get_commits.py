@@ -1,3 +1,4 @@
+import sys
 import requests
 
 
@@ -10,4 +11,7 @@ def count_commits(user, repo, branch):
 
 
 if __name__ == "__main__":
-    count_commits("tiann", "KernelSU", "main")
+    if len(sys.argv) != 4:
+        count_commits("tiann", "KernelSU", "main")
+    else:
+        count_commits(sys.argv[1], sys.argv[2], sys.argv[3])
