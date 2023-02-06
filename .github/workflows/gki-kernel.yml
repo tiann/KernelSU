@@ -112,6 +112,7 @@ jobs:
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
           echo "[+] KernelSU setup done."
+          pip3 install requests
 
       - name: Symbol magic
         run: |
