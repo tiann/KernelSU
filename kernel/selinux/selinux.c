@@ -57,7 +57,7 @@ void setenforce(bool enforce)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	selinux_state.enforcing = enforce;
 #else
-	selinux_enabled = enforce;
+	selinux_enforcing = enforce;
 #endif
 #endif
 }
@@ -78,7 +78,7 @@ bool getenforce()
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	return selinux_state.enforcing;
 #else
-	return selinux_enabled;
+	return selinux_enforcing;
 #endif
 #else
 	return true;
