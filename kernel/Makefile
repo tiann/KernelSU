@@ -20,7 +20,10 @@ ifeq ($(shell test -d $(srctree)/$(src)/../.git; echo $$?),1)
 # KSU_GIT_VERSION := 123
 
 # Use remote git version
-# KSU_GIT_VERSION := $(shell /usr/bin/python3 $(src)/../scripts/get_commits.py tiann KernelSU main)
+# KSU_GIT_VERSION := $(shell /usr/bin/python3 $(srctree)/$(src)/../scripts/get_commits.py tiann KernelSU main)
+# ifeq ($(KSU_GIT_VERSION),)
+# $(error Get git version failed, please make sure git is installed in /usr/bin/git)
+# endif
 
 ifeq ($(KSU_GIT_VERSION),)
 $(error Please set KSU_GIT_VERSION in your Makefile)
