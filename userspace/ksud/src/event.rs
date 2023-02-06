@@ -132,25 +132,26 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("load sepolicy.rule failed");
     }
 
+    if crate::utils::is_safe_mode() {
+        warn!("safe mode, skip module post-fs-data scripts");
+        return Ok(());
+    }
+
     // mount systemless overlay
     if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
 
     // module mounted, exec modules post-fs-data scripts
-    if crate::utils::is_safe_mode() {
-        warn!("safe mode, skip module post-fs-data scripts");
-    } else {
-        // todo: Add timeout
-        if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
-            warn!("exec common post-fs-data scripts failed: {}", e);
-        }
-        if let Err(e) = crate::module::exec_post_fs_data() {
-            warn!("exec post-fs-data scripts failed: {}", e);
-        }
-        if let Err(e) = crate::module::load_system_prop() {
-            warn!("load system.prop failed: {}", e);
-        }
+    // todo: Add timeout
+    if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
+        warn!("exec common post-fs-data scripts failed: {}", e);
+    }
+    if let Err(e) = crate::module::exec_post_fs_data() {
+        warn!("exec post-fs-data scripts failed: {}", e);
+    }
+    if let Err(e) = crate::module::load_system_prop() {
+        warn!("load system.prop failed: {}", e);
     }
 
     Ok(())
