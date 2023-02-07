@@ -2,7 +2,7 @@
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 17, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 163)
 #include "avc.h"
 #endif
 
@@ -57,7 +57,7 @@ if (!is_domain_permissive) {
 void setenforce(bool enforce)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)
 	selinux_state.enforcing = enforce;
 #else
 	selinux_enforcing = enforce;
@@ -68,7 +68,7 @@ void setenforce(bool enforce)
 bool getenforce()
 {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)
 	if (selinux_state.disabled) {
 #else
 	if (selinux_disabled) {
@@ -78,7 +78,7 @@ bool getenforce()
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)
 	return selinux_state.enforcing;
 #else
 	return selinux_enforcing;
