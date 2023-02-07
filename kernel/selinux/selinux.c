@@ -2,6 +2,9 @@
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 17, 0)
+#include "avc.h"
+#endif
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
 
