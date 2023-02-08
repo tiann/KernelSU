@@ -137,10 +137,16 @@ pub fn on_post_data_fs() -> Result<()> {
         return Ok(());
     }
 
+    // umount all stock overlayfs and remount them after module mounted
+    let stock_overlay = mount::StockOverlay::new();
+    stock_overlay.umount_all();
+
     // mount systemless overlay
     if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
+
+    stock_overlay.mount_all();
 
     // module mounted, exec modules post-fs-data scripts
     // todo: Add timeout

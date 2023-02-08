@@ -7,6 +7,11 @@ use retry::delay::NoDelay;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use procfs::process::{MountInfo, Process};
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use std::collections::HashSet;
+
 pub struct AutoMountExt4 {
     mnt: String,
     #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -146,4 +151,104 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn mount_overlay(_lowerdir: &str, _mnt: &str) -> Result<()> {
     unimplemented!()
+}
+
+pub struct StockOverlay {
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    mountinfos: Vec<MountInfo>,
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+impl StockOverlay {
+    pub fn new() -> Self {
+        unimplemented!()
+    }
+
+    pub fn mount_all(&self) {
+        unimplemented!()
+    }
+
+    pub fn umount_all(&self) {
+        unimplemented!()
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+impl StockOverlay {
+    pub fn new() -> Self {
+        if let std::result::Result::Ok(process) = Process::myself() {
+            if let std::result::Result::Ok(mountinfos) = process.mountinfo() {
+                let overlay_mounts = mountinfos
+                    .into_iter()
+                    .filter(|m| m.fs_type == "overlay")
+                    .collect::<Vec<_>>();
+                return Self {
+                    mountinfos: overlay_mounts,
+                };
+            }
+        }
+        Self { mountinfos: vec![] }
+    }
+
+    pub fn mount_all(&self) {
+        log::info!("stock overlay: mount all: {:?}", self.mountinfos);
+        for mount in self.mountinfos.clone() {
+            let Some(mnt) = mount.mount_point.to_str() else {
+                log::warn!("Failed to get mount point");
+                continue;
+            };
+
+            if mnt == "/system" {
+                log::warn!("stock overlay found /system, skip!");
+                continue;
+            }
+
+            let (_flags, b): (HashSet<_>, HashSet<_>) = mount
+                .mount_options
+                .into_iter()
+                .chain(mount.super_options)
+                .partition(|&(_, ref m)| m.is_none());
+
+            let mut overlay_opts = vec![];
+            for (opt, val) in b {
+                if let Some(val) = val {
+                    overlay_opts.push(format!("{}={}", opt, val));
+                } else {
+                    log::warn!("opt empty: {}", opt);
+                }
+            }
+            let overlay_data = overlay_opts.join(",");
+            let result = Mount::builder()
+                .fstype(FilesystemType::from("overlay"))
+                .flags(MountFlags::RDONLY)
+                .data(&overlay_data)
+                .mount("overlay", mnt);
+            if let Err(e) = result {
+                log::error!(
+                    "stock mount overlay: {} failed: {}",
+                    mount.mount_point.display(),
+                    e
+                );
+            } else {
+                log::info!(
+                    "stock mount :{} overlay_opts: {}",
+                    mount.mount_point.display(),
+                    overlay_opts.join(",")
+                );
+            }
+        }
+    }
+
+    pub fn umount_all(&self) {
+        log::info!("stock overlay: umount all: {:?}", self.mountinfos);
+        for mnt in &self.mountinfos {
+            let Some(p) = mnt.mount_point.to_str() else {
+                log::warn!("Failed to umount: {}", mnt.mount_point.display());
+                continue;
+            };
+
+            let result = umount_dir(p);
+            log::info!("stock umount {}: {:?}", p, result);
+        }
+    }
 }
