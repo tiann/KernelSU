@@ -138,5 +138,12 @@
         "kernel_name": "android-msm-coral-4.14-android13",
         "kernel_link": "https://github.com/msnx/KernelSU-Pixel4XL",
         "devices": "Pixel 4 XL"
+    },
+    {
+        "maintainer": "SoDebug",
+        "maintainer_link": "https://github.com/SoDebug",
+        "kernel_name": "kernel_xiaomi_raphael",
+        "kernel_link": "https://github.com/SoDebug/kernel_xiaomi_raphael",
+        "devices": "non-GKI"
     }
 ]
