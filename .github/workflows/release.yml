@@ -27,12 +27,12 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Zip AnyKernel3
         run: |
-        for dir in AnyKernel3-*; do
-          if [ -d "$dir" ]; then
-            echo "----- Zip $dir -----"
-            (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
-          fi
-        done
+          for dir in AnyKernel3-*; do
+            if [ -d "$dir" ]; then
+              echo "----- Zip $dir -----"
+              (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
+            fi
+          done
 
       - name: Display structure of downloaded files
         run: ls -R
