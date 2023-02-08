@@ -207,12 +207,12 @@ impl StockOverlay {
                 .mount_options
                 .into_iter()
                 .chain(mount.super_options)
-                .partition(|&(_, ref m)| m.is_none());
+                .partition(|(_, m)| m.is_none());
 
             let mut overlay_opts = vec![];
             for (opt, val) in b {
                 if let Some(val) = val {
-                    overlay_opts.push(format!("{}={}", opt, val));
+                    overlay_opts.push(format!("{opt}={val}"));
                 } else {
                     log::warn!("opt empty: {}", opt);
                 }
