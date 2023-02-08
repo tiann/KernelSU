@@ -118,12 +118,24 @@ pub fn on_post_data_fs() -> Result<()> {
         }
     }
 
-    if !Path::new(target_update_img).exists() {
-        // no image exist, do nothing for module!
+    // check safe mode first.
+    if crate::utils::is_safe_mode() {
+        warn!("safe mode, skip module post-fs-data scripts");
+        // TODO: we should also disable modules
         return Ok(());
     }
 
-    info!("mount {target_update_img} to {module_dir}");
+    // Then exec common post-fs-data scripts
+    if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
+        warn!("exec common post-fs-data scripts failed: {}", e);
+    }
+
+    // If there isn't any image exist, do nothing for module!
+    if !Path::new(target_update_img).exists() {
+        return Ok(());
+    }
+
+    info!("mount module image: {target_update_img} to {module_dir}");
     mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
         .with_context(|| "mount module image failed".to_string())?;
 
@@ -132,48 +144,43 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("load sepolicy.rule failed");
     }
 
-    if crate::utils::is_safe_mode() {
-        warn!("safe mode, skip module post-fs-data scripts");
-        return Ok(());
+    // exec modules post-fs-data scripts
+    // TODO: Add timeout
+    if let Err(e) = crate::module::exec_post_fs_data() {
+        warn!("exec post-fs-data scripts failed: {}", e);
     }
 
-    // umount all stock overlayfs and remount them after module mounted
+    // load system.prop
+    if let Err(e) = crate::module::load_system_prop() {
+        warn!("load system.prop failed: {}", e);
+    }
+
+    // Finally, we should do systemless mount
+    // But we should umount all stock overlayfs and remount them after module mounted
     let stock_overlay = mount::StockOverlay::new();
     stock_overlay.umount_all();
 
-    // mount systemless overlay
+    // mount moduke systemlessly by overlay
     if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
 
     stock_overlay.mount_all();
 
-    // module mounted, exec modules post-fs-data scripts
-    // todo: Add timeout
-    if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
-        warn!("exec common post-fs-data scripts failed: {}", e);
-    }
-    if let Err(e) = crate::module::exec_post_fs_data() {
-        warn!("exec post-fs-data scripts failed: {}", e);
-    }
-    if let Err(e) = crate::module::load_system_prop() {
-        warn!("load system.prop failed: {}", e);
-    }
-
     Ok(())
 }
 
 pub fn on_services() -> Result<()> {
-    // exec modules service.sh scripts
+    // check safe mode first.
     if crate::utils::is_safe_mode() {
         warn!("safe mode, skip module service scripts");
-    } else {
-        if let Err(e) = crate::module::exec_common_scripts("service.d", false) {
-            warn!("exec common service scripts failed: {}", e);
-        }
-        if let Err(e) = crate::module::exec_services() {
-            warn!("exec service scripts failed: {}", e);
-        }
+        return Ok(());
+    }
+    if let Err(e) = crate::module::exec_common_scripts("service.d", false) {
+        warn!("Failed to exec common service scripts: {}", e);
+    }
+    if let Err(e) = crate::module::exec_services() {
+        warn!("Failed to exec service scripts: {}", e);
     }
 
     Ok(())
