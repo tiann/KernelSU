@@ -8,6 +8,7 @@ on:
 jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
+    secrets: inherit
   build-a12-kernel:
     uses: ./.github/workflows/build-kernel-a12.yml
   build-a13-kernel:
