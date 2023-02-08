@@ -54,4 +54,3 @@ jobs:
             AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip
-          tag_name: ci-test
