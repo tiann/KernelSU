@@ -100,11 +100,11 @@ jobs:
       - name: Display structure of boot files
         run: ls -R
 
-      - name: Upload build artifact
+      - name: Upload images artifact
         uses: actions/upload-artifact@v3
         with:
-          name: android12-5.10.${{ matrix.sub_level }}-images
-          path: boot-*.img
+          name: android12-5.10.${{ matrix.sub_level }}-boot-images
+          path: Image-*/*.img.gz
 
   check-build-kernel:
     if: github.event_name == 'pull_request'

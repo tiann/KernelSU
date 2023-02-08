@@ -35,3 +35,4 @@ jobs:
             AnyKernel3-*
             *.img
             kernel-WSA-*
+          tag_name: ci-test

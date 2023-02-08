@@ -97,6 +97,15 @@ jobs:
           echo "VERSION: $VERSION"
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
+      
+      - name: Display structure of boot files
+        run: ls -R
+
+      - name: Upload images artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android13-${{ matrix.version }}.${{ matrix.sub_level }}-boot-images
+          path: Image-*/*.img.gz
 
   check-build-kernel:
     if: github.event_name == 'pull_request'
