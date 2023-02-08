@@ -1,0 +1,14 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-manager:
+    uses: ./.github/workflows/build-manager.yml
+  build-a12-kernel:
+    uses: ./.github/workflows/build-kernel-a12.yml
+  build-a13-kernel:
+    uses: ./.github/workflows/build-kernel-a13.yml
