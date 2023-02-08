@@ -14,6 +14,7 @@ on:
       - ".github/workflows/gki-kernel.yml"
       - ".github/scripts/build-a12.sh"
       - "kernel/**"
+  workflow_call:
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request'
@@ -41,7 +42,7 @@ jobs:
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
-    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' || github.ref == 'refs/heads/ci' }}
     env:
       CHAT_ID: ${{ secrets.CHAT_ID }}
       CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
@@ -91,10 +92,19 @@ jobs:
           export MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py
           export UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py
           cd $GITHUB_WORKSPACE/KernelSU
-          export VERSION=$(git rev-list --count HEAD)
+          export VERSION=$(($(git rev-list --count HEAD) + 10200))
           echo "VERSION: $VERSION"
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a12.sh
+
+      - name: Display structure of boot files
+        run: ls -R
+
+      - name: Upload images artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: boot-images-android12
+          path: Image-android12*/*.img.gz
 
   check-build-kernel:
     if: github.event_name == 'pull_request'

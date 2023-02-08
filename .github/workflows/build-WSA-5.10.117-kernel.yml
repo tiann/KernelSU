@@ -9,6 +9,7 @@ on:
     branches: [ "main" ]
     paths: 
       - 'kernel/**'
+  workflow_call:
 jobs:
   build:
     strategy:
