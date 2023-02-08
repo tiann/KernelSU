@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - "v*"
+    branches: ["main", "ci"]
   workflow_dispatch:
 
 jobs:
@@ -12,3 +13,14 @@ jobs:
     uses: ./.github/workflows/build-kernel-a12.yml
   build-a13-kernel:
     uses: ./.github/workflows/build-kernel-a13.yml
+  release:
+    needs: 
+      - build-manager
+      - build-a12-kernel
+      - build-a13-kernel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+      - name: Display structure of downloaded files
+        run: ls -R
