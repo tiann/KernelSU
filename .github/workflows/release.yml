@@ -32,7 +32,7 @@ jobs:
         with:
           files: |
             manager/*.apk
-            AnyKernel3-*
-            *.img
-            kernel-WSA-*
+            AnyKernel3-*.zip
+            boot-images-*/Image-*/*.img.gz
+            kernel-WSA-*/*
           tag_name: ci-test

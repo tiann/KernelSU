@@ -24,7 +24,7 @@ build_from_image() {
 	echo '[+] Compress images'
 	for image in boot*.img; do
 		$GZIP -n -f -9 "$image"
-		mv "$image".gz ksu-"$VERSION"-"$image".gz
+        mv "$image".gz ksu-"$VERSION"-"$1"-"$image".gz
 	done
 
 	echo '[+] Images to upload'

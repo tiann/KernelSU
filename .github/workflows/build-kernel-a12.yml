@@ -92,7 +92,7 @@ jobs:
           export MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py
           export UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py
           cd $GITHUB_WORKSPACE/KernelSU
-          export VERSION=$(git rev-list --count HEAD)
+          export VERSION=$(($(git rev-list --count HEAD) + 10200))
           echo "VERSION: $VERSION"
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a12.sh
@@ -103,7 +103,7 @@ jobs:
       - name: Upload images artifact
         uses: actions/upload-artifact@v3
         with:
-          name: android12-5.10.${{ matrix.sub_level }}-boot-images
+          name: boot-images-android12
           path: Image-*/*.img.gz
 
   check-build-kernel:
