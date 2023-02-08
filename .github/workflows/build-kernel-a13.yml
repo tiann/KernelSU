@@ -43,7 +43,7 @@ jobs:
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
-    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+    if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' || github.ref == 'refs/heads/ci' }}
     env:
       CHAT_ID: ${{ secrets.CHAT_ID }}
       CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
