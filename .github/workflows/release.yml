@@ -13,11 +13,14 @@ jobs:
     uses: ./.github/workflows/build-kernel-a12.yml
   build-a13-kernel:
     uses: ./.github/workflows/build-kernel-a13.yml
+  build-wsa-kernel:
+    uses: ./.github/workflows/build-WSA-5.10.117-kernel.yml
   release:
     needs: 
       - build-manager
       - build-a12-kernel
       - build-a13-kernel
+      - build-wsa-kernel
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -31,3 +34,4 @@ jobs:
             manager/*.apk
             AnyKernel3-*
             *.img
+            kernel-WSA-*

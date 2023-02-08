@@ -97,6 +97,15 @@ jobs:
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a12.sh
 
+      - name: Display structure of boot files
+        run: ls -R
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android12-5.10.${{ matrix.sub_level }}-images
+          path: boot-*.img
+
   check-build-kernel:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/gki-kernel.yml
