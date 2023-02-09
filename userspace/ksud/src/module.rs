@@ -87,6 +87,9 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
+
+    check_image(img)?;
+
     let output = Command::new("resize2fs")
         .args(["-P", img])
         .stdout(Stdio::piped())
