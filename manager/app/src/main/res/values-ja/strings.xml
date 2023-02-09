@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name" translatable="false">KernelSU</string>
+  <string name="home">ホーム</string>
+  <string name="home_not_installed">未インストール</string>
+  <string name="home_click_to_install">タップでインストール</string>
+  <string name="home_working">動作中</string>
+  <string name="home_working_version">バージョン: %d</string>
+  <string name="home_unsupported">非対応</string>
+  <string name="home_unsupported_reason">KernelSUは現在、GKI Kernelのみサポートをしています</string>
+  <string name="home_copied_to_clipboard">クリップボードにコピーしました</string>
+  <string name="home_support">対応</string>
+  <string name="home_kernel">カーネル</string>
+  <string name="home_arch">アーキテクチャ</string>
+  <string name="home_version">バージョン</string>
+  <string name="home_api">APIレベル</string>
+  <string name="home_abi">ABI</string>
+  <string name="home_fingerprint">フィンガープリント</string>
+  <string name="home_securitypatch">セキュリティパッチ</string>
+  <string name="home_selinux_status">SELinuxの状態</string>
+  <string name="selinux_status_disabled">無効</string>
+  <string name="selinux_status_enforcing">Enforcing</string>
+  <string name="selinux_status_permissive">Permissive</string>
+  <string name="selinux_status_unknown">不明</string>
+  <string name="superuser">スーパーユーザー</string>
+  <string name="superuser_failed_to_grant_root">%dの権限の付与に失敗しました</string>
+  <string name="module_failed_to_enable">モジュールの有効化に失敗: %s</string>
+  <string name="module_failed_to_disable">モジュールの無効化に失敗: %s</string>
+  <string name="module_empty">モジュールはインストールされていません</string>
+  <string name="module">モジュール</string>
+  <string name="uninstall">アンインストール</string>
+  <string name="module_install">インストール</string>
+  <string name="install">インストール</string>
+  <string name="reboot">再起動</string>
+  <string name="settings">設定</string>
+  <string name="reboot_userspace">ソフトリブート</string>
+  <string name="reboot_recovery">リカバリーで再起動</string>
+  <string name="reboot_bootloader">Bootloaderで再起動</string>
+  <string name="reboot_download">ダウンロードモードで再起動</string>
+  <string name="reboot_edl">EDLで再起動</string>
+  <string name="settings_system_rw">システムを書き込み可能にする</string>
+  <string name="settings_system_rw_summary">OverlayFSを使用してシステムパーティション内部を書き込み可能にします。この機能は再起動後に有効になります。</string>
+  <string name="about">アプリについて</string>
+  <string name="require_kernel_version_8">KernelSU バージョン8以降が必要です</string>
+  <string name="module_uninstall_success">%sをアンインストールしました</string>
+  <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
+  <string name="module_version">バージョン</string>
+  <string name="module_author">作者</string>
+  <string name="module_overlay_fs_not_available">OverlayFSが有効でないためモジュールは動作しません</string>
+  <string name="refresh">更新</string>
+  <string name="show_system_apps">システムアプリを表示</string>
+  <string name="hide_system_apps">システムアプリを非表示</string>
+  <string name="send_log">ログを送信</string>
+</resources>
