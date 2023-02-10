@@ -270,10 +270,6 @@ request_size_check() {
   reqSizeM=`du -ms "$1" | cut -f1`
 }
 
-unzip() {
-    /system/bin/unzip -q "$@"
-}
-
 request_zip_size_check() {
   reqSizeM=`unzip -l "$1" | tail -n 1 | awk '{ print int(($1 - 1) / 1048576 + 1) }'`
 }
