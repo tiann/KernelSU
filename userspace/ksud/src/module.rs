@@ -8,7 +8,6 @@ use crate::{
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use const_format::concatcp;
-use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 use std::{
@@ -87,7 +86,6 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
-
     check_image(img)?;
 
     let output = Command::new("resize2fs")
@@ -274,11 +272,6 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
         let path = entry.path();
         if !path.ends_with(".sh") {
             warn!("{} is not a shell script, skip", path.display());
-            continue;
-        }
-
-        if !is_executable(&path) {
-            warn!("{} is not executable, skip", path.display());
             continue;
         }
 

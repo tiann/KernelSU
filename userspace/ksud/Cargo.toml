@@ -24,7 +24,6 @@ humansize = "2.0.0"
 libc = "0.2"
 extattr = "1.0.0"
 jwalk = "0.8.1"
-is_executable = "1.0.1"
 nom = "7"
 derive-new = "0.5"
 rust-embed = { version = "6.4.2", features = [
