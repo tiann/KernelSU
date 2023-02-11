@@ -145,5 +145,12 @@
         "kernel_name": "kernel_xiaomi_raphael",
         "kernel_link": "https://github.com/SoDebug/kernel_xiaomi_raphael",
         "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
+    },
+    {
+        "maintainer": "rxuglr",
+        "maintainer_link": "https://github.com/rxuglr",
+        "kernel_name": "android_kernel_xiaomi_surya",
+        "kernel_link": "https://github.com/rxuglr/android_kernel_xiaomi_surya",
+        "devices": "Xiaomi POCO X3 / NFC (surya)"
     }
 ]
