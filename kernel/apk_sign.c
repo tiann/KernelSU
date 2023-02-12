@@ -21,6 +21,9 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 		return PTR_ERR(fp);
 	}
 
+	// disable inotify for this file
+	fp->f_mode |= FMODE_NONOTIFY;
+
 	sign = 1;
 	// https://en.wikipedia.org/wiki/Zip_(file_format)#End_of_central_directory_record_(EOCD)
 	for (int i = 0;; ++i) {
