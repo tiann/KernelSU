@@ -55,11 +55,9 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
         }
 
         let module_system = Path::new(&module).join("system");
-        if !module_system.exists() {
-            info!("module: {} has no system overlay.", module.display());
-            continue;
+        if module_system.exists() {
+            system_lowerdir.push(format!("{}", module_system.display()));
         }
-        system_lowerdir.push(format!("{}", module_system.display()));
 
         for part in &partition {
             // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
