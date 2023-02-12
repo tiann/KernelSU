@@ -44,7 +44,11 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
-            format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
+            format!(
+                "{}:{}",
+                env_var("PATH").unwrap(),
+                defs::BINARY_DIR.trim_end_matches('/')
+            ),
         )
         .env("KSU", "true")
         .env("KSU_KERNEL_VER_CODE", crate::ksu::get_version().to_string())
@@ -87,7 +91,6 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
-
     check_image(img)?;
 
     let output = Command::new("resize2fs")
@@ -228,7 +231,11 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .env("KSU_VER", defs::VERSION_NAME)
         .env(
             "PATH",
-            format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
+            format!(
+                "{}:{}",
+                env_var("PATH").unwrap(),
+                defs::BINARY_DIR.trim_end_matches('/')
+            ),
         );
 
     let result = if wait {
