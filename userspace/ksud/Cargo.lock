@@ -88,9 +88,9 @@ checksum = "b645a089122eccb6111b4f81cbc1a49f5900ac4666bb93ac027feaecf15607bf"
 
 [[package]]
 name = "bindgen"
-version = "0.59.2"
+version = "0.60.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bd2a9a458e8f4304c52c43ebb0cfbd520289f8379a52e329a38afda99bf8eb8"
+checksum = "062dddbc1ba4aca46de6338e2bf87771414c335f7b2f2036e8f3e9befebf88e6"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -891,9 +891,8 @@ dependencies = [
 
 [[package]]
 name = "loopdev"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bfa0855b04611e38acaff718542e9e809cddfc16535d39f9d9c694ab19f7388"
+version = "0.5.0"
+source = "git+https://github.com/tiann/loopdev#4baedb0650a8df35efbd63ed117a88bb132c938a"
 dependencies = [
  "bindgen",
  "errno",
@@ -1345,8 +1344,7 @@ dependencies = [
 [[package]]
 name = "sys-mount"
 version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8b080a2fff4d267282506b4d5f2efe0dfa732fb2a5715f30662eed1c4f13390"
+source = "git+https://github.com/tiann/sys-mount#00359e763b3692986fc1af5e990d034bc9b48067"
 dependencies = [
  "bitflags",
  "libc",
