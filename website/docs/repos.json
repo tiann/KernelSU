@@ -152,5 +152,12 @@
         "kernel_name": "android_kernel_xiaomi_surya",
         "kernel_link": "https://github.com/rxuglr/android_kernel_xiaomi_surya",
         "devices": "Xiaomi POCO X3 / NFC (surya)"
+    },
+    {
+        "maintainer": "z1298808165",
+        "maintainer_link": "https://github.com/z1298808165",
+        "kernel_name": "kernel_xiaomi_star",
+        "kernel_link": "https://github.com/z1298808165/kernel_xiaomi_star",
+        "devices": "Xiaomi 11 Ultra"
     }
 ]
