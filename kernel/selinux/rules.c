@@ -166,6 +166,16 @@ static int get_object(char *buf, char __user *user_object, size_t buf_sz,
 	return 0;
 }
 
+// reset avc cache table, otherwise the new rules will not take effect if already denied
+static void reset_avc_cache() {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 17, 0)
+	avc_ss_reset(0);
+#else
+	struct selinux_avc *avc = selinux_state.avc;
+	avc_ss_reset(avc, 0);
+#endif
+}
+
 int handle_sepolicy(unsigned long arg3, void __user *arg4)
 {
 	if (!arg4) {
@@ -439,6 +449,10 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 
 exit:
 	rcu_read_unlock();
+
+	// only allow and xallow needs to reset avc cache, but we cannot do that because
+	// we are in atomic context. so we just reset it every time.
+	reset_avc_cache();
 
 	return ret;
 }
