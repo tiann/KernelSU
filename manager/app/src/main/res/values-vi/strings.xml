@@ -48,4 +48,5 @@
     <string name="refresh">Làm mới</string>
     <string name="show_system_apps">Hiển thị ứng dụng hệ thống</string>
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>
+    <string name="safe_mode_disable_module">Chế độ an toàn, tất cả các mod đều bị tắt!</string>
 </resources>

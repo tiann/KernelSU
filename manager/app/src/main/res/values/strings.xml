@@ -54,5 +54,6 @@
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
     <string name="send_log">Send Log</string>
+    <string name="safe_mode_disable_module">Safe mode, all module are disabled</string>
 
 </resources>

@@ -52,36 +52,42 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         }
     }
 
+    val isSafeMode = Natives.isSafeMode()
+
     Scaffold(
         topBar = {
             TopBar()
         },
-        floatingActionButton = {
-            val moduleInstall = stringResource(id = R.string.module_install)
-            val selectZipLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.StartActivityForResult()
-            ) {
-                if (it.resultCode != RESULT_OK) {
-                    return@rememberLauncherForActivityResult
+        floatingActionButton = if (isSafeMode) {
+            { /* Empty */ }
+        } else {
+            {
+                val moduleInstall = stringResource(id = R.string.module_install)
+                val selectZipLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult()
+                ) {
+                    if (it.resultCode != RESULT_OK) {
+                        return@rememberLauncherForActivityResult
+                    }
+                    val data = it.data ?: return@rememberLauncherForActivityResult
+                    val uri = data.data ?: return@rememberLauncherForActivityResult
+
+                    navigator.navigate(InstallScreenDestination(uri))
+
+                    Log.i("ModuleScreen", "select zip result: ${it.data}")
                 }
-                val data = it.data ?: return@rememberLauncherForActivityResult
-                val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                navigator.navigate(InstallScreenDestination(uri))
-
-                Log.i("ModuleScreen", "select zip result: ${it.data}")
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // select the zip file to install
+                        val intent = Intent(Intent.ACTION_GET_CONTENT)
+                        intent.type = "application/zip"
+                        selectZipLauncher.launch(intent)
+                    },
+                    icon = { Icon(Icons.Filled.Add, moduleInstall) },
+                    text = { Text(text = moduleInstall) },
+                )
             }
-
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // select the zip file to install
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "application/zip"
-                    selectZipLauncher.launch(intent)
-                },
-                icon = { Icon(Icons.Filled.Add, moduleInstall) },
-                text = { Text(text = moduleInstall) },
-            )
         }
     ) { innerPadding ->
         val failedEnable = stringResource(R.string.module_failed_to_enable)
@@ -93,6 +99,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         if (Natives.getVersion() < 8) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.require_kernel_version_8))
+            }
+            return@Scaffold
+        }
+        if (isSafeMode) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.safe_mode_disable_module))
             }
             return@Scaffold
         }
@@ -123,7 +135,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(15.dp),
-                    contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */ ) }
+                    contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */) }
                 ) {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }

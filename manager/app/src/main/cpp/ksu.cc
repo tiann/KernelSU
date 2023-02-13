@@ -19,6 +19,7 @@
 #define CMD_DENY_SU 4
 #define CMD_GET_ALLOW_LIST 5
 #define CMD_GET_DENY_LIST 6
+#define CMD_CHECK_SAFEMODE 9
 
 static bool ksuctl(int cmd, void* arg1, void* arg2) {
     int32_t result = 0;
@@ -51,4 +52,8 @@ bool get_allow_list(int *uids, int *size) {
 
 bool get_deny_list(int *uids, int *size) {
     return ksuctl(CMD_GET_DENY_LIST, uids, size);
+}
+
+bool is_safe_mode() {
+    return ksuctl(CMD_CHECK_SAFEMODE, nullptr, nullptr);
 }
