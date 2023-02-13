@@ -11,7 +11,6 @@
 #include "linux/version.h"
 #include "linux/workqueue.h"
 #include "linux/input.h"
-#include "linux/time64.h"
 
 #include "allowlist.h"
 #include "arch.h"
@@ -192,13 +191,10 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
-static const time64_t UNINITIALIZED = -1;
-static time64_t last_vol_down_pressed = UNINITIALIZED;
-static time64_t last_vol_down_release = UNINITIALIZED;
+static unsigned int volumedown_pressed_count = 0;
 
-static bool is_time_initialized(time64_t t)
-{
-	return t != UNINITIALIZED;
+static bool is_volumedown_enough(unsigned int count) {
+	return count >= 3;
 }
 
 int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
@@ -213,20 +209,12 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 		int val = *value;
 		pr_info("KEY_VOLUMEDOWN val: %d\n", val);
 		if (val) {
-			// key pressed
-			last_vol_down_pressed = ktime_get_seconds();
-		} else {
-			// key released
-			if (is_time_initialized(last_vol_down_pressed)) {
-				last_vol_down_release = ktime_get_seconds();
-				// when released, stop hook
+			// key pressed, count it
+			volumedown_pressed_count += 1;
+			if (is_volumedown_enough(volumedown_pressed_count)) {
 				stop_input_hook();
-			} else {
-				pr_info("KEY_VOLUMEDOWN released, but not pressed yet\n");
 			}
 		}
-		pr_info("last_vol_down_pressed: %ld, last_vol_down_release: %ld\n",
-			last_vol_down_pressed, last_vol_down_release);
 	}
 
 	return 0;
@@ -243,27 +231,10 @@ bool ksu_is_safe_mode() {
 	// stop hook first!
 	stop_input_hook();
 
-	pr_info("ksu_is_safe_mode last_vol_down_pressed: %ld, last_vol_down_release: %ld\n",
-		last_vol_down_pressed, last_vol_down_release);
-	if (!is_time_initialized(last_vol_down_pressed)) {
-		// not pressed yet
-		return false;
-	}
-
-	// vol down pressed
-	time64_t vol_down_time;
-	if (!is_time_initialized(last_vol_down_release)) {
-		// not released yet, use current time
-		vol_down_time = ktime_get_seconds();
-	} else {
-		vol_down_time = last_vol_down_release;
-	}
-
-	pr_info("ksu_is_safe_mode vol_down_time: %ld, last_vol_down_pressed: %ld\n",
-		vol_down_time, last_vol_down_pressed);
-	if (vol_down_time - last_vol_down_pressed >= 2) {
-		// pressed over 2 seconds
-		pr_info("KEY_VOLUMEDOWN pressed over 2 seconds, safe mode detected!\n");
+	pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
+	if (is_volumedown_enough(volumedown_pressed_count)) {
+		// pressed over 3 times
+		pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
 		safe_mode = true;
 		return true;
 	}
