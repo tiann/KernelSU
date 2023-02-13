@@ -102,12 +102,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             }
             return@Scaffold
         }
-        if (isSafeMode) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.safe_mode_disable_module))
-            }
-            return@Scaffold
-        }
         SwipeRefresh(
             state = swipeState,
             onRefresh = {
