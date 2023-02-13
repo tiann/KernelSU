@@ -6,6 +6,8 @@
 #include "selinux.h"
 #include "sepolicy.h"
 #include "ss/services.h"
+#include "linux/lsm_audit.h"
+#include "xfrm.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
@@ -170,10 +172,15 @@ static int get_object(char *buf, char __user *user_object, size_t buf_sz,
 static void reset_avc_cache() {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 163)
 	avc_ss_reset(0);
+	selnl_notify_policyload(0);
+	selinux_status_update_policyload(0);
 #else
 	struct selinux_avc *avc = selinux_state.avc;
 	avc_ss_reset(avc, 0);
+	selnl_notify_policyload(0);
+	selinux_status_update_policyload(&selinux_state, 0);
 #endif
+	selinux_xfrm_notify_policyload();
 }
 
 int handle_sepolicy(unsigned long arg3, void __user *arg4)
