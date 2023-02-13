@@ -243,6 +243,16 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
+	if (arg2 == CMD_CHECK_SAFEMODE) {
+		if (ksu_is_safe_mode()) {
+			pr_warn("safemode enabled!\n");
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("safemode: prctl reply error\n");
+			}
+		}
+		return 0;
+	}
+
 	// all other cmds are for 'root manager'
 	if (!is_manager()) {
 		pr_info("Only manager can do cmd: %d\n", arg2);
