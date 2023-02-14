@@ -11,7 +11,7 @@
 
     <string name="home_kernel">Ядро</string>
     <string name="home_arch">Архитектура</string>
-    <string name="home_version">Версия</string>
+    <string name="home_manager_version">Версия</string>
     <string name="home_api">Уровень API</string>
     <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Подпись</string>

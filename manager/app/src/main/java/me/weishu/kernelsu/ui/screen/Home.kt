@@ -222,10 +222,7 @@ private fun InfoCard() {
             InfoCardItem(stringResource(R.string.home_kernel), uname.release)
 
             Spacer(Modifier.height(24.dp))
-            InfoCardItem(stringResource(R.string.home_arch), uname.machine)
-
-            Spacer(Modifier.height(24.dp))
-            InfoCardItem(stringResource(R.string.home_version), uname.version)
+            InfoCardItem(stringResource(R.string.home_manager_version), getManagerVersion(context))
 
             Spacer(Modifier.height(24.dp))
             InfoCardItem(stringResource(R.string.home_api), Build.VERSION.SDK_INT.toString())
@@ -254,6 +251,11 @@ private fun InfoCard() {
             )
         }
     }
+}
+
+fun getManagerVersion(context: Context) : String {
+    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+    return "${packageInfo.versionName} (${packageInfo.versionCode})"
 }
 
 @Preview
