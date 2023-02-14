@@ -11,7 +11,7 @@
     <string name="home_support">Dukungan</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_arch">Arch</string>
-    <string name="home_manager_version">Versi</string>
+    <string name="home_manager_version">Versi manager</string>
     <string name="home_api">API Level</string>
     <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -50,5 +50,6 @@
     <string name="show_system_apps">Tampilkan system apps</string>
     <string name="hide_system_apps">Sembunyikan system apps</string>
     <string name="send_log">Kirim logs</string>
-    <string name="safe_mode_disable_module">Mode Safe, semua module dinonaktifkan</string>
+    <string name="safe_mode">Mode aman</string>
+    <string name="reboot_to_apply">Restart untuk menerapkan</string>
 </resources>
