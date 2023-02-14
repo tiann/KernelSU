@@ -10,7 +10,7 @@
     <string name="home_support">Ủng hộ</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_arch">Kiến trúc</string>
-    <string name="home_version">Phiên bản</string>
+    <string name="home_manager_version">Phiên bản</string>
     <string name="home_api">Cấp độ API</string>
     <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -48,5 +48,6 @@
     <string name="refresh">Làm mới</string>
     <string name="show_system_apps">Hiển thị ứng dụng hệ thống</string>
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>
-    <string name="safe_mode_disable_module">Chế độ an toàn, tất cả các mod đều bị tắt!</string>
+    <string name="safe_mode">Chế độ an toàn</string>
+    <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
 </resources>

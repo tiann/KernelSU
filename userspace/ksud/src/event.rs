@@ -116,10 +116,23 @@ pub fn on_post_data_fs() -> Result<()> {
         }
     }
 
+    // If there isn't any image exist, do nothing for module!
+    if !Path::new(target_update_img).exists() {
+        return Ok(());
+    }
+
+    // we should always mount the module.img to module dir
+    // becuase we may need to operate the module dir in safe mode
+    info!("mount module image: {target_update_img} to {module_dir}");
+    mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
+        .with_context(|| "mount module image failed".to_string())?;
+
     // check safe mode first.
     if crate::utils::is_safe_mode() {
-        warn!("safe mode, skip module post-fs-data scripts");
-        // TODO: we should also disable modules
+        warn!("safe mode, skip post-fs-data scripts and disable all modules!");
+        if let Err(e) = crate::module::disable_all_modules() {
+            warn!("disable all modules failed: {}", e);
+        }
         return Ok(());
     }
 
@@ -127,15 +140,6 @@ pub fn on_post_data_fs() -> Result<()> {
     if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
         warn!("exec common post-fs-data scripts failed: {}", e);
     }
-
-    // If there isn't any image exist, do nothing for module!
-    if !Path::new(target_update_img).exists() {
-        return Ok(());
-    }
-
-    info!("mount module image: {target_update_img} to {module_dir}");
-    mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
-        .with_context(|| "mount module image failed".to_string())?;
 
     // load sepolicy.rule
     if crate::module::load_sepolicy_rule().is_err() {

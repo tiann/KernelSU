@@ -636,6 +636,20 @@ pub fn disable_module(id: &str) -> Result<()> {
     })
 }
 
+pub fn disable_all_modules() -> Result<()> {
+    // we assume the module dir is already mounted
+    let dir = std::fs::read_dir(defs::MODULE_DIR)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let disable_flag = path.join(defs::DISABLE_FILE_NAME);
+        if let Err(e) = ensure_file_exists(disable_flag) {
+            warn!("Failed to disable module: {}: {}", path.display(), e);
+        }
+    }
+
+    Ok(())
+}
+
 fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
     // first check enabled modules
     let dir = std::fs::read_dir(path);

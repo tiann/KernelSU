@@ -31,10 +31,7 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.overlayFsAvailable
-import me.weishu.kernelsu.ui.util.toggleModule
-import me.weishu.kernelsu.ui.util.uninstallModule
+import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,42 +51,39 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     val isSafeMode = Natives.isSafeMode()
 
-    Scaffold(
-        topBar = {
-            TopBar()
-        },
-        floatingActionButton = if (isSafeMode) {
-            { /* Empty */ }
-        } else {
-            {
-                val moduleInstall = stringResource(id = R.string.module_install)
-                val selectZipLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult()
-                ) {
-                    if (it.resultCode != RESULT_OK) {
-                        return@rememberLauncherForActivityResult
-                    }
-                    val data = it.data ?: return@rememberLauncherForActivityResult
-                    val uri = data.data ?: return@rememberLauncherForActivityResult
-
-                    navigator.navigate(InstallScreenDestination(uri))
-
-                    Log.i("ModuleScreen", "select zip result: ${it.data}")
+    Scaffold(topBar = {
+        TopBar()
+    }, floatingActionButton = if (isSafeMode) {
+        { /* Empty */ }
+    } else {
+        {
+            val moduleInstall = stringResource(id = R.string.module_install)
+            val selectZipLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartActivityForResult()
+            ) {
+                if (it.resultCode != RESULT_OK) {
+                    return@rememberLauncherForActivityResult
                 }
+                val data = it.data ?: return@rememberLauncherForActivityResult
+                val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        // select the zip file to install
-                        val intent = Intent(Intent.ACTION_GET_CONTENT)
-                        intent.type = "application/zip"
-                        selectZipLauncher.launch(intent)
-                    },
-                    icon = { Icon(Icons.Filled.Add, moduleInstall) },
-                    text = { Text(text = moduleInstall) },
-                )
+                navigator.navigate(InstallScreenDestination(uri))
+
+                Log.i("ModuleScreen", "select zip result: ${it.data}")
             }
+
+            ExtendedFloatingActionButton(
+                onClick = {
+                    // select the zip file to install
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.type = "application/zip"
+                    selectZipLauncher.launch(intent)
+                },
+                icon = { Icon(Icons.Filled.Add, moduleInstall) },
+                text = { Text(text = moduleInstall) },
+            )
         }
-    ) { innerPadding ->
+    }) { innerPadding ->
         val failedEnable = stringResource(R.string.module_failed_to_enable)
         val failedDisable = stringResource(R.string.module_failed_to_disable)
         val failedUninstall = stringResource(R.string.module_uninstall_failed)
@@ -102,18 +96,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             }
             return@Scaffold
         }
-        if (isSafeMode) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.safe_mode_disable_module))
-            }
-            return@Scaffold
-        }
         SwipeRefresh(
-            state = swipeState,
-            onRefresh = {
+            state = swipeState, onRefresh = {
                 scope.launch { viewModel.fetchModuleList() }
-            },
-            modifier = Modifier
+            }, modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
                 .fillMaxSize()
@@ -133,42 +119,54 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     Text(stringResource(R.string.module_empty))
                 }
             } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(15.dp),
-                    contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */) }
-                ) {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp),
+                    contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */) }) {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
-                        ModuleItem(module,
-                            isChecked,
-                            onUninstall = {
-                                scope.launch {
-                                    val result = uninstallModule(module.id)
-                                    if (result) {
-                                        viewModel.fetchModuleList()
-                                    }
-                                    snackBarHost.showSnackbar(
-                                        if (result) {
-                                            successUninstall.format(module.name)
-                                        } else {
-                                            failedUninstall.format(module.name)
-                                        }
-                                    )
-                                }
-                            },
-                            onCheckChanged = {
-                                val success = toggleModule(module.id, !isChecked)
+                        val reboot = stringResource(id = R.string.reboot)
+                        val rebootToApply = stringResource(id = R.string.reboot_to_apply)
+                        ModuleItem(module, isChecked, onUninstall = {
+                            scope.launch {
+                                val success = uninstallModule(module.id)
                                 if (success) {
-                                    isChecked = it
-                                    scope.launch {
-                                        viewModel.fetchModuleList()
-                                    }
-                                } else scope.launch {
-                                    val message = if (isChecked) failedDisable else failedEnable
-                                    snackBarHost.showSnackbar(message.format(module.name))
+                                    viewModel.fetchModuleList()
+                                }
+                                val message = if (success) {
+                                    successUninstall.format(module.name)
+                                } else {
+                                    failedUninstall.format(module.name)
+                                }
+                                val actionLabel = if (success) {
+                                    reboot
+                                } else {
+                                    null
+                                }
+                                val result = snackBarHost.showSnackbar(
+                                    message, actionLabel = actionLabel
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    reboot()
                                 }
                             }
-                        )
+                        }, onCheckChanged = {
+                            val success = toggleModule(module.id, !isChecked)
+                            if (success) {
+                                isChecked = it
+                                scope.launch {
+                                    viewModel.fetchModuleList()
+
+                                    val result = snackBarHost.showSnackbar(
+                                        rebootToApply, actionLabel = reboot
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        reboot()
+                                    }
+                                }
+                            } else scope.launch {
+                                val message = if (isChecked) failedDisable else failedEnable
+                                snackBarHost.showSnackbar(message.format(module.name))
+                            }
+                        })
                         // fix last item shadow incomplete in LazyColumn
                         Spacer(Modifier.height(1.dp))
                     }
@@ -181,9 +179,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar() {
-    TopAppBar(
-        title = { Text(stringResource(R.string.module)) }
-    )
+    TopAppBar(title = { Text(stringResource(R.string.module)) })
 }
 
 @Composable

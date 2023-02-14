@@ -11,7 +11,7 @@
 
     <string name="home_kernel">Ядро</string>
     <string name="home_arch">Архитектура</string>
-    <string name="home_version">Версия</string>
+    <string name="home_manager_version">Версия</string>
     <string name="home_api">Уровень API</string>
     <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Подпись</string>
@@ -52,6 +52,7 @@
     <string name="show_system_apps">Показать системные приложения</string>
     <string name="hide_system_apps">Скрыть системные приложения</string>
     <string name="send_log">Отправить лог</string>
-    <string name="safe_mode_disable_module">Безопасный режим, все моды отключены!</string>
+    <string name="safe_mode">Безопасный режим</string>
+    <string name="reboot_to_apply">Перезагрузите, чтобы вступить в силу</string>
 
 </resources>
