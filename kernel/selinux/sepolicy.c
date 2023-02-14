@@ -128,14 +128,13 @@ static struct avtab_node *get_avtab_node(struct policydb *db,
 		/* this is used to get the node - insertion is actually unique */
 		node = avtab_insert_nonunique(&db->te_avtab, key, &avdatum);
 
-		int grow_size = sizeof(u16) * 4;
+		int grow_size = sizeof(struct avtab_key);
+		grow_size += sizeof(struct avtab_datum);
 		if (key->specified & AVTAB_XPERMS) {
 			grow_size += sizeof(u8);
 			grow_size += sizeof(u8);
 			grow_size += sizeof(u32) *
 				     ARRAY_SIZE(avdatum.u.xperms->perms.p);
-		} else {
-			grow_size += sizeof(u32) * 1;
 		}
 		db->len += grow_size;
 	}
