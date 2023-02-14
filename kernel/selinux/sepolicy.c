@@ -588,6 +588,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 
 	type->primary = 1;
 	type->value = value;
+	type->attribute = attr;
 
 	char *key = kstrdup(type_name, GFP_ATOMIC);
 	if (!key) {
