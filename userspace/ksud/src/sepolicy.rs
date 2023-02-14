@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 use derive_new::new;
 use nom::{
     branch::alt,
