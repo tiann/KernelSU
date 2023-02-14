@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="safe_mode_disable_module">セーフモード、すべてのモッドが無効になっています!</string>
+    <string name="safe_mode">セーフモード</string>
     <string name="app_name" translatable="false">KernelSU</string>
   <string name="home">ホーム</string>
   <string name="home_not_installed">未インストール</string>

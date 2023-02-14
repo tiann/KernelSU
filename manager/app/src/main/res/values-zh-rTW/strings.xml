@@ -49,5 +49,5 @@
     <string name="refresh">重新整理</string>
     <string name="show_system_apps">顯示系統應用程式</string>
     <string name="hide_system_apps">隱藏系統應用程式</string>
-    <string name="safe_mode_disable_module">安全模式，所有模塊已被禁用！</string>
+    <string name="safe_mode">安全模式</string>
 </resources>

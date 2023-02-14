@@ -145,10 +145,15 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
         ) {
             when {
                 ksuVersion != null -> {
+                    val appendText = if (Natives.isSafeMode()) {
+                        " [${stringResource(id = R.string.safe_mode)}]"
+                    } else {
+                        ""
+                    }
                     Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(
-                            text = stringResource(R.string.home_working),
+                            text = stringResource(R.string.home_working) + appendText,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(4.dp))

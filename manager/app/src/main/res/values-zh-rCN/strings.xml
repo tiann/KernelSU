@@ -50,5 +50,5 @@
     <string name="show_system_apps">显示系统应用</string>
     <string name="hide_system_apps">隐藏系统应用</string>
     <string name="send_log">发送日志</string>
-    <string name="safe_mode_disable_module">安全模式，所有模块已被禁用！</string>
+    <string name="safe_mode">安全模式</string>
 </resources>

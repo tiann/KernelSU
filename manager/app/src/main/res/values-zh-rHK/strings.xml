@@ -46,5 +46,5 @@
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
     <string name="module_overlay_fs_not_available">內核不支持 overlayfs，模塊功能無法運作！</string>
-    <string name="safe_mode_disable_module">安全模式，所有模塊已被禁用！</string>
+    <string name="safe_mode">安全模式</string>
 </resources>
