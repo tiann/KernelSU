@@ -71,6 +71,11 @@ print_title() {
   ui_print "$bar"
 }
 
+check_sepolicy() {
+    /data/adb/ksud sepolicy check "$1"
+    return $?
+}
+
 ######################
 # Environment Related
 ######################
