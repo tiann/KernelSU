@@ -49,4 +49,5 @@
     <string name="show_system_apps">Hiển thị ứng dụng hệ thống</string>
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>
     <string name="safe_mode">Chế độ an toàn</string>
+    <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
 </resources>

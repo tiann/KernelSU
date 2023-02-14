@@ -47,4 +47,5 @@
     <string name="module_author">作者</string>
     <string name="module_overlay_fs_not_available">內核不支持 overlayfs，模塊功能無法運作！</string>
     <string name="safe_mode">安全模式</string>
+    <string name="reboot_to_apply">重啟生效</string>
 </resources>

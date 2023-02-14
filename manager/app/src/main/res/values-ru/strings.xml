@@ -53,5 +53,6 @@
     <string name="hide_system_apps">Скрыть системные приложения</string>
     <string name="send_log">Отправить лог</string>
     <string name="safe_mode">Безопасный режим</string>
+    <string name="reboot_to_apply">Перезагрузите, чтобы вступить в силу</string>
 
 </resources>

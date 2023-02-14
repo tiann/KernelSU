@@ -51,4 +51,5 @@
     <string name="hide_system_apps">隐藏系统应用</string>
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>
+    <string name="reboot_to_apply">重启生效</string>
 </resources>
