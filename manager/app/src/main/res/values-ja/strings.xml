@@ -15,7 +15,7 @@
   <string name="home_version">バージョン</string>
   <string name="home_api">APIレベル</string>
   <string name="home_abi">ABI</string>
-  <string name="home_fingerprint">フィンガープリント</string>
+  <string name="home_fingerprint">Fingerprint</string>
   <string name="home_securitypatch">セキュリティパッチ</string>
   <string name="home_selinux_status">SELinuxの状態</string>
   <string name="selinux_status_disabled">無効</string>
@@ -39,7 +39,7 @@
   <string name="reboot_download">ダウンロードモードで再起動</string>
   <string name="reboot_edl">EDLで再起動</string>
   <string name="settings_system_rw">システムを書き込み可能にする</string>
-  <string name="settings_system_rw_summary">OverlayFSを使用してシステムパーティション内部を書き込み可能にします。この機能は再起動後に有効になります。</string>
+  <string name="settings_system_rw_summary">OverlayFSを使用してシステムを書き込み可能にします。\nこの機能は再起動後に有効になります。</string>
   <string name="about">アプリについて</string>
   <string name="require_kernel_version_8">KernelSU バージョン8以降が必要です</string>
   <string name="module_uninstall_success">%sをアンインストールしました</string>
