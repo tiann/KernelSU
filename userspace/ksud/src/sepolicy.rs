@@ -352,6 +352,9 @@ where
     let mut statements = vec![];
 
     for line in input.split(['\n', ';']) {
+        if line.trim().is_empty() {
+            continue;
+        }
         if let Ok((_, statement)) = PolicyStatement::parse(line.trim()) {
             statements.push(statement);
         } else if strict {
