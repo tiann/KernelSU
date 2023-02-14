@@ -3,6 +3,8 @@ package me.weishu.kernelsu.ui.util
 import android.content.Context
 import android.os.Build
 import android.system.Os
+import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.ui.screen.getManagerVersion
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -26,7 +28,7 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("tar -czf ${tombstonesFile.absolutePath} /data/tombstones").exec()
     shell.newJob().add("tar -czf ${dropboxFile.absolutePath} /data/system/dropbox").exec()
 
-    // build.prop
+    // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
     PrintWriter(FileWriter(buildInfo)).use { pw ->
         pw.println("Kernel: ${System.getProperty("os.version")}")
@@ -38,10 +40,7 @@ fun getBugreportFile(context: Context): File {
         pw.println("PREVIEW_SDK: " + Build.VERSION.PREVIEW_SDK_INT)
         pw.println("FINGERPRINT: " + Build.FINGERPRINT)
         pw.println("DEVICE: " + Build.DEVICE)
-        val packageInfo =
-            context.packageManager.getPackageInfo(context.packageName, 0)
-        pw.println("PACKAGE: " + packageInfo.packageName)
-        pw.println("VERSION: " + packageInfo.versionName)
+        pw.println("Manager: " + getManagerVersion(context))
 
         val uname = Os.uname()
         pw.println("KernelRelease: ${uname.release}")
@@ -50,6 +49,10 @@ fun getBugreportFile(context: Context): File {
         pw.println("Nodename: ${uname.nodename}")
         pw.println("Sysname: ${uname.sysname}")
 
+        val ksuKernel = Natives.getVersion()
+        pw.println("KernelSU: $ksuKernel")
+        val safeMode = Natives.isSafeMode()
+        pw.println("SafeMode: $safeMode")
     }
 
     // modules
