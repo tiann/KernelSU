@@ -253,6 +253,29 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
+	if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
+		if (is_manager() || 0 == current_uid().val) {
+			u32 array[128];
+			u32 array_length;
+			bool success = ksu_get_allow_list(array, &array_length,
+							  arg2 == CMD_GET_ALLOW_LIST);
+			if (success) {
+				if (!copy_to_user(arg4, &array_length,
+						  sizeof(array_length)) &&
+			    	!copy_to_user(arg3, array,
+						  sizeof(u32) * array_length)) {
+					if (copy_to_user(result, &reply_ok,
+							  sizeof(reply_ok))) {
+						pr_err("prctl reply error, cmd: %d\n",
+						       arg2);
+					}
+				} else {
+					pr_err("prctl copy allowlist error\n");
+				}
+			}
+	    }
+	}
+
 	// all other cmds are for 'root manager'
 	if (!is_manager()) {
 		pr_info("Only manager can do cmd: %d\n", arg2);
@@ -271,25 +294,6 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			}
 		}
 		ksu_show_allow_list();
-	} else if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
-		u32 array[128];
-		u32 array_length;
-		bool success = ksu_get_allow_list(array, &array_length,
-						  arg2 == CMD_GET_ALLOW_LIST);
-		if (success) {
-			if (!copy_to_user(arg4, &array_length,
-					  sizeof(array_length)) &&
-			    !copy_to_user(arg3, array,
-					  sizeof(u32) * array_length)) {
-				if (copy_to_user(result, &reply_ok,
-						  sizeof(reply_ok))) {
-					pr_err("prctl reply error, cmd: %d\n",
-					       arg2);
-				}
-			} else {
-				pr_err("prctl copy allowlist error\n");
-			}
-		}
 	}
 
 	return 0;
