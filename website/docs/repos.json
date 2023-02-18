@@ -152,5 +152,12 @@
         "kernel_name": "android_kernel_xiaomi_surya",
         "kernel_link": "https://github.com/rxuglr/android_kernel_xiaomi_surya",
         "devices": "Xiaomi POCO X3 / NFC (surya)"
+    },
+    {
+        "maintainer": "H1mJT",
+        "maintainer_link": "https://github.com/H1mJT",
+        "kernel_name": "kernel_realme_RMX1901",
+        "kernel_link": "https://github.com/H1mJT/kernel_realme_RMX1901",
+        "devices": "Realme X (RMX1901/RMX1901CN)"
     }
 ]
