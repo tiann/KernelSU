@@ -51,8 +51,6 @@ If you find that your kernel version is `android12-5.10.101`, but your Android s
 
 ## Introduction
 
-KernelSU 的安装方法有如下几种，各自适用于不同的场景，请按需选择：
-
 There are several installation methods for KernelSU, each suitable for a different scenario, so please choose as needed.
 
 1. Install with custom Recovery (e.g. TWRP)

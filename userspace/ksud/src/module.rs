@@ -44,7 +44,11 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
-            format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
+            format!(
+                "{}:{}",
+                env_var("PATH").unwrap(),
+                defs::BINARY_DIR.trim_end_matches('/')
+            ),
         )
         .env("KSU", "true")
         .env("KSU_KERNEL_VER_CODE", crate::ksu::get_version().to_string())
@@ -87,6 +91,8 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
+    check_image(img)?;
+
     let output = Command::new("resize2fs")
         .args(["-P", img])
         .stdout(Stdio::piped())
@@ -225,7 +231,11 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .env("KSU_VER", defs::VERSION_NAME)
         .env(
             "PATH",
-            format!("{}:{}", env_var("PATH").unwrap(), defs::BINARY_DIR),
+            format!(
+                "{}:{}",
+                env_var("PATH").unwrap(),
+                defs::BINARY_DIR.trim_end_matches('/')
+            ),
         );
 
     let result = if wait {
@@ -624,6 +634,20 @@ pub fn disable_module(id: &str) -> Result<()> {
     update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         _enable_module(update_dir, mid, false)
     })
+}
+
+pub fn disable_all_modules() -> Result<()> {
+    // we assume the module dir is already mounted
+    let dir = std::fs::read_dir(defs::MODULE_DIR)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let disable_flag = path.join(defs::DISABLE_FILE_NAME);
+        if let Err(e) = ensure_file_exists(disable_flag) {
+            warn!("Failed to disable module: {}: {}", path.display(), e);
+        }
+    }
+
+    Ok(())
 }
 
 fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {

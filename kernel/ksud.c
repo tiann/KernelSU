@@ -3,12 +3,14 @@
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/fs.h"
+#include "linux/input-event-codes.h"
 #include "linux/kprobes.h"
 #include "linux/printk.h"
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
 #include "linux/workqueue.h"
+#include "linux/input.h"
 
 #include "allowlist.h"
 #include "arch.h"
@@ -21,32 +23,35 @@ static const char KERNEL_SU_RC[] =
 
 	"on post-fs-data\n"
 	// We should wait for the post-fs-data finish
-	"    exec u:r:su:s0 root -- "KSUD_PATH" post-fs-data\n"
+	"    exec u:r:su:s0 root -- " KSUD_PATH " post-fs-data\n"
 	"\n"
 
 	"on nonencrypted\n"
-	"    exec u:r:su:s0 root -- "KSUD_PATH" services\n"
+	"    exec u:r:su:s0 root -- " KSUD_PATH " services\n"
 	"\n"
 
 	"on property:vold.decrypt=trigger_restart_framework\n"
-	"    exec u:r:su:s0 root -- "KSUD_PATH" services\n"
+	"    exec u:r:su:s0 root -- " KSUD_PATH " services\n"
 	"\n"
 
 	"on property:sys.boot_completed=1\n"
-	"    exec u:r:su:s0 root -- "KSUD_PATH" boot-completed\n"
+	"    exec u:r:su:s0 root -- " KSUD_PATH " boot-completed\n"
 	"\n"
 
 	"\n";
 
 static void stop_vfs_read_hook();
 static void stop_execve_hook();
+static void stop_input_hook();
 
 #ifdef CONFIG_KPROBES
 static struct work_struct stop_vfs_read_work;
 static struct work_struct stop_execve_hook_work;
+static struct work_struct stop_input_hook_work;
 #else
 static bool vfs_read_hook = true;
 static bool execveat_hook = true;
+static bool input_hook = true;
 #endif
 
 void on_post_fs_data(void)
@@ -59,6 +64,8 @@ void on_post_fs_data(void)
 	done = true;
 	pr_info("ksu_load_allow_list");
 	ksu_load_allow_list();
+	// sanity check, this may influence the performance
+	stop_input_hook();
 }
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
@@ -184,6 +191,57 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
+static unsigned int volumedown_pressed_count = 0;
+
+static bool is_volumedown_enough(unsigned int count) {
+	return count >= 3;
+}
+
+int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
+				  int *value)
+{
+#ifndef CONFIG_KPROBES
+	if (!input_hook) {
+		return 0;
+	}
+#endif
+	if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
+		int val = *value;
+		pr_info("KEY_VOLUMEDOWN val: %d\n", val);
+		if (val) {
+			// key pressed, count it
+			volumedown_pressed_count += 1;
+			if (is_volumedown_enough(volumedown_pressed_count)) {
+				stop_input_hook();
+			}
+		}
+	}
+
+	return 0;
+}
+
+bool ksu_is_safe_mode() {
+
+	static bool safe_mode = false;
+	if (safe_mode) {
+		// don't need to check again, userspace may call multiple times
+		return true;
+	}
+	
+	// stop hook first!
+	stop_input_hook();
+
+	pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
+	if (is_volumedown_enough(volumedown_pressed_count)) {
+		// pressed over 3 times
+		pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
+		safe_mode = true;
+		return true;
+	}
+
+	return false;
+}
+
 #ifdef CONFIG_KPROBES
 
 // https://elixir.bootlin.com/linux/v5.10.158/source/fs/exec.c#L1864
@@ -209,6 +267,15 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
 }
 
+static int input_handle_event_handler_pre(struct kprobe *p,
+					  struct pt_regs *regs)
+{
+	unsigned int *type = (unsigned int *)&PT_REGS_PARM2(regs);
+	unsigned int *code = (unsigned int *)&PT_REGS_PARM3(regs);
+	int *value = (int *)&PT_REGS_PARM4(regs);
+	return ksu_handle_input_handle_event(type, code, value);
+}
+
 static struct kprobe execve_kp = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
@@ -225,6 +292,11 @@ static struct kprobe vfs_read_kp = {
 	.pre_handler = read_handler_pre,
 };
 
+static struct kprobe input_handle_event_kp = {
+	.symbol_name = "input_handle_event",
+	.pre_handler = input_handle_event_handler_pre,
+};
+
 static void do_stop_vfs_read_hook(struct work_struct *work)
 {
 	unregister_kprobe(&vfs_read_kp);
@@ -233,6 +305,11 @@ static void do_stop_vfs_read_hook(struct work_struct *work)
 static void do_stop_execve_hook(struct work_struct *work)
 {
 	unregister_kprobe(&execve_kp);
+}
+
+static void do_stop_input_hook(struct work_struct *work)
+{
+	unregister_kprobe(&input_handle_event_kp);
 }
 #endif
 
@@ -256,6 +333,21 @@ static void stop_execve_hook()
 #endif
 }
 
+static void stop_input_hook()
+{
+	static bool input_hook_stopped = false;
+	if (input_hook_stopped) {
+		return;
+	}
+	input_hook_stopped = true;
+#ifdef CONFIG_KPROBES
+	bool ret = schedule_work(&stop_input_hook_work);
+	pr_info("unregister input kprobe: %d!\n", ret);
+#else
+	input_hook = false;
+#endif
+}
+
 // ksud: module support
 void ksu_enable_ksud()
 {
@@ -268,7 +360,11 @@ void ksu_enable_ksud()
 	ret = register_kprobe(&vfs_read_kp);
 	pr_info("ksud: vfs_read_kp: %d\n", ret);
 
+	ret = register_kprobe(&input_handle_event_kp);
+	pr_info("ksud: input_handle_event_kp: %d\n", ret);
+
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
+	INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 #endif
 }

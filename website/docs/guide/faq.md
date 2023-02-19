@@ -12,7 +12,7 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, But it is in early version, may be buggy. Please waiting it to be stable :)
+Yes, But it is in early version, it may be buggy. Please wait for it to be stable :)
 
 ## Does KernelSU support Xposed?
 

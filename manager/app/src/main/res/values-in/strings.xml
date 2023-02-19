@@ -11,7 +11,7 @@
     <string name="home_support">Dukungan</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_arch">Arch</string>
-    <string name="home_version">Versi</string>
+    <string name="home_manager_version">Versi manager</string>
     <string name="home_api">API Level</string>
     <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -37,12 +37,12 @@
     <string name="reboot_bootloader">Reboot ke Bootloader</string>
     <string name="reboot_download">Reboot ke Download</string>
     <string name="reboot_edl">Reboot ke EDL</string>
-    <string name="settings_system_rw">Buat system agar dapat ditulis RW</string>
-    <string name="settings_system_rw_summary">fitur ini memungkinkan anda dapat melakukan edit system, lakukan reboot setelah mengaktifkan</string>
+    <string name="settings_system_rw">Buat system agar dapat ditulis sebagai OverlayFs</string>
+    <string name="settings_system_rw_summary">restart perangkat setelah mengaktifkan fitur ini</string>
     <string name="about">Tentang</string>
     <string name="require_kernel_version_8">Membutuhkan KernelSU Versi 8+</string>
-    <string name="module_uninstall_success">%s tercopot</string>
-    <string name="module_uninstall_failed">Gagal untuk mencopot: %s</string>
+    <string name="module_uninstall_success">%s terhapus</string>
+    <string name="module_uninstall_failed">Gagal untuk menghapus: %s</string>
     <string name="module_version">Versi</string>
     <string name="module_author">Pembuat</string>
     <string name="module_overlay_fs_not_available">overlayfs tidak tersedia, module tidak bekerja!</string>
@@ -50,4 +50,6 @@
     <string name="show_system_apps">Tampilkan system apps</string>
     <string name="hide_system_apps">Sembunyikan system apps</string>
     <string name="send_log">Kirim logs</string>
+    <string name="safe_mode">Mode aman</string>
+    <string name="reboot_to_apply">Restart untuk menerapkan</string>
 </resources>

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use derive_new::new;
 use nom::{
     branch::alt,
@@ -345,18 +345,23 @@ impl<'a> PolicyStatement<'a> {
     }
 }
 
-fn parse_sepolicy<'a, 'b>(input: &'b str) -> Vec<PolicyStatement<'a>>
+fn parse_sepolicy<'a, 'b>(input: &'b str, strict: bool) -> Result<Vec<PolicyStatement<'a>>>
 where
     'b: 'a,
 {
     let mut statements = vec![];
 
     for line in input.split(['\n', ';']) {
+        if line.trim().is_empty() {
+            continue;
+        }
         if let Ok((_, statement)) = PolicyStatement::parse(line.trim()) {
             statements.push(statement);
+        } else if strict {
+            bail!("Failed to parse policy statement: {}", line)
         }
     }
-    statements
+    Ok(statements)
 }
 
 const SEPOLICY_MAX_LEN: usize = 128;
@@ -726,7 +731,7 @@ fn apply_one_rule<'a>(_statement: &'a PolicyStatement<'a>, _strict: bool) -> Res
 }
 
 pub fn live_patch(policy: &str) -> Result<()> {
-    let result = parse_sepolicy(policy.trim());
+    let result = parse_sepolicy(policy.trim(), false)?;
     for statement in result {
         println!("{statement:?}");
         apply_one_rule(&statement, false)?;
@@ -740,7 +745,13 @@ pub fn apply_file<P: AsRef<Path>>(path: P) -> Result<()> {
 }
 
 pub fn check_rule(policy: &str) -> Result<()> {
-    let result = parse_sepolicy(policy.trim());
+    let path = Path::new(policy);
+    let policy = if path.exists() {
+        std::fs::read_to_string(path)?
+    } else {
+        policy.to_string()
+    };
+    let result = parse_sepolicy(policy.trim(), true)?;
     for statement in result {
         apply_one_rule(&statement, true)?;
     }

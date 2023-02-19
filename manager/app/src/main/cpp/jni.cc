@@ -61,3 +61,9 @@ Java_me_weishu_kernelsu_Natives_allowRoot(JNIEnv *env, jclass clazz, jint uid, j
 }
 
 
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isSafeMode(JNIEnv *env, jclass clazz) {
+    return is_safe_mode();
+}

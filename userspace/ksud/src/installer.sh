@@ -71,6 +71,11 @@ print_title() {
   ui_print "$bar"
 }
 
+check_sepolicy() {
+    /data/adb/ksud sepolicy check "$1"
+    return $?
+}
+
 ######################
 # Environment Related
 ######################
@@ -268,10 +273,6 @@ mktouch() {
 
 request_size_check() {
   reqSizeM=`du -ms "$1" | cut -f1`
-}
-
-unzip() {
-    /system/bin/unzip -q "$@"
 }
 
 request_zip_size_check() {

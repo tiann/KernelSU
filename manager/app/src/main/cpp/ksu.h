@@ -15,4 +15,6 @@ bool get_allow_list(int *uids, int *size);
 
 bool get_deny_list(int *uids, int *size);
 
+bool is_safe_mode();
+
 #endif //KERNELSU_KSU_H

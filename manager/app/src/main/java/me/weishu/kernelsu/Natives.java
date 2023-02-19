@@ -21,4 +21,6 @@ public final class Natives {
     public static native int[] getDenyList();
 
     public static native boolean allowRoot(int uid, boolean allow);
+
+    public static native boolean isSafeMode();
 }

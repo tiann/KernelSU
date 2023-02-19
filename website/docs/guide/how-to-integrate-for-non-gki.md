@@ -196,4 +196,31 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
+To enable KernelSU's builtin SafeMode, You should also modify `input_handle_event` in `drivers/input/input.c`:
+
+:::tip
+It is strongly recommended to enable this feature, it is very helpful for recusing from bootloop!
+:::
+
+```diff
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 45306f9ef247..815091ebfca4 100755
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -367,10 +367,13 @@ static int input_get_disposition(struct input_dev *dev,
+        return disposition;
+ }
+
++extern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);
++
+ static void input_handle_event(struct input_dev *dev,
+                               unsigned int type, unsigned int code, int value)
+ {
+        int disposition = input_get_disposition(dev, type, code, &value);
++       ksu_handle_input_handle_event(&type, &code, &value);
+
+        if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
+                add_input_randomness(type, code, value);
+```
+
 Finally, build your kernel again, KernelSU should works well.

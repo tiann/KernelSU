@@ -33,7 +33,7 @@ rust-embed = { version = "6.4.2", features = [
 ] }
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-sys-mount = "2.0.1"
+sys-mount = { git = "https://github.com/tiann/sys-mount" }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
 procfs = "0.14"

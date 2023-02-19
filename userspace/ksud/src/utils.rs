@@ -74,12 +74,19 @@ pub fn getprop(_prop: &str) -> Option<String> {
 }
 
 pub fn is_safe_mode() -> bool {
-    getprop("persist.sys.safemode")
+    let safemode = getprop("persist.sys.safemode")
         .filter(|prop| prop == "1")
         .is_some()
         || getprop("ro.sys.safemode")
             .filter(|prop| prop == "1")
-            .is_some()
+            .is_some();
+    log::info!("safemode: {}", safemode);
+    if safemode {
+        return true;
+    }
+    let safemode = crate::ksu::check_kernel_safemode();
+    log::info!("kernel_safemode: {}", safemode);
+    safemode
 }
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {

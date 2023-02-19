@@ -16,6 +16,7 @@ const CMD_GET_VERSION: u64 = 2;
 // const CMD_GET_DENY_LIST: u64 = 6;
 const CMD_REPORT_EVENT: u64 = 7;
 pub const CMD_SET_SEPOLICY: u64 = 8;
+pub const CMD_CHECK_SAFEMODE: u64 = 9;
 
 const EVENT_POST_FS_DATA: u64 = 1;
 const EVENT_BOOT_COMPLETED: u64 = 2;
@@ -67,6 +68,22 @@ fn report_event(event: u64) {
             event,
         );
     }
+}
+
+pub fn check_kernel_safemode() -> bool {
+    let mut result: i32 = 0;
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    unsafe {
+        #[allow(clippy::cast_possible_wrap)]
+        libc::prctl(
+            KERNEL_SU_OPTION as i32, // supposed to overflow
+            CMD_CHECK_SAFEMODE,
+            0,
+            0,
+            std::ptr::addr_of_mut!(result).cast::<libc::c_void>(),
+        );
+    }
+    result == KERNEL_SU_OPTION as i32
 }
 
 pub fn report_post_fs_data() {

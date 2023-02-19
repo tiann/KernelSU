@@ -11,7 +11,7 @@
     <string name="home_support">支持</string>
     <string name="home_kernel">内核版本</string>
     <string name="home_arch">设备架构</string>
-    <string name="home_version">系统版本</string>
+    <string name="home_manager_version">管理器版本</string>
     <string name="home_api">API 版本</string>
     <string name="home_abi">ABI 支持</string>
     <string name="home_fingerprint">系统指纹</string>
@@ -46,4 +46,6 @@
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
     <string name="module_overlay_fs_not_available">內核不支持 overlayfs，模塊功能無法運作！</string>
+    <string name="safe_mode">安全模式</string>
+    <string name="reboot_to_apply">重啟生效</string>
 </resources>
