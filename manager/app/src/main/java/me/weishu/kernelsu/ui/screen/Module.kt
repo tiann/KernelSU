@@ -30,6 +30,9 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.ConfirmDialog
+import me.weishu.kernelsu.ui.component.DialogResult
+import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -84,6 +87,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             )
         }
     }) { innerPadding ->
+
+        val dialogState = rememberDialogHostState()
+        ConfirmDialog(dialogState)
+
         val failedEnable = stringResource(R.string.module_failed_to_enable)
         val failedDisable = stringResource(R.string.module_failed_to_disable)
         val failedUninstall = stringResource(R.string.module_uninstall_failed)
@@ -125,8 +132,23 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         val reboot = stringResource(id = R.string.reboot)
                         val rebootToApply = stringResource(id = R.string.reboot_to_apply)
+                        val moduleStr = stringResource(id = R.string.module)
+                        val uninstall = stringResource(id = R.string.uninstall)
+                        val cancel = stringResource(id = android.R.string.cancel)
+                        val moduleUninstallConfirm =
+                            stringResource(id = R.string.module_uninstall_confirm)
                         ModuleItem(module, isChecked, onUninstall = {
                             scope.launch {
+                                val dialogResult = dialogState.showDialog(
+                                    moduleStr,
+                                    content = moduleUninstallConfirm.format(module.name),
+                                    confirm = uninstall,
+                                    dismiss = cancel
+                                )
+                                if (dialogResult != DialogResult.Confirmed) {
+                                    return@launch
+                                }
+
                                 val success = uninstallModule(module.id)
                                 if (success) {
                                     viewModel.fetchModuleList()
