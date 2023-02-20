@@ -16,9 +16,12 @@ import androidx.core.content.FileProvider
 import com.alorma.compose.settings.ui.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.SimpleDialog
+import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.util.LinkifyText
 
 
@@ -39,29 +42,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     ) { paddingValues ->
 
-        var openDialog by remember { mutableStateOf(false) }
+        val dialogState = rememberDialogHostState()
 
-        if (openDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    openDialog = false
-                },
-                title = {
-                    Text(text = stringResource(id = R.string.about))
-                },
-                text = {
-                    SupportCard()
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            openDialog = false
-                        }
-                    ) {
-                        Text(stringResource(id = android.R.string.ok))
-                    }
-                },
-            )
+        SimpleDialog(dialogState) {
+            SupportCard()
         }
 
         Column(modifier = Modifier.padding(paddingValues)) {
@@ -98,11 +82,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     )
                 }
             )
+
+            val about = stringResource(id = R.string.about)
+            val ok = stringResource(id = android.R.string.ok)
+            val scope = rememberCoroutineScope()
             SettingsMenuLink(title = {
-                Text(stringResource(id = R.string.about))
+                Text(about)
             },
                 onClick = {
-                    openDialog = true
+                    scope.launch {
+                        dialogState.showDialog(about, content = "unused", confirm = ok)
+                    }
                 }
             )
         }

@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.viewmodel
 
-import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
@@ -74,6 +73,7 @@ class ModuleViewModel : ViewModel() {
                     }.toList()
             }.onFailure { e ->
                 Log.e(TAG, "fetchModuleList: ", e)
+                isRefreshing = false
             }
 
 
