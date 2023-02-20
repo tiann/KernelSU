@@ -1,0 +1,6 @@
+[build]
+target = "aarch64-linux-android"
+
+[target.aarch64-linux-android]
+ar = "/Users/ylarod/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-ar"
+linker = "/Users/ylarod/Library/Android/sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android21-clang"
