@@ -5,7 +5,7 @@
 #include "linux/errno.h"
 struct key *init_session_keyring = NULL;
 #endif
-ssize_t kernel_read_compat(struct file *p, void *buf, size_t count, loff_t *pos){
+ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count, loff_t *pos){
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
     return kernel_read(p, buf, count, pos);
 #else
@@ -19,7 +19,7 @@ ssize_t kernel_read_compat(struct file *p, void *buf, size_t count, loff_t *pos)
 #endif
 }
 
-ssize_t kernel_write_compat(struct file *p, const void *buf, size_t count, loff_t *pos){
+ssize_t ksu_kernel_write_compat(struct file *p, const void *buf, size_t count, loff_t *pos){
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
     return kernel_write(p, buf, count, pos);
 #else

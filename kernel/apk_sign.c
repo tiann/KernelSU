@@ -30,10 +30,10 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	for (i = 0;; ++i) {
 		unsigned short n;
 		pos = generic_file_llseek(fp, -i - 2, SEEK_END);
-		kernel_read_compat(fp, &n, 2, &pos);
+		ksu_kernel_read_compat(fp, &n, 2, &pos);
 		if (n == i) {
 			pos -= 22;
-			kernel_read_compat(fp, &size4, 4, &pos);
+			ksu_kernel_read_compat(fp, &size4, 4, &pos);
 			if ((size4 ^ 0xcafebabeu) == 0xccfbf1eeu) {
 				break;
 			}
@@ -46,17 +46,17 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 
 	pos += 12;
 	// offset
-	kernel_read_compat(fp, &size4, 0x4, &pos);
+	ksu_kernel_read_compat(fp, &size4, 0x4, &pos);
 	pos = size4 - 0x18;
 
-	kernel_read_compat(fp, &size8, 0x8, &pos);
-	kernel_read_compat(fp, buffer, 0x10, &pos);
+	ksu_kernel_read_compat(fp, &size8, 0x8, &pos);
+	ksu_kernel_read_compat(fp, buffer, 0x10, &pos);
 	if (strcmp((char *)buffer, "APK Sig Block 42")) {
 		goto clean;
 	}
 
 	pos = size4 - (size8 + 0x8);
-	kernel_read_compat(fp, &size_of_block, 0x8, &pos);
+	ksu_kernel_read_compat(fp, &size_of_block, 0x8, &pos);
 	if (size_of_block != size8) {
 		goto clean;
 	}
@@ -64,37 +64,37 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	for (;;) {
 		uint32_t id;
 		uint32_t offset;
-		kernel_read_compat(fp, &size8, 0x8, &pos); // sequence length
+		ksu_kernel_read_compat(fp, &size8, 0x8, &pos); // sequence length
 		if (size8 == size_of_block) {
 			break;
 		}
-		kernel_read_compat(fp, &id, 0x4, &pos); // id
+		ksu_kernel_read_compat(fp, &id, 0x4, &pos); // id
 		offset = 4;
 		pr_info("id: 0x%08x\n", id);
 		if ((id ^ 0xdeadbeefu) == 0xafa439f5u ||
 		    (id ^ 0xdeadbeefu) == 0x2efed62f) {
-			kernel_read_compat(fp, &size4, 0x4,
+			ksu_kernel_read_compat(fp, &size4, 0x4,
 				    &pos); // signer-sequence length
-			kernel_read_compat(fp, &size4, 0x4, &pos); // signer length
-			kernel_read_compat(fp, &size4, 0x4,
+			ksu_kernel_read_compat(fp, &size4, 0x4, &pos); // signer length
+			ksu_kernel_read_compat(fp, &size4, 0x4,
 				    &pos); // signed data length
 			offset += 0x4 * 3;
 
-			kernel_read_compat(fp, &size4, 0x4,
+			ksu_kernel_read_compat(fp, &size4, 0x4,
 				    &pos); // digests-sequence length
 			pos += size4;
 			offset += 0x4 + size4;
 
-			kernel_read_compat(fp, &size4, 0x4,
+			ksu_kernel_read_compat(fp, &size4, 0x4,
 				    &pos); // certificates length
-			kernel_read_compat(fp, &size4, 0x4,
+			ksu_kernel_read_compat(fp, &size4, 0x4,
 				    &pos); // certificate length
 			offset += 0x4 * 2;
 #if 0
 			int hash = 1;
 			signed char c;
 			for (unsigned i = 0; i < size4; ++i) {
-				kernel_read_compat(fp, &c, 0x1, &pos);
+				ksu_kernel_read_compat(fp, &c, 0x1, &pos);
 				hash = 31 * hash + c;
 			}
 			offset += size4;
@@ -104,7 +104,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 				int hash = 1;
 				signed char c;
 				for (unsigned i = 0; i < size4; ++i) {
-					kernel_read_compat(fp, &c, 0x1, &pos);
+					ksu_kernel_read_compat(fp, &c, 0x1, &pos);
 					hash = 31 * hash + c;
 				}
 				offset += size4;
