@@ -43,15 +43,15 @@ checksum = "fc7eb209b1518d6bb87b283c20095f5228ecda460da70b44f0802523dea6da04"
 
 [[package]]
 name = "android_log-sys"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85965b6739a430150bdd138e2374a98af0c3ee0d030b3bb7fc3bddff58d0102e"
+checksum = "27f0fc03f560e1aebde41c2398b691cb98b5ea5996a6184a7a67bbbb77448969"
 
 [[package]]
 name = "android_logger"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "037f3e1da32ddba7770530e69258b742c15ad67bdf90e5f6b35f4b6db9a60eb7"
+checksum = "7d70a974711fabdc7555de36765bbc237f093f5992d62cab3dcaa0b0bfc7d756"
 dependencies = [
  "android_log-sys",
  "env_logger",
@@ -892,7 +892,7 @@ dependencies = [
 [[package]]
 name = "loopdev"
 version = "0.5.0"
-source = "git+https://github.com/tiann/loopdev#4baedb0650a8df35efbd63ed117a88bb132c938a"
+source = "git+https://github.com/tiann/loopdev?branch=loopfix#b6ca5e3ea163f66239f6a835874fe231b2a9286f"
 dependencies = [
  "bindgen",
  "errno",
@@ -1074,9 +1074,9 @@ dependencies = [
 
 [[package]]
 name = "procfs"
-version = "0.14.2"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1de8dacb0873f77e6aefc6d71e044761fcc68060290f5b1089fcdf84626bb69"
+checksum = "943ca7f9f29bab5844ecd8fdb3992c5969b6622bb9609b9502fef9b4310e3f1f"
 dependencies = [
  "bitflags",
  "byteorder",
@@ -1344,7 +1344,7 @@ dependencies = [
 [[package]]
 name = "sys-mount"
 version = "2.0.2"
-source = "git+https://github.com/tiann/sys-mount#00359e763b3692986fc1af5e990d034bc9b48067"
+source = "git+https://github.com/tiann/sys-mount#328928573feb9dbe6318d7ebcb8c8c9b681c47cd"
 dependencies = [
  "bitflags",
  "libc",
