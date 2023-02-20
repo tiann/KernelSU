@@ -191,7 +191,7 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 
 	if (!getenforce()) {
 		pr_info("SELinux permissive or disabled, don't apply policies.");
-		return -1;
+		return 0;
 	}
 
 	struct sepol_data data;
