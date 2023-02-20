@@ -37,7 +37,7 @@ But if you encounter a boot loop when integrated KernelSU, it is maybe *kprobe i
 
 :::tip How to check if kprobe is broken？
 
-comment out `ksu_enable_sucompat()` and `ksu_enable_ksud()` in `KernelSU/kernel/ksu.c`, the the device boot normally, then kprobe may be broken.
+comment out `ksu_enable_sucompat()` and `ksu_enable_ksud()` in `KernelSU/kernel/ksu.c`, if the device boots normally, then kprobe may be broken.
 :::
 
 ## Manully modify the kernel source
