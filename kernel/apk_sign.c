@@ -15,6 +15,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	loff_t pos;
 
 	int sign = -1;
+	int i;
 	struct file *fp = filp_open(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.", path);
@@ -26,7 +27,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 
 	sign = 1;
 	// https://en.wikipedia.org/wiki/Zip_(file_format)#End_of_central_directory_record_(EOCD)
-	for (int i = 0;; ++i) {
+	for (i = 0;; ++i) {
 		unsigned short n;
 		pos = generic_file_llseek(fp, -i - 2, SEEK_END);
 		kernel_read_compat(fp, &n, 2, &pos);
