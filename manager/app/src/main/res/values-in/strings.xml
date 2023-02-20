@@ -41,6 +41,7 @@
     <string name="settings_system_rw_summary">restart perangkat setelah mengaktifkan fitur ini</string>
     <string name="about">Tentang</string>
     <string name="require_kernel_version_8">Membutuhkan KernelSU Versi 8+</string>
+    <string name="module_uninstall_confirm">Apakah anda yakin ingin menghapus module ini %s?</string>
     <string name="module_uninstall_success">%s terhapus</string>
     <string name="module_uninstall_failed">Gagal untuk menghapus: %s</string>
     <string name="module_version">Versi</string>
