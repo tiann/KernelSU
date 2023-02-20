@@ -100,7 +100,7 @@ fun SuperUserScreen() {
                 .fillMaxSize()
         ) {
             LazyColumn {
-                items(viewModel.appList) { app ->
+                items(viewModel.appList, key = { it.packageName }) { app ->
                     var isChecked by rememberSaveable(app) { mutableStateOf(app.onAllowList) }
                     AppItem(app, isChecked) { checked ->
                         val success = Natives.allowRoot(app.uid, checked)
