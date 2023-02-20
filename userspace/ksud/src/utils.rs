@@ -99,8 +99,8 @@ pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
-    use std::os::fd::AsRawFd;
     use anyhow::ensure;
+    use std::os::fd::AsRawFd;
     let path = format!("/proc/{}/ns/mnt", pid);
     let fd = std::fs::File::open(path)?;
     let ret = unsafe { libc::setns(fd.as_raw_fd(), libc::CLONE_NEWNS) };
