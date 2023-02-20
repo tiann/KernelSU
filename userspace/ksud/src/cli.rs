@@ -148,7 +148,7 @@ pub fn run() -> Result<()> {
         Commands::BootCompleted => event::on_boot_completed(),
 
         Commands::Module { command } => {
-            #[cfg(target_os = "android")]
+            #[cfg(any(target_os = "linux", target_os = "android"))]
             {
                 utils::switch_mnt_ns(1)?;
                 utils::unshare_mnt_ns()?;
