@@ -6,8 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -52,31 +53,35 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun BottomBar(navController: NavHostController) {
-    val currentDestination: Destination = navController.appCurrentDestinationAsState().value
+    val topDestination: Destination = navController.appCurrentDestinationAsState().value
         ?: NavGraphs.root.startAppDestination
-    var topDestination by rememberSaveable { mutableStateOf(currentDestination.route) }
-    LaunchedEffect(currentDestination) {
-        val queue = navController.backQueue
-        if (queue.size == 2) topDestination = queue[1].destination.route!!
-        else if (queue.size > 2) topDestination = queue[2].destination.route!!
+    val bottomBarRoutes = remember {
+        BottomBarDestination.values().map { it.direction.route }
     }
 
     NavigationBar(tonalElevation = 8.dp) {
         BottomBarDestination.values().forEach { destination ->
             NavigationBarItem(
-                selected = topDestination == destination.direction.route,
+                selected = topDestination.route == destination.direction.route,
                 onClick = {
+                    val firstRoute = navController.backQueue.reversed().first {
+                        it.destination.route in bottomBarRoutes
+                    }.destination.route
+
                     navController.navigate(destination.direction.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                            saveState = firstRoute != destination.direction.route
                         }
                         launchSingleTop = true
                         restoreState = true
                     }
                 },
                 icon = {
-                    if (topDestination == destination.direction.route) Icon(destination.iconSelected, stringResource(destination.label))
-                    else Icon(destination.iconNotSelected, stringResource(destination.label))
+                    if (topDestination.route == destination.direction.route) {
+                        Icon(destination.iconSelected, stringResource(destination.label))
+                    } else {
+                        Icon(destination.iconNotSelected, stringResource(destination.label))
+                    }
                 },
                 label = { Text(stringResource(destination.label)) },
                 alwaysShowLabel = false
