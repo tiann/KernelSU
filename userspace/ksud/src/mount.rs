@@ -1,7 +1,7 @@
-use anyhow::Result;
+use anyhow::{Ok, Result};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use anyhow::{Context, Ok};
+use anyhow::Context;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use retry::delay::NoDelay;
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -260,9 +260,11 @@ impl StockOverlay {
 #[derive(Debug)]
 pub struct StockMount {
     mnt: String,
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     mountlist: proc_mounts::MountList,
 }
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 impl StockMount {
     pub fn new(mnt: &str) -> Result<Self> {
         let mountlist = proc_mounts::MountList::new()?;
@@ -320,5 +322,22 @@ impl StockMount {
                 .with_context(|| format!("Failed to mount {:?}", m))?;
         }
         Ok(())
+    }
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+impl StockMount {
+    pub fn new(mnt: &str) -> Result<Self> {
+        Ok(Self {
+            mnt: mnt.to_string(),
+        })
+    }
+
+    pub fn umount(&self) -> Result<()> {
+        unimplemented!()
+    }
+
+    pub fn remount(&self) -> Result<()> {
+        unimplemented!()
     }
 }
