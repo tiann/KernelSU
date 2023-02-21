@@ -17,13 +17,13 @@ fi
 
 test -d "$GKI_ROOT/KernelSU" || git clone https://github.com/tiann/KernelSU
 cd "$GKI_ROOT/KernelSU"
-git stash && git pull
+git stash && git pull --allow-unrelated-histories
 cd "$GKI_ROOT"
 
 echo "[+] GKI_ROOT: $GKI_ROOT"
 echo "[+] Copy kernel su driver to $DRIVER_DIR"
 
-test -e "$DRIVER_DIR/kernelsu" || ln -sf "$GKI_ROOT/KernelSU/kernel" "$DRIVER_DIR/kernelsu"
+test -e "$DRIVER_DIR/kernelsu" || ln -r -sf "$GKI_ROOT/KernelSU/kernel" "$DRIVER_DIR/kernelsu"
 
 echo '[+] Add kernel su driver to Makefile'
 
