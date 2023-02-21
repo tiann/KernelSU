@@ -16,19 +16,18 @@ jobs:
   build:
     strategy:
       matrix:
+        arch: [x86_64, arm64]
+        version: [5.10.117.2]
         include:
-          - version: 5.10.117.2
-            arch: "x86_64"
-            out_file: "arch/x86/boot/bzImage"
+          - date: "20220906"
+          - out_file: "arch/x86/boot/bzImage"
             kernel_make_cmd: "bzImage"
             make_config: "config-wsa"
-            date: "20220906"
-          - version: 5.10.117.2
-            arch: "arm64"
-            out_file: "arch/arm64/boot/Image"
+            arch: x86_64
+          - out_file: "arch/arm64/boot/Image"
             kernel_make_cmd: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
             make_config: "config-wsa-arm64"
-            date: "20220906"
+            arch: arm64
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
