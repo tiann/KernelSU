@@ -277,7 +277,7 @@ impl StockMount {
     fn get_target_mounts(&self) -> Vec<&proc_mounts::MountInfo> {
         let mounts = self
             .mountlist
-            .destination_starts_with(&std::path::Path::new(&self.mnt))
+            .destination_starts_with(std::path::Path::new(&self.mnt))
             .filter(|m| m.fstype != "overlay");
         mounts.collect()
     }
