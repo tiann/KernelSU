@@ -279,10 +279,6 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
     let dir = std::fs::read_dir(&script_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
-        if !path.ends_with(".sh") {
-            warn!("{} is not a shell script, skip", path.display());
-            continue;
-        }
 
         if !is_executable(&path) {
             warn!("{} is not executable, skip", path.display());
