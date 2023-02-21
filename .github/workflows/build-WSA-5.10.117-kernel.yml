@@ -55,22 +55,21 @@ jobs:
         sudo apt install -y bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
         sudo apt install -y $PKG
 
-    - name: Download kernel source
-      run: |
-        cd $GITHUB_WORKSPACE
-        KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
-        git clone https://github.com/microsoft/WSA-Linux-Kernel
-        cd WSA-Linux-Kernel && git checkout android-lts/latte/${{ matrix.version }}
-        ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
-        DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
-        grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
-        cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
-        cd -
+    - name: Checkout kernel source
+      uses: actions/checkout@v3
+      with:
+        repository: microsoft/WSA-Linux-Kernel
+        ref: android-lts/latte/${{ matrix.version }}
+        path: WSA-Linux-Kernel
 
     - name: Build Kernel
       working-directory: WSA-Linux-Kernel
       run: |
+        ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
+        DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
+        grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
         KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
+        cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch && cd -
         cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
         make -j`nproc` LLVM=-11 ${{ matrix.kernel_make_cmd }} CCACHE="/usr/bin/ccache"
 
