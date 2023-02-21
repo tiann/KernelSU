@@ -159,5 +159,12 @@
         "kernel_name": "kernel_realme_RMX1901",
         "kernel_link": "https://github.com/H1mJT/kernel_realme_RMX1901",
         "devices": "Realme X (RMX1901/RMX1901CN)"
+    },
+    {
+        "maintainer": "SonalSingh18",
+        "maintainer_link": "https://github.com/SonalSingh18",
+        "kernel_name": "android_kernel_xiaomi_sm6250.git",
+        "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250.git",
+        "devices": "Miatoll [curtana, excalibur, gram, joyeuse]"
     }
 ]
