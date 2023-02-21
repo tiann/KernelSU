@@ -218,11 +218,20 @@ pub fn on_services() -> Result<()> {
 
 pub fn on_boot_completed() -> Result<()> {
     crate::ksu::report_boot_complete();
+    info!("on_boot_completed triggered!");
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);
     if module_update_img.exists() {
         // this is a update and we successfully booted
-        std::fs::rename(module_update_img, module_img)?;
+        if std::fs::rename(module_update_img, module_img).is_err() {
+            warn!(
+                "Failed to rename {} to {}, copy it now.",
+                module_update_img.display(),
+                module_img.display()
+            );
+            std::fs::copy(module_update_img, module_img)
+                .with_context(|| "Failed to copy modules_update.img to modules.img")?;
+        }
     }
     Ok(())
 }
