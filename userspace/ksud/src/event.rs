@@ -4,7 +4,7 @@ use std::{collections::HashMap, path::Path};
 
 use crate::{
     assets, defs, mount,
-    utils::{ensure_clean_dir, ensure_dir_exists},
+    utils::{ensure_clean_dir, ensure_dir_exists, self},
 };
 
 fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
@@ -89,6 +89,9 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
 
 pub fn on_post_data_fs() -> Result<()> {
     crate::ksu::report_post_fs_data();
+
+    utils::umask(0);
+
     let module_update_img = defs::MODULE_UPDATE_IMG;
     let module_img = defs::MODULE_IMG;
     let module_dir = defs::MODULE_DIR;
@@ -173,6 +176,9 @@ pub fn on_post_data_fs() -> Result<()> {
 }
 
 pub fn on_services() -> Result<()> {
+
+    utils::umask(0);
+
     // check safe mode first.
     if crate::utils::is_safe_mode() {
         warn!("safe mode, skip module service scripts");

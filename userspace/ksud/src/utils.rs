@@ -115,3 +115,13 @@ pub fn unshare_mnt_ns() -> Result<()> {
     ensure!(ret == 0, "unshare mnt ns failed");
     Ok(())
 }
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn umask(mask: u32) {
+    unsafe { libc::umask(mask) };
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+pub fn umask(_mask: u32) {
+    unimplemented!("umask is not supported on this platform")
+}
