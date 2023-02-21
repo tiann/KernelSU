@@ -36,12 +36,7 @@ jobs:
       CCACHE_HARDLINK: "true"
 
     steps:
-      - name: Checkout KernelSU
-        uses: actions/checkout@v3
-        with:
-          path: KernelSU
-
-      - name: Install LLVM
+      - name: Install Build Tools
         run: |
           sudo apt update
           sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
@@ -60,7 +55,12 @@ jobs:
           sudo ln -s --force /usr/bin/llvm-readelf-$LLVM_VERSION /usr/bin/llvm-readelf
           sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
 
-      - name: Checkout kernel source
+      - name: Checkout KernelSU
+        uses: actions/checkout@v3
+        with:
+          path: KernelSU
+
+      - name: Setup kernel source
         uses: actions/checkout@v3
         with:
           repository: microsoft/WSA-Linux-Kernel
@@ -74,14 +74,24 @@ jobs:
           append-timestamp: false
           save: ${{ github.event_name != 'pull_request' }}
 
-      - name: Build Kernel
+      - name: Setup KernelSU
         working-directory: WSA-Linux-Kernel
         run: |
+          echo "[+] KernelSU setup"
           KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
+          echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
+          echo "[+] Copy KernelSU driver to $KERNEL_ROOT/drivers"
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
+          echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          echo "[+] Apply KernelSU patches"
           cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch && cd -
+          echo "[+] KernelSU setup done."
+
+      - name: Build boot
+        working-directory: WSA-Linux-Kernel
+        run: |
           cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
 
