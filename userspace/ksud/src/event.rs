@@ -4,7 +4,7 @@ use std::{collections::HashMap, path::Path};
 
 use crate::{
     assets, defs, mount,
-    utils::{ensure_clean_dir, ensure_dir_exists, self},
+    utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
 fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
@@ -176,7 +176,6 @@ pub fn on_post_data_fs() -> Result<()> {
 }
 
 pub fn on_services() -> Result<()> {
-
     utils::umask(0);
 
     // check safe mode first.
