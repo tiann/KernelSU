@@ -70,7 +70,7 @@ jobs:
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ccache-WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
+          key: WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
           save: ${{ github.event_name != 'pull_request' }}
 
       - name: Setup KernelSU
