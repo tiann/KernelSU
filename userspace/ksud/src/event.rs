@@ -224,13 +224,10 @@ pub fn on_boot_completed() -> Result<()> {
     if module_update_img.exists() {
         // this is a update and we successfully booted
         if std::fs::rename(module_update_img, module_img).is_err() {
-            warn!(
-                "Failed to rename {} to {}, copy it now.",
-                module_update_img.display(),
-                module_img.display()
-            );
+            warn!("Failed to rename images, copy it now.",);
             std::fs::copy(module_update_img, module_img)
-                .with_context(|| "Failed to copy modules_update.img to modules.img")?;
+                .with_context(|| "Failed to copy images")?;
+            std::fs::remove_file(module_update_img).with_context(|| "Failed to remove image!")?;
         }
     }
     Ok(())
