@@ -49,7 +49,6 @@ fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
     }
 
     result
-    
 }
 
 pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
