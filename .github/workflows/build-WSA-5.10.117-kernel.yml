@@ -50,7 +50,21 @@ jobs:
     - name: Install LLVM
       run: |
         sudo apt update
-        sudo apt install -y bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget clang clangd clang-tidy clang-format clang-tools llvm-dev lld lldb libomp-dev libc++-dev libc++abi-dev libclang-dev libclang-cpp-dev
+        sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
+        export LLVM_VERSION=14
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh $LLVM_VERSION
+        rm ./llvm.sh
+        sudo ln -s --force /usr/bin/clang-$LLVM_VERSION /usr/bin/clang
+        sudo ln -s --force /usr/bin/ld.lld-$LLVM_VERSION /usr/bin/ld.lld
+        sudo ln -s --force /usr/bin/llvm-objdump-$LLVM_VERSION /usr/bin/llvm-objdump
+        sudo ln -s --force /usr/bin/llvm-ar-$LLVM_VERSION /usr/bin/llvm-ar
+        sudo ln -s --force /usr/bin/llvm-nm-$LLVM_VERSION /usr/bin/llvm-nm
+        sudo ln -s --force /usr/bin/llvm-strip-$LLVM_VERSION /usr/bin/llvm-strip
+        sudo ln -s --force /usr/bin/llvm-objcopy-$LLVM_VERSION /usr/bin/llvm-objcopy
+        sudo ln -s --force /usr/bin/llvm-readelf-$LLVM_VERSION /usr/bin/llvm-readelf
+        sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
 
     - name: Checkout kernel source
       uses: actions/checkout@v3
