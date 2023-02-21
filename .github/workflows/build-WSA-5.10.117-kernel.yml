@@ -31,7 +31,7 @@ jobs:
             date: "20220906"
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
