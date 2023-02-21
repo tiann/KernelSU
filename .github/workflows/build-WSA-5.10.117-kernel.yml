@@ -19,7 +19,6 @@ jobs:
         arch: [x86_64, arm64]
         version: [5.10.117.2]
         include:
-          - date: "20220906"
           - file_name: "bzImage"
             make_config: "config-wsa"
             arch: x86_64
@@ -89,5 +88,5 @@ jobs:
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
         uses: actions/upload-artifact@v3
         with:
-          name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}-${{ matrix.date }}
+          name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
           path: WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}
