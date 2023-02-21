@@ -55,18 +55,11 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
-        echo "[+] 克隆远程仓库 WSA-Linux-Kernel..."
         git clone https://github.com/microsoft/WSA-Linux-Kernel
         cd WSA-Linux-Kernel && git checkout android-lts/latte/${{ matrix.version }}
-        echo "[+] 切换到分支 android-lts/latte/${{ matrix.version }}"
-        echo "[+] 导入 KernelSU"
-        echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
-        echo "[+] 复制 kernel su driver 到路径：$KERNEL_ROOT/drivers"
         ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
         DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
-        echo "[+] 添加 kernel su driver 到文件：$DRIVER_MAKEFILE"
         grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
-        echo "[+] KernelSU 导入完成"
         cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
         cd -
 
@@ -74,11 +67,8 @@ jobs:
       working-directory: WSA-Linux-Kernel
       run: |
         KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
-        echo "[+] 构建 kernel"
         cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
-        echo "[+] 复制配置文件 configs/wsa/${{ matrix.make_config }}-5.10 到 $KERNEL_ROOT/.config"
-        echo "执行: make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}"
-        make -j`nproc` LLVM=1 -DLLVM_CCACHE_BUILD=true ${{ matrix.kernel_make_cmd }}
+        make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}
 
     - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
       uses: actions/upload-artifact@v3
