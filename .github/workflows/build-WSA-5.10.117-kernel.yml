@@ -68,7 +68,7 @@ jobs:
         KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
         cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch && cd -
         cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
-        make -j`nproc` LLVM=-11 ${{ matrix.kernel_make_cmd }} CCACHE="/usr/bin/ccache"
+        make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }} CCACHE="/usr/bin/ccache"
 
     - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
       uses: actions/upload-artifact@v3
