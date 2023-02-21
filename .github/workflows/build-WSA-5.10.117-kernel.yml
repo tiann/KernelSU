@@ -10,6 +10,8 @@ on:
     paths: 
       - 'kernel/**'
   workflow_call:
+  workflow_dispatch:
+
 jobs:
   build:
     strategy:
