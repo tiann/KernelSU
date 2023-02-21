@@ -85,13 +85,13 @@ jobs:
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch && cd -
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
           echo "[+] KernelSU setup done."
 
       - name: Build Kernel
         working-directory: WSA-Linux-Kernel
         run: |
-          cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
+          cp configs/wsa/${{ matrix.make_config }}-5.10 .config
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
