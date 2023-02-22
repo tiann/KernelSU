@@ -200,9 +200,9 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			u32 version = KERNEL_SU_VERSION;
 			if (copy_to_user(arg3, &version, sizeof(version))) {
 				pr_err("prctl reply error, cmd: %d\n", arg2);
-				return 0;
 			}
 		}
+		return 0;
 	}
 
 	if (arg2 == CMD_REPORT_EVENT) {
@@ -257,15 +257,16 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		if (is_manager() || 0 == current_uid().val) {
 			u32 array[128];
 			u32 array_length;
-			bool success = ksu_get_allow_list(array, &array_length,
-							  arg2 == CMD_GET_ALLOW_LIST);
+			bool success =
+				ksu_get_allow_list(array, &array_length,
+						   arg2 == CMD_GET_ALLOW_LIST);
 			if (success) {
 				if (!copy_to_user(arg4, &array_length,
 						  sizeof(array_length)) &&
-			    	!copy_to_user(arg3, array,
+				    !copy_to_user(arg3, array,
 						  sizeof(u32) * array_length)) {
 					if (copy_to_user(result, &reply_ok,
-							  sizeof(reply_ok))) {
+							 sizeof(reply_ok))) {
 						pr_err("prctl reply error, cmd: %d\n",
 						       arg2);
 					}
@@ -273,7 +274,8 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 					pr_err("prctl copy allowlist error\n");
 				}
 			}
-	    }
+		}
+		return 0;
 	}
 
 	// all other cmds are for 'root manager'
@@ -294,6 +296,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			}
 		}
 		ksu_show_allow_list();
+		return 0;
 	}
 
 	return 0;
@@ -373,16 +376,13 @@ static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 }
 // kernel 4.4 and 4.9
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-static int ksu_key_permission(key_ref_t key_ref,
-				  const struct cred *cred,
-				  unsigned perm)
+static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
+			      unsigned perm)
 {
-	if (init_session_keyring != NULL)
-	{
+	if (init_session_keyring != NULL) {
 		return 0;
 	}
-	if (strcmp(current->comm, "init"))
-	{
+	if (strcmp(current->comm, "init")) {
 		// we are only interested in `init` process
 		return 0;
 	}
