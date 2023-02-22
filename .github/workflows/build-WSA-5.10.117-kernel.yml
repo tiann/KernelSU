@@ -1,99 +1,103 @@
 name: Build WSA-5.10.117-Kernel
 on:
   push:
-    branches: [ "main" ]
-    paths: 
-      - '.github/workflows/build-WSA-5.10.117-kernel.yml'
-      - 'kernel/**'
+    branches: ["main"]
+    paths:
+      - ".github/workflows/build-WSA-5.10.117-kernel.yml"
+      - "kernel/**"
   pull_request:
-    branches: [ "main" ]
-    paths: 
-      - 'kernel/**'
+    branches: ["main"]
+    paths:
+      - "kernel/**"
   workflow_call:
+  workflow_dispatch:
+
 jobs:
   build:
     strategy:
       matrix:
+        arch: [x86_64, arm64]
+        version: [5.10.117.2]
         include:
-          - version: 5.10.117.2
-            arch: "x86_64"
-            out_file: "arch/x86/boot/bzImage"
-            kernel_make_cmd: "bzImage"
+          - file_name: "bzImage"
             make_config: "config-wsa"
-            date: "20220906"
-          - version: 5.10.117.2
-            arch: "arm64"
-            out_file: "arch/arm64/boot/Image"
-            kernel_make_cmd: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu Image"
+            arch: x86_64
+          - file_name: "Image"
+            cross_compile: "aarch64-linux-gnu"
             make_config: "config-wsa-arm64"
-            date: "20220906"
+            arch: arm64
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
+
     steps:
-    - uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: ccache-WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
-        append-timestamp: false
-        save: ${{ github.event_name != 'pull_request' }}
-    - uses: actions/checkout@v3
-      with:
-        path: KernelSU
+      - name: Install Build Tools
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
+          export LLVM_VERSION=12
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh $LLVM_VERSION
+          rm ./llvm.sh
+          sudo ln -s --force /usr/bin/clang-$LLVM_VERSION /usr/bin/clang
+          sudo ln -s --force /usr/bin/ld.lld-$LLVM_VERSION /usr/bin/ld.lld
+          sudo ln -s --force /usr/bin/llvm-objdump-$LLVM_VERSION /usr/bin/llvm-objdump
+          sudo ln -s --force /usr/bin/llvm-ar-$LLVM_VERSION /usr/bin/llvm-ar
+          sudo ln -s --force /usr/bin/llvm-nm-$LLVM_VERSION /usr/bin/llvm-nm
+          sudo ln -s --force /usr/bin/llvm-strip-$LLVM_VERSION /usr/bin/llvm-strip
+          sudo ln -s --force /usr/bin/llvm-objcopy-$LLVM_VERSION /usr/bin/llvm-objcopy
+          sudo ln -s --force /usr/bin/llvm-readelf-$LLVM_VERSION /usr/bin/llvm-readelf
+          sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
 
-    - name: Install LLVM
-      run: |
-        sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
-        export LLVM_VERSION=10
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh $LLVM_VERSION
-        rm ./llvm.sh
-        sudo ln -s --force /usr/bin/clang-$LLVM_VERSION /usr/bin/clang
-        sudo ln -s --force /usr/bin/ld.lld-$LLVM_VERSION /usr/bin/ld.lld
-        sudo ln -s --force /usr/bin/llvm-objdump-$LLVM_VERSION /usr/bin/llvm-objdump
-        sudo ln -s --force /usr/bin/llvm-ar-$LLVM_VERSION /usr/bin/llvm-ar
-        sudo ln -s --force /usr/bin/llvm-nm-$LLVM_VERSION /usr/bin/llvm-nm
-        sudo ln -s --force /usr/bin/llvm-strip-$LLVM_VERSION /usr/bin/llvm-strip
-        sudo ln -s --force /usr/bin/llvm-objcopy-$LLVM_VERSION /usr/bin/llvm-objcopy
-        sudo ln -s --force /usr/bin/llvm-readelf-$LLVM_VERSION /usr/bin/llvm-readelf
-        sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
+      - name: Checkout KernelSU
+        uses: actions/checkout@v3
+        with:
+          path: KernelSU
+          ref: main
+          fetch-depth: 0
 
-    - name: Download kernel source
-      run: |
-        cd $GITHUB_WORKSPACE
-        KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
-        echo "[+] 克隆远程仓库 WSA-Linux-Kernel..."
-        git clone https://github.com/microsoft/WSA-Linux-Kernel
-        cd WSA-Linux-Kernel && git checkout android-lts/latte/${{ matrix.version }}
-        echo "[+] 切换到分支 android-lts/latte/${{ matrix.version }}"
-        echo "[+] 导入 KernelSU"
-        echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
-        echo "[+] 复制 kernel su driver 到路径：$KERNEL_ROOT/drivers"
-        ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
-        DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
-        echo "[+] 添加 kernel su driver 到文件：$DRIVER_MAKEFILE"
-        grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
-        echo "[+] KernelSU 导入完成"
-        cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
-        cd -
-    
-    - name: Build Kernel
-      working-directory: WSA-Linux-Kernel
-      run: |
-        KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
-        echo "[+] 构建 kernel"
-        cp configs/wsa/${{ matrix.make_config }}-5.10 $KERNEL_ROOT/.config
-        echo "[+] 复制配置文件 configs/wsa/${{ matrix.make_config }}-5.10 到 $KERNEL_ROOT/.config"
-        echo "执行: make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }}"
-        make -j`nproc` LLVM=1 ${{ matrix.kernel_make_cmd }} CCACHE="/usr/bin/ccache" 
+      - name: Setup kernel source
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/WSA-Linux-Kernel
+          ref: android-lts/latte/${{ matrix.version }}
+          path: WSA-Linux-Kernel
 
-    - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}-${{ matrix.date }}
-        path: WSA-Linux-Kernel/${{ matrix.out_file }}
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
+          save: ${{ github.event_name != 'pull_request' }}
+
+      - name: Setup KernelSU
+        working-directory: WSA-Linux-Kernel
+        run: |
+          echo "[+] KernelSU setup"
+          KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
+          echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
+          echo "[+] Copy KernelSU driver to $KERNEL_ROOT/drivers"
+          ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
+          echo "[+] Add KernelSU driver to Makefile"
+          DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
+          grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          echo "[+] Apply KernelSU patches"
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+          echo "[+] KernelSU setup done."
+
+      - name: Build Kernel
+        working-directory: WSA-Linux-Kernel
+        run: |
+          cp configs/wsa/${{ matrix.make_config }}-5.10 .config
+          make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
+
+      - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
+          path: WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}
