@@ -1,4 +1,5 @@
 #include "asm/current.h"
+#include "linux/string.h"
 #include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
@@ -62,7 +63,7 @@ void on_post_fs_data(void)
 		return;
 	}
 	done = true;
-	pr_info("ksu_load_allow_list");
+	pr_info("on_post_fs_data!");
 	ksu_load_allow_list();
 	// sanity check, this may influence the performance
 	stop_input_hook();
@@ -111,6 +112,35 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	}
 
 	return 0;
+}
+
+static ssize_t (*orig_read)(struct file *, char __user *, size_t, loff_t *);
+static ssize_t (*orig_read_iter)(struct kiocb *, struct iov_iter *);
+static struct file_operations fops_proxy;
+static ssize_t read_count_append = 0;
+
+static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
+			  loff_t *pos)
+{
+	bool first_read = file->f_pos == 0;
+	ssize_t ret = orig_read(file, buf, count, pos);
+	if (first_read) {
+		pr_info("read_proxy append %ld + %ld", ret, read_count_append);
+		ret += read_count_append;
+	}
+	return ret;
+}
+
+static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
+{
+	bool first_read = iocb->ki_pos == 0;
+	ssize_t ret = orig_read_iter(iocb, to);
+	if (first_read) {
+		pr_info("read_iter_proxy append %ld + %ld", ret,
+			read_count_append);
+		ret += read_count_append;
+	}
+	return ret;
 }
 
 int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
@@ -185,6 +215,22 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 		return 0;
 	}
 
+	// we've succeed to insert ksud.rc, now we need to proxy the read and modify the result!
+	// But, we can not modify the file_operations directly, because it's in read-only memory.
+	// We just replace the whole file_operations with a proxy one.
+	memcpy(&fops_proxy, file->f_op, sizeof(struct file_operations));
+	orig_read = file->f_op->read;
+	if (orig_read) {
+		fops_proxy.read = read_proxy;
+	}
+	orig_read_iter = file->f_op->read_iter;
+	if (orig_read_iter) {
+		fops_proxy.read_iter = read_iter_proxy;
+	}
+	// replace the file_operations
+	file->f_op = &fops_proxy;
+	read_count_append = rc_count;
+
 	*buf_ptr = buf + rc_count;
 	*count_ptr = count - rc_count;
 
@@ -193,7 +239,8 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 
 static unsigned int volumedown_pressed_count = 0;
 
-static bool is_volumedown_enough(unsigned int count) {
+static bool is_volumedown_enough(unsigned int count)
+{
 	return count >= 3;
 }
 
@@ -220,14 +267,14 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 	return 0;
 }
 
-bool ksu_is_safe_mode() {
-
+bool ksu_is_safe_mode()
+{
 	static bool safe_mode = false;
 	if (safe_mode) {
 		// don't need to check again, userspace may call multiple times
 		return true;
 	}
-	
+
 	// stop hook first!
 	stop_input_hook();
 
