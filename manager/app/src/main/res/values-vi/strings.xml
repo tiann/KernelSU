@@ -36,8 +36,6 @@
     <string name="reboot_bootloader">Khởi động lại vào Bootloader</string>
     <string name="reboot_download">Khởi động lại vào Download Mode</string>
     <string name="reboot_edl">Khởi động vào EDL</string>
-    <string name="settings_system_rw">Cho phép ghi vào phân vùng system</string>
-    <string name="settings_system_rw_summary">Sử dụng overlayfs để làm cho phân vùng system có thể ghi được, khởi động lại để áp dụng</string>
     <string name="about">Thông tin</string>
     <string name="require_kernel_version_8">Yêu cầu KernelSU phiên bản 8+</string>
     <string name="module_uninstall_success">%s đã được gỡ cài đặt</string>

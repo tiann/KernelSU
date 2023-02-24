@@ -38,8 +38,6 @@
   <string name="reboot_bootloader">Bootloaderで再起動</string>
   <string name="reboot_download">ダウンロードモードで再起動</string>
   <string name="reboot_edl">EDLで再起動</string>
-  <string name="settings_system_rw">システムを書き込み可能にする</string>
-  <string name="settings_system_rw_summary">OverlayFSを使用してシステムを書き込み可能にします。\nこの機能は再起動後に有効になります。</string>
   <string name="about">アプリについて</string>
   <string name="require_kernel_version_8">KernelSU バージョン8以降が必要です</string>
   <string name="module_uninstall_success">%sをアンインストールしました</string>

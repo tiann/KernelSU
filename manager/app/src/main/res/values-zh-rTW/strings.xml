@@ -37,8 +37,6 @@
     <string name="reboot_bootloader">重新啟動到 BootLoader</string>
     <string name="reboot_download">重新啟用到 Download</string>
     <string name="reboot_edl">重新啟用到 EDL</string>
-    <string name="settings_system_rw">讓系統可以寫入</string>
-    <string name="settings_system_rw_summary">使用 overlayfs 使系統分區可以寫入，重新啟動後生效</string>
     <string name="about">關於</string>
     <string name="require_kernel_version_8">需要 KernelSU 版本 8+</string>
     <string name="module_uninstall_success">%s 已解除安裝</string>

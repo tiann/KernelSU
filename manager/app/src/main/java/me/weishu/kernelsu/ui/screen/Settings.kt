@@ -51,17 +51,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         Column(modifier = Modifier.padding(paddingValues)) {
 
             val context = LocalContext.current
-            SettingsSwitch(
-                title = {
-                    Text(stringResource(id = R.string.settings_system_rw))
-                },
-                subtitle = {
-                    Text(stringResource(id = R.string.settings_system_rw_summary))
-                },
-                onCheckedChange = {
-                    Toast.makeText(context, "coming soon", Toast.LENGTH_SHORT).show()
-                }
-            )
             SettingsMenuLink(title = {
                 Text(stringResource(id = R.string.send_log))
             },

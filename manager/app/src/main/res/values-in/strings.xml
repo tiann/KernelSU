@@ -37,8 +37,6 @@
     <string name="reboot_bootloader">Reboot ke Bootloader</string>
     <string name="reboot_download">Reboot ke Download</string>
     <string name="reboot_edl">Reboot ke EDL</string>
-    <string name="settings_system_rw">Buat system agar dapat ditulis sebagai OverlayFs</string>
-    <string name="settings_system_rw_summary">restart perangkat setelah mengaktifkan fitur ini</string>
     <string name="about">Tentang</string>
     <string name="require_kernel_version_8">Membutuhkan KernelSU Versi 8+</string>
     <string name="module_uninstall_confirm">Apakah anda yakin ingin menghapus module ini %s?</string>
