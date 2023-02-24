@@ -223,6 +223,7 @@ pub fn on_boot_completed() -> Result<()> {
     let module_img = Path::new(defs::MODULE_IMG);
     if module_update_img.exists() {
         // this is a update and we successfully booted
+        std::fs::rename(module_update_img, module_img)?;
         if std::fs::rename(module_update_img, module_img).is_err() {
             warn!("Failed to rename images, copy it now.",);
             std::fs::copy(module_update_img, module_img)
