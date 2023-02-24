@@ -83,7 +83,7 @@ dependencies {
     implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
 
     implementation("com.github.topjohnwu.libsu:core:5.0.3")
-    implementation("com.github.alorma:compose-settings-ui-m3:0.15.0")
+    implementation("com.github.alorma:compose-settings-ui-m3:0.22.0")
 
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion")
 
