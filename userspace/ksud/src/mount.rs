@@ -278,7 +278,7 @@ impl StockMount {
         let mounts = self
             .mountlist
             .destination_starts_with(std::path::Path::new(&self.mnt))
-            .filter(|m| m.fstype != "overlay");
+            .filter(|m| m.fstype != "overlay" && m.fstype != "rootfs");
         mounts.collect()
     }
 
