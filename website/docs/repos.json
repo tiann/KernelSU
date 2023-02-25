@@ -53,7 +53,7 @@
         "maintainer_link": "https://github.com/SakuraNotStupid",
         "kernel_name": "android_kernel_xiaomi_sdm710",
         "kernel_link": "https://github.com/SakuraNotStupid/android_kernel_xiaomi_sdm710",
-        "devices": "MI8SE(sirius) for LineageOS"
+        "devices": "Xiaomi MI 8 SE(sirius/xmsirius)"
     },
     {
         "maintainer": "Aquarius223(paper)",
