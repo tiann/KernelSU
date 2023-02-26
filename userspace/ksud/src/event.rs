@@ -25,8 +25,8 @@ fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
     let result = stock_mount.umount();
     if result.is_err() {
         let remount_result = stock_mount.remount();
-        if remount_result.is_err() {
-            log::error!("remount stock mount of failed: {:?}", remount_result);
+        if let Err(e) = remount_result {
+            log::error!("remount stock failed: {:?}", e);
         }
         bail!("umount stock mount of failed: {:?}", result);
     }
@@ -40,11 +40,13 @@ fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
 
     let result = mount::mount_overlay(&lowerdir, &lowest_dir);
 
-    if result.is_ok() && stock_mount.remount().is_err() {
-        // if mount overlay ok but stock remount failed, we should umount overlay
-        warn!("remount stock mount of failed, umount overlay {lowest_dir} now");
-        if mount::umount_dir(&lowest_dir).is_err() {
-            warn!("umount overlay {lowest_dir} failed");
+    if let Err(e) = stock_mount.remount() {
+        if result.is_ok() {
+            // if mount overlay ok but stock remount failed, we should umount overlay
+            warn!("remount stock failed: {:?}, umount overlay {lowest_dir}", e);
+            if mount::umount_dir(&lowest_dir).is_err() {
+                warn!("umount overlay {lowest_dir} failed");
+            }
         }
     }
 
