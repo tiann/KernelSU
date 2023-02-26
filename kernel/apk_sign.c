@@ -93,7 +93,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 #if 0
 			int hash = 1;
 			signed char c;
-			for (unsigned i = 0; i < size4; ++i) {
+			for (i = 0; i < size4; ++i) {
 				ksu_kernel_read_compat(fp, &c, 0x1, &pos);
 				hash = 31 * hash + c;
 			}
@@ -103,7 +103,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 			if (size4 == expected_size) {
 				int hash = 1;
 				signed char c;
-				for (unsigned i = 0; i < size4; ++i) {
+				for (i = 0; i < size4; ++i) {
 					ksu_kernel_read_compat(fp, &c, 0x1, &pos);
 					hash = 31 * hash + c;
 				}
