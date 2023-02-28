@@ -27,7 +27,7 @@ By default, you will use ADB and fastboot tools in this tutorial, so if you don'
 
 ### KMI
 
-Kernel Module Interface (KMI), kernel versions with the same KMI are **compatible** This is what "genernal" means in GKI; conversely, if the KMI is different, then these kernels are not compatible with each other, and brushing in a kernel image with a different KMI than your device may cause a bootloop.
+Kernel Module Interface (KMI), kernel versions with the same KMI are **compatible** This is what "genernal" means in GKI; conversely, if the KMI is different, then these kernels are not compatible with each other, and flashing a kernel image with a different KMI than your device may cause a bootloop.
 
 Specifically, for GKI devices, the kernel version format should be as follows:
 
