@@ -24,6 +24,7 @@ fun getBugreportFile(context: Context): File {
     val fileSystemsFile = File(bugreportDir, "filesystems.txt")
     val ksuFileTree = File(bugreportDir, "ksu_tree.txt")
     val appListFile = File(bugreportDir, "app_list.txt")
+    val propFile = File(bugreportDir, "props.txt")
 
     val shell = createRootShell()
 
@@ -33,8 +34,9 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("tar -czf ${dropboxFile.absolutePath} /data/system/dropbox").exec()
     shell.newJob().add("cat /proc/mounts > ${mountsFile.absolutePath}").exec()
     shell.newJob().add("cat /proc/filesystems > ${fileSystemsFile.absolutePath}").exec()
-    shell.newJob().add("ls -alRZ /data/adb/ksu > ${ksuFileTree.absolutePath}").exec()
+    shell.newJob().add("ls -alRZ /data/adb > ${ksuFileTree.absolutePath}").exec()
     shell.newJob().add("cat /data/system/packages.list > ${appListFile.absolutePath}").exec()
+    shell.newJob().add("getprop > ${propFile.absolutePath}").exec()
 
     // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
