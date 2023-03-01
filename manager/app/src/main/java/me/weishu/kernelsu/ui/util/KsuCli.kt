@@ -109,3 +109,9 @@ fun overlayFsAvailable(): Boolean {
     // check /proc/filesystems
     return ShellUtils.fastCmdResult(shell, "cat /proc/filesystems | grep overlay")
 }
+
+fun hasMagisk(): Boolean {
+    val shell = createRootShell()
+    val result = shell.newJob().add("nsenter --mount=/proc/1/ns/mnt which magisk").exec()
+    return result.isSuccess
+}

@@ -103,6 +103,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             }
             return@Scaffold
         }
+        if (hasMagisk()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.module_magisk_conflict))
+            }
+            return@Scaffold
+        }
         SwipeRefresh(
             state = swipeState, onRefresh = {
                 scope.launch { viewModel.fetchModuleList() }
