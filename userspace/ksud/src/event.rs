@@ -115,6 +115,11 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
 pub fn on_post_data_fs() -> Result<()> {
     crate::ksu::report_post_fs_data();
 
+    if utils::has_magisk() {
+        warn!("Magisk detected, skip post-fs-data!");
+        return Ok(());
+    }
+
     utils::umask(0);
 
     let module_update_img = defs::MODULE_UPDATE_IMG;
@@ -203,11 +208,16 @@ pub fn on_post_data_fs() -> Result<()> {
 pub fn on_services() -> Result<()> {
     utils::umask(0);
 
-    // check safe mode first.
+    if utils::has_magisk() {
+        warn!("Magisk detected, skip services!");
+        return Ok(());
+    }
+
     if crate::utils::is_safe_mode() {
         warn!("safe mode, skip module service scripts");
         return Ok(());
     }
+
     if let Err(e) = crate::module::exec_common_scripts("service.d", false) {
         warn!("Failed to exec common service scripts: {}", e);
     }

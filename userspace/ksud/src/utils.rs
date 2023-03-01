@@ -125,3 +125,7 @@ pub fn umask(mask: u32) {
 pub fn umask(_mask: u32) {
     unimplemented!("umask is not supported on this platform")
 }
+
+pub fn has_magisk() -> bool {
+    which::which("magisk").is_ok()
+}
