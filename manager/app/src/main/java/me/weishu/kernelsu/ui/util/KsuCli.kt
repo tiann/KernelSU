@@ -113,5 +113,6 @@ fun overlayFsAvailable(): Boolean {
 fun hasMagisk(): Boolean {
     val shell = createRootShell()
     val result = shell.newJob().add("nsenter --mount=/proc/1/ns/mnt which magisk").exec()
+    Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }

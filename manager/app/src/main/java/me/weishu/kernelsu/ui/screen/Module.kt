@@ -53,10 +53,13 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     }
 
     val isSafeMode = Natives.isSafeMode()
+    val hasMagisk = hasMagisk()
+
+    val showInstallButton = !(isSafeMode || hasMagisk)
 
     Scaffold(topBar = {
         TopBar()
-    }, floatingActionButton = if (isSafeMode) {
+    }, floatingActionButton = if (showInstallButton) {
         { /* Empty */ }
     } else {
         {
@@ -103,8 +106,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             }
             return@Scaffold
         }
-        if (hasMagisk()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (hasMagisk) {
+            Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.module_magisk_conflict))
             }
             return@Scaffold
