@@ -7,7 +7,7 @@ pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
 pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
 pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
 
-pub const MODULE_DIR: &str = concatcp!(WORKING_DIR, "modules/");
+pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
 pub const MODULE_IMG: &str = concatcp!(WORKING_DIR, "modules.img");
 pub const MODULE_UPDATE_IMG: &str = concatcp!(WORKING_DIR, "modules_update.img");
 
