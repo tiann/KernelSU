@@ -55,11 +55,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     val isSafeMode = Natives.isSafeMode()
     val hasMagisk = hasMagisk()
 
-    val showInstallButton = !(isSafeMode || hasMagisk)
+    val hideInstallButton = isSafeMode || hasMagisk
 
     Scaffold(topBar = {
         TopBar()
-    }, floatingActionButton = if (showInstallButton) {
+    }, floatingActionButton = if (hideInstallButton) {
         { /* Empty */ }
     } else {
         {
