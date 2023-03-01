@@ -27,7 +27,7 @@ By default, you will use ADB and fastboot tools in this tutorial, so if you don'
 
 ### KMI
 
-Kernel Module Interface (KMI), kernel versions with the same KMI are **compatible** This is what "genernal" means in GKI; conversely, if the KMI is different, then these kernels are not compatible with each other, and flashing a kernel image with a different KMI than your device may cause a bootloop.
+Kernel Module Interface (KMI), kernel versions with the same KMI are **compatible** This is what "general" means in GKI; conversely, if the KMI is different, then these kernels are not compatible with each other, and flashing a kernel image with a different KMI than your device may cause a bootloop.
 
 Specifically, for GKI devices, the kernel version format should be as follows:
 
@@ -81,8 +81,9 @@ Step:
 
 If you haven't used the Kernel flash App before, the following are the more popular ones.
 
-1. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
-2. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
+1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
+2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
+3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
 
 PS. This method is more convenient when upgrading KernelSU and can be done without a computer (backup first!). .
 

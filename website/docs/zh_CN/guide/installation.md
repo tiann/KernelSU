@@ -81,8 +81,9 @@ PS. 这种方法适用于任何情况下的安装（不限于初次安装或者�
 
 如果你之前没有用过内核刷写 App，那么下面几个是比较流行的：
 
-1. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
-2. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
+1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
+2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
+3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
 
 PS. 这种方法在升级 KernelSU 的时候较为方便，无需电脑即可完成（注意备份！）。
 
