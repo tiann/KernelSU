@@ -8,8 +8,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,14 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -32,7 +35,6 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialog
 import me.weishu.kernelsu.ui.component.DialogResult
-import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -42,9 +44,6 @@ import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 @Composable
 fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
-    val snackBarHost = LocalSnackbarHost.current
-
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         if (viewModel.moduleList.isEmpty()) {
@@ -53,9 +52,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     }
 
     val isSafeMode = Natives.isSafeMode()
+    val isKSUVersionInvalid = Natives.getVersion() < 0
     val hasMagisk = hasMagisk()
 
-    val hideInstallButton = isSafeMode || hasMagisk
+    val hideInstallButton = isSafeMode || isKSUVersionInvalid || hasMagisk
 
     Scaffold(topBar = {
         TopBar()
@@ -91,94 +91,115 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         }
     }) { innerPadding ->
 
-        val dialogState = rememberDialogHostState()
-        ConfirmDialog(dialogState)
+        ConfirmDialog()
 
-        val failedEnable = stringResource(R.string.module_failed_to_enable)
-        val failedDisable = stringResource(R.string.module_failed_to_disable)
-        val failedUninstall = stringResource(R.string.module_uninstall_failed)
-        val successUninstall = stringResource(R.string.module_uninstall_success)
-        val swipeState = rememberSwipeRefreshState(viewModel.isRefreshing)
-        // TODO: Replace SwipeRefresh with RefreshIndicator when it's ready
-        if (Natives.getVersion() < 8) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.require_kernel_version_8))
-            }
-            return@Scaffold
-        }
-        if (hasMagisk) {
-            Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.module_magisk_conflict))
-            }
-            return@Scaffold
-        }
-        SwipeRefresh(
-            state = swipeState, onRefresh = {
-                scope.launch { viewModel.fetchModuleList() }
-            }, modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize()
-        ) {
-            val isOverlayAvailable = overlayFsAvailable()
-            if (!isOverlayAvailable) {
-                swipeState.isRefreshing = false
+        when {
+            isKSUVersionInvalid -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.module_overlay_fs_not_available))
+                    Text(stringResource(R.string.require_kernel_version_8))
                 }
-                return@SwipeRefresh
             }
-            val isEmpty = viewModel.moduleList.isEmpty()
-            if (isEmpty) {
-                swipeState.isRefreshing = false
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.module_empty))
+            hasMagisk -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.module_magisk_conflict),
+                        textAlign = TextAlign.Center,
+                    )
                 }
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp),
-                    contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */) }) {
+            }
+            else -> {
+                ModuleList(
+                    viewModel = viewModel,
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun ModuleList(viewModel: ModuleViewModel, modifier: Modifier = Modifier) {
+    val failedEnable = stringResource(R.string.module_failed_to_enable)
+    val failedDisable = stringResource(R.string.module_failed_to_disable)
+    val failedUninstall = stringResource(R.string.module_uninstall_failed)
+    val successUninstall = stringResource(R.string.module_uninstall_success)
+    val reboot = stringResource(id = R.string.reboot)
+    val rebootToApply = stringResource(id = R.string.reboot_to_apply)
+    val moduleStr = stringResource(id = R.string.module)
+    val uninstall = stringResource(id = R.string.uninstall)
+    val cancel = stringResource(id = android.R.string.cancel)
+    val moduleUninstallConfirm =
+        stringResource(id = R.string.module_uninstall_confirm)
+
+    val dialogHost = LocalDialogHost.current
+    val snackBarHost = LocalSnackbarHost.current
+
+    suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
+        val dialogResult = dialogHost.showDialog(
+            moduleStr,
+            content = moduleUninstallConfirm.format(module.name),
+            confirm = uninstall,
+            dismiss = cancel
+        )
+        if (dialogResult != DialogResult.Confirmed) {
+            return
+        }
+
+        val success = uninstallModule(module.id)
+        if (success) {
+            viewModel.fetchModuleList()
+        }
+        val message = if (success) {
+            successUninstall.format(module.name)
+        } else {
+            failedUninstall.format(module.name)
+        }
+        val actionLabel = if (success) {
+            reboot
+        } else {
+            null
+        }
+        val result = snackBarHost.showSnackbar(message, actionLabel = actionLabel)
+        if (result == SnackbarResult.ActionPerformed) {
+            reboot()
+        }
+    }
+
+    val refreshState = rememberPullRefreshState(
+        refreshing = viewModel.isRefreshing,
+        onRefresh = { viewModel.fetchModuleList() }
+    )
+    Box(modifier.pullRefresh(refreshState).padding(16.dp)) {
+        if (viewModel.isOverlayAvailable) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(15.dp),
+                contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */) },
+            ) {
+                val isEmpty = viewModel.moduleList.isEmpty()
+                if (isEmpty) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(R.string.module_empty))
+                        }
+                    }
+                } else {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
-                        val reboot = stringResource(id = R.string.reboot)
-                        val rebootToApply = stringResource(id = R.string.reboot_to_apply)
-                        val moduleStr = stringResource(id = R.string.module)
-                        val uninstall = stringResource(id = R.string.uninstall)
-                        val cancel = stringResource(id = android.R.string.cancel)
-                        val moduleUninstallConfirm =
-                            stringResource(id = R.string.module_uninstall_confirm)
+                        val scope = rememberCoroutineScope()
                         ModuleItem(module, isChecked, onUninstall = {
-                            scope.launch {
-                                val dialogResult = dialogState.showDialog(
-                                    moduleStr,
-                                    content = moduleUninstallConfirm.format(module.name),
-                                    confirm = uninstall,
-                                    dismiss = cancel
-                                )
-                                if (dialogResult != DialogResult.Confirmed) {
-                                    return@launch
-                                }
-
-                                val success = uninstallModule(module.id)
-                                if (success) {
-                                    viewModel.fetchModuleList()
-                                }
-                                val message = if (success) {
-                                    successUninstall.format(module.name)
-                                } else {
-                                    failedUninstall.format(module.name)
-                                }
-                                val actionLabel = if (success) {
-                                    reboot
-                                } else {
-                                    null
-                                }
-                                val result = snackBarHost.showSnackbar(
-                                    message, actionLabel = actionLabel
-                                )
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    reboot()
-                                }
-                            }
+                            scope.launch { onModuleUninstall(module) }
                         }, onCheckChanged = {
                             val success = toggleModule(module.id, !isChecked)
                             if (success) {
@@ -203,7 +224,19 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
+        } else {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.module_overlay_fs_not_available))
+            }
         }
+
+        PullRefreshIndicator(
+            refreshing = viewModel.isRefreshing,
+            state = refreshState,
+            modifier = Modifier.align(
+                Alignment.TopCenter
+            )
+        )
     }
 }
 

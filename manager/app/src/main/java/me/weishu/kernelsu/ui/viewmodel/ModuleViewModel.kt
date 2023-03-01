@@ -7,9 +7,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.util.listModules
+import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import org.json.JSONArray
 import java.text.Collator
 import java.util.*
@@ -36,6 +38,9 @@ class ModuleViewModel : ViewModel() {
     var isRefreshing by mutableStateOf(false)
         private set
 
+    var isOverlayAvailable by mutableStateOf(overlayFsAvailable())
+        private set
+
     val moduleList by derivedStateOf {
         val comparator = compareBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
         modules.sortedWith(comparator).also {
@@ -43,12 +48,16 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
-    suspend fun fetchModuleList() {
-        withContext(Dispatchers.IO) {
+    fun fetchModuleList() {
+        viewModelScope.launch(Dispatchers.IO) {
             isRefreshing = true
+
+            val oldModuleList = modules
+
             val start = SystemClock.elapsedRealtime()
 
             kotlin.runCatching {
+                isOverlayAvailable = overlayFsAvailable()
 
                 val result = listModules()
 
@@ -76,6 +85,11 @@ class ModuleViewModel : ViewModel() {
                 isRefreshing = false
             }
 
+            // when both old and new is kotlin.collections.EmptyList
+            // moduleList update will don't trigger
+            if (oldModuleList === modules) {
+                isRefreshing = false
+            }
 
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: $modules")
         }

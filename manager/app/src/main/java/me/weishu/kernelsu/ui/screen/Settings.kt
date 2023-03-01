@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,12 +16,12 @@ import com.alorma.compose.settings.ui.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.SimpleDialog
-import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.util.LinkifyText
+import me.weishu.kernelsu.ui.util.LocalDialogHost
+import me.weishu.kernelsu.ui.util.getBugreportFile
 
 
 /**
@@ -42,9 +41,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     ) { paddingValues ->
 
-        val dialogState = rememberDialogHostState()
-
-        SimpleDialog(dialogState) {
+        SimpleDialog {
             SupportCard()
         }
 
@@ -75,12 +72,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             val about = stringResource(id = R.string.about)
             val ok = stringResource(id = android.R.string.ok)
             val scope = rememberCoroutineScope()
+            val dialogHost = LocalDialogHost.current
             SettingsMenuLink(title = {
                 Text(about)
             },
                 onClick = {
                     scope.launch {
-                        dialogState.showDialog(about, content = "unused", confirm = ok)
+                        dialogHost.showDialog(about, content = "unused", confirm = ok)
                     }
                 }
             )
