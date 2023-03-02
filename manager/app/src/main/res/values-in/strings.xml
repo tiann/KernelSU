@@ -51,4 +51,5 @@
     <string name="send_log">Kirim logs</string>
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Restart untuk menerapkan</string>
+    <string name="module_magisk_conflict">Module akan di nonaktifkan karna konflik dengan magisk\'s!</string>
 </resources>
