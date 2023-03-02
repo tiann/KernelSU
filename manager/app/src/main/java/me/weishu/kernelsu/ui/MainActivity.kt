@@ -16,12 +16,14 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
+import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
 import me.weishu.kernelsu.ui.screen.NavGraphs
 import me.weishu.kernelsu.ui.screen.appCurrentDestinationAsState
 import me.weishu.kernelsu.ui.screen.destinations.Destination
 import me.weishu.kernelsu.ui.screen.startAppDestination
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
+import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 
 class MainActivity : ComponentActivity() {
@@ -38,7 +40,10 @@ class MainActivity : ComponentActivity() {
                     bottomBar = { BottomBar(navController) },
                     snackbarHost = { SnackbarHost(snackbarHostState) }
                 ) { innerPadding ->
-                    CompositionLocalProvider(LocalSnackbarHost provides snackbarHostState) {
+                    CompositionLocalProvider(
+                        LocalSnackbarHost provides snackbarHostState,
+                        LocalDialogHost provides rememberDialogHostState(),
+                    ) {
                         DestinationsNavHost(
                             modifier = Modifier.padding(innerPadding),
                             navGraph = NavGraphs.root,
