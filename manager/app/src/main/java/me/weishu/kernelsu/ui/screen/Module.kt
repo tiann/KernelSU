@@ -177,12 +177,20 @@ private fun ModuleList(viewModel: ModuleViewModel, modifier: Modifier = Modifier
         refreshing = viewModel.isRefreshing,
         onRefresh = { viewModel.fetchModuleList() }
     )
-    Box(modifier.pullRefresh(refreshState).padding(16.dp)) {
+    Box(modifier.pullRefresh(refreshState)) {
         if (viewModel.isOverlayAvailable) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(15.dp),
-                contentPadding = remember { PaddingValues(bottom = 16.dp + 56.dp /* Scaffold Fab Spacing + Fab container height */) },
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = remember {
+                    PaddingValues(
+                        start = 16.dp,
+                        top = 16.dp,
+                        end = 16.dp,
+                        bottom = 16.dp
+                                + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
+                    )
+                },
             ) {
                 val isEmpty = viewModel.moduleList.isEmpty()
                 if (isEmpty) {
