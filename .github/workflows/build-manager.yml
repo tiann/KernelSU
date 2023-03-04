@@ -59,6 +59,9 @@ jobs:
           echo KEYSTORE_FILE='../key.jks' >> sign.properties
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
+        if [ ! -z "${{ secrets.APPLICATION_ID }}" ]; then
+          sed -i '/defaultConfig {/a \        applicationId = \"${{ secrets.APPLICATION_ID }}\"' app/build.gradle.kts
+        fi
     - name: Download arm64 ksud
       uses: actions/download-artifact@v3
       with:
