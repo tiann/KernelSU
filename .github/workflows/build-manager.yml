@@ -59,6 +59,9 @@ jobs:
           echo KEYSTORE_FILE='../key.jks' >> sign.properties
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
+        if [ ! -z "${{ secrets.APPLICATION_NAME }}" ]; then
+          sed -i '/defaultConfig {/a \        resValue\"string\",\"app_name\",\"${{ secrets.APPLICATION_NAME }}\"' app/build.gradle.kts
+        fi
         if [ ! -z "${{ secrets.APPLICATION_ID }}" ]; then
           sed -i '/defaultConfig {/a \        applicationId = \"${{ secrets.APPLICATION_ID }}\"' app/build.gradle.kts
         fi
@@ -108,3 +111,4 @@ jobs:
           pip3 install python-telegram-bot
           python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
         fi
+
