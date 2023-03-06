@@ -86,9 +86,11 @@ fun Project.configureBaseExtension() {
                 keyPassword = prop.getProperty("KEY_PASSWORD")
             }
             defaultConfig.applicationId = prop.getProperty("APPLICATION_ID")
-            defaultConfig.resValue("String","app_name",prop.getProperty("APPLICATION_NAME"))
+            defaultConfig.resValue("String", "app_name", prop.getProperty("APPLICATION_NAME"))
         } else {
             signingConfigs["debug"]
+            defaultConfig.applicationId = "me.weishu.kernelsu"
+            defaultConfig.resValue("String", "app_name", "KernelSU")
         }
 
         buildTypes {
