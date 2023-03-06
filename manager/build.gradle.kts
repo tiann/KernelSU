@@ -89,22 +89,19 @@ fun Project.configureBaseExtension() {
             signingConfigs["debug"]
         }
 
+        val DEFAULT_APPLICATION_ID = "me.weishu.kernelsu"
+        val DEFAULT_APPLICATION_NAME = "KernelSU"
+
         if (signFile.canRead()) {
             val prop = Properties()
             prop.load(signFile.inputStream())
-            var APPLICATION_ID = prop.getProperty("APPLICATION_ID")
-            var APPLICATION_NAME = prop.getProperty("APPLICATION_NAME")
-            if (APPLICATION_ID.isBlank()){
-                APPLICATION_ID = "me.weishu.kernelsu"
-            }
-            if (APPLICATION_NAME.isBlank()){
-                APPLICATION_NAME = "KernelSU"
-            }
+            var APPLICATION_ID = prop.getProperty("APPLICATION_ID", DEFAULT_APPLICATION_ID)
+            var APPLICATION_NAME = prop.getProperty("APPLICATION_NAME", DEFAULT_APPLICATION_NAME)
             defaultConfig.applicationId = APPLICATION_ID
             defaultConfig.resValue("string", "app_name", APPLICATION_NAME)
         } else {
-            defaultConfig.applicationId = "me.weishu.kernelsu"
-            defaultConfig.resValue("string", "app_name", "KernelSU")
+            defaultConfig.applicationId = DEFAULT_APPLICATION_ID
+            defaultConfig.resValue("string", "app_name", DEFAULT_APPLICATION_NAME)
         }
 
         buildTypes {
