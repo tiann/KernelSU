@@ -59,6 +59,12 @@ jobs:
           echo KEYSTORE_FILE='../key.jks' >> sign.properties
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
+        if [ ! -z "${{ vars.APPLICATION_NAME }}" ]; then
+          echo APPLICATION_NAME='${{ vars.APPLICATION_NAME }}' >> sign.properties
+        fi
+        if [ ! -z "${{ vars.APPLICATION_ID }}" ]; then
+          echo APPLICATION_ID='${{ vars.APPLICATION_ID }}' >> sign.properties
+        fi
     - name: Download arm64 ksud
       uses: actions/download-artifact@v3
       with:
@@ -105,3 +111,4 @@ jobs:
           pip3 install python-telegram-bot
           python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
         fi
+
