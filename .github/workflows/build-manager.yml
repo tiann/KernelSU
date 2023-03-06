@@ -59,10 +59,10 @@ jobs:
           echo KEYSTORE_FILE='../key.jks' >> sign.properties
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
-        if [ ! -z "${{ variables.APPLICATION_NAME }}" ]; then
-          echo APPLICATION_NAME='${{ variables.APPLICATION_NAME }}' >> sign.properties
-        if [ ! -z "${{ variables.APPLICATION_ID }}" ]; then
-          echo APPLICATION_ID='${{ variables.APPLICATION_ID }}' >> sign.properties
+        if [ ! -z "${{ vars.APPLICATION_NAME }}" ]; then
+          echo APPLICATION_NAME='${{ vars.APPLICATION_NAME }}' >> sign.properties
+        if [ ! -z "${{ vars.APPLICATION_ID }}" ]; then
+          echo APPLICATION_ID='${{ vars.APPLICATION_ID }}' >> sign.properties
         fi
     - name: Download arm64 ksud
       uses: actions/download-artifact@v3
