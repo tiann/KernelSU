@@ -66,7 +66,27 @@ fun Project.configureBaseExtension() {
         compileSdkVersion(androidCompileSdk)
         buildToolsVersion = androidBuildToolsVersion
 
+        val signFile = rootProject.file("sign.properties")
+        val config = if (signFile.canRead()) {
+            val prop = Properties()
+            prop.load(signFile.inputStream())
+            applicationId = prop.getProperty("APPLICATION_ID")
+            applicationName = prop.getProperty("APPLICATION_NAME")
+            signingConfigs.create("config") {
+                storeFile = file(prop.getProperty("KEYSTORE_FILE"))
+                storePassword = prop.getProperty("KEYSTORE_PASSWORD")
+                keyAlias = prop.getProperty("KEY_ALIAS")
+                keyPassword = prop.getProperty("KEY_PASSWORD")
+            }
+        } else {
+            applicationId = "me.weishu.kernelsu"
+            applicationName = "KernelSU"
+            signingConfigs["debug"]
+        }
+
         defaultConfig {
+            applicationId = config.applicationId
+            resValue("string","app_name", config.applicationName)
             minSdk = androidMinSdk
             targetSdk = androidTargetSdk
             versionCode = managerVersionCode
@@ -75,23 +95,9 @@ fun Project.configureBaseExtension() {
             consumerProguardFiles("proguard-rules.pro")
         }
 
-        val signFile = rootProject.file("sign.properties")
-        val config = if (signFile.canRead()) {
-            val prop = Properties()
-            prop.load(signFile.inputStream())
-            signingConfigs.create("config") {
-                storeFile = file(prop.getProperty("KEYSTORE_FILE"))
-                storePassword = prop.getProperty("KEYSTORE_PASSWORD")
-                keyAlias = prop.getProperty("KEY_ALIAS")
-                keyPassword = prop.getProperty("KEY_PASSWORD")
-            }
-        } else {
-            signingConfigs["debug"]
-        }
-
         buildTypes {
             all {
-                signingConfig = config
+                signingConfig = config.signingConfigs
             }
 
             named("release") {
