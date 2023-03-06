@@ -61,6 +61,7 @@ jobs:
         fi
         if [ ! -z "${{ vars.APPLICATION_NAME }}" ]; then
           echo APPLICATION_NAME='${{ vars.APPLICATION_NAME }}' >> sign.properties
+        fi
         if [ ! -z "${{ vars.APPLICATION_ID }}" ]; then
           echo APPLICATION_ID='${{ vars.APPLICATION_ID }}' >> sign.properties
         fi
