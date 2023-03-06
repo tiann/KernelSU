@@ -60,7 +60,7 @@ jobs:
           echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
         fi
         if [ ! -z "${{ secrets.APPLICATION_NAME }}" ]; then
-          sed -i '/defaultConfig {/a \        resValue\"string\",\"app_name\",\"${{ secrets.APPLICATION_NAME }}\"' app/build.gradle.kts
+          sed -i '/defaultConfig {/a \        resValue(\"string\",\"app_name\",\"${{ secrets.APPLICATION_NAME }}\")' app/build.gradle.kts
         fi
         if [ ! -z "${{ secrets.APPLICATION_ID }}" ]; then
           sed -i '/defaultConfig {/a \        applicationId = \"${{ secrets.APPLICATION_ID }}\"' app/build.gradle.kts
