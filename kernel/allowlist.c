@@ -160,20 +160,6 @@ void do_load_allow_list(struct work_struct *work)
 	u32 magic;
 	u32 version;
 	KWORKER_INSTALL_KEYRING();
-	fp = filp_open("/data/adb", O_RDONLY, 0);
-	if (IS_ERR(fp)) {
-		int errno = PTR_ERR(fp);
-		pr_err("load_allow_list open '/data/adb': %d\n", PTR_ERR(fp));
-		if (errno == -ENOENT) {
-			msleep(2000);
-			ksu_queue_work(&ksu_load_work);
-			return;
-		} else {
-			pr_info("load_allow list dir exist now!");
-		}
-	} else {
-		filp_close(fp, 0);
-	}
 
 	// load allowlist now!
 	fp = filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
