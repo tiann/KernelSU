@@ -1,17 +1,7 @@
 import os
 import sys
 import asyncio
-import telegram
-from telegram import helpers
 
-
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
-CACHE_CHAT_ID = os.environ.get("CACHE_CHAT_ID")
-MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
-COMMIT_URL = os.environ.get("COMMIT_URL")
-COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
-RUN_URL = os.environ.get("RUN_URL")
 TITLE = os.environ.get("TITLE")
 VERSION = os.environ.get("VERSION")
 MSG_TEMPLATE = """
@@ -29,9 +19,6 @@ def get_caption():
     msg = MSG_TEMPLATE.format(
         title=helpers.escape_markdown(TITLE, 2),
         version=helpers.escape_markdown(VERSION, 2),
-        commit_message=helpers.escape_markdown(COMMIT_MESSAGE, 2, telegram.MessageEntity.PRE),
-        commit_url=helpers.escape_markdown(COMMIT_URL, 2, telegram.MessageEntity.TEXT_LINK),
-        run_url=helpers.escape_markdown(RUN_URL, 2, telegram.MessageEntity.TEXT_LINK)
     )
     if len(msg) > telegram.constants.MessageLimit.CAPTION_LENGTH:
         return COMMIT_URL
@@ -98,4 +85,3 @@ async def main():
 if __name__ == "__main__":
     loops = asyncio.new_event_loop()
     loops.run_until_complete(asyncio.wait([main()]))
-
