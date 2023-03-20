@@ -173,5 +173,11 @@
         "kernel_name": "kernel_google_msm-4.9_KernelSU",
         "kernel_link": "https://github.com/JunASAKA/kernel_google_msm-4.9_KernelSU",
         "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
+    },
+        "maintainer": "RooGhz720",
+        "maintainer_link": "https://github.com/RooGhz720",
+        "kernel_name": "kernel_asus_X01BD",
+        "kernel_link": "https://github.com/RooGhz720/kernel_asus_X01BD",
+        "devices": "Asus Zenfone Max Pro M1/M2"
     }
 ]
