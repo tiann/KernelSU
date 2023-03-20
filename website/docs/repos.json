@@ -166,5 +166,12 @@
         "kernel_name": "android_kernel_xiaomi_sm6250.git",
         "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250.git",
         "devices": "Miatoll [curtana, excalibur, gram, joyeuse]"
+    },
+    {
+        "maintainer": "RooGhz720",
+        "maintainer_link": "https://github.com/RooGhz720",
+        "kernel_name": "kernel_asus_X01BD",
+        "kernel_link": "https://github.com/RooGhz720/kernel_asus_X01BD",
+        "devices": "Asus Zenfone Max Pro M1/M2"
     }
 ]
