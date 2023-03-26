@@ -50,6 +50,7 @@ function sidebarGuide() {
           { text: '如何构建?', link: '/zh_CN/guide/how-to-build' },
           { text: '如何为非GKI设备集成 KernelSU', link: '/zh_CN/guide/how-to-integrate-for-non-gki'},
           { text: '非官方支持设备', link: '/zh_CN/guide/unofficially-support-devices.md' },
+          { text: '模块开发指南', link: '/zh_CN/guide/module.md' },
           { text: '常见问题', link: '/zh_CN/guide/faq' },
         ]
     }
