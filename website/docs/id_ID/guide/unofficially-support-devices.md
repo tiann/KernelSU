@@ -1,11 +1,15 @@
 # Perangkat Yang Didukung Tidak Resmi
 
 :::peringatan
+
 di halaman ini, terdapat kernel untuk perangkat non-GKI yang mendukung KernelSU yang dikelola oleh pengembang lain.
+
 :::
 
 :::peringatan
+
 Halaman ini hanya untuk Anda yang ingin menemukan kode sumber yang sesuai dengan perangkat Anda, itu **BUKAN** berarti kode sumber telah ditinjau oleh _KernelSU Developers_. Anda harus menggunakannya dengan risiko Anda sendiri.
+
 :::
 
 <script setup>
