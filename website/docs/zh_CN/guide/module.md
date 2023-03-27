@@ -226,7 +226,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 在 KernelSU 中，启动脚本根据存放位置的不同还分为两种：通用脚本和模块脚本。
 
 - 通用脚本
-  - 放置在 `/data/adb/ksu/post-fs-data.d` 或 `/data/adb/ksu/service.d` 中。
+  - 放置在 `/data/adb/post-fs-data.d` 或 `/data/adb/service.d` 中。
   - 只有在脚本被设置为可执行（`chmod +x script.sh`）时才会被执行。
   - 在 `post-fs-data.d` 中的脚本以 post-fs-data 模式运行，在 `service.d` 中的脚本以 late_start 服务模式运行。
   - 模块**不应**在安装过程中添加通用脚本。
@@ -237,7 +237,3 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
   - `post-fs-data.sh` 以 post-fs-data 模式运行，而 `service.sh` 则以 late_start 服务模式运行。
 
 所有启动脚本都将在 KernelSU 的 BusyBox ash shell 中运行，并启用“独立模式”。
-
-::: tip 与 Magisk 的差异
-KernelSU 的通用模块存放在 `/data/adb/ksu/post-fs-data.d` 和 `/data/adb/ksu/service.d`，而 Magisk 的通用模块存放在 `/data/adb/post-fs-data.d` 和 `/data/adb/service.d`；除此之外二者是完全一样的（后面可能会改成一样的）。包括 post-fs-data 和 late_start 脚本的运行时机，脚本的运行模式等。
-:::

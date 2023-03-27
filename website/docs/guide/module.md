@@ -221,7 +221,7 @@ In KernelSU, scripts are divided into two types based on their running mode: pos
 In KernelSU, startup scripts are divided into two types based on their storage location: general scripts and module scripts:
 
 - General Scripts
-  - Placed in `/data/adb/ksu/post-fs-data.d` or `/data/adb/ksu/service.d`
+  - Placed in `/data/adb/post-fs-data.d` or `/data/adb/service.d`
   - Only executed if the script is set as executable (`chmod +x script.sh`)
   - Scripts in `post-fs-data.d` runs in post-fs-data mode, and scripts in `service.d` runs in late_start service mode.
   - Modules should **NOT** add general scripts during installation
@@ -231,7 +231,3 @@ In KernelSU, startup scripts are divided into two types based on their storage l
   - `post-fs-data.sh` runs in post-fs-data mode, and `service.sh` runs in late_start service mode.
 
 All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
-
-::: tip difference with Magisk
-KernelSU's general modules are stored in `/data/adb/ksu/post-fs-data.d` and `/data/adb/ksu/service.d`, while Magisk's general modules are stored in `/data/adb/post-fs-data.d` and `/data/adb/service.d`. Apart from this difference, they are completely identical (this may be changed to make them identical in the future). This includes the timing of the execution of post-fs-data and late_start scripts, as well as the running mode of the scripts.
-:::

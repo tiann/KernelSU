@@ -270,7 +270,7 @@ pub fn exec_post_fs_data() -> Result<()> {
 }
 
 pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
-    let script_dir = Path::new(defs::WORKING_DIR).join(dir);
+    let script_dir = Path::new(defs::ADB_DIR).join(dir);
     if !script_dir.exists() {
         info!("{} not exists, skip", script_dir.display());
         return Ok(());
