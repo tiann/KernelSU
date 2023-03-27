@@ -101,7 +101,7 @@ pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     use anyhow::ensure;
     use std::os::fd::AsRawFd;
-    let path = format!("/proc/{}/ns/mnt", pid);
+    let path = format!("/proc/{pid}/ns/mnt");
     let fd = std::fs::File::open(path)?;
     let ret = unsafe { libc::setns(fd.as_raw_fd(), libc::CLONE_NEWNS) };
     ensure!(ret == 0, "switch mnt ns failed");
