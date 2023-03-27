@@ -134,6 +134,19 @@ REMOVE="
 
 上面的这个列表将会执行： `mknod $MODPATH/system/app/YouTuBe c 0 0` 和 `mknod $MODPATH/system/app/Bloatware c 0 0`；并且 `/system/app/YouTube` 和 `/system/app/Bloatware` 将会在模块生效后被删除。
 
+如果你想替换掉系统的某个目录，你需要在模块目录创建一个相同路径的目录，然后为此目录设置此属性：`setfattr -n trusted.overlay.opaque -v y <TARGET>`；这样 overlayfs 系统会自动将系统内相应目录替换（`/system` 分区并没有被更改）。
+
+你可以在 `customize.sh` 中声明一个名为 `REPLACE` 并且包含一系列目录的变量来执行替换操作，KernelSU 会自动为你在模块对应目录执行相关操作。例如：
+
+```sh
+REPLACE="
+/system/app/YouTube
+/system/app/Bloatware
+"
+```
+
+上面这个列表将会：自动创建目录 `$MODPATH/system/app/YouTube` 和 `$MODPATH//system/app/Bloatware`，然后执行 `setfattr -n trusted.overlay.opaque -v y $$MODPATH/system/app/YouTube` 和 `setfattr -n trusted.overlay.opaque -v y $$MODPATH/system/app/Bloatware`；并且 `/system/app/YouTube` 和 `/system/app/Bloatware` 将会在模块生效后替换为空目录。
+
 ::: tip 与 Magisk 的差异
 
 KernelSU 的 systemless 机制是通过内核的 overlayfs 实现的，而 Magisk 当前则是通过 magic mount (bind mount)，二者实现方式有着巨大的差异，但最终的目标实际上是一致的：不修改物理的 `/system` 分区但实现修改 `/system` 文件。

@@ -130,6 +130,17 @@ REMOVE="
 
 The above list will execute `mknod $MODPATH/system/app/YouTuBe c 0 0` and `mknod $MODPATH/system/app/Bloatware c 0 0`; and `/system/app/YouTube` and `/system/app/Bloatware` will be removed after the module takes effect.
 
+If you want to replace a directory in the system, you need to create a directory with the same path in your module directory, and then set the attribute `setfattr -n trusted.overlay.opaque -v y <TARGET>` for this directory. This way, the overlayfs system will automatically replace the corresponding directory in the system (without changing the /system partition).
+
+You can declare a variable named `REPLACE` in your `customize.sh` file, which includes a list of directories to be replaced, and KernelSU will automatically perform the corresponding operations in your module directory. For example:
+
+REPLACE="
+/system/app/YouTube
+/system/app/Bloatware
+"
+
+This list will automatically create the directories `$MODPATH/system/app/YouTube` and `$MODPATH/system/app/Bloatware`, and then execute `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` and `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. After the module takes effect, `/system/app/YouTube` and `/system/app/Bloatware` will be replaced with empty directories.
+
 ::: tip difference with Magisk
 
 KernelSU's systemless mechanism is implemented through the kernel's overlayfs, while Magisk currently uses magic mount (bind mount). The two implementation methods have significant differences, but the ultimate goal is the same: to modify /system files without physically modifying the /system partition.
