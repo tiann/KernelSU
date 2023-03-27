@@ -23,3 +23,4 @@ Here are some differences:
 - KernelSU modules do not have built-in support for Zygisk (but you can use Zygisk modules through [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
 - The method for replacing or deleting files in KernelSU modules is completely different from Magisk. KernelSU does not support the `.replace` method. Instead, you need to create a same-named file with `mknod filename c 0 0` to delete the corresponding file.
 - The directories for BusyBox are different. The built-in BusyBox in KernelSU is located in `/data/adb/ksu/bin/busybox`, while in Magisk it is in `/data/adb/magisk/busybox`. **Note that this is an internal behavior of KernelSU and may change in the future!**
+- KernelSU does not support `.replace` files and `REPLACE` variable; however, KernelSU supports the `REMOVE` variable and `mknod <TARGET> c 0 0` command to remove files and folders.

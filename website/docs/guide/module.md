@@ -119,6 +119,17 @@ The contents of this directory will be overlaid on top of the system's /system p
 
 If you want to delete a file or folder in the original system directory, you need to create a file with the same name as the file/folder in the module directory using `mknod filename c 0 0`. This way, the overlayfs system will automatically "whiteout" this file as if it has been deleted (the /system partition is not actually changed).
 
+You can also declare a variable named `REMOVE` containing a list of directories in `customize.sh` to execute removal operations, and KernelSU will automatically execute `mknod <TARGET> c 0 0` in the corresponding directories of the module. For example:
+
+```sh
+REMOVE="
+/system/app/YouTube
+/system/app/Bloatware
+"
+```
+
+The above list will execute `mknod $MODPATH/system/app/YouTuBe c 0 0` and `mknod $MODPATH/system/app/Bloatware c 0 0`; and `/system/app/YouTube` and `/system/app/Bloatware` will be removed after the module takes effect.
+
 ::: tip difference with Magisk
 
 KernelSU's systemless mechanism is implemented through the kernel's overlayfs, while Magisk currently uses magic mount (bind mount). The two implementation methods have significant differences, but the ultimate goal is the same: to modify /system files without physically modifying the /system partition.
