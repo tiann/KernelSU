@@ -1,4 +1,4 @@
-# 模块开发指南
+# 模块开发指南 {#introduction}
 
 KernelSU 提供了一个模块机制，它可以在保持系统分区完整性的同时达到修改系统分区的效果；这种机制通常被称之为 systemless。
 
@@ -28,7 +28,7 @@ KernelSU 的 BusyBox 现在是直接使用 Magisk 项目编译的二进制文件
 因此，你完全不用担心 BusyBox 脚本与在 Magisk 和 KernelSU 之间的兼容问题，因为他们是完全一样的！
 :::
 
-## KernelSU 模块
+## KernelSU 模块 {#kernelsu-modules}
 
 KernelSU 模块就是一个放置在 `/data/adb/modules` 内且满足如下结构的文件夹：
 
@@ -104,9 +104,9 @@ description=<string>
 - 其他未在上面提到的内容可以是任何单行字符串。
 - 请确保使用 UNIX（LF）换行类型，而不是Windows（CR + LF）或 Macintosh（CR）。
 
-### Shell 脚本
+### Shell 脚本 {#shell-scripts}
 
-请阅读 [启动脚本](#启动脚本) 一节，以了解 `post-fs-data.sh` 和 `service.sh` 之间的区别。对于大多数模块开发者来说，如果您只需要运行一个启动脚本，`service.sh` 应该已经足够了。
+请阅读 [启动脚本](#boot-scripts) 一节，以了解 `post-fs-data.sh` 和 `service.sh` 之间的区别。对于大多数模块开发者来说，如果您只需要运行一个启动脚本，`service.sh` 应该已经足够了。
 
 在您的模块的所有脚本中，请使用 `MODDIR=${0%/*}`来获取您的模块的基本目录路径；请勿在脚本中硬编码您的模块路径。
 
@@ -114,7 +114,7 @@ description=<string>
 你可以通过环境变量 `KSU` 来判断脚本是运行在 KernelSU 还是 Magisk 中，如果运行在 KernelSU，这个值会被设置为 `true`。
 :::
 
-### `system` 目录
+### `system` 目录 {#system-directories}
 
 这个目录的内容会在系统启动后，以 `overlayfs` 的方式叠加在系统的 `/system` 分区之上，这意味着：
 
@@ -149,7 +149,7 @@ KernelSU 的 systemless 机制是通过内核的 overlayfs 实现的，而 Magis
 
 如果您的模块需要一些额外的 SELinux 策略补丁，请将这些规则添加到此文件中。这个文件中的每一行都将被视为一个策略语句。
 
-## 模块安装包
+## 模块安装包 {#module-installer}
 
 KernelSU 的模块安装包就是一个可以通过 KernelSU 管理器 APP 刷入的 zip 文件，此 zip 文件的格式如下：
 
@@ -167,7 +167,7 @@ module.zip
 KernelSU 模块不支持在 Recovery 中安装！！
 :::
 
-### 定制安装过程
+### 定制安装过程 {#customizing-installation}
 
 如果你想控制模块的安装过程，可以在模块的目录下创建一个名为 `customize.sh` 的文件，这个脚本将会在模块被解压后**导入**到当前 shell 中，如果你的模块需要根据设备的 API 版本或者设备构架做一些额外的操作，那这个脚本将非常有用。
 
@@ -175,7 +175,7 @@ KernelSU 模块不支持在 Recovery 中安装！！
 
 `customize.sh` 脚本以“独立模式”运行在 KernelSU 的 BusyBox `ash` shell 中。你可以使用如下变量和函数：
 
-#### 变量
+#### 变量 {#variables}
 
 - `KSU` (bool): 标记此脚本运行在 KernelSU 环境下，此变量的值将永远为 `true`，你可以通过它区分 Magisk。
 - `KSU_VER` (string): KernelSU 当前的版本名字 (如： `v0.4.0`)
@@ -193,7 +193,7 @@ KernelSU 模块不支持在 Recovery 中安装！！
 `MAGISK_VER_CODE` 在 KernelSU 中永远为 `25200`，`MAGISK_VER` 则为 `v25.2`，请不要通过这两个变量来判断是否是 KernelSU！
 :::
 
-#### 函数
+#### 函数 {#functions}
 
 ```txt
 ui_print <msg>
@@ -219,7 +219,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
        set_perm dir owner group dirpermission context
 ```
 
-## 启动脚本
+## 启动脚本 {#boot-scripts}
 
 在 KernelSU 中，根据脚本运行模式的不同分为两种：post-fs-data 模式和 late_start 服务模式。
 
