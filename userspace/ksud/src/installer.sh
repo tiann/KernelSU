@@ -337,7 +337,7 @@ install_module() {
   [ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
 
   local MODDIRNAME=modules
-  $BOOTMODE && MODDIRNAME=modules_update
+  $BOOTMODE && MODDIRNAME=ksu/modules_update
   local MODULEROOT=$NVBASE/$MODDIRNAME
   MODID=`grep_prop id $TMPDIR/module.prop`
   MODNAME=`grep_prop name $TMPDIR/module.prop`
@@ -434,7 +434,7 @@ install_module() {
 [ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
 [ -z $BOOTMODE ] && BOOTMODE=false
 
-NVBASE=/data/adb/ksu
+NVBASE=/data/adb
 TMPDIR=/dev/tmp
 
 # Some modules dependents on this
