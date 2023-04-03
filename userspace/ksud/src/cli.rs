@@ -138,6 +138,12 @@ pub fn run() -> Result<()> {
     #[cfg(not(target_os = "android"))]
     env_logger::init();
 
+    // the kernel executes su with argv[0] = "su" and replace it with us
+    let arg0 = std::env::args().next().unwrap_or_default();
+    if arg0 == "su" || arg0 == "/system/bin/su" {
+        return crate::ksu::grant_root();
+    }
+
     let cli = Args::parse();
 
     log::info!("command: {:?}", cli.command);
