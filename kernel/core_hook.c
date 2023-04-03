@@ -1,13 +1,16 @@
 #include "linux/cred.h"
+#include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/init.h"
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
 #include "linux/lsm_hooks.h"
+#include "linux/path.h"
 #include "linux/printk.h"
 #include "linux/uaccess.h"
 #include "linux/uidgid.h"
 #include "linux/version.h"
+#include "linux/mount.h"
 
 #include "linux/fs.h"
 #include "linux/namei.h"
@@ -328,6 +331,85 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	return 0;
 }
 
+static bool is_appuid(kuid_t uid) {
+	#define PER_USER_RANGE 100000
+	#define FIRST_APPLICATION_UID 10000
+	#define LAST_APPLICATION_UID 19999
+
+	uid_t appid = uid.val % PER_USER_RANGE;
+	return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
+}
+
+static bool should_umount(struct path* path) {
+	if (!path) {
+		return false;
+	}
+
+	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
+		const char* fstype = path->mnt->mnt_sb->s_type->name;
+		return strcmp(fstype, "overlay") == 0;
+	}
+	return false;
+}
+
+static void try_umount(const char *mnt) {
+	struct path path;
+	int err = kern_path(mnt, 0, &path);
+	if (err) {
+		return;
+	}
+
+	// we are only interest in some specific mounts
+	if (!should_umount(&path)) {
+		return;
+	}
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+	err = path_umount(&path, 0);
+	dput(path.dentry);
+	if (err) {
+		pr_info("umount %s failed: %d\n", mnt, err);
+	}
+#endif
+}
+
+int ksu_handle_setuid(struct cred *new, const struct cred *old) {
+	if (!new || !old) {
+		return 0;
+	}
+
+	kuid_t new_uid = new->uid;
+	kuid_t old_uid = old->uid;
+
+	if (0 != old_uid.val) {
+		// old process is not root, ignore it.
+		return 0;
+	}
+
+	// todo: check old process's selinux context, if it is not zygote, ignore it!
+
+	if (!is_appuid(new_uid)) {
+		// pr_info("handle setuid ignore non application uid: %d\n", new_uid.val);
+		return 0;
+	}
+
+	if (ksu_is_allow_uid(new_uid.val)) {
+		// pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
+		return 0;
+	}
+
+	// umount the target mnt
+	pr_info("handle umount for uid: %d\n", new_uid.val);
+
+	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
+	// filter the mountpoint whose target is `/data/adb`
+	try_umount("/system");
+	try_umount("/vendor");
+	try_umount("/product");
+
+	return 0;
+}
+
 // Init functons
 
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -423,9 +505,15 @@ static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
 	return ksu_handle_rename(old_dentry, new_dentry);
 }
 
+static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
+			     int flags) {
+	return ksu_handle_setuid(new, old);
+}
+
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
+	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 	LSM_HOOK_INIT(key_permission, ksu_key_permission)
 #endif
