@@ -271,6 +271,18 @@ mktouch() {
   chmod 644 $1
 }
 
+mark_remove() {
+  mkdir -p ${1%/*} 2>/dev/null
+  mknod $1 c 0 0
+  chmod 644 $1
+}
+
+mark_replace() {
+  mkdir -p ${1%/*} 2>/dev/null
+  setfattr -n trusted.overlay.opaque -v y $1
+  chmod 644 $1
+}
+
 request_size_check() {
   reqSizeM=`du -ms "$1" | cut -f1`
 }
@@ -384,7 +396,13 @@ install_module() {
   # Handle replace folders
   for TARGET in $REPLACE; do
     ui_print "- Replace target: $TARGET"
-    mktouch $MODPATH$TARGET/.replace
+    mark_replace $MODPATH$TARGET
+  done
+
+  # Handle remove files
+  for TARGET in $REMOVE; do
+    ui_print "- Remove target: $TARGET"
+    mark_remove $MODPATH$TARGET
   done
 
   if $BOOTMODE; then

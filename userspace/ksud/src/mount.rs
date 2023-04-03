@@ -284,21 +284,6 @@ impl StockMount {
         mounts
     }
 
-    pub fn umount(&self) -> Result<()> {
-        let mounts = self.get_target_mounts();
-        log::info!("umount stock for {} : {:?}", self.mnt, mounts);
-        for m in mounts {
-            let dst = m
-                .dest
-                .to_str()
-                .ok_or(anyhow::anyhow!("Failed to get dst"))?;
-            umount_dir(dst)?;
-            log::info!("umount: {:?}", m);
-        }
-        log::info!("umount stock succeed!");
-        Ok(())
-    }
-
     pub fn remount(&self) -> Result<()> {
         let mut mounts = self.get_target_mounts();
         mounts.reverse(); // remount it in order
@@ -340,10 +325,6 @@ impl StockMount {
         Ok(Self {
             mnt: mnt.to_string(),
         })
-    }
-
-    pub fn umount(&self) -> Result<()> {
-        unimplemented!()
     }
 
     pub fn remount(&self) -> Result<()> {

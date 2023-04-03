@@ -35,6 +35,16 @@ static inline bool is_allow_su()
 	return ksu_is_allow_uid(current_uid().val);
 }
 
+static inline bool is_isolated_uid(uid_t uid) {
+    #define FIRST_ISOLATED_UID 99000
+    #define LAST_ISOLATED_UID 99999
+    #define FIRST_APP_ZYGOTE_ISOLATED_UID 90000
+    #define LAST_APP_ZYGOTE_ISOLATED_UID 98999
+    uid_t appid = uid % 100000;
+    return (appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID)
+                || (appid >= FIRST_APP_ZYGOTE_ISOLATED_UID && appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
+}
+
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
 
 void escape_to_root(void)
@@ -124,7 +134,17 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	pr_info("option: 0x%x, cmd: %ld\n", option, arg2);
+	// always ignore isolated app uid
+	if (is_isolated_uid(current_uid().val)) {
+		return 0;
+	}
+
+	static uid_t last_failed_uid = -1;
+	if (last_failed_uid == current_uid().val) {
+		return 0;
+	}
+
+	// pr_info("option: 0x%x, cmd: %ld\n", option, arg2);
 
 	if (arg2 == CMD_BECOME_MANAGER) {
 		// quick check
@@ -234,6 +254,9 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (arg2 == CMD_SET_SEPOLICY) {
+		if (0 != current_uid().val) {
+			return 0;
+		}
 		if (!handle_sepolicy(arg3, arg4)) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("sepolicy: prctl reply error\n");
@@ -244,6 +267,9 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (arg2 == CMD_CHECK_SAFEMODE) {
+		if (!is_manager() && 0 != current_uid().val) {
+			return 0;
+		}
 		if (ksu_is_safe_mode()) {
 			pr_warn("safemode enabled!\n");
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
@@ -280,7 +306,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 	// all other cmds are for 'root manager'
 	if (!is_manager()) {
-		pr_info("Only manager can do cmd: %d\n", arg2);
+		last_failed_uid = current_uid().val;
 		return 0;
 	}
 

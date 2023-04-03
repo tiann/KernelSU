@@ -4,7 +4,7 @@
 
 首先，您的设备应该能够解锁 bootloader。 如果不能，则不支持。
 
-然后在你的设备上安装 KernelSU 管理器并打开它，如果它显示 `不支持` ，那么你的设备是不受支持的；但你可以自己编译内核来使用。
+然后在你的设备上安装 KernelSU 管理器并打开它，如果它显示 `不支持` ，那么你的设备没有官方支持的开箱即用的 boot image；但你可以自己编译内核集成 KernelSU 进而使用它。
 
 ## KernelSU 是否需要解锁 Bootloader ？
 
@@ -16,7 +16,11 @@
 
 ## KernelSU 是否支持 Xposed ？
 
-支持，[Dreamland](https://github.com/canyie/Dreamland) 和 [TaiChi](https::/taichi.cool) 现在部分可用，我们正在努力使其他 Xposed Framework 可用。
+支持。[Dreamland](https://github.com/canyie/Dreamland) 和 [TaiChi](https::/taichi.cool) 可以正常运行。LSPosed 可以在 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 的支持下正常运行。
+
+## KernelSU 支持 Zygisk 吗?
+
+KernelSU 本体不支持 Zygisk，但是你可以用 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 来使用 Zygisk 模块。
 
 ## KernelSU 与 Magisk 兼容吗 ？
 
@@ -53,11 +57,10 @@ KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU �
 
 ## KernelSU 支持 --mount-master/全局挂载命名空间吗？
 
-目前没有（未来可能会支持），现在你可以用 `nsenter -t 1 -m sh` 在 root shell 里面进入全局命名空间。
+目前没有（未来可能会支持），但实际上有很多种办法手动进入全局命名空间，无需 su 内置支持，比如：
 
-## KernelSU 支持 Zygisk 吗?
-
-KernelSU 本体不支持 Zygisk，但是你可以用 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 来使用 Zygisk 模块。
+1. `nsenter -t 1 -m sh` 可以获得一个全局 mount namespace 的 shell.
+2. 在你要执行的命令之前添加 `nsenter --mount=/proc/1/ns/mnt` 就可以让此命令在全局 mount namespace 下执行。 KernelSU 本身也使用了 [这种方法](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
 
 ## 我是 GKI1.0, 能用 KernelSU 吗?
 

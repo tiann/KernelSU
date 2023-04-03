@@ -4,7 +4,7 @@
 
 First, your devices should be able to unlock the bootloader. If it can't, then it is unsupported.
 
-Then install KernelSU manager App to your device and open it, if it shows `Unsupported` then your device is unsupported and won't be supported in the future.
+Then install KernelSU manager App to your device and open it, if it shows `Unsupported` then your device cannot be supported out of box, but you can build kernel source and integrate KernelSU to make it work or using [unofficially-support-devices](unofficially-support-devices).
 
 ## Does KernelSU need to unlock Bootloader?
 
@@ -16,7 +16,11 @@ Yes, But it is in early version, it may be buggy. Please wait for it to be stabl
 
 ## Does KernelSU support Xposed?
 
-Yes, [Dreamland](https://github.com/canyie/Dreamland) and [TaiChi](https::/taichi.cool) partially works now. For LSPosed, you can follow [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+Yes, [Dreamland](https://github.com/canyie/Dreamland) and [TaiChi](https::/taichi.cool) work now. For LSPosed, you can make it work by [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+
+## Does KernelSU support Zygisk?
+
+KernelSU has no builtin Zygisk support, but you can use [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) instead.
 
 ## Is KernelSU compatible with Magisk?
 
@@ -53,11 +57,10 @@ The Kernel version has nothing to do with Android version, if you need to flash 
 
 ## Is there any --mount-master/global mount namespace in KernelSU?
 
-There isn't now(maybe in the future), But you can use `nsenter -t 1 -m sh` to enter global mount namespace instead.
+There isn't now(maybe in the future), But there are many ways to switch to global mount namespace manully, such as:
 
-## Does KernelSU support Zygisk?
-
-KernelSU has no builtin Zygisk support, but you can use [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) instead.
+1. `nsenter -t 1 -m sh` to get a shell in global mount namespace.
+2. Add `nsenter --mount=/proc/1/ns/mnt` to the command you want to execute, then the command is executed in global mount namespace. KernelSU is also [using this way](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
 
 ## I am GKI1.0, can i use this?
 

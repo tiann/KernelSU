@@ -376,17 +376,12 @@ const CMD_TYPE_TRANSITION: u32 = 7;
 const CMD_TYPE_CHANGE: u32 = 8;
 const CMD_GENFSCON: u32 = 9;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 enum PolicyObject {
     All, // for "*", stand for all objects, and is NULL in ffi
     One([u8; SEPOLICY_MAX_LEN]),
+    #[default]
     None,
-}
-
-impl Default for PolicyObject {
-    fn default() -> Self {
-        PolicyObject::None
-    }
 }
 
 impl TryFrom<&str> for PolicyObject {

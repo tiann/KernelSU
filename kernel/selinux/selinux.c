@@ -2,7 +2,7 @@
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
-#if ((KERNEL_VERSION(4, 14, 0) <= LINUX_VERSION_CODE) && (LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 163))) || (LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 212))
+#if ((KERNEL_VERSION(4, 14, 0) <= LINUX_VERSION_CODE) && (LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 163))) || (LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 337))
 #include "avc.h"
 #endif
 
@@ -57,7 +57,7 @@ if (!is_domain_permissive) {
 void setenforce(bool enforce)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)) || ((KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE) && (LINUX_VERSION_CODE  >= KERNEL_VERSION(4, 9, 212)))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)) || ((KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE) && (LINUX_VERSION_CODE  >= KERNEL_VERSION(4, 9, 337)))
 	selinux_state.enforcing = enforce;
 #else
 	selinux_enforcing = enforce;
@@ -68,7 +68,7 @@ void setenforce(bool enforce)
 bool getenforce()
 {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)) || ((KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE) && (LINUX_VERSION_CODE  >= KERNEL_VERSION(4, 9, 212)))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)) || ((KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE) && (LINUX_VERSION_CODE  >= KERNEL_VERSION(4, 9, 337)))
 	if (selinux_state.disabled) {
 #else
 	if (selinux_disabled) {
@@ -78,7 +78,7 @@ bool getenforce()
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)) || ((KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE) && (LINUX_VERSION_CODE  >= KERNEL_VERSION(4, 9, 212)))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 163)) || ((KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE) && (LINUX_VERSION_CODE  >= KERNEL_VERSION(4, 9, 337)))
 	return selinux_state.enforcing;
 #else
 	return selinux_enforcing;
@@ -88,7 +88,7 @@ bool getenforce()
 #endif
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 212)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 337)
 /*
  * get the subjective security ID of the current task
  */

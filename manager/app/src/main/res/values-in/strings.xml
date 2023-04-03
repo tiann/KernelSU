@@ -28,7 +28,7 @@
     <string name="module_empty">Tidak ada module terpasang</string>
     <string name="module">Module</string>
     <string name="uninstall">Hapus</string>
-    <string name="module_install">Pasang</string>
+    <string name="module_install">Memasang module</string>
     <string name="install">Pasang</string>
     <string name="reboot">Reboot perangkat</string>
     <string name="settings">Pengaturan</string>

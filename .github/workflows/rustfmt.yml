@@ -27,7 +27,7 @@ jobs:
         with:
           components: rustfmt
 
-      - uses: LoliGothick/rustfmt-check@v0.2
+      - uses: LoliGothick/rustfmt-check@v0.3.1
         with:
           token: ${{ github.token }}
           options: --manifest-path userspace/ksud/Cargo.toml
