@@ -187,5 +187,12 @@
         "kernel_name": "kernel_asus_X01BD",
         "kernel_link": "https://github.com/RooGhz720/kernel_asus_X01BD",
         "devices": "Asus Zenfone Max Pro M1/M2"
+    },
+    {
+        "maintainer": "TheNoFace",
+        "maintainer_link": "https://github.com/TheNoFace",
+        "kernel_name": "kernel_oneplus_msm8998",
+        "kernel_link": "https://github.com/TheNoFace/kernel_oneplus_msm8998",
+        "devices": "OnePlus 5/5T"
     }
 ]
