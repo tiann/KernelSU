@@ -126,7 +126,7 @@ pub fn root_shell() -> Result<()> {
     }
 
     if matches.opt_present("v") {
-        println!("{}:KernelSU", "25.2");
+        println!("{}:KernelSU", defs::VERSION_NAME);
         return Ok(());
     }
 
