@@ -65,6 +65,12 @@ fn set_identity(uid: u32) {
     }
 }
 
+#[cfg(not(unix))]
+pub fn root_shell() -> Result<()> {
+    unimplemented!()
+}
+
+#[cfg(unix)]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
     let args: Vec<String> = std::env::args().collect();
@@ -161,7 +167,6 @@ pub fn root_shell() -> Result<()> {
     }
 
     let mut uid = 0; // default uid = 0(root)
-    #[cfg(unix)]
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
@@ -182,7 +187,6 @@ pub fn root_shell() -> Result<()> {
 
     let mut command = &mut Command::new(&shell);
 
-    #[cfg(unix)]
     if !preserve_env {
         // This is actually incorrect, i don't know why.
         // command = command.env_clear();
@@ -204,28 +208,25 @@ pub fn root_shell() -> Result<()> {
         }
     }
 
-    #[cfg(unix)]
-    {
-        // escape from the current cgroup and become session leader
-        command = command.process_group(0);
-        command = unsafe {
-            command.pre_exec(move || {
-                umask(0o22);
-                utils::switch_cgroups();
+    // escape from the current cgroup and become session leader
+    command = command.process_group(0);
+    command = unsafe {
+        command.pre_exec(move || {
+            umask(0o22);
+            utils::switch_cgroups();
 
-                // switch to global mount namespace
-                #[cfg(any(target_os = "linux", target_os = "android"))]
-                if mount_master {
-                    let _ = utils::switch_mnt_ns(1);
-                    let _ = utils::unshare_mnt_ns();
-                }
+            // switch to global mount namespace
+            #[cfg(any(target_os = "linux", target_os = "android"))]
+            if mount_master {
+                let _ = utils::switch_mnt_ns(1);
+                let _ = utils::unshare_mnt_ns();
+            }
 
-                set_identity(uid);
+            set_identity(uid);
 
-                std::result::Result::Ok(())
-            })
-        };
-    }
+            std::result::Result::Ok(())
+        })
+    };
 
     command = command.args(args).arg0(arg0);
     Err(command.exec().into())
