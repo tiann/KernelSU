@@ -141,7 +141,7 @@ pub fn run() -> Result<()> {
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
     if arg0 == "su" || arg0 == "/system/bin/su" {
-        return crate::ksu::grant_root();
+        return crate::ksu::root_shell();
     }
 
     let cli = Args::parse();

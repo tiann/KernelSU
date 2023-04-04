@@ -4,12 +4,12 @@ on:
     branches: [ "main" ]
     paths: 
       - '.github/workflows/build-su.yml'
-      - 'userspace/**'
+      - 'userspace/su/**'
       - 'scripts/ksubot.py'
   pull_request:
     branches: [ "main" ]
     paths: 
-      - 'userspace/**'
+      - 'userspace/su/**'
 jobs:
   build-su:
     name: Build userspace su
