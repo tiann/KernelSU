@@ -5,10 +5,7 @@ use anyhow::ensure;
 use getopts::Options;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
-use std::{
-    ffi::CStr,
-    process::Command,
-};
+use std::{ffi::CStr, process::Command};
 
 use crate::{
     defs,
@@ -188,7 +185,7 @@ pub fn root_shell() -> Result<()> {
 
         if let Some(pw) = pw {
             let home = unsafe { CStr::from_ptr(pw.pw_dir) };
-            let pw_name = unsafe { CStr::from_ptr(pw.pw_name)};
+            let pw_name = unsafe { CStr::from_ptr(pw.pw_name) };
 
             let home = home.to_string_lossy();
             let pw_name = pw_name.to_string_lossy();
