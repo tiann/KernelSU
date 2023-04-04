@@ -182,6 +182,7 @@ pub fn root_shell() -> Result<()> {
 
     let mut command = &mut Command::new(&shell);
 
+    #[cfg(unix)]
     if !preserve_env {
         // This is actually incorrect, i don't know why.
         // command = command.env_clear();
