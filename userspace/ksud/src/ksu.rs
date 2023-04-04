@@ -209,7 +209,8 @@ pub fn root_shell() -> Result<()> {
     }
 
     // escape from the current cgroup and become session leader
-    command = command.process_group(0);
+    // WARNING!!! This cause some root shell hang forever!
+    // command = command.process_group(0);
     command = unsafe {
         command.pre_exec(move || {
             umask(0o22);
