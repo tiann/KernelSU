@@ -126,7 +126,7 @@ pub fn root_shell() -> Result<()> {
     }
 
     if matches.opt_present("v") {
-        println!("{}:KernelSU", defs::VERSION_NAME);
+        println!("{}:KernelSU", "25.2");
         return Ok(());
     }
 
@@ -161,6 +161,7 @@ pub fn root_shell() -> Result<()> {
     }
 
     let mut uid = 0; // default uid = 0(root)
+    #[cfg(unix)]
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
