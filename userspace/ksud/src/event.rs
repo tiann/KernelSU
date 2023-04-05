@@ -1,6 +1,9 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use crate::{
     assets, defs, mount,
@@ -248,7 +251,7 @@ pub fn install() -> Result<()> {
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
 
     // install binary assets
-    assets::ensure_binaries().with_context(|| "Failed to extract assets");
+    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
 
     #[cfg(target_os = "android")]
     link_ksud_to_bin();
@@ -259,7 +262,7 @@ pub fn install() -> Result<()> {
 #[cfg(target_os = "android")]
 fn link_ksud_to_bin() {
     let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
-    let ksu_bin_link = PathBuf::from(defs::BINARY_DIR + "/ksud");
+    let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
     if ksu_bin.exists() && !ksu_bin_link.exists() {
         std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link).unwrap();
     }
