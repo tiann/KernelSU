@@ -86,7 +86,7 @@ pub fn root_shell() -> Result<()> {
         "COMMAND",
     );
     opts.optflag("h", "help", "display this help message and exit");
-    opts.optflag("l", "login", "force run in the global mount namespace");
+    opts.optflag("l", "login", "pretend the shell to be a login shell");
     opts.optflag(
         "p",
         "preserve-environment",
