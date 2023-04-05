@@ -251,17 +251,18 @@ pub fn install() -> Result<()> {
     assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
 
     #[cfg(target_os = "android")]
-    link_ksud_to_bin();
+    link_ksud_to_bin()?;
 
     Ok(())
 }
 
 #[cfg(target_os = "android")]
-fn link_ksud_to_bin() {
+fn link_ksud_to_bin() -> Result<()> {
     use std::path::PathBuf;
     let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
     let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
     if ksu_bin.exists() && !ksu_bin_link.exists() {
-        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link).unwrap();
+        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link)?;
     }
+    Ok(())
 }
