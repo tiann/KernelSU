@@ -1,9 +1,6 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, path::Path};
 
 use crate::{
     assets, defs, mount,
@@ -261,6 +258,7 @@ pub fn install() -> Result<()> {
 
 #[cfg(target_os = "android")]
 fn link_ksud_to_bin() {
+    use std::path::PathBuf;
     let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
     let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
     if ksu_bin.exists() && !ksu_bin_link.exists() {
