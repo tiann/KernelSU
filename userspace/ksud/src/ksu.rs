@@ -211,8 +211,11 @@ pub fn root_shell() -> Result<()> {
     }
 
     // add /data/adb/ksu/bin to PATH
-    add_path_to_env("/data/adb/ksu/bin")?;
-    link_ksud_to_bin();
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    {
+        add_path_to_env("/data/adb/ksu/bin")?;
+        link_ksud_to_bin();
+    }
 
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
