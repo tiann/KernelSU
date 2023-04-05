@@ -555,6 +555,10 @@ pub fn uninstall_module(id: &str) -> Result<()> {
                     }
                 })?;
             if module_id.eq(mid) {
+                let uninstall_script = path.join("uninstall.sh");
+                if uninstall_script.exists() {
+                    exec_script(uninstall_script, true)?;
+                }
                 remove_dir_all(path)?;
                 break;
             }
