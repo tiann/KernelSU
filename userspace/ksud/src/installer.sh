@@ -337,7 +337,7 @@ install_module() {
   [ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
 
   local MODDIRNAME=modules
-  $BOOTMODE && MODDIRNAME=ksu/modules_update
+  $BOOTMODE && MODDIRNAME=modules_update
   local MODULEROOT=$NVBASE/$MODDIRNAME
   MODID=`grep_prop id $TMPDIR/module.prop`
   MODNAME=`grep_prop name $TMPDIR/module.prop`

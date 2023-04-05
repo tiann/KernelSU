@@ -14,8 +14,8 @@ use log::{info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, set_permissions, File, OpenOptions, Permissions},
-    io::{Cursor, Write},
+    fs::{remove_dir_all, set_permissions, File, Permissions},
+    io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     str::FromStr,
@@ -152,32 +152,6 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     check_image(img)?;
 
     Ok(())
-}
-
-fn switch_cgroup(grp: &str, pid: u32) {
-    let path = Path::new(grp).join("cgroup.procs");
-    if !path.exists() {
-        return;
-    }
-
-    let fp = OpenOptions::new().append(true).open(path);
-    if let Ok(mut fp) = fp {
-        let _ = writeln!(fp, "{pid}");
-    }
-}
-
-fn switch_cgroups() {
-    let pid = std::process::id();
-    switch_cgroup("/acct", pid);
-    switch_cgroup("/dev/cg2_bpf", pid);
-    switch_cgroup("/sys/fs/cgroup", pid);
-
-    if getprop("ro.config.per_app_memcg")
-        .filter(|prop| prop == "false")
-        .is_none()
-    {
-        switch_cgroup("/dev/memcg/apps", pid);
-    }
 }
 
 pub fn load_sepolicy_rule() -> Result<()> {

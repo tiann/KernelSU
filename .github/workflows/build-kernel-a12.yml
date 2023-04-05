@@ -23,14 +23,8 @@ jobs:
         include:
           - sub_level: 66
             os_patch_level: 2021-11
-          - sub_level: 81
-            os_patch_level: 2022-03
-          - sub_level: 101
-            os_patch_level: 2022-05
-          - sub_level: 110
-            os_patch_level: 2022-07
-          - sub_level: 136
-            os_patch_level: 2022-11
+          - sub_level: 160
+            os_patch_level: 2023-02
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -111,7 +105,7 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
-      version_name: android12-5.10.101
-      tag: android12-5.10-2022-05
-      os_patch_level: 2022-05
+      version_name: android12-5.10.160
+      tag: android12-5.10-2023-02
+      os_patch_level: 2023-02
       patch_path: "5.10"
