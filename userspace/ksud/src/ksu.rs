@@ -212,10 +212,7 @@ pub fn root_shell() -> Result<()> {
 
     // add /data/adb/ksu/bin to PATH
     #[cfg(any(target_os = "linux", target_os = "android"))]
-    {
-        add_path_to_env("/data/adb/ksu/bin")?;
-        link_ksud_to_bin();
-    }
+    add_path_to_env(defs::BINARY_DIR)?;
 
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
@@ -250,15 +247,6 @@ fn add_path_to_env(path: &str) -> Result<()> {
     let new_path_env = env::join_paths(paths)?;
     env::set_var("PATH", new_path_env);
     Ok(())
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-fn link_ksud_to_bin() {
-    let ksu_bin = PathBuf::from("/data/adb/ksud");
-    let ksu_bin_link = PathBuf::from("/data/adb/ksu/bin/ksud");
-    if ksu_bin.exists() && !ksu_bin_link.exists() {
-        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link).unwrap();
-    }
 }
 
 pub fn get_version() -> i32 {
