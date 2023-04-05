@@ -215,10 +215,8 @@ pub fn root_shell() -> Result<()> {
     add_path_to_env(defs::BINARY_DIR)?;
 
     // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
-    if PathBuf::from(defs::KSURC_PATH).exists() {
-        if env::var("ENV").is_err() {
-            command = command.env("ENV", defs::KSURC_PATH);
-        }
+    if PathBuf::from(defs::KSURC_PATH).exists() && env::var("ENV").is_err() {
+        command = command.env("ENV", defs::KSURC_PATH);
     }
 
     // escape from the current cgroup and become session leader
