@@ -53,6 +53,7 @@ function sidebarGuide() {
           { text: 'Module Guide', link: '/guide/module.md' },
           { text: 'Rescue from bootloop', link: '/guide/rescue-from-bootloop.md' },
           { text: 'FAQ', link: '/guide/faq' },
+          { text: 'Hidden features', link: '/guide/hidden-features' },
         ]
     }
   ]
