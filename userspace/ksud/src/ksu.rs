@@ -214,6 +214,11 @@ pub fn root_shell() -> Result<()> {
     #[cfg(any(target_os = "linux", target_os = "android"))]
     add_path_to_env(defs::BINARY_DIR)?;
 
+    // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
+    if PathBuf::from(defs::KSURC_PATH).exists() && env::var("ENV").is_err() {
+        command = command.env("ENV", defs::KSURC_PATH);
+    }
+
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
     // command = command.process_group(0);
