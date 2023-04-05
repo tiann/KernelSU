@@ -73,7 +73,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
                         val date = format.format(Date())
                         val file = File(
-                            ksuApp.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                            ksuApp.getExternalPublicDir(Environment.DIRECTORY_DOWNLOADS),
                             "KernelSU_install_log_${date}.log"
                         )
                         file.writeText(text)
