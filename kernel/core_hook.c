@@ -76,8 +76,12 @@ void escape_to_root(void)
 #else
 	current_thread_info()->flags &= ~(TIF_SECCOMP | _TIF_SECCOMP);
 #endif
+
+#ifdef CONFIG_SECCOMP
 	current->seccomp.mode = 0;
 	current->seccomp.filter = NULL;
+#else
+#endif
 
 	// setgroup to root
 	if (cred->group_info)
