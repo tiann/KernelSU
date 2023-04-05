@@ -216,7 +216,7 @@ pub fn root_shell() -> Result<()> {
 
     // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
     if PathBuf::from(defs::KSURC_PATH).exists() {
-        if let Err(_) = env::var("ENV") {
+        if env::var("ENV").is_err() {
             command = command.env("ENV", defs::KSURC_PATH);
         }
     }
