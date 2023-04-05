@@ -6,6 +6,8 @@ use getopts::Options;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::{ffi::CStr, process::Command};
+use std::path::PathBuf;
+use std::env;
 
 use crate::{
     defs,
@@ -208,6 +210,10 @@ pub fn root_shell() -> Result<()> {
         }
     }
 
+    // add /data/adb/ksu/bin to PATH
+    add_path_to_env("/data/adb/ksu/bin")?;
+    link_ksud_to_bin();
+
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
     // command = command.process_group(0);
@@ -231,6 +237,23 @@ pub fn root_shell() -> Result<()> {
 
     command = command.args(args).arg0(arg0);
     Err(command.exec().into())
+}
+
+fn add_path_to_env(path: &str) -> Result<()>{
+    let mut paths = env::var_os("PATH").map_or(Vec::new(), |val| env::split_paths(&val).collect::<Vec<_>>());
+    let new_path = PathBuf::from(path);
+    paths.push(new_path);
+    let new_path_env = env::join_paths(paths)?;
+    env::set_var("PATH", new_path_env);
+    Ok(())
+}
+
+fn link_ksud_to_bin(){
+    let ksu_bin = PathBuf::from("/data/adb/ksud");
+    let ksu_bin_link = PathBuf::from("/data/adb/ksu/bin/ksud");
+    if ksu_bin.exists() && !ksu_bin_link.exists() {
+        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link).unwrap();
+    }
 }
 
 pub fn get_version() -> i32 {
