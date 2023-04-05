@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.installModule
 import me.weishu.kernelsu.ui.util.reboot
@@ -73,7 +72,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
                         val date = format.format(Date())
                         val file = File(
-                            ksuApp.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                             "KernelSU_install_log_${date}.log"
                         )
                         file.writeText(text)
