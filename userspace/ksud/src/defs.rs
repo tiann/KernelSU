@@ -4,6 +4,7 @@ pub const ADB_DIR: &str = "/data/adb/";
 pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
 pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
 
+pub const KSURC_PATH: &str = concatcp!(WORKING_DIR, ".ksurc");
 pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
 
 #[cfg(target_os = "android")]
