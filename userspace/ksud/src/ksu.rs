@@ -3,11 +3,11 @@ use anyhow::{Ok, Result};
 #[cfg(unix)]
 use anyhow::ensure;
 use getopts::Options;
+use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
-use std::{ffi::CStr, process::Command};
 use std::path::PathBuf;
-use std::env;
+use std::{ffi::CStr, process::Command};
 
 use crate::{
     defs,
@@ -242,8 +242,9 @@ pub fn root_shell() -> Result<()> {
     Err(command.exec().into())
 }
 
-fn add_path_to_env(path: &str) -> Result<()>{
-    let mut paths = env::var_os("PATH").map_or(Vec::new(), |val| env::split_paths(&val).collect::<Vec<_>>());
+fn add_path_to_env(path: &str) -> Result<()> {
+    let mut paths =
+        env::var_os("PATH").map_or(Vec::new(), |val| env::split_paths(&val).collect::<Vec<_>>());
     let new_path = PathBuf::from(path);
     paths.push(new_path);
     let new_path_env = env::join_paths(paths)?;
@@ -251,7 +252,8 @@ fn add_path_to_env(path: &str) -> Result<()>{
     Ok(())
 }
 
-fn link_ksud_to_bin(){
+#[cfg(any(target_os = "linux", target_os = "android"))]
+fn link_ksud_to_bin() {
     let ksu_bin = PathBuf::from("/data/adb/ksud");
     let ksu_bin_link = PathBuf::from("/data/adb/ksu/bin/ksud");
     if ksu_bin.exists() && !ksu_bin_link.exists() {
