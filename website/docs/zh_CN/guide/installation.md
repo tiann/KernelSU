@@ -89,7 +89,7 @@ PS. 这种方法在升级 KernelSU 的时候较为方便，无需电脑即可完
 
 ## 使用 KernelSU 提供的 boot.img 安装 {#install-by-kernelsu-boot-image}
 
-这张方法无需你有 TWRP，也不需要你的手机有 root 权限；适用于你初次安装 KernelSU。
+这种方法无需你有 TWRP，也不需要你的手机有 root 权限；适用于你初次安装 KernelSU。
 
 ### 找到合适的 boot.img {#found-propery-image}
 
