@@ -103,7 +103,11 @@ pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     use std::os::fd::AsRawFd;
     let path = format!("/proc/{pid}/ns/mnt");
     let fd = std::fs::File::open(path)?;
+    let current_dir = std::env::current_dir();
     let ret = unsafe { libc::setns(fd.as_raw_fd(), libc::CLONE_NEWNS) };
+    if let std::result::Result::Ok(current_dir) = current_dir {
+        let _ = std::env::set_current_dir(current_dir);
+    }
     ensure!(ret == 0, "switch mnt ns failed");
     Ok(())
 }
