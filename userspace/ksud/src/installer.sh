@@ -434,7 +434,7 @@ install_module() {
 [ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
 [ -z $BOOTMODE ] && BOOTMODE=false
 
-NVBASE=/data/adb/ksu
+NVBASE=/data/adb
 TMPDIR=/dev/tmp
 
 # Some modules dependents on this
