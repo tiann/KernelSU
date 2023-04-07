@@ -3,8 +3,8 @@ use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
 use crate::{
-    assets, defs, mount,
-    utils::{self, ensure_clean_dir, ensure_dir_exists}, restorecon,
+    assets, defs, mount, restorecon,
+    utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
 fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
