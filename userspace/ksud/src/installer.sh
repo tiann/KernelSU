@@ -389,10 +389,6 @@ install_module() {
     [ -f $MODPATH/customize.sh ] && . $MODPATH/customize.sh
   fi
 
-  handle_partition vendor
-  handle_partition system_ext
-  handle_partition product
-
   # Handle replace folders
   for TARGET in $REPLACE; do
     ui_print "- Replace target: $TARGET"
@@ -404,6 +400,10 @@ install_module() {
     ui_print "- Remove target: $TARGET"
     mark_remove $MODPATH$TARGET
   done
+
+  handle_partition vendor
+  handle_partition system_ext
+  handle_partition product
 
   if $BOOTMODE; then
     mktouch $NVBASE/modules/$MODID/update
