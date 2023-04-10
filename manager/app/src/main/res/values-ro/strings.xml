@@ -3,7 +3,7 @@
     <string name="home">Acasă</string>
     <string name="home_not_installed">Nu este instalat</string>
     <string name="home_click_to_install">Click pentru a instala</string>
-    <string name="home_working">Se procesează</string>
+    <string name="home_working">Funcționează</string>
     <string name="home_working_version">Versiune: %d</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
@@ -29,7 +29,7 @@
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
 
-    <string name="module">Modul</string>
+    <string name="module">Module</string>
     <string name="uninstall">Dezinstalează</string>
     <string name="module_install">Instalează</string>
     <string name="install">Instalează</string>

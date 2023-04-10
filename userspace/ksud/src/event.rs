@@ -3,7 +3,7 @@ use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
 use crate::{
-    assets, defs, mount,
+    assets, defs, mount, restorecon,
     utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
@@ -246,7 +246,23 @@ pub fn daemon() -> Result<()> {
 pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
-
+    restorecon::setcon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
     // install binary assets
-    assets::ensure_binaries().with_context(|| "Failed to extract assets")
+    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
+
+    #[cfg(target_os = "android")]
+    link_ksud_to_bin()?;
+
+    Ok(())
+}
+
+#[cfg(target_os = "android")]
+fn link_ksud_to_bin() -> Result<()> {
+    use std::path::PathBuf;
+    let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
+    let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
+    if ksu_bin.exists() && !ksu_bin_link.exists() {
+        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link)?;
+    }
+    Ok(())
 }

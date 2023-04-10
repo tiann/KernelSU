@@ -23,6 +23,16 @@ jobs:
         include:
           - sub_level: 66
             os_patch_level: 2021-11
+          - sub_level: 81
+            os_patch_level: 2022-03
+          - sub_level: 101
+            os_patch_level: 2022-05
+          - sub_level: 110
+            os_patch_level: 2022-07
+          - sub_level: 136
+            os_patch_level: 2022-11
+          - sub_level: 149
+            os_patch_level: 2023-01
           - sub_level: 160
             os_patch_level: 2023-02
     uses: ./.github/workflows/gki-kernel.yml

@@ -7,8 +7,8 @@ use anyhow::{Context, Ok};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use extattr::{setxattr, Flags as XattrFlags};
 
-const SYSTEM_CON: &str = "u:object_r:system_file:s0";
-const _ADB_CON: &str = "u:object_r:adb_data_file:s0";
+pub const SYSTEM_CON: &str = "u:object_r:system_file:s0";
+pub const ADB_CON: &str = "u:object_r:adb_data_file:s0";
 const SELINUX_XATTR: &str = "security.selinux";
 
 pub fn setcon<P: AsRef<Path>>(path: P, con: &str) -> Result<()> {

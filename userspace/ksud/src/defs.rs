@@ -1,11 +1,14 @@
 use const_format::concatcp;
 
 pub const ADB_DIR: &str = "/data/adb/";
-
-pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
-
 pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
 pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
+
+pub const KSURC_PATH: &str = concatcp!(WORKING_DIR, ".ksurc");
+pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
+
+#[cfg(target_os = "android")]
+pub const DAEMON_LINK_PATH: &str = concatcp!(BINARY_DIR, "ksud");
 
 pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
 pub const MODULE_IMG: &str = concatcp!(WORKING_DIR, "modules.img");

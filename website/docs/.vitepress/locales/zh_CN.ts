@@ -53,6 +53,7 @@ function sidebarGuide() {
           { text: '模块开发指南', link: '/zh_CN/guide/module.md' },
           { text: '救砖', link: '/zh_CN/guide/rescue-from-bootloop.md' },
           { text: '常见问题', link: '/zh_CN/guide/faq' },
+          { text: '隐藏功能', link: '/zh_CN/guide/hidden-features' },
         ]
     }
   ]

@@ -3,8 +3,10 @@ use anyhow::{Ok, Result};
 #[cfg(unix)]
 use anyhow::ensure;
 use getopts::Options;
+use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
+use std::path::PathBuf;
 use std::{ffi::CStr, process::Command};
 
 use crate::{
@@ -84,7 +86,7 @@ pub fn root_shell() -> Result<()> {
         "COMMAND",
     );
     opts.optflag("h", "help", "display this help message and exit");
-    opts.optflag("l", "login", "force run in the global mount namespace");
+    opts.optflag("l", "login", "pretend the shell to be a login shell");
     opts.optflag(
         "p",
         "preserve-environment",
@@ -208,6 +210,15 @@ pub fn root_shell() -> Result<()> {
         }
     }
 
+    // add /data/adb/ksu/bin to PATH
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    add_path_to_env(defs::BINARY_DIR)?;
+
+    // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
+    if PathBuf::from(defs::KSURC_PATH).exists() && env::var("ENV").is_err() {
+        command = command.env("ENV", defs::KSURC_PATH);
+    }
+
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
     // command = command.process_group(0);
@@ -231,6 +242,16 @@ pub fn root_shell() -> Result<()> {
 
     command = command.args(args).arg0(arg0);
     Err(command.exec().into())
+}
+
+fn add_path_to_env(path: &str) -> Result<()> {
+    let mut paths =
+        env::var_os("PATH").map_or(Vec::new(), |val| env::split_paths(&val).collect::<Vec<_>>());
+    let new_path = PathBuf::from(path);
+    paths.push(new_path);
+    let new_path_env = env::join_paths(paths)?;
+    env::set_var("PATH", new_path_env);
+    Ok(())
 }
 
 pub fn get_version() -> i32 {
