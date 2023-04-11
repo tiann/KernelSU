@@ -54,7 +54,7 @@ jobs:
       - name: Install Build Tools
         run: |
           sudo apt update
-          sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
+          sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
           export LLVM_VERSION=12
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
@@ -105,6 +105,10 @@ jobs:
           echo "[+] Apply KernelSU patches"
           cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/${{ matrix.kernel_version }}/*.patch
           echo "[+] KernelSU setup done."
+          cd $GITHUB_WORKSPACE/KernelSU
+          VERSION=$(($(git rev-list --count HEAD) + 10200))
+          echo "VERSION: $VERSION"
+          echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
 
       - name: Build Kernel
         working-directory: WSA-Linux-Kernel
@@ -112,9 +116,34 @@ jobs:
           cp configs/wsa/${{ matrix.make_config }} .config
           make olddefconfig
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
+          echo "file_path=WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
         uses: actions/upload-artifact@v3
         with:
           name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
-          path: WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}
+          path: "${{ env.file_path }}"
+
+      - name: Post to Telegram
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        working-directory: WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}    
+        run: |
+          TITLE=kernel-${{ matrix.arch }}-WSA-${{ matrix.version }}
+          echo "[+] title: $TITLE"
+          export TITLE
+          export VERSION="${{ env.kernelsu_version }}"
+          echo "[+] Compress images"
+          $GZIP -n -f -9 "${{ env.file_path }}"
+          echo "[+] Image to upload"
+          find . -type f -name "*.gz"
+          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
+          fi
