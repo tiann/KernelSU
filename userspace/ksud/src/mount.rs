@@ -247,6 +247,7 @@ pub struct StockMount {
     mnt: String,
     #[cfg(any(target_os = "linux", target_os = "android"))]
     mountlist: Vec<(proc_mounts::MountInfo, std::path::PathBuf)>,
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     rootmount: sys_mount::Mount,
 }
 
@@ -261,11 +262,11 @@ impl StockMount {
         mounts.sort_by(|a, b| b.dest.cmp(&a.dest)); // inverse order
 
         let mntroot = std::path::Path::new(crate::defs::STOCK_MNT_ROOT);
-        utils::ensure_dir_exists(&mntroot)?;
+        utils::ensure_dir_exists(mntroot)?;
         log::info!("stock mount root: {}", mntroot.display());
 
         let rootdir = mntroot.join(
-            mnt.strip_prefix("/")
+            mnt.strip_prefix('/')
                 .ok_or(anyhow::anyhow!("invalid mnt: {}!", mnt))?,
         );
         utils::ensure_dir_exists(&rootdir)?;
@@ -290,7 +291,7 @@ impl StockMount {
             log::info!("bind stock mount: {} -> {}", dest.display(), path.display());
             Mount::builder()
                 .flags(MountFlags::BIND)
-                .mount(&dest, &path)?;
+                .mount(dest, &path)?;
 
             ms.push((m.clone(), path));
         }
@@ -315,7 +316,7 @@ impl StockMount {
                 .mount(&src, &dst);
             if let Err(e) = mount_result {
                 log::error!("remount failed: {}", e);
-                result = Err(e);
+                result = Err(e.into());
             } else {
                 log::info!(
                     "remount {}({}) -> {} succeed!",
