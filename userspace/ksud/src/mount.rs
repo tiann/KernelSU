@@ -168,9 +168,6 @@ impl StockOverlay {
         unimplemented!()
     }
 
-    pub fn umount_all(&self) {
-        unimplemented!()
-    }
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -236,19 +233,6 @@ impl StockOverlay {
                     overlay_opts.join(",")
                 );
             }
-        }
-    }
-
-    pub fn umount_all(&self) {
-        log::info!("stock overlay: umount all: {:?}", self.mountinfos);
-        for mnt in &self.mountinfos {
-            let Some(p) = mnt.mount_point.to_str() else {
-                log::warn!("Failed to umount: {}", mnt.mount_point.display());
-                continue;
-            };
-
-            let result = umount_dir(p);
-            log::info!("stock umount {}: {:?}", p, result);
         }
     }
 }

@@ -185,9 +185,8 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // Finally, we should do systemless mount
-    // But we should umount all stock overlayfs and remount them after module mounted
+    // But we should backup all stock overlayfs and remount them after module mounted
     let stock_overlay = mount::StockOverlay::new();
-    stock_overlay.umount_all();
 
     // mount moduke systemlessly by overlay
     if let Err(e) = mount_systemlessly(module_dir) {
