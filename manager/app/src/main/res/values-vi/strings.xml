@@ -1,4 +1,7 @@
 <resources>
+    <string name="module_magisk_conflict">"Các mô-đun bị vô hiệu hóa vì nó xung đột với Magisk!"</string>
+    <string name="module_uninstall_confirm">Bạn có chắc chắn muốn gỡ cài đặt mô-đun %s?</string>
+    <string name="send_log">Gửi nhật ký</string>
     <string name="home">Trang chủ</string>
     <string name="home_not_installed">Chưa được cài đặt</string>
     <string name="home_click_to_install">Nhấn đề cài dặt</string>
