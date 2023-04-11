@@ -69,6 +69,69 @@ void on_post_fs_data(void)
 	stop_input_hook();
 }
 
+#define MAX_ARG_STRINGS 0x7FFFFFFF
+struct user_arg_ptr {
+#ifdef CONFIG_COMPAT
+	bool is_compat;
+#endif
+	union {
+		const char __user *const __user *native;
+#ifdef CONFIG_COMPAT
+		const compat_uptr_t __user *compat;
+#endif
+	} ptr;
+};
+
+static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
+{
+	const char __user *native;
+
+#ifdef CONFIG_COMPAT
+	if (unlikely(argv.is_compat)) {
+		compat_uptr_t compat;
+
+		if (get_user(compat, argv.ptr.compat + nr))
+			return ERR_PTR(-EFAULT);
+
+		return compat_ptr(compat);
+	}
+#endif
+
+	if (get_user(native, argv.ptr.native + nr))
+		return ERR_PTR(-EFAULT);
+
+	return native;
+}
+
+/*
+ * count() counts the number of strings in array ARGV.
+ */
+static int count(struct user_arg_ptr argv, int max)
+{
+	int i = 0;
+
+	if (argv.ptr.native != NULL) {
+		for (;;) {
+			const char __user *p = get_user_arg_ptr(argv, i);
+
+			if (!p)
+				break;
+
+			if (IS_ERR(p))
+				return -EFAULT;
+
+			if (i >= max)
+				return -E2BIG;
+			++i;
+
+			if (fatal_signal_pending(current))
+				return -ERESTARTNOHAND;
+			cond_resched();
+		}
+	}
+	return i;
+}
+
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     void *argv, void *envp, int *flags)
 {
@@ -82,7 +145,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	static const char app_process[] = "/system/bin/app_process";
 	static bool first_app_process = true;
 	static const char system_bin_init[] = "/system/bin/init";
-	static int init_count = 0;
+	static bool init_second_stage_executed = false;
 
 	if (!filename_ptr)
 		return 0;
@@ -95,18 +158,34 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	if (!memcmp(filename->name, system_bin_init,
 		    sizeof(system_bin_init) - 1)) {
 		// /system/bin/init executed
-		if (++init_count == 2) {
-			// 1: /system/bin/init selinux_setup
-			// 2: /system/bin/init second_stage
-			pr_info("/system/bin/init second_stage executed\n");
-			apply_kernelsu_rules();
+		struct user_arg_ptr *ptr = (struct user_arg_ptr*) argv;
+		int argc = count(*ptr, MAX_ARG_STRINGS);
+		pr_info("/system/bin/init argc: %d\n", argc);
+		if (argc > 1 && !init_second_stage_executed) {
+			const char __user *p = get_user_arg_ptr(*ptr, 1);
+			if (p && !IS_ERR(p)) {
+				char first_arg[16];
+				#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
+				strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
+				#else
+				strncpy_from_unsafe_user(first_arg, p, sizeof(first_arg));
+				#endif
+				pr_info("first arg: %s\n", first_arg);
+				if (!strcmp(first_arg, "second_stage")) {
+					pr_info("/system/bin/init second_stage executed\n");
+					apply_kernelsu_rules();
+					init_second_stage_executed = true;
+				}
+			} else {
+				pr_err("/system/bin/init parse args err!\n");
+			}
 		}
 	}
 
 	if (first_app_process &&
 	    !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
 		first_app_process = false;
-		pr_info("exec app_process, /data prepared!\n");
+		pr_info("exec app_process, /data prepared, second_stage: %d\n", init_second_stage_executed);
 		on_post_fs_data(); // we keep this for old ksud
 		stop_execve_hook();
 	}
