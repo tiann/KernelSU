@@ -12,6 +12,8 @@ use procfs::process::{MountInfo, Process};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::collections::HashSet;
 
+use crate::utils;
+
 pub struct AutoMountExt4 {
     mnt: String,
     #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -167,7 +169,6 @@ impl StockOverlay {
     pub fn mount_all(&self) {
         unimplemented!()
     }
-
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -245,61 +246,92 @@ impl StockOverlay {
 pub struct StockMount {
     mnt: String,
     #[cfg(any(target_os = "linux", target_os = "android"))]
-    mountlist: proc_mounts::MountList,
+    mountlist: Vec<(proc_mounts::MountInfo, std::path::PathBuf)>,
+    rootmount: sys_mount::Mount,
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 impl StockMount {
     pub fn new(mnt: &str) -> Result<Self> {
         let mountlist = proc_mounts::MountList::new()?;
-        Ok(Self {
-            mnt: mnt.to_string(),
-            mountlist,
-        })
-    }
-
-    fn get_target_mounts(&self) -> Vec<&proc_mounts::MountInfo> {
-        let mut mounts = self
-            .mountlist
-            .destination_starts_with(std::path::Path::new(&self.mnt))
+        let mut mounts = mountlist
+            .destination_starts_with(std::path::Path::new(mnt))
             .filter(|m| m.fstype != "overlay" && m.fstype != "rootfs")
             .collect::<Vec<_>>();
         mounts.sort_by(|a, b| b.dest.cmp(&a.dest)); // inverse order
-        mounts
+
+        let mntroot = std::path::Path::new(crate::defs::STOCK_MNT_ROOT);
+        utils::ensure_dir_exists(&mntroot)?;
+        log::info!("stock mount root: {}", mntroot.display());
+
+        let rootdir = mntroot.join(
+            mnt.strip_prefix("/")
+                .ok_or(anyhow::anyhow!("invalid mnt: {}!", mnt))?,
+        );
+        utils::ensure_dir_exists(&rootdir)?;
+        let rootmount = Mount::builder().fstype("tmpfs").mount("tmpfs", &rootdir)?;
+
+        let mut ms = vec![];
+        for m in mounts {
+            let dest = &m.dest;
+            if dest == std::path::Path::new(mnt) {
+                continue;
+            }
+
+            let path = rootdir.join(dest.strip_prefix("/")?);
+            log::info!("rootdir: {}, path: {}", rootdir.display(), path.display());
+            if dest.is_dir() {
+                utils::ensure_dir_exists(&path)?;
+            } else if dest.is_file() {
+                utils::ensure_file_exists(&path)?;
+            } else {
+                log::warn!("unknown file type: {:?}", dest);
+            }
+            log::info!("bind stock mount: {} -> {}", dest.display(), path.display());
+            Mount::builder()
+                .flags(MountFlags::BIND)
+                .mount(&dest, &path)?;
+
+            ms.push((m.clone(), path));
+        }
+
+        Ok(Self {
+            mnt: mnt.to_string(),
+            mountlist: ms,
+            rootmount,
+        })
     }
 
-    pub fn remount(&self) -> Result<()> {
-        let mut mounts = self.get_target_mounts();
-        mounts.reverse(); // remount it in order
-        log::info!("remount stock for {} : {:?}", self.mnt, mounts);
-        for m in mounts {
-            let src = std::fs::canonicalize(&m.source)?;
+    // Yes, we move self here!
+    pub fn remount(self) -> Result<()> {
+        log::info!("remount stock for {} : {:?}", self.mnt, self.mountlist);
+        let mut result = Ok(());
+        for (m, src) in self.mountlist {
+            let dst = m.dest;
 
-            let src = src.to_str().ok_or(anyhow::anyhow!("Failed to get src"))?;
-            let dst = m
-                .dest
-                .to_str()
-                .ok_or(anyhow::anyhow!("Failed to get dst"))?;
-
-            let fstype = m.fstype.as_str();
-            let options = m.options.join(",");
-
-            log::info!("begin remount: {src} -> {dst}");
-            let result = std::process::Command::new("mount")
-                .arg("-t")
-                .arg(fstype)
-                .arg("-o")
-                .arg(options)
-                .arg(src)
-                .arg(dst)
-                .status();
-            if let Err(e) = result {
+            log::info!("begin remount: {} -> {}", src.display(), dst.display());
+            let mount_result = Mount::builder()
+                .flags(MountFlags::BIND | MountFlags::MOVE)
+                .mount(&src, &dst);
+            if let Err(e) = mount_result {
                 log::error!("remount failed: {}", e);
+                result = Err(e);
             } else {
-                log::info!("remount {src} -> {dst} succeed!");
+                log::info!(
+                    "remount {}({}) -> {} succeed!",
+                    m.source.display(),
+                    src.display(),
+                    dst.display()
+                );
             }
         }
-        Ok(())
+
+        // umount the root tmpfs mount
+        if let Err(e) = self.rootmount.unmount(UnmountFlags::DETACH) {
+            log::warn!("umount root mount failed: {}", e);
+        }
+
+        result
     }
 }
 
