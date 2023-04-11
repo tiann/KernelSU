@@ -1,9 +1,9 @@
-name: Build WSA-5.10.117-Kernel
+name: Build WSA-5.1x-Kernel
 on:
   push:
     branches: ["main"]
     paths:
-      - ".github/workflows/build-WSA-5.10.117-kernel.yml"
+      - ".github/workflows/build-WSA-5.1x-kernel.yml"
       - "kernel/**"
   pull_request:
     branches: ["main"]
@@ -17,22 +17,37 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: [5.10.117.2]
+        version: ["5.10.117.2", "5.15.78.1"]
         include:
-          - file_name: "bzImage"
-            make_config: "config-wsa"
-            arch: x86_64
-          - file_name: "Image"
+          - arch: x86_64
+            file_name: "bzImage"
+          - arch: arm64
+            file_name: "Image"
             cross_compile: "aarch64-linux-gnu"
-            make_config: "config-wsa-arm64"
+          - version: "5.10.117.2"
+            arch: x86_64
+            make_config: config-wsa-5.10
+          - version: "5.10.117.2"
             arch: arm64
+            make_config: config-wsa-arm64-5.10
+          - version: "5.15.78.1"
+            arch: x86_64
+            make_config: config-wsa-x64
+          - version: "5.15.78.1"
+            arch: arm64
+            make_config: config-wsa-arm64
+          - version: "5.10.117.2"
+            device_code: latte
+            kernel_version: "5.10"
+          - version: "5.15.78.1"
+            device_code: latte-2
+            kernel_version: "5.15"
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
-      CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
 
     steps:
@@ -66,14 +81,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: microsoft/WSA-Linux-Kernel
-          ref: android-lts/latte/${{ matrix.version }}
+          ref: android-lts/${{ matrix.device_code }}/${{ matrix.version }}
           path: WSA-Linux-Kernel
 
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
-          save: ${{ github.event_name != 'pull_request' }}
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          max-size: 2G
 
       - name: Setup KernelSU
         working-directory: WSA-Linux-Kernel
@@ -87,13 +103,14 @@ jobs:
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/${{ matrix.kernel_version }}/*.patch
           echo "[+] KernelSU setup done."
 
       - name: Build Kernel
         working-directory: WSA-Linux-Kernel
         run: |
-          cp configs/wsa/${{ matrix.make_config }}-5.10 .config
+          cp configs/wsa/${{ matrix.make_config }} .config
+          make olddefconfig
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
