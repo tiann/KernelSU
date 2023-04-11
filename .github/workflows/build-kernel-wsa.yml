@@ -1,9 +1,9 @@
-name: Build WSA-5.1x-Kernel
+name: Build Kernel - WSA
 on:
   push:
     branches: ["main"]
     paths:
-      - ".github/workflows/build-WSA-5.1x-kernel.yml"
+      - ".github/workflows/build-kernel-wsa.yml"
       - "kernel/**"
   pull_request:
     branches: ["main"]
