@@ -145,5 +145,6 @@ jobs:
           echo "[+] Image to upload"
           find . -type f -name "*.gz"
           if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            pip3 install python-telegram-bot
             python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
           fi
