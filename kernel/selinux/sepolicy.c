@@ -7,6 +7,15 @@
 #include "../klog.h" // IWYU pragma: keep
 #include "ss/symtab.h"
 
+/* Huawei Hisi Kernel Enable or Disable Flag */
+int hw_flag;
+#if IS_ENABLED(CONFIG_HISILICON_PLATFORM) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) && LINUX_VERSION_CODE <= KERNEL_VERSION(4, 9, 999)
+      hw_flag = 1;
+#else
+      hw_flag = 0;
+#endif
+
+
 #define KSU_SUPPORT_ADD_TYPE
 
 //////////////////////////////////////////////////////
@@ -680,6 +689,53 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	}
 
 	return true;
+/* Modify For Huawei */
+#elif hw_flag == 1
+    size_t new_size = sizeof(struct ebitmap) * db->p_types.nprim;
+	struct ebitmap *new_type_attr_map =
+		(krealloc(db->type_attr_map, new_size, GFP_ATOMIC));
+
+	struct type_datum **new_type_val_to_struct =
+		krealloc(db->type_val_to_struct,
+			 sizeof(*db->type_val_to_struct) * db->p_types.nprim,
+			 GFP_ATOMIC);
+
+	if (!new_type_attr_map) {
+		pr_err("add_type: alloc type_attr_map failed\n");
+		return false;
+	}
+
+	if (!new_type_val_to_struct) {
+		pr_err("add_type: alloc type_val_to_struct failed\n");
+		return false;
+	}
+
+	char **new_val_to_name_types =
+		krealloc(db->sym_val_to_name[SYM_TYPES],
+			 sizeof(char *) * db->symtab[SYM_TYPES].nprim,
+			 GFP_KERNEL);
+	if (!new_val_to_name_types) {
+		pr_err("add_type: alloc val_to_name failed\n");
+		return false;
+	}
+
+	db->type_attr_map = new_type_attr_map;
+	ebitmap_init(&db->type_attr_map[value - 1],HISI_SELINUX_EBITMAP_RO);
+	ebitmap_set_bit(&db->type_attr_map[value - 1], value - 1, 1);
+
+	db->type_val_to_struct = new_type_val_to_struct;
+	db->type_val_to_struct[value - 1] = type;
+
+	db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
+	db->sym_val_to_name[SYM_TYPES][value - 1] = key;
+
+	int i;
+	for (i = 0; i < db->p_roles.nprim; ++i) {
+		ebitmap_set_bit(&db->role_val_to_struct[i]->types, value - 1,
+				0);
+	}
+
+	return true;
 #else
 	// flex_array is not extensible, we need to create a new bigger one instead
 	struct flex_array *new_type_attr_map_array = flex_array_alloc(sizeof(struct ebitmap),
@@ -823,8 +879,12 @@ static bool set_type_state(struct policydb *db, const char *type_name,
 static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 				  struct type_datum *attr)
 {
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
+	/* Modify For Huawei */
+#elif hw_flag == 1
+struct ebitmap *sattr = &db->type_attr_map[type->value - 1],HISI_SELINUX_EBITMAP_RO;
 #else
 	struct ebitmap *sattr =
 		flex_array_get(db->type_attr_map_array, type->value - 1);
