@@ -778,7 +778,13 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	}
 
 	return true;
-/* Modify For Huawei */
+
+
+/*
+Modify For Huawei ,
+Huawei use type_attr_map and type_val_to_struct.
+And use ebitmap not flex_array.
+*/
 #elif hw_flag == 1
 	size_t new_size = sizeof(struct ebitmap) * db->p_types.nprim;
 	struct ebitmap *new_type_attr_map =
@@ -993,7 +999,10 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
-	/* Modify For Huawei */
+	/* 
+	Modify For Huawei ,
+	HISI_SELINUX_EBITMAP_RO is Huawei's unique features.
+	*/
 #elif hw_flag == 1
 	struct ebitmap *sattr = &db->type_attr_map[type->value - 1], HISI_SELINUX_EBITMAP_RO;
 #else
