@@ -141,7 +141,7 @@ jobs:
           export TITLE
           export VERSION="${{ env.kernelsu_version }}"
           echo "[+] Compress images"
-          $GZIP -n -f -9 "${{ env.file_path }}"
+          gzip -n -f -9 "${{ env.file_path }}"
           echo "[+] Image to upload"
           find . -type f -name "*.gz"
           if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
