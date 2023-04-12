@@ -1,4 +1,4 @@
-use anyhow::{Ok, Result};
+use anyhow::{bail, Ok, Result};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -259,10 +259,7 @@ impl StockMount {
             .destination_starts_with(std::path::Path::new(mnt))
             .filter(|m| m.fstype != "overlay" && m.fstype != "rootfs")
             .collect::<Vec<_>>();
-
-        // sort it by dest length, so we can mount it in order
-        // TODO: there are maybe submounts, we don't need to mount them, so we can skip them.
-        mounts.sort_by(|a, b| a.dest.as_os_str().len().cmp(&b.dest.as_os_str().len()));
+        mounts.sort_by(|a, b| b.dest.cmp(&a.dest)); // inverse order
 
         let mntroot = std::path::Path::new(crate::defs::STOCK_MNT_ROOT);
         utils::ensure_dir_exists(mntroot)?;
@@ -285,16 +282,29 @@ impl StockMount {
             let path = rootdir.join(dest.strip_prefix("/")?);
             log::info!("rootdir: {}, path: {}", rootdir.display(), path.display());
             if dest.is_dir() {
-                utils::ensure_dir_exists(&path)?;
+                utils::ensure_dir_exists(&path)
+                    .with_context(|| format!("Failed to create dir: {}", path.display(),))?;
             } else if dest.is_file() {
-                utils::ensure_file_exists(&path)?;
+                if !path.exists() {
+                    let parent = path
+                        .parent()
+                        .with_context(|| format!("Failed to get parent: {}", path.display()))?;
+                    utils::ensure_dir_exists(parent).with_context(|| {
+                        format!("Failed to create parent: {}", parent.display())
+                    })?;
+                    std::fs::File::create(&path)
+                        .with_context(|| format!("Failed to create file: {}", path.display(),))?;
+                }
             } else {
-                log::warn!("unknown file type: {:?}", dest);
+                bail!("unknown file type: {:?}", dest)
             }
             log::info!("bind stock mount: {} -> {}", dest.display(), path.display());
             Mount::builder()
                 .flags(MountFlags::BIND)
-                .mount(dest, &path)?;
+                .mount(dest, &path)
+                .with_context(|| {
+                    format!("Failed to mount: {} -> {}", dest.display(), path.display())
+                })?;
 
             ms.push((m.clone(), path));
         }

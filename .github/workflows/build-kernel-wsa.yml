@@ -1,13 +1,14 @@
-name: Build WSA-5.10.117-Kernel
+name: Build Kernel - WSA
 on:
   push:
     branches: ["main"]
     paths:
-      - ".github/workflows/build-WSA-5.10.117-kernel.yml"
+      - ".github/workflows/build-kernel-wsa.yml"
       - "kernel/**"
   pull_request:
     branches: ["main"]
     paths:
+      - ".github/workflows/build-kernel-wsa.yml"
       - "kernel/**"
   workflow_call:
   workflow_dispatch:
@@ -17,29 +18,44 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: [5.10.117.2]
+        version: ["5.10.117.2", "5.15.78.1"]
         include:
-          - file_name: "bzImage"
-            make_config: "config-wsa"
-            arch: x86_64
-          - file_name: "Image"
+          - arch: x86_64
+            file_name: "bzImage"
+          - arch: arm64
+            file_name: "Image"
             cross_compile: "aarch64-linux-gnu"
-            make_config: "config-wsa-arm64"
+          - version: "5.10.117.2"
+            arch: x86_64
+            make_config: config-wsa-5.10
+          - version: "5.10.117.2"
             arch: arm64
+            make_config: config-wsa-arm64-5.10
+          - version: "5.15.78.1"
+            arch: x86_64
+            make_config: config-wsa-x64
+          - version: "5.15.78.1"
+            arch: arm64
+            make_config: config-wsa-arm64
+          - version: "5.10.117.2"
+            device_code: latte
+            kernel_version: "5.10"
+          - version: "5.15.78.1"
+            device_code: latte-2
+            kernel_version: "5.15"
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
-      CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
 
     steps:
       - name: Install Build Tools
         run: |
           sudo apt update
-          sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget
+          sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
           export LLVM_VERSION=12
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
@@ -66,14 +82,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: microsoft/WSA-Linux-Kernel
-          ref: android-lts/latte/${{ matrix.version }}
+          ref: android-lts/${{ matrix.device_code }}/${{ matrix.version }}
           path: WSA-Linux-Kernel
 
       - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
-          save: ${{ github.event_name != 'pull_request' }}
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          max-size: 2G
 
       - name: Setup KernelSU
         working-directory: WSA-Linux-Kernel
@@ -87,17 +104,47 @@ jobs:
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/${{ matrix.kernel_version }}/*.patch
           echo "[+] KernelSU setup done."
+          cd $GITHUB_WORKSPACE/KernelSU
+          VERSION=$(($(git rev-list --count HEAD) + 10200))
+          echo "VERSION: $VERSION"
+          echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
 
       - name: Build Kernel
         working-directory: WSA-Linux-Kernel
         run: |
-          cp configs/wsa/${{ matrix.make_config }}-5.10 .config
+          cp configs/wsa/${{ matrix.make_config }} .config
+          make olddefconfig
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
+          echo "file_path=WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
         uses: actions/upload-artifact@v3
         with:
           name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
-          path: WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}
+          path: "${{ env.file_path }}"
+
+      - name: Post to Telegram
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}    
+        run: |
+          TITLE=kernel-${{ matrix.arch }}-WSA-${{ matrix.version }}
+          echo "[+] title: $TITLE"
+          export TITLE
+          export VERSION="${{ env.kernelsu_version }}"
+          echo "[+] Compress images"
+          gzip -n -f -9 "${{ env.file_path }}"
+          echo "[+] Image to upload"
+          ls -l "${{ env.file_path }}.gz"
+          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            pip3 install python-telegram-bot
+            python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
+          fi
