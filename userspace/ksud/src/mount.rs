@@ -285,8 +285,16 @@ impl StockMount {
                 utils::ensure_dir_exists(&path)
                     .with_context(|| format!("Failed to create dir: {}", path.display(),))?;
             } else if dest.is_file() {
-                utils::ensure_file_exists(&path)
-                    .with_context(|| format!("Failed to create file: {}", path.display(),))?;
+                if !path.exists() {
+                    let parent = path
+                        .parent()
+                        .with_context(|| format!("Failed to get parent: {}", path.display()))?;
+                    utils::ensure_dir_exists(parent).with_context(|| {
+                        format!("Failed to create parent: {}", parent.display())
+                    })?;
+                    std::fs::File::create(&path)
+                        .with_context(|| format!("Failed to create file: {}", path.display(),))?;
+                }
             } else {
                 bail!("unknown file type: {:?}", dest)
             }
