@@ -21,6 +21,14 @@ private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
 }
 
+object KsuCli {
+    val SHELL: Shell = createRootShell()
+}
+
+fun getRootShell(): Shell {
+    return KsuCli.SHELL
+}
+
 fun createRootShell(): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
     val builder = Shell.Builder.create()
@@ -33,7 +41,7 @@ fun createRootShell(): Shell {
 }
 
 fun execKsud(args: String): Boolean {
-    val shell = createRootShell()
+    val shell = getRootShell()
     return ShellUtils.fastCmdResult(shell, "${getKsuDaemonPath()} $args")
 }
 
@@ -44,7 +52,7 @@ fun install() {
 }
 
 fun listModules(): String {
-    val shell = createRootShell()
+    val shell = getRootShell()
 
     val out = shell.newJob().add("${getKsuDaemonPath()} module list").to(ArrayList(), null).exec().out
     return out.joinToString("\n").ifBlank { "[]" }
@@ -77,7 +85,7 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
         }
         val cmd = "module install ${file.absolutePath}"
 
-        val shell = createRootShell()
+        val shell = getRootShell()
 
         val callbackList: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
@@ -96,7 +104,7 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
 }
 
 fun reboot(reason: String = "") {
-    val shell = createRootShell()
+    val shell = getRootShell()
     if (reason == "recovery") {
         // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
         ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
@@ -105,13 +113,13 @@ fun reboot(reason: String = "") {
 }
 
 fun overlayFsAvailable(): Boolean {
-    val shell = createRootShell()
+    val shell = getRootShell()
     // check /proc/filesystems
     return ShellUtils.fastCmdResult(shell, "cat /proc/filesystems | grep overlay")
 }
 
 fun hasMagisk(): Boolean {
-    val shell = createRootShell()
+    val shell = getRootShell()
     val result = shell.newJob().add("nsenter --mount=/proc/1/ns/mnt which magisk").exec()
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess

@@ -28,7 +28,7 @@ fun getBugreportFile(context: Context): File {
     val appListFile = File(bugreportDir, "app_list.txt")
     val propFile = File(bugreportDir, "props.txt")
 
-    val shell = createRootShell()
+    val shell = getRootShell()
 
     shell.newJob().add("dmesg > ${dmesgFile.absolutePath}").exec()
     shell.newJob().add("logcat -d > ${logcatFile.absolutePath}").exec()

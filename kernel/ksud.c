@@ -166,10 +166,12 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
 				#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-				strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-				#else
-				strncpy_from_unsafe_user(first_arg, p, sizeof(first_arg));
-				#endif
+                                strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
+                                #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0)
+                                strncpy_from_unsafe_user(first_arg, p, sizeof(first_arg));
+                                #else
+                                strncpy_from_user(first_arg, p, sizeof(first_arg));
+                                #endif
 				pr_info("first arg: %s\n", first_arg);
 				if (!strcmp(first_arg, "second_stage")) {
 					pr_info("/system/bin/init second_stage executed\n");
