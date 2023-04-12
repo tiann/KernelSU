@@ -1,4 +1,4 @@
-use anyhow::{Ok, Result};
+use anyhow::{bail, Ok, Result};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -282,16 +282,21 @@ impl StockMount {
             let path = rootdir.join(dest.strip_prefix("/")?);
             log::info!("rootdir: {}, path: {}", rootdir.display(), path.display());
             if dest.is_dir() {
-                utils::ensure_dir_exists(&path)?;
+                utils::ensure_dir_exists(&path)
+                    .with_context(|| format!("Failed to create dir: {}", path.display(),))?;
             } else if dest.is_file() {
-                utils::ensure_file_exists(&path)?;
+                utils::ensure_file_exists(&path)
+                    .with_context(|| format!("Failed to create file: {}", path.display(),))?;
             } else {
-                log::warn!("unknown file type: {:?}", dest);
+                bail!("unknown file type: {:?}", dest)
             }
             log::info!("bind stock mount: {} -> {}", dest.display(), path.display());
             Mount::builder()
                 .flags(MountFlags::BIND)
-                .mount(dest, &path)?;
+                .mount(dest, &path)
+                .with_context(|| {
+                    format!("Failed to mount: {} -> {}", dest.display(), path.display())
+                })?;
 
             ms.push((m.clone(), path));
         }
