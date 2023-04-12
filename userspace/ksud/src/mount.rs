@@ -259,10 +259,7 @@ impl StockMount {
             .destination_starts_with(std::path::Path::new(mnt))
             .filter(|m| m.fstype != "overlay" && m.fstype != "rootfs")
             .collect::<Vec<_>>();
-
-        // sort it by dest length, so we can mount it in order
-        // TODO: there are maybe submounts, we don't need to mount them, so we can skip them.
-        mounts.sort_by(|a, b| a.dest.as_os_str().len().cmp(&b.dest.as_os_str().len()));
+        mounts.sort_by(|a, b| b.dest.cmp(&a.dest)); // inverse order
 
         let mntroot = std::path::Path::new(crate::defs::STOCK_MNT_ROOT);
         utils::ensure_dir_exists(mntroot)?;
