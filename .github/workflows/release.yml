@@ -14,7 +14,7 @@ jobs:
   build-a13-kernel:
     uses: ./.github/workflows/build-kernel-a13.yml
   build-wsa-kernel:
-    uses: ./.github/workflows/build-WSA-5.10.117-kernel.yml
+    uses: ./.github/workflows/build-kernel-wsa.yml
   release:
     needs: 
       - build-manager
