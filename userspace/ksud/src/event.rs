@@ -93,13 +93,13 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
 
     // mount /system first
     if let Err(e) = mount_partition("system", &mut system_lowerdir) {
-        warn!("mount system failed: {e}");
+        warn!("mount system failed: {:#}", e);
     }
 
     // mount other partitions
     for (k, mut v) in partition_lowerdir {
         if let Err(e) = mount_partition(&k, &mut v) {
-            warn!("mount {k} failed: {e}");
+            warn!("mount {k} failed: {:#}", e);
         }
     }
 
