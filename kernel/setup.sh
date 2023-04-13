@@ -18,6 +18,7 @@ fi
 test -d "$GKI_ROOT/KernelSU" || git clone https://github.com/tiann/KernelSU
 cd "$GKI_ROOT/KernelSU"
 git stash && git pull
+git checkout "$(git describe --abbrev=0 --tags)"
 cd "$GKI_ROOT"
 
 echo "[+] GKI_ROOT: $GKI_ROOT"
