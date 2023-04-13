@@ -13,9 +13,9 @@
 #ifdef HISI_SELINUX_EBITMAP_RO &&LINUX_VERSION_CODE >=                         \
         KERNEL_VERSION(4, 9, 0) ||                                             \
     LINUX_VERSION_CODE <= KERNEL_VERSION(4, 9, 250)
-#define CONFIG_IS_HW 1
+#define CONFIG_IS_HW_HISI 1
 #else
-#define CONFIG_IS_HW 0
+#define CONFIG_IS_HW_HISI 0
 #endif
 
 //////////////////////////////////////////////////////
@@ -689,7 +689,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	}
 
 	return true;
-#elif CONFIG_IS_HW == 1
+#elif CONFIG_IS_HW_HISI == 1
 	/*
 	Huawei use type_attr_map and type_val_to_struct.
 	And use ebitmap not flex_array.
@@ -884,7 +884,7 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
-#elif CONFIG_IS_HW == 1
+#elif CONFIG_IS_HW_HISI == 1
 	/*
 	   HISI_SELINUX_EBITMAP_RO is Huawei's unique features.
 	*/
