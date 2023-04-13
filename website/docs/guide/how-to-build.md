@@ -42,10 +42,24 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 
 ## Build Kernel with KernelSU
 
-If you can build the kernel successfully, then build KernelSU is so easy, run this command in Kernel source root dir:
+If you can build the kernel successfully, then build KernelSU is so easy, Select any one run in Kernel source root dir:
+
+- Latest tag(stable)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+```
+
+- main branch(dev)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+```
+
+- Select tag(Such as v0.5.2)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
 
 And then rebuild the kernel and you will get a kernel image with KernelSU!

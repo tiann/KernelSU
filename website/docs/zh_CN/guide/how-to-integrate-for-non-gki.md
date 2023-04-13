@@ -17,8 +17,22 @@ KernelSU 使用 kprobe 机制来做内核的相关 hook，如果 *kprobe* 可以
 
 首先，把 KernelSU 添加到你的内核源码树，在内核的根目录执行以下命令：
 
+- 最新tag(稳定版本)
+
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+```
+
+- main分支(开发版本)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+```
+
+- 指定tag(比如v0.5.2)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
 
 然后，你需要检查你的内核是否开启了 *kprobe* 相关的配置，如果没有开启，需要添加以下配置：
