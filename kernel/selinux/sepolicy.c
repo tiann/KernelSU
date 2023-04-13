@@ -9,17 +9,15 @@
 
 #define KSU_SUPPORT_ADD_TYPE
 
-/* 
-	* Adapt to Huawei HISI kernel without affecting other kernels ,
-	* Huawei Hisi Kernel EBITMAP Enable or Disable Flag , 
-	* From ss/ebitmap.h 
-	*/
+/*
+ * Adapt to Huawei HISI kernel without affecting other kernels ,
+ * Huawei Hisi Kernel EBITMAP Enable or Disable Flag ,
+ * From ss/ebitmap.h
+ */
 #ifdef HISI_SELINUX_EBITMAP_RO &&                                              \
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) &&                      \
 	 LINUX_VERSION_CODE <= KERNEL_VERSION(4, 9, 250))
-#define CONFIG_IS_HW_HISI 1
-#else
-#define CONFIG_IS_HW_HISI 0
+#define CONFIG_IS_HW_HISI
 #endif
 
 //////////////////////////////////////////////////////
@@ -466,8 +464,9 @@ static bool add_type_rule(struct policydb *db, const char *s, const char *t,
 	return true;
 }
 
-// 5.9.0 : static inline int hashtab_insert(struct hashtab *h, void *key, void *datum, struct hashtab_key_params key_params)
-// 5.8.0: int hashtab_insert(struct hashtab *h, void *k, void *d);
+// 5.9.0 : static inline int hashtab_insert(struct hashtab *h, void *key, void
+// *datum, struct hashtab_key_params key_params) 5.8.0: int
+// hashtab_insert(struct hashtab *h, void *k, void *d);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 static u32 filenametr_hash(const void *k)
 {
@@ -697,11 +696,11 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	}
 
 	return true;
-#elif CONFIG_IS_HW_HISI == 1
+#elif defined(CONFIG_IS_HW_HISI)
 	/*
-	* Huawei use type_attr_map and type_val_to_struct.
-	* And use ebitmap not flex_array.
-	*/
+   * Huawei use type_attr_map and type_val_to_struct.
+   * And use ebitmap not flex_array.
+   */
 	size_t new_size = sizeof(struct ebitmap) * db->p_types.nprim;
 	struct ebitmap *new_type_attr_map =
 		(krealloc(db->type_attr_map, new_size, GFP_ATOMIC));
@@ -821,7 +820,8 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 					   GFP_ATOMIC | __GFP_ZERO);
 	}
 
-	// store the pointer of old flex arrays first, when assigning new ones we should free it
+	// store the pointer of old flex arrays first, when assigning new ones we
+	// should free it
 	struct flex_array *old_fa;
 
 	old_fa = db->type_attr_map_array;
@@ -897,10 +897,10 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
-#elif CONFIG_IS_HW_HISI == 1
+#elif defined(CONFIG_IS_HW_HISI)
 	/*
-	*   HISI_SELINUX_EBITMAP_RO is Huawei's unique features.
-	*/
+   *   HISI_SELINUX_EBITMAP_RO is Huawei's unique features.
+   */
 	struct ebitmap *sattr = &db->type_attr_map[type->value - 1],
 		       HISI_SELINUX_EBITMAP_RO;
 #else
