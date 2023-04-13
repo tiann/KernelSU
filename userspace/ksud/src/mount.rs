@@ -1,4 +1,4 @@
-use anyhow::{bail, Ok, Result};
+use anyhow::{bail, ensure, Ok, Result};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -8,11 +8,15 @@ use retry::delay::NoDelay;
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use procfs::process::{MountInfo, Process};
+use std::fs;
+use std::fs::File;
+use std::os::fd::AsRawFd;
+use std::os::unix::fs::OpenOptionsExt;
+use std::path::PathBuf;
+use log::{info, warn};
+use crate::defs::KSU_OVERLAY_SOURCE;
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use std::collections::HashSet;
-
-use crate::utils;
+use crate::mount_tree::{MountNode, MountTree};
 
 pub struct AutoMountExt4 {
     mnt: String,
@@ -130,14 +134,114 @@ pub fn umount_dir(src: &str) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_overlay(lowerdir: &str, mnt: &str) -> Result<()> {
-    Mount::builder()
-        .fstype(FilesystemType::from("overlay"))
-        .flags(MountFlags::RDONLY)
-        .data(&format!("lowerdir={lowerdir}"))
-        .mount("overlay", mnt)
-        .map(|_| ())
-        .map_err(|e| anyhow::anyhow!("mount partition: {mnt} overlay failed: {e}"))
+pub fn mount_overlay(dest: &PathBuf, lower_dirs: &Vec<String>, root_mounted: &mut bool) -> Result<()> {
+    let mut mount_seq: Vec<MountTree> = vec![];
+    let dest_str = dest.to_str().unwrap();
+    info!("mount overlay for {}", dest_str);
+    let tree = MountNode::get_tree()?;
+    let tree = MountNode::get_mount_for_path(&tree, &dest).unwrap();
+    MountNode::get_top_mounts_under_path(&mut mount_seq, &tree, &dest);
+    let old_root = File::options()
+        .read(true)
+        .custom_flags(libc::O_PATH)
+        .open(&dest)?;
+    ensure!(old_root.metadata()?.is_dir());
+    let old_root = format!("/proc/self/fd/{}", old_root.as_raw_fd());
+    let mut first = true;
+    for mount in mount_seq.iter().rev() {
+        let mut lower_count: usize = 0;
+        let src: String;
+        let mount_point: String;
+        let mut overlay_lower_dir = String::from("lowerdir=");
+        let stock_is_dir: bool;
+        let modified_is_dir: bool;
+        if first {
+            mount_point = String::from(dest_str);
+            src = String::from(dest_str);
+            stock_is_dir = true; // ensured
+        } else {
+            mount_point = String::from(mount.mount_info.mount_point.to_str().unwrap());
+            let relative = mount_point.clone().replacen(dest_str, "", 1);
+            src = format!("{}{}", old_root, relative);
+            match fs::metadata(&src) {
+                Result::Ok(stat) => {
+                    stock_is_dir = stat.is_dir();
+                }
+                Err(e) => bail!("stat {}: {:#}", src, e)
+            }
+        }
+        match fs::metadata(&mount_point) {
+            Result::Ok(stat) => {
+                modified_is_dir = stat.is_dir();
+            }
+            Err(e) => {
+                match e.raw_os_error().unwrap() {
+                    libc::ENOENT | libc::ENOTDIR => {
+                        warn!("skip {} since it doesn't exists, maybe removed by module?", mount_point);
+                        first = false;
+                        continue;
+                    }
+                    _ => {
+                        bail!("stat {}: {:#}", mount_point, e);
+                    }
+                }
+            }
+        }
+        for lower in lower_dirs {
+            let lower_dir = format!("{}{}", lower, mount_point);
+            match fs::metadata(&lower_dir) {
+                Result::Ok(stat) => {
+                    if !stat.is_dir() {
+                        if first {
+                            warn!("{} is an invalid module", lower_dir);
+                        }
+                        continue;
+                    }
+                    lower_count += 1;
+                    if lower_count > 1 {
+                        overlay_lower_dir.push_str(":");
+                    }
+                    overlay_lower_dir.push_str(lower_dir.as_str());
+                }
+                Err(..) => {
+                    continue;
+                }
+            }
+        }
+        if lower_count == 0 {
+            if first {
+                warn!("no valid modules, skip mount");
+                break;
+            }
+            info!("mount bind mount_point={}, src={}", mount_point, src);
+            Mount::builder()
+                .flags(MountFlags::BIND)
+                .mount(&src, &mount_point)
+                .with_context(|| format!("bind mount failed: {} -> {}", src, mount_point))?;
+        } else if stock_is_dir && modified_is_dir {
+            overlay_lower_dir.push_str(":");
+            overlay_lower_dir.push_str(&src);
+            info!("mount overlayfs mount_point={}, src={}, options={}", mount_point, src, overlay_lower_dir);
+            if let Err(e) = Mount::builder()
+                .fstype(FilesystemType::from("overlay"))
+                .data(&overlay_lower_dir)
+                .mount(KSU_OVERLAY_SOURCE, &mount_point) {
+                if first {
+                    bail!(e);
+                }
+                warn!("mount overlayfs failed: {:#}, fallback to bind mount", e);
+                Mount::builder()
+                    .flags(MountFlags::BIND)
+                    .mount(&src, &mount_point)
+                    .with_context(|| format!("fallback bind mount failed: {} -> {}", src, mount_point))?;
+            }
+            if first {
+                *root_mounted = true;
+            }
+        }
+        first = false;
+    }
+    Ok(())
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
@@ -151,213 +255,7 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_overlay(_lowerdir: &str, _mnt: &str) -> Result<()> {
+pub fn mount_overlay(_dest: &PathBuf, _lower_dirs: &Vec<String>, _root_mounted: &mut bool) -> Result<()> {
     unimplemented!()
 }
 
-pub struct StockOverlay {
-    #[cfg(any(target_os = "linux", target_os = "android"))]
-    mountinfos: Vec<MountInfo>,
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-impl StockOverlay {
-    pub fn new() -> Self {
-        unimplemented!()
-    }
-
-    pub fn mount_all(&self) {
-        unimplemented!()
-    }
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-impl StockOverlay {
-    pub fn new() -> Self {
-        if let std::result::Result::Ok(process) = Process::myself() {
-            if let std::result::Result::Ok(mountinfos) = process.mountinfo() {
-                let overlay_mounts = mountinfos
-                    .into_iter()
-                    .filter(|m| m.fs_type == "overlay")
-                    .collect::<Vec<_>>();
-                return Self {
-                    mountinfos: overlay_mounts,
-                };
-            }
-        }
-        Self { mountinfos: vec![] }
-    }
-
-    pub fn mount_all(&self) {
-        log::info!("stock overlay: mount all: {:?}", self.mountinfos);
-        for mount in self.mountinfos.clone() {
-            let Some(mnt) = mount.mount_point.to_str() else {
-                log::warn!("Failed to get mount point");
-                continue;
-            };
-
-            if mnt == "/system" {
-                log::warn!("stock overlay found /system, skip!");
-                continue;
-            }
-
-            let (_flags, b): (HashSet<_>, HashSet<_>) = mount
-                .mount_options
-                .into_iter()
-                .chain(mount.super_options)
-                .partition(|(_, m)| m.is_none());
-
-            let mut overlay_opts = vec![];
-            for (opt, val) in b {
-                if let Some(val) = val {
-                    overlay_opts.push(format!("{opt}={val}"));
-                } else {
-                    log::warn!("opt empty: {}", opt);
-                }
-            }
-            let overlay_data = overlay_opts.join(",");
-            let result = Mount::builder()
-                .fstype(FilesystemType::from("overlay"))
-                .flags(MountFlags::RDONLY)
-                .data(&overlay_data)
-                .mount("overlay", mnt);
-            if let Err(e) = result {
-                log::error!(
-                    "stock mount overlay: {} failed: {}",
-                    mount.mount_point.display(),
-                    e
-                );
-            } else {
-                log::info!(
-                    "stock mount :{} overlay_opts: {}",
-                    mount.mount_point.display(),
-                    overlay_opts.join(",")
-                );
-            }
-        }
-    }
-}
-
-// some ROMs mount device(ext4,exfat) to /vendor, when we do overlay mount, it will overlay
-// the stock mounts, these mounts include bt_firmware, wifi_firmware, etc.
-// so we to remount these mounts when we do overlay mount.
-// this is a workaround, we should find a better way to do this.
-#[derive(Debug)]
-pub struct StockMount {
-    mnt: String,
-    #[cfg(any(target_os = "linux", target_os = "android"))]
-    mountlist: Vec<(proc_mounts::MountInfo, std::path::PathBuf)>,
-    #[cfg(any(target_os = "linux", target_os = "android"))]
-    rootmount: sys_mount::Mount,
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-impl StockMount {
-    pub fn new(mnt: &str) -> Result<Self> {
-        let mountlist = proc_mounts::MountList::new()?;
-        let mut mounts = mountlist
-            .destination_starts_with(std::path::Path::new(mnt))
-            .filter(|m| m.fstype != "overlay" && m.fstype != "rootfs")
-            .collect::<Vec<_>>();
-        mounts.sort_by(|a, b| b.dest.cmp(&a.dest)); // inverse order
-
-        let mntroot = std::path::Path::new(crate::defs::STOCK_MNT_ROOT);
-        utils::ensure_dir_exists(mntroot)?;
-        log::info!("stock mount root: {}", mntroot.display());
-
-        let rootdir = mntroot.join(
-            mnt.strip_prefix('/')
-                .ok_or(anyhow::anyhow!("invalid mnt: {}!", mnt))?,
-        );
-        utils::ensure_dir_exists(&rootdir)?;
-        let rootmount = Mount::builder().fstype("tmpfs").mount("tmpfs", &rootdir)?;
-
-        let mut ms = vec![];
-        for m in mounts {
-            let dest = &m.dest;
-            if dest == std::path::Path::new(mnt) {
-                continue;
-            }
-
-            let path = rootdir.join(dest.strip_prefix("/")?);
-            log::info!("rootdir: {}, path: {}", rootdir.display(), path.display());
-            if dest.is_dir() {
-                utils::ensure_dir_exists(&path)
-                    .with_context(|| format!("Failed to create dir: {}", path.display(),))?;
-            } else if dest.is_file() {
-                if !path.exists() {
-                    let parent = path
-                        .parent()
-                        .with_context(|| format!("Failed to get parent: {}", path.display()))?;
-                    utils::ensure_dir_exists(parent).with_context(|| {
-                        format!("Failed to create parent: {}", parent.display())
-                    })?;
-                    std::fs::File::create(&path)
-                        .with_context(|| format!("Failed to create file: {}", path.display(),))?;
-                }
-            } else {
-                bail!("unknown file type: {:?}", dest)
-            }
-            log::info!("bind stock mount: {} -> {}", dest.display(), path.display());
-            Mount::builder()
-                .flags(MountFlags::BIND)
-                .mount(dest, &path)
-                .with_context(|| {
-                    format!("Failed to mount: {} -> {}", dest.display(), path.display())
-                })?;
-
-            ms.push((m.clone(), path));
-        }
-
-        Ok(Self {
-            mnt: mnt.to_string(),
-            mountlist: ms,
-            rootmount,
-        })
-    }
-
-    // Yes, we move self here!
-    pub fn remount(self) -> Result<()> {
-        log::info!("remount stock for {} : {:?}", self.mnt, self.mountlist);
-        let mut result = Ok(());
-        for (m, src) in self.mountlist {
-            let dst = m.dest;
-
-            log::info!("begin remount: {} -> {}", src.display(), dst.display());
-            let mount_result = Mount::builder()
-                .flags(MountFlags::BIND | MountFlags::MOVE)
-                .mount(&src, &dst);
-            if let Err(e) = mount_result {
-                log::error!("remount failed: {}", e);
-                result = Err(e.into());
-            } else {
-                log::info!(
-                    "remount {}({}) -> {} succeed!",
-                    m.source.display(),
-                    src.display(),
-                    dst.display()
-                );
-            }
-        }
-
-        // umount the root tmpfs mount
-        if let Err(e) = self.rootmount.unmount(UnmountFlags::DETACH) {
-            log::warn!("umount root mount failed: {}", e);
-        }
-
-        result
-    }
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-impl StockMount {
-    pub fn new(mnt: &str) -> Result<Self> {
-        Ok(Self {
-            mnt: mnt.to_string(),
-        })
-    }
-
-    pub fn remount(&self) -> Result<()> {
-        unimplemented!()
-    }
-}
