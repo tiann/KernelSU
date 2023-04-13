@@ -60,17 +60,19 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
             continue;
         }
 
-        let module_system = Path::new(&module);
-        if module_system.exists() {
+        let module_system = Path::new(&module).join("system");
+        if module_system.is_dir() {
             system_lowerdir.push(format!("{}", module_system.display()));
         }
 
         for part in &partition {
             // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
             // otherwise it must be a symlink and we don't need to overlay!
-            let part_path = Path::new(&module);
-            if let Some(v) = partition_lowerdir.get_mut(*part) {
-                v.push(format!("{}", part_path.display()));
+            let part_path = Path::new(&module).join(&part);
+            if part_path.is_dir() {
+                if let Some(v) = partition_lowerdir.get_mut(*part) {
+                    v.push(format!("{}", part_path.display()));
+                }
             }
         }
     }

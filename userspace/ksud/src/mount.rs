@@ -1,4 +1,4 @@
-use anyhow::{bail, Ok, Result};
+use anyhow::{Ok, Result};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -8,11 +8,10 @@ use retry::delay::NoDelay;
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use std::fs;
 use std::fs::File;
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::OpenOptionsExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use log::{info, warn};
 use procfs::process::Process;
 use crate::defs::KSU_OVERLAY_SOURCE;
@@ -134,113 +133,85 @@ pub fn umount_dir(src: &str) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_overlay(dest: &PathBuf, lower_dirs: &Vec<String>, root_mounted: &mut bool) -> Result<()> {
-    let dest_str = dest.to_str().unwrap();
-    let dest = PathBuf::from(format!("{}/", dest_str));
-    info!("mount overlay for {}", dest_str);
+fn mount_overlayfs(lower_dirs: &Vec<String>, lowest: impl AsRef<str>, dest: impl AsRef<str>) -> Result<()> {
+    let options = format!("lowerdir={}:{}", lower_dirs.join(":"), lowest.as_ref());
+    info!("mount overlayfs on {}, options={}", dest.as_ref(), options);
+    Mount::builder()
+        .fstype(FilesystemType::from("overlay"))
+        .data(&options)
+        .mount(KSU_OVERLAY_SOURCE, dest.as_ref())
+        .with_context(|| format!("mount overlayfs on {} options {} failed", dest.as_ref(), options))?;
+    Ok(())
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
+    info!("bind mount {} -> {}", from.as_ref().display(), to.as_ref().display());
+    Mount::builder()
+        .flags(MountFlags::BIND)
+        .mount(from.as_ref(), to.as_ref())
+        .with_context(|| format!("bind mount failed: {} -> {}", from.as_ref().display(), to.as_ref().display()))?;
+    Ok(())
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+fn mount_overlay_child(mount_point: &str, relative: &String, module_roots: &Vec<String>, stock_root: &String) -> Result<()> {
+    if !module_roots.iter().any(|lower| Path::new(&format!("{}{}", lower, relative)).exists()) {
+        bind_mount(&stock_root, mount_point)?;
+    }
+    if !Path::new(&stock_root).is_dir() {
+        return Ok(());
+    }
+    let mut lower_dirs: Vec<String> = vec![];
+    for lower in module_roots {
+        let lower_dir = format!("{}{}", lower, relative);
+        let path = Path::new(&lower_dir);
+        if path.is_dir() {
+            lower_dirs.push(lower_dir);
+        } else if path.exists() {
+            // stock root has been blocked by this file
+            return Ok(());
+        }
+    }
+    if lower_dirs.is_empty() {
+        return Ok(());
+    }
+    // merge modules and stock
+    if let Err(e) = mount_overlayfs(&lower_dirs, &stock_root, &mount_point) {
+        warn!("failed: {:#}, fallback to bind mount", e);
+        bind_mount(&stock_root, &mount_point)?;
+    }
+    Ok(())
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn mount_overlay(dest: &PathBuf, module_roots: &Vec<String>, root_mounted: &mut bool) -> Result<()> {
+    let root = dest.to_str().unwrap();
+    let dest = PathBuf::from(format!("{}/", root));
+    info!("mount overlay for {}", root);
+    let stock_root = File::options()
+        .read(true)
+        .custom_flags(libc::O_PATH)
+        .open(&dest)?; // this have ensured it is a dir
+    let stock_root = format!("/proc/self/fd/{}", stock_root.as_raw_fd());
+
+    // collect child mounts before mounting the root
     let mounts = Process::myself()?.mountinfo()?;
     let mut mount_seq: Vec<&str> = mounts.iter()
         .filter(|m| m.mount_point.starts_with(&dest))
         .map(|m| m.mount_point.to_str().unwrap())
         .collect::<Vec<&str>>();
-    mount_seq.insert(0, dest_str);
     mount_seq.sort();
     mount_seq.dedup();
-    let old_root = File::options()
-        .read(true)
-        .custom_flags(libc::O_PATH)
-        .open(&dest)?; // this have ensured it is a dir
-    let old_root = format!("/proc/self/fd/{}", old_root.as_raw_fd());
-    let mut first = true;
+
+    mount_overlayfs(module_roots, root, root)?;
+    *root_mounted = true;
     for mount_point in mount_seq.iter() {
-        let mut lower_count: usize = 0;
-        let src: String;
-        let mut overlay_lower_dir = String::from("lowerdir=");
-        let stock_is_dir: bool;
-        let modified_is_dir: bool;
-        if first {
-            src = String::from(dest_str);
-            stock_is_dir = true; // ensured
-        } else {
-            let relative = mount_point.replacen(dest_str, "", 1);
-            src = format!("{}{}", old_root, relative);
-            match fs::metadata(&src) {
-                Result::Ok(stat) => {
-                    stock_is_dir = stat.is_dir();
-                }
-                Err(e) => bail!("stat {}: {:#}", src, e)
-            }
+        let relative = mount_point.replacen(root, "", 1);
+        let stock_root: String = format!("{}{}", stock_root, relative);
+        if Path::new(&stock_root).exists() {
+            mount_overlay_child(mount_point, &relative, &module_roots, &stock_root)?;
         }
-        match fs::metadata(&mount_point) {
-            Result::Ok(stat) => {
-                modified_is_dir = stat.is_dir();
-            }
-            Err(e) => {
-                match e.raw_os_error().unwrap() {
-                    libc::ENOENT | libc::ENOTDIR => {
-                        warn!("skip {} since it doesn't exists, maybe removed by module?", mount_point);
-                        first = false;
-                        continue;
-                    }
-                    _ => {
-                        bail!("stat {}: {:#}", mount_point, e);
-                    }
-                }
-            }
-        }
-        for lower in lower_dirs {
-            let lower_dir = format!("{}{}", lower, mount_point);
-            match fs::metadata(&lower_dir) {
-                Result::Ok(stat) => {
-                    if !stat.is_dir() {
-                        if first {
-                            warn!("{} is an invalid module", lower_dir);
-                        }
-                        continue;
-                    }
-                    lower_count += 1;
-                    if lower_count > 1 {
-                        overlay_lower_dir.push_str(":");
-                    }
-                    overlay_lower_dir.push_str(lower_dir.as_str());
-                }
-                Err(..) => {
-                    continue;
-                }
-            }
-        }
-        if lower_count == 0 {
-            if first {
-                warn!("no valid modules, skip mount");
-                break;
-            }
-            info!("mount bind mount_point={}, src={}", mount_point, src);
-            Mount::builder()
-                .flags(MountFlags::BIND)
-                .mount(&src, &mount_point)
-                .with_context(|| format!("bind mount failed: {} -> {}", src, mount_point))?;
-        } else if stock_is_dir && modified_is_dir {
-            overlay_lower_dir.push_str(":");
-            overlay_lower_dir.push_str(&src);
-            info!("mount overlayfs mount_point={}, src={}, options={}", mount_point, src, overlay_lower_dir);
-            if let Err(e) = Mount::builder()
-                .fstype(FilesystemType::from("overlay"))
-                .data(&overlay_lower_dir)
-                .mount(KSU_OVERLAY_SOURCE, &mount_point) {
-                if first {
-                    bail!(e);
-                }
-                warn!("mount overlayfs failed: {:#}, fallback to bind mount", e);
-                Mount::builder()
-                    .flags(MountFlags::BIND)
-                    .mount(&src, &mount_point)
-                    .with_context(|| format!("fallback bind mount failed: {} -> {}", src, mount_point))?;
-            }
-            if first {
-                *root_mounted = true;
-            }
-        }
-        first = false;
     }
     Ok(())
 }
