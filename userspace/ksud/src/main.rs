@@ -10,7 +10,6 @@ mod mount;
 mod restorecon;
 mod sepolicy;
 mod utils;
-mod mount_tree;
 
 fn main() -> anyhow::Result<()> {
     cli::run()

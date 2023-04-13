@@ -1,4 +1,4 @@
-use anyhow::{bail, ensure, Ok, Result};
+use anyhow::{bail, Ok, Result};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -14,9 +14,9 @@ use std::os::fd::AsRawFd;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::PathBuf;
 use log::{info, warn};
+use procfs::process::Process;
 use crate::defs::KSU_OVERLAY_SOURCE;
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use crate::mount_tree::{MountNode, MountTree};
 
 pub struct AutoMountExt4 {
     mnt: String,
@@ -135,33 +135,34 @@ pub fn umount_dir(src: &str) -> Result<()> {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_overlay(dest: &PathBuf, lower_dirs: &Vec<String>, root_mounted: &mut bool) -> Result<()> {
-    let mut mount_seq: Vec<MountTree> = vec![];
     let dest_str = dest.to_str().unwrap();
+    let dest = PathBuf::from(format!("{}/", dest_str));
     info!("mount overlay for {}", dest_str);
-    let tree = MountNode::get_tree()?;
-    let tree = MountNode::get_mount_for_path(&tree, &dest).unwrap();
-    MountNode::get_top_mounts_under_path(&mut mount_seq, &tree, &dest);
+    let mounts = Process::myself()?.mountinfo()?;
+    let mut mount_seq: Vec<&str> = mounts.iter()
+        .filter(|m| m.mount_point.starts_with(&dest))
+        .map(|m| m.mount_point.to_str().unwrap())
+        .collect::<Vec<&str>>();
+    mount_seq.insert(0, dest_str);
+    mount_seq.sort();
+    mount_seq.dedup();
     let old_root = File::options()
         .read(true)
         .custom_flags(libc::O_PATH)
-        .open(&dest)?;
-    ensure!(old_root.metadata()?.is_dir());
+        .open(&dest)?; // this have ensured it is a dir
     let old_root = format!("/proc/self/fd/{}", old_root.as_raw_fd());
     let mut first = true;
-    for mount in mount_seq.iter().rev() {
+    for mount_point in mount_seq.iter() {
         let mut lower_count: usize = 0;
         let src: String;
-        let mount_point: String;
         let mut overlay_lower_dir = String::from("lowerdir=");
         let stock_is_dir: bool;
         let modified_is_dir: bool;
         if first {
-            mount_point = String::from(dest_str);
             src = String::from(dest_str);
             stock_is_dir = true; // ensured
         } else {
-            mount_point = String::from(mount.mount_info.mount_point.to_str().unwrap());
-            let relative = mount_point.clone().replacen(dest_str, "", 1);
+            let relative = mount_point.replacen(dest_str, "", 1);
             src = format!("{}{}", old_root, relative);
             match fs::metadata(&src) {
                 Result::Ok(stat) => {
