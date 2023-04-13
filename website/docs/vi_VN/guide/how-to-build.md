@@ -44,8 +44,22 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 
 Nếu bạn có thể build được kernel hoàn chỉnh, thì việc tích hợp KernelSU rất dễ dàng, chạy lệnh sau tại thư mục chứa mã nguồn kernel:
 
+- Latest tag(stable)
+
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+```
+
+- main branch(dev)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+```
+
+- Select tag(Such as v0.5.2)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
 
 Và rồi build lại, bạn sẽ có được một image chứa KernelSU
