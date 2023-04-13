@@ -194,5 +194,12 @@
         "kernel_name": "kernel_oneplus_msm8998",
         "kernel_link": "https://github.com/TheNoFace/kernel_oneplus_msm8998",
         "devices": "OnePlus 5/5T"
+    },
+    {
+        "maintainer": "Evans Mike",
+        "maintainer_link": "https://github.com/etnperlong",
+        "kernel_name": "kernel_xiaomi_raphael_bool-x",
+        "kernel_link": "https://github.com/etnperlong/kernel_xiaomi_raphael_bool-x",
+        "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
     }
 ]
