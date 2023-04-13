@@ -46,8 +46,22 @@ If kprobe can not work in your kernel (maybe a upstream bug or kernel below 4.8)
 
 First, add KernelSU to your kernel source tree:
 
+- Latest tag(stable)
+
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+```
+
+- main branch(dev)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+```
+
+- Select tag(Such as v0.5.2)
+
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
 
 Then, add KernelSU calls to the kernel source, here is a patch to refer:
