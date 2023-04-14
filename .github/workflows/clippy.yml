@@ -1,6 +1,6 @@
 name: Clippy check
 
-on: pull_request
+on: [push, pull_request]
   paths:
     - '.github/workflows/clippy.yml'
     - 'userspace/ksud/**'
