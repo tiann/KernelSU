@@ -2,13 +2,10 @@ name: Clippy check
 
 on: 
   push:
-    paths:
-      - '.github/workflows/clippy.yml'
-      - 'userspace/ksud/**'
   pull_request:
-    paths:
-      - '.github/workflows/clippy.yml'
-      - 'userspace/ksud/**'
+  paths:
+    - '.github/workflows/clippy.yml'
+    - 'userspace/ksud/**'
 
 env:
   RUSTFLAGS: '-Dwarnings'
