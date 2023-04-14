@@ -7,17 +7,17 @@ use retry::delay::NoDelay;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlags};
 
+use crate::defs::KSU_OVERLAY_SOURCE;
+use log::{info, warn};
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use procfs::process::Process;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::fs::File;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::fd::AsRawFd;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::unix::fs::OpenOptionsExt;
-use std::path::{Path};
-use log::{info, warn};
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use procfs::process::Process;
-use crate::defs::KSU_OVERLAY_SOURCE;
+use std::path::Path;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 
 pub struct AutoMountExt4 {
@@ -136,30 +136,66 @@ pub fn umount_dir(src: &str) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn mount_overlayfs(lower_dirs: &Vec<String>, lowest: impl AsRef<Path>, dest: impl AsRef<Path>) -> Result<()> {
-    let options = format!("lowerdir={}:{}", lower_dirs.join(":"), lowest.as_ref().display());
-    info!("mount overlayfs on {}, options={}", dest.as_ref().display(), options);
+fn mount_overlayfs(
+    lower_dirs: &Vec<String>,
+    lowest: impl AsRef<Path>,
+    dest: impl AsRef<Path>,
+) -> Result<()> {
+    let options = format!(
+        "lowerdir={}:{}",
+        lower_dirs.join(":"),
+        lowest.as_ref().display()
+    );
+    info!(
+        "mount overlayfs on {}, options={}",
+        dest.as_ref().display(),
+        options
+    );
     Mount::builder()
         .fstype(FilesystemType::from("overlay"))
         .data(&options)
         .mount(KSU_OVERLAY_SOURCE, dest.as_ref())
-        .with_context(|| format!("mount overlayfs on {} options {} failed", dest.as_ref().display(), options))?;
+        .with_context(|| {
+            format!(
+                "mount overlayfs on {} options {} failed",
+                dest.as_ref().display(),
+                options
+            )
+        })?;
     Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
-    info!("bind mount {} -> {}", from.as_ref().display(), to.as_ref().display());
+    info!(
+        "bind mount {} -> {}",
+        from.as_ref().display(),
+        to.as_ref().display()
+    );
     Mount::builder()
         .flags(MountFlags::BIND)
         .mount(from.as_ref(), to.as_ref())
-        .with_context(|| format!("bind mount failed: {} -> {}", from.as_ref().display(), to.as_ref().display()))?;
+        .with_context(|| {
+            format!(
+                "bind mount failed: {} -> {}",
+                from.as_ref().display(),
+                to.as_ref().display()
+            )
+        })?;
     Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn mount_overlay_child(mount_point: &str, relative: &String, module_roots: &Vec<String>, stock_root: &String) -> Result<()> {
-    if !module_roots.iter().any(|lower| Path::new(&format!("{}{}", lower, relative)).exists()) {
+fn mount_overlay_child(
+    mount_point: &str,
+    relative: &String,
+    module_roots: &Vec<String>,
+    stock_root: &String,
+) -> Result<()> {
+    if !module_roots
+        .iter()
+        .any(|lower| Path::new(&format!("{}{}", lower, relative)).exists())
+    {
         bind_mount(&stock_root, mount_point)?;
     }
     if !Path::new(&stock_root).is_dir() {
@@ -197,10 +233,14 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     let stock_root = format!("/proc/self/fd/{}", stock_root.as_raw_fd());
 
     // collect child mounts before mounting the root
-    let mounts = Process::myself()?.mountinfo().with_context(|| format!("get mountinfo"))?;
-    let mut mount_seq = mounts.iter()
-        .filter(|m| m.mount_point.starts_with(&root)
-            && !Path::new(&root).starts_with(&m.mount_point))
+    let mounts = Process::myself()?
+        .mountinfo()
+        .with_context(|| format!("get mountinfo"))?;
+    let mut mount_seq = mounts
+        .iter()
+        .filter(|m| {
+            m.mount_point.starts_with(&root) && !Path::new(&root).starts_with(&m.mount_point)
+        })
         .map(|m| m.mount_point.to_str())
         .collect::<Vec<_>>();
     mount_seq.sort();
@@ -213,8 +253,13 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
             let relative = mount_point.replacen(root, "", 1);
             let stock_root: String = format!("{}{}", stock_root, relative);
             if Path::new(&stock_root).exists() {
-                if let Err(e) = mount_overlay_child(mount_point, &relative, &module_roots, &stock_root) {
-                    warn!("failed to mount overlay for child {}: {:#}, revert", mount_point, e);
+                if let Err(e) =
+                    mount_overlay_child(mount_point, &relative, &module_roots, &stock_root)
+                {
+                    warn!(
+                        "failed to mount overlay for child {}: {:#}, revert",
+                        mount_point, e
+                    );
                     umount_dir(&root).with_context(|| format!("failed to revert {}", root))?;
                     bail!(e);
                 }
@@ -235,7 +280,10 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_overlay(_dest: &PathBuf, _lower_dirs: &Vec<String>, _root_mounted: &mut bool) -> Result<()> {
+pub fn mount_overlay(
+    _dest: &PathBuf,
+    _lower_dirs: &Vec<String>,
+    _root_mounted: &mut bool,
+) -> Result<()> {
     unimplemented!()
 }
-
