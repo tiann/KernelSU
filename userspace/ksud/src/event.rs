@@ -22,9 +22,7 @@ fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
         return Ok(());
     }
 
-    let result = mount::mount_overlay(&partition, &lowerdir);
-
-    result
+    mount::mount_overlay(&partition, lowerdir)
 }
 
 pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
@@ -61,7 +59,7 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
         for part in &partition {
             // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
             // otherwise it must be a symlink and we don't need to overlay!
-            let part_path = Path::new(&module).join(&part);
+            let part_path = Path::new(&module).join(part);
             if part_path.is_dir() {
                 if let Some(v) = partition_lowerdir.get_mut(*part) {
                     v.push(format!("{}", part_path.display()));
@@ -71,13 +69,13 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
     }
 
     // mount /system first
-    if let Err(e) = mount_partition("system", &mut system_lowerdir) {
+    if let Err(e) = mount_partition("system", &system_lowerdir) {
         warn!("mount system failed: {:#}", e);
     }
 
     // mount other partitions
-    for (k, mut v) in partition_lowerdir {
-        if let Err(e) = mount_partition(&k, &mut v) {
+    for (k, v) in partition_lowerdir {
+        if let Err(e) = mount_partition(&k, &v) {
             warn!("mount {k} failed: {:#}", e);
         }
     }

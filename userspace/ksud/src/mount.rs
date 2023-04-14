@@ -136,7 +136,7 @@ pub fn umount_dir(src: &str) -> Result<()> {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn mount_overlayfs(
-    lower_dirs: &Vec<String>,
+    lower_dirs: &[String],
     lowest: impl AsRef<Path>,
     dest: impl AsRef<Path>,
 ) -> Result<()> {
@@ -195,7 +195,7 @@ fn mount_overlay_child(
         .iter()
         .any(|lower| Path::new(&format!("{}{}", lower, relative)).exists())
     {
-        return bind_mount(&stock_root, mount_point);
+        return bind_mount(stock_root, mount_point);
     }
     if !Path::new(&stock_root).is_dir() {
         return Ok(());
@@ -215,9 +215,9 @@ fn mount_overlay_child(
         return Ok(());
     }
     // merge modules and stock
-    if let Err(e) = mount_overlayfs(&lower_dirs, &stock_root, &mount_point) {
+    if let Err(e) = mount_overlayfs(&lower_dirs, stock_root, mount_point) {
         warn!("failed: {:#}, fallback to bind mount", e);
-        bind_mount(&stock_root, &mount_point)?;
+        bind_mount(stock_root, mount_point)?;
     }
     Ok(())
 }
@@ -228,17 +228,17 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     let stock_root = File::options()
         .read(true)
         .custom_flags(libc::O_PATH)
-        .open(&root)?;
+        .open(root)?;
     let stock_root = format!("/proc/self/fd/{}", stock_root.as_raw_fd());
 
     // collect child mounts before mounting the root
     let mounts = Process::myself()?
         .mountinfo()
-        .with_context(|| format!("get mountinfo"))?;
+        .with_context(|| "get mountinfo")?;
     let mut mount_seq = mounts
         .iter()
         .filter(|m| {
-            m.mount_point.starts_with(&root) && !Path::new(&root).starts_with(&m.mount_point)
+            m.mount_point.starts_with(root) && !Path::new(&root).starts_with(&m.mount_point)
         })
         .map(|m| m.mount_point.to_str())
         .collect::<Vec<_>>();
@@ -246,7 +246,7 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     mount_seq.dedup();
 
     mount_overlayfs(module_roots, root, root)
-        .with_context(|| format!("mount overlayfs for root failed"))?;
+        .with_context(|| "mount overlayfs for root failed")?;
     for mount_point in mount_seq.iter() {
         let Some(mount_point) = mount_point else {
             continue;
@@ -256,12 +256,12 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
         if !Path::new(&stock_root).exists() {
             continue;
         }
-        if let Err(e) = mount_overlay_child(mount_point, &relative, &module_roots, &stock_root) {
+        if let Err(e) = mount_overlay_child(mount_point, &relative, module_roots, &stock_root) {
             warn!(
                 "failed to mount overlay for child {}: {:#}, revert",
                 mount_point, e
             );
-            umount_dir(&root).with_context(|| format!("failed to revert {}", root))?;
+            umount_dir(root).with_context(|| format!("failed to revert {}", root))?;
             bail!(e);
         }
     }
