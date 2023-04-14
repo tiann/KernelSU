@@ -37,7 +37,7 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("tar -czf ${pstoreFile.absolutePath} /sys/fs/pstore").exec()
     shell.newJob().add("tar -czf ${diagFile.absolutePath} /data/vendor/diag").exec()
 
-    shell.newJob().add("cat /proc/mounts > ${mountsFile.absolutePath}").exec()
+    shell.newJob().add("cat /proc/1/mountinfo > ${mountsFile.absolutePath}").exec()
     shell.newJob().add("cat /proc/filesystems > ${fileSystemsFile.absolutePath}").exec()
     shell.newJob().add("ls -alRZ /data/adb > ${ksuFileTree.absolutePath}").exec()
     shell.newJob().add("cat /data/system/packages.list > ${appListFile.absolutePath}").exec()
