@@ -1,8 +1,12 @@
 name: Clippy check
 
-on: 
+on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
   paths:
     - '.github/workflows/clippy.yml'
     - 'userspace/ksud/**'
