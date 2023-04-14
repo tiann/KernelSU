@@ -193,7 +193,7 @@ fn mount_overlay_child(
 ) -> Result<()> {
     if !module_roots
         .iter()
-        .any(|lower| Path::new(&format!("{}{}", lower, relative)).exists())
+        .any(|lower| Path::new(&format!("{lower}{relative}")).exists())
     {
         return bind_mount(stock_root, mount_point);
     }
@@ -202,7 +202,7 @@ fn mount_overlay_child(
     }
     let mut lower_dirs: Vec<String> = vec![];
     for lower in module_roots {
-        let lower_dir = format!("{}{}", lower, relative);
+        let lower_dir = format!("{lower}{relative}");
         let path = Path::new(&lower_dir);
         if path.is_dir() {
             lower_dirs.push(lower_dir);
@@ -251,7 +251,7 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
             continue;
         };
         let relative = mount_point.replacen(root, "", 1);
-        let stock_root: String = format!("{}{}", stock_root, relative);
+        let stock_root: String = format!("{stock_root}{relative}");
         if !Path::new(&stock_root).exists() {
             continue;
         }
@@ -260,7 +260,7 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
                 "failed to mount overlay for child {}: {:#}, revert",
                 mount_point, e
             );
-            umount_dir(root).with_context(|| format!("failed to revert {}", root))?;
+            umount_dir(root).with_context(|| format!("failed to revert {root}"))?;
             bail!(e);
         }
     }
