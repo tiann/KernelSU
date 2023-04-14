@@ -22,14 +22,7 @@ fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
         return Ok(());
     }
 
-    let mut root_mounted = false;
-    let result = mount::mount_overlay(&PathBuf::from(&partition), &lowerdir, &mut root_mounted);
-    if result.is_err() && root_mounted {
-        warn!("failed to mount overlay on {}, revert", partition);
-        if let Err(e) = mount::umount_dir(&partition) {
-            warn!("failed to umount {} while reverting: {}", partition, e);
-        }
-    }
+    let result = mount::mount_overlay(&partition, &lowerdir);
 
     result
 }
