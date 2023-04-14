@@ -195,7 +195,7 @@ fn mount_overlay_child(
         .iter()
         .any(|lower| Path::new(&format!("{}{}", lower, relative)).exists())
     {
-        bind_mount(&stock_root, mount_point)?;
+        return bind_mount(&stock_root, mount_point);
     }
     if !Path::new(&stock_root).is_dir() {
         return Ok(());
@@ -248,21 +248,21 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     mount_overlayfs(module_roots, root, root)
         .with_context(|| format!("mount overlayfs for root failed"))?;
     for mount_point in mount_seq.iter() {
-        if let Some(mount_point) = mount_point {
-            let relative = mount_point.replacen(root, "", 1);
-            let stock_root: String = format!("{}{}", stock_root, relative);
-            if Path::new(&stock_root).exists() {
-                if let Err(e) =
-                    mount_overlay_child(mount_point, &relative, &module_roots, &stock_root)
-                {
-                    warn!(
-                        "failed to mount overlay for child {}: {:#}, revert",
-                        mount_point, e
-                    );
-                    umount_dir(&root).with_context(|| format!("failed to revert {}", root))?;
-                    bail!(e);
-                }
-            }
+        let Some(mount_point) = mount_point else {
+            continue;
+        };
+        let relative = mount_point.replacen(root, "", 1);
+        let stock_root: String = format!("{}{}", stock_root, relative);
+        if !Path::new(&stock_root).exists() {
+            continue;
+        }
+        if let Err(e) = mount_overlay_child(mount_point, &relative, &module_roots, &stock_root) {
+            warn!(
+                "failed to mount overlay for child {}: {:#}, revert",
+                mount_point, e
+            );
+            umount_dir(&root).with_context(|| format!("failed to revert {}", root))?;
+            bail!(e);
         }
     }
     Ok(())
@@ -279,9 +279,6 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_overlay(
-    _dest: &String,
-    _lower_dirs: &Vec<String>
-) -> Result<()> {
+pub fn mount_overlay(_dest: &String, _lower_dirs: &Vec<String>) -> Result<()> {
     unimplemented!()
 }
