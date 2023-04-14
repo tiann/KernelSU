@@ -18,7 +18,6 @@ use std::os::fd::AsRawFd;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
-#[cfg(any(target_os = "linux", target_os = "android"))]
 
 pub struct AutoMountExt4 {
     mnt: String,
@@ -281,9 +280,8 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn mount_overlay(
-    _dest: &PathBuf,
-    _lower_dirs: &Vec<String>,
-    _root_mounted: &mut bool,
+    _dest: &String,
+    _lower_dirs: &Vec<String>
 ) -> Result<()> {
     unimplemented!()
 }
