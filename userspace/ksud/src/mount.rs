@@ -245,8 +245,7 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     mount_seq.sort();
     mount_seq.dedup();
 
-    mount_overlayfs(module_roots, root, root)
-        .with_context(|| "mount overlayfs for root failed")?;
+    mount_overlayfs(module_roots, root, root).with_context(|| "mount overlayfs for root failed")?;
     for mount_point in mount_seq.iter() {
         let Some(mount_point) = mount_point else {
             continue;
