@@ -16,7 +16,7 @@ Ya, Tetapi masih dalam versi awal, bisa jadi ngebug. Mohon tunggu sampai semuany
 
 ## Apakah KernelSU mendukung Xposed?
 
-Ya, [Dreamland](https://github.com/canyie/Dreamland) dan [TaiChi](https::/taichi.cool) sekarang bekerja sebagian, Dan kita sedang mencoba untuk membuat Xposed Framework lainnya bekerja.
+Ya, [Dreamland](https://github.com/canyie/Dreamland) dan [TaiChi](https://taichi.cool) sekarang bekerja sebagian, Dan kita sedang mencoba untuk membuat Xposed Framework lainnya bekerja.
 
 ## Apakah KernelSU kompatibel dengan Magisk?
 
