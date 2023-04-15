@@ -16,7 +16,7 @@ Yes, But it is in early version, it may be buggy. Please wait for it to be stabl
 
 ## Does KernelSU support Xposed?
 
-Yes, [Dreamland](https://github.com/canyie/Dreamland) and [TaiChi](https::/taichi.cool) work now. For LSPosed, you can make it work by [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+Yes, [Dreamland](https://github.com/canyie/Dreamland) and [TaiChi](https://taichi.cool) work now. For LSPosed, you can make it work by [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
 
 ## Does KernelSU support Zygisk?
 
