@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
+use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
 use crate::{
@@ -7,44 +8,21 @@ use crate::{
     utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
-fn mount_partition(partition: &str, lowerdir: &mut Vec<String>) -> Result<()> {
+fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
     if lowerdir.is_empty() {
         warn!("partition: {partition} lowerdir is empty");
         return Ok(());
     }
 
+    let partition = format!("/{partition}");
+
     // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
-    if Path::new(&format!("/{partition}")).read_link().is_ok() {
+    if Path::new(&partition).read_link().is_ok() {
         warn!("partition: {partition} is a symlink");
         return Ok(());
     }
 
-    // handle stock mounts under /partition, we should restore the mount point after overlay
-    // because the overlayfs mount will "overlay" the bind mount such as /vendor/bt_firmware, /vendor/dsp
-    // which will cause the system bootloop or bluetooth/dsp not working
-    let stock_mount = mount::StockMount::new(&format!("/{partition}/"))
-        .with_context(|| format!("get stock mount of partition: {partition} failed"))?;
-
-    // add /partition as the lowerest dir
-    let lowest_dir = format!("/{partition}");
-    lowerdir.push(lowest_dir.clone());
-
-    let lowerdir = lowerdir.join(":");
-    info!("partition: {partition} lowerdir: {lowerdir}");
-
-    let result = mount::mount_overlay(&lowerdir, &lowest_dir);
-
-    if let Err(e) = stock_mount.remount() {
-        if result.is_ok() {
-            // if mount overlay ok but stock remount failed, we should umount overlay
-            warn!("remount stock failed: {:?}, umount overlay {lowest_dir}", e);
-            if mount::umount_dir(&lowest_dir).is_err() {
-                warn!("umount overlay {lowest_dir} failed");
-            }
-        }
-    }
-
-    result
+    mount::mount_overlay(&partition, lowerdir)
 }
 
 pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
@@ -74,7 +52,7 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
         }
 
         let module_system = Path::new(&module).join("system");
-        if module_system.exists() {
+        if module_system.is_dir() {
             system_lowerdir.push(format!("{}", module_system.display()));
         }
 
@@ -82,23 +60,22 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
             // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
             // otherwise it must be a symlink and we don't need to overlay!
             let part_path = Path::new(&module).join(part);
-            if !part_path.exists() {
-                continue;
-            }
-            if let Some(v) = partition_lowerdir.get_mut(*part) {
-                v.push(format!("{}", part_path.display()));
+            if part_path.is_dir() {
+                if let Some(v) = partition_lowerdir.get_mut(*part) {
+                    v.push(format!("{}", part_path.display()));
+                }
             }
         }
     }
 
     // mount /system first
-    if let Err(e) = mount_partition("system", &mut system_lowerdir) {
+    if let Err(e) = mount_partition("system", &system_lowerdir) {
         warn!("mount system failed: {:#}", e);
     }
 
     // mount other partitions
-    for (k, mut v) in partition_lowerdir {
-        if let Err(e) = mount_partition(&k, &mut v) {
+    for (k, v) in partition_lowerdir {
+        if let Err(e) = mount_partition(&k, &v) {
             warn!("mount {k} failed: {:#}", e);
         }
     }
@@ -184,16 +161,10 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("load system.prop failed: {}", e);
     }
 
-    // Finally, we should do systemless mount
-    // But we should backup all stock overlayfs and remount them after module mounted
-    let stock_overlay = mount::StockOverlay::new();
-
     // mount moduke systemlessly by overlay
     if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
-
-    stock_overlay.mount_all();
 
     Ok(())
 }
@@ -257,7 +228,6 @@ pub fn install() -> Result<()> {
 
 #[cfg(target_os = "android")]
 fn link_ksud_to_bin() -> Result<()> {
-    use std::path::PathBuf;
     let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
     let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
     if ksu_bin.exists() && !ksu_bin_link.exists() {

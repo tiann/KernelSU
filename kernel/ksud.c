@@ -23,6 +23,7 @@ static const char KERNEL_SU_RC[] =
 	"\n"
 
 	"on post-fs-data\n"
+	"    start logd\n"
 	// We should wait for the post-fs-data finish
 	"    exec u:r:su:s0 root -- " KSUD_PATH " post-fs-data\n"
 	"\n"
