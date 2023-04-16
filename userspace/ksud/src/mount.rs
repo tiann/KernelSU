@@ -9,6 +9,7 @@ use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlag
 
 use crate::defs::KSU_OVERLAY_SOURCE;
 use log::{info, warn};
+use procfs::process::MountInfo;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -165,22 +166,42 @@ fn mount_overlayfs(
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
+fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>, mount_info: &MountInfo) -> Result<()> {
     info!(
         "bind mount {} -> {}",
         from.as_ref().display(),
         to.as_ref().display()
     );
-    Mount::builder()
+    if let Err(e) = Mount::builder()
         .flags(MountFlags::BIND)
         .mount(from.as_ref(), to.as_ref())
-        .with_context(|| {
-            format!(
-                "bind mount failed: {} -> {}",
+    {
+        if e.raw_os_error() != Some(libc::EROFS) {
+            bail!(
+                "failed to bind mount {} -> {}: {:#}",
                 from.as_ref().display(),
-                to.as_ref().display()
-            )
-        })?;
+                to.as_ref().display(),
+                e
+            );
+        }
+        warn!(
+            "failed to bind mount {} -> {}: {:#}, try bind mount {}",
+            from.as_ref().display(),
+            to.as_ref().display(),
+            e,
+            mount_info.root
+        );
+        Mount::builder()
+            .flags(MountFlags::BIND)
+            .mount(&mount_info.root, to.as_ref())
+            .with_context(|| {
+                format!(
+                    "bind mount failed: {} -> {}",
+                    mount_info.root,
+                    to.as_ref().display()
+                )
+            })?;
+    }
     Ok(())
 }
 
@@ -190,12 +211,13 @@ fn mount_overlay_child(
     relative: &String,
     module_roots: &Vec<String>,
     stock_root: &String,
+    mount_info: &MountInfo,
 ) -> Result<()> {
     if !module_roots
         .iter()
         .any(|lower| Path::new(&format!("{lower}{relative}")).exists())
     {
-        return bind_mount(stock_root, mount_point);
+        return bind_mount(stock_root, mount_point, mount_info);
     }
     if !Path::new(&stock_root).is_dir() {
         return Ok(());
@@ -217,7 +239,7 @@ fn mount_overlay_child(
     // merge modules and stock
     if let Err(e) = mount_overlayfs(&lower_dirs, stock_root, mount_point) {
         warn!("failed: {:#}, fallback to bind mount", e);
-        bind_mount(stock_root, mount_point)?;
+        bind_mount(stock_root, mount_point, mount_info)?;
     }
     Ok(())
 }
@@ -237,17 +259,14 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
         .with_context(|| "get mountinfo")?;
     let mut mount_seq = mounts
         .iter()
-        .filter(|m| {
-            m.mount_point.starts_with(root) && !Path::new(&root).starts_with(&m.mount_point)
-        })
-        .map(|m| m.mount_point.to_str())
+        .filter(|m| m.mount_point.starts_with(root) && Path::new(&root) != m.mount_point)
         .collect::<Vec<_>>();
-    mount_seq.sort();
-    mount_seq.dedup();
+    mount_seq.sort_by_key(|k| &k.mount_point);
+    mount_seq.dedup_by(|a, b| a.mount_point == b.mount_point);
 
     mount_overlayfs(module_roots, root, root).with_context(|| "mount overlayfs for root failed")?;
-    for mount_point in mount_seq.iter() {
-        let Some(mount_point) = mount_point else {
+    for mount_info in mount_seq.iter() {
+        let Some(mount_point) = mount_info.mount_point.to_str() else {
             continue;
         };
         let relative = mount_point.replacen(root, "", 1);
@@ -255,7 +274,13 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
         if !Path::new(&stock_root).exists() {
             continue;
         }
-        if let Err(e) = mount_overlay_child(mount_point, &relative, module_roots, &stock_root) {
+        if let Err(e) = mount_overlay_child(
+            mount_point,
+            &relative,
+            module_roots,
+            &stock_root,
+            mount_info,
+        ) {
             warn!(
                 "failed to mount overlay for child {}: {:#}, revert",
                 mount_point, e
