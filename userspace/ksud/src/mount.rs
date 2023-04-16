@@ -9,6 +9,7 @@ use sys_mount::{unmount, FilesystemType, Mount, MountFlags, Unmount, UnmountFlag
 
 use crate::defs::KSU_OVERLAY_SOURCE;
 use log::{info, warn};
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::MountInfo;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
