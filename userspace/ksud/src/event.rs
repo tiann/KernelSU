@@ -250,7 +250,7 @@ fn catch_bootlog() -> Result<()> {
     let oldbootlog = logdir.join("boot.old.log");
 
     if bootlog.exists() {
-        std::fs::rename(&bootlog, &oldbootlog)?;
+        std::fs::rename(&bootlog, oldbootlog)?;
     }
 
     let bootlog = std::fs::File::create(bootlog)?;
