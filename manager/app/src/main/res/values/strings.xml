@@ -26,6 +26,7 @@
     <string name="selinux_status_unknown">Unknown</string>
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
+    <string name="superuser_allow_root_confirm">Are you sure to grant root access to %s?</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
