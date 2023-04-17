@@ -1374,7 +1374,7 @@ dependencies = [
 [[package]]
 name = "sys-mount"
 version = "2.0.2"
-source = "git+https://github.com/tiann/sys-mount#328928573feb9dbe6318d7ebcb8c8c9b681c47cd"
+source = "git+https://github.com/tiann/sys-mount?branch=loopfix#c7c4048e4a4ffdf8b108a85956363a75f2c554f0"
 dependencies = [
  "bitflags",
  "libc",
