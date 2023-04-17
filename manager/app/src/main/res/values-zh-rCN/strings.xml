@@ -23,6 +23,7 @@
     <string name="selinux_status_unknown">未知</string>
     <string name="superuser">超级用户</string>
     <string name="superuser_failed_to_grant_root">无法为 %d 授予 Root</string>
+    <string name="superuser_allow_root_confirm">确定要授予 %s ROOT 权限吗？</string>
     <string name="module_failed_to_enable">无法启用模块: %s</string>
     <string name="module_failed_to_disable">无法禁用模块: %s</string>
     <string name="module_empty">没有安装模块</string>

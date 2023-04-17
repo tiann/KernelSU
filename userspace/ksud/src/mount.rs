@@ -11,12 +11,6 @@ use crate::defs::KSU_OVERLAY_SOURCE;
 use log::{info, warn};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use std::fs::File;
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use std::os::fd::AsRawFd;
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 
 pub struct AutoMountExt4 {
@@ -32,6 +26,7 @@ impl AutoMountExt4 {
         let result = Mount::builder()
             .fstype(FilesystemType::from("ext4"))
             .flags(MountFlags::empty())
+            .create_loop(true)
             .mount(src, mnt)
             .map(|mount| {
                 Ok(Self {
@@ -106,6 +101,7 @@ fn mount_image(src: &str, target: &str, autodrop: bool) -> Result<()> {
     if autodrop {
         Mount::builder()
             .fstype(FilesystemType::from("ext4"))
+            .create_loop(true)
             .mount_autodrop(src, target, UnmountFlags::empty())
             .with_context(|| format!("Failed to do mount: {src} -> {target}"))?;
     } else {
@@ -225,11 +221,8 @@ fn mount_overlay_child(
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     info!("mount overlay for {}", root);
-    let stock_root = File::options()
-        .read(true)
-        .custom_flags(libc::O_PATH)
-        .open(root)?;
-    let stock_root = format!("/proc/self/fd/{}", stock_root.as_raw_fd());
+    std::env::set_current_dir(root).with_context(|| format!("failed to chdir to {root}"))?;
+    let stock_root = ".";
 
     // collect child mounts before mounting the root
     let mounts = Process::myself()?
