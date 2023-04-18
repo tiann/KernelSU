@@ -102,12 +102,13 @@ class SuperUserViewModel : ViewModel() {
 
     suspend fun fetchAppList() {
 
+        isRefreshing = true
+
         val result = connectKsuService {
             Log.w(TAG, "KsuService disconnected")
         }
-
+        
         withContext(Dispatchers.IO) {
-            isRefreshing = true
             val pm = ksuApp.packageManager
             val allowList = Natives.getAllowList().toSet()
             val denyList = Natives.getDenyList().toSet()
