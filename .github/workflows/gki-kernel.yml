@@ -82,17 +82,16 @@ jobs:
 
       - name: Setup kernel source
         run: |
-          cd $GITHUB_WORKSPACE
-          git clone https://gerrit.googlesource.com/git-repo
+          sudo apt-get install -y repo
           mkdir android-kernel && cd android-kernel
-          ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
-          ../git-repo/repo sync -j$(nproc --all)
+          repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
+          repo sync -c -j$(nproc --all)
 
       - name: Setup KernelSU
+        working-directory: android-kernel
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
         run: |
-          cd $GITHUB_WORKSPACE/android-kernel
           echo "[+] KernelSU setup"
           GKI_ROOT=$(pwd)
           echo "[+] GKI_ROOT: $GKI_ROOT"
