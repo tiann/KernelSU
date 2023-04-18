@@ -185,7 +185,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		if (userId == 0) {
 			prefix = "/data/data";
 		} else {
-			snprintf(prefixTmp, 10, "/data/user/%d", userId);
+			snprintf(prefixTmp, sizeof(prefixTmp), "/data/user/%d", userId);
 			prefix = prefixTmp;
 		}
 
