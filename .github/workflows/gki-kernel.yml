@@ -116,7 +116,7 @@ jobs:
           echo "[+] Add KernelSU symbols"
           cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
 
-      - name: Settup ccache
+      - name: Setup ccache
         if: inputs.use_cache == true
         uses: hendrikmuhs/ccache-action@v1.2
         with:
