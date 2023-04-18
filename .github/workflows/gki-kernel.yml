@@ -64,7 +64,6 @@ jobs:
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
-      CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
     steps:
       - uses: actions/checkout@v3
@@ -75,9 +74,9 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
         if: inputs.use_cache == true
         with:
-          key: ccache-aarch64-${{ inputs.version_name }}
-          append-timestamp: false
-          save: ${{ github.event_name != 'pull_request' }}
+          key: Kernel-aarch64-${{ inputs.version_name }}
+          max-size: 2G
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Setup need_upload
         id: need_upload
