@@ -81,7 +81,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
 
-    implementation("com.github.topjohnwu.libsu:core:5.0.3")
+    val libsuVersion = "5.0.4"
+    implementation("com.github.topjohnwu.libsu:core:$libsuVersion")
+    implementation("com.github.topjohnwu.libsu:service:$libsuVersion")
     implementation("com.github.alorma:compose-settings-ui-m3:0.22.0")
 
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion")
