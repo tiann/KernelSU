@@ -244,12 +244,7 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 // make sure allow list works cross boot
 bool persistent_allow_list(void)
 {
-#ifndef MODULE
-	do_persistent_allow_list(NULL);
-	return true;
-#else
 	return ksu_queue_work(&ksu_save_work);
-#endif
 }
 
 bool ksu_load_allow_list(void)
