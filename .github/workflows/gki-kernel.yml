@@ -120,7 +120,7 @@ jobs:
         if: inputs.use_cache == true
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: Kernel-aarch64-${{ inputs.version_name }}
+          key: gki-kernel-aarch64-${{ inputs.version_name }}
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
