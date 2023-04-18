@@ -81,11 +81,11 @@ jobs:
           fi
 
       - name: Setup kernel source
-        run: |
-          sudo apt-get install -y repo
-          mkdir android-kernel && cd android-kernel
-          repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
-          repo sync -c -j$(nproc --all)
+        uses: actions/checkout@v3
+        with:
+          repository: aosp-mirror/kernel_common
+          ref: ${{ inputs.tag }}
+          path: android-kernel
 
       - name: Setup KernelSU
         working-directory: android-kernel
