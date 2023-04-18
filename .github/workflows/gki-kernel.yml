@@ -34,10 +34,6 @@ on:
         description: >
           Directory name of .github/patches/<patch_path>
           for example: 5.10
-      use_cache:
-        required: false
-        type: boolean
-        default: true
       embed_ksud:
         required: false
         type: string
@@ -72,7 +68,6 @@ jobs:
           fetch-depth: 0
 
       - uses: hendrikmuhs/ccache-action@v1.2
-        if: inputs.use_cache == true
         with:
           key: Kernel-aarch64-${{ inputs.version_name }}
           max-size: 2G
