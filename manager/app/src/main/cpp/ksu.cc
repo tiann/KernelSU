@@ -35,7 +35,7 @@ bool become_manager(const char* pkg) {
     if (userId == 0) {
         sprintf(param, "/data/data/%s", pkg);
     } else {
-        snprintf(param, 10, "/data/user/%d/%s", userId, pkg);
+        snprintf(param, sizeof(param), "/data/user/%d/%s", userId, pkg);
     }
 
     return ksuctl(CMD_BECOME_MANAGER, param, nullptr);
