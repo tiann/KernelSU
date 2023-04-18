@@ -34,6 +34,10 @@ on:
         description: >
           Directory name of .github/patches/<patch_path>
           for example: 5.10
+      use_cache:
+        required: false
+        type: boolean
+        default: true
       embed_ksud:
         required: false
         type: string
@@ -113,6 +117,7 @@ jobs:
           cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
 
       - name: Settup ccache
+        if: inputs.use_cache == true
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: Kernel-aarch64-${{ inputs.version_name }}
