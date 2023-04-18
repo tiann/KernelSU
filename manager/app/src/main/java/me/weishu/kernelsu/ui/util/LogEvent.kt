@@ -26,8 +26,9 @@ fun getBugreportFile(context: Context): File {
     val mountsFile = File(bugreportDir, "mounts.txt")
     val fileSystemsFile = File(bugreportDir, "filesystems.txt")
     val ksuFileTree = File(bugreportDir, "ksu_tree.txt")
-    val appListFile = File(bugreportDir, "app_list.txt")
+    val appListFile = File(bugreportDir, "packages.txt")
     val propFile = File(bugreportDir, "props.txt")
+    val allowListFile = File(bugreportDir, "allowlist.bin")
 
     val shell = getRootShell()
 
@@ -42,8 +43,9 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("cat /proc/1/mountinfo > ${mountsFile.absolutePath}").exec()
     shell.newJob().add("cat /proc/filesystems > ${fileSystemsFile.absolutePath}").exec()
     shell.newJob().add("ls -alRZ /data/adb > ${ksuFileTree.absolutePath}").exec()
-    shell.newJob().add("cat /data/system/packages.list > ${appListFile.absolutePath}").exec()
+    shell.newJob().add("cp /data/system/packages.list ${appListFile.absolutePath}").exec()
     shell.newJob().add("getprop > ${propFile.absolutePath}").exec()
+    shell.newJob().add("cp /data/adb/ksu/.allowlist ${allowListFile.absolutePath}").exec()
 
     // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
