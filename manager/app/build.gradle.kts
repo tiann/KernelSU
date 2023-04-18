@@ -84,6 +84,8 @@ dependencies {
     val libsuVersion = "5.0.4"
     implementation("com.github.topjohnwu.libsu:core:$libsuVersion")
     implementation("com.github.topjohnwu.libsu:service:$libsuVersion")
+    implementation("dev.rikka.rikkax.parcelablelist:parcelablelist:2.0.0")
+
     implementation("com.github.alorma:compose-settings-ui-m3:0.22.0")
 
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion")

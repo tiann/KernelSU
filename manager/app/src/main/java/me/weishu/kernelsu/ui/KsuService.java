@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.weishu.kernelsu.IKsuInterface;
+import rikka.parcelablelist.ParcelableListSlice;
 
 /**
  * @author weishu
@@ -30,10 +31,10 @@ public class KsuService extends RootService {
 
     class Stub extends IKsuInterface.Stub {
         @Override
-        public List<PackageInfo> getPackages() {
-            List<PackageInfo> list = getInstalledPackagesAll();
+        public ParcelableListSlice<PackageInfo> getPackages(int flags) {
+            List<PackageInfo> list = getInstalledPackagesAll(flags);
             Log.i(TAG, "getPackages: " + list.size());
-            return list;
+            return new ParcelableListSlice<>(list);
         }
     }
 
@@ -48,28 +49,25 @@ public class KsuService extends RootService {
         List<UserHandle> userProfiles = um.getUserProfiles();
         for (UserHandle userProfile : userProfiles) {
             int userId = userProfile.hashCode();
-            if (userId == 0) {
-                continue;
-            }
             result.add(userProfile.hashCode());
         }
         return result;
     }
 
-    ArrayList<PackageInfo> getInstalledPackagesAll() {
+    ArrayList<PackageInfo> getInstalledPackagesAll(int flags) {
         ArrayList<PackageInfo> packages = new ArrayList<>();
         for (Integer userId : getUserIds()) {
             Log.i(TAG, "getInstalledPackagesAll: " + userId);
-            packages.addAll(getInstalledPackagesAsUser(userId));
+            packages.addAll(getInstalledPackagesAsUser(flags, userId));
         }
         return packages;
     }
 
-    List<PackageInfo> getInstalledPackagesAsUser(int userId) {
+    List<PackageInfo> getInstalledPackagesAsUser(int flags, int userId) {
         try {
             PackageManager pm = getPackageManager();
             Method getInstalledPackagesAsUser = pm.getClass().getDeclaredMethod("getInstalledPackagesAsUser", int.class, int.class);
-            return (List<PackageInfo>) getInstalledPackagesAsUser.invoke(pm, 0, userId);
+            return (List<PackageInfo>) getInstalledPackagesAsUser.invoke(pm, flags, userId);
         } catch (Throwable e) {
             Log.e(TAG, "err", e);
         }

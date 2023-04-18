@@ -105,9 +105,6 @@ class SuperUserViewModel : ViewModel() {
         val result = connectKsuService {
             Log.w(TAG, "KsuService disconnected")
         }
-        val binder = result.first
-        val extraPackages = IKsuInterface.Stub.asInterface(binder).packages
-        stopKsuService()
 
         withContext(Dispatchers.IO) {
             isRefreshing = true
@@ -118,8 +115,14 @@ class SuperUserViewModel : ViewModel() {
             Log.i(TAG, "denyList: $denyList")
             val start = SystemClock.elapsedRealtime()
 
-            val packages = pm.getInstalledPackages(0)
-            packages.addAll(extraPackages)
+            val binder = result.first
+            val allPackages = IKsuInterface.Stub.asInterface(binder).getPackages(0)
+
+            withContext(Dispatchers.Main) {
+                stopKsuService()
+            }
+
+            val packages = allPackages.list
 
             apps = packages.map {
                 val appInfo = it.applicationInfo

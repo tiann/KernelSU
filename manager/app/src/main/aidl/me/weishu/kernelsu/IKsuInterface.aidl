@@ -2,8 +2,8 @@
 package me.weishu.kernelsu;
 
 import android.content.pm.PackageInfo;
-import java.util.List;
+import rikka.parcelablelist.ParcelableListSlice;
 
 interface IKsuInterface {
-    List<PackageInfo> getPackages();
+    ParcelableListSlice<PackageInfo> getPackages(int flags);
 }
