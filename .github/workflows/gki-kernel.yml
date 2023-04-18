@@ -93,7 +93,7 @@ jobs:
           PATCH_PATH: ${{ inputs.patch_path }}
         run: |
           echo "[+] KernelSU setup"
-          GKI_ROOT=$(pwd)
+          GKI_ROOT=$GITHUB_WORKSPACE/android-kernel
           echo "[+] GKI_ROOT: $GKI_ROOT"
           echo "[+] Copy KernelSU driver to $GKI_ROOT/common/drivers"
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
