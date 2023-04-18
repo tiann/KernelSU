@@ -31,7 +31,7 @@ static struct policydb *get_policydb(void)
 	db = &ss->policydb;
 #endif
 #else
-    db = &policydb;
+	db = &policydb;
 #endif
 	return db;
 }
@@ -39,8 +39,7 @@ static struct policydb *get_policydb(void)
 void apply_kernelsu_rules()
 {
 	if (!getenforce()) {
-		pr_info("SELinux permissive or disabled, don't apply rules.");
-		return;
+		pr_info("SELinux permissive or disabled, apply rules!");
 	}
 
 	rcu_read_lock();
@@ -169,8 +168,11 @@ static int get_object(char *buf, char __user *user_object, size_t buf_sz,
 }
 
 // reset avc cache table, otherwise the new rules will not take effect if already denied
-static void reset_avc_cache() {
-#if ((KERNEL_VERSION(4, 14, 0) <= LINUX_VERSION_CODE) && (LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 163))) || (LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 337))
+static void reset_avc_cache()
+{
+#if ((KERNEL_VERSION(4, 14, 0) <= LINUX_VERSION_CODE) &&                       \
+     (LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 163))) ||                     \
+	(LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 337))
 	avc_ss_reset(0);
 	selnl_notify_policyload(0);
 	selinux_status_update_policyload(0);
@@ -190,8 +192,7 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 	}
 
 	if (!getenforce()) {
-		pr_info("SELinux permissive or disabled, don't apply policies.");
-		return 0;
+		pr_info("SELinux permissive or disabled when handle policy!\n");
 	}
 
 	struct sepol_data data;
