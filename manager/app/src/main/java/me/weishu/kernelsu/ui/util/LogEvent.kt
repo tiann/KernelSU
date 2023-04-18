@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.util
 import android.content.Context
 import android.os.Build
 import android.system.Os
+import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.screen.getManagerVersion
 import java.io.File
@@ -47,6 +48,8 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("getprop > ${propFile.absolutePath}").exec()
     shell.newJob().add("cp /data/adb/ksu/.allowlist ${allowListFile.absolutePath}").exec()
 
+    val selinux = ShellUtils.fastCmd(shell, "getenforce");
+
     // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
     PrintWriter(FileWriter(buildInfo)).use { pw ->
@@ -60,6 +63,7 @@ fun getBugreportFile(context: Context): File {
         pw.println("FINGERPRINT: " + Build.FINGERPRINT)
         pw.println("DEVICE: " + Build.DEVICE)
         pw.println("Manager: " + getManagerVersion(context))
+        pw.println("SELinux: $selinux")
 
         val uname = Os.uname()
         pw.println("KernelRelease: ${uname.release}")
