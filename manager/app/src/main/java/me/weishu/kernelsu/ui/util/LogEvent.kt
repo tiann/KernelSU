@@ -33,11 +33,11 @@ fun getBugreportFile(context: Context): File {
 
     shell.newJob().add("dmesg > ${dmesgFile.absolutePath}").exec()
     shell.newJob().add("logcat -d > ${logcatFile.absolutePath}").exec()
-    shell.newJob().add("tar -czf ${tombstonesFile.absolutePath} /data/tombstones").exec()
-    shell.newJob().add("tar -czf ${dropboxFile.absolutePath} /data/system/dropbox").exec()
-    shell.newJob().add("tar -czf ${pstoreFile.absolutePath} /sys/fs/pstore").exec()
-    shell.newJob().add("tar -czf ${diagFile.absolutePath} /data/vendor/diag").exec()
-    shell.newJob().add("tar -czf ${bootlogFile.absolutePath} /data/adb/ksu/log").exec()
+    shell.newJob().add("tar -czf ${tombstonesFile.absolutePath} -C /data/tombstones .").exec()
+    shell.newJob().add("tar -czf ${dropboxFile.absolutePath} -C /data/system/dropbox .").exec()
+    shell.newJob().add("tar -czf ${pstoreFile.absolutePath} -C /sys/fs/pstore .").exec()
+    shell.newJob().add("tar -czf ${diagFile.absolutePath} -C /data/vendor/diag .").exec()
+    shell.newJob().add("tar -czf ${bootlogFile.absolutePath} -C /data/adb/ksu/log .").exec()
 
     shell.newJob().add("cat /proc/1/mountinfo > ${mountsFile.absolutePath}").exec()
     shell.newJob().add("cat /proc/filesystems > ${fileSystemsFile.absolutePath}").exec()
