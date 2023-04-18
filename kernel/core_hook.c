@@ -38,14 +38,16 @@ static inline bool is_allow_su()
 	return ksu_is_allow_uid(current_uid().val);
 }
 
-static inline bool is_isolated_uid(uid_t uid) {
-    #define FIRST_ISOLATED_UID 99000
-    #define LAST_ISOLATED_UID 99999
-    #define FIRST_APP_ZYGOTE_ISOLATED_UID 90000
-    #define LAST_APP_ZYGOTE_ISOLATED_UID 98999
-    uid_t appid = uid % 100000;
-    return (appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID)
-                || (appid >= FIRST_APP_ZYGOTE_ISOLATED_UID && appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
+static inline bool is_isolated_uid(uid_t uid)
+{
+#define FIRST_ISOLATED_UID 99000
+#define LAST_ISOLATED_UID 99999
+#define FIRST_APP_ZYGOTE_ISOLATED_UID 90000
+#define LAST_APP_ZYGOTE_ISOLATED_UID 98999
+	uid_t appid = uid % 100000;
+	return (appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID) ||
+	       (appid >= FIRST_APP_ZYGOTE_ISOLATED_UID &&
+		appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
 }
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
@@ -168,12 +170,23 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		}
 
 		// someone wants to be root manager, just check it!
-		// arg3 should be `/data/data/<manager_package_name>`
+		// arg3 should be `/data/user/<userId>/<manager_package_name>`
 		char param[128];
-		const char *prefix = "/data/data/";
 		if (copy_from_user(param, arg3, sizeof(param))) {
 			pr_err("become_manager: copy param err\n");
 			return 0;
+		}
+
+		// for user 0, it is /data/data
+		// for user 999, it is /data/user/999
+		const char *prefix;
+		char prefixTmp[64];
+		int userId = current_uid().val / 100000;
+		if (userId == 0) {
+			prefix = "/data/data";
+		} else {
+			snprintf(prefixTmp, 10, "/data/user/%d", userId);
+			prefix = prefixTmp;
 		}
 
 		if (startswith(param, (char *)prefix) != 0) {
@@ -335,28 +348,31 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	return 0;
 }
 
-static bool is_appuid(kuid_t uid) {
-	#define PER_USER_RANGE 100000
-	#define FIRST_APPLICATION_UID 10000
-	#define LAST_APPLICATION_UID 19999
+static bool is_appuid(kuid_t uid)
+{
+#define PER_USER_RANGE 100000
+#define FIRST_APPLICATION_UID 10000
+#define LAST_APPLICATION_UID 19999
 
 	uid_t appid = uid.val % PER_USER_RANGE;
 	return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
 }
 
-static bool should_umount(struct path* path) {
+static bool should_umount(struct path *path)
+{
 	if (!path) {
 		return false;
 	}
 
 	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
-		const char* fstype = path->mnt->mnt_sb->s_type->name;
+		const char *fstype = path->mnt->mnt_sb->s_type->name;
 		return strcmp(fstype, "overlay") == 0;
 	}
 	return false;
 }
 
-static void try_umount(const char *mnt) {
+static void try_umount(const char *mnt)
+{
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
 	if (err) {
@@ -376,7 +392,8 @@ static void try_umount(const char *mnt) {
 #endif
 }
 
-int ksu_handle_setuid(struct cred *new, const struct cred *old) {
+int ksu_handle_setuid(struct cred *new, const struct cred *old)
+{
 	if (!new || !old) {
 		return 0;
 	}
@@ -509,7 +526,8 @@ static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
 }
 
 static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
-			     int flags) {
+			       int flags)
+{
 	return ksu_handle_setuid(new, old);
 }
 
