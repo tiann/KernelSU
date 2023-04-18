@@ -67,12 +67,6 @@ jobs:
           path: KernelSU
           fetch-depth: 0
 
-      - uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: Kernel-aarch64-${{ inputs.version_name }}
-          max-size: 2G
-          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
       - name: Setup need_upload
         id: need_upload
         run: |
@@ -117,6 +111,13 @@ jobs:
           # python3 $KSU_ROOT/scripts/abi_gki_all.py $ABI_XML > $SYMBOL_LIST
           echo "[+] Add KernelSU symbols"
           cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
+
+      - name: Settup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: Kernel-aarch64-${{ inputs.version_name }}
+          max-size: 2G
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Build boot.img
         working-directory: android-kernel
