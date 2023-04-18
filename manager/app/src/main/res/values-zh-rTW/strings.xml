@@ -25,6 +25,7 @@
     <string name="selinux_status_unknown">未知</string>
     <string name="superuser">超級使用者</string>
     <string name="superuser_failed_to_grant_root">無法為 %d 授予 Root 存取權</string>
+    <string name="superuser_allow_root_confirm">您確定要授予 %s Root 存取權嗎？</string>
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
     <string name="module_failed_to_disable">無法停用模組：%s</string>
     <string name="module_empty">尚未安裝模組</string>
