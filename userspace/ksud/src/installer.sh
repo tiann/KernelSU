@@ -438,5 +438,5 @@ NVBASE=/data/adb
 TMPDIR=/dev/tmp
 
 # Some modules dependents on this
-export MAGISK_VER=26.1
-export MAGISK_VER_CODE=26100
+export MAGISK_VER=25.2
+export MAGISK_VER_CODE=25200
