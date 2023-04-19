@@ -191,7 +191,6 @@ private fun ModuleList(viewModel: ModuleViewModel, modifier: Modifier = Modifier
                                 + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
                     )
                 },
-                userScrollEnabled = !viewModel.isRefreshing
             ) {
                 val isEmpty = viewModel.moduleList.isEmpty()
                 if (isEmpty) {

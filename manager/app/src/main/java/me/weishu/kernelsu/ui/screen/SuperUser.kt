@@ -107,7 +107,7 @@ fun SuperUserScreen() {
         ) {
             val failMessage = stringResource(R.string.superuser_failed_to_grant_root)
 
-            LazyColumn(Modifier.fillMaxSize(), userScrollEnabled = !viewModel.isRefreshing) {
+            LazyColumn(Modifier.fillMaxSize()) {
                 items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
                     var isChecked by rememberSaveable(app) { mutableStateOf(app.onAllowList) }
                     val dialogHost = LocalDialogHost.current
