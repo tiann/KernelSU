@@ -22,7 +22,7 @@ static struct policydb *get_policydb(void)
 {
 	struct policydb *db;
 // selinux_state does not exists before 4.19
-#ifdef USE_SELINUX_STATE
+#ifdef KSU_COMPAT_USE_SELINUX_STATE
 #ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
 	struct selinux_policy *policy = rcu_dereference(selinux_state.policy);
 	db = &policy->policydb;
@@ -170,7 +170,7 @@ static int get_object(char *buf, char __user *user_object, size_t buf_sz,
 // reset avc cache table, otherwise the new rules will not take effect if already denied
 static void reset_avc_cache()
 {
-#ifndef USE_SELINUX_STATE
+#ifndef KSU_COMPAT_USE_SELINUX_STATE
 	avc_ss_reset(0);
 	selnl_notify_policyload(0);
 	selinux_status_update_policyload(0);

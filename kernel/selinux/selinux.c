@@ -2,7 +2,7 @@
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
-#ifndef USE_SELINUX_STATE
+#ifndef KSU_COMPAT_USE_SELINUX_STATE
 #include "avc.h"
 #endif
 
@@ -57,7 +57,7 @@ if (!is_domain_permissive) {
 void setenforce(bool enforce)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-#ifdef USE_SELINUX_STATE
+#ifdef KSU_COMPAT_USE_SELINUX_STATE
 	selinux_state.enforcing = enforce;
 #else
 	selinux_enforcing = enforce;
@@ -68,7 +68,7 @@ void setenforce(bool enforce)
 bool getenforce()
 {
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
-#ifdef USE_SELINUX_STATE
+#ifdef KSU_COMPAT_USE_SELINUX_STATE
 	if (selinux_state.disabled) {
 #else
 	if (selinux_disabled) {
@@ -78,7 +78,7 @@ bool getenforce()
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-#ifdef USE_SELINUX_STATE
+#ifdef KSU_COMPAT_USE_SELINUX_STATE
 	return selinux_state.enforcing;
 #else
 	return selinux_enforcing;
@@ -88,7 +88,7 @@ bool getenforce()
 #endif
 }
 
-#ifndef HAS_CURRENT_SID
+#ifndef KSU_COMPAT_HAS_CURRENT_SID
 /*
  * get the subjective security ID of the current task
  */
