@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: boot-images-android13
-          path: Image-android13*/*.img*.gz
+          path: Image-android13*/*.img.gz
 
   check-build-kernel:
     if: github.event_name == 'pull_request'
