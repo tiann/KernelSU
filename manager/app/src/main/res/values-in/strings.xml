@@ -5,6 +5,8 @@
     <string name="home_click_to_install">Klik untuk menginstall</string>
     <string name="home_working">Bekerja</string>
     <string name="home_working_version">Versi: %d</string>
+    <string name="home_superuser_count">Superuser: %d</string>
+    <string name="home_module_count">Module: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">Saat ini kernelSu hanya mendukung GKI kernel</string>
     <string name="home_copied_to_clipboard">Salin ke clipboard</string>
@@ -23,6 +25,7 @@
     <string name="selinux_status_unknown">Tidak tersedia</string>
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Gagal mengizinkan root untuk %d</string>
+    <string name="superuser_allow_root_confirm">Ijinkan akses root untuk aplikasi %s?</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan module: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan module: %s</string>
     <string name="module_empty">Tidak ada module terpasang</string>
@@ -52,4 +55,9 @@
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Restart untuk menerapkan</string>
     <string name="module_magisk_conflict">Module akan di nonaktifkan karna konflik dengan magisk\'s!</string>
+    <string name="home_learn_kernelsu">Belajar KernelSU</string>
+    <string name="home_click_to_learn_kernelsu">Cara menginstall KernelSu dan menggunakan Module</string>
+    <string name="home_support_title">Dukung kami</string>
+    <string name="home_support_content">KernelSU akan selalu gratis dan open source. Namun Anda dapat menunjukkan kepada kami bahwa Anda peduli dengan memberikan sedikit donasi.</string>
+    <string name="about_source_code"><![CDATA[Lihat sumber kode di %1$s<br/>Gabung sekarang %2$s channel]]></string>
 </resources>
