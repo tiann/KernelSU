@@ -88,6 +88,8 @@ dependencies {
 
     implementation("com.github.alorma:compose-settings-ui-m3:0.22.0")
 
+    implementation("com.github.ireward:compose-html:1.0.2")
+
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion")
 
     testImplementation("junit:junit:4.13.2")

@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -27,8 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.SimpleDialog
-import me.weishu.kernelsu.ui.util.LinkifyText
+import me.weishu.kernelsu.ui.component.AboutDialog
 import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.getBugreportFile
 
@@ -49,9 +47,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     ) { paddingValues ->
 
-        SimpleDialog {
-            SupportCard()
-        }
+        val showAboutDialog = remember { mutableStateOf(false) }
+        AboutDialog(showAboutDialog)
 
         var showLoadingDialog by remember { mutableStateOf(false) }
         LoadingDialog(showLoadingDialog)
@@ -98,15 +95,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             )
 
             val about = stringResource(id = R.string.about)
-            val ok = stringResource(id = android.R.string.ok)
             SettingsMenuLink(
                 title = {
                     Text(about)
                 },
                 onClick = {
-                    scope.launch {
-                        dialogHost.showDialog(about, content = "unused", confirm = ok)
-                    }
+                    showAboutDialog.value = true
                 }
             )
         }
@@ -143,22 +137,6 @@ fun LoadingDialog(showLoadingDialog: Boolean) {
                 .background(White, shape = RoundedCornerShape(8.dp))
         ) {
             CircularProgressIndicator()
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun SupportCard() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
-            LinkifyText("Author: weishu")
-            LinkifyText("Github: https://github.com/tiann/KernelSU")
-            LinkifyText("Telegram: https://t.me/KernelSU")
-            LinkifyText("QQ: https://pd.qq.com/s/8lipl1brp")
         }
     }
 }

@@ -62,7 +62,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             StatusCard(kernelVersion, ksuVersion)
             InfoCard()
             DonateCard()
-            AboutCard()
+            LearnMoreCard()
             Spacer(Modifier)
         }
     }
@@ -205,7 +205,7 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
 }
 
 @Composable
-fun AboutCard() {
+fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
 
     ElevatedCard {
