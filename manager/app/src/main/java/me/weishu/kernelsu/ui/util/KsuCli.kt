@@ -7,7 +7,10 @@ import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.BuildConfig
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
+import org.json.JSONArray
 import java.io.File
 
 
@@ -54,8 +57,21 @@ fun install() {
 fun listModules(): String {
     val shell = getRootShell()
 
-    val out = shell.newJob().add("${getKsuDaemonPath()} module list").to(ArrayList(), null).exec().out
+    val out =
+        shell.newJob().add("${getKsuDaemonPath()} module list").to(ArrayList(), null).exec().out
     return out.joinToString("\n").ifBlank { "[]" }
+}
+
+fun getModuleCount(): Int {
+    val result = listModules()
+    runCatching {
+        val array = JSONArray(result)
+        return array.length()
+    }.getOrElse { return 0 }
+}
+
+fun getSuperuserCount(): Int {
+    return Natives.getAllowList().size
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {
@@ -69,14 +85,14 @@ fun toggleModule(id: String, enable: Boolean): Boolean {
     return result
 }
 
-fun uninstallModule(id: String) : Boolean {
+fun uninstallModule(id: String): Boolean {
     val cmd = "module uninstall $id"
     val result = execKsud(cmd)
     Log.i(TAG, "uninstall module $id result: $result")
     return result
 }
 
-fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Unit) : Boolean {
+fun installModule(uri: Uri, onFinish: (Boolean) -> Unit, onOutput: (String) -> Unit): Boolean {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
         val file = File(ksuApp.cacheDir, "module.zip")
@@ -93,7 +109,8 @@ fun installModule(uri: Uri, onFinish: (Boolean)->Unit, onOutput: (String) -> Uni
             }
         }
 
-        val result = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(callbackList, callbackList).exec()
+        val result =
+            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(callbackList, callbackList).exec()
         Log.i("KernelSU", "install module $uri result: $result")
 
         file.delete()

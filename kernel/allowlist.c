@@ -64,6 +64,8 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 	p->uid = uid;
 	p->allow = allow;
 
+	pr_info("allow_uid: %d, allow: %d", uid, allow);
+
 	list_add_tail(&p->list, &allow_list);
 	result = true;
 
@@ -102,7 +104,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
 	int i = 0;
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
-		pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
+		// pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
 		if (p->allow == allow) {
 			array[i++] = p->uid;
 		}

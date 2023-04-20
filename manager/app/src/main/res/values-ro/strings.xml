@@ -25,6 +25,7 @@
     <string name="selinux_status_unknown">Necunoscut</string>
     <string name="superuser">Superutilizator</string>
     <string name="superuser_failed_to_grant_root">Nu s-a putut acorda acces root pentru %d</string>
+    <string name="superuser_allow_root_confirm">Sigur oferi acces root pentru %s?</string>
     <string name="module_failed_to_enable">Activarea modulului %s a eșuat</string>
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
