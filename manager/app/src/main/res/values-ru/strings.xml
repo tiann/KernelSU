@@ -4,6 +4,8 @@
     <string name="home_click_to_install">Нажмите чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
     <string name="home_copied_to_clipboard">Скопировано в буфер обмена</string>
@@ -23,7 +25,8 @@
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
     <string name="superuser">Superuser</string>
-    <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
+    <string name="superuser_failed_to_grant_root">Не удалось предоставить root права для %d</string>
+    <string name="superuser_allow_root_confirm">Вы уверены, что хотите предоставить root права для %s?</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -41,6 +44,7 @@
     <string name="reboot_edl">Reboot to EDL</string>
     <string name="about">О KernelSU</string>
     <string name="require_kernel_version_8">Требуется KernelSU версии 8 и выше</string>
+    <string name="module_uninstall_confirm">Вы уверены, что хотите удалить модуль %s?</string>
     <string name="module_uninstall_success">%s удален</string>
     <string name="module_uninstall_failed">Не удалось удалить: %s</string>
     <string name="module_version">Версия</string>
@@ -52,5 +56,10 @@
     <string name="send_log">Отправить лог</string>
     <string name="safe_mode">Безопасный режим</string>
     <string name="reboot_to_apply">Перезагрузите, чтобы вступить в силу</string>
-
+    <string name="module_magisk_conflict">Модули отключены, потому что они конфликтуют с модулями Magisk!</string>
+    <string name="home_learn_kernelsu">Узнайте о KernelSU</string>
+    <string name="home_click_to_learn_kernelsu">Узнайте, как установить KernelSU и использовать модули</string>
+    <string name="home_support_title">Поддержите нас</string>
+    <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
+    <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
 </resources>
