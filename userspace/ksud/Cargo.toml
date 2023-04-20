@@ -35,11 +35,10 @@ which = "4.2.2"
 getopts = "0.2.21"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-sys-mount = { git = "https://github.com/tiann/sys-mount" }
+sys-mount = { git = "https://github.com/tiann/sys-mount", branch = "loopfix" }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
 procfs = "0.15"
-proc-mounts = "0.3"
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.13"

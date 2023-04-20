@@ -1,4 +1,10 @@
 <resources>
+    <string name="home_learn_kernelsu">Tìm hiểu về KernelSU</string>
+    <string name="home_click_to_learn_kernelsu">Cách cài đặt KernelSU và sử dụng mô-đun</string>
+    <string name="home_support_title">Hỗ trợ chúng tôi</string>
+    <string name="home_support_content">KernelSU sẽ luôn luôn miễn phi và mã nguồn mở. Tuy nhiên, bạn có thể cho chúng tôi thấy rằng bạn quan tâm bằng cách gửi một khoản đóng góp nhỏ.</string>
+    <string name="about_source_code"><![CDATA[Xem mã nguồn tại %1$s<br/>Tham gia kênh %2$s của chúng tôi]]></string>
+    <string name="superuser_allow_root_confirm">Bạn có chắc chắn muốn cấp quyền truy cập root cho %s?</string>
     <string name="module_magisk_conflict">"Các mô-đun bị vô hiệu hóa vì nó xung đột với Magisk!"</string>
     <string name="module_uninstall_confirm">Bạn có chắc chắn muốn gỡ cài đặt mô-đun %s?</string>
     <string name="send_log">Gửi nhật ký</string>

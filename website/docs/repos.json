@@ -201,5 +201,19 @@
         "kernel_name": "kernel_xiaomi_raphael_bool-x",
         "kernel_link": "https://github.com/etnperlong/kernel_xiaomi_raphael_bool-x",
         "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
+    },
+    {
+        "maintainer": "easterNday",
+        "maintainer_link": "https://github.com/DogDayAndroid",
+        "kernel_name": "KSU_Thyme_BuildBot",
+        "kernel_link": "https://github.com/DogDayAndroid/KSU_Thyme_BuildBot",
+        "devices": "Xiaomi 10S"
+    },
+    {
+        "maintainer": "tedomi2705",
+        "maintainer_link": "https://github.com/tedomi2705",
+        "kernel_name": "kernel_xiaomi_sdm660",
+        "kernel_link": "https://github.com/tedomi2705/kernel_xiaomi_sdm660",
+        "devices": "Xiaomi Redmi Note 6 Pro (tulip)"
     }
 ]

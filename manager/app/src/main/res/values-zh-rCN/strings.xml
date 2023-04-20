@@ -5,6 +5,7 @@
     <string name="home_click_to_install">点击安装</string>
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本: %d</string>
+    <string name="home_superuser_count">超级用户数：%d</string>
     <string name="home_unsupported">不支持</string>
     <string name="home_unsupported_reason">KernelSU 现在只支持 GKI 内核</string>
     <string name="home_copied_to_clipboard">已复制到剪贴板</string>
@@ -23,6 +24,7 @@
     <string name="selinux_status_unknown">未知</string>
     <string name="superuser">超级用户</string>
     <string name="superuser_failed_to_grant_root">无法为 %d 授予 Root</string>
+    <string name="superuser_allow_root_confirm">确定要授予 %s ROOT 权限吗？</string>
     <string name="module_failed_to_enable">无法启用模块: %s</string>
     <string name="module_failed_to_disable">无法禁用模块: %s</string>
     <string name="module_empty">没有安装模块</string>
@@ -52,4 +54,10 @@
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">重启生效</string>
     <string name="module_magisk_conflict">所有模块已被禁用，因为它与 Magisk 的模块系统有冲突！</string>
+    <string name="home_module_count">模块数：%d</string>
+    <string name="home_learn_kernelsu">了解 KernelSU</string>
+    <string name="home_click_to_learn_kernelsu">了解如何安装 KernelSU 以及如何开发模块</string>
+    <string name="home_support_title">支持开发</string>
+    <string name="home_support_content">KernelSU 将保持免费和开源，向开发者捐赠以表示支持。</string>
+    <string name="about_source_code"><![CDATA[在 %1$s 查看源码<br/>加入我们的 %2$s 频道<br/>加入我们的 <b><a href="https://pd.qq.com/s/8lipl1brp">QQ 频道</a></b>]]></string>
 </resources>

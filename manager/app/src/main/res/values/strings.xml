@@ -6,6 +6,8 @@
     <string name="home_click_to_install">Click to install</string>
     <string name="home_working">Working</string>
     <string name="home_working_version">Version: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Unsupported</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
     <string name="home_copied_to_clipboard">Copied to clipboard</string>
@@ -26,6 +28,7 @@
     <string name="selinux_status_unknown">Unknown</string>
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
+    <string name="superuser_allow_root_confirm">Are you sure to grant root access to %s?</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
@@ -56,5 +59,9 @@
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>
     <string name="module_magisk_conflict">Modules are disabled because it is conflict with Magisk\'s!</string>
-
+    <string name="home_learn_kernelsu">Learn KernelSU</string>
+    <string name="home_click_to_learn_kernelsu">Learn how to install KernelSU and use modules</string>
+    <string name="home_support_title">Support Us</string>
+    <string name="home_support_content">KernelSU is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
+    <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
 </resources>

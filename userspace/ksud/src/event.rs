@@ -164,10 +164,12 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("load system.prop failed: {}", e);
     }
 
-    // mount moduke systemlessly by overlay
+    // mount module systemlessly by overlay
     if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
+
+    std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
 
     Ok(())
 }
@@ -250,7 +252,7 @@ fn catch_bootlog() -> Result<()> {
     let oldbootlog = logdir.join("boot.old.log");
 
     if bootlog.exists() {
-        std::fs::rename(&bootlog, &oldbootlog)?;
+        std::fs::rename(&bootlog, oldbootlog)?;
     }
 
     let bootlog = std::fs::File::create(bootlog)?;

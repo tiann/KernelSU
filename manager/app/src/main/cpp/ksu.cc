@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "ksu.h"
 
@@ -29,7 +30,14 @@ static bool ksuctl(int cmd, void* arg1, void* arg2) {
 
 bool become_manager(const char* pkg) {
     char param[128];
-    sprintf(param, "/data/data/%s", pkg);
+    uid_t uid = getuid();
+    uint32_t userId = uid / 100000;
+    if (userId == 0) {
+        sprintf(param, "/data/data/%s", pkg);
+    } else {
+        snprintf(param, sizeof(param), "/data/user/%d/%s", userId, pkg);
+    }
+
     return ksuctl(CMD_BECOME_MANAGER, param, nullptr);
 }
 

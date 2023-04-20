@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name" translatable="false">KernelSU</string>
-  <string name="home">ホーム</string>
+    <string name="home">ホーム</string>
   <string name="home_not_installed">未インストール</string>
   <string name="home_click_to_install">タップでインストール</string>
   <string name="home_working">動作中</string>
@@ -40,6 +39,7 @@
   <string name="reboot_edl">EDLで再起動</string>
   <string name="about">アプリについて</string>
   <string name="require_kernel_version_8">KernelSU バージョン8以降が必要です</string>
+  <string name="module_uninstall_confirm">モジュール %s をアンインストールしますか?</string>
   <string name="module_uninstall_success">%sをアンインストールしました</string>
   <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
   <string name="module_version">バージョン</string>

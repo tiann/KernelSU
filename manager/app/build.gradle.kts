@@ -61,27 +61,31 @@ android {
 dependencies {
     val accompanistVersion = "0.28.0"
     val composeDestinationsVersion = "1.7.27-beta"
-    implementation(platform("androidx.compose:compose-bom:2022.12.00"))
+    implementation(platform("androidx.compose:compose-bom:2023.04.00"))
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation("androidx.activity:activity-compose:1.6.1")
-    implementation("androidx.compose.material:material:1.4.0-beta02")
+    implementation("androidx.activity:activity-compose:1.7.0")
+    implementation("androidx.compose.material:material:1.5.0-alpha01")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("androidx.navigation:navigation-compose:2.5.3")
     implementation("com.google.accompanist:accompanist-drawablepainter:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-navigation-animation:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
     implementation("io.github.raamcosta.compose-destinations:animations-core:$composeDestinationsVersion")
 
-    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("io.coil-kt:coil-compose:2.3.0")
     implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
 
-    implementation("com.github.topjohnwu.libsu:core:5.0.3")
+    val libsuVersion = "5.0.4"
+    implementation("com.github.topjohnwu.libsu:core:$libsuVersion")
+    implementation("com.github.topjohnwu.libsu:service:$libsuVersion")
+    implementation("dev.rikka.rikkax.parcelablelist:parcelablelist:2.0.0")
+
     implementation("com.github.alorma:compose-settings-ui-m3:0.22.0")
 
     ksp("io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion")
