@@ -215,5 +215,12 @@
         "kernel_name": "kernel_xiaomi_sdm660",
         "kernel_link": "https://github.com/tedomi2705/kernel_xiaomi_sdm660",
         "devices": "Xiaomi Redmi Note 6 Pro (tulip)"
+    },
+    {
+        "maintainer": "RyuujiX",
+        "maintainer_link": "https://github.com/RyuujiX",
+        "kernel_name": "android_kernel_asus_sdm660-4.19",
+        "kernel_link": "https://github.com/RyuujiX/android_kernel_asus_sdm660-4.19",
+        "devices": "Asus Zenfone Max Pro M1 (X00TD)/ M2 (X01BD) (Linux 4.19)"
     }
 ]
