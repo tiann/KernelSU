@@ -28,7 +28,6 @@ import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
 import me.weishu.kernelsu.ui.screen.NavGraphs
-import me.weishu.kernelsu.ui.screen.appCurrentDestinationAsState
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
@@ -65,8 +64,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun BottomBar(navController: NavHostController) {
-    val topDestination by navController.appCurrentDestinationAsState()
-
     NavigationBar(tonalElevation = 8.dp) {
         BottomBarDestination.values().forEach { destination ->
             val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
@@ -86,7 +83,7 @@ private fun BottomBar(navController: NavHostController) {
                     }
                 },
                 icon = {
-                    if (topDestination?.route == destination.direction.route) {
+                    if (isCurrentDestOnBackStack) {
                         Icon(destination.iconSelected, stringResource(destination.label))
                     } else {
                         Icon(destination.iconNotSelected, stringResource(destination.label))
