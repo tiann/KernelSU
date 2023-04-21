@@ -81,9 +81,11 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.3.0")
     implementation("me.zhanghai.android.appiconloader:appiconloader-coil:1.5.0")
 
-    val libsuVersion = "5.0.4"
-    implementation("com.github.topjohnwu.libsu:core:$libsuVersion")
-    implementation("com.github.topjohnwu.libsu:service:$libsuVersion")
+    val libsuVersion = "5.0.5"
+    // change to official build(com.github.topjohnwu.libsu) when this pr is merged:
+    // https://github.com/topjohnwu/libsu/pull/151
+    implementation("com.github.tiann.libsu:core:$libsuVersion")
+    implementation("com.github.tiann.libsu:service:$libsuVersion")
     implementation("dev.rikka.rikkax.parcelablelist:parcelablelist:2.0.0")
 
     implementation("com.github.alorma:compose-settings-ui-m3:0.22.0")
