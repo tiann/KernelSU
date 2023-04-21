@@ -97,7 +97,10 @@ static void do_update_uid(struct work_struct *work)
 	// first, check if manager_uid exist!
 	bool manager_exist = false;
 	list_for_each_entry (np, &uid_list, list) {
-		if (np->uid == ksu_get_manager_uid()) {
+		// if manager is installed in work profile, the uid in packages.list is still equals main profile
+		// don't delete it in this case!
+		int manager_uid = ksu_get_manager_uid() % 100000;
+		if (np->uid == manager_uid) {
 			manager_exist = true;
 			break;
 		}
