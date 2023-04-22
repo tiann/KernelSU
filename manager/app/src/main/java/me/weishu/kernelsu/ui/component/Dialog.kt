@@ -256,7 +256,7 @@ fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
             Text(text = visuals.content)
         },
         confirmButton = {
-            TextButton(onClick = { confirmDialogData.dismiss() }) {
+            TextButton(onClick = { confirmDialogData.confirm() }) {
                 Text(text = visuals.confirm ?: stringResource(id = android.R.string.ok))
             }
         },
