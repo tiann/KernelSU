@@ -222,5 +222,12 @@
         "kernel_name": "android_kernel_asus_sdm660-4.19",
         "kernel_link": "https://github.com/RyuujiX/android_kernel_asus_sdm660-4.19",
         "devices": "Asus Zenfone Max Pro M1 (X00TD)/ M2 (X01BD) (Linux 4.19)"
+    },
+    {
+        "maintainer": "liqidecg",
+        "maintainer_link": "https://github.com/liqidecg",
+        "kernel_name": "android_kernel_xiaomi_sdm710",
+        "kernel_link": "https://github.com/liqidecg/android_kernel_xiaomi_sdm710",
+        "devices": "Mi 8 SE (sirius) (Linux 4.9)"
     }
 ]
