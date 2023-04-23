@@ -229,5 +229,12 @@
         "kernel_name": "android_kernel_xiaomi_sdm710",
         "kernel_link": "https://github.com/liqidecg/android_kernel_xiaomi_sdm710",
         "devices": "Mi 8 SE (sirius) (Linux 4.9)"
+    },
+    {
+        "maintainer": "Abdelhay-Ali",
+        "maintainer_link": "https://github.com/Abdelhay-Ali",
+        "kernel_name": "android_kernel_huawei_hi6250",
+        "kernel_link": "https://github.com/Abdelhay-Ali/android_kernel_huawei_hi6250_KernelSU",
+        "devices": "Huawei P20 lite (hi6250) (Linux 4.9)"
     }
 ]
