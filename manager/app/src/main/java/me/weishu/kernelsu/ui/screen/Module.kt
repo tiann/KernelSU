@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialog
-import me.weishu.kernelsu.ui.component.DialogResult
+import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -143,13 +143,13 @@ private fun ModuleList(viewModel: ModuleViewModel, modifier: Modifier = Modifier
     val snackBarHost = LocalSnackbarHost.current
 
     suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
-        val dialogResult = dialogHost.showDialog(
+        val confirmResult = dialogHost.showConfirm(
             moduleStr,
             content = moduleUninstallConfirm.format(module.name),
             confirm = uninstall,
             dismiss = cancel
         )
-        if (dialogResult != DialogResult.Confirmed) {
+        if (confirmResult != ConfirmResult.Confirmed) {
             return
         }
 
