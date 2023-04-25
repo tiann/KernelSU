@@ -1,5 +1,12 @@
 [
     {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_oxygen",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_oxygen/tree/13",
+        "devices": "Poco F3: alioth | Poco F4: munch | MI10T/PRO: Apollo"
+    },
+    {
         "maintainer": "SpectreDev-007",
         "maintainer_link": "https://github.com/SpectreDev-007",
         "kernel_name": "kernel_sony_sm8250",
