@@ -57,7 +57,7 @@ int __init kernelsu_init(void)
 	ksu_enable_sucompat();
 	ksu_enable_ksud();
 #else
-#warning("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html")
+// #warning("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html")
 #endif
 
 	return 0;
