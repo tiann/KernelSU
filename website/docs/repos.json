@@ -1,5 +1,19 @@
 [
     {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_oxygen",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_oxygen/tree/13",
+        "devices": "Poco F3: alioth | Poco F4: munch | MI10T/PRO: Apollo"
+    },
+    {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_ROG",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_Vayuasu/tree/main",
+        "devices": "Poco X3 Pro: Vayu | Bhima"
+    },
+    {
         "maintainer": "SpectreDev-007",
         "maintainer_link": "https://github.com/SpectreDev-007",
         "kernel_name": "kernel_sony_sm8250",
@@ -187,13 +201,6 @@
         "kernel_name": "kernel_asus_X01BD",
         "kernel_link": "https://github.com/RooGhz720/kernel_asus_X01BD",
         "devices": "Asus Zenfone Max Pro M1/M2"
-    },
-    {
-        "maintainer": "TheNoFace",
-        "maintainer_link": "https://github.com/TheNoFace",
-        "kernel_name": "kernel_oneplus_msm8998",
-        "kernel_link": "https://github.com/TheNoFace/kernel_oneplus_msm8998",
-        "devices": "OnePlus 5/5T"
     },
     {
         "maintainer": "Evans Mike",
