@@ -26,6 +26,25 @@ unsigned int get_ksu_state(void)
 	return enable_kernelsu;
 }
 
+unsigned int ksu_safe_mode = CONFIG_KSU_SAFE_MODE;
+
+static int __init is_ksu_safe_mode(char *s)
+{
+	if (s)
+		ksu_safe_mode = simple_strtoul(s, NULL, 0);
+	
+	if (ksu_safe_mode > 1)
+		ksu_safe_mode = 1;
+
+	return 1;
+}
+__setup("kernelsu.safemode=", is_ksu_safe_mode);
+
+unsigned int get_ksu_safe_mode_state(void)
+{
+	return ksu_safe_mode;
+}
+
 static struct workqueue_struct *ksu_workqueue;
 
 bool ksu_queue_work(struct work_struct *work)
