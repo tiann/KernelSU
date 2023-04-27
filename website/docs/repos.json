@@ -243,5 +243,12 @@
         "kernel_name": "android_kernel_huawei_hi6250",
         "kernel_link": "https://github.com/Abdelhay-Ali/android_kernel_huawei_hi6250_KernelSU",
         "devices": "Huawei P20 lite (hi6250) (Linux 4.9)"
+    },
+    {
+        "maintainer": "reocat",
+        "maintainer_link": "https://github.com/reocat",
+        "kernel_name": "android_kernel_nokia_sdm660_ksu",
+        "kernel_link": "https://github.com/reocat/android_kernel_nokia_sdm660_ksu",
+        "devices": "Nokia 6.1 (2018)"
     }
 ]
