@@ -250,5 +250,12 @@
         "kernel_name": "android_kernel_nokia_sdm660_ksu",
         "kernel_link": "https://github.com/reocat/android_kernel_nokia_sdm660_ksu",
         "devices": "Nokia 6.1 (2018)"
+    },
+    {
+        "maintainer": "bggRGjQaUbCoE",
+        "maintainer_link": "https://github.com/bggRGjQaUbCoE",
+        "kernel_name": "android_kernel_samsung_sm8250",
+        "kernel_link": "https://github.com/bggRGjQaUbCoE/android_kernel_samsung_sm8250",
+        "devices": "Samsung Galaxy S20+ 5G (y2q)"
     }
 ]
