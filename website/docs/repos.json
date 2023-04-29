@@ -112,6 +112,13 @@
         "devices": "OnePlus 8 Serials"
     },
     {
+        "maintainer": "Sreeshankar K",
+        "maintainer_link": "https://github.com/Sanju0910",
+        "kernel_name": "android_kernel_oneplus_avicii",
+        "kernel_link": "https://github.com/Sanju0910/android_kernel_oneplus_avicii",
+        "devices": "OnePlus Nord (avicii)"
+    },
+    {
         "maintainer": "Molyuu",
         "maintainer_link": "https://github.com/Molyuu",
         "kernel_name": "neko_kernel_xiaomi_gauguin",
