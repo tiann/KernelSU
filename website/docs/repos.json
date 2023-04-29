@@ -1,5 +1,19 @@
 [
     {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_oxygen",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_oxygen/tree/13",
+        "devices": "Poco F3: alioth | Poco F4: munch | MI10T/PRO: Apollo"
+    },
+    {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_ROG",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_Vayuasu/tree/main",
+        "devices": "Poco X3 Pro: Vayu | Bhima"
+    },
+    {
         "maintainer": "SpectreDev-007",
         "maintainer_link": "https://github.com/SpectreDev-007",
         "kernel_name": "kernel_sony_sm8250",
@@ -189,13 +203,6 @@
         "devices": "Asus Zenfone Max Pro M1/M2"
     },
     {
-        "maintainer": "TheNoFace",
-        "maintainer_link": "https://github.com/TheNoFace",
-        "kernel_name": "kernel_oneplus_msm8998",
-        "kernel_link": "https://github.com/TheNoFace/kernel_oneplus_msm8998",
-        "devices": "OnePlus 5/5T"
-    },
-    {
         "maintainer": "Evans Mike",
         "maintainer_link": "https://github.com/etnperlong",
         "kernel_name": "kernel_xiaomi_raphael_bool-x",
@@ -215,5 +222,40 @@
         "kernel_name": "kernel_xiaomi_sdm660",
         "kernel_link": "https://github.com/tedomi2705/kernel_xiaomi_sdm660",
         "devices": "Xiaomi Redmi Note 6 Pro (tulip)"
+    },
+    {
+        "maintainer": "RyuujiX",
+        "maintainer_link": "https://github.com/RyuujiX",
+        "kernel_name": "android_kernel_asus_sdm660-4.19",
+        "kernel_link": "https://github.com/RyuujiX/android_kernel_asus_sdm660-4.19",
+        "devices": "Asus Zenfone Max Pro M1 (X00TD)/ M2 (X01BD) (Linux 4.19)"
+    },
+    {
+        "maintainer": "liqidecg",
+        "maintainer_link": "https://github.com/liqidecg",
+        "kernel_name": "android_kernel_xiaomi_sdm710",
+        "kernel_link": "https://github.com/liqidecg/android_kernel_xiaomi_sdm710",
+        "devices": "Mi 8 SE (sirius) (Linux 4.9)"
+    },
+    {
+        "maintainer": "Abdelhay-Ali",
+        "maintainer_link": "https://github.com/Abdelhay-Ali",
+        "kernel_name": "android_kernel_huawei_hi6250",
+        "kernel_link": "https://github.com/Abdelhay-Ali/android_kernel_huawei_hi6250_KernelSU",
+        "devices": "Huawei P20 lite (hi6250) (Linux 4.9)"
+    },
+    {
+        "maintainer": "reocat",
+        "maintainer_link": "https://github.com/reocat",
+        "kernel_name": "android_kernel_nokia_sdm660_ksu",
+        "kernel_link": "https://github.com/reocat/android_kernel_nokia_sdm660_ksu",
+        "devices": "Nokia 6.1 (2018)"
+    },
+    {
+        "maintainer": "bggRGjQaUbCoE",
+        "maintainer_link": "https://github.com/bggRGjQaUbCoE",
+        "kernel_name": "android_kernel_samsung_sm8250",
+        "kernel_link": "https://github.com/bggRGjQaUbCoE/android_kernel_samsung_sm8250",
+        "devices": "Samsung Galaxy S20+ 5G (y2q)"
     }
 ]
