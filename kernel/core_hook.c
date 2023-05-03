@@ -385,7 +385,7 @@ static void try_umount(const char *mnt)
 	}
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
-	err = path_umount(&path, 0);
+	err = path_umount(&path, MNT_DETACH);
 	if (err) {
 		pr_info("umount %s failed: %d\n", mnt, err);
 	}
