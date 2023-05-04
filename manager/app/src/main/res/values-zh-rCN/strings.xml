@@ -56,6 +56,7 @@
     <string name="module_magisk_conflict">所有模块已被禁用，因为它与 Magisk 的模块系统有冲突！</string>
     <string name="home_module_count">模块数：%d</string>
     <string name="home_learn_kernelsu">了解 KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_CN/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">了解如何安装 KernelSU 以及如何开发模块</string>
     <string name="home_support_title">支持开发</string>
     <string name="home_support_content">KernelSU 将保持免费和开源，向开发者捐赠以表示支持。</string>

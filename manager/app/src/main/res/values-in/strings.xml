@@ -56,6 +56,7 @@
     <string name="reboot_to_apply">Restart untuk menerapkan</string>
     <string name="module_magisk_conflict">Module akan di nonaktifkan karna konflik dengan magisk\'s!</string>
     <string name="home_learn_kernelsu">Belajar KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/id_ID/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Cara menginstall KernelSu dan menggunakan Module</string>
     <string name="home_support_title">Dukung kami</string>
     <string name="home_support_content">KernelSU akan selalu gratis dan open source. Namun Anda dapat menunjukkan kepada kami bahwa Anda peduli dengan memberikan sedikit donasi.</string>
