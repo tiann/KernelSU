@@ -30,8 +30,10 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 					    flags);
 }
 
+#ifdef CONFIG_KPROBES
 extern void ksu_enable_sucompat();
 extern void ksu_enable_ksud();
+#endif
 
 int __init kernelsu_init(void)
 {
@@ -56,7 +58,7 @@ int __init kernelsu_init(void)
 #ifdef CONFIG_KPROBES
 	ksu_enable_sucompat();
 	ksu_enable_ksud();
-#else
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
 #warning("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html")
 #endif
 
