@@ -278,5 +278,12 @@
         "kernel_name": "kernel_Moe_ginkgo",
         "kernel_link": "https://github.com/AkariOficial/kernel_Moe_ginkgo",
         "devices": "Xiaomi Redmi Note 8 (Ginkgo)"
+    },
+    {
+        "maintainer": "Coconutat",
+        "maintainer_link": "https://github.com/Coconutat",
+        "kernel_name": "android_kernel_huawei_vtr_emui9_KernelSU",
+        "kernel_link": "https://github.com/Coconutat/android_kernel_huawei_vtr_emui9_KernelSU",
+        "devices": "Huawei P10,P10 Plus,Mate9,Mate9 Pro(Kirin960 Series),Stable For GSI"
     }
 ]
