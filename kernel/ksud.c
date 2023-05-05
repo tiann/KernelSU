@@ -1,5 +1,6 @@
 #include "asm/current.h"
 #include "linux/string.h"
+#include "linux/compat.h"
 #include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"

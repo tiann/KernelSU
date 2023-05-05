@@ -37,6 +37,6 @@ WSA 和运行在容器上的 Android 也可以与 KernelSU 一起工作。
 ## 鸣谢
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU 的灵感。
-- [true](https://github.com/brevent/genuine/)：apk v2 签名验证。
+- [genuine](https://github.com/brevent/genuine/)：apk v2 签名验证。
 - [Diamorphine](https://github.com/m0nad/Diamorphine)：一些 rootkit 技巧。
 - [Magisk](https://github.com/topjohnwu/Magisk)：sepolicy 的实现。

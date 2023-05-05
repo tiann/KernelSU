@@ -51,4 +51,5 @@
   <string name="send_log">ログを送信</string>
   <string name="safe_mode">セーフモード</string>
   <string name="reboot_to_apply">再起動をして有効化する</string>
+  <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
 </resources>
