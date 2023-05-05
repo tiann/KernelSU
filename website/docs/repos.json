@@ -271,5 +271,12 @@
         "kernel_name": "kernel_xiaomi_raphael",
         "kernel_link": "https://github.com/SOVIET-ANDROID/kernel_xiaomi_raphael",
         "devices": "XK20 Pro Raphael  DSP & A only SAR support "
+    },
+    {
+        "maintainer": "AkariOficial",
+        "maintainer_link": "https://github.com/AkariOficial",
+        "kernel_name": "kernel_Moe_ginkgo",
+        "kernel_link": "https://github.com/AkariOficial/kernel_Moe_ginkgo",
+        "devices": "Xiaomi Redmi Note 8 (Ginkgo)"
     }
 ]
