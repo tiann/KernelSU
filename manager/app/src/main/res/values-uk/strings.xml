@@ -58,6 +58,7 @@
     <string name="reboot_to_apply">Перезавантажте, щоб застосувати</string>
     <string name="module_magisk_conflict">Модулі вимкнено, оскільки вони конфліктують із модулями Magisk!</string>
     <string name="home_learn_kernelsu">Дізнайтеся про KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Дізнайтеся, як інсталювати KernelSU і використовувати модулі</string>
     <string name="home_support_title">Підтримайте нас</string>
     <string name="home_support_content">KernelSU є і завжди буде безкоштовним і з відкритим кодом. Однак Ви можете показати нам, що Вам не байдуже, зробивши пожертву.</string>
