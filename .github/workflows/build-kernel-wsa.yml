@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: ["5.10.117.2", "5.15.78.1"]
+        version: ["5.10.117.2", "5.15.78.1", "5.15.94.1"]
         include:
           - arch: x86_64
             file_name: "bzImage"
@@ -37,12 +37,22 @@ jobs:
           - version: "5.15.78.1"
             arch: arm64
             make_config: config-wsa-arm64
+          - version: "5.15.94.1"
+            arch: x86_64
+            make_config: config-wsa-x64
+          - version: "5.15.94.1"
+            arch: arm64
+            make_config: config-wsa-arm64
           - version: "5.10.117.2"
             device_code: latte
             kernel_version: "5.10"
           - version: "5.15.78.1"
             device_code: latte-2
             kernel_version: "5.15"
+          - version: "5.15.94.1"
+            device_code: latte-2
+            kernel_version: "5.15"
+
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
@@ -54,8 +64,8 @@ jobs:
     steps:
       - name: Install Build Tools
         run: |
-          sudo apt update
-          sudo apt install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
           export LLVM_VERSION=12
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
