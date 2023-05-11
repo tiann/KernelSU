@@ -8,7 +8,7 @@
 - 模块安装目录: 都在 `/data/adb/modules`
 - systemless: 都支持通过模块的形式以 systemless 修改 /system
 - `post-fs-data.sh`: 执行时机完全一致，语义也完全一致
-- `service.sh`: 执行世纪完全一致，语义也完全一致
+- `service.sh`: 执行时机完全一致，语义也完全一致
 - `system.prop`: 完全相同
 - `sepolicy.rule`: 完全相同
 - BusyBox：脚本都在 BusyBox 中以“独立模式”运行

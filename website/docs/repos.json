@@ -285,5 +285,12 @@
         "kernel_name": "android_kernel_huawei_vtr_emui9_KernelSU",
         "kernel_link": "https://github.com/Coconutat/android_kernel_huawei_vtr_emui9_KernelSU",
         "devices": "Huawei P10,P10 Plus,Mate9,Mate9 Pro(Kirin960 Series),Stable For GSI"
+    },
+    {
+        "maintainer": "dabao1955",
+        "maintainer_link": "https://github.com/dabao1955",
+        "kernel_name": "android_kernel_OPPO_PEQM00",
+        "kernel_link": "https://github.com/dabao1955/android_kernel_OPPO_PEQM00",
+        "devices": "OPPO Reno 6"
     }
 ]
