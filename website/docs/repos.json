@@ -292,5 +292,12 @@
         "kernel_name": "android_kernel_OPPO_PEQM00",
         "kernel_link": "https://github.com/dabao1955/android_kernel_OPPO_PEQM00",
         "devices": "MediaTek devices in the OPPO Reno series on ColorOS13.x"
+    },
+    {
+        "maintainer": "Aflaungos",
+        "maintainer_link": "https://github.com/Aflaungos",
+        "kernel_name": "android_kernel_motorola_msm8998",
+        "kernel_link": "https://github.com/Aflaungos/android_kernel_motorola_msm8998",
+        "devices": "Moto G6 Plus (evert)"
     }
 ]
