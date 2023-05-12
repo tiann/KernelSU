@@ -1,6 +1,6 @@
 #! /bin/bash
 
-set -x
+set +eux
 
 git clone https://github.com/tiann/KernelSU
 
@@ -14,6 +14,6 @@ ln -sf $(pwd)/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
 echo "[+] Add kernel su driver to Makefile"
 
 DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
-grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-$(CONFIG_KPROBES) += kernelsu/" >> $DRIVER_MAKEFILE
 
 echo "[+] Done."
