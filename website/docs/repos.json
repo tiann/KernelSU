@@ -292,5 +292,12 @@
         "kernel_name": "android_kernel_OPPO_PEQM00",
         "kernel_link": "https://github.com/dabao1955/android_kernel_OPPO_PEQM00",
         "devices": "OPPO Reno 6"
+    },
+    {
+        "maintainer": "Aflaungos",
+        "maintainer_link": "https://github.com/Aflaungos",
+        "kernel_name": "android_kernel_motorola_msm8998",
+        "kernel_link": "https://github.com/Aflaungos/android_kernel_motorola_msm8998",
+        "devices": "Kernel 4.4.302 with linux-stable merged in, KernelSU add bu sing KProbes and confirmed working on my device"
     }
 ]
