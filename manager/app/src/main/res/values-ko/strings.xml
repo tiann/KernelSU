@@ -1,0 +1,64 @@
+<resources>
+    <string name="home">홈</string>
+    <string name="home_not_installed">설치되지 않음</string>
+    <string name="home_click_to_install">이 곳을 눌러 설치하기</string>
+    <string name="home_working">정상 작동 중</string>
+    <string name="home_working_version">버전: %d</string>
+    <string name="home_superuser_count">루트 권한: %d개</string>
+    <string name="home_module_count">설치된 모듈: %d개</string>
+    <string name="home_unsupported">지원되지 않음</string>
+    <string name="home_unsupported_reason">KernelSU는 현재 GKI 커널만 지원합니다</string>
+    <string name="home_copied_to_clipboard">클립보드로 복사됨</string>
+    <string name="home_support">지원</string>
+
+    <string name="home_kernel">커널</string>
+    <string name="home_arch">아키텍처</string>
+    <string name="home_manager_version">매니저 버전</string>
+    <string name="home_api">API 레벨</string>
+    <string name="home_fingerprint">빌드 정보</string>
+    <string name="home_securitypatch">보안 패치 버전</string>
+
+    <string name="home_selinux_status">SELinux 상태</string>
+    <string name="selinux_status_disabled">비활성화됨</string>
+    <string name="selinux_status_enforcing">적용</string>
+    <string name="selinux_status_permissive">허용</string>
+    <string name="selinux_status_unknown">알 수 없음</string>
+    <string name="superuser">슈퍼유저</string>
+    <string name="superuser_failed_to_grant_root">%d에 루트 권한 부여 실패</string>
+    <string name="superuser_allow_root_confirm">%s에 루트 권한을 부여할까요?</string>
+    <string name="module_failed_to_enable">모듈 활성화 실패: %s</string>
+    <string name="module_failed_to_disable">모듈 비활성화 실패: %s</string>
+    <string name="module_empty">설치된 모듈 없음</string>
+
+    <string name="module">모듈</string>
+    <string name="uninstall">삭제</string>
+    <string name="module_install">설치</string>
+    <string name="install">설치</string>
+    <string name="reboot">다시 시작</string>
+    <string name="settings">설정</string>
+    <string name="reboot_userspace">빠른 다시 시작</string>
+    <string name="reboot_recovery">복구 모드로 다시 시작</string>
+    <string name="reboot_bootloader">부트로더로 다시 시작</string>
+    <string name="reboot_download">다운로드 모드로 다시 시작</string>
+    <string name="reboot_edl">EDL 모드로 다시 시작</string>
+    <string name="about">정보</string>
+    <string name="require_kernel_version_8">버전 8 이상의 KernelSU가 필요합니다</string>
+    <string name="module_uninstall_confirm">%s 모듈을 삭제할까요?</string>
+    <string name="module_uninstall_success">%s 모듈 삭제됨</string>
+    <string name="module_uninstall_failed">모듈 삭제 실패: %s</string>
+    <string name="module_version">버전</string>
+    <string name="module_author">제작자</string>
+    <string name="module_overlay_fs_not_available">overlayfs 사용 불가, 모듈을 사용할 수 없습니다!</string>
+    <string name="refresh">새로고침</string>
+    <string name="show_system_apps">시스템 앱 보이기</string>
+    <string name="hide_system_apps">시스템 앱 숨기기</string>
+    <string name="send_log">로그 보내기</string>
+    <string name="safe_mode">안전 모드</string>
+    <string name="reboot_to_apply">다시 시작하여 변경 사항 적용</string>
+    <string name="module_magisk_conflict">Magisk와의 충돌로 인해 모듈을 사용할 수 없습니다!</string>
+    <string name="home_learn_kernelsu">KernelSU 알아보기</string>
+    <string name="home_click_to_learn_kernelsu">KernelSU 설치 방법과 모듈 사용 방법을 확인합니다.</string>
+    <string name="home_support_title">지원이 필요해요!</string>
+    <string name="home_support_content">KernelSU는 지금도, 앞으로도 항상 무료이며 오픈 소스로 유지됩니다. 기부를 통해 여러분의 관심을 보여주세요.</string>
+    <string name="about_source_code"><![CDATA[%1$s에서 소스 코드 보기<br/>%2$s 채널 참가하기]]></string>
+</resources>
