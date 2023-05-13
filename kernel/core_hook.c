@@ -5,6 +5,7 @@
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
 #include "linux/lsm_hooks.h"
+#include "linux/nsproxy.h"
 #include "linux/path.h"
 #include "linux/printk.h"
 #include "linux/uaccess.h"
@@ -361,6 +362,11 @@ static bool is_appuid(kuid_t uid)
 static bool should_umount(struct path *path)
 {
 	if (!path) {
+		return false;
+	}
+
+	if (current->nsproxy->mnt_ns == init_nsproxy.mnt_ns) {
+		pr_info("ignore global mnt namespace process: %d\n", current_uid().val);
 		return false;
 	}
 
