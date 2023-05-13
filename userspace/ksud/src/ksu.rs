@@ -229,7 +229,10 @@ pub fn root_shell() -> Result<()> {
 
             // switch to global mount namespace
             #[cfg(any(target_os = "linux", target_os = "android"))]
-            if mount_master {
+            let global_namespace_enable =
+                std::fs::read_to_string("/sys/module/ksu/parameters/global_namespace_enable")
+                    .unwrap_or("0".to_string());
+            if global_namespace_enable.trim() == "1" || mount_master {
                 let _ = utils::switch_mnt_ns(1);
                 let _ = utils::unshare_mnt_ns();
             }
