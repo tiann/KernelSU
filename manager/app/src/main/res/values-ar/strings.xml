@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name" translatable="false">KernelSU</string>
+
+    <string name="home">الرئيسية</string>
+    <string name="home_not_installed">غير مثبت</string>
+    <string name="home_click_to_install">اضغط لتثبيت</string>
+    <string name="home_working">يعمل</string>
+    <string name="home_working_version">الاصدار: %d</string>
+    <string name="home_superuser_count">مستخدمين الجذر: %d</string>
+    <string name="home_module_count">الوحدات: %d</string>
+    <string name="home_unsupported">غير مدعوم</string>
+    <string name="home_unsupported_reason">KernelSU يدعم GKI kernels الان</string>
+    <string name="home_copied_to_clipboard">نسخ الي حافظة</string>
+    <string name="home_support">مدعوم</string>
+
+    <string name="home_kernel">نواه</string>
+    <string name="home_arch">معمارية</string>
+    <string name="home_manager_version">اصدار المدير</string>
+    <string name="home_api">API Level</string>
+    <string name="home_abi">ABI</string>
+    <string name="home_fingerprint">بصمة</string>
+    <string name="home_securitypatch">تصحيح الأمان</string>
+
+    <string name="home_selinux_status">وضع SELinux</string>
+    <string name="selinux_status_disabled">غير مفعل</string>
+    <string name="selinux_status_enforcing">فرض</string>
+    <string name="selinux_status_permissive">متساهل</string>
+    <string name="selinux_status_unknown">مجهول</string>
+    <string name="superuser">مستخدم الجذر</string>
+    <string name="superuser_failed_to_grant_root">فشل منح الجذر لـ %d</string>
+    <string name="superuser_allow_root_confirm">هل أنت متأكد من منح حق الوصول إلى الجذر إلى %s?</string>
+    <string name="module_failed_to_enable">فشل في تمكين الوحدة النمطية: %s</string>
+    <string name="module_failed_to_disable">فشل تعطيل الوحدة النمطية: %s</string>
+    <string name="module_empty">لا توجد وحدة مثبتة</string>
+
+    <string name="module">وحدة</string>
+    <string name="uninstall">الغاء التثبيت</string>
+    <string name="module_install">تثبيت</string>
+    <string name="install">تثبيت</string>
+    <string name="reboot">اعادة تشغيل</string>
+    <string name="settings">الاعدادات</string>
+    <string name="reboot_userspace">اعادة تشغيل سريع</string>
+    <string name="reboot_recovery">اعادة تشغيل الي ريكفيري</string>
+    <string name="reboot_bootloader">اعادة تشغيل الي بوت لودر</string>
+    <string name="reboot_download">اعادة تشغيل الي وضع داونلود</string>
+    <string name="reboot_edl">اعادة تشغيل الي وضع EDL</string>
+    <string name="about">من نحن</string>
+    <string name="require_kernel_version_8">يتطلب KernelSU اصدار 8+</string>
+    <string name="module_uninstall_confirm">Are you sure you want to uninstall module %s?</string>
+    <string name="module_uninstall_success">%s uninstalled</string>
+    <string name="module_uninstall_failed">Failed to uninstall: %s</string>
+    <string name="module_version">الاصدار</string>
+    <string name="module_author">مؤلف</string>
+    <string name="module_overlay_fs_not_available">التراكبات غير متوفرة ، لا يمكن للوحدة أن تعمل!</string>
+    <string name="refresh">رفريش</string>
+    <string name="show_system_apps">عرض تطبيقات النظام</string>
+    <string name="hide_system_apps">اخفاء تطبيقات النظام</string>
+    <string name="send_log">ارسال اللوج</string>
+    <string name="safe_mode">وضع الامن</string>
+    <string name="reboot_to_apply">اعادة تشغيل لتطبيق التغيرات</string>
+    <string name="module_magisk_conflict">تم تعطيل الوحدات النمطية لأنها تتعارض مع Magisk\'s!</string>
+    <string name="home_learn_kernelsu">تعلم KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">تعرف على كيفية تثبيت KernelSU واستخدام الوحدات النمطية</string>
+    <string name="home_support_title">ادعمنا</string>
+    <string name="home_support_content">KernelSU هو وسيظل دائمًا مجانيًا ومفتوح المصدر. ومع ذلك ، يمكنك أن تظهر لنا أنك تهتم بالتبرع.</string>
+    <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
+</resources>
