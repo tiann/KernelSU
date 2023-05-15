@@ -5,6 +5,7 @@
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
 #include "linux/lsm_hooks.h"
+#include "linux/nsproxy.h"
 #include "linux/path.h"
 #include "linux/printk.h"
 #include "linux/uaccess.h"
@@ -364,6 +365,11 @@ static bool should_umount(struct path *path)
 		return false;
 	}
 
+	if (current->nsproxy->mnt_ns == init_nsproxy.mnt_ns) {
+		pr_info("ignore global mnt namespace process: %d\n", current_uid().val);
+		return false;
+	}
+
 	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
 		const char *fstype = path->mnt->mnt_sb->s_type->name;
 		return strcmp(fstype, "overlay") == 0;
@@ -385,7 +391,7 @@ static void try_umount(const char *mnt)
 	}
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
-	err = path_umount(&path, MNT_DETACH);
+	err = path_umount(&path, 0);
 	if (err) {
 		pr_info("umount %s failed: %d\n", mnt, err);
 	}
