@@ -26,7 +26,11 @@ unsigned int get_ksu_state(void)
 	return enable_kernelsu;
 }
 
-unsigned int ksu_safe_mode = CONFIG_KSU_SAFE_MODE;
+#ifdef CONFIG_KSU_SAFE_MODE
+unsigned int ksu_safe_mode = 1;
+#else
+unsigned int ksu_safe_mode = 0;
+#endif
 
 static int __init is_ksu_safe_mode(char *s)
 {
