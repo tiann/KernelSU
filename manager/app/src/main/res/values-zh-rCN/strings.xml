@@ -63,4 +63,6 @@
     <string name="about_source_code"><![CDATA[在 %1$s 查看源码<br/>加入我们的 %2$s 频道<br/>加入我们的 <b><a href="https://pd.qq.com/s/8lipl1brp">QQ 频道</a></b>]]></string>
     <string name="app_profile_title1">应用</string>
     <string name="app_profile_root_switch">Root 权限</string>
+    <string name="app_profile_denylist">Denylist</string>
+    <string name="app_profile_title0">全局</string>
 </resources>

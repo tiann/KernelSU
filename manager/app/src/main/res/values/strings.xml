@@ -70,4 +70,7 @@
     <string name="app_profile_title2" translatable="false">Root Profile</string>
     <string name="app_profile_root_switch">Grant Root</string>
     <string name="app_profile_allowlist">Allowlist</string>
+    <string name="app_profile_denylist">Denylist</string>
+    <string name="app_profile_title0">Global</string>
+    <string name="app_profile_mode">Working Mode</string>
 </resources>

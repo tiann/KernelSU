@@ -12,20 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Groups2
 import androidx.compose.material.icons.filled.Groups3
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.PermDeviceInformation
 import androidx.compose.material.icons.filled.PermIdentity
 import androidx.compose.material.icons.filled.Rule
-import androidx.compose.material.icons.filled.RuleFolder
 import androidx.compose.material.icons.filled.SafetyDivider
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,22 +39,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.alorma.compose.settings.ui.SettingsGroup
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AboutDialog
-import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.LoadingDialog
-import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 
 /**
@@ -95,6 +85,17 @@ fun AppProfileScreen(
 
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
+
+            GroupTitle(stringResource(id = R.string.app_profile_title0))
+
+            var allowlistMode by rememberSaveable {
+                mutableStateOf(true)
+            }
+            WorkingMode(allowlistMode) { checked ->
+                allowlistMode = !allowlistMode
+            }
+
+            Divider(thickness = Dp.Hairline)
 
             GroupTitle(stringResource(id = R.string.app_profile_title1))
 
@@ -140,7 +141,11 @@ fun AppProfileScreen(
 
             AppSwitch(
                 icon = Icons.Filled.List,
-                title = stringResource(id = R.string.app_profile_allowlist),
+                title = if (allowlistMode) {
+                    stringResource(id = R.string.app_profile_allowlist)
+                } else {
+                    stringResource(id = R.string.app_profile_denylist)
+                },
                 checked = true
             ) {
 
@@ -166,7 +171,7 @@ fun AppProfileScreen(
 @Composable
 private fun GroupTitle(title: String) {
     Row(modifier = Modifier.padding(12.dp)) {
-        Spacer(modifier = Modifier.width(30.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
             color = MaterialTheme.colorScheme.primary,
@@ -175,6 +180,36 @@ private fun GroupTitle(title: String) {
             fontWeight = MaterialTheme.typography.titleSmall.fontWeight,
         )
     }
+}
+
+@Composable
+private fun WorkingMode(allowlistMode: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    var showDropdown by remember { mutableStateOf(false) }
+    val mode = if (allowlistMode) {
+        stringResource(id = R.string.app_profile_allowlist)
+    } else {
+        stringResource(id = R.string.app_profile_denylist)
+    }
+    ListItem(
+        modifier = Modifier.clickable(onClick = {
+            showDropdown = true
+        }),
+        headlineText = {
+            Text(stringResource(id = R.string.app_profile_mode))
+        },
+        supportingText = {
+            Text(mode)
+        },
+        leadingContent = {
+            Icon(
+                Icons.Filled.List,
+                contentDescription = stringResource(id = R.string.app_profile_mode)
+            )
+        },
+        trailingContent = {
+            Switch(checked = allowlistMode, onCheckedChange = onCheckedChange)
+        }
+    )
 }
 
 @Composable
