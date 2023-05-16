@@ -141,8 +141,8 @@ private fun AppItem(
 ) {
     ListItem(
         modifier = Modifier.clickable(onClick = onClickListener),
-        headlineText = { Text(app.label) },
-        supportingText = { Text(app.packageName) },
+        headlineContent = { Text(app.label) },
+        supportingContent = { Text(app.packageName) },
         leadingContent = {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)

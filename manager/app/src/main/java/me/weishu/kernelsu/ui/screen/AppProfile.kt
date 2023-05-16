@@ -116,8 +116,8 @@ fun AppProfileScreen(
             GroupTitle(stringResource(id = R.string.app_profile_title1))
 
             ListItem(
-                headlineText = { Text(label) },
-                supportingText = { Text(packageName) },
+                headlineContent = { Text(label) },
+                supportingContent = { Text(packageName) },
                 leadingContent = {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -223,10 +223,10 @@ private fun WorkingMode(allowlistMode: Boolean, onCheckedChange: (Boolean) -> Un
         modifier = Modifier.clickable(onClick = {
             showDropdown = true
         }),
-        headlineText = {
+        headlineContent = {
             Text(stringResource(id = R.string.app_profile_mode))
         },
-        supportingText = {
+        supportingContent = {
             Text(mode)
         },
         leadingContent = {
@@ -249,7 +249,7 @@ private fun AppSwitch(
     onCheckChange: (Boolean) -> Unit
 ) {
     ListItem(
-        headlineText = { Text(title) },
+        headlineContent = { Text(title) },
         leadingContent = {
             Icon(
                 icon,
@@ -265,7 +265,7 @@ private fun AppSwitch(
 @Composable
 private fun Uid() {
     ListItem(
-        headlineText = {
+        headlineContent = {
             Text("Uid: 0")
         },
         leadingContent = {
@@ -280,7 +280,7 @@ private fun Uid() {
 @Composable
 private fun Gid() {
     ListItem(
-        headlineText = { Text("Gid: 0") },
+        headlineContent = { Text("Gid: 0") },
         leadingContent = {
             Icon(
                 Icons.Filled.Group,
@@ -293,7 +293,7 @@ private fun Gid() {
 @Composable
 private fun Groups() {
     ListItem(
-        headlineText = { Text("Groups: 0") },
+        headlineContent = { Text("Groups: 0") },
         leadingContent = {
             Icon(
                 Icons.Filled.Groups3,
@@ -306,7 +306,7 @@ private fun Groups() {
 @Composable
 private fun Capabilities() {
     ListItem(
-        headlineText = { Text("Capabilities") },
+        headlineContent = { Text("Capabilities") },
         leadingContent = {
             Icon(
                 Icons.Filled.SafetyDivider,
@@ -319,7 +319,7 @@ private fun Capabilities() {
 @Composable
 private fun SELinuxDomain() {
     ListItem(
-        headlineText = { Text("u:r:su:s0") },
+        headlineContent = { Text("u:r:su:s0") },
         leadingContent = {
             Icon(
                 Icons.Filled.Rule,
