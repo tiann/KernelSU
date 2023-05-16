@@ -49,7 +49,7 @@ KernelSU は現在カーネル4.14にバックポートされていますが、�
 
 ## 古いカーネルに KernelSU を組み込むには？
 
-[ガイド](how-to-integrate-for-non-gki) を参考にしてください。
+[ガイド](../../guide/how-to-integrate-for-non-gki) を参考にしてください。
 
 ## Android のバージョンが13なのに、カーネルは「android12-5.10」と表示されるのはなぜ？
 
