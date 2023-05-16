@@ -108,10 +108,10 @@ jobs:
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
-          echo "Patch script/setlocalversion"
+          echo "[+] Patch script/setlocalversion"
           sed -i 's/-dirty//g' $GKI_ROOT/common/scripts/setlocalversion
 
-          if [ "$IS_DEBUG_KERNEL" = "true"]; then
+          if [ "$IS_DEBUG_KERNEL" = "true" ]; then
             echo "[+] Enable debug features for kernel"
             echo "ccflags-y += -DCONFIG_KSU_DEBUG" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
           fi
