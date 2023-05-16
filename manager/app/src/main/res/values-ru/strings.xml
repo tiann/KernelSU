@@ -63,4 +63,7 @@
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходники на %1$s<br/>Присоединяйтесь к каналу %2$s]]></string>
+    <string name="app_profile_title1">Приложение</string>
+    <string name="app_profile_root_switch">Разрешить Root</string>
+    <string name="app_profile_allowlist">Allowlist</string>
 </resources>
