@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
-import com.alorma.compose.settings.ui.*
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +28,6 @@ import me.weishu.kernelsu.ui.util.getBugreportFile
  * @author weishu
  * @date 2023/1/1.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
@@ -50,11 +49,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
             val dialogHost = LocalDialogHost.current
-            SettingsMenuLink(
-                title = {
-                    Text(stringResource(id = R.string.send_log))
-                },
-                onClick = {
+            ListItem(
+                headlineContent = { Text(stringResource(id = R.string.send_log)) },
+                modifier = Modifier.clickable {
                     scope.launch {
                         val bugreport = dialogHost.withLoading {
                             withContext(Dispatchers.IO) {
@@ -85,11 +82,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             )
 
             val about = stringResource(id = R.string.about)
-            SettingsMenuLink(
-                title = {
-                    Text(about)
-                },
-                onClick = {
+            ListItem(
+                headlineContent = { Text(about) },
+                modifier = Modifier.clickable {
                     showAboutDialog.value = true
                 }
             )

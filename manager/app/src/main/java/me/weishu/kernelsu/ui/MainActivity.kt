@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -25,6 +24,8 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.navigation.popBackStack
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
+import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
 import me.weishu.kernelsu.ui.screen.NavGraphs
@@ -34,7 +35,7 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,8 +65,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun BottomBar(navController: NavHostController) {
+    val isManager = Natives.becomeManager(ksuApp.packageName)
     NavigationBar(tonalElevation = 8.dp) {
         BottomBarDestination.values().forEach { destination ->
+            if (!isManager && destination.rootRequired) return@forEach
             val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
             NavigationBarItem(
                 selected = isCurrentDestOnBackStack,

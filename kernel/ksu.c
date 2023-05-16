@@ -1,6 +1,5 @@
 #include "linux/fs.h"
 #include "linux/module.h"
-#include "linux/moduleparam.h"
 #include "linux/workqueue.h"
 
 #include "allowlist.h"
@@ -9,9 +8,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "uid_observer.h"
-
-int global_namespace_enable;
-module_param(global_namespace_enable, int, S_IRUSR | S_IWUSR);
 
 static struct workqueue_struct *ksu_workqueue;
 
