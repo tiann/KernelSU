@@ -1,19 +1,25 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.os.Parcelable
-import androidx.compose.animation.AnimatedVisibility
+import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -39,12 +45,10 @@ import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.AppProfile
 import me.weishu.kernelsu.profile.RootProfile
-import me.weishu.kernelsu.ui.component.RadioItem
 import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
@@ -126,96 +130,69 @@ private fun AppProfileInner(
             onCheckedChange = onSwitchRootPermission,
         )
 
-        Divider(thickness = Dp.Hairline)
-
         Crossfade(targetState = isRootGranted, label = "") { current ->
-            if (current) {
-                var mode: Mode<RootProfile> by rememberSaveable { mutableStateOf(Mode.Default()) }
-                var template by rememberSaveable { mutableStateOf("None") }
-                var profile by rememberSaveable { mutableStateOf(RootProfile("@$packageName")) }
-
-                Column {
-                    RadioItem(
-                        title = stringResource(R.string.profile_default),
-                        selected = mode is Mode.Default,
-                        onClick = { mode = Mode.Default() }
-                    )
-
-                    RadioItem(
-                        title = stringResource(R.string.profile_template),
-                        selected = mode is Mode.Template,
-                        onClick = { mode = Mode.Template("") }
-                    )
-                    AnimatedVisibility(mode is Mode.Template) {
-                        var expanded by remember { mutableStateOf(false) }
-                        ListItem(headlineContent = {
-                            ExposedDropdownMenuBox(
-                                expanded = expanded,
-                                onExpandedChange = { expanded = it },
-                            ) {
-                                OutlinedTextField(
-                                    modifier = Modifier.menuAnchor(),
-                                    readOnly = true,
-                                    label = { Text(stringResource(R.string.profile_template)) },
-                                    value = template,
-                                    onValueChange = {}
-                                )
-                                // TODO: Template
-                            }
-                        })
+            Column {
+                if (current) {
+                    var mode by rememberSaveable { mutableStateOf(Mode.Default) }
+                    ProfileBox(mode, true) { mode = it }
+                    Crossfade(targetState = mode, label = "") { currentMode ->
+                        if (currentMode == Mode.Template) {
+                            var expanded by remember { mutableStateOf(false) }
+                            var template by rememberSaveable { mutableStateOf("None") }
+                            ListItem(headlineContent = {
+                                ExposedDropdownMenuBox(
+                                    expanded = expanded,
+                                    onExpandedChange = { expanded = it },
+                                ) {
+                                    OutlinedTextField(
+                                        modifier = Modifier.menuAnchor(),
+                                        readOnly = true,
+                                        label = { Text(stringResource(R.string.profile_template)) },
+                                        value = template,
+                                        onValueChange = {},
+                                        trailingIcon = {
+                                            if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
+                                            else Icon(Icons.Filled.ArrowDropDown, null)
+                                        },
+                                    )
+                                    // TODO: Template
+                                }
+                            })
+                        } else if (mode == Mode.Custom) {
+                            var profile by rememberSaveable { mutableStateOf(RootProfile("@$packageName")) }
+                            RootProfileConfig(
+                                fixedName = true,
+                                profile = profile,
+                                onProfileChange = { profile = it }
+                            )
+                        }
                     }
-
-                    RadioItem(
-                        title = stringResource(R.string.profile_custom),
-                        selected = mode is Mode.Custom,
-                        onClick = { mode = Mode.Custom(profile) }
-                    )
-                    AnimatedVisibility(mode is Mode.Custom) {
-                        RootProfileConfig(
-                            fixedName = true,
-                            profile = profile,
-                            onProfileChange = { profile = it }
-                        )
-                    }
-                }
-            } else {
-                var mode: Mode<AppProfile> by rememberSaveable { mutableStateOf(Mode.Default()) }
-                var profile by rememberSaveable { mutableStateOf(AppProfile("@$packageName")) }
-
-                Column {
-                    RadioItem(
-                        title = stringResource(R.string.profile_default),
-                        selected = mode is Mode.Default,
-                        onClick = { mode = Mode.Default() }
-                    )
-
-                    RadioItem(
-                        title = stringResource(R.string.profile_custom),
-                        selected = mode is Mode.Custom,
-                        onClick = { mode = Mode.Custom(profile) }
-                    )
-                    AnimatedVisibility(mode is Mode.Custom) {
-                        AppProfileConfig(
-                            fixedName = true,
-                            profile = profile,
-                            onProfileChange = { profile = it }
-                        )
+                } else {
+                    var mode by rememberSaveable { mutableStateOf(Mode.Default) }
+                    ProfileBox(mode, false) { mode = it }
+                    Crossfade(targetState = mode, label = "") { currentMode ->
+                        if (currentMode == Mode.Custom) {
+                            var profile by rememberSaveable { mutableStateOf(AppProfile(packageName)) }
+                            AppProfileConfig(
+                                fixedName = true,
+                                profile = profile,
+                                onProfileChange = { profile = it }
+                            )
+                        }
                     }
                 }
-
             }
         }
     }
 }
 
-@Parcelize
-private sealed class Mode<P : Parcelable> : Parcelable {
+private enum class Mode(@StringRes private val res: Int) {
+    Default(R.string.profile_default),
+    Template(R.string.profile_template),
+    Custom(R.string.profile_custom);
 
-    class Default<P : Parcelable> : Mode<P>()
-
-    class Template<P : Parcelable>(val template: String) : Mode<P>()
-
-    class Custom<P : Parcelable>(val profile: P) : Mode<P>()
+    val text: String
+        @Composable get() = stringResource(res)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -231,6 +208,45 @@ private fun TopBar(onBack: () -> Unit) {
             ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
         },
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProfileBox(
+    mode: Mode,
+    hasTemplate: Boolean,
+    onModeChange: (Mode) -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.profile)) },
+        supportingContent = { Text(mode.text) },
+        leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
+    )
+    Divider(thickness = Dp.Hairline)
+    ListItem(headlineContent = {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            FilterChip(
+                selected = mode == Mode.Default,
+                label = { Text(stringResource(R.string.profile_default)) },
+                onClick = { onModeChange(Mode.Default) },
+            )
+            if (hasTemplate) {
+                FilterChip(
+                    selected = mode == Mode.Template,
+                    label = { Text(stringResource(R.string.profile_template)) },
+                    onClick = { onModeChange(Mode.Template) },
+                )
+            }
+            FilterChip(
+                selected = mode == Mode.Custom,
+                label = { Text(stringResource(R.string.profile_custom)) },
+                onClick = { onModeChange(Mode.Custom) },
+            )
+        }
+    })
 }
 
 @Preview
