@@ -63,13 +63,15 @@
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходники на %1$s<br/>Присоединяйтесь к каналу %2$s]]></string>
-    <string name="app_profile_title1">Приложение</string>
-    <string name="app_profile_allowlist">Allowlist</string>
-    <string name="app_profile_denylist">Denylist</string>
-    <string name="app_profile_title0">Global</string>
-    <string name="app_profile_mode">Режим работы</string>
-    <string name="failed_to_set_allowlist_mode">Не удалось перейти в режим allowlist</string>
-    <string name="failed_to_add_to_allowlist">Не удалось добавить %s в allowlist</string>
-    <string name="failed_to_add_to_denylist">Не удалось добавить %s в denylist</string>
-    <string name="failed_to_set_denylist_mode">Не удалось перейти в режим denylist</string>
+    <string name="profile">Профиль приложения</string>
+    <string name="profile_default">Использовать профиль по умолчанию</string>
+    <string name="profile_template">Использовать профиль шаблона</string>
+    <string name="profile_custom">Использовать пользовательский профиль</string>
+    <string name="profile_name">Название профиля</string>
+    <string name="profile_namespace">Mount namespace</string>
+    <string name="profile_namespace_inherited">Inherited</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_unmount_modules">Размонтировать модули</string>
+    <string name="profile_allow_root_request">Разрешить запрос root</string>
 </resources>
