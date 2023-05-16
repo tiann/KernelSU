@@ -334,13 +334,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
-static unsigned int volumeup_pressed_count = 0;
 static unsigned int volumedown_pressed_count = 0;
-
-static bool is_volumeup_enough(unsigned int count)
-{
-	return count >= 3;
-}
 
 static bool is_volumedown_enough(unsigned int count)
 {
@@ -367,18 +361,6 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 		}
 	}
 
-	if (*type == EV_KEY && *code == KEY_VOLUMEUP) {
-		int val = *value;
-		pr_info("KEY_VOLUMEUP val: %d\n", val);
-		if (val) {
-			// key pressed, count it
-			volumeup_pressed_count += 1;
-			if (is_volumeup_enough(volumeup_pressed_count)) {
-				stop_input_hook();
-			}
-		}
-	}
-
 	return 0;
 }
 
@@ -387,7 +369,7 @@ bool ksu_is_safe_mode()
 	static bool safe_mode = false;
 	if (safe_mode) {
 		// don't need to check again, userspace may call multiple times
-		return false;
+		return true;
 	}
 
 	// stop hook first!
@@ -396,20 +378,12 @@ bool ksu_is_safe_mode()
 	pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
 	if (is_volumedown_enough(volumedown_pressed_count)) {
 		// pressed over 3 times
-		pr_info("KEY_VOLUMEDOWN pressed max times, enter safe mode!\n");
+		pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
 		safe_mode = true;
 		return true;
 	}
 
-	pr_info("volumeup_pressed_count: %d\n", volumeup_pressed_count);
-	if (is_volumeup_enough(volumeup_pressed_count)) {
-		// pressed over 3 times
-		pr_info("KEY_VOLUMEUP pressed max times, exit safe mode!\n");
-		safe_mode = false;
-		return true;
-	}
-
-	return 0;
+	return false;
 }
 
 #ifdef CONFIG_KPROBES
