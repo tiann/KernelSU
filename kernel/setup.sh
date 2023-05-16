@@ -11,7 +11,7 @@ elif test -d "$GKI_ROOT/drivers"; then
      DRIVER_DIR="$GKI_ROOT/drivers"
 else
      echo '[ERROR] "drivers/" directory is not found.'
-     echo '[+] You should modify this scrpit by yourself.'
+     echo '[+] You should modify this script by yourself.'
      exit 127
 fi
 
