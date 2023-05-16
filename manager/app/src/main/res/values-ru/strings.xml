@@ -58,6 +58,7 @@
     <string name="reboot_to_apply">Перезагрузите, чтобы вступить в силу</string>
     <string name="module_magisk_conflict">Модули отключены, потому что они конфликтуют с модулями Magisk!</string>
     <string name="home_learn_kernelsu">Узнайте о KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Узнайте, как установить KernelSU и использовать модули</string>
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>

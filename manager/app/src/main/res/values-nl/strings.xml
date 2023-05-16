@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name" translatable="false">KernelSU</string>
+
+    <string name="home">Home</string>
+    <string name="home_not_installed">Niet geïnstalleerd</string>
+    <string name="home_click_to_install">Klik om te installeren</string>
+    <string name="home_working">Werkend</string>
+    <string name="home_working_version">Versie: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="home_module_count">Modules: %d</string>
+    <string name="home_unsupported">Niet ondersteund</string>
+    <string name="home_unsupported_reason">KernelSU ondersteunt alleen GKI kernels</string>
+    <string name="home_copied_to_clipboard">Gekopiëerd naar clipboard</string>
+    <string name="home_support">Ondersteuning</string>
+
+    <string name="home_kernel">Kernel</string>
+    <string name="home_arch">Arch</string>
+    <string name="home_manager_version">Manager Versie</string>
+    <string name="home_api">API Niveau</string>
+    <string name="home_abi">ABI</string>
+    <string name="home_fingerprint">Fingerprint</string>
+    <string name="home_securitypatch">Veiligheidspatch</string>
+
+    <string name="home_selinux_status">SELinux status</string>
+    <string name="selinux_status_disabled">Uitgeschakeld</string>
+    <string name="selinux_status_enforcing">Afgedwongen</string>
+    <string name="selinux_status_permissive">Permissief</string>
+    <string name="selinux_status_unknown">Niet gekend</string>
+    <string name="superuser">Superuser</string>
+    <string name="superuser_failed_to_grant_root">Mislukt om root te geven voor %d</string>
+    <string name="superuser_allow_root_confirm">Zeker dat je root wil geven aan %s?</string>
+    <string name="module_failed_to_enable">Mislukt om module in te schakelen: %s</string>
+    <string name="module_failed_to_disable">Mislukt om module uit te schakelen: %s</string>
+    <string name="module_empty">Geen module geïnstalleerd</string>
+
+    <string name="module">Module</string>
+    <string name="uninstall">Verwijderen</string>
+    <string name="module_install">Installeren</string>
+    <string name="install">Installeren</string>
+    <string name="reboot">Herstart</string>
+    <string name="settings">Instellingen</string>
+    <string name="reboot_userspace">Soft herstart</string>
+    <string name="reboot_recovery">Herstart naar Recovery</string>
+    <string name="reboot_bootloader">Herstart naar Bootloader</string>
+    <string name="reboot_download">Herstart om te downloaden</string>
+    <string name="reboot_edl">Herstart naar EDL</string>
+    <string name="about">Over</string>
+    <string name="require_kernel_version_8">Vereist KernelSU versie 8+</string>
+    <string name="module_uninstall_confirm">Zeker van het verwijderen van module %s?</string>
+    <string name="module_uninstall_success">%s verwijderd</string>
+    <string name="module_uninstall_failed">Mislukt om te verwijderen: %s</string>
+    <string name="module_version">Versie</string>
+    <string name="module_author">Auteur</string>
+    <string name="module_overlay_fs_not_available">overlayfs is niet beschikbaar, module kan niet werken!</string>
+    <string name="refresh">Vernieuwen</string>
+    <string name="show_system_apps">Toon system apps</string>
+    <string name="hide_system_apps">Verberg system apps</string>
+    <string name="send_log">Stuur Log</string>
+    <string name="safe_mode">Safe mode</string>
+    <string name="reboot_to_apply">Herstart om effect te hebben</string>
+    <string name="module_magisk_conflict">Modules zijn uitgeschakeld omdat ze in conflict zijn met magisk!</string>
+    <string name="home_learn_kernelsu">Leer KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">Leer hoe KernelSU te installeren en modules te gebruiken</string>
+    <string name="home_support_title">Ondersteun ons</string>
+    <string name="home_support_content">KernelSU is, en zal altijd, vrij en open source zijn. Je kan altijd je appreciatie tonen met een donatie.</string>
+    <string name="about_source_code"><![CDATA[Bekijk source code op %1$s<br/>Vervoeg ons %2$s kanaal]]></string>
+</resources>
