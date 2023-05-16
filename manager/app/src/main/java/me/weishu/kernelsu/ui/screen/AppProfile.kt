@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package me.weishu.kernelsu.ui.screen
 
 import android.os.Parcelable
@@ -104,6 +102,7 @@ fun AppProfileScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppProfileInner(
     modifier: Modifier = Modifier,

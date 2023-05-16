@@ -39,7 +39,6 @@ import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun ModuleScreen(navigator: DestinationsNavigator) {
