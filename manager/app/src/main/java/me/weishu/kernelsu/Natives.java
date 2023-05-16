@@ -23,4 +23,20 @@ public final class Natives {
     public static native boolean allowRoot(int uid, boolean allow);
 
     public static native boolean isSafeMode();
+
+    public static native boolean isAllowlistMode();
+
+    public static native boolean setAllowlistMode(boolean isAllowlist);
+
+    public static native boolean isUidInAllowlist(int uid);
+
+    public static native boolean isUidInDenylist(int uid);
+
+    public static native boolean addUidToAllowlist(int uid);
+
+    public static native boolean removeUidFromAllowlist(int uid);
+
+    public static native boolean addUidToDenylist(int uid);
+
+    public static native boolean removeUidFromDenylist(int uid);
 }

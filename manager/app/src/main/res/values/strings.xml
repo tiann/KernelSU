@@ -73,4 +73,8 @@
     <string name="app_profile_denylist">Denylist</string>
     <string name="app_profile_title0">Global</string>
     <string name="app_profile_mode">Working Mode</string>
+    <string name="failed_to_set_allowlist_mode">Failed to switch to allowlist mode</string>
+    <string name="failed_to_add_to_allowlist">Failed to add %s to allowlist</string>
+    <string name="failed_to_add_to_denylist">Failed to add %s to denylist</string>
+    <string name="failed_to_set_denylist_mode">Failed to switch to denylist mode</string>
 </resources>

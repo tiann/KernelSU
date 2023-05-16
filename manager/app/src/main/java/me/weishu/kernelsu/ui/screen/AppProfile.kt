@@ -76,23 +76,41 @@ fun AppProfileScreen(
             })
         }
     ) { paddingValues ->
-        LoadingDialog()
-
-        val showAboutDialog = remember { mutableStateOf(false) }
-        AboutDialog(showAboutDialog)
 
         Column(modifier = Modifier.padding(paddingValues)) {
 
-            val context = LocalContext.current
             val scope = rememberCoroutineScope()
+
+            val uid = icon.applicationInfo.uid
+            val isAllowlistModeInit = Natives.isAllowlistMode()
+
+            val isInAllowDenyListInit = if (isAllowlistModeInit) {
+                Natives.isUidInAllowlist(uid)
+            } else {
+                Natives.isUidInDenylist(uid)
+            }
 
             GroupTitle(stringResource(id = R.string.app_profile_title0))
 
             var allowlistMode by rememberSaveable {
-                mutableStateOf(true)
+                mutableStateOf(isAllowlistModeInit)
+            }
+
+            var isInAllowDenyList by rememberSaveable {
+                mutableStateOf(isInAllowDenyListInit)
+            }
+
+            val setAllowlistFailedMsg = if (allowlistMode) {
+                stringResource(R.string.failed_to_set_allowlist_mode)
+            } else {
+                stringResource(R.string.failed_to_set_denylist_mode)
             }
             WorkingMode(allowlistMode) { checked ->
-                allowlistMode = !allowlistMode
+                if (Natives.setAllowlistMode(checked)) {
+                    allowlistMode = !allowlistMode
+                } else scope.launch {
+                    snackbarHost.showSnackbar(setAllowlistFailedMsg)
+                }
             }
 
             Divider(thickness = Dp.Hairline)
@@ -122,7 +140,6 @@ fun AppProfileScreen(
             }
 
             val failMessage = stringResource(R.string.superuser_failed_to_grant_root)
-            val uid = icon.applicationInfo.uid;
             AppSwitch(
                 Icons.Filled.Security,
                 stringResource(id = R.string.app_profile_root_switch),
@@ -139,6 +156,11 @@ fun AppProfileScreen(
                 }
             }
 
+            val failedToAddAllowListMsg = if (allowlistMode) {
+                stringResource(R.string.failed_to_add_to_allowlist)
+            } else {
+                stringResource(R.string.failed_to_add_to_denylist)
+            }
             AppSwitch(
                 icon = Icons.Filled.List,
                 title = if (allowlistMode) {
@@ -146,9 +168,18 @@ fun AppProfileScreen(
                 } else {
                     stringResource(id = R.string.app_profile_denylist)
                 },
-                checked = true
-            ) {
-
+                checked = isInAllowDenyList
+            ) { checked ->
+                val success = if (allowlistMode) {
+                    Natives.addUidToAllowlist(uid)
+                } else {
+                    Natives.addUidToDenylist(uid)
+                }
+                if (success) {
+                    isInAllowDenyList = checked
+                } else scope.launch {
+                    snackbarHost.showSnackbar(failedToAddAllowListMsg.format(label))
+                }
             }
 
             Divider(thickness = Dp.Hairline)
