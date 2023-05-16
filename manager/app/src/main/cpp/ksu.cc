@@ -31,6 +31,9 @@
 #define CMD_ADD_DENY_LIST 16
 #define CMD_REMOVE_DENY_LIST 17
 
+#define CMD_GET_APP_PROFILE 18
+#define CMD_SET_APP_PROFILE 19
+
 static bool ksuctl(int cmd, void* arg1, void* arg2) {
     int32_t result = 0;
     prctl(KERNEL_SU_OPTION, cmd, arg1, arg2, &result);
@@ -73,6 +76,22 @@ bool get_deny_list(int *uids, int *size) {
 
 bool is_safe_mode() {
     return ksuctl(CMD_CHECK_SAFEMODE, nullptr, nullptr);
+}
+
+bool set_app_profile(const app_profile *profile) {
+    return ksuctl(CMD_SET_APP_PROFILE, (void*) profile, nullptr);
+}
+
+bool get_app_profile(int32_t key, app_profile *profile) {
+    return ksuctl(CMD_GET_APP_PROFILE, (void*) profile, nullptr);
+}
+
+bool get_default_non_root_app_profile(app_profile *profile) {
+    return get_app_profile(DEFAULT_NON_ROOT_PROFILE_KEY, profile);
+}
+
+bool get_default_root_app_profile(app_profile *profile) {
+    return get_app_profile(DEFAULT_ROOT_PROFILE_KEY, profile);
 }
 
 bool is_allowlist_mode() {
