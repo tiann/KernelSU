@@ -49,8 +49,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.AboutDialog
-import me.weishu.kernelsu.ui.component.LoadingDialog
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 
 /**
@@ -101,9 +99,9 @@ fun AppProfileScreen(
             }
 
             val setAllowlistFailedMsg = if (allowlistMode) {
-                stringResource(R.string.failed_to_set_allowlist_mode)
-            } else {
                 stringResource(R.string.failed_to_set_denylist_mode)
+            } else {
+                stringResource(R.string.failed_to_set_allowlist_mode)
             }
             WorkingMode(allowlistMode) { checked ->
                 if (Natives.setAllowlistMode(checked)) {
@@ -135,23 +133,23 @@ fun AppProfileScreen(
                 },
             )
 
-            var isChecked by rememberSaveable {
+            var isGrantRoot by rememberSaveable {
                 mutableStateOf(grantRoot)
             }
 
-            val failMessage = stringResource(R.string.superuser_failed_to_grant_root)
+            val failToGrantRoot = stringResource(R.string.superuser_failed_to_grant_root)
             AppSwitch(
                 Icons.Filled.Security,
-                stringResource(id = R.string.app_profile_root_switch),
-                checked = isChecked
+                stringResource(id = R.string.superuser),
+                checked = isGrantRoot
             ) { checked ->
 
                 scope.launch {
                     val success = Natives.allowRoot(uid, checked)
                     if (success) {
-                        isChecked = checked
+                        isGrantRoot = checked
                     } else {
-                        snackbarHost.showSnackbar(failMessage.format(uid))
+                        snackbarHost.showSnackbar(failToGrantRoot.format(uid))
                     }
                 }
             }

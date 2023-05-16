@@ -68,7 +68,6 @@
     <string name="app_profile" translatable="false">App Profile</string>
     <string name="app_profile_title1">Application</string>
     <string name="app_profile_title2" translatable="false">Root Profile</string>
-    <string name="app_profile_root_switch">Grant Root</string>
     <string name="app_profile_allowlist">Allowlist</string>
     <string name="app_profile_denylist">Denylist</string>
     <string name="app_profile_title0">Global</string>
