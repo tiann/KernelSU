@@ -26,7 +26,7 @@
     <string name="selinux_status_unknown">Неизвестно</string>
     <string name="superuser">Superuser</string>
     <string name="superuser_failed_to_grant_root">Не удалось разрешить root для %d</string>
-    <string name="superuser_allow_root_confirm">Вы уверены, что хотите разрешить root для %s?</string>
+    <string name="superuser_allow_root_confirm">Вы уверены, что хотите разрешить доступ к root для %s?</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -64,6 +64,12 @@
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходники на %1$s<br/>Присоединяйтесь к каналу %2$s]]></string>
     <string name="app_profile_title1">Приложение</string>
-    <string name="app_profile_root_switch">Разрешить Root</string>
     <string name="app_profile_allowlist">Allowlist</string>
+    <string name="app_profile_denylist">Denylist</string>
+    <string name="app_profile_title0">Global</string>
+    <string name="app_profile_mode">Режим работы</string>
+    <string name="failed_to_set_allowlist_mode">Не удалось перейти в режим allowlist</string>
+    <string name="failed_to_add_to_allowlist">Не удалось добавить %s в allowlist</string>
+    <string name="failed_to_add_to_denylist">Не удалось добавить %s в denylist</string>
+    <string name="failed_to_set_denylist_mode">Не удалось перейти в режим denylist</string>
 </resources>
