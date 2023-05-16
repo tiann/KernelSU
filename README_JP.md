@@ -2,41 +2,41 @@
 
 # KernelSU
 
-Androidにおけるカーネルベースのルートソリューション。
+Android におけるカーネルベースの root ソリューションです。
 
 ## 特徴
 
-- カーネルベースのsuと権限管理。
-- overlayfsに基づくモジュールシステム。
+1. カーネルベースの `su` と権限管理
+2. OverlayFS に基づくモジュールシステム
 
 ## 対応状況
 
-KernelSUはGKI 2.0デバイス（カーネルバージョン5.10以上）を公式にサポートしています。古いカーネルも互換性がありますが（最小4.14以上）、自分でカーネルをコンパイルする必要があります。
+KernelSU は GKI 2.0 デバイス（カーネルバージョン 5.10 以上）を公式にサポートしています。古いカーネル（4.14以上）とも互換性がありますが、自分でカーネルをビルドする必要があります。
 
-コンテナ上で動作するWSAとAndroidもKernelSUで動作します。
+WSA とコンテナ上で動作する Android でも KernelSU を統合して動かせます。
 
-現在サポートされているアーキテクチャ : `arm64-v8a` および `x86_64` です。
+現在サポートしているアーキテクチャは `arm64-v8a` および `x86_64` です。
 
 ## 使用方法
 
-[インストールチュートリアル](https://kernelsu.org/zh_CN/guide/installation.html)
+[インストール方法はこちら](https://kernelsu.org/guide/installation.html)
 
-## 構築する
+## ビルド
 
-[どうやって構築するのでしょうか？](https://kernelsu.org/zh_CN/guide/how-to-build.html)
+[ビルド方法はこちら](https://kernelsu.org/guide/how-to-build.html)
 
 ### ディスカッション
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
-## 許可証
+## ライセンス
 
-- ディレクトリ `kernel` の下にある全てのファイルは [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- ディレクトリの `kernel` 以外の部分は全て [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- `kernel` ディレクトリの下にあるすべてのファイル： [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- `kernel` ディレクトリ以外のすべてのファイル： [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
 
-## 謝辞
+## クレジット
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSUのきっかけとなった。
-- [genuine](https://github.com/brevent/genuine/)：apk v2の署名検証
-- [Diamorphine](https://github.com/m0nad/Diamorphine): いくつかのrootkitのTips。
-- [Magisk](https://github.com/topjohnwu/Magisk)：sepolicyの実装です。
+- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU のアイデア元
+- [genuine](https://github.com/brevent/genuine/)：apk v2 の署名検証
+- [Diamorphine](https://github.com/m0nad/Diamorphine): rootkit のスキル
+- [Magisk](https://github.com/topjohnwu/Magisk)：sepolicy の実装
