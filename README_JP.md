@@ -23,7 +23,7 @@ KernelSUはGKI 2.0デバイス（カーネルバージョン5.10以上）を公�
 
 ## 構築する
 
-[構築するには？](https://kernelsu.org/zh_CN/guide/how-to-build.html)
+[どうやって構築するのでしょうか？](https://kernelsu.org/zh_CN/guide/how-to-build.html)
 
 ### ディスカッション
 
