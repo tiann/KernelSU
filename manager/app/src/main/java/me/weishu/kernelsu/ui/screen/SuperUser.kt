@@ -12,7 +12,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,18 +23,13 @@ import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialog
-import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.screen.destinations.AppProfileScreenDestination
-import me.weishu.kernelsu.ui.util.LocalDialogHost
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
-import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
 fun SuperUserScreen(navigator: DestinationsNavigator) {
@@ -107,18 +101,10 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                 .padding(innerPadding)
                 .pullRefresh(refreshState)
         ) {
-            val failMessage = stringResource(R.string.superuser_failed_to_grant_root)
-
             LazyColumn(Modifier.fillMaxSize()) {
                 items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
                     AppItem(app) {
-                        navigator.navigate(
-                            AppProfileScreenDestination(
-                                packageName = app.packageName,
-                                grantRoot = app.onAllowList,
-                                label = app.label, icon = app.icon
-                            )
-                        )
+                        navigator.navigate(AppProfileScreenDestination(app))
                     }
 
                 }
@@ -133,7 +119,6 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
@@ -141,12 +126,12 @@ private fun AppItem(
 ) {
     ListItem(
         modifier = Modifier.clickable(onClick = onClickListener),
-        headlineText = { Text(app.label) },
-        supportingText = { Text(app.packageName) },
+        headlineContent = { Text(app.label) },
+        supportingContent = { Text(app.packageName) },
         leadingContent = {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(app.icon)
+                    .data(app.packageInfo)
                     .crossfade(true)
                     .build(),
                 contentDescription = app.label,

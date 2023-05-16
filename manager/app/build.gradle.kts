@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.ksp)
     alias(libs.plugins.lsplugin.apksign)
+    id("kotlin-parcelize")
 }
 
 val managerVersionCode: Int by rootProject.extra
@@ -95,8 +96,6 @@ dependencies {
 
     implementation(libs.compose.destinations.animations.core)
     ksp(libs.compose.destinations.ksp)
-
-    implementation(libs.com.github.alorma.compose.settings.ui.m3)
 
     implementation(libs.com.github.topjohnwu.libsu.core)
     implementation(libs.com.github.topjohnwu.libsu.service)

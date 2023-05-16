@@ -35,7 +35,6 @@ import java.util.*
  * @author weishu
  * @date 2023/1/1.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Destination
 fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
