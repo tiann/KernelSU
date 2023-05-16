@@ -55,10 +55,13 @@
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Restart untuk menerapkan</string>
     <string name="module_magisk_conflict">Module akan di nonaktifkan karna konflik dengan magisk\'s!</string>
-    <string name="home_learn_kernelsu">Belajar KernelSU</string>
+    <string name="home_learn_kernelsu">Tentang KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/id_ID/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Cara menginstall KernelSu dan menggunakan Module</string>
     <string name="home_support_title">Dukung kami</string>
     <string name="home_support_content">KernelSU akan selalu gratis dan open source. Namun Anda dapat menunjukkan kepada kami bahwa Anda peduli dengan memberikan sedikit donasi.</string>
     <string name="about_source_code"><![CDATA[Lihat sumber kode di %1$s<br/>Gabung sekarang %2$s channel]]></string>
+    <string name="app_profile_title1">Aplikasi</string>
+    <string name="app_profile_root_switch">Ijinkan Root</string>
+    <string name="app_profile_allowlist">Daftar yang ijinkan</string>
 </resources>
