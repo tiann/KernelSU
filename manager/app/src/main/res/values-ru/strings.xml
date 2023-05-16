@@ -25,8 +25,8 @@
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
     <string name="superuser">Superuser</string>
-    <string name="superuser_failed_to_grant_root">Не удалось предоставить root права для %d</string>
-    <string name="superuser_allow_root_confirm">Вы уверены, что хотите предоставить root права для %s?</string>
+    <string name="superuser_failed_to_grant_root">Не удалось разрешить root для %d</string>
+    <string name="superuser_allow_root_confirm">Вы уверены, что хотите разрешить root для %s?</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
