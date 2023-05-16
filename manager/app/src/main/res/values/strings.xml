@@ -65,15 +65,15 @@
     <string name="home_support_title">Support Us</string>
     <string name="home_support_content">KernelSU is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
-    <string name="app_profile" translatable="false">App Profile</string>
-    <string name="app_profile_title1">Application</string>
-    <string name="app_profile_title2" translatable="false">Root Profile</string>
-    <string name="app_profile_allowlist">Allowlist</string>
-    <string name="app_profile_denylist">Denylist</string>
-    <string name="app_profile_title0">Global</string>
-    <string name="app_profile_mode">Working Mode</string>
-    <string name="failed_to_set_allowlist_mode">Failed to switch to allowlist mode</string>
-    <string name="failed_to_add_to_allowlist">Failed to add %s to allowlist</string>
-    <string name="failed_to_add_to_denylist">Failed to add %s to denylist</string>
-    <string name="failed_to_set_denylist_mode">Failed to switch to denylist mode</string>
+    <string name="profile">App profile</string>
+    <string name="profile_default">Use default profile</string>
+    <string name="profile_template">Use template profile</string>
+    <string name="profile_custom">Use custom profile</string>
+    <string name="profile_name">Profile name</string>
+    <string name="profile_namespace">Mount namespace</string>
+    <string name="profile_namespace_inherited">Inherited</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_unmount_modules">Unmount modules</string>
+    <string name="profile_allow_root_request">Allow root request</string>
 </resources>

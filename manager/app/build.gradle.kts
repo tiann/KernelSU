@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.ksp)
     alias(libs.plugins.lsplugin.apksign)
+    id("kotlin-parcelize")
 }
 
 val managerVersionCode: Int by rootProject.extra
