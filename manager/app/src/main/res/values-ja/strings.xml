@@ -59,7 +59,7 @@
     <string name="reboot_to_apply">再起動すると有効化されます</string>
     <string name="module_magisk_conflict">Magisk と競合しているためモジュールは無効になっています!</string>
     <string name="home_learn_kernelsu">KernelSU の詳細</string>
-    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/ja_JP/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU のインストール方法やモジュールの使い方はこちら</string>
     <string name="home_support_title">支援する</string>
     <string name="home_support_content">KernelSU は無料かつオープンソースです。寄付していただくことで開発を支援できます。</string>
