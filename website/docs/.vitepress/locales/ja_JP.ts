@@ -23,7 +23,7 @@ export default defineConfig({
 
     footer: {
       message: 'GPL3 ライセンスでリリースされています。',
-      copyright: 'Copyright © 2022-present KernelSU Developers'
+      copyright: 'Copyright © 2022-今すぐ KernelSU デベロッパー'
     },
 
     editLink: {
