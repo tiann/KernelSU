@@ -109,7 +109,7 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
-      version_name: android12-5.10.160
-      tag: android12-5.10-2023-02
-      os_patch_level: 2023-02
+      version_name: android12-5.10.168
+      tag: android12-5.10-2023-04
+      os_patch_level: 2023-04
       patch_path: "5.10"
