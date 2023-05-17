@@ -9,9 +9,16 @@
     {
         "maintainer": "diphons",
         "maintainer_link": "https://github.com/diphons",
-        "kernel_name": "D8G_Kernel_ROG",
-        "kernel_link": "https://github.com/diphons/D8G_Kernel_Vayuasu/tree/main",
+        "kernel_name": "D8G_Kernel_SM8150",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_SM8150/tree/13",
         "devices": "Poco X3 Pro: Vayu | Bhima"
+    },
+    {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_SDM845",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel/tree/main",
+        "devices": "Poco F1 | MI8 | MiMix2S"
     },
     {
         "maintainer": "SpectreDev-007",
