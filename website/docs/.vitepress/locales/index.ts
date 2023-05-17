@@ -4,6 +4,7 @@ import zh_CN from './zh_CN'
 import zh_TW from './zh_TW'
 import vi_VN from './vi_VN'
 import id_ID from './id_ID'
+import ja_JP from './ja_JP'
 
 export default defineConfig({
   locales: {
@@ -24,6 +25,12 @@ export default defineConfig({
       lang: zh_TW.lang,
       themeConfig: zh_TW.themeConfig,
       description: zh_TW.description
+    },
+    ja_JP: {
+      label: '日本語',
+      lang: ja_JP.lang,
+      themeConfig: ja_JP.themeConfig,
+      description: ja_JP.description
     },
     vi_VN: {
       label: 'Tiếng Việt',

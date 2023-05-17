@@ -1,12 +1,12 @@
 [versions]
-agp = "8.0.0"
+agp = "8.0.1"
 kotlin = "1.8.10"
 ksp = "1.8.10-1.0.9"
-compose-bom = "2023.04.01"
+compose-bom = "2023.05.01"
 lifecycle = "2.6.1"
 accompanist = "0.30.0"
 navigation = "2.5.3"
-compose-destination = "1.9.40-beta"
+compose-destination = "1.9.42-beta"
 libsu = "5.0.5"
 
 [plugins]
@@ -38,8 +38,6 @@ com-google-accompanist-drawablepainter = { group = "com.google.accompanist", nam
 com-google-accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
 com-google-accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 
-com-github-alorma-compose-settings-ui-m3 = { module = "com.github.alorma:compose-settings-ui-m3", version = "0.22.0" }
-
 com-github-topjohnwu-libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
 com-github-topjohnwu-libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
 
@@ -47,7 +45,7 @@ dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:pa
 
 io-coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.3.0" }
 
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.6.4" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1" }
 
 me-zhanghai-android-appiconloader-coil = { group = "me.zhanghai.android.appiconloader", name = "appiconloader-coil", version = "1.5.0" }
 

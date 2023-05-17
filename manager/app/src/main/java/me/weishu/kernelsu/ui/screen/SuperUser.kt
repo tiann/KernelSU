@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +12,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,23 +21,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialog
-import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.SearchAppBar
-import me.weishu.kernelsu.ui.util.LocalDialogHost
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.screen.destinations.AppProfileScreenDestination
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
-import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
-fun SuperUserScreen() {
+fun SuperUserScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<SuperUserViewModel>()
-    val snackbarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -105,39 +101,12 @@ fun SuperUserScreen() {
                 .padding(innerPadding)
                 .pullRefresh(refreshState)
         ) {
-            val failMessage = stringResource(R.string.superuser_failed_to_grant_root)
-
             LazyColumn(Modifier.fillMaxSize()) {
                 items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
-                    var isChecked by rememberSaveable(app) { mutableStateOf(app.onAllowList) }
-                    val dialogHost = LocalDialogHost.current
-                    val content =
-                        stringResource(id = R.string.superuser_allow_root_confirm, app.label)
-                    val confirm = stringResource(id = android.R.string.ok)
-                    val cancel = stringResource(id = android.R.string.cancel)
-
-                    AppItem(app, isChecked) { checked ->
-                        scope.launch {
-                            if (checked) {
-                                val confirmResult = dialogHost.showConfirm(
-                                    app.label,
-                                    content = content,
-                                    confirm = confirm,
-                                    dismiss = cancel
-                                )
-                                if (confirmResult != ConfirmResult.Confirmed) {
-                                    return@launch
-                                }
-                            }
-
-                            val success = Natives.allowRoot(app.uid, checked)
-                            if (success) {
-                                isChecked = checked
-                            } else {
-                                snackbarHost.showSnackbar(failMessage.format(app.uid))
-                            }
-                        }
+                    AppItem(app) {
+                        navigator.navigate(AppProfileScreenDestination(app))
                     }
+
                 }
             }
 
@@ -150,20 +119,19 @@ fun SuperUserScreen() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onClickListener: () -> Unit,
 ) {
     ListItem(
-        headlineText = { Text(app.label) },
-        supportingText = { Text(app.packageName) },
+        modifier = Modifier.clickable(onClick = onClickListener),
+        headlineContent = { Text(app.label) },
+        supportingContent = { Text(app.packageName) },
         leadingContent = {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(app.icon)
+                    .data(app.packageInfo)
                     .crossfade(true)
                     .build(),
                 contentDescription = app.label,
@@ -173,12 +141,5 @@ private fun AppItem(
                     .height(48.dp)
             )
         },
-        trailingContent = {
-            Switch(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
     )
 }

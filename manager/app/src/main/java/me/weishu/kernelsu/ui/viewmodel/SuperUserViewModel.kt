@@ -6,6 +6,7 @@ import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.os.IBinder
+import android.os.Parcelable
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
@@ -16,6 +17,7 @@ import androidx.lifecycle.ViewModel
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.IKsuInterface
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
@@ -34,14 +36,18 @@ class SuperUserViewModel : ViewModel() {
         private var apps by mutableStateOf<List<AppInfo>>(emptyList())
     }
 
-    class AppInfo(
+    @Parcelize
+    data class AppInfo(
         val label: String,
-        val packageName: String,
-        val icon: PackageInfo,
-        val uid: Int,
+        val packageInfo: PackageInfo,
         val onAllowList: Boolean,
-        val onDenyList: Boolean
-    )
+        val onDenyList: Boolean,
+    ) : Parcelable {
+        val packageName: String
+            get() = packageInfo.packageName
+        val uid: Int
+            get() = packageInfo.applicationInfo.uid
+    }
 
     var search by mutableStateOf("")
     var showSystemApps by mutableStateOf(false)
@@ -67,7 +73,7 @@ class SuperUserViewModel : ViewModel() {
                 .toPinyinString(it.label).contains(search)
         }.filter {
             it.uid == 2000 // Always show shell
-                    || showSystemApps || it.icon.applicationInfo.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
+                    || showSystemApps || it.packageInfo.applicationInfo.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
         }
     }
 
@@ -107,7 +113,7 @@ class SuperUserViewModel : ViewModel() {
         val result = connectKsuService {
             Log.w(TAG, "KsuService disconnected")
         }
-        
+
         withContext(Dispatchers.IO) {
             val pm = ksuApp.packageManager
             val allowList = Natives.getAllowList().toSet()
@@ -130,9 +136,7 @@ class SuperUserViewModel : ViewModel() {
                 val uid = appInfo.uid
                 AppInfo(
                     label = appInfo.loadLabel(pm).toString(),
-                    packageName = it.packageName,
-                    icon = it,
-                    uid = uid,
+                    packageInfo = it,
                     onAllowList = uid in allowList,
                     onDenyList = uid in denyList
                 )
