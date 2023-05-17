@@ -2,9 +2,13 @@ package me.weishu.kernelsu.ui.component.profile
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,7 +41,7 @@ fun RootProfileConfig(
             )
         }
 
-        var namespaceBoxExpanded by remember { mutableStateOf(false) }
+        var expanded by remember { mutableStateOf(false) }
         val currentNamespace = when (profile.namespace) {
             RootProfile.Namespace.Inherited -> stringResource(R.string.profile_namespace_inherited)
             RootProfile.Namespace.Global -> stringResource(R.string.profile_namespace_global)
@@ -45,8 +49,8 @@ fun RootProfileConfig(
         }
         ListItem(headlineContent = {
             ExposedDropdownMenuBox(
-                expanded = namespaceBoxExpanded,
-                onExpandedChange = { namespaceBoxExpanded = it }
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
                     modifier = Modifier.menuAnchor(),
@@ -54,30 +58,34 @@ fun RootProfileConfig(
                     label = { Text(stringResource(R.string.profile_namespace)) },
                     value = currentNamespace,
                     onValueChange = {},
+                    trailingIcon = {
+                        if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
+                        else Icon(Icons.Filled.ArrowDropDown, null)
+                    },
                 )
                 ExposedDropdownMenu(
-                    expanded = namespaceBoxExpanded,
-                    onDismissRequest = { namespaceBoxExpanded = false }
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_inherited)) },
                         onClick = {
                             onProfileChange(profile.copy(namespace = RootProfile.Namespace.Inherited))
-                            namespaceBoxExpanded = false
+                            expanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_global)) },
                         onClick = {
                             onProfileChange(profile.copy(namespace = RootProfile.Namespace.Global))
-                            namespaceBoxExpanded = false
+                            expanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_individual)) },
                         onClick = {
                             onProfileChange(profile.copy(namespace = RootProfile.Namespace.Individual))
-                            namespaceBoxExpanded = false
+                            expanded = false
                         },
                     )
                 }
