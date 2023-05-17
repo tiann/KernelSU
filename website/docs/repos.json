@@ -313,5 +313,12 @@
         "kernel_name": "kernel_xiaomi_mojito.git",
         "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito.git",
         "devices": "Redmi Note 10 (Sunny/Mojito)"
+    },
+    {
+        "maintainer": "dabao1955",
+        "maintainer_link": "https://github.com/dabao1955",
+        "kernel_name": "android_kernel_OPPO_OP4ED5",
+        "kernel_link": "https://github.com/dabao1955/android_kernel_OPPO_OP4ED5",
+        "devices": "OPPO Reno6 on ColorOS11.x/ColorOS12.x\uff0ckernel version4.14.186+"
     }
 ]
