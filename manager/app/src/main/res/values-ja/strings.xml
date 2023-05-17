@@ -64,15 +64,15 @@
     <string name="home_support_title">支援する</string>
     <string name="home_support_content">KernelSU は無料かつオープンソースです。寄付していただくことで開発を支援できます。</string>
     <string name="about_source_code"><![CDATA[%1$s でソースコードを表示<br/>%2$s チャンネルに参加]]></string>
-
-    <string name="app_profile_title1">アプリ</string>
-
-    <string name="app_profile_allowlist">許可リスト</string>
-    <string name="app_profile_denylist">拒否リスト</string>
-    <string name="app_profile_title0">グローバル</string>
-    <string name="app_profile_mode">動作中モード</string>
-    <string name="failed_to_set_allowlist_mode">許可リストモードへの切り替えに失敗しました</string>
-    <string name="failed_to_add_to_allowlist">許可リストへの %s の追加に失敗しました</string>
-    <string name="failed_to_add_to_denylist">拒否リストへの %s の追加に失敗しました</string>
-    <string name="failed_to_set_denylist_mode">拒否リストモードへの切り替えに失敗しました</string>
+    <string name="profile">アプリのプロファイル</string>
+    <string name="profile_default">デフォルト</string>
+    <string name="profile_template">テンプレート</string>
+    <string name="profile_custom">カスタム</string>
+    <string name="profile_name">プロファイル名</string>
+    <string name="profile_namespace">マウント名前空間</string>
+    <string name="profile_namespace_inherited">継承</string>
+    <string name="profile_namespace_global">グローバル</string>
+    <string name="profile_namespace_individual">分離</string>
+    <string name="profile_unmount_modules">モジュールのアンマウント</string>
+    <string name="profile_allow_root_request">root 権限要求を許可</string>
 </resources>
