@@ -64,9 +64,9 @@
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходники на %1$s<br/>Присоединяйтесь к каналу %2$s]]></string>
     <string name="profile">Профиль приложения</string>
-    <string name="profile_default">Использовать профиль по умолчанию</string>
-    <string name="profile_template">Использовать профиль шаблона</string>
-    <string name="profile_custom">Использовать пользовательский профиль</string>
+    <string name="profile_default">По умолчанию</string>
+    <string name="profile_template">Шаблон</string>
+    <string name="profile_custom">Особый</string>
     <string name="profile_name">Название профиля</string>
     <string name="profile_namespace">Mount namespace</string>
     <string name="profile_namespace_inherited">Inherited</string>
