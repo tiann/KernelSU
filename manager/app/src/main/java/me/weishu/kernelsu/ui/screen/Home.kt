@@ -56,7 +56,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             SideEffect {
                 if (isManager) install()
             }
-            val ksuVersion = if (isManager) Natives.getVersion() else null
+            val ksuVersion = if (isManager) Natives.version else null
 
             StatusCard(kernelVersion, ksuVersion)
             InfoCard()
@@ -141,7 +141,7 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
         ) {
             when {
                 ksuVersion != null -> {
-                    val appendText = if (Natives.isSafeMode()) {
+                    val appendText = if (Natives.isSafeMode) {
                         " [${stringResource(id = R.string.safe_mode)}]"
                     } else {
                         ""

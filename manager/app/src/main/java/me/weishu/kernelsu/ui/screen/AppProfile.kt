@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
@@ -49,8 +50,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.profile.AppProfile
-import me.weishu.kernelsu.profile.RootProfile
 import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
@@ -70,8 +69,15 @@ fun AppProfileScreen(
     val context = LocalContext.current
     val snackbarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
-    val failToGrantRoot = stringResource(R.string.superuser_failed_to_grant_root)
-    var isRootGranted by rememberSaveable { mutableStateOf(appInfo.onAllowList) }
+    val failToUpdateAppProfile =
+        stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
+
+    val packageName = appInfo.packageName
+    var profile by rememberSaveable {
+        mutableStateOf(Natives.getAppProfile(packageName, appInfo.uid))
+    }
+
+    Log.i("mylog", "profile: $profile")
 
     Scaffold(
         topBar = { TopBar { navigator.popBackStack() } }
@@ -95,14 +101,13 @@ fun AppProfileScreen(
                         .height(48.dp)
                 )
             },
-            isRootGranted = isRootGranted,
-            onSwitchRootPermission = { grant ->
+            profile = profile,
+            onProfileChange = {
                 scope.launch {
-                    val success = Natives.allowRoot(appInfo.uid, grant)
-                    if (success) {
-                        isRootGranted = grant
+                    if (!Natives.setAppProfile(it)) {
+                        snackbarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
                     } else {
-                        snackbarHost.showSnackbar(failToGrantRoot.format(appInfo.uid))
+                        profile = it
                     }
                 }
             },
@@ -117,9 +122,11 @@ private fun AppProfileInner(
     packageName: String,
     appLabel: String,
     appIcon: @Composable () -> Unit,
-    isRootGranted: Boolean,
-    onSwitchRootPermission: (Boolean) -> Unit,
+    profile: Natives.Profile,
+    onProfileChange: (Natives.Profile) -> Unit,
 ) {
+     val isRootGranted = profile.allowSu
+
     Column(modifier = modifier) {
         ListItem(
             headlineContent = { Text(appLabel) },
@@ -131,14 +138,32 @@ private fun AppProfileInner(
             icon = Icons.Filled.Security,
             title = stringResource(id = R.string.superuser),
             checked = isRootGranted,
-            onCheckedChange = onSwitchRootPermission,
+            onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
         )
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
             Column {
                 if (current) {
-                    var mode by rememberSaveable { mutableStateOf(Mode.Default) }
-                    ProfileBox(mode, true) { mode = it }
+                    val mode = if (profile.rootUseDefault) {
+                        Mode.Default
+                    } else if (profile.rootTemplate != null) {
+                        Mode.Template
+                    } else {
+                        Mode.Custom
+                    }
+                    ProfileBox(mode, true) {
+                        when (it) {
+                            Mode.Default -> {
+                                onProfileChange(profile.copy(rootUseDefault = true))
+                            }
+                            Mode.Template -> {
+                                onProfileChange(profile.copy(rootUseDefault = false))
+                            }
+                            else -> {
+                                onProfileChange(profile.copy(rootUseDefault = false))
+                            }
+                        }
+                    }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         if (currentMode == Mode.Template) {
                             var expanded by remember { mutableStateOf(false) }
@@ -163,11 +188,10 @@ private fun AppProfileInner(
                                 }
                             })
                         } else if (mode == Mode.Custom) {
-                            var profile by rememberSaveable { mutableStateOf(RootProfile("@$packageName")) }
                             RootProfileConfig(
                                 fixedName = true,
                                 profile = profile,
-                                onProfileChange = { profile = it }
+                                onProfileChange = onProfileChange
                             )
                         }
                     }
@@ -176,11 +200,10 @@ private fun AppProfileInner(
                     ProfileBox(mode, false) { mode = it }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         if (currentMode == Mode.Custom) {
-                            var profile by rememberSaveable { mutableStateOf(AppProfile(packageName)) }
                             AppProfileConfig(
                                 fixedName = true,
                                 profile = profile,
-                                onProfileChange = { profile = it }
+                                onProfileChange = onProfileChange
                             )
                         }
                     }
@@ -256,12 +279,15 @@ private fun ProfileBox(
 @Preview
 @Composable
 private fun AppProfilePreview() {
-    var isRootGranted by remember { mutableStateOf(false) }
+    var profile by remember { mutableStateOf(Natives.Profile("")) }
     AppProfileInner(
         packageName = "icu.nullptr.test",
         appLabel = "Test",
         appIcon = { Icon(Icons.Filled.Android, null) },
-        isRootGranted = isRootGranted,
-        onSwitchRootPermission = { isRootGranted = it },
+        profile = profile,
+        onProfileChange = {
+            profile = it
+        },
     )
 }
+

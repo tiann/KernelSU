@@ -5,7 +5,7 @@
 #ifndef KERNELSU_KSU_H
 #define KERNELSU_KSU_H
 
-bool become_manager(const char*);
+bool become_manager(const char *);
 
 int get_version();
 
@@ -17,49 +17,46 @@ bool get_deny_list(int *uids, int *size);
 
 bool is_safe_mode();
 
-bool is_allowlist_mode();
-
-bool set_allowlist_mode(bool allowlist_mode);
-
-bool is_in_allow_list(int uid);
-
-bool is_in_deny_list(int uid);
-
-bool add_to_allow_list(int uid);
-
-bool remove_from_allow_list(int uid);
-
-bool add_to_deny_list(int uid);
-
-bool remove_from_deny_list(int uid);
-
+#define KSU_MAX_PACKAGE_NAME 256
 // NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
 #define KSU_MAX_GROUPS 32
 #define KSU_SELINUX_DOMAIN 64
 
-#define DEFAULT_ROOT_PROFILE_KEY 0
-#define DEFAULT_NON_ROOT_PROFILE_KEY 9999 // This UID means NOBODY in Android
+using p_key_t = char[KSU_MAX_PACKAGE_NAME];
 
 struct app_profile {
 
-    int32_t key; // this is usually the uid of the app, but can be other value for special apps
-
-    int32_t uid;
-    int32_t gid;
-
-    int32_t groups[KSU_MAX_GROUPS];
-    int32_t groups_count;
-
-    // kernel_cap_t is u32[2]
-    uint64_t capabilities;
-    char selinux_domain[KSU_SELINUX_DOMAIN];
-
+    // this is usually the package of the app, but can be other value for special apps
+    p_key_t key;
+    int32_t current_uid;
     bool allow_su;
-    bool mount_module;
+
+    union {
+        struct {
+            bool use_default;
+            char template_name[KSU_MAX_PACKAGE_NAME];
+            int32_t uid;
+            int32_t gid;
+
+            int32_t groups[KSU_MAX_GROUPS];
+            int32_t groups_count;
+
+            // kernel_cap_t is u32[2]
+            int32_t capabilities[2];
+            char selinux_domain[KSU_SELINUX_DOMAIN];
+
+            int32_t namespaces;
+        } root_profile;
+
+        struct {
+            bool use_default;
+            bool umount_modules;
+        } non_root_profile;
+    };
 };
 
 bool set_app_profile(const app_profile *profile);
 
-bool get_app_profile(int32_t key, app_profile *profile);
+bool get_app_profile(p_key_t key, app_profile *profile);
 
 #endif //KERNELSU_KSU_H

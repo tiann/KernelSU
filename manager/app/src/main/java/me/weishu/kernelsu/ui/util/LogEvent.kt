@@ -72,9 +72,9 @@ fun getBugreportFile(context: Context): File {
         pw.println("Nodename: ${uname.nodename}")
         pw.println("Sysname: ${uname.sysname}")
 
-        val ksuKernel = Natives.getVersion()
+        val ksuKernel = Natives.version
         pw.println("KernelSU: $ksuKernel")
-        val safeMode = Natives.isSafeMode()
+        val safeMode = Natives.isSafeMode
         pw.println("SafeMode: $safeMode")
     }
 

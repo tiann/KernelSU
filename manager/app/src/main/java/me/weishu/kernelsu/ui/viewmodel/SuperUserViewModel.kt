@@ -116,8 +116,8 @@ class SuperUserViewModel : ViewModel() {
 
         withContext(Dispatchers.IO) {
             val pm = ksuApp.packageManager
-            val allowList = Natives.getAllowList().toSet()
-            val denyList = Natives.getDenyList().toSet()
+            val allowList = Natives.allowList.toSet()
+            val denyList = Natives.denyList.toSet()
             Log.i(TAG, "allowList: $allowList")
             Log.i(TAG, "denyList: $denyList")
             val start = SystemClock.elapsedRealtime()

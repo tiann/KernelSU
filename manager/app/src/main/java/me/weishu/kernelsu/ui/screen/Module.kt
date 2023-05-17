@@ -50,8 +50,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    val isSafeMode = Natives.isSafeMode()
-    val isKSUVersionInvalid = Natives.getVersion() < 0
+    val isSafeMode = Natives.isSafeMode
+    val isKSUVersionInvalid = Natives.version < 0
     val hasMagisk = hasMagisk()
 
     val hideInstallButton = isSafeMode || isKSUVersionInvalid || hasMagisk

@@ -21,31 +21,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.profile.RootProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootProfileConfig(
     modifier: Modifier = Modifier,
     fixedName: Boolean,
-    profile: RootProfile,
-    onProfileChange: (RootProfile) -> Unit,
+    profile: Natives.Profile,
+    onProfileChange: (Natives.Profile) -> Unit,
 ) {
     Column(modifier = modifier) {
         if (!fixedName) {
             OutlinedTextField(
                 label = { Text(stringResource(R.string.profile_name)) },
-                value = profile.profileName,
-                onValueChange = { onProfileChange(profile.copy(profileName = it)) }
+                value = profile.name,
+                onValueChange = { onProfileChange(profile.copy(name = it)) }
             )
         }
 
         var expanded by remember { mutableStateOf(false) }
         val currentNamespace = when (profile.namespace) {
-            RootProfile.Namespace.Inherited -> stringResource(R.string.profile_namespace_inherited)
-            RootProfile.Namespace.Global -> stringResource(R.string.profile_namespace_global)
-            RootProfile.Namespace.Individual -> stringResource(R.string.profile_namespace_individual)
+            Natives.Profile.Namespace.Inherited -> stringResource(R.string.profile_namespace_inherited)
+            Natives.Profile.Namespace.Global -> stringResource(R.string.profile_namespace_global)
+            Natives.Profile.Namespace.Individual -> stringResource(R.string.profile_namespace_individual)
         }
         ListItem(headlineContent = {
             ExposedDropdownMenuBox(
@@ -70,21 +70,21 @@ fun RootProfileConfig(
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_inherited)) },
                         onClick = {
-                            onProfileChange(profile.copy(namespace = RootProfile.Namespace.Inherited))
+                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Inherited))
                             expanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_global)) },
                         onClick = {
-                            onProfileChange(profile.copy(namespace = RootProfile.Namespace.Global))
+                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Global))
                             expanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_individual)) },
                         onClick = {
-                            onProfileChange(profile.copy(namespace = RootProfile.Namespace.Individual))
+                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Individual))
                             expanded = false
                         },
                     )
@@ -97,7 +97,18 @@ fun RootProfileConfig(
                 label = { Text("uid") },
                 value = profile.uid.toString(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                onValueChange = { onProfileChange(profile.copy(uid = it.toInt())) }
+                onValueChange = {
+                    if (it.isNotEmpty()) {
+                        it.filter { symbol ->
+                            symbol.isDigit()
+                        }.let { filtered ->
+                            filtered.ifEmpty { "0" }
+                        }.let { value ->
+                            onProfileChange(profile.copy(uid = value.toInt(), rootUseDefault = false))
+                        }
+                    }
+                }
+
             )
         })
 
@@ -106,16 +117,37 @@ fun RootProfileConfig(
                 label = { Text("gid") },
                 value = profile.gid.toString(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                onValueChange = { onProfileChange(profile.copy(gid = it.toInt())) }
+                onValueChange = {
+                    if (it.isNotEmpty()) {
+                        it.filter { symbol ->
+                            symbol.isDigit()
+                        }.let { filtered ->
+                            filtered.ifEmpty { "0" }
+                        }.let { value ->
+                            onProfileChange(profile.copy(gid = value.toInt(), rootUseDefault = false))
+                        }
+                    }
+                }
             )
         })
 
         ListItem(headlineContent = {
             OutlinedTextField(
                 label = { Text("groups") },
-                value = profile.groups.toString(),
+                value = profile.groups.joinToString(","),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                onValueChange = { onProfileChange(profile.copy(groups = it.toInt())) }
+                onValueChange = { s ->
+                    if (s.isNotEmpty()) {
+                        s.filter { symbol ->
+                            symbol.isDigit() || symbol == ','
+                        }.let { filtered ->
+                            filtered.ifEmpty { "0" }
+                        }.let { value ->
+                            val groups = value.split(',').filter { it.isNotEmpty() }.map { it.toInt() }
+                            onProfileChange(profile.copy(groups = groups, rootUseDefault = false))
+                        }
+                    }
+                }
             )
         })
 
@@ -123,7 +155,9 @@ fun RootProfileConfig(
             OutlinedTextField(
                 label = { Text("context") },
                 value = profile.context,
-                onValueChange = { onProfileChange(profile.copy(context = it)) }
+                onValueChange = {
+                    onProfileChange(profile.copy(context = it, rootUseDefault = false))
+                }
             )
         })
     }
@@ -132,7 +166,7 @@ fun RootProfileConfig(
 @Preview
 @Composable
 private fun RootProfileConfigPreview() {
-    var profile by remember { mutableStateOf(RootProfile("")) }
+    var profile by remember { mutableStateOf(Natives.Profile("")) }
     RootProfileConfig(fixedName = true, profile = profile) {
         profile = it
     }
