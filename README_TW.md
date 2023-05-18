@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | **繁體中文**
+[English](README.md) | [简体中文](README_CN.md) | **繁體中文** | [日本語](README_JP.md)
 
 # KernelSU
 
@@ -37,6 +37,6 @@ WSA 和執行在容器中的 Android 也可以與 KernelSU 一同運作。
 ## 致謝
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU 的靈感。
-- [true](https://github.com/brevent/genuine/)：apk v2 簽章驗證。
+- [genuine](https://github.com/brevent/genuine/)：apk v2 簽章驗證。
 - [Diamorphine](https://github.com/m0nad/Diamorphine)：一些 rootkit 技巧。
 - [Magisk](https://github.com/topjohnwu/Magisk)：sepolicy 實作。

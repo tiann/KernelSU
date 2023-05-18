@@ -60,8 +60,20 @@
     <string name="reboot_to_apply">Reboot to take effect</string>
     <string name="module_magisk_conflict">Modules are disabled because it is conflict with Magisk\'s!</string>
     <string name="home_learn_kernelsu">Learn KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Learn how to install KernelSU and use modules</string>
     <string name="home_support_title">Support Us</string>
     <string name="home_support_content">KernelSU is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
+    <string name="profile">App profile</string>
+    <string name="profile_default">Default</string>
+    <string name="profile_template">Template</string>
+    <string name="profile_custom">Custom</string>
+    <string name="profile_name">Profile name</string>
+    <string name="profile_namespace">Mount namespace</string>
+    <string name="profile_namespace_inherited">Inherited</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_unmount_modules">Unmount modules</string>
+    <string name="profile_allow_root_request">Allow root request</string>
 </resources>

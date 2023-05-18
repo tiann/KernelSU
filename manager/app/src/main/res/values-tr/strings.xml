@@ -1,0 +1,66 @@
+<resources>
+    <string name="home">Ana menü</string>
+    <string name="home_not_installed">Yüklü değil</string>
+    <string name="home_click_to_install">Yüklemek için dokun</string>
+    <string name="home_working">Çalışıyor</string>
+    <string name="home_working_version">Sürüm: %d</string>
+    <string name="home_superuser_count">Süper kullanıcılar: %d</string>
+    <string name="home_module_count">Modüller: %d</string>
+    <string name="home_unsupported">Desteklenmiyor</string>
+    <string name="home_unsupported_reason">KernelSU artık yalnızca GKI çekirdeklerini destekliyor</string>
+    <string name="home_copied_to_clipboard">Panoya kopyalandı</string>
+    <string name="home_support">Destek</string>
+
+    <string name="home_kernel">Kernel</string>
+    <string name="home_arch">Arch</string>
+    <string name="home_manager_version">Yönetici Sürümü</string>
+    <string name="home_api">API Seviyesi</string>
+    <string name="home_abi">ABI</string>
+    <string name="home_fingerprint">Parmak izi</string>
+    <string name="home_securitypatch">Güvenlik Yaması</string>
+
+    <string name="home_selinux_status">SELinux durumu</string>
+    <string name="selinux_status_disabled">Devre dışı</string>
+    <string name="selinux_status_enforcing">Zorunlu</string>
+    <string name="selinux_status_permissive">Serbest</string>
+    <string name="selinux_status_unknown">Bilinmiyor</string>
+    <string name="superuser">Süper kullanıcı</string>
+    <string name="superuser_failed_to_grant_root">%d için root erişimi verilemedi</string>
+    <string name="superuser_allow_root_confirm">%s için root erişimi vereceğinizden emin misiniz?</string>
+    <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
+    <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
+    <string name="module_empty">Yüklü modül yok</string>
+
+    <string name="module">Modül</string>
+    <string name="uninstall">Kaldır</string>
+    <string name="module_install">Yükle</string>
+    <string name="install">Yükle</string>
+    <string name="reboot">Yeniden başlat</string>
+    <string name="settings">Ayarlar</string>
+    <string name="reboot_userspace">Hızlı yeniden Başlat</string>
+    <string name="reboot_recovery">Kurtarma modunda Başlat</string>
+    <string name="reboot_bootloader">Bootloader modunda Başlat</string>
+    <string name="reboot_download">İndirme modunda Başlat</string>
+    <string name="reboot_edl">EDL modunda Başlat</string>
+    <string name="about">Hakkında</string>
+    <string name="require_kernel_version_8">KernelSU sürüm 8+ gerektir</string>
+    <string name="module_uninstall_confirm">%s modülünü kaldırmak istediğinizden emin misiniz?</string>
+    <string name="module_uninstall_success">%s kaldırıldı</string>
+    <string name="module_uninstall_failed">Kaldırılamadı: %s</string>
+    <string name="module_version">Sürüm</string>
+    <string name="module_author">Yazar</string>
+    <string name="module_overlay_fs_not_available">overlayfs mevcut değil, modül çalışamıyor!</string>
+    <string name="refresh">Yenile</string>
+    <string name="show_system_apps">Sistem uygulamalarını göster</string>
+    <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
+    <string name="send_log">Log gönder</string>
+    <string name="safe_mode">Güvenli mod</string>
+    <string name="reboot_to_apply">Etkili olması için yeniden başlat</string>
+    <string name="module_magisk_conflict">Modüller Magisk ile çakıştığı için devre dışı bırakıldı!</string>
+    <string name="home_learn_kernelsu">KernelSU\'yu Öğrenin</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">KernelSU\'yu nasıl kuracağınızı ve modülleri nasıl kullanacağınızı öğrenin</string>
+    <string name="home_support_title">Bizi destekle</string>
+    <string name="home_support_content">KernelSU ücretsiz ve açık kaynaktır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize değer verdiğinizi gösterebilirsiniz.</string>
+    <string name="about_source_code"><![CDATA[%1$s kaynak kodunu görüntüle<br/>%2$s kanalımıza katılın]]></string>
+</resources>

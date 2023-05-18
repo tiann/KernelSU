@@ -57,4 +57,5 @@
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>
     <string name="safe_mode">Chế độ an toàn</string>
     <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/vi_VN/guide/what-is-kernelsu.html</string>
 </resources>

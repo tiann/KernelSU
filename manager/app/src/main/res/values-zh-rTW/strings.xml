@@ -59,8 +59,16 @@
     <string name="reboot_to_apply">重新啟動以生效</string>
     <string name="module_magisk_conflict">模組已停用，因其與 Magisk 的模組存在衝突！</string>
     <string name="home_learn_kernelsu">深入瞭解 KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_TW/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">瞭解如何安裝 KernelSU 以及如何開發模組</string>
     <string name="home_support_title">支持開發</string>
     <string name="home_support_content">KernelSU 將保持免費和開源，您可以考慮向開發人員捐贈以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 中檢視原始碼<br/>加入我們的 %2$s 頻道]]></string>
+    <string name="app_profile_allowlist">白名單</string>
+    <string name="app_profile_denylist">黑名單</string>
+    <string name="app_profile_mode">工作模式</string>
+    <string name="failed_to_set_allowlist_mode">全換到白名單模式失敗！ </string>
+    <string name="failed_to_add_to_allowlist">添加 %s 到白名單失敗！ </string>
+    <string name="failed_to_add_to_denylist">添加 %s 到黑名單失敗！ </string>
+    <string name="failed_to_set_denylist_mode">切換到黑名單模式失敗！ </string>
 </resources>

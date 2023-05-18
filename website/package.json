@@ -7,7 +7,7 @@
   "author": "weishu",
   "license": "MIT",
   "devDependencies": {
-    "vitepress": "^1.0.0-alpha.40",
+    "vitepress": "^1.0.0-alpha.75",
     "vue": "^3.2.45"
   },
   "scripts": {

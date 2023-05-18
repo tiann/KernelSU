@@ -1,0 +1,66 @@
+<resources>
+    <string name="home">Home</string>
+    <string name="home_not_installed">Non installato</string>
+    <string name="home_click_to_install">Clicca per installare</string>
+    <string name="home_working">In esecuzione</string>
+    <string name="home_working_version">Versione: %d</string>
+    <string name="home_superuser_count">Superuser: %d</string>
+    <string name="home_module_count">Moduli: %d</string>
+    <string name="home_unsupported">Non supportato</string>
+    <string name="home_unsupported_reason">KernelSU ora supporta solo i kernel GKI</string>
+    <string name="home_copied_to_clipboard">Copiato negli appunti</string>
+    <string name="home_support">Supporto</string>
+
+    <string name="home_kernel">Kernel</string>
+    <string name="home_arch">Architettura</string>
+    <string name="home_manager_version">Versione del manager</string>
+    <string name="home_api">Livello API</string>
+    <string name="home_abi">ABI</string>
+    <string name="home_fingerprint">Fingerprint</string>
+    <string name="home_securitypatch">Patch di sicurezza</string>
+
+    <string name="home_selinux_status">Stato SELinux</string>
+    <string name="selinux_status_disabled">Disabilitato</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_unknown">Sconosciuto</string>
+    <string name="superuser">Accesso root</string>
+    <string name="superuser_failed_to_grant_root">Impossibile concedere l\'accesso root per %d</string>
+    <string name="superuser_allow_root_confirm">Sei sicuro di concedere l\'accesso root a %s?</string>
+    <string name="module_failed_to_enable">Impossibile abilitare il modulo: %s</string>
+    <string name="module_failed_to_disable">Impossibile disabilitare il modulo: %s</string>
+    <string name="module_empty">Nessun modulo installato</string>
+
+    <string name="module">Moduli</string>
+    <string name="uninstall">Disinstalla</string>
+    <string name="module_install">Installa</string>
+    <string name="install">Installa</string>
+    <string name="reboot">Riavvia</string>
+    <string name="settings">Impostazioni</string>
+    <string name="reboot_userspace">Riavvio veloce</string>
+    <string name="reboot_recovery">Riavvia in Recovery</string>
+    <string name="reboot_bootloader">Riavvia in modalità Bootloader</string>
+    <string name="reboot_download">Riavvia in modalità Download</string>
+    <string name="reboot_edl">Riavvia in modalità EDL</string>
+    <string name="about">Informazioni</string>
+    <string name="require_kernel_version_8">Richiede KernelSU versione 8+</string>
+    <string name="module_uninstall_confirm">Sei sicuro di voler disinstallare il modulo %s?</string>
+    <string name="module_uninstall_success">%s disinstallato</string>
+    <string name="module_uninstall_failed">Impossibile disinstallare: %s</string>
+    <string name="module_version">Versione</string>
+    <string name="module_author">Autore</string>
+    <string name="module_overlay_fs_not_available">overlayfs non è disponibile, il modulo non può funzionare!</string>
+    <string name="refresh">Aggiorna</string>
+    <string name="show_system_apps">Mostra app di sistema</string>
+    <string name="hide_system_apps">Nascondi app di sistema</string>
+    <string name="send_log">Invia log</string>
+    <string name="safe_mode">Modalità provvisoria</string>
+    <string name="reboot_to_apply">Riavvia per applicare la modifica</string>
+    <string name="module_magisk_conflict">I moduli sono disabilitati perché in conflitto con quelli di Magisk!</string>
+    <string name="home_learn_kernelsu">Scopri KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">Scopri come installare KernelSU e utilizzare i moduli</string>
+    <string name="home_support_title">Supportaci</string>
+    <string name="home_support_content">KernelSU è, e sempre sarà, gratuito e open source. Puoi comunque mostrarci il tuo apprezzamento facendo una donazione.</string>
+    <string name="about_source_code"><![CDATA[Visualizza il codice sorgente su %1$s<br/>Unisciti al nostro canale %2$s]]></string>
+</resources>

@@ -56,8 +56,18 @@
     <string name="module_magisk_conflict">所有模块已被禁用，因为它与 Magisk 的模块系统有冲突！</string>
     <string name="home_module_count">模块数：%d</string>
     <string name="home_learn_kernelsu">了解 KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_CN/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">了解如何安装 KernelSU 以及如何开发模块</string>
     <string name="home_support_title">支持开发</string>
     <string name="home_support_content">KernelSU 将保持免费和开源，向开发者捐赠以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 查看源码<br/>加入我们的 %2$s 频道<br/>加入我们的 <b><a href="https://pd.qq.com/s/8lipl1brp">QQ 频道</a></b>]]></string>
+    <string name="app_profile_title1">应用</string>
+    <string name="app_profile_title0">全局</string>
+    <string name="app_profile_allowlist">白名单</string>
+    <string name="app_profile_denylist">黑名单</string>
+    <string name="app_profile_mode">工作模式</string>
+    <string name="failed_to_set_allowlist_mode">全换到白名单模式失败！</string>
+    <string name="failed_to_add_to_allowlist">添加 %s 到白名单失败！</string>
+    <string name="failed_to_add_to_denylist">添加 %s 到黑名单失败！</string>
+    <string name="failed_to_set_denylist_mode">切换到黑名单模式失败！</string>
 </resources>

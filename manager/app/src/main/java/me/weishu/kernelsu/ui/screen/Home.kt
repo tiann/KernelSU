@@ -33,7 +33,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
 @Destination
 @Composable
@@ -207,6 +206,7 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
 @Composable
 fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
+    val url = stringResource(R.string.home_learn_kernelsu_url)
 
     ElevatedCard {
 
@@ -214,7 +214,7 @@ fun LearnMoreCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    uriHandler.openUri("https://kernelsu.org/guide/what-is-kernelsu.html")
+                    uriHandler.openUri(url)
                 }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
