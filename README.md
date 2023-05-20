@@ -11,7 +11,7 @@ A Kernel based root solution for Android devices.
 
 ## Compatibility State
 
-KernelSU officially supports Android GKI 2.0 devices(with kernel 5.10+), old kernels(4.14+) is also compatiable, but you need to build kernel yourself.
+KernelSU officially supports Android GKI 2.0 devices(with kernel 5.10+), old kernels(4.14+) is also compatible, but you need to build kernel yourself.
 
 WSA and containter-based Android should also work with KernelSU integrated.
 
