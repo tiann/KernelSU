@@ -46,9 +46,9 @@
     <string name="reboot_edl">اعادة تشغيل الي وضع EDL</string>
     <string name="about">من نحن</string>
     <string name="require_kernel_version_8">يتطلب KernelSU اصدار 8+</string>
-    <string name="module_uninstall_confirm">Are you sure you want to uninstall module %s?</string>
-    <string name="module_uninstall_success">%s uninstalled</string>
-    <string name="module_uninstall_failed">Failed to uninstall: %s</string>
+    <string name="module_uninstall_confirm">هل أنت متأكد أنك تريد إلغاء تثبيت الوحدة النمطية %s ?</string>
+    <string name="module_uninstall_success">غير مثبت %s</string>
+    <string name="module_uninstall_failed">فشل إلغاء التثبيت: %s</string>
     <string name="module_version">الاصدار</string>
     <string name="module_author">مؤلف</string>
     <string name="module_overlay_fs_not_available">التراكبات غير متوفرة ، لا يمكن للوحدة أن تعمل!</string>
