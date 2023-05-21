@@ -1,13 +1,17 @@
+menu "KernelSU"
+
 config KSU
 	tristate "KernelSU module"
+	select OVERLAY_FS
 	default y
-	depends on OVERLAY_FS
 	help
 	This is the KSU privilege driver for android system.
 
 config KSU_DEBUG
-	tristate "KernelSU module debug mode"
-	default n
+	bool "KernelSU module debug mode"
 	depends on KSU
+	default n
 	help
 	This enables debug mode for KSU
+
+endmenu
