@@ -1,4 +1,6 @@
 <resources>
+    <string name="app_name" translatable="false">KernelSU</string>
+
     <string name="home">Головна</string>
     <string name="home_not_installed">Не встановлено</string>
     <string name="home_click_to_install">Натисніть щоб встановити</string>
@@ -60,7 +62,18 @@
     <string name="home_learn_kernelsu">Дізнайтеся про KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Дізнайтеся, як інсталювати KernelSU і використовувати модулі</string>
-    <string name="home_support_title">Підтримайте нас</string>
-    <string name="home_support_content">KernelSU є і завжди буде безкоштовним і з відкритим кодом. Однак Ви можете показати нам, що Вам не байдуже, зробивши пожертву.</string>
+    <string name="home_support_title">Підтримати нас</string>
+    <string name="home_support_content">KernelSU є, і завжди буде безкоштовним та з відкритим кодом. Однак, якщо вам не байдуже, можете зробити невеличке пожертвування.</string>
     <string name="about_source_code"><![CDATA[Переглянути вихідний код на %1$s<br/>Приєднуйтесь до нашого каналу %2$s]]></string>
+    <string name="profile">Профіль додатка</string>
+    <string name="profile_default">За замовчуванням</string>
+    <string name="profile_template">Шаблон</string>
+    <string name="profile_custom">Користувальницький</string>
+    <string name="profile_name">Назва профілю</string>
+    <string name="profile_namespace">Монтування простору імен</string>
+    <string name="profile_namespace_inherited">Наслідуваний</string>
+    <string name="profile_namespace_global">Глобальний</string>
+    <string name="profile_namespace_individual">Індивідуальний</string>
+    <string name="profile_unmount_modules">Демонтувати модулі</string>
+    <string name="profile_allow_root_request">Дозволити запит на root</string>
 </resources>
