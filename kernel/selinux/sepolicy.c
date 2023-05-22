@@ -73,7 +73,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // rules
 #define strip_av(effect, invert) ((effect == AVTAB_AUDITDENY) == !invert)
 
-#define hash_for_each(node_ptr, n_slot, cur)                                   \
+#define ksu_hash_for_each(node_ptr, n_slot, cur)                                   \
 	int i;                                                                 \
 	for (i = 0; i < n_slot; ++i)                                           \
 		for (cur = node_ptr[i]; cur; cur = cur->next)
@@ -81,10 +81,10 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // htable is a struct instead of pointer above 5.8.0:
 // https://elixir.bootlin.com/linux/v5.8-rc1/source/security/selinux/ss/symtab.h
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-#define hashtab_for_each(htab, cur) hash_for_each (htab.htable, htab.size, cur)
+#define ksu_hashtab_for_each(htab, cur) ksu_hash_for_each (htab.htable, htab.size, cur)
 #else
-#define hashtab_for_each(htab, cur)                                            \
-	hash_for_each (htab->htable, htab->size, cur)
+#define ksu_hashtab_for_each(htab, cur)                                            \
+	ksu_hash_for_each (htab->htable, htab->size, cur)
 #endif
 
 // symtab_search is introduced on 5.9.0:
@@ -95,7 +95,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 #endif
 
 #define avtab_for_each(avtab, cur)                                             \
-	hash_for_each (avtab.htable, avtab.nslot, cur)                         \
+	ksu_hash_for_each (avtab.htable, avtab.nslot, cur)                         \
 		;
 
 static struct avtab_node *get_avtab_node(struct policydb *db,
@@ -210,14 +210,14 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src,
 	if (src == NULL) {
 		struct hashtab_node *node;
 		if (strip_av(effect, invert)) {
-			hashtab_for_each(db->p_types.table, node)
+			ksu_hashtab_for_each(db->p_types.table, node)
 			{
 				add_rule_raw(db,
 					     (struct type_datum *)node->datum,
 					     tgt, cls, perm, effect, invert);
 			};
 		} else {
-			hashtab_for_each(db->p_types.table, node)
+			ksu_hashtab_for_each(db->p_types.table, node)
 			{
 				struct type_datum *type =
 					(struct type_datum *)(node->datum);
@@ -230,14 +230,14 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src,
 	} else if (tgt == NULL) {
 		struct hashtab_node *node;
 		if (strip_av(effect, invert)) {
-			hashtab_for_each(db->p_types.table, node)
+			ksu_hashtab_for_each(db->p_types.table, node)
 			{
 				add_rule_raw(db, src,
 					     (struct type_datum *)node->datum,
 					     cls, perm, effect, invert);
 			};
 		} else {
-			hashtab_for_each(db->p_types.table, node)
+			ksu_hashtab_for_each(db->p_types.table, node)
 			{
 				struct type_datum *type =
 					(struct type_datum *)(node->datum);
@@ -249,7 +249,7 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src,
 		}
 	} else if (cls == NULL) {
 		struct hashtab_node *node;
-		hashtab_for_each(db->p_classes.table, node)
+		ksu_hashtab_for_each(db->p_classes.table, node)
 		{
 			add_rule_raw(db, src, tgt,
 				     (struct class_datum *)node->datum, perm,
@@ -292,7 +292,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 {
 	if (src == NULL) {
 		struct hashtab_node *node;
-		hashtab_for_each(db->p_types.table, node)
+		ksu_hashtab_for_each(db->p_types.table, node)
 		{
 			struct type_datum *type =
 				(struct type_datum *)(node->datum);
@@ -303,7 +303,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 		};
 	} else if (tgt == NULL) {
 		struct hashtab_node *node;
-		hashtab_for_each(db->p_types.table, node)
+		ksu_hashtab_for_each(db->p_types.table, node)
 		{
 			struct type_datum *type =
 				(struct type_datum *)(node->datum);
@@ -314,7 +314,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 		};
 	} else if (cls == NULL) {
 		struct hashtab_node *node;
-		hashtab_for_each(db->p_classes.table, node)
+		ksu_hashtab_for_each(db->p_classes.table, node)
 		{
 			add_xperm_rule_raw(db, src, tgt,
 					   (struct class_datum *)(node->datum),
@@ -870,7 +870,7 @@ static bool set_type_state(struct policydb *db, const char *type_name,
 	struct type_datum *type;
 	if (type_name == NULL) {
 		struct hashtab_node *node;
-		hashtab_for_each(db->p_types.table, node)
+		ksu_hashtab_for_each(db->p_types.table, node)
 		{
 			type = (struct type_datum *)(node->datum);
 			if (ebitmap_set_bit(&db->permissive_map, type->value,
@@ -913,7 +913,7 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 	struct hashtab_node *node;
 	struct constraint_node *n;
 	struct constraint_expr *e;
-	hashtab_for_each(db->p_classes.table, node)
+	ksu_hashtab_for_each(db->p_classes.table, node)
 	{
 		struct class_datum *cls = (struct class_datum *)(node->datum);
 		for (n = cls->constraints; n; n = n->next) {
