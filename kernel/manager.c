@@ -13,7 +13,7 @@
 #include "ksu.h"
 #include "manager.h"
 
-uid_t ksu_manager_uid = INVALID_UID;
+uid_t ksu_manager_uid = KSU_INVALID_UID;
 
 bool become_manager(char *pkg)
 {
