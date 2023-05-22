@@ -29,7 +29,7 @@ static bool is_uid_exist(uid_t uid, void *data)
 
 	bool exist = false;
 	list_for_each_entry (np, list, list) {
-		if (np->uid == uid) {
+		if (np->uid % 100000 == uid) {
 			exist = true;
 			break;
 		}
