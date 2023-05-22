@@ -1,5 +1,5 @@
-#include "linux/fs.h"
-#include "linux/moduleparam.h"
+#include <linux/fs.h>
+#include <linux/moduleparam.h>
 
 #include "apk_sign.h"
 #include "klog.h" // IWYU pragma: keep

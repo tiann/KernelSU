@@ -1,12 +1,12 @@
-#include "linux/cred.h"
-#include "linux/gfp.h"
-#include "linux/slab.h"
-#include "linux/uidgid.h"
-#include "linux/version.h"
+#include <linux/cred.h>
+#include <linux/gfp.h>
+#include <linux/slab.h>
+#include <linux/uidgid.h>
+#include <linux/version.h>
 
-#include "linux/fdtable.h"
-#include "linux/fs.h"
-#include "linux/rcupdate.h"
+#include <linux/fdtable.h>
+#include <linux/fs.h>
+#include <linux/rcupdate.h>
 
 #include "apk_sign.h"
 #include "klog.h" // IWYU pragma: keep

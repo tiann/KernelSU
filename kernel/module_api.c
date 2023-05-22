@@ -1,4 +1,4 @@
-#include "linux/kallsyms.h"
+#include <linux/kallsyms.h>
 
 #define RE_EXPORT_SYMBOL1(ret, func, t1, v1)                                   \
 	ret ksu_##func(t1 v1)                                                  \

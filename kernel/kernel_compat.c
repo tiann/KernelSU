@@ -1,8 +1,8 @@
-#include "linux/version.h"
-#include "linux/fs.h"
+#include <linux/version.h>
+#include <linux/fs.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-#include "linux/key.h"
-#include "linux/errno.h"
+#include <linux/key.h>
+#include <linux/errno.h>
 struct key *init_session_keyring = NULL;
 #endif
 ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count, loff_t *pos){

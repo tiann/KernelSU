@@ -1,10 +1,10 @@
-#include "linux/delay.h"
-#include "linux/fs.h"
-#include "linux/kernel.h"
-#include "linux/list.h"
-#include "linux/printk.h"
-#include "linux/slab.h"
-#include "linux/version.h"
+#include <linux/delay.h>
+#include <linux/fs.h>
+#include <linux/kernel.h>
+#include <linux/list.h>
+#include <linux/printk.h>
+#include <linux/slab.h>
+#include <linux/version.h>
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 #include "kernel_compat.h"
