@@ -65,4 +65,15 @@
     <string name="home_support_title">Ondersteun ons</string>
     <string name="home_support_content">KernelSU is, en zal altijd, vrij en open source zijn. Je kan altijd je appreciatie tonen met een donatie.</string>
     <string name="about_source_code"><![CDATA[Bekijk source code op %1$s<br/>Vervoeg ons %2$s kanaal]]></string>
+    <string name="profile">App profiel</string>
+    <string name="profile_default">Standaard</string>
+    <string name="profile_template">Sjabloon</string>
+    <string name="profile_custom">Aangepast</string>
+    <string name="profile_name">Profiel naam</string>
+    <string name="profile_namespace">Koppel naamruimte</string>
+    <string name="profile_namespace_inherited">Overgenomen</string>
+    <string name="profile_namespace_global">Globaal</string>
+    <string name="profile_namespace_individual">Individuëel</string>
+    <string name="profile_unmount_modules">Ontkoppel modules</string>
+    <string name="profile_allow_root_request">Root verzoek toestaan</string>
 </resources>
