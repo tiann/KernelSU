@@ -66,9 +66,9 @@
     <string name="home_support_content">KernelSU є, і завжди буде безкоштовним та з відкритим кодом. Однак, якщо вам не байдуже, можете зробити невеличке пожертвування.</string>
     <string name="about_source_code"><![CDATA[Переглянути вихідний код на %1$s<br/>Приєднуйтесь до нашого каналу %2$s]]></string>
     <string name="profile">Профіль додатка</string>
-    <string name="profile_default">За замовчуванням</string>
+    <string name="profile_default">Типовий</string>
     <string name="profile_template">Шаблон</string>
-    <string name="profile_custom">Користувальницький</string>
+    <string name="profile_custom">Власний</string>
     <string name="profile_name">Назва профілю</string>
     <string name="profile_namespace">Монтування простору імен</string>
     <string name="profile_namespace_inherited">Наслідуваний</string>
