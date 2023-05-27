@@ -110,6 +110,11 @@ static bool profile_valid(struct app_profile *profile)
 		return false;
 	}
 
+	if (profile->current_uid < 2000) {
+		pr_err("uid lower than 2000 is unsupported: %d\n", profile->current_uid);
+		return false;
+	}
+
 	if (profile->version < KSU_APP_PROFILE_VER) {
 		pr_info("Unsupported profile version: %d\n", profile->version);
 		return false;
@@ -200,6 +205,11 @@ bool __ksu_is_allow_uid(uid_t uid)
 	if (unlikely(uid == 0)) {
 		// already root, but only allow our domain.
 		return is_ksu_domain();
+	}
+
+	if (uid < 2000) {
+		// do not bother going through the list if it's system
+		return false;
 	}
 
 	list_for_each (pos, &allow_list) {
