@@ -46,6 +46,12 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 	bool result = false;
+
+	if (uid < 2000) {
+		pr_err("uid lower than 2000 is unsupported: %d\n", uid);
+		return false;
+	}
+
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		if (uid == p->uid) {
@@ -84,6 +90,11 @@ bool __ksu_is_allow_uid(uid_t uid)
 	if (unlikely(uid == 0)) {
 		// already root, but only allow our domain.
 		return is_ksu_domain();
+	}
+
+	if (uid < 2000) {
+		// do not bother going through the list if it's system
+		return false;
 	}
 
 	list_for_each (pos, &allow_list) {
