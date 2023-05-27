@@ -192,12 +192,12 @@ exit:
 	return result;
 }
 
-bool ksu_is_allow_uid(uid_t uid)
+bool __ksu_is_allow_uid(uid_t uid)
 {
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 
-	if (uid == 0) {
+	if (unlikely(uid == 0)) {
 		// already root, but only allow our domain.
 		return is_ksu_domain();
 	}
