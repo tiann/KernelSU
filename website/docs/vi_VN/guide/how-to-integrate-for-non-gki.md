@@ -118,7 +118,7 @@ index 650fc7e0f3a6..55be193913b6 100644
  	ssize_t ret;
  
 +	ksu_handle_vfs_read(&file, &buf, &count, &pos);
-+	
++
  	if (!(file->f_mode & FMODE_READ))
  		return -EBADF;
  	if (!(file->f_mode & FMODE_CAN_READ))
