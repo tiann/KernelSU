@@ -52,9 +52,9 @@ static struct work_struct stop_vfs_read_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
 #else
-static bool vfs_read_hook = true;
-static bool execveat_hook = true;
-static bool input_hook = true;
+static bool vfs_read_hook __read_mostly = true;
+static bool execveat_hook __read_mostly = true;
+static bool input_hook __read_mostly = true;
 #endif
 
 void on_post_fs_data(void)
