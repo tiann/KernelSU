@@ -22,6 +22,30 @@ struct perm_data {
 
 static struct list_head allow_list;
 
+static uint64_t allow_list_hash __read_mostly = 0;
+#define HASH_PRIME_NUMBER 61
+#define HASH_BIT(x) (1 << ((x % 10000) % HASH_PRIME_NUMBER))
+
+/*
+ * Deleting an entry from allow_list is a bit more complicated with
+ * regards to the bitmap hash, as it has to go through all entries to make
+ * sure the designated bit slot is truly unused.
+ */
+static void rebuild_bitmap_hash()
+{
+	struct perm_data *p;
+	struct list_head *pos;
+	uint64_t tmp = 0;
+
+	list_for_each (pos, &allow_list) {
+		p = list_entry(pos, struct perm_data, list);
+		if (p->allow)
+			tmp |= HASH_BIT(p->uid);
+	}
+
+	allow_list_hash = tmp;
+}
+
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
 static struct work_struct ksu_save_work;
@@ -56,8 +80,7 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 		p = list_entry(pos, struct perm_data, list);
 		if (uid == p->uid) {
 			p->allow = allow;
-			result = true;
-			goto exit;
+			goto out;
 		}
 	}
 
@@ -73,9 +96,15 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 	pr_info("allow_uid: %d, allow: %d", uid, allow);
 
 	list_add_tail(&p->list, &allow_list);
+
+out:
+	if (allow)
+		allow_list_hash |= HASH_BIT(uid);
+	else
+		rebuild_bitmap_hash();
+	smp_mb();
 	result = true;
 
-exit:
 	if (persist)
 		persistent_allow_list();
 
@@ -94,6 +123,11 @@ bool __ksu_is_allow_uid(uid_t uid)
 
 	if (uid < 2000) {
 		// do not bother going through the list if it's system
+		return false;
+	}
+
+	if (!(allow_list_hash & HASH_BIT(uid))) {
+		// not in the hash
 		return false;
 	}
 
@@ -248,6 +282,8 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 	mutex_unlock(&allowlist_mutex);
 
 	if (modified) {
+		rebuild_bitmap_hash();
+		smp_mb();
 		persistent_allow_list();
 	}
 }
@@ -265,6 +301,8 @@ bool ksu_load_allow_list(void)
 
 void ksu_allowlist_init(void)
 {
+	BUILD_BUG_ON(HASH_PRIME_NUMBER >= (sizeof(allow_list_hash) * 8));
+
 	INIT_LIST_HEAD(&allow_list);
 
 	INIT_WORK(&ksu_save_work, do_persistent_allow_list);
