@@ -52,9 +52,9 @@ static struct work_struct stop_vfs_read_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
 #else
-static bool vfs_read_hook __read_mostly = true;
-static bool execveat_hook __read_mostly = true;
-static bool input_hook __read_mostly = true;
+bool ksu_vfs_read_hook __read_mostly = true;
+bool ksu_execveat_hook __read_mostly = true;
+bool ksu_input_hook __read_mostly = true;
 #endif
 
 void on_post_fs_data(void)
@@ -138,7 +138,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     void *argv, void *envp, int *flags)
 {
 #ifndef CONFIG_KPROBES
-	if (!execveat_hook) {
+	if (!ksu_execveat_hook) {
 		return 0;
 	}
 #endif
@@ -244,7 +244,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 			size_t *count_ptr, loff_t **pos)
 {
 #ifndef CONFIG_KPROBES
-	if (!vfs_read_hook) {
+	if (!ksu_vfs_read_hook) {
 		return 0;
 	}
 #endif
@@ -345,7 +345,7 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 				  int *value)
 {
 #ifndef CONFIG_KPROBES
-	if (!input_hook) {
+	if (!ksu_input_hook) {
 		return 0;
 	}
 #endif
@@ -463,7 +463,7 @@ static void stop_vfs_read_hook()
 	bool ret = schedule_work(&stop_vfs_read_work);
 	pr_info("unregister vfs_read kprobe: %d!\n", ret);
 #else
-	vfs_read_hook = false;
+	ksu_vfs_read_hook = false;
 #endif
 }
 
@@ -473,7 +473,7 @@ static void stop_execve_hook()
 	bool ret = schedule_work(&stop_execve_hook_work);
 	pr_info("unregister execve kprobe: %d!\n", ret);
 #else
-	execveat_hook = false;
+	ksu_execveat_hook = false;
 #endif
 }
 
@@ -488,7 +488,7 @@ static void stop_input_hook()
 	bool ret = schedule_work(&stop_input_hook_work);
 	pr_info("unregister input kprobe: %d!\n", ret);
 #else
-	input_hook = false;
+	ksu_input_hook = false;
 #endif
 }
 
