@@ -157,8 +157,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	if (!memcmp(filename->name, system_bin_init,
-		    sizeof(system_bin_init) - 1)) {
+	if (unlikely(!memcmp(filename->name, system_bin_init,
+		    sizeof(system_bin_init) - 1))) {
 #ifdef __aarch64__
 		// /system/bin/init executed
 		struct user_arg_ptr *ptr = (struct user_arg_ptr*) argv;
@@ -200,8 +200,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 #endif
 	}
 
-	if (first_app_process &&
-	    !memcmp(filename->name, app_process, sizeof(app_process) - 1)) {
+	if (unlikely(first_app_process &&
+	    !memcmp(filename->name, app_process, sizeof(app_process) - 1))) {
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared, second_stage: %d\n", init_second_stage_executed);
 		on_post_fs_data(); // we keep this for old ksud
