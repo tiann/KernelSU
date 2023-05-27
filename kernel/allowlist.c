@@ -46,6 +46,38 @@ static void rebuild_bitmap_hash()
 	allow_list_hash = tmp;
 }
 
+static int allow_list_arr[PAGE_SIZE / sizeof(int)] __read_mostly __aligned(PAGE_SIZE);
+static int allow_list_pointer __read_mostly = 0;
+
+static void remove_uid_from_arr(uid_t uid)
+{
+	int *temp_arr;
+	int i, j;
+
+	if (allow_list_pointer == 0)
+		return;
+
+	temp_arr = kmalloc(sizeof(allow_list_arr), GFP_KERNEL);
+	if (temp_arr == NULL) {
+		pr_err("%s: unable to allocate memory\n", __func__);
+		return;
+	}
+
+	for (i = j = 0; i < allow_list_pointer; i++) {
+		if (allow_list_arr[i] == uid)
+			continue;
+		temp_arr[j++] = allow_list_arr[i];
+	}
+
+	allow_list_pointer = j;
+
+	for (; j < ARRAY_SIZE(allow_list_arr); j++)
+		temp_arr[j] = -1;
+
+	memcpy(&allow_list_arr, temp_arr, PAGE_SIZE);
+	kfree(temp_arr);
+}
+
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
 static struct work_struct ksu_save_work;
@@ -98,10 +130,19 @@ bool ksu_allow_uid(uid_t uid, bool allow, bool persist)
 	list_add_tail(&p->list, &allow_list);
 
 out:
-	if (allow)
+	if (allow) {
 		allow_list_hash |= HASH_BIT(uid);
-	else
+		allow_list_arr[allow_list_pointer++] = uid;
+		// 1024 apps registered to request superuser?
+		if (allow_list_pointer >= ARRAY_SIZE(allow_list_arr)) {
+			pr_err("too many apps registered\n");
+			WARN_ON(1);
+			return false;
+		}
+	} else {
 		rebuild_bitmap_hash();
+		remove_uid_from_arr(uid);
+	}
 	smp_mb();
 	result = true;
 
@@ -113,8 +154,7 @@ out:
 
 bool __ksu_is_allow_uid(uid_t uid)
 {
-	struct perm_data *p = NULL;
-	struct list_head *pos = NULL;
+	int i;
 
 	if (unlikely(uid == 0)) {
 		// already root, but only allow our domain.
@@ -131,12 +171,9 @@ bool __ksu_is_allow_uid(uid_t uid)
 		return false;
 	}
 
-	list_for_each (pos, &allow_list) {
-		p = list_entry(pos, struct perm_data, list);
-		// pr_info("is_allow_uid uid :%d, allow: %d\n", p->uid, p->allow);
-		if (uid == p->uid) {
-			return p->allow;
-		}
+	for (i = 0; i < allow_list_pointer; i++) {
+		if (allow_list_arr[i] == uid)
+			return true;
 	}
 
 	return false;
@@ -268,6 +305,7 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 	struct perm_data *n = NULL;
 
 	bool modified = false;
+
 	// TODO: use RCU!
 	mutex_lock(&allowlist_mutex);
 	list_for_each_entry_safe (np, n, &allow_list, list) {
@@ -276,6 +314,7 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 			modified = true;
 			pr_info("prune uid: %d\n", uid);
 			list_del(&np->list);
+			remove_uid_from_arr(uid);
 			kfree(np);
 		}
 	}
@@ -301,7 +340,13 @@ bool ksu_load_allow_list(void)
 
 void ksu_allowlist_init(void)
 {
+	int i;
+
 	BUILD_BUG_ON(HASH_PRIME_NUMBER >= (sizeof(allow_list_hash) * 8));
+	BUILD_BUG_ON(sizeof(allow_list_arr) != PAGE_SIZE);
+
+	for (i = 0; i < ARRAY_SIZE(allow_list_arr); i++)
+		allow_list_arr[i] = -1;
 
 	INIT_LIST_HEAD(&allow_list);
 
