@@ -41,7 +41,7 @@ E os ABIs atualmente suportados são: `arm64-v8a` e `x86_64`
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): a ideia do KernelSU.
 
-- [genuíno](https://github.com/brevent/genuine/): validação de assinatura apk v2.
+- [genuine](https://github.com/brevent/genuine/): validação de assinatura apk v2.
 
 - [Diamorphine](https://github.com/m0nad/Diamorphine): algumas habilidades de rootkit.
 
