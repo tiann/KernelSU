@@ -29,7 +29,7 @@ E os ABIs atualmente suportados são: `arm64-v8a` e `x86_64`
 
 ### Discussão
 
-- Telegrama: [@KernelSU](https://t.me/KernelSU)
+- Telegram: [@KernelSU](https://t.me/KernelSU)
 
 ## Licença
 
