@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | **繁體中文** | [日本語](README_JP.md)
+[English](README.md) | [简体中文](README_CN.md) | **繁體中文** | [日本語](README_JP.md) | [ブラジル(Portuguese-Brazil)](README_PT-BR.md)
 
 # KernelSU
 
