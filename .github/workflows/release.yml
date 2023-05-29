@@ -10,11 +10,11 @@ jobs:
     uses: ./.github/workflows/build-manager.yml
     secrets: inherit
   build-a12-kernel:
-    #uses: ./.github/workflows/build-kernel-a12.yml
+    uses: ./.github/workflows/build-kernel-a12.yml
   build-a13-kernel:
-    #uses: ./.github/workflows/build-kernel-a13.yml
+    uses: ./.github/workflows/build-kernel-a13.yml
   build-wsa-kernel:
-    #uses: ./.github/workflows/build-kernel-wsa.yml
+    uses: ./.github/workflows/build-kernel-wsa.yml
   release:
     needs: 
       - build-manager
@@ -51,6 +51,6 @@ jobs:
         with:
           files: |
             manager/*.apk
-           AnyKernel3-*.zip
+            AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip
