@@ -16,10 +16,10 @@
     <string name="home_manager_version">Yönetici Sürümü</string>
     <string name="home_api">API Seviyesi</string>
     <string name="home_abi">ABI</string>
-    <string name="home_fingerprint">Parmak izi</string>
+    <string name="home_fingerprint">Parmak İzi</string>
     <string name="home_securitypatch">Güvenlik Yaması</string>
 
-    <string name="home_selinux_status">SELinux durumu</string>
+    <string name="home_selinux_status">SELinux Durumu</string>
     <string name="selinux_status_disabled">Devre dışı</string>
     <string name="selinux_status_enforcing">Zorunlu</string>
     <string name="selinux_status_permissive">Serbest</string>
@@ -43,7 +43,7 @@
     <string name="reboot_download">İndirme modunda Başlat</string>
     <string name="reboot_edl">EDL modunda Başlat</string>
     <string name="about">Hakkında</string>
-    <string name="require_kernel_version_8">KernelSU sürüm 8+ gerektir</string>
+    <string name="require_kernel_version_8">KernelSU sürümü 8+ gerekir</string>
     <string name="module_uninstall_confirm">%s modülünü kaldırmak istediğinizden emin misiniz?</string>
     <string name="module_uninstall_success">%s kaldırıldı</string>
     <string name="module_uninstall_failed">Kaldırılamadı: %s</string>
@@ -63,4 +63,15 @@
     <string name="home_support_title">Bizi destekle</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaktır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize değer verdiğinizi gösterebilirsiniz.</string>
     <string name="about_source_code"><![CDATA[%1$s kaynak kodunu görüntüle<br/>%2$s kanalımıza katılın]]></string>
+    <string name="profile">Uygulama profili</string>
+    <string name="profile_default">Varsayılan</string>
+    <string name="profile_template">Örnek</string>
+    <string name="profile_custom">Özel</string>
+    <string name="profile_name">Profil adı</string>
+    <string name="profile_namespace">Ad alanını bağla</string>
+    <string name="profile_namespace_inherited">Kalıtsal</string>
+    <string name="profile_namespace_global">Küresel</string>
+    <string name="profile_namespace_individual">Bireysel</string>
+    <string name="profile_unmount_modules">Modüllerin bağlantısını kes</string>
+    <string name="profile_allow_root_request">Root isteğine izin ver</string>
 </resources>
