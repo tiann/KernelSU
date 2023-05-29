@@ -9,39 +9,39 @@ jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
     secrets: inherit
-  build-a12-kernel:
-    uses: ./.github/workflows/build-kernel-a12.yml
-  build-a13-kernel:
-    uses: ./.github/workflows/build-kernel-a13.yml
-  build-wsa-kernel:
-    uses: ./.github/workflows/build-kernel-wsa.yml
+  #build-a12-kernel:
+    #uses: ./.github/workflows/build-kernel-a12.yml
+  #build-a13-kernel:
+    #uses: ./.github/workflows/build-kernel-a13.yml
+  #build-wsa-kernel:
+    #uses: ./.github/workflows/build-kernel-wsa.yml
   release:
     needs: 
       - build-manager
-      - build-a12-kernel
-      - build-a13-kernel
-      - build-wsa-kernel
+      #- build-a12-kernel
+      #- build-a13-kernel
+      #- build-wsa-kernel
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
-      - name: Zip AnyKernel3
-        run: |
-          for dir in AnyKernel3-*; do
-            if [ -d "$dir" ]; then
-              echo "----- Zip $dir -----"
-              (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
-            fi
-          done
+      #- name: Zip AnyKernel3
+        #run: |
+          #for dir in AnyKernel3-*; do
+            #if [ -d "$dir" ]; then
+              #echo "----- Zip $dir -----"
+              #(cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
+            #fi
+          #done
 
-      - name: Zip WSA kernel
-        run: |
-          for dir in kernel-WSA-*; do
-            if [ -d "$dir" ]; then
-              echo "------ Zip $dir ----------"
-              (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
-            fi
-          done
+      #- name: Zip WSA kernel
+        #run: |
+          #for dir in kernel-WSA-*; do
+           # if [ -d "$dir" ]; then
+           #   echo "------ Zip $dir ----------"
+          #    (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
+           # fi
+          #done
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -51,6 +51,6 @@ jobs:
         with:
           files: |
             manager/*.apk
-            AnyKernel3-*.zip
-            boot-images-*/Image-*/*.img.gz
-            kernel-WSA*.zip
+           #AnyKernel3-*.zip
+            #boot-images-*/Image-*/*.img.gz
+            #kernel-WSA*.zip
