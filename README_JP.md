@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | **日本語** | [ブラジル(Portuguese-Brazil)](README_PT-BR.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | **日本語** | [Portuguese-Brazil](README_PT-BR.md)
 
 # KernelSU
 
@@ -19,7 +19,7 @@ WSA とコンテナ上で動作する Android でも KernelSU を統合して動
 
 ## 使用方法
 
-[インストール方法はこちら](https://kernelsu.org/guide/installation.html)
+[インストール方法はこちら](https://kernelsu.org/ja_JP/guide/installation.html)
 
 ## ビルド
 
