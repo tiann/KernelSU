@@ -46,5 +46,5 @@ DRIVER_MAKEFILE=$DRIVER_DIR/Makefile
 grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
 DRIVER_KCONFIG=$DRIVER_DIR/Kconfig
 KSU_CONFIG=$(printf "source \"drivers/kernelsu/Kconfig\"\n")
-grep -q "kernelsu" "$DRIVER_KCONFIG" || sed  "4i\\$text" "$DRIVER_KCONFIG"
+grep -q "kernelsu" "$DRIVER_KCONFIG" || sed  "4i\\$KSU_CONFIG" "$DRIVER_KCONFIG"
 echo '[+] Done.'
