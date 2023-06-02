@@ -1,13 +1,17 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
+#include "linux/capability.h"
 #include "linux/workqueue.h"
 
 #ifndef KSU_GIT_VERSION
-#warning "KSU_GIT_VERSION not defined! It is better to make KernelSU a git submodule!"
+#warning                                                                       \
+	"KSU_GIT_VERSION not defined! It is better to make KernelSU a git submodule!"
 #define KERNEL_SU_VERSION (16)
 #else
-#define KERNEL_SU_VERSION (10000 + KSU_GIT_VERSION + 200) // major * 10000 + git version + 200 for historical reasons
+#define KERNEL_SU_VERSION                                                      \
+	(10000 + KSU_GIT_VERSION +                                             \
+	 200) // major * 10000 + git version + 200 for historical reasons
 #endif
 
 #define KERNEL_SU_OPTION 0xDEADBEEF
@@ -22,9 +26,50 @@
 #define CMD_REPORT_EVENT 7
 #define CMD_SET_SEPOLICY 8
 #define CMD_CHECK_SAFEMODE 9
+#define CMD_GET_APP_PROFILE 10
+#define CMD_SET_APP_PROFILE 11
 
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
+
+#define KSU_MAX_PACKAGE_NAME 256
+// NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
+#define KSU_MAX_GROUPS 32
+#define KSU_SELINUX_DOMAIN 64
+
+struct root_identity {
+	int32_t uid;
+	int32_t gid;
+
+	int32_t groups[KSU_MAX_GROUPS];
+	int32_t groups_count;
+
+	kernel_cap_t capabilities;
+	char selinux_domain[KSU_SELINUX_DOMAIN];
+
+	int32_t namespaces;
+};
+
+struct app_profile {
+	// this is usually the package of the app, but can be other value for special apps
+	char key[KSU_MAX_PACKAGE_NAME];
+	int32_t current_uid;
+	bool allow_su;
+
+	union {
+		struct {
+			bool use_default;
+			char template_name[KSU_MAX_PACKAGE_NAME];
+
+			struct root_identity identity;
+		} root_profile;
+
+		struct {
+			bool use_default;
+			bool umount_modules;
+		} non_root_profile;
+	};
+};
 
 bool ksu_queue_work(struct work_struct *work);
 
