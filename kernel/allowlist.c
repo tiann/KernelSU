@@ -59,6 +59,7 @@ void ksu_show_allow_list(void)
 	}
 }
 
+#ifdef CONFIG_KSU_DEBUG
 static void ksu_grant_root_to_shell()
 {
 	struct app_profile profile = {
@@ -68,6 +69,7 @@ static void ksu_grant_root_to_shell()
 	strcpy(profile.key, "com.android.shell");
 	ksu_set_app_profile(&profile, false);
 }
+#endif
 
 bool ksu_get_app_profile(struct app_profile *profile)
 {
@@ -85,19 +87,6 @@ bool ksu_get_app_profile(struct app_profile *profile)
 		}
 	}
 
-	if (!found) {
-		// don't found, fill it with default profile
-		if (profile->allow_su) {
-			profile->root_profile.use_default = true;
-			memcpy(&profile->root_profile.identity,
-			       &default_root_identity,
-			       sizeof(default_root_identity));
-		} else {
-			profile->non_root_profile.use_default = true;
-			profile->non_root_profile.umount_modules =
-				default_umount_modules;
-		}
-	}
 exit:
 	return found;
 }
