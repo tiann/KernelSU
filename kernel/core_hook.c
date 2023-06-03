@@ -322,6 +322,31 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
+	if (arg2 == CMD_IS_UID_GRANTED_ROOT ||
+	    arg2 == CMD_IS_UID_SHOULD_UMOUNT) {
+		if (is_manager() || 0 == current_uid().val) {
+			uid_t target_uid = (uid_t)arg3;
+			bool allow = false;
+			if (arg2 == CMD_IS_UID_GRANTED_ROOT) {
+				allow = ksu_is_allow_uid(target_uid);
+			} else if (arg2 == CMD_IS_UID_SHOULD_UMOUNT) {
+				allow = ksu_is_uid_should_umount(target_uid);
+			} else {
+				pr_err("unknown cmd: %d\n", arg2);
+			}
+			if (!copy_to_user(arg4, &allow, sizeof(allow))) {
+				if (copy_to_user(result, &reply_ok,
+						 sizeof(reply_ok))) {
+					pr_err("prctl reply error, cmd: %d\n",
+					       arg2);
+				}
+			} else {
+				pr_err("prctl copy err, cmd: %d\n", arg2);
+			}
+		}
+		return 0;
+	}
+
 	// all other cmds are for 'root manager'
 	if (!is_manager()) {
 		last_failed_uid = current_uid().val;
@@ -336,7 +361,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 
-		bool success = ksu_get_app_profile(&profile);
+		bool success = ksu_get_app_profile(&profile, false);
 		if (success) {
 			if (copy_to_user(arg3, &profile, sizeof(profile))) {
 				pr_err("copy profile failed\n");
