@@ -84,6 +84,17 @@ static int getListSize(JNIEnv *env, jobject list) {
     return env->CallIntMethod(list, size);
 }
 
+static void fillArrayWithList(JNIEnv* env, jobject list, int *data, int count) {
+    auto cls = env->GetObjectClass(list);
+    auto get = env->GetMethodID(cls, "get", "(I)Ljava/lang/Object;");
+    auto integerCls = env->FindClass("java/lang/Integer");
+    auto intValue = env->GetMethodID(integerCls, "intValue", "()I");
+    for (int i = 0; i < count; ++i) {
+        auto integer = env->CallObjectMethod(list, get, i);
+        data[i] = env->CallIntMethod(integer, intValue);
+    }
+}
+
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg, jint uid) {
@@ -140,9 +151,6 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetIntField(obj, gidField, profile.root_profile.gid);
 
         jobject groupList = env->GetObjectField(obj, groupsField);
-        if (env->ExceptionCheck()) {
-            env->ExceptionDescribe();
-        }
         fillIntArray(env, groupList, profile.root_profile.groups, profile.root_profile.groups_count);
 
         jobject capList = env->GetObjectField(obj, capabilitiesField);
@@ -223,7 +231,12 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
 
         p.root_profile.uid = uid;
         p.root_profile.gid = gid;
-        p.root_profile.groups_count = getListSize(env, groups);
+
+        int groups_count = getListSize(env, groups);
+        p.root_profile.groups_count = groups_count;
+        fillArrayWithList(env, groups, p.root_profile.groups, groups_count);
+
+        fillArrayWithList(env, capabilities, p.root_profile.capabilities, 2);
 
         auto cdomain = env->GetStringUTFChars((jstring) domain, nullptr);
         strcpy(p.root_profile.selinux_domain, cdomain);

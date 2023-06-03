@@ -107,4 +107,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     implementation(libs.me.zhanghai.android.appiconloader.coil)
+
+    implementation(libs.sheet.compose.dialogs.core)
+    implementation(libs.sheet.compose.dialogs.list)
 }
