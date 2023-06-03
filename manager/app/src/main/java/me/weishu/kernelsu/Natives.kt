@@ -1,6 +1,7 @@
 package me.weishu.kernelsu
 
 import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
 
@@ -49,6 +50,7 @@ object Natives {
 
     @Immutable
     @Parcelize
+    @Keep
     data class Profile(
         // and there is a default profile for root and non-root
         val name: String,
