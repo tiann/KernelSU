@@ -336,13 +336,15 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 
-		ksu_get_app_profile(&profile);
-		if (copy_to_user(arg3, &profile, sizeof(profile))) {
-			pr_err("copy profile failed\n");
-			return 0;
-		}
-		if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
-			pr_err("prctl reply error, cmd: %d\n", arg2);
+		bool success = ksu_get_app_profile(&profile);
+		if (success) {
+			if (copy_to_user(arg3, &profile, sizeof(profile))) {
+				pr_err("copy profile failed\n");
+				return 0;
+			}
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("prctl reply error, cmd: %d\n", arg2);
+			}
 		}
 		return 0;
 	}
