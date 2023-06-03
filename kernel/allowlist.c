@@ -16,6 +16,8 @@
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 2 // u32
 
+#define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
+
 static DEFINE_MUTEX(allowlist_mutex);
 
 // default profiles, these may be used frequently, so we cache it
@@ -122,19 +124,27 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
 	}
 
 	memcpy(&p->profile, profile, sizeof(*profile));
-	pr_info("set app profile, key: %s, uid: %d\n", profile->key,
-		profile->current_uid);
+	if (profile->allow_su) {
+		pr_info("set root profile, key: %s, uid: %d, gid: %d, context: %s\n",
+			profile->key, profile->current_uid,
+			profile->rp_config.profile.gid,
+			profile->rp_config.profile.selinux_domain);
+	} else {
+		pr_info("set app profile, key: %s, uid: %d, umount modules: %d\n",
+			profile->key, profile->current_uid,
+			profile->nrp_config.profile.umount_modules);
+	}
 	list_add_tail(&p->list, &allow_list);
 	result = true;
 
 	// check if the default profiles is changed, cache it to a single struct to accelerate access.
-	if (unlikely(!strcpy(profile->key, "$"))) {
+	if (unlikely(!strcmp(profile->key, "$"))) {
 		// set default non root profile
 		memcpy(&default_non_root_profile, &profile->nrp_config.profile,
 		       sizeof(default_non_root_profile));
 	}
 
-	if (unlikely(!strcpy(profile->key, "#"))) {
+	if (unlikely(!strcmp(profile->key, "#"))) {
 		// set default root profile
 		memcpy(&default_root_profile, &profile->rp_config.profile,
 		       sizeof(default_root_profile));
@@ -316,7 +326,9 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 	mutex_lock(&allowlist_mutex);
 	list_for_each_entry_safe (np, n, &allow_list, list) {
 		uid_t uid = np->profile.current_uid;
-		if (!is_uid_exist(uid, data)) {
+		// we use this uid for special cases, don't prune it!
+		bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID;
+		if (!is_preserved_uid && !is_uid_exist(uid, data)) {
 			modified = true;
 			pr_info("prune uid: %d\n", uid);
 			list_del(&np->list);

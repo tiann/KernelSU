@@ -421,7 +421,7 @@ static bool should_umount(struct path *path)
 			return ksu_is_uid_should_umount(current_uid().val);
 		}
 #ifdef CONFIG_KSU_DEBUG
-		pr_info("uid: %d should not umount!\n")
+		pr_info("uid: %d should not umount!\n", current_uid().val);
 #endif
 	}
 	return false;
