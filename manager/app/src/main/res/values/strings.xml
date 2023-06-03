@@ -78,5 +78,5 @@
     <string name="profile_allow_root_request">Allow root request</string>
     <string name="failed_to_update_root_profile">Failed to update root profile for %s</string>
     <string name="failed_to_update_app_profile">Failed to update app profile for %s</string>
-    <string name="require_kernel_version">The current kernel version: %d is too low for the manager to function properly. Please upgrade to version %d or higher!</string>
+    <string name="require_kernel_version">The current kernel version %d is too low for the manager to function properly. Please upgrade to version %d or higher!</string>
 </resources>
