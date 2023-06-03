@@ -19,6 +19,7 @@ import me.weishu.kernelsu.ui.component.SwitchItem
 fun AppProfileConfig(
     modifier: Modifier = Modifier,
     fixedName: Boolean,
+    enabled: Boolean,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
@@ -33,7 +34,12 @@ fun AppProfileConfig(
 
         SwitchItem(
             title = stringResource(R.string.profile_unmount_modules),
-            checked = profile.umountModules,
+            checked = if (enabled) {
+                profile.umountModules
+            } else {
+                Natives.isDefaultUmountModules()
+            },
+            enabled = enabled,
             onCheckedChange = { onProfileChange(profile.copy(umountModules = it)) }
         )
     }
@@ -43,7 +49,7 @@ fun AppProfileConfig(
 @Composable
 private fun AppProfileConfigPreview() {
     var profile by remember { mutableStateOf(Natives.Profile("")) }
-    AppProfileConfig(fixedName = true, profile = profile) {
+    AppProfileConfig(fixedName = true, enabled = false, profile = profile) {
         profile = it
     }
 }

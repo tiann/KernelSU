@@ -125,7 +125,7 @@ private fun AppProfileInner(
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
-     val isRootGranted = profile.allowSu
+    val isRootGranted = profile.allowSu
 
     Column(modifier = modifier) {
         ListItem(
@@ -156,9 +156,11 @@ private fun AppProfileInner(
                             Mode.Default -> {
                                 onProfileChange(profile.copy(rootUseDefault = true))
                             }
+
                             Mode.Template -> {
                                 onProfileChange(profile.copy(rootUseDefault = false))
                             }
+
                             else -> {
                                 onProfileChange(profile.copy(rootUseDefault = false))
                             }
@@ -199,13 +201,13 @@ private fun AppProfileInner(
                     var mode by rememberSaveable { mutableStateOf(Mode.Default) }
                     ProfileBox(mode, false) { mode = it }
                     Crossfade(targetState = mode, label = "") { currentMode ->
-                        if (currentMode == Mode.Custom) {
-                            AppProfileConfig(
-                                fixedName = true,
-                                profile = profile,
-                                onProfileChange = onProfileChange
-                            )
-                        }
+                        val modifyEnabled = currentMode == Mode.Custom
+                        AppProfileConfig(
+                            fixedName = true,
+                            profile = profile,
+                            enabled = modifyEnabled,
+                            onProfileChange = onProfileChange
+                        )
                     }
                 }
             }
