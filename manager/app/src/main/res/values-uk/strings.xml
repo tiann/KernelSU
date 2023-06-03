@@ -76,4 +76,7 @@
     <string name="profile_namespace_individual">Індивідуальний</string>
     <string name="profile_unmount_modules">Демонтувати модулі</string>
     <string name="profile_allow_root_request">Дозволити запит на root</string>
+    <string name="failed_to_update_root_profile">Не вдалося оновити профіль root для %s</string>
+    <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
+    <string name="require_kernel_version">Поточна версія ядра %d занизька для належної роботи менджера. Будь ласка, оновіть до версії %d або вище!</string>
 </resources>
