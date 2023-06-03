@@ -40,13 +40,27 @@ class SuperUserViewModel : ViewModel() {
     data class AppInfo(
         val label: String,
         val packageInfo: PackageInfo,
-        val onAllowList: Boolean,
-        val onDenyList: Boolean,
+        val profile: Natives.Profile?,
     ) : Parcelable {
         val packageName: String
             get() = packageInfo.packageName
         val uid: Int
             get() = packageInfo.applicationInfo.uid
+
+        val allowSu: Boolean
+            get() = profile != null && profile.allowSu
+        val hasCustomProfile: Boolean
+            get() {
+                if (profile == null) {
+                    return false
+                }
+
+                return if (profile.allowSu) {
+                    !profile.rootUseDefault
+                } else {
+                    !profile.nonRootUseDefault
+                }
+            }
     }
 
     var search by mutableStateOf("")
@@ -57,8 +71,8 @@ class SuperUserViewModel : ViewModel() {
     private val sortedList by derivedStateOf {
         val comparator = compareBy<AppInfo> {
             when {
-                it.onAllowList -> 0
-                it.onDenyList -> 1
+                it.allowSu -> 0
+                it.hasCustomProfile -> 1
                 else -> 2
             }
         }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
@@ -116,10 +130,6 @@ class SuperUserViewModel : ViewModel() {
 
         withContext(Dispatchers.IO) {
             val pm = ksuApp.packageManager
-            val allowList = Natives.allowList.toSet()
-            val denyList = Natives.denyList.toSet()
-            Log.i(TAG, "allowList: $allowList")
-            Log.i(TAG, "denyList: $denyList")
             val start = SystemClock.elapsedRealtime()
 
             val binder = result.first
@@ -134,11 +144,11 @@ class SuperUserViewModel : ViewModel() {
             apps = packages.map {
                 val appInfo = it.applicationInfo
                 val uid = appInfo.uid
+                val profile = Natives.getAppProfile(it.packageName, uid)
                 AppInfo(
                     label = appInfo.loadLabel(pm).toString(),
                     packageInfo = it,
-                    onAllowList = uid in allowList,
-                    onDenyList = uid in denyList
+                    profile = profile,
                 )
             }.filter { it.packageName != ksuApp.packageName }
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")

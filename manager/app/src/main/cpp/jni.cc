@@ -111,6 +111,10 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     strcpy(profile.key, key);
     profile.current_uid = uid;
 
+    // set default value, don't allow root and use default profile!
+    profile.allow_su = false;
+    profile.non_root_profile.use_default = true;
+
     if (!get_app_profile(key, &profile)) {
         return nullptr;
     }

@@ -1,9 +1,11 @@
 package me.weishu.kernelsu.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -14,9 +16,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -119,6 +124,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
@@ -127,7 +133,19 @@ private fun AppItem(
     ListItem(
         modifier = Modifier.clickable(onClick = onClickListener),
         headlineContent = { Text(app.label) },
-        supportingContent = { Text(app.packageName) },
+        supportingContent = {
+            Column {
+                Text(app.packageName)
+                FlowRow {
+                    if (app.allowSu) {
+                        LabelText(label = "ROOT")
+                    }
+                    if (app.hasCustomProfile) {
+                        LabelText(label = "CUSTOM")
+                    }
+                }
+            }
+        },
         leadingContent = {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -142,4 +160,25 @@ private fun AppItem(
             )
         },
     )
+}
+
+@Composable
+fun LabelText(label: String) {
+    Box(
+        modifier = Modifier
+            .padding(top = 4.dp, end = 4.dp)
+            .background(
+                Color.Black,
+                shape = RoundedCornerShape(4.dp)
+            )
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(vertical = 2.dp, horizontal = 5.dp),
+            style = TextStyle(
+                fontSize = 8.sp,
+                color = Color.White,
+            )
+        )
+    }
 }
