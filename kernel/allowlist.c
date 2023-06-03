@@ -1,5 +1,6 @@
 #include "ksu.h"
-#include "linux/delay.h"
+#include "linux/compiler.h"
+#include "linux/compiler_types.h"
 #include "linux/fs.h"
 #include "linux/gfp.h"
 #include "linux/kernel.h"
@@ -17,7 +18,7 @@
 
 static DEFINE_MUTEX(allowlist_mutex);
 
-// default root identify
+// default profiles, these may be used frequently, so we cache it
 static struct root_profile default_root_profile;
 static struct non_root_profile default_non_root_profile;
 
@@ -32,6 +33,7 @@ static void init_default_profiles()
 	default_root_profile.namespaces = 0;
 	strcpy(default_root_profile.selinux_domain, "su");
 
+	// This means that we will umount modules by default!
 	default_non_root_profile.umount_modules = true;
 }
 
@@ -125,6 +127,18 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
 	list_add_tail(&p->list, &allow_list);
 	result = true;
 
+	// check if the default profiles is changed, cache it to a single struct to accelerate access.
+	if (unlikely(!strcpy(profile->key, "$"))) {
+		// set default non root profile
+		memcpy(&default_non_root_profile, &profile->nrp_config.profile,
+		       sizeof(default_non_root_profile));
+	}
+
+	if (unlikely(!strcpy(profile->key, "#"))) {
+		// set default root profile
+		memcpy(&default_root_profile, &profile->rp_config.profile,
+		       sizeof(default_root_profile));
+	}
 exit:
 	if (persist)
 		persistent_allow_list();
