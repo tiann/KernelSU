@@ -12,8 +12,8 @@ import kotlinx.parcelize.Parcelize
 object Natives {
     // minimal supported kernel version
     // 10915: allowlist breaking change, add app profile
-    // 10929: app profile struct add 'version' field
-    const val MINIMAL_SUPPORTED_KERNEL = 10929
+    // 10931: app profile struct add 'version' field
+    const val MINIMAL_SUPPORTED_KERNEL = 10931
 
     init {
         System.loadLibrary("kernelsu")
