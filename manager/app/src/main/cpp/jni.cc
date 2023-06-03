@@ -111,12 +111,11 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     strcpy(profile.key, key);
     profile.current_uid = uid;
 
-    // set default value, don't allow root and use default profile!
-    profile.allow_su = false;
-    profile.non_root_profile.use_default = true;
-
     if (!get_app_profile(key, &profile)) {
-        return nullptr;
+        // no profile found, so just use default profile:
+        // don't allow root and use default profile!
+        profile.allow_su = false;
+        profile.non_root_profile.use_default = true;
     }
 
     auto cls = env->FindClass("me/weishu/kernelsu/Natives$Profile");
@@ -158,7 +157,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         fillIntArray(env, groupList, profile.root_profile.groups, profile.root_profile.groups_count);
 
         jobject capList = env->GetObjectField(obj, capabilitiesField);
-        fillIntArray(env, capList, profile.root_profile.capabilities, 2);
+//        fillIntArray(env, capList, profile.root_profile.capabilities, 2);
 
         env->SetObjectField(obj, domainField,
                             env->NewStringUTF(profile.root_profile.selinux_domain));
@@ -240,7 +239,7 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
         p.root_profile.groups_count = groups_count;
         fillArrayWithList(env, groups, p.root_profile.groups, groups_count);
 
-        fillArrayWithList(env, capabilities, p.root_profile.capabilities, 2);
+//        fillArrayWithList(env, capabilities, p.root_profile.capabilities, 2);
 
         auto cdomain = env->GetStringUTFChars((jstring) domain, nullptr);
         strcpy(p.root_profile.selinux_domain, cdomain);
