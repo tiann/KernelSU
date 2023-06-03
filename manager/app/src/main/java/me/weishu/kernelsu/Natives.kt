@@ -12,6 +12,10 @@ object Natives {
     const val DEFAULT_ROOT_PROFILE_KEY = "_root_default_"
     const val DEFAULT_NON_ROOT_PROFILE_KEY = "_non_root_default_"
 
+    // minimal supported kernel version
+    // 10915: allowlist breaking change
+    const val MINIMAL_SUPPORTED_KERNEL = 10916
+
     init {
         System.loadLibrary("kernelsu")
     }
@@ -39,6 +43,9 @@ object Natives {
     external fun getAppProfile(key: String?, uid: Int): Profile
     external fun setAppProfile(profile: Profile?): Boolean
 
+    fun requireNewKernel(): Boolean {
+        return version < MINIMAL_SUPPORTED_KERNEL
+    }
 
     @Immutable
     @Parcelize

@@ -66,9 +66,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun BottomBar(navController: NavHostController) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
+    val fullFeatured = isManager && !Natives.requireNewKernel()
     NavigationBar(tonalElevation = 8.dp) {
         BottomBarDestination.values().forEach { destination ->
-            if (!isManager && destination.rootRequired) return@forEach
+            if (!fullFeatured && destination.rootRequired) return@forEach
             val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
             NavigationBarItem(
                 selected = isCurrentDestOnBackStack,

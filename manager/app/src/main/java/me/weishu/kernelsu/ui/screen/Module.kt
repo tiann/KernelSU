@@ -51,10 +51,9 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     }
 
     val isSafeMode = Natives.isSafeMode
-    val isKSUVersionInvalid = Natives.version < 0
     val hasMagisk = hasMagisk()
 
-    val hideInstallButton = isSafeMode || isKSUVersionInvalid || hasMagisk
+    val hideInstallButton = isSafeMode || hasMagisk
 
     Scaffold(topBar = {
         TopBar()
@@ -93,11 +92,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         ConfirmDialog()
 
         when {
-            isKSUVersionInvalid -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.require_kernel_version_8))
-                }
-            }
             hasMagisk -> {
                 Box(
                     modifier = Modifier

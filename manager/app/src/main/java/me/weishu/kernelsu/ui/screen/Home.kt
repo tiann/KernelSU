@@ -59,6 +59,14 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             val ksuVersion = if (isManager) Natives.version else null
 
             StatusCard(kernelVersion, ksuVersion)
+            if (Natives.requireNewKernel()) {
+                WarningCard(
+                    stringResource(id = R.string.require_kernel_version).format(
+                        ksuVersion,
+                        Natives.MINIMAL_SUPPORTED_KERNEL
+                    )
+                )
+            }
             InfoCard()
             DonateCard()
             LearnMoreCard()
@@ -159,7 +167,10 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.home_superuser_count, getSuperuserCount()),
+                            text = stringResource(
+                                R.string.home_superuser_count,
+                                getSuperuserCount()
+                            ),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(Modifier.height(4.dp))
@@ -169,6 +180,7 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                         )
                     }
                 }
+
                 kernelVersion.isGKI() -> {
                     Icon(Icons.Outlined.Warning, stringResource(R.string.home_not_installed))
                     Column(Modifier.padding(start = 20.dp)) {
@@ -183,6 +195,7 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                         )
                     }
                 }
+
                 else -> {
                     Icon(Icons.Outlined.Block, stringResource(R.string.home_unsupported))
                     Column(Modifier.padding(start = 20.dp)) {
@@ -198,6 +211,29 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun WarningCard(message: String) {
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.error
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column() {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
