@@ -97,6 +97,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         // don't allow root and use default profile!
         profile.allow_su = false;
         profile.non_root_profile.use_default = true;
+        LOGD("get app profile for: %s failed, use default profile.", key);
     }
 
     auto cls = env->FindClass("me/weishu/kernelsu/Natives$Profile");
@@ -148,6 +149,8 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetBooleanField(obj, nonRootUseDefaultField,
                              (jboolean) profile.non_root_profile.use_default);
         env->SetBooleanField(obj, umountModulesField, profile.non_root_profile.umount_modules);
+        LOGD("non root profile: use default: %d, umount modules: %d",
+             profile.non_root_profile.use_default, profile.non_root_profile.umount_modules);
     }
 
     return obj;
