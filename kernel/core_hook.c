@@ -417,7 +417,12 @@ static bool should_umount(struct path *path)
 
 	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
 		const char *fstype = path->mnt->mnt_sb->s_type->name;
-		return strcmp(fstype, "overlay") == 0;
+		if (strcmp(fstype, "overlay") == 0) {
+			return ksu_is_uid_should_umount(current_uid().val);
+		}
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("uid: %d should not umount!\n")
+#endif
 	}
 	return false;
 }
