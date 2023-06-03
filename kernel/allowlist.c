@@ -18,19 +18,21 @@
 static DEFINE_MUTEX(allowlist_mutex);
 
 // default root identify
-static struct root_identity default_root_identity;
-static bool default_umount_modules = true;
+static struct root_profile default_root_profile;
+static struct non_root_profile default_non_root_profile;
 
-static void init_root_identity()
+static void init_default_profiles()
 {
-	default_root_identity.uid = 0;
-	default_root_identity.gid = 0;
-	default_root_identity.groups_count = 1;
-	default_root_identity.groups[0] = 0;
-	memset(&default_root_identity.capabilities, 0xff,
-	       sizeof(default_root_identity.capabilities));
-	default_root_identity.namespaces = 0;
-	strcpy(default_root_identity.selinux_domain, "su");
+	default_root_profile.uid = 0;
+	default_root_profile.gid = 0;
+	default_root_profile.groups_count = 1;
+	default_root_profile.groups[0] = 0;
+	memset(&default_root_profile.capabilities, 0xff,
+	       sizeof(default_root_profile.capabilities));
+	default_root_profile.namespaces = 0;
+	strcpy(default_root_profile.selinux_domain, "su");
+
+	default_non_root_profile.umount_modules = true;
 }
 
 struct perm_data {
@@ -308,8 +310,7 @@ void ksu_allowlist_init(void)
 	INIT_WORK(&ksu_save_work, do_save_allow_list);
 	INIT_WORK(&ksu_load_work, do_load_allow_list);
 
-	// init default_root_identity, which is used for root identity when root profile is not set.
-	init_root_identity();
+	init_default_profiles();
 }
 
 void ksu_allowlist_exit(void)
