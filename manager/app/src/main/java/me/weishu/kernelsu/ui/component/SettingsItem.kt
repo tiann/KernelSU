@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 fun SwitchItem(
     icon: ImageVector? = null,
     title: String,
+    summary: String? = null,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -25,6 +26,11 @@ fun SwitchItem(
         trailingContent = {
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         },
+        supportingContent = {
+            if (summary != null) {
+                Text(summary)
+            }
+        }
     )
 }
 

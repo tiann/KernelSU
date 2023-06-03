@@ -79,4 +79,6 @@
     <string name="failed_to_update_root_profile">Failed to update root profile for %s</string>
     <string name="failed_to_update_app_profile">Failed to update app profile for %s</string>
     <string name="require_kernel_version">The current kernel version %d is too low for the manager to function properly. Please upgrade to version %d or higher!</string>
+    <string name="settings_umount_modules_default">Umount modules by default</string>
+    <string name="settings_umount_modules_default_summary">The global default value for uninstalling modules in App Profiles. If enabled, it will remove all module modifications to the system for applications that do not have a Profile set.</string>
 </resources>

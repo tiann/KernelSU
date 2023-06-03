@@ -11,8 +11,9 @@ import kotlinx.parcelize.Parcelize
  */
 object Natives {
     // minimal supported kernel version
-    // 10915: allowlist breaking change
-    const val MINIMAL_SUPPORTED_KERNEL = 10916
+    // 10915: allowlist breaking change, add app profile
+    // 10929: app profile struct add 'version' field
+    const val MINIMAL_SUPPORTED_KERNEL = 10929
 
     init {
         System.loadLibrary("kernelsu")
@@ -37,6 +38,27 @@ object Natives {
      */
     external fun getAppProfile(key: String?, uid: Int): Profile
     external fun setAppProfile(profile: Profile?): Boolean
+
+    private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
+    private const val ROOT_DEFAULT_PROFILE_KEY = "#"
+    private const val NOBODY_UID = 9999
+
+    fun setDefaultUmountModules(umountModules: Boolean): Boolean {
+        Profile(
+            NON_ROOT_DEFAULT_PROFILE_KEY,
+            NOBODY_UID,
+            false,
+            umountModules = umountModules
+        ).let {
+            return setAppProfile(it)
+        }
+    }
+
+    fun isDefaultUmountModules(): Boolean {
+        getAppProfile(NON_ROOT_DEFAULT_PROFILE_KEY, NOBODY_UID).let {
+            return it.umountModules
+        }
+    }
 
     fun requireNewKernel(): Boolean {
         return version < MINIMAL_SUPPORTED_KERNEL
@@ -73,6 +95,7 @@ object Natives {
             Global,
             Individual,
         }
-        constructor(): this("")
+
+        constructor() : this("")
     }
 }

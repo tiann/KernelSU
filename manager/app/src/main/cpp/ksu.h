@@ -9,14 +9,11 @@ bool become_manager(const char *);
 
 int get_version();
 
-bool allow_su(int uid, bool allow);
-
 bool get_allow_list(int *uids, int *size);
-
-bool get_deny_list(int *uids, int *size);
 
 bool is_safe_mode();
 
+#define KSU_APP_PROFILE_VER 1
 #define KSU_MAX_PACKAGE_NAME 256
 // NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
 #define KSU_MAX_GROUPS 32
@@ -25,6 +22,8 @@ bool is_safe_mode();
 using p_key_t = char[KSU_MAX_PACKAGE_NAME];
 
 struct app_profile {
+
+    int32_t version;
 
     // this is usually the package of the app, but can be other value for special apps
     p_key_t key;

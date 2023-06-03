@@ -87,6 +87,8 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     env->ReleaseStringUTFChars(pkg, cpkg);
 
     app_profile profile = {};
+    profile.version = KSU_APP_PROFILE_VER;
+
     strcpy(profile.key, key);
     profile.current_uid = uid;
 
@@ -197,8 +199,9 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
     auto umountModules = env->GetBooleanField(profile, umountModulesField);
 
     app_profile p = {};
-    strcpy(p.key, p_key);
+    p.version = KSU_APP_PROFILE_VER;
 
+    strcpy(p.key, p_key);
     p.allow_su = allowSu;
     p.current_uid = currentUid;
 
