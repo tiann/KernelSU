@@ -88,7 +88,7 @@ object Natives {
         val namespace: Namespace = Namespace.Inherited,
 
         val nonRootUseDefault: Boolean = true,
-        val umountModules: Boolean = false,
+        val umountModules: Boolean = true,
     ) : Parcelable {
         enum class Namespace {
             Inherited,
