@@ -159,7 +159,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
 		p = list_entry(pos, struct perm_data, list);
 		// pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
 		if (p->profile.allow_su == allow) {
-			array[i++] = p->profile.allow_su;
+			array[i++] = p->profile.current_uid;
 		}
 	}
 	*length = i;
