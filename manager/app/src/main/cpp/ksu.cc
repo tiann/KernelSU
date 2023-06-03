@@ -52,17 +52,8 @@ int get_version() {
     return version;
 }
 
-bool allow_su(int uid, bool allow) {
-    int cmd = allow ? CMD_ALLOW_SU : CMD_DENY_SU;
-    return ksuctl(cmd, (void*) uid, nullptr);
-}
-
 bool get_allow_list(int *uids, int *size) {
     return ksuctl(CMD_GET_SU_LIST, uids, size);
-}
-
-bool get_deny_list(int *uids, int *size) {
-    return ksuctl(CMD_GET_DENY_LIST, uids, size);
 }
 
 bool is_safe_mode() {

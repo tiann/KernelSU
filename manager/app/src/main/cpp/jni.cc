@@ -41,27 +41,6 @@ Java_me_weishu_kernelsu_Natives_getAllowList(JNIEnv *env, jobject) {
 }
 
 extern "C"
-JNIEXPORT jintArray JNICALL
-Java_me_weishu_kernelsu_Natives_getDenyList(JNIEnv *env, jclass clazz) {
-    int uids[1024];
-    int size = 0;
-    bool result = get_deny_list(uids, &size);
-    if (result) {
-        // success!
-        auto array = env->NewIntArray(size);
-        env->SetIntArrayRegion(array, 0, size, uids);
-        return array;
-    }
-    return env->NewIntArray(0);
-}
-
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_allowRoot(JNIEnv *env, jobject clazz, jint uid, jboolean allow) {
-    return allow_su(uid, allow);
-}
-
-extern "C"
 JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_isSafeMode(JNIEnv *env, jclass clazz) {
     return is_safe_mode();

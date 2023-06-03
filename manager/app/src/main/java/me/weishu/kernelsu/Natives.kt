@@ -10,9 +10,6 @@ import kotlinx.parcelize.Parcelize
  * @date 2022/12/8.
  */
 object Natives {
-    const val DEFAULT_ROOT_PROFILE_KEY = "_root_default_"
-    const val DEFAULT_NON_ROOT_PROFILE_KEY = "_non_root_default_"
-
     // minimal supported kernel version
     // 10915: allowlist breaking change
     const val MINIMAL_SUPPORTED_KERNEL = 10916
@@ -29,10 +26,7 @@ object Natives {
     // get the uid list of allowed su processes.
     val allowList: IntArray
         external get
-    val denyList: IntArray
-        external get
 
-    external fun allowRoot(uid: Int, allow: Boolean): Boolean
     val isSafeMode: Boolean
         external get
 
