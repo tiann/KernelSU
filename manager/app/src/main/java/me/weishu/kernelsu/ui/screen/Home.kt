@@ -59,7 +59,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             val ksuVersion = if (isManager) Natives.version else null
 
             StatusCard(kernelVersion, ksuVersion)
-            if (Natives.requireNewKernel()) {
+            if (isManager && Natives.requireNewKernel()) {
                 WarningCard(
                     stringResource(id = R.string.require_kernel_version).format(
                         ksuVersion,
