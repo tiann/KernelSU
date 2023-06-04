@@ -168,7 +168,8 @@ pub fn root_shell() -> Result<()> {
         free_idx += 1;
     }
 
-    let mut uid = 0; // default uid = 0(root)
+    // use current uid if no user specified, these has been done in kernel!
+    let mut uid = unsafe { libc::getuid() };
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
