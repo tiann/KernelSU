@@ -1,7 +1,6 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
-#include "linux/capability.h"
 #include "linux/types.h"
 #include "linux/workqueue.h"
 
@@ -29,8 +28,8 @@
 #define CMD_CHECK_SAFEMODE 9
 #define CMD_GET_APP_PROFILE 10
 #define CMD_SET_APP_PROFILE 11
-#define CMD_IS_UID_GRANTED_ROOT 12
-#define CMD_IS_UID_SHOULD_UMOUNT 13
+#define CMD_UID_GRANTED_ROOT 12
+#define CMD_UID_SHOULD_UMOUNT 13
 
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
@@ -48,7 +47,13 @@ struct root_profile {
 	int32_t groups[KSU_MAX_GROUPS];
 	int32_t groups_count;
 
-	kernel_cap_t capabilities;
+	// kernel_cap_t is u32[2] for capabilities v3
+	struct {
+		u64 effective;
+		u64 permitted;
+		u64 inheritable;
+	} capabilities;
+
 	char selinux_domain[KSU_SELINUX_DOMAIN];
 
 	int32_t namespaces;

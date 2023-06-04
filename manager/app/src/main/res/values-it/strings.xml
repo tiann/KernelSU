@@ -8,16 +8,10 @@
     <string name="home_module_count">Moduli: %d</string>
     <string name="home_unsupported">Non supportato</string>
     <string name="home_unsupported_reason">KernelSU ora supporta solo i kernel GKI</string>
-    <string name="home_copied_to_clipboard">Copiato negli appunti</string>
-    <string name="home_support">Supporto</string>
 
     <string name="home_kernel">Kernel</string>
-    <string name="home_arch">Architettura</string>
     <string name="home_manager_version">Versione del manager</string>
-    <string name="home_api">Livello API</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Fingerprint</string>
-    <string name="home_securitypatch">Patch di sicurezza</string>
 
     <string name="home_selinux_status">Stato SELinux</string>
     <string name="selinux_status_disabled">Disabilitato</string>
@@ -25,8 +19,6 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Sconosciuto</string>
     <string name="superuser">Accesso root</string>
-    <string name="superuser_failed_to_grant_root">Impossibile concedere l\'accesso root per %d</string>
-    <string name="superuser_allow_root_confirm">Sei sicuro di concedere l\'accesso root a %s?</string>
     <string name="module_failed_to_enable">Impossibile abilitare il modulo: %s</string>
     <string name="module_failed_to_disable">Impossibile disabilitare il modulo: %s</string>
     <string name="module_empty">Nessun modulo installato</string>
@@ -43,7 +35,6 @@
     <string name="reboot_download">Riavvia in modalità Download</string>
     <string name="reboot_edl">Riavvia in modalità EDL</string>
     <string name="about">Informazioni</string>
-    <string name="require_kernel_version_8">Richiede KernelSU versione 8+</string>
     <string name="module_uninstall_confirm">Sei sicuro di voler disinstallare il modulo %s?</string>
     <string name="module_uninstall_success">%s disinstallato</string>
     <string name="module_uninstall_failed">Impossibile disinstallare: %s</string>

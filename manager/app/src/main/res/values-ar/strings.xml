@@ -10,16 +10,10 @@
     <string name="home_module_count">الوحدات: %d</string>
     <string name="home_unsupported">غير مدعوم</string>
     <string name="home_unsupported_reason">KernelSU يدعم GKI kernels فقط</string>
-    <string name="home_copied_to_clipboard">نسخ إلى الحافظة</string>
-    <string name="home_support">مدعوم</string>
 
     <string name="home_kernel">إصدار النواة</string>
-    <string name="home_arch">المعمارية</string>
     <string name="home_manager_version">إصدار المدير</string>
-    <string name="home_api">API Level</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">البصمة</string>
-    <string name="home_securitypatch">إصدار تصحيح الأمان</string>
 
     <string name="home_selinux_status">وضع SELinux</string>
     <string name="selinux_status_disabled">غير مفعل</string>
@@ -27,8 +21,6 @@
     <string name="selinux_status_permissive">متساهل</string>
     <string name="selinux_status_unknown">مجهول</string>
     <string name="superuser">مستخدم خارق</string>
-    <string name="superuser_failed_to_grant_root">فشل منح الجذر لـ %d</string>
-    <string name="superuser_allow_root_confirm">هل أنت متأكد من منح حق وصول الجذر إلى %s?</string>
     <string name="module_failed_to_enable">فشل في تمكين الوحدة: %s</string>
     <string name="module_failed_to_disable">فشل تعطيل الوحدة : %s</string>
     <string name="module_empty">لا توجد وحدة مثبتة</string>
@@ -45,7 +37,6 @@
     <string name="reboot_download">إعادة تشغيل إلى وضع Download</string>
     <string name="reboot_edl">إعادة تشغيل إلى وضع EDL</string>
     <string name="about">من نحن</string>
-    <string name="require_kernel_version_8">يتطلب KernelSU إصدار 8 أو أعلى</string>
     <string name="module_uninstall_confirm">هل أنت متأكد أنك تريد إلغاء تثبيت الوحدة  %s ?</string>
     <string name="module_uninstall_success">تم إلغاء التثبيت %s</string>
     <string name="module_uninstall_failed">فشل إلغاء التثبيت: %s</string>

@@ -9,16 +9,10 @@
     <string name="home_module_count">模組：%d 個</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現在僅支援 GKI 核心</string>
-    <string name="home_copied_to_clipboard">已複製到剪貼簿</string>
-    <string name="home_support">支援</string>
 
     <string name="home_kernel">核心</string>
-    <string name="home_arch">架構</string>
     <string name="home_manager_version">管理員版本</string>
-    <string name="home_api">API 層級</string>
-    <string name="home_abi">ABI 支援</string>
     <string name="home_fingerprint">指紋</string>
-    <string name="home_securitypatch">安全性修補程式</string>
 
     <string name="home_selinux_status">SELinux 狀態</string>
     <string name="selinux_status_disabled">已停用</string>
@@ -26,8 +20,6 @@
     <string name="selinux_status_permissive">寬鬆</string>
     <string name="selinux_status_unknown">未知</string>
     <string name="superuser">超級使用者</string>
-    <string name="superuser_failed_to_grant_root">無法為「%d」授予 Root 存取權</string>
-    <string name="superuser_allow_root_confirm">您確定要授予「%s」Root 存取權嗎？</string>
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
     <string name="module_failed_to_disable">無法停用模組：%s</string>
     <string name="module_empty">尚未安裝模組</string>
@@ -44,7 +36,6 @@
     <string name="reboot_download">重新啟動至 Download</string>
     <string name="reboot_edl">重新啟動至 EDL</string>
     <string name="about">關於</string>
-    <string name="require_kernel_version_8">需要 KernelSU 8+ 版本</string>
     <string name="module_uninstall_confirm">您確定要解除安裝模組「%s」嗎？</string>
     <string name="module_uninstall_success">「%s」已解除安裝</string>
     <string name="module_uninstall_failed">無法解除安裝：%s</string>
@@ -64,11 +55,4 @@
     <string name="home_support_title">支持我們</string>
     <string name="home_support_content">KernelSU 是免費且開源的，您可以透過捐贈來向我們展示您對我們的關心。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 中檢視原始碼<br/>加入我們的 %2$s 頻道]]></string>
-    <string name="app_profile_allowlist">白名單</string>
-    <string name="app_profile_denylist">黑名單</string>
-    <string name="app_profile_mode">工作模式</string>
-    <string name="failed_to_set_allowlist_mode">全換到白名單模式失敗！ </string>
-    <string name="failed_to_add_to_allowlist">添加 %s 到白名單失敗！ </string>
-    <string name="failed_to_add_to_denylist">添加 %s 到黑名單失敗！ </string>
-    <string name="failed_to_set_denylist_mode">切換到黑名單模式失敗！ </string>
 </resources>

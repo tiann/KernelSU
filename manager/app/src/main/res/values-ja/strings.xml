@@ -9,16 +9,10 @@
     <string name="home_module_count">モジュール: %d</string>
     <string name="home_unsupported">非対応</string>
     <string name="home_unsupported_reason">KernelSU は現在、GKI カーネルにのみ対応しています</string>
-    <string name="home_copied_to_clipboard">クリップボードにコピーしました</string>
-    <string name="home_support">対応</string>
 
     <string name="home_kernel">カーネル</string>
-    <string name="home_arch">アーキテクチャ</string>
     <string name="home_manager_version">バージョン</string>
-    <string name="home_api">API レベル</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">フィンガープリント</string>
-    <string name="home_securitypatch">セキュリティパッチ</string>
 
     <string name="home_selinux_status">SELinux の状態</string>
     <string name="selinux_status_disabled">無効</string>
@@ -26,8 +20,6 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">不明</string>
     <string name="superuser">スーパーユーザー</string>
-    <string name="superuser_failed_to_grant_root">%dの権限の付与に失敗しました</string>
-    <string name="superuser_allow_root_confirm">%s に root 権限を付与しますか?</string>
     <string name="module_failed_to_enable">モジュールの有効化に失敗: %s</string>
     <string name="module_failed_to_disable">モジュールの無効化に失敗: %s</string>
     <string name="module_empty">モジュールをインストールしていません</string>
@@ -44,7 +36,6 @@
     <string name="reboot_download">ダウンロードモードへ再起動</string>
     <string name="reboot_edl">EDLへ再起動</string>
     <string name="about">アプリについて</string>
-    <string name="require_kernel_version_8">KernelSU バージョン8以降が必要です</string>
     <string name="module_uninstall_confirm">モジュール %s をアンインストールしますか?</string>
     <string name="module_uninstall_success">%sをアンインストールしました</string>
     <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
@@ -73,6 +64,5 @@
     <string name="profile_namespace_inherited">継承</string>
     <string name="profile_namespace_global">グローバル</string>
     <string name="profile_namespace_individual">分離</string>
-    <string name="profile_unmount_modules">モジュールのアンマウント</string>
-    <string name="profile_allow_root_request">root 権限要求を許可</string>
+    <string name="profile_umount_modules">モジュールのアンマウント</string>
 </resources>
