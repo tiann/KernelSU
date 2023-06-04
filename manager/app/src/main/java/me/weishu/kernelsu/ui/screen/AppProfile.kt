@@ -152,19 +152,7 @@ private fun AppProfileInner(
                         Mode.Custom
                     }
                     ProfileBox(mode, true) {
-                        when (it) {
-                            Mode.Default -> {
-                                onProfileChange(profile.copy(rootUseDefault = true))
-                            }
-
-                            Mode.Template -> {
-                                onProfileChange(profile.copy(rootUseDefault = false))
-                            }
-
-                            else -> {
-                                onProfileChange(profile.copy(rootUseDefault = false))
-                            }
-                        }
+                        onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
                     }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         if (currentMode == Mode.Template) {
@@ -198,8 +186,10 @@ private fun AppProfileInner(
                         }
                     }
                 } else {
-                    var mode by rememberSaveable { mutableStateOf(Mode.Default) }
-                    ProfileBox(mode, false) { mode = it }
+                    val mode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
+                    ProfileBox(mode, false) {
+                        onProfileChange(profile.copy(nonRootUseDefault = (it == Mode.Default)))
+                    }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         val modifyEnabled = currentMode == Mode.Custom
                         AppProfileConfig(
