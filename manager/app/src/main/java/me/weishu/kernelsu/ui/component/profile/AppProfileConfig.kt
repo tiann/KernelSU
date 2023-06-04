@@ -40,7 +40,14 @@ fun AppProfileConfig(
                 Natives.isDefaultUmountModules()
             },
             enabled = enabled,
-            onCheckedChange = { onProfileChange(profile.copy(umountModules = it)) }
+            onCheckedChange = {
+                onProfileChange(
+                    profile.copy(
+                        umountModules = it,
+                        nonRootUseDefault = false
+                    )
+                )
+            }
         )
     }
 }

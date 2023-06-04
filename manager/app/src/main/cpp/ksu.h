@@ -11,6 +11,8 @@ int get_version();
 
 bool get_allow_list(int *uids, int *size);
 
+bool uid_should_umount(int uid);
+
 bool is_safe_mode();
 
 #define KSU_APP_PROFILE_VER 1
