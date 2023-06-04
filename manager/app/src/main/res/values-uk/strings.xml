@@ -65,7 +65,10 @@
     <string name="profile_namespace_inherited">Наслідуваний</string>
     <string name="profile_namespace_global">Глобальний</string>
     <string name="profile_namespace_individual">Індивідуальний</string>
-    <string name="profile_umount_modules">Демонтувати модулі</string>
+    <string name="profile_umount_modules">Розмонтувати модулі</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
     <string name="require_kernel_version">Поточна версія ядра %d занизька для належної роботи менджера. Будь ласка, оновіть до версії %d або вище!</string>
+    <string name="settings_umount_modules_default">Розмонтувати модулі за замовчуванням</string>
+    <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
+    <string name="profile_umount_modules_summary">Увімкнення даної опції дозволить KernelSU відновити для цього додатка будь-які файли, змінені модулями.</string>
 </resources>
