@@ -181,7 +181,7 @@ bool ksu_is_allow_uid(uid_t uid)
 	return false;
 }
 
-bool ksu_is_uid_should_umount(uid_t uid)
+bool ksu_uid_should_umount(uid_t uid)
 {
 	struct app_profile profile = { .current_uid = uid };
 	bool found = ksu_get_app_profile(&profile);
@@ -200,6 +200,24 @@ bool ksu_is_uid_should_umount(uid_t uid)
 			return profile.nrp_config.profile.umount_modules;
 		}
 	}
+}
+
+struct root_profile *ksu_get_root_profile(uid_t uid)
+{
+	struct perm_data *p = NULL;
+	struct list_head *pos = NULL;
+
+	list_for_each (pos, &allow_list) {
+		p = list_entry(pos, struct perm_data, list);
+		if (uid == p->profile.current_uid && p->profile.allow_su) {
+			if (!p->profile.rp_config.use_default) {
+				return &p->profile.rp_config.profile;
+			}
+		}
+	}
+
+	// use default profile
+	return &default_root_profile;
 }
 
 bool ksu_get_allow_list(int *array, int *length, bool allow)

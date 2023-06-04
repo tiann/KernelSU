@@ -63,5 +63,5 @@
     <string name="profile_namespace_inherited">Kalıtsal</string>
     <string name="profile_namespace_global">Küresel</string>
     <string name="profile_namespace_individual">Bireysel</string>
-    <string name="profile_hide_modules">Modüllerin bağlantısını kes</string>
+    <string name="profile_umount_modules">Modüllerin bağlantısını kes</string>
 </resources>

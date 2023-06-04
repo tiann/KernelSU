@@ -1,3 +1,4 @@
+#include "linux/capability.h"
 #include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
@@ -59,18 +60,26 @@ void escape_to_root(void)
 
 	cred = (struct cred *)__task_cred(current);
 
-	memset(&cred->uid, 0, sizeof(cred->uid));
-	memset(&cred->gid, 0, sizeof(cred->gid));
-	memset(&cred->suid, 0, sizeof(cred->suid));
-	memset(&cred->euid, 0, sizeof(cred->euid));
-	memset(&cred->egid, 0, sizeof(cred->egid));
-	memset(&cred->fsuid, 0, sizeof(cred->fsuid));
-	memset(&cred->fsgid, 0, sizeof(cred->fsgid));
-	memset(&cred->cap_inheritable, 0xff, sizeof(cred->cap_inheritable));
-	memset(&cred->cap_permitted, 0xff, sizeof(cred->cap_permitted));
-	memset(&cred->cap_effective, 0xff, sizeof(cred->cap_effective));
-	memset(&cred->cap_bset, 0xff, sizeof(cred->cap_bset));
-	memset(&cred->cap_ambient, 0xff, sizeof(cred->cap_ambient));
+	struct root_profile *profile = ksu_get_root_profile(cred->uid.val);
+
+	cred->uid.val = profile->uid;
+	cred->suid.val = profile->uid;
+	cred->euid.val = profile->uid;
+	cred->fsuid.val = profile->uid;
+
+	cred->gid.val = profile->gid;
+	cred->fsgid.val = profile->gid;
+	cred->sgid.val = profile->gid;
+	cred->egid.val = profile->gid;
+
+	BUILD_BUG_ON(sizeof(profile->capabilities.effective) != sizeof(kernel_cap_t));
+
+	// capabilities
+	memcpy(&cred->cap_effective, &profile->capabilities.effective, sizeof(cred->cap_effective));
+	memcpy(&cred->cap_inheritable, &profile->capabilities.effective, sizeof(cred->cap_inheritable));
+	memcpy(&cred->cap_permitted, &profile->capabilities.effective, sizeof(cred->cap_permitted));
+	memcpy(&cred->cap_bset, &profile->capabilities.effective, sizeof(cred->cap_bset));
+	memcpy(&cred->cap_ambient, &profile->capabilities.effective, sizeof(cred->cap_ambient));
 
 	// disable seccomp
 #if defined(CONFIG_GENERIC_ENTRY) &&                                           \
@@ -322,15 +331,15 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	if (arg2 == CMD_IS_UID_GRANTED_ROOT ||
-	    arg2 == CMD_IS_UID_SHOULD_UMOUNT) {
+	if (arg2 == CMD_UID_GRANTED_ROOT ||
+	    arg2 == CMD_UID_SHOULD_UMOUNT) {
 		if (is_manager() || 0 == current_uid().val) {
 			uid_t target_uid = (uid_t)arg3;
 			bool allow = false;
-			if (arg2 == CMD_IS_UID_GRANTED_ROOT) {
+			if (arg2 == CMD_UID_GRANTED_ROOT) {
 				allow = ksu_is_allow_uid(target_uid);
-			} else if (arg2 == CMD_IS_UID_SHOULD_UMOUNT) {
-				allow = ksu_is_uid_should_umount(target_uid);
+			} else if (arg2 == CMD_UID_SHOULD_UMOUNT) {
+				allow = ksu_uid_should_umount(target_uid);
 			} else {
 				pr_err("unknown cmd: %d\n", arg2);
 			}
@@ -418,7 +427,7 @@ static bool should_umount(struct path *path)
 	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
 		const char *fstype = path->mnt->mnt_sb->s_type->name;
 		if (strcmp(fstype, "overlay") == 0) {
-			return ksu_is_uid_should_umount(current_uid().val);
+			return ksu_uid_should_umount(current_uid().val);
 		}
 #ifdef CONFIG_KSU_DEBUG
 		pr_info("uid: %d should not umount!\n", current_uid().val);
