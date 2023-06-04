@@ -64,5 +64,5 @@
     <string name="profile_namespace_inherited">継承</string>
     <string name="profile_namespace_global">グローバル</string>
     <string name="profile_namespace_individual">分離</string>
-    <string name="profile_hide_modules">モジュールのアンマウント</string>
+    <string name="profile_umount_modules">モジュールのアンマウント</string>
 </resources>

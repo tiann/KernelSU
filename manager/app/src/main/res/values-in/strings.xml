@@ -65,5 +65,5 @@
     <string name="profile_namespace_inherited">Diwariskan</string>
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Personal</string>
-    <string name="profile_hide_modules">Lepas modul</string>
+    <string name="profile_umount_modules">Lepas modul</string>
 </resources>
