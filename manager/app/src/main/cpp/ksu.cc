@@ -25,6 +25,9 @@
 #define CMD_GET_APP_PROFILE 10
 #define CMD_SET_APP_PROFILE 11
 
+#define CMD_IS_UID_GRANTED_ROOT 12
+#define CMD_IS_UID_SHOULD_UMOUNT 13
+
 static bool ksuctl(int cmd, void* arg1, void* arg2) {
     int32_t result = 0;
     prctl(KERNEL_SU_OPTION, cmd, arg1, arg2, &result);
@@ -58,6 +61,11 @@ bool get_allow_list(int *uids, int *size) {
 
 bool is_safe_mode() {
     return ksuctl(CMD_CHECK_SAFEMODE, nullptr, nullptr);
+}
+
+bool uid_should_umount(int uid) {
+    bool should;
+    return ksuctl(CMD_IS_UID_SHOULD_UMOUNT, reinterpret_cast<void*>(uid), &should) && should;
 }
 
 bool set_app_profile(const app_profile *profile) {

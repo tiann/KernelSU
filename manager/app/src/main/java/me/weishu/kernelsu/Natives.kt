@@ -31,6 +31,8 @@ object Natives {
     val isSafeMode: Boolean
         external get
 
+    external fun uidShouldUmount(uid: Int): Boolean
+
     /**
      * Get the profile of the given package.
      * @param key usually the package name

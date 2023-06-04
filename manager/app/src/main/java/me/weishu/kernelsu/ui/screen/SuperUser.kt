@@ -28,6 +28,7 @@ import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialog
 import me.weishu.kernelsu.ui.component.SearchAppBar
@@ -139,6 +140,10 @@ private fun AppItem(
                 FlowRow {
                     if (app.allowSu) {
                         LabelText(label = "ROOT")
+                    } else {
+                        if (Natives.uidShouldUmount(app.uid)) {
+                            LabelText(label = "UMOUNT")
+                        }
                     }
                     if (app.hasCustomProfile) {
                         LabelText(label = "CUSTOM")
