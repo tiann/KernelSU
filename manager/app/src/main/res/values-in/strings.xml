@@ -74,6 +74,6 @@
     <string name="profile_namespace_inherited">Diwariskan</string>
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Personal</string>
-    <string name="profile_unmount_modules">Lepas modul</string>
+    <string name="profile_hide_modules">Lepas modul</string>
     <string name="profile_allow_root_request">Izinkan permintaan root</string>
 </resources>

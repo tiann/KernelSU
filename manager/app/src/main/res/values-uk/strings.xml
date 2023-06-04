@@ -74,7 +74,7 @@
     <string name="profile_namespace_inherited">Наслідуваний</string>
     <string name="profile_namespace_global">Глобальний</string>
     <string name="profile_namespace_individual">Індивідуальний</string>
-    <string name="profile_unmount_modules">Демонтувати модулі</string>
+    <string name="profile_hide_modules">Демонтувати модулі</string>
     <string name="profile_allow_root_request">Дозволити запит на root</string>
     <string name="failed_to_update_root_profile">Не вдалося оновити профіль root для %s</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>

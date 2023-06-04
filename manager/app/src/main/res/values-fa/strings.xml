@@ -72,6 +72,6 @@
 <string name="profile_namespace_inherited">اثر گرفته</string>
 <string name="profile_namespace_global">گلوبال</string>
 <string name="profile_namespace_individual">تکی</string>
-<string name="profile_unmount_modules">جداکردن ماژول ها</string>
+<string name="profile_hide_modules">جداکردن ماژول ها</string>
 <string name="profile_allow_root_request">اجازه درخواست روت</string>
 </resources>

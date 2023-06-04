@@ -33,7 +33,7 @@ fun AppProfileConfig(
         }
 
         SwitchItem(
-            title = stringResource(R.string.profile_unmount_modules),
+            title = stringResource(R.string.profile_hide_modules),
             checked = if (enabled) {
                 profile.umountModules
             } else {

@@ -74,6 +74,6 @@
     <string name="profile_namespace_inherited">Overgenomen</string>
     <string name="profile_namespace_global">Globaal</string>
     <string name="profile_namespace_individual">Individuëel</string>
-    <string name="profile_unmount_modules">Ontkoppel modules</string>
+    <string name="profile_hide_modules">Ontkoppel modules</string>
     <string name="profile_allow_root_request">Root verzoek toestaan</string>
 </resources>

@@ -73,6 +73,6 @@
     <string name="profile_namespace_inherited">継承</string>
     <string name="profile_namespace_global">グローバル</string>
     <string name="profile_namespace_individual">分離</string>
-    <string name="profile_unmount_modules">モジュールのアンマウント</string>
+    <string name="profile_hide_modules">モジュールのアンマウント</string>
     <string name="profile_allow_root_request">root 権限要求を許可</string>
 </resources>
