@@ -4,22 +4,22 @@
     <string name="home_not_installed">未安裝</string>
     <string name="home_click_to_install">按一下以安裝</string>
     <string name="home_working">正在處理</string>
-    <string name="home_working_version">版本：%d</string>
-    <string name="home_superuser_count">超級使用者：%d 個</string>
-    <string name="home_module_count">模組：%d 個</string>
+    <string name="home_working_version">KernelSU 版本：%d</string>
+    <string name="home_superuser_count">已授權 Root：%d 個</string>
+    <string name="home_module_count">已安裝模組：%d 個</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現在僅支援 GKI 核心</string>
 
     <string name="home_kernel">核心</string>
-    <string name="home_manager_version">管理員版本</string>
-    <string name="home_fingerprint">指紋</string>
+    <string name="home_manager_version">管理器版本</string>
+    <string name="home_fingerprint">設備指紋</string>
 
     <string name="home_selinux_status">SELinux 狀態</string>
     <string name="selinux_status_disabled">已停用</string>
     <string name="selinux_status_enforcing">強制</string>
     <string name="selinux_status_permissive">寬鬆</string>
     <string name="selinux_status_unknown">未知</string>
-    <string name="superuser">超級使用者</string>
+    <string name="superuser">Root 授權</string>
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
     <string name="module_failed_to_disable">無法停用模組：%s</string>
     <string name="module_empty">尚未安裝模組</string>
@@ -55,4 +55,8 @@
     <string name="home_support_title">支持開發</string>
     <string name="home_support_content">KernelSU 將保持免費和開源，您可以考慮向開發人員捐贈以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 中檢視原始碼<br/>加入我們的 %2$s 頻道]]></string>
+    <string name="profile_hide_modules">隱藏模組</string>
+    <string name="require_kernel_version">當前核心版本 %d 過低，管理器無法正常工作，請升級核心版本至 %d 或以上！</string>
+    <string name="settings_umount_modules_default">預設隱藏模組</string>
+    <string name="settings_umount_modules_default_summary">App Profile 中\"隱藏模組\"的全域性預設值，如果啟用，將會為沒有設定 Profile 的應用移除所有模組針對系統的修改。</string>
 </resources>
