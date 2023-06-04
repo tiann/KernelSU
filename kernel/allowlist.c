@@ -80,7 +80,7 @@ static void ksu_grant_root_to_shell()
 }
 #endif
 
-bool ksu_get_app_profile(struct app_profile *profile, bool query_by_uid)
+bool ksu_get_app_profile(struct app_profile *profile)
 {
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
@@ -88,10 +88,8 @@ bool ksu_get_app_profile(struct app_profile *profile, bool query_by_uid)
 
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
-		bool uid_match =
-			(query_by_uid &&
-			 profile->current_uid == p->profile.current_uid);
-		if (uid_match || !strcmp(profile->key, p->profile.key)) {
+		bool uid_match = profile->current_uid == p->profile.current_uid;
+		if (uid_match) {
 			// found it, override it with ours
 			memcpy(profile, &p->profile, sizeof(*profile));
 			found = true;
@@ -183,7 +181,7 @@ bool ksu_is_allow_uid(uid_t uid)
 bool ksu_is_uid_should_umount(uid_t uid)
 {
 	struct app_profile profile = { .current_uid = uid };
-	bool found = ksu_get_app_profile(&profile, true);
+	bool found = ksu_get_app_profile(&profile);
 	if (!found) {
 		// no app profile found, it must be non root app
 		return default_non_root_profile.umount_modules;

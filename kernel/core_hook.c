@@ -361,7 +361,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 
-		bool success = ksu_get_app_profile(&profile, false);
+		bool success = ksu_get_app_profile(&profile);
 		if (success) {
 			if (copy_to_user(arg3, &profile, sizeof(profile))) {
 				pr_err("copy profile failed\n");
