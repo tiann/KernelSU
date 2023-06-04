@@ -1,7 +1,6 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
-#include "linux/capability.h"
 #include "linux/types.h"
 #include "linux/workqueue.h"
 
@@ -29,8 +28,8 @@
 #define CMD_CHECK_SAFEMODE 9
 #define CMD_GET_APP_PROFILE 10
 #define CMD_SET_APP_PROFILE 11
-#define CMD_IS_UID_GRANTED_ROOT 12
-#define CMD_IS_UID_SHOULD_UMOUNT 13
+#define CMD_UID_GRANTED_ROOT 12
+#define CMD_UID_SHOULD_UMOUNT 13
 
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
