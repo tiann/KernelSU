@@ -164,8 +164,10 @@ fun RootProfileConfig(
             )
         })
 
-        val selectedGroups = profile.groups.mapNotNull { id ->
-            Groups.values().find { it.gid == id }
+        val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let {
+            it.mapNotNull { id ->
+                Groups.values().find { it.gid == id }
+            }
         }
         GroupsPanel(selectedGroups) {
             onProfileChange(
