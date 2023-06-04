@@ -25,12 +25,35 @@ bool is_safe_mode();
 
 using p_key_t = char[KSU_MAX_PACKAGE_NAME];
 
-struct app_profile {
+struct root_profile {
+    int32_t uid;
+    int32_t gid;
 
-    int32_t version;
+    int32_t groups[KSU_MAX_GROUPS];
+    int32_t groups_count;
+
+    // kernel_cap_t is u32[2] for capabilities v3
+    struct {
+        uint64_t effective;
+        uint64_t permitted;
+        uint64_t inheritable;
+    } capabilities;
+
+    char selinux_domain[KSU_SELINUX_DOMAIN];
+
+    int32_t namespaces;
+};
+
+struct non_root_profile {
+    bool umount_modules;
+};
+
+struct app_profile {
+    // It may be utilized for backward compatibility, although we have never explicitly made any promises regarding this.
+    uint32_t version;
 
     // this is usually the package of the app, but can be other value for special apps
-    p_key_t key;
+    char key[KSU_MAX_PACKAGE_NAME];
     int32_t current_uid;
     bool allow_su;
 
@@ -38,27 +61,15 @@ struct app_profile {
         struct {
             bool use_default;
             char template_name[KSU_MAX_PACKAGE_NAME];
-            int32_t uid;
-            int32_t gid;
 
-            int32_t groups[KSU_MAX_GROUPS];
-            int32_t groups_count;
-
-            struct {
-                // kernel_cap_t is u32[2], we use u64 here to avoid alignment issues.
-                uint64_t effective;
-                uint64_t permitted;
-                uint64_t inheritable;
-            } caps;
-            char selinux_domain[KSU_SELINUX_DOMAIN];
-
-            int32_t namespaces;
-        } root_profile;
+            struct root_profile profile;
+        } rp_config;
 
         struct {
             bool use_default;
-            bool umount_modules;
-        } non_root_profile;
+
+            struct non_root_profile profile;
+        } nrp_config;
     };
 };
 

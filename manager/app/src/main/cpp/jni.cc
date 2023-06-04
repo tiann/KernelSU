@@ -125,7 +125,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         // no profile found, so just use default profile:
         // don't allow root and use default profile!
         profile.allow_su = false;
-        profile.non_root_profile.use_default = true;
+        profile.nrp_config.use_default = true;
         LOGD("get app profile for: %s failed, use default profile.", key);
     }
 
@@ -155,36 +155,36 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     auto allowSu = profile.allow_su;
 
     if (allowSu) {
-        env->SetBooleanField(obj, rootUseDefaultField, (jboolean) profile.root_profile.use_default);
-        if (strlen(profile.root_profile.template_name) > 0) {
+        env->SetBooleanField(obj, rootUseDefaultField, (jboolean) profile.rp_config.use_default);
+        if (strlen(profile.rp_config.template_name) > 0) {
             env->SetObjectField(obj, rootTemplateField,
-                                env->NewStringUTF(profile.root_profile.template_name));
+                                env->NewStringUTF(profile.rp_config.template_name));
         }
 
-        env->SetIntField(obj, uidField, profile.root_profile.uid);
-        env->SetIntField(obj, gidField, profile.root_profile.gid);
+        env->SetIntField(obj, uidField, profile.rp_config.profile.uid);
+        env->SetIntField(obj, gidField, profile.rp_config.profile.gid);
 
         jobject groupList = env->GetObjectField(obj, groupsField);
-        fillIntArray(env, groupList, profile.root_profile.groups,
-                     profile.root_profile.groups_count);
+        fillIntArray(env, groupList, profile.rp_config.profile.groups,
+                     profile.rp_config.profile.groups_count);
 
         jobject capList = env->GetObjectField(obj, capabilitiesField);
         for (int i = 0; i <= CAP_LAST_CAP; i++) {
-            if (profile.root_profile.caps.effective & (1ULL << i)) {
+            if (profile.rp_config.profile.capabilities.effective & (1ULL << i)) {
                 addIntToList(env, capList, i);
             }
         }
 
         env->SetObjectField(obj, domainField,
-                            env->NewStringUTF(profile.root_profile.selinux_domain));
-        env->SetIntField(obj, namespacesField, profile.root_profile.namespaces);
+                            env->NewStringUTF(profile.rp_config.profile.selinux_domain));
+        env->SetIntField(obj, namespacesField, profile.rp_config.profile.namespaces);
         env->SetBooleanField(obj, allowSuField, profile.allow_su);
     } else {
         env->SetBooleanField(obj, nonRootUseDefaultField,
-                             (jboolean) profile.non_root_profile.use_default);
-        env->SetBooleanField(obj, umountModulesField, profile.non_root_profile.umount_modules);
+                             (jboolean) profile.nrp_config.use_default);
+        env->SetBooleanField(obj, umountModulesField, profile.nrp_config.profile.umount_modules);
         LOGD("non root profile: use default: %d, umount modules: %d",
-             profile.non_root_profile.use_default, profile.non_root_profile.umount_modules);
+             profile.nrp_config.use_default, profile.nrp_config.profile.umount_modules);
     }
 
     return obj;
@@ -243,31 +243,31 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
     p.current_uid = currentUid;
 
     if (allowSu) {
-        p.root_profile.use_default = env->GetBooleanField(profile, rootUseDefaultField);
+        p.rp_config.use_default = env->GetBooleanField(profile, rootUseDefaultField);
         auto templateName = env->GetObjectField(profile, rootTemplateField);
         if (templateName) {
             auto ctemplateName = env->GetStringUTFChars((jstring) templateName, nullptr);
-            strcpy(p.root_profile.template_name, ctemplateName);
+            strcpy(p.rp_config.template_name, ctemplateName);
             env->ReleaseStringUTFChars((jstring) templateName, ctemplateName);
         }
 
-        p.root_profile.uid = uid;
-        p.root_profile.gid = gid;
+        p.rp_config.profile.uid = uid;
+        p.rp_config.profile.gid = gid;
 
         int groups_count = getListSize(env, groups);
-        p.root_profile.groups_count = groups_count;
-        fillArrayWithList(env, groups, p.root_profile.groups, groups_count);
+        p.rp_config.profile.groups_count = groups_count;
+        fillArrayWithList(env, groups, p.rp_config.profile.groups, groups_count);
 
-        p.root_profile.caps.effective = capListToBits(env, capabilities);
+        p.rp_config.profile.capabilities.effective = capListToBits(env, capabilities);
 
         auto cdomain = env->GetStringUTFChars((jstring) domain, nullptr);
-        strcpy(p.root_profile.selinux_domain, cdomain);
+        strcpy(p.rp_config.profile.selinux_domain, cdomain);
         env->ReleaseStringUTFChars((jstring) domain, cdomain);
 
-        p.root_profile.namespaces = env->GetIntField(profile, namespacesField);
+        p.rp_config.profile.namespaces = env->GetIntField(profile, namespacesField);
     } else {
-        p.non_root_profile.use_default = env->GetBooleanField(profile, nonRootUseDefaultField);
-        p.non_root_profile.umount_modules = umountModules;
+        p.nrp_config.use_default = env->GetBooleanField(profile, nonRootUseDefaultField);
+        p.nrp_config.profile.umount_modules = umountModules;
     }
 
     return set_app_profile(&p);
