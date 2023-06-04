@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -29,11 +30,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
@@ -43,7 +48,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun RootProfileConfig(
     modifier: Modifier = Modifier,
@@ -114,54 +119,21 @@ fun RootProfileConfig(
             }
         })
 
-        ListItem(headlineContent = {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("uid") },
-                value = profile.uid.toString(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                onValueChange = {
-                    if (it.isNotEmpty()) {
-                        it.filter { symbol ->
-                            symbol.isDigit()
-                        }.let { filtered ->
-                            filtered.ifEmpty { "0" }
-                        }.let { value ->
-                            onProfileChange(
-                                profile.copy(
-                                    uid = value.toInt(),
-                                    rootUseDefault = false
-                                )
-                            )
-                        }
-                    }
-                }
-
+        UidPanel(uid = profile.uid, label = "uid", onUidChange = {
+            onProfileChange(
+                profile.copy(
+                    uid = it,
+                    rootUseDefault = false
+                )
             )
         })
 
-        ListItem(headlineContent = {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("gid") },
-                value = profile.gid.toString(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                onValueChange = {
-                    if (it.isNotEmpty()) {
-                        it.filter { symbol ->
-                            symbol.isDigit()
-                        }.let { filtered ->
-                            filtered.ifEmpty { "0" }
-                        }.let { value ->
-                            onProfileChange(
-                                profile.copy(
-                                    gid = value.toInt(),
-                                    rootUseDefault = false
-                                )
-                            )
-                        }
-                    }
-                }
+        UidPanel(uid = profile.gid, label = "gid", onUidChange = {
+            onProfileChange(
+                profile.copy(
+                    gid = it,
+                    rootUseDefault = false
+                )
             )
         })
 
@@ -179,13 +151,10 @@ fun RootProfileConfig(
             )
         }
 
-        val selectedCaps = profile.capabilities.ifEmpty {
-            Capabilities.values().toList()
-        }.let { e ->
-            e.mapNotNull { cap ->
-                Capabilities.values().find { it.cap == cap }
-            }
+        val selectedCaps = profile.capabilities.mapNotNull { e ->
+            Capabilities.values().find { it.cap == e }
         }
+
         CapsPanel(selectedCaps) {
             onProfileChange(
                 profile.copy(
@@ -272,7 +241,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: List<Groups>
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CapsPanel(
-    selected: List<Capabilities>,
+    selected: Collection<Capabilities>,
     closeSelection: (selection: List<Capabilities>) -> Unit
 ) {
 
@@ -329,6 +298,47 @@ fun CapsPanel(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
+
+    ListItem(headlineContent = {
+        var isError by remember {
+            mutableStateOf(false)
+        }
+        var lastValidUid by remember {
+            mutableStateOf(uid)
+        }
+
+        val keyboardController = LocalSoftwareKeyboardController.current
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(label) },
+            value = uid.toString(),
+            isError = isError,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = {
+                keyboardController?.hide()
+            }),
+            onValueChange = {
+                val valid = isTextValidUid(it)
+
+                val targetUid = if (valid) it.toInt() else lastValidUid
+                if (valid) {
+                    lastValidUid = it.toInt()
+                }
+
+                onUidChange(targetUid)
+
+                isError = !valid
+            }
+        )
+    })
+}
+
 @Preview
 @Composable
 private fun RootProfileConfigPreview() {
@@ -336,4 +346,8 @@ private fun RootProfileConfigPreview() {
     RootProfileConfig(fixedName = true, profile = profile) {
         profile = it
     }
+}
+
+private fun isTextValidUid(text: String): Boolean {
+    return text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0 && text.toInt() <= Int.MAX_VALUE
 }
