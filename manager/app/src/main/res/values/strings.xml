@@ -10,16 +10,10 @@
     <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Unsupported</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
-    <string name="home_copied_to_clipboard">Copied to clipboard</string>
-    <string name="home_support">Support</string>
 
     <string name="home_kernel">Kernel</string>
-    <string name="home_arch">Arch</string>
     <string name="home_manager_version">Manager Version</string>
-    <string name="home_api">API Level</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Fingerprint</string>
-    <string name="home_securitypatch">Security Patch</string>
 
     <string name="home_selinux_status">SELinux status</string>
     <string name="selinux_status_disabled">Disabled</string>
@@ -27,8 +21,6 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
     <string name="superuser">Superuser</string>
-    <string name="superuser_failed_to_grant_root">Failed to grant root for %d</string>
-    <string name="superuser_allow_root_confirm">Are you sure to grant root access to %s?</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
@@ -45,7 +37,6 @@
     <string name="reboot_download">Reboot to Download</string>
     <string name="reboot_edl">Reboot to EDL</string>
     <string name="about">About</string>
-    <string name="require_kernel_version_8">Require KernelSU version 8+</string>
     <string name="module_uninstall_confirm">Are you sure you want to uninstall module %s?</string>
     <string name="module_uninstall_success">%s uninstalled</string>
     <string name="module_uninstall_failed">Failed to uninstall: %s</string>
@@ -65,7 +56,7 @@
     <string name="home_support_title">Support Us</string>
     <string name="home_support_content">KernelSU is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
-    <string name="profile">App profile</string>
+    <string name="profile" translatable="false">App profile</string>
     <string name="profile_default">Default</string>
     <string name="profile_template">Template</string>
     <string name="profile_custom">Custom</string>
@@ -75,8 +66,6 @@
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_individual">Individual</string>
     <string name="profile_hide_modules">Hide modules</string>
-    <string name="profile_allow_root_request">Allow root request</string>
-    <string name="failed_to_update_root_profile">Failed to update root profile for %s</string>
     <string name="failed_to_update_app_profile">Failed to update app profile for %s</string>
     <string name="require_kernel_version">The current kernel version %d is too low for the manager to function properly. Please upgrade to version %d or higher!</string>
     <string name="settings_umount_modules_default">Hide modules by default</string>

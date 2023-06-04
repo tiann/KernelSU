@@ -8,16 +8,10 @@
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
-    <string name="home_copied_to_clipboard">Скопировано в буфер обмена</string>
-    <string name="home_support">Поддержка</string>
 
     <string name="home_kernel">Ядро</string>
-    <string name="home_arch">Архитектура</string>
     <string name="home_manager_version">Версия</string>
-    <string name="home_api">Уровень API</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Подпись</string>
-    <string name="home_securitypatch">Патч Безопасности</string>
 
     <string name="home_selinux_status">Состояние SELinux</string>
     <string name="selinux_status_disabled">Выключен</string>
@@ -25,8 +19,6 @@
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
     <string name="superuser">Superuser</string>
-    <string name="superuser_failed_to_grant_root">Не удалось предоставить root права для %d</string>
-    <string name="superuser_allow_root_confirm">Вы уверены, что хотите предоставить root права для %s?</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -43,7 +35,6 @@
     <string name="reboot_download">Reboot to Download</string>
     <string name="reboot_edl">Reboot to EDL</string>
     <string name="about">О KernelSU</string>
-    <string name="require_kernel_version_8">Требуется KernelSU версии 8 и выше</string>
     <string name="module_uninstall_confirm">Вы уверены, что хотите удалить модуль %s?</string>
     <string name="module_uninstall_success">%s удален</string>
     <string name="module_uninstall_failed">Не удалось удалить: %s</string>

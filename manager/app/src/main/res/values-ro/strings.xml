@@ -7,16 +7,10 @@
     <string name="home_working_version">Versiune: %d</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
-    <string name="home_copied_to_clipboard">Copiat în clipboard</string>
-    <string name="home_support">Asistență</string>
 
     <string name="home_kernel">Nucleu</string>
-    <string name="home_arch">Arhitectură</string>
     <string name="home_manager_version">Versiune Manager</string>
-    <string name="home_api">Nivel API</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Amprentă</string>
-    <string name="home_securitypatch">Corecție de securitate</string>
 
     <string name="home_selinux_status">Stare SELinux</string>
     <string name="selinux_status_disabled">Dezactivat</string>
@@ -24,8 +18,6 @@
     <string name="selinux_status_permissive">Permisiv</string>
     <string name="selinux_status_unknown">Necunoscut</string>
     <string name="superuser">Superutilizator</string>
-    <string name="superuser_failed_to_grant_root">Nu s-a putut acorda acces root pentru %d</string>
-    <string name="superuser_allow_root_confirm">Sigur oferi acces root pentru %s?</string>
     <string name="module_failed_to_enable">Activarea modulului %s a eșuat</string>
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
@@ -42,7 +34,6 @@
     <string name="reboot_download">Repornire în Download</string>
     <string name="reboot_edl">Repornire în EDL</string>
     <string name="about">Despre</string>
-    <string name="require_kernel_version_8">Necesită KernelSU versiunea 8+</string>
     <string name="module_uninstall_confirm">Sigur dorești să dezinstalezi modulul %s?</string>
     <string name="module_uninstall_success">%s dezinstalat</string>
     <string name="module_uninstall_failed">Dezinstalare eșuată: %s</string>

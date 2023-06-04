@@ -10,16 +10,10 @@
     <string name="home_module_count">Modul: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">KernelSU hanya mendukung kernel GKI saat ini</string>
-    <string name="home_copied_to_clipboard">Disalin ke clipboard</string>
-    <string name="home_support">Dukungan</string>
 
     <string name="home_kernel">Kernel</string>
-    <string name="home_arch">Arch</string>
     <string name="home_manager_version">Versi Manager</string>
-    <string name="home_api">Level API</string>
-    <string name="home_abi">ABI</string>
     <string name="home_fingerprint">Sidik jari</string>
-    <string name="home_securitypatch">Patch Keamanan</string>
 
     <string name="home_selinux_status">status SELinux</string>
     <string name="selinux_status_disabled">Dinonaktifkan</string>
@@ -27,8 +21,6 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Tidak dikenal</string>
     <string name="superuser">Superuser</string>
-    <string name="superuser_failed_to_grant_root">Gagal mengizinkan root untuk %d</string>
-    <string name="superuser_allow_root_confirm">Apakah Anda yakin untuk mengizinkan akses root ke %s?</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
     <string name="module_empty">Tidak ada modul terpasang</string>
@@ -45,7 +37,6 @@
     <string name="reboot_download">Reboot ke Download</string>
     <string name="reboot_edl">Reboot ke EDL</string>
     <string name="about">Tentang</string>
-    <string name="require_kernel_version_8">Membutuhkan KernelSU Versi 8+</string>
     <string name="module_uninstall_confirm">Apakah Anda yakin ingin mencopot modul %s?</string>
     <string name="module_uninstall_success">%s Tercopot</string>
     <string name="module_uninstall_failed">Gagal untuk mencopot: %s</string>
@@ -75,5 +66,4 @@
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Personal</string>
     <string name="profile_hide_modules">Lepas modul</string>
-    <string name="profile_allow_root_request">Izinkan permintaan root</string>
 </resources>

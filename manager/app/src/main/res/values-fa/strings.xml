@@ -9,24 +9,16 @@
 <string name="home_module_count">ماژول‌ها: %d</string>
 <string name="home_unsupported">پشتیبانی نشده</string>
 <string name="home_unsupported_reason">کرنل اس یو فقط هسته های gki را پشتیبانی میکند</string>
-<string name="home_copied_to_clipboard">در بریده‌دان ذخیره شد</string>
-<string name="home_support">پشتیبانی</string>
-<string name="home_kernel">هسته</string>
-<string name="home_arch">معماری</string>
-<string name="home_manager_version">نسخه برنامه</string>
-<string name="home_api">API_level</string>
-<string name="home_abi">ABI</string>
-<string name="home_fingerprint">اثرانگشت</string>
-<string name="home_securitypatch">پچ امنیتی</string>
-<string name="home_selinux_status">وضعیت SELinux</string>
+    <string name="home_kernel">هسته</string>
+    <string name="home_manager_version">نسخه برنامه</string>
+    <string name="home_fingerprint">اثرانگشت</string>
+    <string name="home_selinux_status">وضعیت SELinux</string>
 <string name="selinux_status_disabled">غیرفعال</string>
 <string name="selinux_status_enforcing">قانونمند</string>
 <string name="selinux_status_permissive">آزاد</string>
 <string name="selinux_status_unknown">ناشناخته</string>
 <string name="superuser">دسترسی روت</string>
-<string name="superuser_failed_to_grant_root">اعطای دسترسی روت برای %d ناموفق بود</string>
-<string name="superuser_allow_root_confirm">آیا مطمئنید که میخواهید به %s دسترسی روت بدهید؟</string>
-<string name="module_failed_to_enable">فعال کردن ماژول ناموفق بود: %s</string>
+    <string name="module_failed_to_enable">فعال کردن ماژول ناموفق بود: %s</string>
 <string name="module_failed_to_disable">غیرفعال کردن ماژول ناموفق بود: %s</string>
 <string name="module_empty">هیچ ماژولی نصب نشده است</string>
 <string name="module">ماژول</string>
@@ -41,8 +33,7 @@
 <string name="reboot_download">راه اندازی به حالت دانلود</string>
 <string name="reboot_edl">راه اندازی به EDL</string>
 <string name="about">درباره</string>
-<string name="require_kernel_version_8"> نسخه کرنل مورد نیاز 8+</string>
-<string name="module_uninstall_confirm">آیا مطمئنید که میخواهید ماژول %s را پاک کنید؟</string>
+    <string name="module_uninstall_confirm">آیا مطمئنید که میخواهید ماژول %s را پاک کنید؟</string>
 <string name="module_uninstall_success">%s پاک شد</string>
 <string name="module_uninstall_failed">پاک کردن ناموفق بود: %s</string>
 <string name="module_version">نسخه</string>
@@ -73,5 +64,4 @@
 <string name="profile_namespace_global">گلوبال</string>
 <string name="profile_namespace_individual">تکی</string>
 <string name="profile_hide_modules">جداکردن ماژول ها</string>
-<string name="profile_allow_root_request">اجازه درخواست روت</string>
 </resources>
