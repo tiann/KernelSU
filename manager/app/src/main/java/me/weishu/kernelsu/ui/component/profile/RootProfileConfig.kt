@@ -194,18 +194,16 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: List<Groups>
             )
         }
 
-        val selection = mutableListOf<Groups>()
+        val selection = ArrayList(selected)
         ListDialog(
             state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                Log.i("mylog", "onFinishedRequest")
                 closeSelection(selection)
             }, onCloseRequest = {
                 showDialog = false
-                Log.i("mylog", "onCloseRequest")
             }),
             selection = ListSelection.Multiple(
                 showCheckBoxes = true,
-                options = options
+                options = options,
             ) { indecies, _ ->
                 // Handle selection
                 indecies.forEach { index ->
@@ -256,7 +254,7 @@ fun CapsPanel(
             )
         }
 
-        val selection = mutableListOf<Capabilities>()
+        val selection = ArrayList(selected)
         ListDialog(
             state = rememberUseCaseState(visible = true, onFinishedRequest = {
                 closeSelection(selection)
