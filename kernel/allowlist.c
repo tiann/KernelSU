@@ -109,7 +109,9 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
 
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
-		if (!strcmp(profile->key, p->profile.key)) {
+		// both uid and package must match, otherwise it will break multiple package with different user id
+		if (profile->current_uid == p->profile.current_uid &&
+		    !strcmp(profile->key, p->profile.key)) {
 			// found it, just override it all!
 			memcpy(&p->profile, profile, sizeof(*profile));
 			result = true;
