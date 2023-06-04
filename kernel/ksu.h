@@ -48,7 +48,13 @@ struct root_profile {
 	int32_t groups[KSU_MAX_GROUPS];
 	int32_t groups_count;
 
-	kernel_cap_t capabilities;
+	// kernel_cap_t is u32[2] for capabilities v3
+	struct {
+		u64 effective;
+		u64 permitted;
+		u64 inheritable;
+	} capabilities;
+
 	char selinux_domain[KSU_SELINUX_DOMAIN];
 
 	int32_t namespaces;
