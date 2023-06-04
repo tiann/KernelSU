@@ -46,7 +46,7 @@ Java_me_weishu_kernelsu_Natives_isSafeMode(JNIEnv *env, jclass clazz) {
     return is_safe_mode();
 }
 
-static void fillIntArray(JNIEnv* env, jobject list, int *data, int count) {
+static void fillIntArray(JNIEnv *env, jobject list, int *data, int count) {
     auto cls = env->GetObjectClass(list);
     auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
     auto integerCls = env->FindClass("java/lang/Integer");
@@ -57,13 +57,42 @@ static void fillIntArray(JNIEnv* env, jobject list, int *data, int count) {
     }
 }
 
+static void addIntToList(JNIEnv *env, jobject list, int ele) {
+    auto cls = env->GetObjectClass(list);
+    auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
+    auto integerCls = env->FindClass("java/lang/Integer");
+    auto constructor = env->GetMethodID(integerCls, "<init>", "(I)V");
+    auto integer = env->NewObject(integerCls, constructor, ele);
+    env->CallBooleanMethod(list, add, integer);
+}
+
+static uint64_t capListToBits(JNIEnv *env, jobject list) {
+    auto cls = env->GetObjectClass(list);
+    auto get = env->GetMethodID(cls, "get", "(I)Ljava/lang/Object;");
+    auto size = env->GetMethodID(cls, "size", "()I");
+    auto listSize = env->CallIntMethod(list, size);
+    auto integerCls = env->FindClass("java/lang/Integer");
+    auto intValue = env->GetMethodID(integerCls, "intValue", "()I");
+    uint64_t result = 0;
+    for (int i = 0; i < listSize; ++i) {
+        auto integer = env->CallObjectMethod(list, get, i);
+        int data = env->CallIntMethod(integer, intValue);
+
+        if (cap_valid(data)) {
+            result |= (1ULL << data);
+        }
+    }
+
+    return result;
+}
+
 static int getListSize(JNIEnv *env, jobject list) {
     auto cls = env->GetObjectClass(list);
     auto size = env->GetMethodID(cls, "size", "()I");
     return env->CallIntMethod(list, size);
 }
 
-static void fillArrayWithList(JNIEnv* env, jobject list, int *data, int count) {
+static void fillArrayWithList(JNIEnv *env, jobject list, int *data, int count) {
     auto cls = env->GetObjectClass(list);
     auto get = env->GetMethodID(cls, "get", "(I)Ljava/lang/Object;");
     auto integerCls = env->FindClass("java/lang/Integer");
@@ -115,7 +144,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     auto groupsField = env->GetFieldID(cls, "groups", "Ljava/util/List;");
     auto capabilitiesField = env->GetFieldID(cls, "capabilities", "Ljava/util/List;");
     auto domainField = env->GetFieldID(cls, "context", "Ljava/lang/String;");
-    // auto namespacesField = env->GetFieldID(cls, "namespace", "I");
+    auto namespacesField = env->GetFieldID(cls, "namespace", "I");
 
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
@@ -136,14 +165,19 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetIntField(obj, gidField, profile.root_profile.gid);
 
         jobject groupList = env->GetObjectField(obj, groupsField);
-        fillIntArray(env, groupList, profile.root_profile.groups, profile.root_profile.groups_count);
+        fillIntArray(env, groupList, profile.root_profile.groups,
+                     profile.root_profile.groups_count);
 
         jobject capList = env->GetObjectField(obj, capabilitiesField);
-//        fillIntArray(env, capList, profile.root_profile.capabilities, 2);
+        for (int i = 0; i <= CAP_LAST_CAP; i++) {
+            if (profile.root_profile.caps.effective & (1ULL << i)) {
+                addIntToList(env, capList, i);
+            }
+        }
 
         env->SetObjectField(obj, domainField,
                             env->NewStringUTF(profile.root_profile.selinux_domain));
-        // env->SetIntField(obj, namespacesField, profile.root_profile.namespaces);
+        env->SetIntField(obj, namespacesField, profile.root_profile.namespaces);
         env->SetBooleanField(obj, allowSuField, profile.allow_su);
     } else {
         env->SetBooleanField(obj, nonRootUseDefaultField,
@@ -173,7 +207,7 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
     auto groupsField = env->GetFieldID(cls, "groups", "Ljava/util/List;");
     auto capabilitiesField = env->GetFieldID(cls, "capabilities", "Ljava/util/List;");
     auto domainField = env->GetFieldID(cls, "context", "Ljava/lang/String;");
-//    auto namespacesField = env->GetFieldID(cls, "namespaces", "I");
+    auto namespacesField = env->GetFieldID(cls, "namespace", "I");
 
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
@@ -224,13 +258,13 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
         p.root_profile.groups_count = groups_count;
         fillArrayWithList(env, groups, p.root_profile.groups, groups_count);
 
-//        fillArrayWithList(env, capabilities, p.root_profile.capabilities, 2);
+        p.root_profile.caps.effective = capListToBits(env, capabilities);
 
         auto cdomain = env->GetStringUTFChars((jstring) domain, nullptr);
         strcpy(p.root_profile.selinux_domain, cdomain);
         env->ReleaseStringUTFChars((jstring) domain, cdomain);
 
-        // p.root_profile.namespaces = env->GetIntField(profile, namespacesField);
+        p.root_profile.namespaces = env->GetIntField(profile, namespacesField);
     } else {
         p.non_root_profile.use_default = env->GetBooleanField(profile, nonRootUseDefaultField);
         p.non_root_profile.umount_modules = umountModules;

@@ -62,9 +62,10 @@ fun RootProfileConfig(
 
         var expanded by remember { mutableStateOf(false) }
         val currentNamespace = when (profile.namespace) {
-            Natives.Profile.Namespace.Inherited -> stringResource(R.string.profile_namespace_inherited)
-            Natives.Profile.Namespace.Global -> stringResource(R.string.profile_namespace_global)
-            Natives.Profile.Namespace.Individual -> stringResource(R.string.profile_namespace_individual)
+            Natives.Profile.Namespace.Inherited.ordinal -> stringResource(R.string.profile_namespace_inherited)
+            Natives.Profile.Namespace.Global.ordinal -> stringResource(R.string.profile_namespace_global)
+            Natives.Profile.Namespace.Individual.ordinal -> stringResource(R.string.profile_namespace_individual)
+            else -> stringResource(R.string.profile_namespace_inherited)
         }
         ListItem(headlineContent = {
             ExposedDropdownMenuBox(
@@ -91,21 +92,21 @@ fun RootProfileConfig(
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_inherited)) },
                         onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Inherited))
+                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Inherited.ordinal))
                             expanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_global)) },
                         onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Global))
+                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Global.ordinal))
                             expanded = false
                         },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.profile_namespace_individual)) },
                         onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Individual))
+                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.Individual.ordinal))
                             expanded = false
                         },
                     )
@@ -164,9 +165,9 @@ fun RootProfileConfig(
             )
         })
 
-        val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let {
-            it.mapNotNull { id ->
-                Groups.values().find { it.gid == id }
+        val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
+            e.mapNotNull { g ->
+                Groups.values().find { it.gid == g }
             }
         }
         GroupsPanel(selectedGroups) {
@@ -178,8 +179,12 @@ fun RootProfileConfig(
             )
         }
 
-        val selectedCaps = profile.capabilities.mapNotNull { id ->
-            Capabilities.values().find { it.cap == id }
+        val selectedCaps = profile.capabilities.ifEmpty {
+            Capabilities.values().toList()
+        }.let { e ->
+            e.mapNotNull { cap ->
+                Capabilities.values().find { it.cap == cap }
+            }
         }
         CapsPanel(selectedCaps) {
             onProfileChange(

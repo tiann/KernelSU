@@ -5,6 +5,8 @@
 #ifndef KERNELSU_KSU_H
 #define KERNELSU_KSU_H
 
+#include <linux/capability.h>
+
 bool become_manager(const char *);
 
 int get_version();
@@ -42,8 +44,12 @@ struct app_profile {
             int32_t groups[KSU_MAX_GROUPS];
             int32_t groups_count;
 
-            // kernel_cap_t is u32[2]
-            int32_t capabilities[2];
+            struct {
+                // kernel_cap_t is u32[2], we use u64 here to avoid alignment issues.
+                uint64_t effective;
+                uint64_t permitted;
+                uint64_t inheritable;
+            } caps;
             char selinux_domain[KSU_SELINUX_DOMAIN];
 
             int32_t namespaces;
