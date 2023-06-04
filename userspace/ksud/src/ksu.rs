@@ -58,11 +58,11 @@ fn print_usage(program: &str, opts: Options) {
     print!("{}", opts.usage(&brief));
 }
 
-fn set_identity(uid: u32) {
+fn set_identity(uid: u32, gid: u32) {
     #[cfg(any(target_os = "linux", target_os = "android"))]
     unsafe {
         libc::seteuid(uid);
-        libc::setresgid(uid, uid, uid);
+        libc::setresgid(gid, gid, gid);
         libc::setresuid(uid, uid, uid);
     }
 }
@@ -170,6 +170,7 @@ pub fn root_shell() -> Result<()> {
 
     // use current uid if no user specified, these has been done in kernel!
     let mut uid = unsafe { libc::getuid() };
+    let gid = unsafe { libc::getgid() };
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
@@ -235,7 +236,7 @@ pub fn root_shell() -> Result<()> {
                 let _ = utils::unshare_mnt_ns();
             }
 
-            set_identity(uid);
+            set_identity(uid, gid);
 
             std::result::Result::Ok(())
         })
