@@ -5,6 +5,8 @@
     <string name="home_click_to_install">Click pentru a instala</string>
     <string name="home_working">Funcționează</string>
     <string name="home_working_version">Versiune: %d</string>
+    <string name="home_superuser_count">Superuseri: %d</string>
+    <string name="home_module_count">Module: %d</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
 
@@ -22,7 +24,7 @@
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
 
-    <string name="module">Module</string>
+    <string name="module">Modul</string>
     <string name="uninstall">Dezinstalează</string>
     <string name="module_install">Instalează</string>
     <string name="install">Instalează</string>
@@ -53,4 +55,18 @@
     <string name="home_support_title">Suport</string>
     <string name="home_support_content">KernelSU este, și va fi întotdeauna, gratuit și cu codul sursă deschis. Cu toate acestea, ne poți arăta că îți pasă făcând o donație.</string>
     <string name="about_source_code"><![CDATA[Vezi codul sursă la %1$s<br/>Alătură-te canalului nostru %2$s]]></string>
+    <string name="profile_default">Implicit</string>
+    <string name="profile_template">Șablon</string>
+    <string name="profile_custom">Personalizat</string>
+    <string name="profile_name">Nume profil</string>
+    <string name="profile_namespace">Montare spațiu de nume</string>
+    <string name="profile_namespace_inherited">Moștenit</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_umount_modules">Module u-montate</string>
+    <string name="failed_to_update_app_profile">Nu s-a putut actualiza profilul aplicației pentru %s</string>
+    <string name="require_kernel_version">Versiunea actuală a nucleului %d este prea mică pentru ca managerul să funcționeze corect. Actualizează la versiunea %d sau o versiune superioară!</string>
+    <string name="settings_umount_modules_default">U-montează modulele în mod implicit</string>
+    <string name="settings_umount_modules_default_summary">Valoarea implicită globală pentru „Module u-montate” în Profilurile aplicațiilor. Dacă este activat, va elimina toate modificările modulelor aduse sistemului pentru aplicațiile care nu au un profil setat.</string>
+    <string name="profile_umount_modules_summary">Activarea acestei opțiuni va permite KernelSU să restaureze orice fișiere modificate de către modulele pentru această aplicație.</string>
 </resources>
