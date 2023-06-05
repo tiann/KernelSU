@@ -143,6 +143,9 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
 
+    env->SetObjectField(obj, keyField, env->NewStringUTF(profile.key));
+    env->SetIntField(obj, currentUidField, profile.current_uid);
+
     if (useDefaultProfile) {
         // no profile found, so just use default profile:
         // don't allow root and use default profile!
@@ -162,9 +165,6 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
 
         return obj;
     }
-
-    env->SetObjectField(obj, keyField, env->NewStringUTF(profile.key));
-    env->SetIntField(obj, currentUidField, profile.current_uid);
 
     auto allowSu = profile.allow_su;
 
