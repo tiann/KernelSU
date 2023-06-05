@@ -181,7 +181,7 @@ fun RootProfileConfig(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: List<Groups>) -> Unit) {
+fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>) -> Unit) {
 
     var showDialog by remember { mutableStateOf(false) }
 
@@ -194,7 +194,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: List<Groups>
             )
         }
 
-        val selection = ArrayList(selected)
+        val selection = HashSet(selected)
         ListDialog(
             state = rememberUseCaseState(visible = true, onFinishedRequest = {
                 closeSelection(selection)
@@ -206,6 +206,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: List<Groups>
                 options = options,
             ) { indecies, _ ->
                 // Handle selection
+                selection.clear()
                 indecies.forEach { index ->
                     val group = groups[index]
                     selection.add(group)
@@ -240,7 +241,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: List<Groups>
 @Composable
 fun CapsPanel(
     selected: Collection<Capabilities>,
-    closeSelection: (selection: List<Capabilities>) -> Unit
+    closeSelection: (selection: Set<Capabilities>) -> Unit
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
@@ -254,7 +255,7 @@ fun CapsPanel(
             )
         }
 
-        val selection = ArrayList(selected)
+        val selection = HashSet(selected)
         ListDialog(
             state = rememberUseCaseState(visible = true, onFinishedRequest = {
                 closeSelection(selection)
@@ -266,6 +267,7 @@ fun CapsPanel(
                 options = options
             ) { indecies, _ ->
                 // Handle selection
+                selection.clear()
                 indecies.forEach { index ->
                     val group = caps[index]
                     selection.add(group)

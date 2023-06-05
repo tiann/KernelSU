@@ -121,13 +121,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     strcpy(profile.key, key);
     profile.current_uid = uid;
 
-    if (!get_app_profile(key, &profile)) {
-        // no profile found, so just use default profile:
-        // don't allow root and use default profile!
-        profile.allow_su = false;
-        profile.nrp_config.use_default = true;
-        LOGD("get app profile for: %s failed, use default profile.", key);
-    }
+    bool useDefaultProfile = !get_app_profile(key, &profile);
 
     auto cls = env->FindClass("me/weishu/kernelsu/Natives$Profile");
     auto constructor = env->GetMethodID(cls, "<init>", "()V");
@@ -151,6 +145,26 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
 
     env->SetObjectField(obj, keyField, env->NewStringUTF(profile.key));
     env->SetIntField(obj, currentUidField, profile.current_uid);
+
+    if (useDefaultProfile) {
+        // no profile found, so just use default profile:
+        // don't allow root and use default profile!
+        LOGD("use default profile for: %s, %d", key, uid);
+
+        // allow_su = false
+        // non root use default = true
+        env->SetBooleanField(obj, allowSuField, false);
+        env->SetBooleanField(obj, nonRootUseDefaultField, true);
+
+        jobject capList = env->GetObjectField(obj, capabilitiesField);
+        int DEFAULT_CAPS[] = {CAP_DAC_READ_SEARCH };
+
+        for (auto i: DEFAULT_CAPS) {
+            addIntToList(env, capList, i);
+        }
+
+        return obj;
+    }
 
     auto allowSu = profile.allow_su;
 
@@ -183,8 +197,6 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetBooleanField(obj, nonRootUseDefaultField,
                              (jboolean) profile.nrp_config.use_default);
         env->SetBooleanField(obj, umountModulesField, profile.nrp_config.profile.umount_modules);
-        LOGD("non root profile: use default: %d, umount modules: %d",
-             profile.nrp_config.use_default, profile.nrp_config.profile.umount_modules);
     }
 
     return obj;
