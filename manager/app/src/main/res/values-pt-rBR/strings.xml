@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name" translatable="false">KernelSU</string>
+
+    <string name="home">Início</string>
+    <string name="home_not_installed">Não instalado</string>
+    <string name="home_click_to_install">Clique para instalar</string>
+    <string name="home_working">Trabalhando</string>
+    <string name="home_working_version">Versão: %d</string>
+    <string name="home_superuser_count">Superusuários: %d</string>
+    <string name="home_module_count">Módulos: %d</string>
+    <string name="home_unsupported">Sem suporte</string>
+    <string name="home_unsupported_reason">Por enquanto, KernelSU suporta apenas kernels GKI</string>
+
+    <string name="home_kernel">Kernel</string>
+    <string name="home_manager_version">Versão do gerenciador</string>
+    <string name="home_fingerprint">Impressão digital</string>
+
+    <string name="home_selinux_status">Status do SELinux</string>
+    <string name="selinux_status_disabled">Desabilitado</string>
+    <string name="selinux_status_enforcing">Impondo</string>
+    <string name="selinux_status_permissive">Permissivo</string>
+    <string name="selinux_status_unknown">Desconhecido</string>
+    <string name="superuser">Superusuário</string>
+    <string name="module_failed_to_enable">Falha ao ativar o módulo: %s</string>
+    <string name="module_failed_to_disable">Falha ao desativar o módulo: %s</string>
+    <string name="module_empty">Nenhum módulo instalado</string>
+
+    <string name="module">Módulo</string>
+    <string name="uninstall">Desinstalar</string>
+    <string name="module_install">Instalar</string>
+    <string name="install">Instalar</string>
+    <string name="reboot">Reiniciar</string>
+    <string name="settings">Configurações</string>
+    <string name="reboot_userspace">Reinicialização suave</string>
+    <string name="reboot_recovery">Reiniciar para recuperação</string>
+    <string name="reboot_bootloader">Reinicializar para bootloader</string>
+    <string name="reboot_download">Reinicializar para download</string>
+    <string name="reboot_edl">Reinicializar para EDL</string>
+    <string name="about">Sobre</string>
+    <string name="module_uninstall_confirm">Tem certeza de que deseja desinstalar o módulo %s?</string>
+    <string name="module_uninstall_success">%s desinstalado</string>
+    <string name="module_uninstall_failed">Falha ao desinstalar: %s</string>
+    <string name="module_version">Versão</string>
+    <string name="module_author">Autor</string>
+    <string name="module_overlay_fs_not_available">overlayfs não está disponível, o módulo não funcioná!</string>
+    <string name="refresh">Atualizar</string>
+    <string name="show_system_apps">Mostrar aplicativos do sistema</string>
+    <string name="hide_system_apps">Ocultar aplicativos do sistema</string>
+    <string name="send_log">Enviar log</string>
+    <string name="safe_mode">Modo de segurança</string>
+    <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
+    <string name="module_magisk_conflict">Os módulos estão desativados porque estão em conflito com o Magisk\'s!</string>
+    <string name="home_learn_kernelsu">Leia mais sobre KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">Saiba como instalar o KernelSU e usar os módulos</string>
+    <string name="home_support_title">Apoie-nos</string>
+    <string name="home_support_content">O KernelSU é, e sempre será, gratuito e de código aberto. No entanto, você pode nos mostrar que se importa fazendo uma doação.</string>
+    <string name="about_source_code"><![CDATA[Veja o código-fonte em %1$s<br/>Junte-se ao nosso %2$s canal]]></string>
+    <string name="profile" translatable="false">Perfil do aplicativo</string>
+    <string name="profile_default">Padrão</string>
+    <string name="profile_template">Modelo</string>
+    <string name="profile_custom">Personalizado</string>
+    <string name="profile_name">Nome do perfil</string>
+    <string name="profile_namespace">Montar namespace</string>
+    <string name="profile_namespace_inherited">incluído</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_umount_modules">Módulos não montados</string>
+    <string name="failed_to_update_app_profile">Falha ao atualizar o perfil do aplicativo para %s</string>
+    <string name="require_kernel_version">A versão atual do kernel %d é muito baixo para o gerenciador funcionar corretamente. Atualize para a versão %d ou superior!</string>
+    <string name="settings_umount_modules_default">Não montar módulos por padrão</string>
+    <string name="settings_umount_modules_default_summary">O valor padrão global para \"Módulos não montados\" em perfis de aplicativos. Se ativado, removerá todas as modificações do módulo do sistema para aplicativos que não possuem um perfil definido.</string>
+    <string name="profile_umount_modules_summary">Ativar esta opção permitirá que o KernelSU restaure quaisquer arquivos modificados pelos módulos para este aplicativo.</string>
+</resources>
