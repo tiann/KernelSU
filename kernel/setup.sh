@@ -43,6 +43,6 @@ cd "$GKI_ROOT"
 echo '[+] Add kernel su driver to Makefile'
 
 DRIVER_MAKEFILE=$DRIVER_DIR/Makefile
-grep -q "kernelsu" "$DRIVER_MAKEFILE" || sed -i '$i\\obj-$(CONFIG_KSU) += %s\n' 'kernelsu/' >> "$DRIVER_MAKEFILE"
+grep -q "kernelsu" "$DRIVER_MAKEFILE" || sed -i '$i\obj-$(CONFIG_KSU) += kernelsu/\n'  "$DRIVER_MAKEFILE"
 
 echo '[+] Done.'
