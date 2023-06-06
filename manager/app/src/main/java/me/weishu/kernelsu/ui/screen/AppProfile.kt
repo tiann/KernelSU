@@ -144,20 +144,33 @@ private fun AppProfileInner(
         Crossfade(targetState = isRootGranted, label = "") { current ->
             Column {
                 if (current) {
-                    val mode = if (profile.rootUseDefault) {
+                    val initialMode = if (profile.rootUseDefault) {
                         Mode.Default
                     } else if (profile.rootTemplate != null) {
                         Mode.Template
                     } else {
                         Mode.Custom
                     }
+                    var mode by remember {
+                        mutableStateOf(initialMode)
+                    }
                     ProfileBox(mode, true) {
-                        onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
+                        // template mode shouldn't change profile here!
+                        if (it == Mode.Default || it == Mode.Custom) {
+                            onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
+                        }
+                        mode = it
                     }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         if (currentMode == Mode.Template) {
                             var expanded by remember { mutableStateOf(false) }
-                            var template by rememberSaveable { mutableStateOf("None") }
+                            val templateNone = "None"
+                            var template by rememberSaveable {
+                                mutableStateOf(
+                                    profile.rootTemplate
+                                        ?: templateNone
+                                )
+                            }
                             ListItem(headlineContent = {
                                 ExposedDropdownMenuBox(
                                     expanded = expanded,
@@ -168,7 +181,17 @@ private fun AppProfileInner(
                                         readOnly = true,
                                         label = { Text(stringResource(R.string.profile_template)) },
                                         value = template,
-                                        onValueChange = {},
+                                        onValueChange = {
+                                            if (template != templateNone) {
+                                                onProfileChange(
+                                                    profile.copy(
+                                                        rootTemplate = it,
+                                                        rootUseDefault = false
+                                                    )
+                                                )
+                                                template = it
+                                            }
+                                        },
                                         trailingIcon = {
                                             if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
                                             else Icon(Icons.Filled.ArrowDropDown, null)
