@@ -69,6 +69,6 @@
     <string name="failed_to_update_app_profile">Mislukt om App Profiel te updaten voor %s</string>
     <string name="require_kernel_version">De bestaande kernel versie %d is te laag voor de manager om goed te werken. Upgrade best tot versie %d of hoger!</string>
     <string name="settings_umount_modules_default">Ontkoppel standaard de modules</string>
-    <string name="settings_umount_modules_default_summary">De globale standaard waarde voor \"Ontkoppel modules\" in App Profielen. Indien geactiveerd, zal het alle module wijzigingen tot het systeeem verwijderen voor applicaties die geen Profiel ingesteld hebben.</string>
-    <string name="profile_umount_modules_summary">Deze optie ingeschakeld zal KernelSU toelaten om alle gewijzigde bestanden door de modules voor deze applicatie te herstellen.</string>
+    <string name="settings_umount_modules_default_summary">De globale standaard waarde voor \"Ontkoppel modules\" in App Profielen. Indien geactiveerd, zal het alle module wijzigingen tot het systeem verwijderen voor applicaties die geen Profiel ingesteld hebben.</string>
+    <string name="profile_umount_modules_summary">Met deze optie ingeschakeld zal KernelSU toelaten om alle gewijzigde bestanden door de modules voor deze applicatie te herstellen.</string>
 </resources>
