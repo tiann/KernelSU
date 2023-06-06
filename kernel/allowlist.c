@@ -18,7 +18,7 @@
 #include "allowlist.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
-#define FILE_FORMAT_VERSION 2 // u32
+#define FILE_FORMAT_VERSION 3 // u32
 
 #define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
 
@@ -105,6 +105,11 @@ exit:
 static bool profile_valid(struct app_profile *profile)
 {
 	if (!profile) {
+		return false;
+	}
+
+	if (profile->version < KSU_APP_PROFILE_VER) {
+		pr_info("Unsupported profile version: %d\n", profile->version);
 		return false;
 	}
 
