@@ -77,19 +77,17 @@ async def main():
     print("---")
     print(caption)
     print("---")
-    for one in paths:
-        if not os.path.exists(one):
-            print("[-] File not exist: " + one)
+    for file in paths:
+        if not os.path.exists(file):
+            print("[-] File not exist: " + file)
             continue
-        print("[+] Upload: " + one)
-        msg = await bot.send_document(CACHE_CHAT_ID, one, write_timeout=60, connect_timeout=30)
-        if one == paths[-1]:
-            files.append(telegram.InputMediaDocument(msg.document,
+        print("[+] Upload: " + file)
+        if file == paths[-1]:
+            files.append(telegram.InputMediaDocument(media=open(file, "rb"),
                                                      caption=caption,
                                                      parse_mode=telegram.constants.ParseMode.MARKDOWN_V2))
         else:
-            files.append(telegram.InputMediaDocument(msg.document))
-        await bot.delete_message(CACHE_CHAT_ID, msg.message_id)
+            files.append(telegram.InputMediaDocument(media=open(file, "rb")))
     print("[+] Sending")
     await bot.send_media_group(CHAT_ID, files, message_thread_id=MESSAGE_THREAD_ID)
     print("[+] Done!")
@@ -98,4 +96,3 @@ async def main():
 if __name__ == "__main__":
     loops = asyncio.new_event_loop()
     loops.run_until_complete(asyncio.wait([main()]))
-
