@@ -77,6 +77,7 @@ static void ksu_grant_root_to_shell()
 		.current_uid = 2000,
 	};
 	strcpy(profile.key, "com.android.shell");
+	strcpy(profile.rp_config.profile.selinux_domain, "u:r:su:s0");
 	ksu_set_app_profile(&profile, false);
 }
 #endif
