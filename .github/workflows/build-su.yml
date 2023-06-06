@@ -41,6 +41,17 @@ jobs:
     - name: Setup mutex for uploading
       uses: ben-z/gh-action-mutex@v1.0-alpha-7
       if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+
+    - name: Setup Telegram Bot Server
+      env:
+        API_ID: ${{ secrets.API_ID }}
+        API_HASH: ${{ secrets.API_HASH }}
+      if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }} && env.API_ID != null && env.API_HASH != null
+      uses: zjns/telegram-bot-server@v1
+      with:
+        api_id: ${{ env.API_ID }}
+        api_hash: ${{ env.API_HASH }}
+
     - name: Upload to telegram
       if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
       env:

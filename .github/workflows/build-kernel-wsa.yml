@@ -126,6 +126,16 @@ jobs:
           name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"
 
+      - name: Setup Telegram Bot Server
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }} && env.API_ID != null && env.API_HASH != null
+        uses: zjns/telegram-bot-server@v1
+        with:
+          api_id: ${{ env.API_ID }}
+          api_hash: ${{ env.API_HASH }}
+
       - name: Post to Telegram
         if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         env:

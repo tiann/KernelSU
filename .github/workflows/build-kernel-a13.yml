@@ -97,6 +97,16 @@ jobs:
       - name: Setup mutex for uploading
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
 
+      - name: Setup Telegram Bot Server
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }} && env.API_ID != null && env.API_HASH != null
+        uses: zjns/telegram-bot-server@v1
+        with:
+          api_id: ${{ env.API_ID }}
+          api_hash: ${{ env.API_HASH }}
+
       - name: Build boot images
         run: |
           export AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
@@ -109,7 +119,7 @@ jobs:
           echo "VERSION: $VERSION"
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
-      
+
       - name: Display structure of boot files
         run: ls -R
 
