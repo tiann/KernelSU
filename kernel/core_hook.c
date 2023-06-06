@@ -52,7 +52,35 @@ static inline bool is_isolated_uid(uid_t uid)
 		appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
 }
 
-static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+static void setup_groups(struct root_profile *profile, struct cred *cred)
+{
+	if (profile->groups_count > KSU_MAX_GROUPS) {
+		pr_warn("Failed to setgroups, too large group: %d!\n",
+			profile->uid);
+		return;
+	}
+
+	u32 ngroups = profile->groups_count;
+	struct group_info *group_info = groups_alloc(ngroups);
+	if (!group_info) {
+		pr_warn("Failed to setgroups, ENOMEM for: %d\n", profile->uid);
+		return;
+	}
+
+	for (int i = 0; i < ngroups; i++) {
+		gid_t gid = profile->groups[i];
+		kgid_t kgid = make_kgid(current_user_ns(), gid);
+		if (!gid_valid(kgid)) {
+			pr_warn("Failed to setgroups, invalid gid: %d\n", gid);
+			put_group_info(group_info);
+			return;
+		}
+		group_info->gid[i] = kgid;
+	}
+
+	groups_sort(group_info);
+	set_groups(cred, group_info);
+}
 
 void escape_to_root(void)
 {
@@ -76,14 +104,20 @@ void escape_to_root(void)
 	cred->sgid.val = profile->gid;
 	cred->egid.val = profile->gid;
 
-	BUILD_BUG_ON(sizeof(profile->capabilities.effective) != sizeof(kernel_cap_t));
+	BUILD_BUG_ON(sizeof(profile->capabilities.effective) !=
+		     sizeof(kernel_cap_t));
 
 	// capabilities
-	memcpy(&cred->cap_effective, &profile->capabilities.effective, sizeof(cred->cap_effective));
-	memcpy(&cred->cap_inheritable, &profile->capabilities.effective, sizeof(cred->cap_inheritable));
-	memcpy(&cred->cap_permitted, &profile->capabilities.effective, sizeof(cred->cap_permitted));
-	memcpy(&cred->cap_bset, &profile->capabilities.effective, sizeof(cred->cap_bset));
-	memcpy(&cred->cap_ambient, &profile->capabilities.effective, sizeof(cred->cap_ambient));
+	memcpy(&cred->cap_effective, &profile->capabilities.effective,
+	       sizeof(cred->cap_effective));
+	memcpy(&cred->cap_inheritable, &profile->capabilities.effective,
+	       sizeof(cred->cap_inheritable));
+	memcpy(&cred->cap_permitted, &profile->capabilities.effective,
+	       sizeof(cred->cap_permitted));
+	memcpy(&cred->cap_bset, &profile->capabilities.effective,
+	       sizeof(cred->cap_bset));
+	memcpy(&cred->cap_ambient, &profile->capabilities.effective,
+	       sizeof(cred->cap_ambient));
 
 	// disable seccomp
 #if defined(CONFIG_GENERIC_ENTRY) &&                                           \
@@ -99,10 +133,7 @@ void escape_to_root(void)
 #else
 #endif
 
-	// setgroup to root
-	if (cred->group_info)
-		put_group_info(cred->group_info);
-	cred->group_info = get_group_info(&root_groups);
+	setup_groups(profile, cred);
 
 	setup_selinux();
 }
@@ -335,8 +366,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	if (arg2 == CMD_UID_GRANTED_ROOT ||
-	    arg2 == CMD_UID_SHOULD_UMOUNT) {
+	if (arg2 == CMD_UID_GRANTED_ROOT || arg2 == CMD_UID_SHOULD_UMOUNT) {
 		if (is_manager() || 0 == current_uid().val) {
 			uid_t target_uid = (uid_t)arg3;
 			bool allow = false;

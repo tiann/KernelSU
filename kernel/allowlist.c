@@ -6,6 +6,7 @@
 #include "linux/list.h"
 #include "linux/printk.h"
 #include "linux/slab.h"
+#include "linux/types.h"
 #include "linux/version.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include "linux/compiler_types.h"
@@ -101,11 +102,30 @@ exit:
 	return found;
 }
 
+static bool profile_valid(struct app_profile *profile)
+{
+	if (!profile) {
+		return false;
+	}
+
+	if (profile->allow_su) {
+		if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool ksu_set_app_profile(struct app_profile *profile, bool persist)
 {
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 	bool result = false;
+
+	if (!profile_valid(profile)) {
+		pr_err("Failed to set app profile: invalid profile!\n");
+		return false;
+	}
 
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
