@@ -21,6 +21,7 @@
 #define FILE_FORMAT_VERSION 3 // u32
 
 #define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
+#define KSU_DEFAULT_SELINUX_DOMAIN "u:r:su:s0"
 
 static DEFINE_MUTEX(allowlist_mutex);
 
@@ -37,7 +38,7 @@ static void init_default_profiles()
 	memset(&default_root_profile.capabilities, 0xff,
 	       sizeof(default_root_profile.capabilities));
 	default_root_profile.namespaces = 0;
-	strcpy(default_root_profile.selinux_domain, "u:r:su:s0");
+	strcpy(default_root_profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN);
 
 	// This means that we will umount modules by default!
 	default_non_root_profile.umount_modules = true;
@@ -77,7 +78,7 @@ static void ksu_grant_root_to_shell()
 		.current_uid = 2000,
 	};
 	strcpy(profile.key, "com.android.shell");
-	strcpy(profile.rp_config.profile.selinux_domain, "u:r:su:s0");
+	strcpy(profile.rp_config.profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN);
 	ksu_set_app_profile(&profile, false);
 }
 #endif
