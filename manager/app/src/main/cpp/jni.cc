@@ -157,7 +157,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetBooleanField(obj, nonRootUseDefaultField, true);
 
         jobject capList = env->GetObjectField(obj, capabilitiesField);
-        int DEFAULT_CAPS[] = {CAP_DAC_READ_SEARCH };
+        int DEFAULT_CAPS[] = {CAP_DAC_READ_SEARCH};
 
         for (auto i: DEFAULT_CAPS) {
             addIntToList(env, capList, i);
@@ -179,8 +179,12 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetIntField(obj, gidField, profile.rp_config.profile.gid);
 
         jobject groupList = env->GetObjectField(obj, groupsField);
-        fillIntArray(env, groupList, profile.rp_config.profile.groups,
-                     profile.rp_config.profile.groups_count);
+        int groupCount = profile.rp_config.profile.groups_count;
+        if (groupCount > KSU_MAX_GROUPS) {
+            LOGD("kernel group count too large: %d???", groupCount);
+            groupCount = KSU_MAX_GROUPS;
+        }
+        fillIntArray(env, groupList, profile.rp_config.profile.groups, groupCount);
 
         jobject capList = env->GetObjectField(obj, capabilitiesField);
         for (int i = 0; i <= CAP_LAST_CAP; i++) {
@@ -267,6 +271,10 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
         p.rp_config.profile.gid = gid;
 
         int groups_count = getListSize(env, groups);
+        if (groups_count > KSU_MAX_GROUPS) {
+            LOGD("groups count too large: %d", groups_count);
+            return false;
+        }
         p.rp_config.profile.groups_count = groups_count;
         fillArrayWithList(env, groups, p.rp_config.profile.groups, groups_count);
 
