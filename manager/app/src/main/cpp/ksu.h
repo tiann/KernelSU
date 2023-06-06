@@ -17,7 +17,7 @@ bool uid_should_umount(int uid);
 
 bool is_safe_mode();
 
-#define KSU_APP_PROFILE_VER 1
+#define KSU_APP_PROFILE_VER 2
 #define KSU_MAX_PACKAGE_NAME 256
 // NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
 #define KSU_MAX_GROUPS 32
@@ -29,8 +29,8 @@ struct root_profile {
     int32_t uid;
     int32_t gid;
 
-    int32_t groups[KSU_MAX_GROUPS];
     int32_t groups_count;
+    int32_t groups[KSU_MAX_GROUPS];
 
     // kernel_cap_t is u32[2] for capabilities v3
     struct {

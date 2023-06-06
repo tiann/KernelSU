@@ -14,7 +14,8 @@ object Natives {
     // 10915: allowlist breaking change, add app profile
     // 10931: app profile struct add 'version' field
     // 10946: add capabilities
-    const val MINIMAL_SUPPORTED_KERNEL = 10946
+    // 10977: change groups_count and groups to avoid overflow write
+    const val MINIMAL_SUPPORTED_KERNEL = 10977
 
     init {
         System.loadLibrary("kernelsu")
