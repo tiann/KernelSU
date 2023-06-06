@@ -154,7 +154,7 @@ private fun AppProfileInner(
                     var mode by remember {
                         mutableStateOf(initialMode)
                     }
-                    ProfileBox(mode, true) {
+                    ProfileBox(mode, false) {
                         // template mode shouldn't change profile here!
                         if (it == Mode.Default || it == Mode.Custom) {
                             onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
