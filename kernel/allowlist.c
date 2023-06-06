@@ -37,7 +37,7 @@ static void init_default_profiles()
 	memset(&default_root_profile.capabilities, 0xff,
 	       sizeof(default_root_profile.capabilities));
 	default_root_profile.namespaces = 0;
-	strcpy(default_root_profile.selinux_domain, "su");
+	strcpy(default_root_profile.selinux_domain, "u:r:su:s0");
 
 	// This means that we will umount modules by default!
 	default_non_root_profile.umount_modules = true;
@@ -112,7 +112,12 @@ static bool profile_valid(struct app_profile *profile)
 		if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
 			return false;
 		}
+
+		if (strlen(profile->rp_config.profile.selinux_domain) == 0) {
+			return false;
+		}
 	}
+
 	return true;
 }
 

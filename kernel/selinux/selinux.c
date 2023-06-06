@@ -39,9 +39,9 @@ static int transive_to_domain(const char *domain)
 	return error;
 }
 
-void setup_selinux()
+void setup_selinux(const char *domain)
 {
-	if (transive_to_domain(KERNEL_SU_DOMAIN)) {
+	if (transive_to_domain(domain)) {
 		pr_err("transive domain failed.");
 		return;
 	}
@@ -88,7 +88,8 @@ bool getenforce()
 #endif
 }
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)) && !defined(KSU_COMPAT_HAS_CURRENT_SID)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)) &&                         \
+	!defined(KSU_COMPAT_HAS_CURRENT_SID)
 /*
  * get the subjective security ID of the current task
  */

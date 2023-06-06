@@ -135,7 +135,7 @@ void escape_to_root(void)
 
 	setup_groups(profile, cred);
 
-	setup_selinux();
+	setup_selinux(profile->selinux_domain);
 }
 
 int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
