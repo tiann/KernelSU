@@ -162,10 +162,18 @@ fun RootProfileConfig(
         }
 
         ListItem(headlineContent = {
+            val keyboardController = LocalSoftwareKeyboardController.current
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("SELinux context") },
                 value = profile.context,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Ascii,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = {
+                    keyboardController?.hide()
+                }),
                 onValueChange = {
                     onProfileChange(profile.copy(context = it, rootUseDefault = false))
                 }

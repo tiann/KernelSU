@@ -87,7 +87,7 @@ object Natives {
         val gid: Int = 0,
         val groups: List<Int> = mutableListOf(),
         val capabilities: List<Int> = mutableListOf(),
-        val context: String = "su",
+        val context: String = "u:r:su:s0",
         val namespace: Int = Namespace.Inherited.ordinal,
 
         val nonRootUseDefault: Boolean = true,
