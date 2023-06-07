@@ -65,7 +65,7 @@
     <string name="profile_namespace_inherited">Inherited</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_individual">Individual</string>
-    <string name="profile_umount_modules">Umoun modules</string>
+    <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
     <string name="require_kernel_version">The current kernel version %d is too low for the manager to function properly. Please upgrade to version %d or higher!</string>
     <string name="settings_umount_modules_default">Umount modules by default</string>
