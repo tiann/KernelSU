@@ -105,11 +105,11 @@
         "devices": "Mi 8 (dipper) for LineageOS"
     },
     {
-        "maintainer": "WeeAris",
-        "maintainer_link": "https://github.com/WeeAris",
-        "kernel_name": "Realking_su_xiaomi_sm8250",
-        "kernel_link": "https://github.com/WeeAris/Realking_su_xiaomi_sm8250",
-        "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), repo for AOSP only."
+        "maintainer": "Rohail33",
+        "maintainer_link": "https://github.com/Rohail33",
+        "kernel_name": "RealKing Kernel",
+        "kernel_link": "https://github.com/Rohail33/Realking_kernel_sm8250",
+        "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
     },
     {
         "maintainer": "lateautumn233",
