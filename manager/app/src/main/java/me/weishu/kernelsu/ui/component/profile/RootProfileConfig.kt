@@ -330,6 +330,10 @@ private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
                 keyboardController?.hide()
             }),
             onValueChange = {
+                if (it.isEmpty()) {
+                    onUidChange(0)
+                    return@OutlinedTextField
+                }
                 val valid = isTextValidUid(it)
 
                 val targetUid = if (valid) it.toInt() else lastValidUid
