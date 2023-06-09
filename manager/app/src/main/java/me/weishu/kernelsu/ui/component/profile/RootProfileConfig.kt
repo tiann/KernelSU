@@ -195,6 +195,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         val options = groups.map { value ->
             ListOption(
                 titleText = value.display,
+                subtitleText = value.desc,
                 selected = selected.contains(value),
             )
         }
@@ -257,6 +258,7 @@ fun CapsPanel(
         val options = caps.map { value ->
             ListOption(
                 titleText = value.display,
+                subtitleText = value.desc,
                 selected = selected.contains(value),
             )
         }
