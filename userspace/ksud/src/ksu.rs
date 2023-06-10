@@ -75,8 +75,21 @@ pub fn root_shell() -> Result<()> {
 #[cfg(unix)]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
-    let args: Vec<String> = std::env::args().collect();
-    let program = args[0].clone();
+    let env_args: Vec<String> = std::env::args().collect();
+    let program = env_args[0].clone();
+    let args = env_args
+        .iter()
+        .position(|arg| arg == "-c")
+        .map(|i| {
+            let rest = env_args[i + 1..].to_vec();
+            let mut new_args = env_args[..i].to_vec();
+            new_args.push("-c".to_string());
+            if !rest.is_empty() {
+                new_args.push(rest.join(" "));
+            }
+            new_args
+        })
+        .unwrap_or_else(|| env_args.clone());
 
     let mut opts = Options::new();
     opts.optopt(
