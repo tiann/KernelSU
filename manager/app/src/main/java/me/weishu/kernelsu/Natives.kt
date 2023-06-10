@@ -14,7 +14,8 @@ object Natives {
     // 10915: allowlist breaking change, add app profile
     // 10931: app profile struct add 'version' field
     // 10946: add capabilities
-    const val MINIMAL_SUPPORTED_KERNEL = 10946
+    // 10977: change groups_count and groups to avoid overflow write
+    const val MINIMAL_SUPPORTED_KERNEL = 10977
 
     init {
         System.loadLibrary("kernelsu")
@@ -87,7 +88,7 @@ object Natives {
         val gid: Int = 0,
         val groups: List<Int> = mutableListOf(),
         val capabilities: List<Int> = mutableListOf(),
-        val context: String = "su",
+        val context: String = "u:r:su:s0",
         val namespace: Int = Namespace.Inherited.ordinal,
 
         val nonRootUseDefault: Boolean = true,

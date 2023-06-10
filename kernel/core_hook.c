@@ -67,7 +67,8 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
 		return;
 	}
 
-	for (int i = 0; i < ngroups; i++) {
+	int i;
+	for (i = 0; i < ngroups; i++) {
 		gid_t gid = profile->groups[i];
 		kgid_t kgid = make_kgid(current_user_ns(), gid);
 		if (!gid_valid(kgid)) {
@@ -75,7 +76,11 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
 			put_group_info(group_info);
 			return;
 		}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
 		group_info->gid[i] = kgid;
+#else
+		GROUP_AT(group_info, i) = kgid;
+#endif
 	}
 
 	groups_sort(group_info);
@@ -135,7 +140,7 @@ void escape_to_root(void)
 
 	setup_groups(profile, cred);
 
-	setup_selinux();
+	setup_selinux(profile->selinux_domain);
 }
 
 int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
