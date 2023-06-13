@@ -56,7 +56,7 @@
     <string name="home_support_title">Support Us</string>
     <string name="home_support_content">KernelSU is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
-    <string name="profile" translatable="false">App profile</string>
+    <string name="profile" translatable="false">App Profile</string>
     <string name="profile_default">Default</string>
     <string name="profile_template">Template</string>
     <string name="profile_custom">Custom</string>
