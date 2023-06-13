@@ -24,7 +24,7 @@
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
 
-    <string name="module">Modul</string>
+    <string name="module">Module</string>
     <string name="uninstall">Dezinstalează</string>
     <string name="module_install">Instalează</string>
     <string name="install">Instalează</string>
@@ -63,6 +63,9 @@
     <string name="profile_namespace_inherited">Moștenit</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_groups">Grupuri</string>
+    <string name="profile_capabilities">Capabilități</string>
+    <string name="profile_selinux_context">Context SELinux</string>
     <string name="profile_umount_modules">Module u-montate</string>
     <string name="failed_to_update_app_profile">Nu s-a putut actualiza profilul aplicației pentru %s</string>
     <string name="require_kernel_version">Versiunea actuală a nucleului %d este prea mică pentru ca managerul să funcționeze corect. Actualizează la versiunea %d sau o versiune superioară!</string>
