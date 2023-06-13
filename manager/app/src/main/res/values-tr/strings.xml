@@ -15,8 +15,8 @@
 
     <string name="home_selinux_status">SELinux Durumu</string>
     <string name="selinux_status_disabled">Devre dışı</string>
-    <string name="selinux_status_enforcing">Zorunlu</string>
-    <string name="selinux_status_permissive">Serbest</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Bilinmiyor</string>
     <string name="superuser">Süper kullanıcı</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
@@ -64,4 +64,9 @@
     <string name="profile_namespace_global">Küresel</string>
     <string name="profile_namespace_individual">Bireysel</string>
     <string name="profile_umount_modules">Modüllerin bağlantısını kes</string>
+    <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
+    <string name="require_kernel_version">Mevcut kernel versiyonu %d yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya yukarısına yükseltin!</string>
+    <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kesin</string>
+    <string name="settings_umount_modules_default_summary">Uygulama profillerinde \"Modüllerin bağlantısını kesme\" için genel varsayılan değer. Etkinleştirilirse, profil ayarı olmayan uygulamalar için sistemdeki tüm modül değişikliklerini kaldıracaktır.</string>
+    <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen tüm dosyaları geri yüklemesine izin verecektir.</string>
 </resources>
