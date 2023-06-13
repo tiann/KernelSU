@@ -65,6 +65,9 @@
     <string name="profile_namespace_inherited">Overgenomen</string>
     <string name="profile_namespace_global">Globaal</string>
     <string name="profile_namespace_individual">Individuëel</string>
+    <string name="profile_groups">Groepen</string>
+    <string name="profile_capabilities">Mogelijkheden</string>
+    <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Ontkoppel modules</string>
     <string name="failed_to_update_app_profile">Mislukt om App Profiel te updaten voor %s</string>
     <string name="require_kernel_version">De bestaande kernel versie %d is te laag voor de manager om goed te werken. Upgrade best tot versie %d of hoger!</string>
