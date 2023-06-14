@@ -63,6 +63,9 @@
     <string name="profile_namespace_inherited">Kalıtsal</string>
     <string name="profile_namespace_global">Küresel</string>
     <string name="profile_namespace_individual">Bireysel</string>
+    <string name="profile_groups">Gruplar</string>
+    <string name="profile_capabilities">Yetkiler</string>
+    <string name="profile_selinux_context">SELinux içeriği</string>
     <string name="profile_umount_modules">Modüllerin bağlantısını kes</string>
     <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
     <string name="require_kernel_version">Mevcut kernel versiyonu %d yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya yukarısına yükseltin!</string>
