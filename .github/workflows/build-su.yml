@@ -43,6 +43,7 @@ jobs:
       if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
 
     - name: Setup Telegram Bot Server
+      id: setup-bot-server
       env:
         API_ID: ${{ secrets.API_ID }}
         API_HASH: ${{ secrets.API_HASH }}
@@ -63,10 +64,11 @@ jobs:
         COMMIT_URL: ${{ github.event.head_commit.url }}
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         TITLE: SU
+        API_SERVER_URL: ${{ steps.setup-bot-server.outputs.server }}
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
           export VERSION=$(git rev-list --count HEAD)
-          pip3 install python-telegram-bot
+          pip3 install python-telegram-bot validators
           mv ./userspace/su/libs/arm64-v8a/su su-arm64
           mv ./userspace/su/libs/x86_64/su su-x86_64
           python3 scripts/ksubot.py su-arm64 su-x86_64

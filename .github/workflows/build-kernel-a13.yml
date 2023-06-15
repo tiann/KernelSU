@@ -85,7 +85,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
-          pip3 install python-telegram-bot
+          pip3 install python-telegram-bot validators
 
       - name: Set boot sign key
         env:
@@ -99,6 +99,7 @@ jobs:
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
 
       - name: Setup Telegram Bot Server
+        id: setup-bot-server
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}
@@ -109,6 +110,8 @@ jobs:
           api_hash: ${{ env.API_HASH }}
 
       - name: Build boot images
+        env:
+          API_SERVER_URL: ${{ steps.setup-bot-server.outputs.server }}
         run: |
           export AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
           export GZIP=$GITHUB_WORKSPACE/build-tools/path/linux-x86/gzip

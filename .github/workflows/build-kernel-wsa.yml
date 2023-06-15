@@ -127,6 +127,7 @@ jobs:
           path: "${{ env.file_path }}"
 
       - name: Setup Telegram Bot Server
+        id: setup-bot-server
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}
@@ -145,7 +146,8 @@ jobs:
           MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}    
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          API_SERVER_URL: ${{ steps.setup-bot-server.outputs.server }}
         run: |
           TITLE=kernel-${{ matrix.arch }}-WSA-${{ matrix.version }}
           echo "[+] title: $TITLE"
@@ -156,6 +158,6 @@ jobs:
           echo "[+] Image to upload"
           ls -l "${{ env.file_path }}.gz"
           if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
-            pip3 install python-telegram-bot
+            pip3 install python-telegram-bot validators
             python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
           fi

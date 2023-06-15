@@ -1,6 +1,8 @@
 import os
 import sys
 import asyncio
+import validators
+from validators import ValidationFailure
 import telegram
 from telegram import helpers
 
@@ -14,6 +16,7 @@ COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 RUN_URL = os.environ.get("RUN_URL")
 TITLE = os.environ.get("TITLE")
 VERSION = os.environ.get("VERSION")
+API_SERVER_URL = os.environ.get("API_SERVER_URL")
 MSG_TEMPLATE = """
 *{title}*
 \#ci\_{version}
@@ -36,6 +39,15 @@ def get_caption():
     if len(msg) > telegram.constants.MessageLimit.CAPTION_LENGTH:
         return COMMIT_URL
     return msg
+
+
+def is_string_an_url(url_string: str) -> bool:
+    result = validators.url(url_string)
+
+    if isinstance(result, ValidationFailure):
+        return False
+
+    return result
 
 
 def check_environ():
@@ -63,13 +75,17 @@ def check_environ():
     if VERSION is None:
         print("[-] Invalid VERSION")
         exit(1)
+    if not is_string_an_url(API_SERVER_URL):
+        print("[-] API_SERVER_URL is not a url", flush=True)
+        API_SERVER_URL = 'http://api.telegram.org:8088'
+        print(f"[+] Fallback to {API_SERVER_URL}", flush=True)
 
 
 async def main():
     print("[+] Uploading to telegram")
     check_environ()
     print("[+] Files:", sys.argv[1:])
-    bot = telegram.Bot(BOT_TOKEN, base_url='http://127.0.0.1:8088/bot')
+    bot = telegram.Bot(BOT_TOKEN, base_url=API_SERVER_URL + '/bot')
     files = []
     paths = sys.argv[1:]
     caption = get_caption()
