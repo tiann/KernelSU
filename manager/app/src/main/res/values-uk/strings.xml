@@ -65,6 +65,9 @@
     <string name="profile_namespace_inherited">Наслідуваний</string>
     <string name="profile_namespace_global">Глобальний</string>
     <string name="profile_namespace_individual">Індивідуальний</string>
+    <string name="profile_groups">Групи</string>
+    <string name="profile_capabilities">Можливості</string>
+    <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Розмонтувати модулі</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
     <string name="require_kernel_version">Поточна версія ядра %d занизька для належної роботи менджера. Будь ласка, оновіть до версії %d або вище!</string>

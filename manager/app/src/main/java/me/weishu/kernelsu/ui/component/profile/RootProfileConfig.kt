@@ -176,7 +176,7 @@ fun RootProfileConfig(
             val keyboardController = LocalSoftwareKeyboardController.current
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("SELinux context") },
+                label = { Text(text = stringResource(R.string.profile_selinux_context)) },
                 value = profile.context,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Ascii,
@@ -219,7 +219,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                 showDialog = false
             }),
             header = Header.Default(
-                title = "Groups",
+                title = stringResource(R.string.profile_groups),
             ),
             selection = ListSelection.Multiple(
                 showCheckBoxes = true,
@@ -244,7 +244,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         }) {
 
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("groups")
+            Text(stringResource(R.string.profile_groups))
             FlowRow {
                 selected.forEach { group ->
                     AssistChip(
@@ -285,7 +285,7 @@ fun CapsPanel(
                 showDialog = false
             }),
             header = Header.Default(
-                title = "Capabilities",
+                title = stringResource(R.string.profile_capabilities),
             ),
             selection = ListSelection.Multiple(
                 showCheckBoxes = true,
@@ -309,7 +309,7 @@ fun CapsPanel(
         }) {
 
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Capabilities")
+            Text(stringResource(R.string.profile_capabilities))
             FlowRow {
                 selected.forEach { group ->
                     AssistChip(

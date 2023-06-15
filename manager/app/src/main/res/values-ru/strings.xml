@@ -6,7 +6,7 @@
     <string name="home_click_to_install">Нажмите чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Суперпользователи: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string> <!--Don't translate this string!-->
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
@@ -20,7 +20,7 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Суперпользователь</string>
+    <string name="superuser">Superuser</string> <!--Don't translate this string!-->
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -56,7 +56,7 @@
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s<br/>Присоединяйтесь к нашему %2$s каналу]]></string>
-    <string name="profile">Профиль приложения</string>
+    <string name="profile" translatable="false">App Profile</string> <!--Don't translate this string!-->
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
     <string name="profile_custom">Пользовательский</string>
@@ -65,10 +65,13 @@
     <string name="profile_namespace_inherited">Унаследованный</string>
     <string name="profile_namespace_global">Глобальный</string>
     <string name="profile_namespace_individual">Индивидуальный</string>
+    <string name="profile_groups">Группы</string>
+    <string name="profile_capabilities">Возможности</string>
+    <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Размонтировать модули</string>
-    <string name="failed_to_update_app_profile">Не удалось обновить профиль приложения для %s</string>
+    <string name="failed_to_update_app_profile">Не удалось обновить App Profile для %s</string>
     <string name="require_kernel_version">Текущая версия ядра %d слишком низкая для правильной работы менеджера. Пожалуйста, обновитесь до версии %d или выше!</string>
     <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
-    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в профилях приложений. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан профиль.</string>
+    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые измененные модулями файлы для данного приложения.</string>
 </resources>
