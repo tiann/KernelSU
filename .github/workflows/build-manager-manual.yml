@@ -2,17 +2,6 @@ name: Build Manager Manual
 
 on: [workflow_dispatch]
 
-
-
-
-
-
-
-
-
-
-
-
 jobs:
   build-ksud:
     strategy:
@@ -101,26 +90,20 @@ jobs:
         with:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
+          
+      - name: Set DATE
+        run:  |
+          echo "DATE=$(date +'%y%m%d%H')" >> $GITHUB_ENV
 
-      - name: Setup mutex for uploading
-        uses: ben-z/gh-action-mutex@v1.0-alpha-7
-        if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
-
-      - name: Upload to telegram
-        if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
-        env:
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TITLE: Manager
-        run: |
-          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
-            export VERSION=$(git rev-list --count HEAD)
-            APK=$(find ./app/build/outputs/apk/release -name "*.apk")
-            pip3 install python-telegram-bot
-            python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
-          fi
+      - name: Create and upload release asset
+        uses: symbuzzer/fork-github-release@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ env.DATE }}
+          name: ${{ env.DATE }}
+          body: KernelSU Manager release
+          files: manager/app/build/outputs/apk/release/*.apk
+          gzip: false
+          draft: false
+          prerelease: false
+          allow_override: true
