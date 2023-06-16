@@ -76,11 +76,17 @@ jobs:
           echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
           echo "[+] Copy KernelSU driver to $KERNEL_ROOT/drivers"
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
+
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+
           echo "[+] Apply KernelSU patches"
           cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+
+          echo "[+] Patch script/setlocalversion"
+          sed -i 's/-dirty//g' $KERNEL_ROOT/scripts/setlocalversion
+
           echo "[+] KernelSU setup done."
           cd $GITHUB_WORKSPACE/KernelSU
           VERSION=$(($(git rev-list --count HEAD) + 10200))
