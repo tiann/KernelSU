@@ -66,4 +66,9 @@
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Personal</string>
     <string name="profile_umount_modules">Lepas modul</string>
+    <string name="failed_to_update_app_profile">Gagal memperbaharui App Profile untuk %s</string>
+    <string name="require_kernel_version">Versi kernel saat ini %d terlalu lawas agar manager berfungsi dengan baik. Update ke versi %d atau lebih tinggi!</string>
+    <string name="settings_umount_modules_default">Jangan muat modul secara default</string>
+    <string name="settings_umount_modules_default_summary">Nilai default global untuk \"Umount modules\"  di Profil Aplikasi. Jika diaktifkan, ini akan menghapus semua modifikasi modul pada sistem untuk aplikasi yang tidak memiliki Profil</string>
+    <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU memulihkan file-file yang dimodifikasi oleh modul untuk aplikasi ini..</string>
 </resources>
