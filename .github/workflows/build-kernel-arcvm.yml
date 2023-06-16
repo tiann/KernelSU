@@ -74,6 +74,17 @@ jobs:
           echo "VERSION: $VERSION"
           echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
 
+      - name: Disable compiler warnings
+        working-directory: kernel
+        run: |
+          makefiles="$(find . -type f -name Makefile | tr "\n" ' ') $(find . -type f -name Kbuild | tr "\n" ' ')"
+
+          for i in $makefiles; do
+            sed -i 's/-Werror=/-Wno-error=/g' "$i"
+            sed -i 's/-Werror/-w/g' "$i"
+            sed -i 's/-Wall/-w/g' "$i"
+          done
+
       - name: Build Kernel
         working-directory: kernel
         run: |
