@@ -1,4 +1,4 @@
-name: Build Manager
+name: Build Manager Manual
 
 on: [workflow_dispatch]
 
