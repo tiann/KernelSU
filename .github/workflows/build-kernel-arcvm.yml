@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       LTO: thin
-      DEFCONFIG: x86_64_arcvm_defconfig
       ROOT_DIR: /
       KERNEL_DIR: ${{ github.workspace }}/kernel
 
@@ -103,6 +102,7 @@ jobs:
         working-directory: kernel
         run: |
           set -a && . build.config.gki.x86_64; set +a
+          export DEFCONFIG=x86_64_arcvm_defconfig
 
           make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} mrproper
           make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} ${DEFCONFIG} < /dev/null
