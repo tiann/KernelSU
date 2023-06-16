@@ -32,6 +32,8 @@ jobs:
               libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip \
               rsync python3 device-tree-compiler
 
+          sudo ln -s --force python3 /usr/bin/python
+
           export LLVM_VERSION=12
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
