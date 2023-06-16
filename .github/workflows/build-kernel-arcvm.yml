@@ -29,6 +29,8 @@ jobs:
     env:
       LTO: thin
       DEFCONFIG: x86_64_arcvm_defconfig
+      ROOT_DIR: /
+      KERNEL_DIR: ${{ github.workspace }}/kernel
 
     steps:
       - name: Install Build Tools
