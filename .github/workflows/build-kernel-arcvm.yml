@@ -26,9 +26,11 @@ jobs:
       - name: Install Build Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg \
+          sudo apt-get install -y --no-install-recommends bc \
+              bison build-essential ca-certificates flex git gnupg \
               libelf-dev libssl-dev lsb-release software-properties-common wget \
-              libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip rsync
+              libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip \
+              rsync python3 device-tree-compiler
 
           export LLVM_VERSION=12
           wget https://apt.llvm.org/llvm.sh
@@ -88,24 +90,15 @@ jobs:
       - name: Build Kernel
         working-directory: kernel
         run: |
-          set -a
-          . build.config.gki.x86_64
-          OUT_DIR=${PWD}/output
-          set +a
-
-          mkdir -p ${OUT_DIR}/staging
-
+          set -a && . build.config.gki.x86_64; set +a
           echo "kernel_version=$(make kernelversion)" >> $GITHUB_ENV
 
           make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} mrproper
-          make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} ${DEFCONFIG}
+          make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} ${DEFCONFIG} < /dev/null
           scripts/config --file .config -e LTO_CLANG -d LTO_NONE -e LTO_CLANG_THIN -d LTO_CLANG_FULL -e THINLTO
           make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} bzImage modules prepare-objtool
 
-          make O=${OUT_DIR} -j$(nproc)
-          make O=${OUT_DIR} INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=${OUT_DIR}/staging modules_install
-
-          echo "file_path=kernel/arch/x86/boot/bzImage" >> $GITHUB_ENV
+          echo "file_path=${PWD}/arch/x86/boot/bzImage" >> $GITHUB_ENV
 
       - name: Upload kernel-ARCVM-x86_64-${{ env.kernel_version }}
         uses: actions/upload-artifact@v3
@@ -113,26 +106,25 @@ jobs:
           name: kernel-ARCVM-x86_64-${{ env.kernel_version }}
           path: "${{ env.file_path }}"
 
-      #- name: Post to Telegram
-      #  if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
-      #  env:
-      #    CHAT_ID: ${{ secrets.CHAT_ID }}
-      #    CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
-      #    BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      #    MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
-      #    COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-      #    COMMIT_URL: ${{ github.event.head_commit.url }}
-      #    RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      #  run: |
-      #    TITLE=kernel-x86_64-ARCVM-${{ env.kernel_version }}
-      #    echo "[+] title: $TITLE"
-      #    export TITLE
-      #    export VERSION="${{ env.kernelsu_version }}"
-      #    echo "[+] Compress images"
-      #    gzip -n -f -9 "${{ env.file_path }}"
-      #    echo "[+] Image to upload"
-      #    ls -l "${{ env.file_path }}.gz"
-      #    if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
-      #      pip3 install python-telegram-bot
-      #      python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
-      #    fi
+      - name: Post to Telegram
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE=kernel-x86_64-ARCVM-${{ env.kernel_version }}
+          echo "[+] title: $TITLE"
+          export TITLE
+          export VERSION="${{ env.kernelsu_version }}"
+          echo "[+] Compress images"
+          gzip -n -f -9 "${{ env.file_path }}"
+          echo "[+] Image to upload"
+          ls -l "${{ env.file_path }}.gz"
+          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            pip3 install python-telegram-bot
+            python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
