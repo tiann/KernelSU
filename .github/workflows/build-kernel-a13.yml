@@ -56,7 +56,6 @@ jobs:
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
-      deprecated: ${{ (matrix.version == '5.15' && matrix.sub_level == 41) }}
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
