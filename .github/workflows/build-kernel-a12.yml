@@ -35,14 +35,19 @@ jobs:
             deprecated: true
           - sub_level: 136
             os_patch_level: 2022-11
+            deprecated: false
           - sub_level: 149
             os_patch_level: 2023-01
+            deprecated: false
           - sub_level: 160
             os_patch_level: 2023-03
+            deprecated: false
           - sub_level: 168
             os_patch_level: 2023-04
+            deprecated: false
           - sub_level: 177
             os_patch_level: 2023-06
+            deprecated: false
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
