@@ -70,6 +70,6 @@
     <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
     <string name="require_kernel_version">Mevcut kernel versiyonu %d yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya yukarısına yükseltin!</string>
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kesin</string>
-    <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kesme\" seçeneği için genel varsayılan değer. Etkinleştirilirse, profil ayarı yapılmayan uygulamalar için modüllerin sistemde yaptığı tüm değişiklikleri kaldırılacaktır.</string>
-    <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen tüm dosyaların geri alınmasına izin verilecektir.</string>
+    <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kesme\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
+    <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi ile, bu uygulama için modüller tarafından değiştirilen tüm dosyaların KernelSU tarafından geri alınmasına izin verilecektir.</string>
 </resources>
