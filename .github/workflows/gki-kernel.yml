@@ -90,8 +90,8 @@ jobs:
           git clone https://gerrit.googlesource.com/git-repo
           mkdir android-kernel && cd android-kernel
           ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
-          (cd common; git show-branch remotes/aosp/${{ inputs.tag }})
-          if [ $? != 0 ]; then
+          git ls-remote https://android.googlesource.com/kernel/common ${{ inputs.tag }} | grep deprecated
+          if [ $? -eq 0 ]; then
             echo "Found deprecated branch: ${{ inputs.tag }}"
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' .repo/manifests/default.xml
             cat .repo/manifests/default.xml
