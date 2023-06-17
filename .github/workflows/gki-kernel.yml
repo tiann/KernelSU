@@ -91,16 +91,13 @@ jobs:
           fi
 
       - name: Setup kernel source
-        env:
-          IS_DEPRECATED: ${{ inputs.deprecated }}
-          KSU_TAG: ${{ inputs.tag }}
         run: |
           cd $GITHUB_WORKSPACE
           git clone https://gerrit.googlesource.com/git-repo
           mkdir android-kernel && cd android-kernel
           ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
-          if [ "$IS_DEPRECATED" = "true" ]; then
-            echo "Deprecated branch: ${{ inputs.tag }}"
+          if [ "${{ inputs.deprecated }}" = "true" ]; then
+            echo "Found deprecated branch: ${{ inputs.tag }}"
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' .repo/manifests/default.xml
             cat .repo/manifests/default.xml
           fi
