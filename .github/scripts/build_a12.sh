@@ -12,12 +12,13 @@ build_from_image() {
 
 	echo '[+] Download prebuilt ramdisk'
     GKI_URL=https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-"${PATCH_LEVEL}"_r1.zip
+    FALLBACK_URL=https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-2023-01_r1.zip
     status=$(curl -sL -w "%{http_code}" "$GKI_URL" -o /dev/null)
     if [ "$status" = "200" ]; then
-	    curl -Lo gki-kernel.zip "$GKI_URL"
+        curl -Lo gki-kernel.zip "$GKI_URL"
     else
-	    echo "[+] $GKI_URL not found, using fallback"
-        curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-2023-01_r1.zip
+        echo "[+] $GKI_URL not found, using $FALLBACK_URL"
+        curl -Lo gki-kernel.zip "$FALLBACK_URL"
     fi
 	unzip gki-kernel.zip && rm gki-kernel.zip
 
