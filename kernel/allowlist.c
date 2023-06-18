@@ -139,13 +139,19 @@ exit:
 	return found;
 }
 
+static inline bool forbid_system_uid(uid_t uid) {
+	#define SHELL_UID 2000
+	#define SYSTEM_UID 1000
+	return uid < SHELL_UID && uid != SYSTEM_UID;
+}
+
 static bool profile_valid(struct app_profile *profile)
 {
 	if (!profile) {
 		return false;
 	}
 
-	if (profile->current_uid < 2000) {
+	if (forbid_system_uid(profile->current_uid)) {
 		pr_err("uid lower than 2000 is unsupported: %d\n", profile->current_uid);
 		return false;
 	}
@@ -263,7 +269,7 @@ bool __ksu_is_allow_uid(uid_t uid)
 		return is_ksu_domain();
 	}
 
-	if (uid < 2000) {
+	if (forbid_system_uid(uid)) {
 		// do not bother going through the list if it's system
 		return false;
 	}
