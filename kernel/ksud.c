@@ -108,6 +108,40 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
 /*
  * count() counts the number of strings in array ARGV.
  */
+
+ /*
+ * Not all kernel support __maybe_unused,
+ * Test in 4.4.x ~ 4.9.x when use GCC.
+ */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) &&                           \
+	LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+static int count(struct user_arg_ptr argv, int max)
+{
+	int i = 0;
+
+	if (argv.ptr.native != NULL) {
+		for (;;) {
+			const char __user *p = get_user_arg_ptr(argv, i);
+
+			if (!p)
+				break;
+
+			if (IS_ERR(p))
+				return -EFAULT;
+
+			if (i >= max)
+				return -E2BIG;
+			++i;
+
+			if (fatal_signal_pending(current))
+				return -ERESTARTNOHAND;
+			cond_resched();
+		}
+	}
+	return i;
+}
+#else
 static int count(struct user_arg_ptr argv, int max) __maybe_unused
 {
 	int i = 0;
@@ -133,6 +167,7 @@ static int count(struct user_arg_ptr argv, int max) __maybe_unused
 	}
 	return i;
 }
+#endif
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     void *argv, void *envp, int *flags)
