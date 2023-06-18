@@ -11,7 +11,7 @@ build_from_image() {
 	echo "[+] patch level: $PATCH_LEVEL"
 
 	echo '[+] Download prebuilt ramdisk'
-	curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-"${PATCH_LEVEL}"_r1.zip
+	curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-"${PATCH_LEVEL}"_r1.zip || curl -Lo gki-kernel.zip https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-2023-01_r1.zip
 	unzip gki-kernel.zip && rm gki-kernel.zip
 
 	echo '[+] Unpack prebuilt boot.img'
