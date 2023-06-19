@@ -39,39 +39,51 @@ bool become_manager(char *pkg)
 
 	files_table = files_fdtable(current->files);
 
+	int pkg_len = strlen(pkg);
 	// todo: use iterate_fd
-	while (files_table->fd[i] != NULL) {
+	for (i = 0; files_table->fd[i] != NULL; i++) {
 		files_path = files_table->fd[i]->f_path;
 		if (!d_is_reg(files_path.dentry)) {
-			i++;
 			continue;
 		}
 		cwd = d_path(&files_path, buf, PATH_MAX);
-		if (startswith(cwd, "/data/app/") == 0 &&
-		    endswith(cwd, "/base.apk") == 0) {
-			// we have found the apk!
-			pr_info("found apk: %s", cwd);
-			if (!strstr(cwd, pkg)) {
-				pr_info("apk path not match package name!\n");
-				i++;
-				continue;
-			}
-			if (is_manager_apk(cwd) == 0) {
-				// check passed
-				uid_t uid = current_uid().val;
-				pr_info("manager uid: %d\n", uid);
-
-				ksu_set_manager_uid(uid);
-
-				result = true;
-				goto clean;
-			} else {
-				pr_info("manager signature invalid!");
-			}
-
-			break;
+		if (startswith(cwd, "/data/app/") != 0 ||
+		    endswith(cwd, "/base.apk") != 0) {
+			continue;
 		}
-		i++;
+		// we have found the apk!
+		pr_info("found apk: %s", cwd);
+		char *pkg_index = strstr(cwd, pkg);
+		if (!pkg_index) {
+			pr_info("apk path not match package name!\n");
+			continue;
+		}
+		char *next_char = pkg_index + pkg_len;
+		// because we ensure the cwd must startswith `/data/app` and endswith `base.apk`
+		// we don't need to check if the pointer is out of bounds
+		if (*next_char != '-') {
+			// from android 8.1: http://aospxref.com/android-8.1.0_r81/xref/frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java#17612
+			// to android 13: http://aospxref.com/android-13.0.0_r3/xref/frameworks/base/services/core/java/com/android/server/pm/PackageManagerServiceUtils.java#1208
+			// /data/app/~~[randomStringA]/[packageName]-[randomStringB]
+			// the previous char must be `/` and the next char must be `-`
+			// because we use strstr instead of equals, this is a strong verfication.
+			pr_info("invalid pkg: %s\n", pkg);
+			continue;
+		}
+		if (is_manager_apk(cwd) == 0) {
+			// check passed
+			uid_t uid = current_uid().val;
+			pr_info("manager uid: %d\n", uid);
+
+			ksu_set_manager_uid(uid);
+
+			result = true;
+			goto clean;
+		} else {
+			pr_info("manager signature invalid!");
+		}
+
+		break;
 	}
 
 clean:
