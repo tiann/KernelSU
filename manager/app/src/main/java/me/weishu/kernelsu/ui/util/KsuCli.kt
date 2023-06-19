@@ -141,3 +141,13 @@ fun hasMagisk(): Boolean {
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }
+
+fun isSepolicyValid(rules: String?): Boolean {
+    if (rules == null) {
+        return true
+    }
+    val shell = getRootShell()
+    val result =
+        shell.newJob().add("ksud sepolicy check '$rules'").to(ArrayList(), null).exec()
+    return result.isSuccess
+}
