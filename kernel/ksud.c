@@ -110,13 +110,13 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
  */
 
  /*
- * Not all kernel support __maybe_unused,
- * Test in 4.4.x ~ 4.9.x when use GCC.
+ * Make sure old GCC compiler can use __maybe_unused,
+ * Test passed in 4.4.x ~ 4.9.x when use GCC.
  */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) &&                           \
 	LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-static int count(struct user_arg_ptr argv, int max)
+static int __maybe_unused count(struct user_arg_ptr argv, int max)
 {
 	int i = 0;
 
