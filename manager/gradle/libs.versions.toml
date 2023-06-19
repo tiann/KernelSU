@@ -8,7 +8,7 @@ accompanist = "0.30.0"
 navigation = "2.5.3"
 compose-destination = "1.9.42-beta"
 libsu = "5.0.5"
-sheets-compose-dialogs = "1.1.1"
+sheets-compose-dialogs = "1.2.0"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -55,3 +55,4 @@ compose-destinations-ksp = { group = "io.github.raamcosta.compose-destinations",
 
 sheet-compose-dialogs-core = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "core", version.ref = "sheets-compose-dialogs"}
 sheet-compose-dialogs-list = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "list", version.ref = "sheets-compose-dialogs"}
+sheet-compose-dialogs-input = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "input", version.ref = "sheets-compose-dialogs"}

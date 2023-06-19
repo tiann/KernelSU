@@ -8,13 +8,11 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,29 +23,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeker.sheets.core.utils.TestTags
-import com.maxkeppeker.sheets.core.views.IconComponent
+import com.maxkeppeler.sheets.input.InputDialog
+import com.maxkeppeler.sheets.input.models.InputHeader
+import com.maxkeppeler.sheets.input.models.InputSelection
+import com.maxkeppeler.sheets.input.models.InputTextField
+import com.maxkeppeler.sheets.input.models.InputTextFieldType
+import com.maxkeppeler.sheets.input.models.ValidationResult
 import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
@@ -55,8 +53,9 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.ui.util.isSepolicyValid
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootProfileConfig(
     modifier: Modifier = Modifier,
@@ -172,25 +171,14 @@ fun RootProfileConfig(
             )
         }
 
-        ListItem(headlineContent = {
-            val keyboardController = LocalSoftwareKeyboardController.current
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = stringResource(R.string.profile_selinux_context)) },
-                value = profile.context,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Ascii,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(onDone = {
-                    keyboardController?.hide()
-                }),
-                onValueChange = {
-                    onProfileChange(profile.copy(context = it, rootUseDefault = false))
-                }
+        SELinuxPanel(profile = profile, onSELinuxChange = { domain, rules ->
+            onProfileChange(
+                profile.copy(
+                    context = domain,
+                    rootUseDefault = false
+                )
             )
         })
-
 
     }
 }
@@ -364,6 +352,89 @@ private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
 
                 isError = !valid
             }
+        )
+    })
+}
+
+@Composable
+private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: String, rules: String) -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    if (showDialog) {
+        var domain by remember { mutableStateOf(profile.context) }
+        var rules by remember { mutableStateOf("") }
+
+        val inputOptions = listOf(
+            InputTextField(
+                text = domain,
+                header = InputHeader(
+                    title = stringResource(id = R.string.profile_selinux_domain),
+                ),
+                type = InputTextFieldType.OUTLINED,
+                required = true,
+                resultListener = {
+                    domain = it ?: ""
+                },
+                validationListener = { value ->
+                    // value can be a-zA-Z0-9_
+                    val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
+                    if (value?.matches(regex) == true) ValidationResult.Valid
+                    else ValidationResult.Invalid("Domain must be valid sepolicy")
+                }
+            ),
+            InputTextField(
+                text = rules,
+                header = InputHeader(
+                    title = stringResource(id = R.string.profile_selinux_rules),
+                ),
+                type = InputTextFieldType.OUTLINED,
+                singleLine = false,
+                resultListener = {
+                    rules = it ?: ""
+                },
+                validationListener = { value ->
+                    if (isSepolicyValid(value)) ValidationResult.Valid
+                    else ValidationResult.Invalid("Rules must be valid sepolicy")
+                }
+            )
+        )
+
+        InputDialog(
+            state = rememberUseCaseState(visible = true,
+                onFinishedRequest = {
+                    onSELinuxChange(domain, rules)
+                },
+                onCloseRequest = {
+                    showDialog = false
+                }),
+            header = Header.Default(
+                title = stringResource(R.string.profile_selinux_context),
+            ),
+            selection = InputSelection(
+                input = inputOptions,
+                onPositiveClick = { result ->
+                    // Handle selection
+                },
+            )
+        )
+    }
+
+    ListItem(headlineContent = {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    showDialog = true
+                },
+            enabled = false,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            label = { Text(text = stringResource(R.string.profile_selinux_context)) },
+            value = profile.context,
+            onValueChange = { },
         )
     })
 }

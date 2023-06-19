@@ -74,4 +74,6 @@
     <string name="settings_umount_modules_default">Umount modules by default</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profiles. If enabled, it will remove all module modifications to the system for applications that do not have a Profile set.</string>
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU to restore any modified files by the modules for this application.</string>
+    <string name="profile_selinux_domain">Domain</string>
+    <string name="profile_selinux_rules">Rules</string>
 </resources>
