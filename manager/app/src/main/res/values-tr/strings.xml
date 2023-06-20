@@ -72,4 +72,6 @@
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kesin</string>
     <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kesme\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi ile, bu uygulama için modüller tarafından değiştirilen tüm dosyaların KernelSU tarafından geri alınmasına izin verilecektir.</string>
+    <string name="profile_selinux_domain">Etki alanı</string>
+    <string name="profile_selinux_rules">Kurallar</string>
 </resources>
