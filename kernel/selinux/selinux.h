@@ -8,6 +8,9 @@
 #define KSU_COMPAT_USE_SELINUX_STATE
 #endif
 
+#define KERNEL_SU_DOMAIN	"u:r:su:s0"
+#define INIT_DOMAIN		"u:r:init:s0"
+
 void setup_selinux(const char *);
 
 void setenforce(bool);
