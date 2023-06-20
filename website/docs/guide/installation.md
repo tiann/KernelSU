@@ -125,7 +125,7 @@ After flashing is complete, you should reboot your device:
 fastboot reboot
 ```
 
-## Patch boot.img manully
+## Patch boot.img manually
 
 For some devices, the boot.img format is not so common, such as not `lz4`, `gz` and uncompressed; the most typical is Pixel, its boot.img format is `lz4_legacy` compressed, ramdisk may be `gz` may also be `lz4_legacy` compression; at this time, if you directly flash the boot.img provided by KernelSU, the phone may not be able to boot; at this time, you can manually patch the boot.img to achieve.
 

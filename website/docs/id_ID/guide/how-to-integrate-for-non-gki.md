@@ -69,18 +69,24 @@ index ac59664eaecf..bdd585e1d2cc 100644
 @@ -1890,11 +1890,14 @@ static int __do_execve_file(int fd, struct filename *filename,
  	return retval;
  }
-
+ 
++extern bool ksu_execveat_hook __read_mostly;
 +extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 +			void *envp, int *flags);
++extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
++				 void *argv, void *envp, int *flags);
  static int do_execveat_common(int fd, struct filename *filename,
  			      struct user_arg_ptr argv,
  			      struct user_arg_ptr envp,
  			      int flags)
  {
-+	ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
++	if (unlikely(ksu_execveat_hook))
++		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
++	else
++		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
  	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
  }
-
+ 
 diff --git a/fs/open.c b/fs/open.c
 index 05036d819197..965b84d486b8 100644
 --- a/fs/open.c
@@ -88,7 +94,7 @@ index 05036d819197..965b84d486b8 100644
 @@ -348,6 +348,8 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
  	return ksys_fallocate(fd, mode, offset, len);
  }
-
+ 
 +extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 +			 int *flags);
  /*
@@ -109,14 +115,16 @@ index 650fc7e0f3a6..55be193913b6 100644
 @@ -434,10 +434,14 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
  }
  EXPORT_SYMBOL(kernel_read);
-
+ 
++extern bool ksu_vfs_read_hook __read_mostly;
 +extern int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 +			size_t *count_ptr, loff_t **pos);
  ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
  {
  	ssize_t ret;
-
-+	ksu_handle_vfs_read(&file, &buf, &count, &pos);
+ 
++	if (unlikely(ksu_vfs_read_hook))
++		ksu_handle_vfs_read(&file, &buf, &count, &pos);
 +
  	if (!(file->f_mode & FMODE_READ))
  		return -EBADF;
@@ -128,7 +136,7 @@ index 376543199b5a..82adcef03ecc 100644
 @@ -148,6 +148,8 @@ int vfs_statx_fd(unsigned int fd, struct kstat *stat,
  }
  EXPORT_SYMBOL(vfs_statx_fd);
-
+ 
 +extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
 +
  /**
@@ -137,7 +145,7 @@ index 376543199b5a..82adcef03ecc 100644
 @@ -170,6 +172,7 @@ int vfs_statx(int dfd, const char __user *filename, int flags,
  	int error = -EINVAL;
  	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_AUTOMOUNT;
-
+ 
 +	ksu_handle_stat(&dfd, &filename, &flags);
  	if ((flags & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
  		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
@@ -217,19 +225,22 @@ index 45306f9ef247..815091ebfca4 100755
 --- a/drivers/input/input.c
 +++ b/drivers/input/input.c
 @@ -367,10 +367,13 @@ static int input_get_disposition(struct input_dev *dev,
-        return disposition;
+ 	return disposition;
  }
-
+ 
++extern bool ksu_input_hook __read_mostly;
 +extern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);
 +
  static void input_handle_event(struct input_dev *dev,
-                               unsigned int type, unsigned int code, int value)
+ 			       unsigned int type, unsigned int code, int value)
  {
-        int disposition = input_get_disposition(dev, type, code, &value);
-+       ksu_handle_input_handle_event(&type, &code, &value);
-
-        if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
-                add_input_randomness(type, code, value);
+	int disposition = input_get_disposition(dev, type, code, &value);
++
++	if (unlikely(ksu_input_hook))
++		ksu_handle_input_handle_event(&type, &code, &value);
+ 
+ 	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
+ 		add_input_randomness(type, code, value);
 ```
 
 Terakhir, edit `KernelSU/kernel/ksu.c` dan beri komentar pada `enable_sucompat()` lalu build kernel Anda lagi, KernelSU akan bekerja dengan baik.

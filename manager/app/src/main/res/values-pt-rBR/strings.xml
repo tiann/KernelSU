@@ -55,16 +55,19 @@
     <string name="home_click_to_learn_kernelsu">Saiba como instalar o KernelSU e usar os módulos</string>
     <string name="home_support_title">Apoie-nos</string>
     <string name="home_support_content">O KernelSU é, e sempre será, gratuito e de código aberto. No entanto, você pode mostrar seu apoio fazendo uma doação.</string>
-    <string name="about_source_code"><![CDATA[Veja o código-fonte em %1$s<br/>Junte-se ao nosso canal do %2$s]]></string>
-    <string name="profile" translatable="false">Perfil do aplicativo</string>
+    <string name="about_source_code"><![CDATA[Veja o código-fonte no %1$s<br/>Junte-se ao nosso canal do %2$s]]></string>
+    <string name="profile" translatable="false">Perfil do Aplicativo</string>
     <string name="profile_default">Padrão</string>
     <string name="profile_template">Modelo</string>
     <string name="profile_custom">Personalizado</string>
     <string name="profile_name">Nome do perfil</string>
     <string name="profile_namespace">Montar namespace</string>
-    <string name="profile_namespace_inherited">incluído</string>
+    <string name="profile_namespace_inherited">Padrão</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_groups">Grupos</string>
+    <string name="profile_capabilities">Permissões</string>
+    <string name="profile_selinux_context">Contexto do SELinux</string>
     <string name="profile_umount_modules">Módulos não montados</string>
     <string name="failed_to_update_app_profile">Falha ao atualizar o perfil do aplicativo para %s</string>
     <string name="require_kernel_version">A versão atual do kernel %d é muito baixa para o gerenciador funcionar corretamente. Atualize para a versão %d ou superior!</string>

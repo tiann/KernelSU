@@ -42,12 +42,12 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-      - uses: ben-z/actions-comment-on-issue@1.0.2
+      - uses: Kernel-SU/actions-comment-on-issue@master
         if: ${{ steps.cpr.outputs.pull-request-number }}
         with:
           message: "Automatically created pull request: ${{ steps.cpr.outputs.pull-request-url }}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ben-z/actions-comment-on-issue@1.0.2
+      - uses: Kernel-SU/actions-comment-on-issue@master
         if: steps.handle-add-device.outputs.success != 'true'
         with:
           message: "Cannot create pull request. Please check the issue content. Or you can create a pull request manually."

@@ -65,5 +65,13 @@
     <string name="profile_namespace_inherited">Diwariskan</string>
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Personal</string>
+    <string name="profile_groups">Kelompok</string>
+    <string name="profile_capabilities">Kemampuan</string>
+    <string name="profile_selinux_context">Konteks SELinux</string>
     <string name="profile_umount_modules">Lepas modul</string>
+    <string name="failed_to_update_app_profile">Gagal memperbarui Profil Apl untuk %s</string>
+    <string name="require_kernel_version">Versi kernel saat ini %d terlalu rendah bagi manager untuk berfungsi dengan baik. Tolong tingkatkan ke versi %d atau lebih tinggi!</string>
+    <string name="settings_umount_modules_default">Lepas modul secara bawaan</string>
+    <string name="settings_umount_modules_default_summary">Nilai bawaan universal untuk \"Lepas modul\" di Profil-profil Apl. Jika diaktifkan, ini akan menghapus semua modifikasi modul pada sistem untuk aplikasi yang tidak memiliki set Profil.</string>
+    <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan mengizinkan KernelSU memulihkan file-file yang dimodifikasi oleh modul untuk aplikasi ini.</string>
 </resources>

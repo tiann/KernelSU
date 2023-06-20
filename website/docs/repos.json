@@ -341,5 +341,19 @@
         "kernel_name": "android_kernel_samsung_exynos9610_mint",
         "kernel_link": "https://github.com/rushiranpise/android_kernel_samsung_exynos9610_mint",
         "devices": "Kernel 4.14.194 exynos9610 Non-GKI Device, Added KernelSu using manual method"
+    },
+    {
+        "maintainer": "CN-Scars",
+        "maintainer_link": "https://github.com/CN-Scars",
+        "kernel_name": "pixel_experience_kernel_xiaomi_sm8250_kernelSU",
+        "kernel_link": "https://github.com/CN-Scars/pixel_experience_kernel_xiaomi_sm8250_kernelSU",
+        "devices": "Pixel Experience Kernel 4.19.282 for Xiaomi Redmi K40S / Xiaomi Poco F4 (munch)"
+    },
+    {
+        "maintainer": "exer",
+        "maintainer_link": "https://github.com/ekkusa",
+        "kernel_name": "Miyo Toku",
+        "kernel_link": "https://github.com/Miiyo/android_kernel_sony_sdm845/tree/KSU/Toku",
+        "devices": "Sony Tama (akari, apollo, aurora, akatsuki) (Linux 4.9)"
     }
 ]

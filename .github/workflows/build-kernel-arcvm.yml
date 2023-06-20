@@ -1,0 +1,137 @@
+name: Build Kernel - ChromeOS ARCVM
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/build-kernel-arcvm.yml"
+      - "kernel/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/build-kernel-arcvm.yml"
+      - "kernel/**"
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        arch: [x86_64]
+        version: ["5.10.178"]
+        include:
+          - arch: x86_64
+            git_tag: chromeos-5.10-arcvm
+            file_name: "bzImage"
+
+    name: Build ChromeOS ARCVM kernel
+    runs-on: ubuntu-20.04
+    env:
+      LTO: thin
+      ROOT_DIR: /
+      KERNEL_DIR: ${{ github.workspace }}/kernel
+
+    steps:
+      - name: Install Build Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends bc \
+              bison build-essential ca-certificates flex git gnupg \
+              libelf-dev libssl-dev lsb-release software-properties-common wget \
+              libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip \
+              rsync python3 device-tree-compiler
+
+          sudo ln -s --force python3 /usr/bin/python
+
+          export LLVM_VERSION=12
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh $LLVM_VERSION
+          rm ./llvm.sh
+          sudo ln -s --force /usr/bin/clang-$LLVM_VERSION /usr/bin/clang
+          sudo ln -s --force /usr/bin/ld.lld-$LLVM_VERSION /usr/bin/ld.lld
+          sudo ln -s --force /usr/bin/llvm-objdump-$LLVM_VERSION /usr/bin/llvm-objdump
+          sudo ln -s --force /usr/bin/llvm-ar-$LLVM_VERSION /usr/bin/llvm-ar
+          sudo ln -s --force /usr/bin/llvm-nm-$LLVM_VERSION /usr/bin/llvm-nm
+          sudo ln -s --force /usr/bin/llvm-strip-$LLVM_VERSION /usr/bin/llvm-strip
+          sudo ln -s --force /usr/bin/llvm-objcopy-$LLVM_VERSION /usr/bin/llvm-objcopy
+          sudo ln -s --force /usr/bin/llvm-readelf-$LLVM_VERSION /usr/bin/llvm-readelf
+          sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
+
+      - name: Checkout KernelSU
+        uses: actions/checkout@v3
+        with:
+          path: KernelSU
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup kernel source
+        run: git clone https://chromium.googlesource.com/chromiumos/third_party/kernel.git -b ${{ matrix.git_tag }} --depth=1
+
+      - name: Setup KernelSU
+        working-directory: kernel
+        run: |
+          echo "[+] KernelSU setup"
+          KERNEL_ROOT=$GITHUB_WORKSPACE/kernel
+          echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
+          echo "[+] Copy KernelSU driver to $KERNEL_ROOT/drivers"
+          ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
+
+          echo "[+] Add KernelSU driver to Makefile"
+          DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
+          grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+
+          echo "[+] Apply KernelSU patches"
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+
+          echo "[+] Patch script/setlocalversion"
+          sed -i 's/-dirty//g' $KERNEL_ROOT/scripts/setlocalversion
+
+          echo "[+] KernelSU setup done."
+          cd $GITHUB_WORKSPACE/KernelSU
+          VERSION=$(($(git rev-list --count HEAD) + 10200))
+          echo "VERSION: $VERSION"
+          echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
+
+      - name: Build Kernel
+        working-directory: kernel
+        run: |
+          set -a && . build.config.gki.x86_64; set +a
+          export DEFCONFIG=x86_64_arcvm_defconfig
+
+          make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} mrproper
+          make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} ${DEFCONFIG} < /dev/null
+          scripts/config --file .config -e LTO_CLANG -d LTO_NONE -e LTO_CLANG_THIN -d LTO_CLANG_FULL -e THINLTO
+          make LLVM=1 LLVM_IAS=1 DEPMOD=depmod DTC=dtc O=${PWD} -j$(nproc) bzImage modules prepare-objtool
+
+          echo "file_path=${PWD}/arch/x86/boot/bzImage" >> $GITHUB_ENV
+
+      - name: Upload kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
+          path: "${{ env.file_path }}"
+
+      - name: Post to Telegram
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE=kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
+          echo "[+] title: $TITLE"
+          export TITLE
+          export VERSION="${{ env.kernelsu_version }}"
+          echo "[+] Compress images"
+          gzip -n -f -9 "${{ env.file_path }}"
+          echo "[+] Image to upload"
+          ls -l "${{ env.file_path }}.gz"
+          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            pip3 install python-telegram-bot
+            python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
+          fi
