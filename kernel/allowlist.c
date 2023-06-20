@@ -354,7 +354,7 @@ void do_save_allow_list(struct work_struct *work)
 		filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
 
 	if (IS_ERR(fp)) {
-		pr_err("save_allow_list creat file failed: %ld\n", PTR_ERR(fp));
+		pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
 		return;
 	}
 
