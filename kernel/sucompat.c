@@ -20,6 +20,12 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
+#define ksu_copy_from_user_nofault(dst, src, sz) copy_from_user_nofault(dst, src, sz)
+#else
+#define ksu_copy_from_user_nofault(dst, src, sz) probe_user_read(dst, src, sz)
+#endif
+
 extern void escape_to_root();
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
@@ -45,7 +51,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 
 	char path[sizeof(su)];
 	memset(path, 0, sizeof(path));
-	if (copy_from_user_nofault(path, *filename_user, sizeof(path))) {
+	if (ksu_copy_from_user_nofault(path, *filename_user, sizeof(path))) {
 		pr_info("faccessat filename ERR: %d!\n", current_uid().val);
 		return 0;
 	}
@@ -80,7 +86,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	// filename = getname(*filename_user);
 	char path[sizeof(su)];
 	memset(path, 0, sizeof(path));
-	if (copy_from_user_nofault(path, *filename_user, sizeof(path))) {
+	if (ksu_copy_from_user_nofault(path, *filename_user, sizeof(path))) {
 		pr_info("faccessat filename ERR: %d!\n", current_uid().val);
 		return 0;
 	}
