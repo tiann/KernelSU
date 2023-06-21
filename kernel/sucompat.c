@@ -51,7 +51,6 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 	const char su[] = SU_PATH;
 
 	if (!ksu_is_allow_uid(current_uid().val)) {
-		pr_info("faccessat: %d is not allowed!\n", current_uid().val);
 		return 0;
 	}
 
@@ -76,7 +75,6 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	const char su[] = SU_PATH;
 
 	if (!ksu_is_allow_uid(current_uid().val)) {
-		pr_info("stat: %d is not allowed!\n", current_uid().val);
 		return 0;
 	}
 
