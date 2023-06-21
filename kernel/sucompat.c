@@ -41,16 +41,16 @@ static char __user *sh_user_path(void)
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 			 int *flags)
 {
-	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	filename = getname(*filename_user);
-
-	if (IS_ERR(filename)) {
+	char path[sizeof(su)];
+	memset(path, 0, sizeof(path));
+	if (copy_from_user_nofault(path, *filename_user, sizeof(path))) {
 		pr_info("faccessat filename ERR: %d!\n", current_uid().val);
 		return 0;
 	}
-	if (unlikely(!memcmp(filename->name, su, sizeof(su)))) {
+
+	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		pr_info("faccessat su found: %d!\n", current_uid().val);
 		if (!ksu_is_allow_uid(current_uid().val)) {
 			pr_info("faccessat uid: %d is not allowed!\n",
@@ -62,15 +62,13 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 		}
 	}
 
-	putname(filename);
-
 	return 0;
 }
 
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
 	// const char sh[] = SH_PATH;
-	struct filename *filename;
+	// struct filename *filename;
 	const char su[] = SU_PATH;
 
 	if (unlikely(!filename_user)) {
@@ -79,13 +77,15 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 		return 0;
 	}
 
-	filename = getname(*filename_user);
-
-	if (IS_ERR(filename)) {
-		pr_info("handle_stat filename is ERR: %d\n", current_uid().val);
+	// filename = getname(*filename_user);
+	char path[sizeof(su)];
+	memset(path, 0, sizeof(path));
+	if (copy_from_user_nofault(path, *filename_user, sizeof(path))) {
+		pr_info("faccessat filename ERR: %d!\n", current_uid().val);
 		return 0;
 	}
-	if (unlikely(!memcmp(filename->name, su, sizeof(su)))) {
+
+	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		pr_info("newfstatat su found: %d\n", current_uid().val);
 		if (ksu_is_allow_uid(current_uid().val)) {
 			pr_info("newfstatat su->sh: %d\n", current_uid().val);
@@ -95,8 +95,6 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 				current_uid().val);
 		}
 	}
-
-	putname(filename);
 
 	return 0;
 }
