@@ -44,18 +44,22 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	if (!ksu_is_allow_uid(current_uid().val)) {
-		return 0;
-	}
-
 	filename = getname(*filename_user);
 
 	if (IS_ERR(filename)) {
+		pr_info("faccessat filename ERR: %d!\n", current_uid().val);
 		return 0;
 	}
 	if (unlikely(!memcmp(filename->name, su, sizeof(su)))) {
-		pr_info("faccessat su->sh!\n");
-		*filename_user = sh_user_path();
+		pr_info("faccessat su found: %d!\n", current_uid().val);
+		if (!ksu_is_allow_uid(current_uid().val)) {
+			pr_info("faccessat uid: %d is not allowed!\n",
+				current_uid().val);
+		} else {
+			pr_info("faccessat uid: %d su->sh\n",
+				current_uid().val);
+			*filename_user = sh_user_path();
+		}
 	}
 
 	putname(filename);
@@ -69,22 +73,27 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	struct filename *filename;
 	const char su[] = SU_PATH;
 
-	if (!ksu_is_allow_uid(current_uid().val)) {
-		return 0;
-	}
-
 	if (unlikely(!filename_user)) {
+		pr_info("handle_stat filename is NULL: %d\n",
+			current_uid().val);
 		return 0;
 	}
 
 	filename = getname(*filename_user);
 
 	if (IS_ERR(filename)) {
+		pr_info("handle_stat filename is ERR: %d\n", current_uid().val);
 		return 0;
 	}
 	if (unlikely(!memcmp(filename->name, su, sizeof(su)))) {
-		pr_info("newfstatat su->sh!\n");
-		*filename_user = sh_user_path();
+		pr_info("newfstatat su found: %d\n", current_uid().val);
+		if (ksu_is_allow_uid(current_uid().val)) {
+			pr_info("newfstatat su->sh: %d\n", current_uid().val);
+			*filename_user = sh_user_path();
+		} else {
+			pr_info("handle_stat uid: %d is not allowed!\n",
+				current_uid().val);
+		}
 	}
 
 	putname(filename);
@@ -138,10 +147,10 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *dfd = (int *)&PT_REGS_PARM1(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
-// static int vfs_statx(int dfd, const char __user *filename, int flags, struct kstat *stat, u32 request_mask)
+	// static int vfs_statx(int dfd, const char __user *filename, int flags, struct kstat *stat, u32 request_mask)
 	int *flags = (int *)&PT_REGS_PARM3(regs);
 #else
-// int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
+	// int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
 	int *flags = (int *)&PT_REGS_PARM4(regs);
 #endif
 
@@ -172,11 +181,11 @@ static struct kprobe faccessat_kp = {
 };
 
 static struct kprobe newfstatat_kp = {
-	// 5.10: https://elixir.bootlin.com/linux/v5.10/source/include/linux/fs.h#L3115
-	// 5.9: https://elixir.bootlin.com/linux/v5.9.16/source/include/linux/fs.h#L3179
-	// 4.11: https://elixir.bootlin.com/linux/v4.11/source/include/linux/fs.h#L2931
-	// 4.10: https://elixir.bootlin.com/linux/v4.10.17/source/include/linux/fs.h#L2889
-	// so, 4.11.0 <= version < 5.10 is vfs_statx, and others are vfs_fstatat
+// 5.10: https://elixir.bootlin.com/linux/v5.10/source/include/linux/fs.h#L3115
+// 5.9: https://elixir.bootlin.com/linux/v5.9.16/source/include/linux/fs.h#L3179
+// 4.11: https://elixir.bootlin.com/linux/v4.11/source/include/linux/fs.h#L2931
+// 4.10: https://elixir.bootlin.com/linux/v4.10.17/source/include/linux/fs.h#L2889
+// so, 4.11.0 <= version < 5.10 is vfs_statx, and others are vfs_fstatat
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 	.symbol_name = "vfs_fstatat",
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
