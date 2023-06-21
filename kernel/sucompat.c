@@ -21,7 +21,8 @@
 #define SH_PATH "/system/bin/sh"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-#define ksu_copy_from_user_nofault(dst, src, sz) copy_from_user_nofault(dst, src, sz)
+#define ksu_copy_from_user_nofault(dst, src, sz)                               \
+	copy_from_user_nofault(dst, src, sz)
 #else
 #define ksu_copy_from_user_nofault(dst, src, sz) probe_user_read(dst, src, sz)
 #endif
@@ -49,6 +50,11 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 {
 	const char su[] = SU_PATH;
 
+	if (!ksu_is_allow_uid(current_uid().val)) {
+		pr_info("faccessat: %d is not allowed!\n", current_uid().val);
+		return 0;
+	}
+
 	char path[sizeof(su)];
 	memset(path, 0, sizeof(path));
 	if (ksu_copy_from_user_nofault(path, *filename_user, sizeof(path))) {
@@ -58,14 +64,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		pr_info("faccessat su found: %d!\n", current_uid().val);
-		if (!ksu_is_allow_uid(current_uid().val)) {
-			pr_info("faccessat uid: %d is not allowed!\n",
-				current_uid().val);
-		} else {
-			pr_info("faccessat uid: %d su->sh\n",
-				current_uid().val);
-			*filename_user = sh_user_path();
-		}
+		*filename_user = sh_user_path();
 	}
 
 	return 0;
@@ -74,12 +73,15 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
 	// const char sh[] = SH_PATH;
-	// struct filename *filename;
 	const char su[] = SU_PATH;
 
+	if (!ksu_is_allow_uid(current_uid().val)) {
+		pr_info("stat: %d is not allowed!\n", current_uid().val);
+		return 0;
+	}
+
 	if (unlikely(!filename_user)) {
-		pr_info("handle_stat filename is NULL: %d\n",
-			current_uid().val);
+		pr_info("stat filename is NULL: %d\n", current_uid().val);
 		return 0;
 	}
 
@@ -87,19 +89,13 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	char path[sizeof(su)];
 	memset(path, 0, sizeof(path));
 	if (ksu_copy_from_user_nofault(path, *filename_user, sizeof(path))) {
-		pr_info("faccessat filename ERR: %d!\n", current_uid().val);
+		pr_info("stat filename ERR: %d!\n", current_uid().val);
 		return 0;
 	}
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
-		pr_info("newfstatat su found: %d\n", current_uid().val);
-		if (ksu_is_allow_uid(current_uid().val)) {
-			pr_info("newfstatat su->sh: %d\n", current_uid().val);
-			*filename_user = sh_user_path();
-		} else {
-			pr_info("handle_stat uid: %d is not allowed!\n",
-				current_uid().val);
-		}
+		pr_info("stat su found: %d\n", current_uid().val);
+		*filename_user = sh_user_path();
 	}
 
 	return 0;
@@ -126,7 +122,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	if (!ksu_is_allow_uid(current_uid().val))
 		return 0;
 
-	pr_info("do_execveat_common su found\n");
+	pr_info("do_execveat_common su found: %d\n", current_uid().val);
 	memcpy((void *)filename->name, sh, sizeof(sh));
 
 	escape_to_root();
