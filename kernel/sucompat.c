@@ -172,7 +172,14 @@ static struct kprobe faccessat_kp = {
 };
 
 static struct kprobe newfstatat_kp = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
+	// 5.10: https://elixir.bootlin.com/linux/v5.10/source/include/linux/fs.h#L3115
+	// 5.9: https://elixir.bootlin.com/linux/v5.9.16/source/include/linux/fs.h#L3179
+	// 4.11: https://elixir.bootlin.com/linux/v4.11/source/include/linux/fs.h#L2931
+	// 4.10: https://elixir.bootlin.com/linux/v4.10.17/source/include/linux/fs.h#L2889
+	// so, 4.11.0 <= version < 5.10 is vfs_statx, and others are vfs_fstatat
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+	.symbol_name = "vfs_fstatat",
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 	.symbol_name = "vfs_statx",
 #else
 	.symbol_name = "vfs_fstatat",

@@ -108,7 +108,13 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
 /*
  * count() counts the number of strings in array ARGV.
  */
-static int count(struct user_arg_ptr argv, int max) __maybe_unused
+
+ /*
+ * Make sure old GCC compiler can use __maybe_unused,
+ * Test passed in 4.4.x ~ 4.9.x when use GCC.
+ */
+
+static int __maybe_unused count(struct user_arg_ptr argv, int max)
 {
 	int i = 0;
 

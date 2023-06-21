@@ -36,7 +36,7 @@ jobs:
           - sub_level: 160
             os_patch_level: 2023-03
           - sub_level: 168
-            os_patch_level: 2023-04
+            os_patch_level: 2023-05
           - sub_level: 177
             os_patch_level: 2023-06
     uses: ./.github/workflows/gki-kernel.yml
