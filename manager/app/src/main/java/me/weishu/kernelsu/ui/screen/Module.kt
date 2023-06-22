@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -230,12 +231,16 @@ private fun ModuleList(
                             }
                         }, onUpdate = {
 
+                            val downloading = downloadingText.format(module.name)
                             download(
                                 context,
-                                Uri.parse(updateUrl),
-                                module.name,
+                                updateUrl,
                                 "${module.name}-${module.version}.zip",
-                                downloadingText.format(module.name)
+                                downloading,
+                                onDownloaded = onInstallModule,
+                                onDownloading = {
+                                    Toast.makeText(context, downloading, Toast.LENGTH_SHORT).show()
+                                }
                             )
                         })
 

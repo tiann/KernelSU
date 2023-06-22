@@ -15,18 +15,46 @@ import androidx.compose.runtime.DisposableEffect
  * @author weishu
  * @date 2023/6/22.
  */
-
-fun download(context: Context, uri: Uri, title: String, fileName: String, description: String) {
+@SuppressLint("Range")
+fun download(
+    context: Context,
+    url: String,
+    fileName: String,
+    description: String,
+    onDownloaded: (Uri) -> Unit = {},
+    onDownloading: () -> Unit = {}
+) {
     val downloadManager =
         context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-    val request = DownloadManager.Request(uri)
+
+    val query = DownloadManager.Query()
+    query.setFilterByStatus(DownloadManager.STATUS_RUNNING or DownloadManager.STATUS_PAUSED or DownloadManager.STATUS_PENDING)
+    downloadManager.query(query).use { cursor ->
+        while (cursor.moveToNext()) {
+            val uri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))
+            val localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
+            val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+            val columnTitle = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE))
+            if (url == uri || fileName == columnTitle) {
+                if (status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PENDING) {
+                    onDownloading()
+                    return
+                } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                    onDownloaded(Uri.parse(localUri))
+                    return
+                }
+            }
+        }
+    }
+
+    val request = DownloadManager.Request(Uri.parse(url))
         .setDestinationInExternalPublicDir(
             Environment.DIRECTORY_DOWNLOADS,
             fileName
         )
         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         .setMimeType("application/zip")
-        .setTitle(title)
+        .setTitle(fileName)
         .setDescription(description)
 
     downloadManager.enqueue(request)
