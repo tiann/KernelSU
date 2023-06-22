@@ -90,7 +90,10 @@ fun UpdateCard() {
     }
 
     val uriHandler = LocalUriHandler.current
-    WarningCard(message = stringResource(id = R.string.new_version_available).format(newVersionCode)) {
+    WarningCard(
+        message = stringResource(id = R.string.new_version_available).format(newVersionCode),
+        MaterialTheme.colorScheme.outlineVariant
+    ) {
         uriHandler.openUri(newVersionUrl)
     }
 }
