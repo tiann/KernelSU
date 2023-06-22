@@ -50,6 +50,11 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
             info!("module: {} is disabled, ignore!", module.display());
             continue;
         }
+        let skip_mount = module.join(defs::SKIP_MOUNT_FILE_NAME).exists();
+        if skip_mount {
+            info!("module: {} skip_mount exist, skip!", module.display());
+            continue;
+        }
 
         let module_system = Path::new(&module).join("system");
         if module_system.is_dir() {
