@@ -60,6 +60,40 @@ fun download(
     downloadManager.enqueue(request)
 }
 
+fun checkNewVersion(): Pair<Int, String> {
+    val url = "https://api.github.com/repos/tiann/KernelSU/releases/latest"
+    val defaultValue = 0 to ""
+    runCatching {
+        okhttp3.OkHttpClient().newCall(okhttp3.Request.Builder().url(url).build()).execute()
+            .use { response ->
+                if (!response.isSuccessful) {
+                    return defaultValue
+                }
+                val body = response.body?.string() ?: return defaultValue
+                val json = org.json.JSONObject(body)
+
+                val assets = json.getJSONArray("assets")
+                for (i in 0 until assets.length()) {
+                    val asset = assets.getJSONObject(i)
+                    val name = asset.getString("name")
+                    if (!name.endsWith(".apk")) {
+                        continue
+                    }
+
+                    val regex = Regex("v(.+?)_(\\d+)-")
+                    val matchResult = regex.find(name) ?: continue
+                    val versionName = matchResult.groupValues[1]
+                    val versionCode = matchResult.groupValues[2].toInt()
+                    val downloadUrl = asset.getString("browser_download_url")
+
+                    return versionCode to downloadUrl
+                }
+
+            }
+    }
+    return defaultValue
+}
+
 @Composable
 fun DownloadListener(context: Context, onDownloaded: (Uri) -> Unit) {
     DisposableEffect(context) {
