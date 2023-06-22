@@ -149,7 +149,7 @@ class ModuleViewModel : ViewModel() {
             val versionCode = updateJson.optInt("versionCode", 0)
             val zipUrl = updateJson.optString("zipUrl", "")
             val changelog = updateJson.optString("changelog", "")
-            if (versionCode < m.versionCode || zipUrl.isEmpty()) {
+            if (versionCode <= m.versionCode || zipUrl.isEmpty()) {
                 callback(null)
                 return@launch
             }

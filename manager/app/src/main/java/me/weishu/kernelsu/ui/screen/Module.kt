@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -355,8 +356,13 @@ private fun ModuleItem(
                 Spacer(modifier = Modifier.weight(1f, true))
 
                 if (updateUrl.isNotEmpty()) {
-                    TextButton(
+                    Button(
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .defaultMinSize(48.dp, 32.dp),
                         onClick = { onUpdate(module) },
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
                             fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
