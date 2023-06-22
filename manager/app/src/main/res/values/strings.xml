@@ -78,4 +78,5 @@
     <string name="profile_selinux_rules">Rules</string>
     <string name="module_update">Update</string>
     <string name="module_downloading">Downloading module: %s</string>
+    <string name="module_start_downloading">Start downloading: %s</string>
 </resources>

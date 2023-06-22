@@ -177,6 +177,8 @@ private fun ModuleList(
         onRefresh = { viewModel.fetchModuleList() })
     Box(modifier.pullRefresh(refreshState)) {
         if (viewModel.isOverlayAvailable) {
+            val context = LocalContext.current
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -206,8 +208,8 @@ private fun ModuleList(
                             viewModel.checkUpdate(module) { value = it.orEmpty() }
                         }
 
-                        val context = LocalContext.current
                         val downloadingText = stringResource(R.string.module_downloading)
+                        val startDownloadingText = stringResource(R.string.module_start_downloading)
 
                         ModuleItem(module, isChecked, updateUrl, onUninstall = {
                             scope.launch { onModuleUninstall(module) }
@@ -231,6 +233,14 @@ private fun ModuleList(
                             }
                         }, onUpdate = {
 
+                            scope.launch {
+                                Toast.makeText(
+                                    context,
+                                    startDownloadingText.format(module.name),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
                             val downloading = downloadingText.format(module.name)
                             download(
                                 context,
@@ -244,13 +254,14 @@ private fun ModuleList(
                             )
                         })
 
-                        DownloadListener(context, onInstallModule)
-
                         // fix last item shadow incomplete in LazyColumn
                         Spacer(Modifier.height(1.dp))
                     }
                 }
             }
+
+            DownloadListener(context, onInstallModule)
+
         } else {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.module_overlay_fs_not_available))
@@ -364,7 +375,7 @@ private fun ModuleItem(
                     Button(
                         modifier = Modifier
                             .padding(0.dp)
-                            .defaultMinSize(48.dp, 32.dp),
+                            .defaultMinSize(52.dp, 32.dp),
                         onClick = { onUpdate(module) },
                         shape = RoundedCornerShape(6.dp),
                         contentPadding = PaddingValues(0.dp)
