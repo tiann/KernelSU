@@ -362,7 +362,7 @@ fn _install_module(zip: &str) -> Result<()> {
         std::fs::remove_file(tmp_module_path)?;
     }
 
-    let default_reserve_size = 64 * 1024 * 1024;
+    let default_reserve_size = 256 * 1024 * 1024;
     let zip_uncompressed_size = get_zip_uncompressed_size(zip)?;
     let grow_size = default_reserve_size + zip_uncompressed_size;
 
