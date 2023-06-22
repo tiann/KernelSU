@@ -475,12 +475,7 @@ static bool should_umount(struct path *path)
 
 	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
 		const char *fstype = path->mnt->mnt_sb->s_type->name;
-		if (strcmp(fstype, "overlay") == 0) {
-			return ksu_uid_should_umount(current_uid().val);
-		}
-#ifdef CONFIG_KSU_DEBUG
-		pr_info("uid: %d should not umount!\n", current_uid().val);
-#endif
+		return strcmp(fstype, "overlay") == 0;
 	}
 	return false;
 }
@@ -530,6 +525,14 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	if (ksu_is_allow_uid(new_uid.val)) {
 		// pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
 		return 0;
+	}
+
+	if (!ksu_uid_should_umount(new_uid.val)) {
+		return 0;
+	} else {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("uid: %d should not umount!\n", current_uid().val);
+#endif
 	}
 
 	// umount the target mnt
