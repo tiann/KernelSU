@@ -52,11 +52,21 @@ static inline bool is_isolated_uid(uid_t uid)
 		appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
 }
 
+static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+
 static void setup_groups(struct root_profile *profile, struct cred *cred)
 {
 	if (profile->groups_count > KSU_MAX_GROUPS) {
 		pr_warn("Failed to setgroups, too large group: %d!\n",
 			profile->uid);
+		return;
+	}
+
+	if (profile->groups_count == 1 && profile->groups[0] == 0) {
+		// setgroup to root and return early.
+		if (cred->group_info)
+			put_group_info(cred->group_info);
+		cred->group_info = get_group_info(&root_groups);
 		return;
 	}
 
