@@ -74,4 +74,8 @@
     <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi ile, bu uygulama için modüller tarafından değiştirilen tüm dosyaların KernelSU tarafından geri alınmasına izin verilecektir.</string>
     <string name="profile_selinux_domain">Etki alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
+    <string name="module_update">Güncelle</string>
+    <string name="module_downloading">Modül indiriliyor: %s</string>
+    <string name="module_start_downloading">İndirme başladı: %s</string>
+    <string name="new_version_available">Yeni versiyon: %s mevcut, indirmek için tıklayın</string>
 </resources>
