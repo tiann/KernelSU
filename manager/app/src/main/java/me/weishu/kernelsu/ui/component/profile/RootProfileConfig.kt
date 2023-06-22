@@ -371,6 +371,10 @@ private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: Str
                 ),
                 type = InputTextFieldType.OUTLINED,
                 required = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Ascii,
+                    imeAction = ImeAction.Next
+                ),
                 resultListener = {
                     domain = it ?: ""
                 },
@@ -387,6 +391,10 @@ private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: Str
                     title = stringResource(id = R.string.profile_selinux_rules),
                 ),
                 type = InputTextFieldType.OUTLINED,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Ascii,
+                    imeAction = ImeAction.Done
+                ),
                 singleLine = false,
                 resultListener = {
                     rules = it ?: ""
@@ -394,7 +402,7 @@ private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: Str
                 validationListener = { value ->
                     if (isSepolicyValid(value)) ValidationResult.Valid
                     else ValidationResult.Invalid("Rules must be valid sepolicy")
-                }
+                },
             )
         )
 
