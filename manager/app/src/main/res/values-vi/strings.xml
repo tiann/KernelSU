@@ -1,8 +1,23 @@
 <resources>
+    <string name="profile">Hồ sơ ứng dụng</string>
+    <string name="profile_default">Mặc định</string>
+    <string name="profile_template">Trống</string>
+    <string name="profile_custom">Tuỳ chỉnh</string>
+    <string name="profile_name">Tên hồ sơ</string>
+    <string name="profile_groups">Nhóm</string>
+    <string name="failed_to_update_app_profile">Không thể cập nhật Hồ sơ ứng dụng cho %s</string>
+    <string name="require_kernel_version" formatted="false">Phiên bản KernelSU hiện tại %d quá thấp để trình quản lý hoạt động bình thường. Vui lòng nâng cấp lên phiên bản %d hoặc cao hơn!</string>
+    <string name="settings_umount_modules_default">Umount mô-đun theo mặc định</string>
+    <string name="settings_umount_modules_default_summary">Giá trị mặc định chung cho \"Umount modules\" trong Cấu hình ứng dụng. Nếu được bật, nó sẽ xóa tất cả các sửa đổi mô-đun đối với hệ thống đối với các ứng dụng không có bộ Cấu hình.</string>
+    <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU khôi phục mọi tệp đã sửa đổi theo mô-đun cho ứng dụng này.</string>
+    <string name="module_update">Cập nhật</string>
+    <string name="module_downloading">Đang tải xuống mô-đun: %s</string>
+    <string name="module_start_downloading">Bắt đầu tải xuống: %s</string>
+    <string name="new_version_available">Phiên bản mới: %s có sẵn, nhấn để tải xuống</string>
     <string name="home_learn_kernelsu">Tìm hiểu về KernelSU</string>
     <string name="home_click_to_learn_kernelsu">Cách cài đặt KernelSU và sử dụng mô-đun</string>
     <string name="home_support_title">Hỗ trợ chúng tôi</string>
-    <string name="home_support_content">KernelSU sẽ luôn luôn miễn phi và mã nguồn mở. Tuy nhiên, bạn có thể cho chúng tôi thấy rằng bạn quan tâm bằng cách gửi một khoản đóng góp nhỏ.</string>
+    <string name="home_support_content">KernelSU sẽ luôn luôn miễn phi và mã nguồn mở. Tuy nhiên, bạn có thể ủng hộ cho chúng tôi bằng cách gửi một khoản đóng góp nhỏ.</string>
     <string name="about_source_code"><![CDATA[Xem mã nguồn tại %1$s<br/>Tham gia kênh %2$s của chúng tôi]]></string>
     <string name="module_magisk_conflict">"Các mô-đun bị vô hiệu hóa vì nó xung đột với Magisk!"</string>
     <string name="module_uninstall_confirm">Bạn có chắc chắn muốn gỡ cài đặt mô-đun %s?</string>
