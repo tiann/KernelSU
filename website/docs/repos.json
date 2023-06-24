@@ -171,7 +171,7 @@
         "maintainer": "SoDebug",
         "maintainer_link": "https://github.com/SoDebug",
         "kernel_name": "kernel_xiaomi_raphael",
-        "kernel_link": "https://github.com/SoDebug/kernel_xiaomi_raphael",
+        "kernel_link": "https://github.com/SoDebug/KernelSU_Kernel_Raphael",
         "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
     },
     {
