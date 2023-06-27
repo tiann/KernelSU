@@ -355,5 +355,12 @@
         "kernel_name": "Miyo Toku",
         "kernel_link": "https://github.com/Miiyo/android_kernel_sony_sdm845/tree/KSU/Toku",
         "devices": "Sony Tama (akari, apollo, aurora, akatsuki) (Linux 4.9)"
+    },
+    {
+        "maintainer": "likkai",
+        "maintainer_link": "https://github.com/likkai",
+        "kernel_name": "Quicksilver Kernel",
+        "kernel_link": "https://github.com/likkai/ksu_kernel_xiaomi_lisa",
+        "devices": "Xiaomi 11 Lite 5G NE (lisa)"
     }
 ]
