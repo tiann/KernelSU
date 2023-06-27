@@ -22,13 +22,15 @@ jobs:
       matrix:
         include:
           - sub_level: 66
-            os_patch_level: 2021-11
+            os_patch_level: 2022-01
           - sub_level: 81
             os_patch_level: 2022-03
           - sub_level: 101
             os_patch_level: 2022-05
           - sub_level: 110
             os_patch_level: 2022-07
+          - sub_level: 117
+            os_patch_level: 2022-09
           - sub_level: 136
             os_patch_level: 2022-11
           - sub_level: 149
@@ -36,7 +38,7 @@ jobs:
           - sub_level: 160
             os_patch_level: 2023-03
           - sub_level: 168
-            os_patch_level: 2023-04
+            os_patch_level: 2023-05
           - sub_level: 177
             os_patch_level: 2023-06
     uses: ./.github/workflows/gki-kernel.yml

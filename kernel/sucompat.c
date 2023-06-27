@@ -20,6 +20,12 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
+#define ksu_strncpy_from_user_nofault strncpy_from_user_nofault
+#else
+#define ksu_strncpy_from_user_nofault strncpy_from_unsafe_user
+#endif
+
 extern void escape_to_root();
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
@@ -41,24 +47,20 @@ static char __user *sh_user_path(void)
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 			 int *flags)
 {
-	struct filename *filename;
 	const char su[] = SU_PATH;
 
 	if (!ksu_is_allow_uid(current_uid().val)) {
 		return 0;
 	}
 
-	filename = getname(*filename_user);
+	char path[sizeof(su)];
+	memset(path, 0, sizeof(path));
+	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-	if (IS_ERR(filename)) {
-		return 0;
-	}
-	if (unlikely(!memcmp(filename->name, su, sizeof(su)))) {
+	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		pr_info("faccessat su->sh!\n");
 		*filename_user = sh_user_path();
 	}
-
-	putname(filename);
 
 	return 0;
 }
@@ -66,7 +68,6 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
 	// const char sh[] = SH_PATH;
-	struct filename *filename;
 	const char su[] = SU_PATH;
 
 	if (!ksu_is_allow_uid(current_uid().val)) {
@@ -77,17 +78,14 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 		return 0;
 	}
 
-	filename = getname(*filename_user);
+	char path[sizeof(su)];
+	memset(path, 0, sizeof(path));
+	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-	if (IS_ERR(filename)) {
-		return 0;
-	}
-	if (unlikely(!memcmp(filename->name, su, sizeof(su)))) {
+	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		pr_info("newfstatat su->sh!\n");
 		*filename_user = sh_user_path();
 	}
-
-	putname(filename);
 
 	return 0;
 }

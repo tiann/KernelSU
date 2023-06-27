@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.viewmodel
 
+import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import org.json.JSONArray
+import org.json.JSONObject
 import java.text.Collator
 import java.util.*
 
@@ -33,6 +35,14 @@ class ModuleViewModel : ViewModel() {
         val enabled: Boolean,
         val update: Boolean,
         val remove: Boolean,
+        val updateJson: String,
+    )
+
+    data class ModuleUpdateInfo(
+        val version: String,
+        val versionCode: Int,
+        val zipUrl: String,
+        val changelog: String,
     )
 
     var isRefreshing by mutableStateOf(false)
@@ -78,6 +88,7 @@ class ModuleViewModel : ViewModel() {
                             obj.getBoolean("enabled"),
                             obj.getBoolean("update"),
                             obj.getBoolean("remove"),
+                            obj.optString("updateJson", "")
                         )
                     }.toList()
             }.onFailure { e ->
@@ -94,4 +105,57 @@ class ModuleViewModel : ViewModel() {
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: $modules")
         }
     }
+
+    fun checkUpdate(m: ModuleInfo, callback: (String?) -> Unit) {
+        if (m.updateJson.isEmpty()) {
+            callback(null)
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            // download updateJson
+            val result = kotlin.runCatching {
+                val url = m.updateJson
+                Log.i(TAG, "checkUpdate url: $url")
+                val response = okhttp3.OkHttpClient()
+                    .newCall(
+                    okhttp3.Request.Builder()
+                        .url(url)
+                        .build()
+                ).execute()
+                Log.d(TAG, "checkUpdate code: ${response.code}")
+                if (response.isSuccessful) {
+                    response.body?.string() ?: ""
+                } else {
+                    ""
+                }
+            }.getOrDefault("")
+            Log.i(TAG, "checkUpdate result: $result")
+
+            if (result.isEmpty()) {
+                callback(null)
+                return@launch
+            }
+
+            val updateJson = kotlin.runCatching {
+                JSONObject(result)
+            }.getOrNull()
+
+            if (updateJson == null) {
+                callback(null)
+                return@launch
+            }
+
+            val version = updateJson.optString("version", "")
+            val versionCode = updateJson.optInt("versionCode", 0)
+            val zipUrl = updateJson.optString("zipUrl", "")
+            val changelog = updateJson.optString("changelog", "")
+            if (versionCode <= m.versionCode || zipUrl.isEmpty()) {
+                callback(null)
+                return@launch
+            }
+
+            callback(zipUrl)
+        }
+    }
+
 }

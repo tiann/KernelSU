@@ -44,8 +44,8 @@
     <string name="module_author">Auteur</string>
     <string name="module_overlay_fs_not_available">overlayfs is niet beschikbaar, module kan niet werken!</string>
     <string name="refresh">Vernieuwen</string>
-    <string name="show_system_apps">Toon system apps</string>
-    <string name="hide_system_apps">Verberg system apps</string>
+    <string name="show_system_apps">Toon systeem apps</string>
+    <string name="hide_system_apps">Verberg systeem apps</string>
     <string name="send_log">Stuur Log</string>
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Herstart om effect te hebben</string>
@@ -74,4 +74,9 @@
     <string name="settings_umount_modules_default">Ontkoppel standaard de modules</string>
     <string name="settings_umount_modules_default_summary">De globale standaard waarde voor \"Ontkoppel modules\" in App Profielen. Indien geactiveerd, zal het alle module wijzigingen tot het systeem verwijderen voor applicaties die geen Profiel ingesteld hebben.</string>
     <string name="profile_umount_modules_summary">Met deze optie ingeschakeld zal KernelSU toelaten om alle gewijzigde bestanden door de modules voor deze applicatie te herstellen.</string>
+    <string name="profile_selinux_domain">Domein</string>
+    <string name="profile_selinux_rules">Regels</string>
+    <string name="module_update">Update</string>
+    <string name="module_downloading">Downloaden van module: %s</string>
+    <string name="new_version_available">Nieuwe versie: %s is beschikbaar, klik om te downloaden</string>
 </resources>

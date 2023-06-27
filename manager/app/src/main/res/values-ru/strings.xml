@@ -3,7 +3,7 @@
 
     <string name="home">Главная</string>
     <string name="home_not_installed">Не установлен</string>
-    <string name="home_click_to_install">Нажмите чтобы установить</string>
+    <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
     <string name="home_superuser_count">Superusers: %d</string> <!--Don't translate this string!-->
@@ -74,4 +74,10 @@
     <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые измененные модулями файлы для данного приложения.</string>
+    <string name="profile_selinux_domain">Домен</string>
+    <string name="profile_selinux_rules">Правила</string>
+    <string name="module_update">Обновить</string>
+    <string name="module_downloading">Скачивание модуля: %s</string>
+    <string name="module_start_downloading">Начало скачивания: %s</string>
+    <string name="new_version_available">Новая версия: %s доступна, нажмите, чтобы скачать</string>
 </resources>

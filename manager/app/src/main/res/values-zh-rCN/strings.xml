@@ -52,10 +52,27 @@
     <string name="home_support_title">支持开发</string>
     <string name="home_support_content">KernelSU 将保持免费和开源，向开发者捐赠以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 查看源码<br/>加入我们的 %2$s 频道<br/>加入我们的 <b><a href="https://pd.qq.com/s/8lipl1brp">QQ 频道</a></b>]]></string>
+    <string name="profile_default">默认</string>
+    <string name="profile_template">模版</string>
+    <string name="profile_custom">自定义</string>
+    <string name="profile_name">名称</string>
+    <string name="profile_namespace">命名空间</string>
+    <string name="profile_namespace_inherited">继承</string>
+    <string name="profile_namespace_global">全局</string>
+    <string name="profile_namespace_individual">私有</string>
+    <string name="profile_groups">组</string>
+    <string name="profile_capabilities">权能</string>
+    <string name="profile_selinux_context">SELinux</string>
     <string name="profile_umount_modules">卸载模块</string>
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
     <string name="require_kernel_version">当前内核版本 %d 过低，管理器无法正常工作，请升级内核版本至 %d 或以上！</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
     <string name="settings_umount_modules_default_summary">App Profile 中\"卸载模块\"的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改</string>
     <string name="profile_umount_modules_summary">启用后将允许 KernelSU 为本应用还原被模块修改过的文件</string>
+    <string name="profile_selinux_domain">域</string>
+    <string name="profile_selinux_rules">规则</string>
+    <string name="module_update">更新</string>
+    <string name="module_downloading">正在下载模块：%s</string>
+    <string name="module_start_downloading">开始下载：%s</string>
+    <string name="new_version_available">发现新版本：%d，点击下载</string>
 </resources>
