@@ -355,7 +355,7 @@
         "kernel_name": "Miyo Toku",
         "kernel_link": "https://github.com/Miiyo/android_kernel_sony_sdm845/tree/KSU/Toku",
         "devices": "Sony Tama (akari, apollo, aurora, akatsuki) (Linux 4.9)"
-    }
+    },
     {
         "maintainer": "likkai",
         "maintainer_link": "https://github.com/likkai",
