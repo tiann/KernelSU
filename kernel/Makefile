@@ -16,6 +16,10 @@ obj-y += selinux/
 ifeq ($(shell test -e $(srctree)/$(src)/../.git; echo $$?),0)
 KSU_GIT_VERSION := $(shell cd $(srctree)/$(src); /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin git rev-list --count HEAD)
 ccflags-y += -DKSU_GIT_VERSION=$(KSU_GIT_VERSION)
+
+# KernelSU version
+$(eval ver=$(shell expr 10000 + $(KSU_GIT_VERSION) + 200))
+$(info - KernelSU version: $(ver))
 endif
 
 ifndef EXPECTED_SIZE
