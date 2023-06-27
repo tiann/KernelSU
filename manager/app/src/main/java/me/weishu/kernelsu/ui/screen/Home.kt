@@ -216,7 +216,6 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(
                             text = stringResource(R.string.home_unsupported),
-                            fontFamily = FontFamily.Serif,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(4.dp))
