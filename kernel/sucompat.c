@@ -28,7 +28,7 @@
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 #define ksu_strncpy_from_user_nofault strncpy_from_user_nofault
-#else if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) &&                           \
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) &&                           \
 	LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 #define ksu_strncpy_from_user_nofault strncpy_from_unsafe
 #else
