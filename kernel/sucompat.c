@@ -20,8 +20,17 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
+/*
+* In LINUX KERNEL VERSION 4.4 ～ 4.13.16                           \
+* doesn't have strncpy_from_unsafe_user,                           \
+* Only have strncpy_from_unsafe.
+*/
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 #define ksu_strncpy_from_user_nofault strncpy_from_user_nofault
+#else if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) &&                           \
+	LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+#define ksu_strncpy_from_user_nofault strncpy_from_unsafe
 #else
 #define ksu_strncpy_from_user_nofault strncpy_from_unsafe_user
 #endif
