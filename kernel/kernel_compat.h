@@ -4,6 +4,15 @@
 #include "linux/fs.h"
 #include "linux/key.h"
 #include "linux/version.h"
+#include "linux/uaccess.h"
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
+#define ksu_strncpy_from_user_nofault strncpy_from_user_nofault
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0)
+#define ksu_strncpy_from_user_nofault strncpy_from_unsafe_user
+#else
+#define ksu_strncpy_from_user_nofault strncpy_from_user
+#endif
 
 extern struct key *init_session_keyring;
 

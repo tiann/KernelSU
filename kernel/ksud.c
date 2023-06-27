@@ -1,7 +1,5 @@
 #include "asm/current.h"
-#include "linux/string.h"
 #include "linux/compat.h"
-#include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/fs.h"
@@ -12,12 +10,12 @@
 #include "linux/uaccess.h"
 #include "linux/version.h"
 #include "linux/workqueue.h"
-#include "linux/input.h"
 
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
+#include "kernel_compat.h"
 #include "selinux/selinux.h"
 
 static const char KERNEL_SU_RC[] =
@@ -174,13 +172,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*ptr, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-                                strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-                                #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0)
-                                strncpy_from_unsafe_user(first_arg, p, sizeof(first_arg));
-                                #else
-                                strncpy_from_user(first_arg, p, sizeof(first_arg));
-                                #endif
+                                ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
 				pr_info("first arg: %s\n", first_arg);
 				if (!strcmp(first_arg, "second_stage")) {
 					pr_info("/system/bin/init second_stage executed\n");

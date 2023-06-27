@@ -16,15 +16,10 @@
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
+#include "kernel_compat.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-#define ksu_strncpy_from_user_nofault strncpy_from_user_nofault
-#else
-#define ksu_strncpy_from_user_nofault strncpy_from_unsafe_user
-#endif
 
 extern void escape_to_root();
 
