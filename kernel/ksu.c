@@ -16,6 +16,11 @@ bool ksu_queue_work(struct work_struct *work)
 	return queue_work(ksu_workqueue, work);
 }
 
+bool ksu_queue_delayed_work(struct delayed_work *dwork, unsigned long delay)
+{
+	return queue_delayed_work(ksu_workqueue, dwork, delay);
+}
+
 extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 					void *argv, void *envp, int *flags);
 

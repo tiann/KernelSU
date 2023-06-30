@@ -15,7 +15,7 @@
 #include "kernel_compat.h"
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
-static struct work_struct ksu_update_uid_work;
+static struct delayed_work ksu_update_uid_work;
 
 struct uid_data {
 	struct list_head list;
@@ -39,8 +39,18 @@ static bool is_uid_exist(uid_t uid, void *data)
 
 static void do_update_uid(struct work_struct *work)
 {
+	struct ns_fs_saved saved;
+	struct file *fp;
 	KWORKER_INSTALL_KEYRING();
-	struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+	save_ns_fs(&saved);
+	if (!load_ns_fs(&android_saved, false)) {
+		load_ns_fs(&saved, true);
+		if (!work) return;
+		ksu_queue_delayed_work(&ksu_update_uid_work, msecs_to_jiffies(250));
+		return;
+	}
+	fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+	load_ns_fs(&saved, true);
 	if (IS_ERR(fp)) {
 		pr_err("do_update_uid, open " SYSTEM_PACKAGES_LIST_PATH
 		       " failed: %d\n",
@@ -126,12 +136,12 @@ out:
 
 void update_uid()
 {
-	ksu_queue_work(&ksu_update_uid_work);
+	ksu_queue_delayed_work(&ksu_update_uid_work, 0);
 }
 
 int ksu_uid_observer_init()
 {
-	INIT_WORK(&ksu_update_uid_work, do_update_uid);
+	INIT_DELAYED_WORK(&ksu_update_uid_work, do_update_uid);
 	return 0;
 }
 

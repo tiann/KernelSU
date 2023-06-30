@@ -16,7 +16,14 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 
 	int sign = -1;
 	int i;
+	struct ns_fs_saved saved;
+	save_ns_fs(&saved);
+	if (!load_ns_fs(&android_saved, false)) {
+		load_ns_fs(&saved, true);
+		return sign;
+	}
 	struct file *fp = filp_open(path, O_RDONLY, 0);
+	load_ns_fs(&saved, true);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.", path);
 		return PTR_ERR(fp);

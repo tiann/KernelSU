@@ -88,8 +88,8 @@ static uint8_t allow_list_bitmap[PAGE_SIZE] __read_mostly __aligned(PAGE_SIZE);
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
-static struct work_struct ksu_save_work;
-static struct work_struct ksu_load_work;
+static struct delayed_work ksu_save_work;
+static struct delayed_work ksu_load_work;
 
 bool persistent_allow_list(void);
 
@@ -349,10 +349,18 @@ void do_save_allow_list(struct work_struct *work)
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 	loff_t off = 0;
+	struct ns_fs_saved saved;
 	KWORKER_INSTALL_KEYRING();
+	save_ns_fs(&saved);
+	if (!load_ns_fs(&android_saved, false)) {
+		load_ns_fs(&saved, true);
+		if (!work) return;
+		ksu_queue_delayed_work(&ksu_save_work, msecs_to_jiffies(250));
+		return;
+	}
 	struct file *fp =
 		filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
-
+	load_ns_fs(&saved, true);
 	if (IS_ERR(fp)) {
 		pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
 		return;
@@ -392,15 +400,22 @@ void do_load_allow_list(struct work_struct *work)
 	struct file *fp = NULL;
 	u32 magic;
 	u32 version;
-	KWORKER_INSTALL_KEYRING();
-
+	struct ns_fs_saved saved;
 #ifdef CONFIG_KSU_DEBUG
 	// always allow adb shell by default
 	ksu_grant_root_to_shell();
 #endif
+	KWORKER_INSTALL_KEYRING();
+	save_ns_fs(&saved);
+	if (!load_ns_fs(&android_saved, false)) {
+		load_ns_fs(&saved, true);
+		if (!work) return;
+		ksu_queue_delayed_work(&ksu_load_work, msecs_to_jiffies(250));
+		return;
+	}
 	// load allowlist now!
 	fp = filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
-
+	load_ns_fs(&saved, true);
 	if (IS_ERR(fp)) {
 		pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
 		return;
@@ -475,12 +490,12 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 // make sure allow list works cross boot
 bool persistent_allow_list(void)
 {
-	return ksu_queue_work(&ksu_save_work);
+	return ksu_queue_delayed_work(&ksu_save_work, 0);
 }
 
 bool ksu_load_allow_list(void)
 {
-	return ksu_queue_work(&ksu_load_work);
+	return ksu_queue_delayed_work(&ksu_load_work, 0);
 }
 
 void ksu_allowlist_init(void)
@@ -495,8 +510,8 @@ void ksu_allowlist_init(void)
 
 	INIT_LIST_HEAD(&allow_list);
 
-	INIT_WORK(&ksu_save_work, do_save_allow_list);
-	INIT_WORK(&ksu_load_work, do_load_allow_list);
+	INIT_DELAYED_WORK(&ksu_save_work, do_save_allow_list);
+	INIT_DELAYED_WORK(&ksu_load_work, do_load_allow_list);
 
 	init_default_profiles();
 }

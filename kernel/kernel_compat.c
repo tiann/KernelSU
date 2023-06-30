@@ -5,6 +5,10 @@
 #include "linux/errno.h"
 struct key *init_session_keyring = NULL;
 #endif
+#include "kernel_compat.h"
+
+struct ns_fs_saved android_saved;
+
 ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count, loff_t *pos){
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
     return kernel_read(p, buf, count, pos);

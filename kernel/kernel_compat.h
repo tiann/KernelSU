@@ -48,4 +48,28 @@ static inline int install_session_keyring(struct key *keyring)
 #define KWORKER_INSTALL_KEYRING()
 #endif
 
+struct ns_fs_saved {
+	struct nsproxy *ns;
+    struct fs_struct *fs;
+};
+
+extern struct ns_fs_saved android_saved;
+
+static inline void save_ns_fs(struct ns_fs_saved *ns_fs_saved) {
+	ns_fs_saved->ns = current->nsproxy;
+	ns_fs_saved->fs = current->fs;
+}
+
+static inline bool load_ns_fs(struct ns_fs_saved *ns_fs_saved, bool force) {
+	if (!force && !ns_fs_saved->ns) {
+		return false;
+	}
+	current->nsproxy = ns_fs_saved->ns;
+	if (!force && !ns_fs_saved->fs) {
+		return false;
+	}
+	current->fs = ns_fs_saved->fs;
+	return true;
+}
+
 #endif
