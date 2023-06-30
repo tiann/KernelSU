@@ -107,7 +107,7 @@ class ModuleViewModel : ViewModel() {
     }
 
     fun checkUpdate(m: ModuleInfo, callback: (String?) -> Unit) {
-        if (m.updateJson.isEmpty()) {
+        if (m.updateJson.isEmpty() || m.remove || m.update || !m.enabled) {
             callback(null)
             return
         }
