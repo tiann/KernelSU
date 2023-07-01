@@ -26,7 +26,9 @@ static int transive_to_domain(const char *domain)
 	}
 
 	error = security_secctx_to_secid(domain, strlen(domain), &sid);
-	pr_info("error: %d, sid: %d\n", error, sid);
+	if (error) {
+		pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain, sid, error);
+	}
 	if (!error) {
 		if (!ksu_sid)
 			ksu_sid = sid;
