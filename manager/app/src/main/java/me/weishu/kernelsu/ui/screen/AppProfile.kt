@@ -3,11 +3,12 @@ package me.weishu.kernelsu.ui.screen
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -42,10 +43,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -302,16 +307,29 @@ private fun ProfileBox(
 private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
 
     var expanded by remember { mutableStateOf(false) }
-    Box {
+    var touchPoint: Offset by remember { mutableStateOf(Offset.Zero) }
+    val density = LocalDensity.current
 
-        Box(modifier = Modifier.clickable {
-            expanded = true
-        }) {
-            content()
+    BoxWithConstraints(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    touchPoint = it
+                    expanded = true
+                }
+            }
+    ) {
+
+        content()
+
+        val (offsetX, offsetY) = with(density) {
+            (touchPoint.x.toDp()) to (touchPoint.y.toDp())
         }
 
         DropdownMenu(
             expanded = expanded,
+            offset = DpOffset(offsetX, -offsetY),
             onDismissRequest = {
                 expanded = false
             },
