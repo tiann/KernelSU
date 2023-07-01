@@ -1,5 +1,6 @@
 #include "linux/version.h"
 #include "linux/fs.h"
+#include "linux/nsproxy.h"
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 #include "linux/key.h"
 #include "linux/errno.h"
@@ -47,29 +48,36 @@ static struct ksu_ns_fs_saved android_context_saved;
 void ksu_android_ns_fs_check() {
     if (android_context_saved_checked) return;
     android_context_saved_checked = true;
+    task_lock(current);
     if (current->nsproxy && current->fs && current->nsproxy->mnt_ns != init_task.nsproxy->mnt_ns) {
         android_context_saved_enabled = true;
         ksu_save_ns_fs(&android_context_saved);
     }
+    task_unlock(current);
 }
 
 struct file *ksu_filp_open_compat(const char *filename, int flags, umode_t mode){
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
     static bool keyring_installed = false;
-    if (init_session_keyring != NULL && !keyring_installed)
+    if (init_session_keyring != NULL && !keyring_installed && (current->flags & PF_WQ_WORKER))
 	{
 		install_session_keyring(init_session_keyring);
 		keyring_installed = true;
 	}
 #endif
-    struct ns_fs_saved saved;
+    // switch mnt_ns even if current is not wq_worker, to ensure what we open is the correct file in android mnt_ns, rather than user created mnt_ns
+    struct ksu_ns_fs_saved saved;
     if (android_context_saved_enabled) {
+        task_lock(current);
         ksu_save_ns_fs(&saved);
         ksu_load_ns_fs(&android_context_saved);
+        task_unlock(current);
     }
-    file *fp = filp_open(filename, flags, mode);
+    struct file *fp = filp_open(filename, flags, mode);
     if (android_context_saved_enabled) {
+        task_lock(current);
         ksu_load_ns_fs(&saved);
+        task_unlock(current);
     }
     return fp;
 }
