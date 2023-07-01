@@ -158,6 +158,10 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("load sepolicy.rule failed");
     }
 
+    if let Err(e) = crate::profile::apply_sepolies() {
+        warn!("apply root profile sepolicy failed: {}", e);
+    }
+
     // exec modules post-fs-data scripts
     // TODO: Add timeout
     if let Err(e) = crate::module::exec_post_fs_data() {
