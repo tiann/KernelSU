@@ -147,7 +147,23 @@ fun isSepolicyValid(rules: String?): Boolean {
     }
     val shell = getRootShell()
     val result =
-        shell.newJob().add("ksud sepolicy check '$rules'").to(ArrayList(), null).exec()
+        shell.newJob().add("${getKsuDaemonPath()} sepolicy check '$rules'").to(ArrayList(), null).exec()
+    return result.isSuccess
+}
+
+fun getSepolicy(pkg: String): String {
+    val shell = getRootShell()
+    val result =
+        shell.newJob().add("${getKsuDaemonPath()} profile get-sepolicy $pkg").to(ArrayList(), null).exec()
+    Log.i(TAG, "code: ${result.code}, out: ${result.out}, err: ${result.err}")
+    return result.out.joinToString("\n")
+}
+
+fun setSepolicy(pkg: String, rules: String): Boolean {
+    val shell = getRootShell()
+    val result =
+        shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'").to(ArrayList(), null).exec()
+    Log.i(TAG, "set sepolicy result: ${result.code}")
     return result.isSuccess
 }
 
