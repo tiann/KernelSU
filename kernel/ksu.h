@@ -80,7 +80,6 @@ struct app_profile {
 };
 
 bool ksu_queue_work(struct work_struct *work);
-bool ksu_queue_delayed_work(struct delayed_work *dwork, unsigned long delay);
 
 static inline int startswith(char *s, char *prefix)
 {

@@ -4,10 +4,75 @@
 #include "linux/key.h"
 #include "linux/errno.h"
 struct key *init_session_keyring = NULL;
-#endif
-#include "kernel_compat.h"
 
-struct ns_fs_saved android_saved;
+static inline int install_session_keyring(struct key *keyring)
+{
+	struct cred *new;
+	int ret;
+
+	new = prepare_creds();
+	if (!new)
+		return -ENOMEM;
+
+	ret = install_session_keyring_to_cred(new, keyring);
+	if (ret < 0) {
+		abort_creds(new);
+		return ret;
+	}
+
+	return commit_creds(new);
+}
+#endif
+
+// mnt_ns context switch for environment that android_init->nsproxy->mnt_ns != init_task.nsproxy->mnt_ns, such as WSA
+struct ksu_ns_fs_saved {
+	struct nsproxy *ns;
+    struct fs_struct *fs;
+};
+
+static void ksu_save_ns_fs(struct ksu_ns_fs_saved *ns_fs_saved) {
+	ns_fs_saved->ns = current->nsproxy;
+	ns_fs_saved->fs = current->fs;
+}
+
+static void ksu_load_ns_fs(struct ksu_ns_fs_saved *ns_fs_saved) {
+	current->nsproxy = ns_fs_saved->ns;
+	current->fs = ns_fs_saved->fs;
+}
+
+static bool android_context_saved_checked = false;
+static bool android_context_saved_enabled = false;
+static struct ksu_ns_fs_saved android_context_saved;
+
+void ksu_android_ns_fs_check() {
+    if (android_context_saved_checked) return;
+    android_context_saved_checked = true;
+    if (current->nsproxy && current->fs && current->nsproxy->mnt_ns != init_task.nsproxy->mnt_ns) {
+        android_context_saved_enabled = true;
+        ksu_save_ns_fs(&android_context_saved);
+    }
+}
+
+struct file *ksu_filp_open_compat(const char *filename, int flags, umode_t mode){
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+    static bool keyring_installed = false;
+    if (init_session_keyring != NULL && !keyring_installed)
+	{
+		install_session_keyring(init_session_keyring);
+		keyring_installed = true;
+	}
+#endif
+    struct ns_fs_saved saved;
+    if (android_context_saved_enabled) {
+        ksu_save_ns_fs(&saved);
+        ksu_load_ns_fs(&android_context_saved);
+    }
+    file *fp = filp_open(filename, flags, mode);
+    if (android_context_saved_enabled) {
+        ksu_load_ns_fs(&saved);
+    }
+    return fp;
+}
 
 ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count, loff_t *pos){
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
