@@ -7,6 +7,7 @@ pub fn set_sepolicy(pkg: String, policy: String) -> Result<()> {
     ensure_dir_exists(defs::PROFILE_SELINUX_DIR)?;
     let policy_file = Path::new(defs::PROFILE_SELINUX_DIR).join(pkg);
     std::fs::write(policy_file, policy)?;
+    sepolicy::apply_file(&policy_file)?;
     Ok(())
 }
 
