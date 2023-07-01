@@ -39,8 +39,7 @@ static bool is_uid_exist(uid_t uid, void *data)
 
 static void do_update_uid(struct work_struct *work)
 {
-	KWORKER_INSTALL_KEYRING();
-	struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+	struct file *fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("do_update_uid, open " SYSTEM_PACKAGES_LIST_PATH
 		       " failed: %d\n",

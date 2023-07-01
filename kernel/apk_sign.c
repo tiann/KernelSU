@@ -16,7 +16,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 
 	int sign = -1;
 	int i;
-	struct file *fp = filp_open(path, O_RDONLY, 0);
+	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.", path);
 		return PTR_ERR(fp);
