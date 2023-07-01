@@ -75,4 +75,7 @@
     <string name="module_downloading">正在下载模块：%s</string>
     <string name="module_start_downloading">开始下载：%s</string>
     <string name="new_version_available">发现新版本：%d，点击下载</string>
+    <string name="launch_app">启动</string>
+    <string name="force_stop_app">强制停止</string>
+    <string name="restart_app">重新启动</string>
 </resources>

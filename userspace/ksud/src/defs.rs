@@ -5,6 +5,10 @@ pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
 pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
 pub const LOG_DIR: &str = concatcp!(WORKING_DIR, "log/");
 
+pub const PROFILE_DIR: &str = concatcp!(WORKING_DIR, "profile/");
+pub const PROFILE_SELINUX_DIR: &str = concatcp!(PROFILE_DIR, "selinux/");
+pub const PROFILE_TEMPLATE_DIR: &str = concatcp!(PROFILE_DIR, "templates/");
+
 pub const KSURC_PATH: &str = concatcp!(WORKING_DIR, ".ksurc");
 pub const KSU_OVERLAY_SOURCE: &str = "KSU";
 pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
