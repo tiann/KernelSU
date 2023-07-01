@@ -1,6 +1,7 @@
 #include "linux/version.h"
 #include "linux/fs.h"
 #include "linux/nsproxy.h"
+#include "klog.h"
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 #include "linux/key.h"
 #include "linux/errno.h"
