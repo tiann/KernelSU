@@ -12,7 +12,6 @@ pub fn set_sepolicy(pkg: String, policy: String) -> Result<()> {
 }
 
 pub fn get_sepolicy(pkg: String) -> Result<()> {
-    ensure_dir_exists(defs::PROFILE_SELINUX_DIR)?;
     let policy_file = Path::new(defs::PROFILE_SELINUX_DIR).join(pkg);
     let policy = std::fs::read_to_string(policy_file)?;
     println!("{policy}");
@@ -27,7 +26,6 @@ pub fn set_template(name: String, template: String) -> Result<()> {
 }
 
 pub fn get_template(name: String) -> Result<()> {
-    ensure_dir_exists(defs::PROFILE_TEMPLATE_DIR)?;
     let template_file = Path::new(defs::PROFILE_TEMPLATE_DIR).join(name);
     let template = std::fs::read_to_string(template_file)?;
     println!("{template}");
