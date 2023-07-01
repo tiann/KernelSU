@@ -42,6 +42,12 @@ enum Commands {
         command: Sepolicy,
     },
 
+    /// Manage App Profiles
+    Profile {
+        #[command(subcommand)]
+        command: Profile,
+    },
+
     /// For developers
     Debug {
         #[command(subcommand)]
@@ -126,6 +132,40 @@ enum Module {
     List,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum Profile {
+    /// get root profile's selinux policy of <package-name>
+    GetSepolicy {
+        /// package name
+        package: String,
+    },
+
+    /// set root profile's selinux policy of <package-name> to <profile>
+    SetSepolicy {
+        /// package name
+        package: String,
+        /// policy statements
+        policy: String,
+    },
+
+    /// get template of <package-name>
+    GetTemplate {
+        /// package name
+        package: String,
+    },
+
+    /// set template of <package-name> to <template>
+    SetTemplate {
+        /// package name
+        package: String,
+        /// template
+        template: String,
+    },
+
+    /// list all templates
+    ListTemplates,
+}
+
 pub fn run() -> Result<()> {
     #[cfg(target_os = "android")]
     android_logger::init_once(
@@ -172,6 +212,17 @@ pub fn run() -> Result<()> {
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
         Commands::Services => event::on_services(),
+        Commands::Profile { command } => match command {
+            Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
+            Profile::SetSepolicy { package, policy } => {
+                crate::profile::set_sepolicy(package, policy)
+            }
+            Profile::GetTemplate { package } => crate::profile::get_template(package),
+            Profile::SetTemplate { package, template } => {
+                crate::profile::set_template(package, template)
+            }
+            Profile::ListTemplates => crate::profile::list_templates(),
+        },
 
         Commands::Debug { command } => match command {
             Debug::SetManager { apk } => debug::set_manager(&apk),
