@@ -79,4 +79,7 @@
     <string name="module_update">Update</string>
     <string name="module_downloading">Downloaden van module: %s</string>
     <string name="new_version_available">Nieuwe versie: %s is beschikbaar, klik om te downloaden</string>
+    <string name="launch_app">Start</string>
+    <string name="force_stop_app">Forceer Stop</string>
+    <string name="restart_app">Herstart</string>
 </resources>
