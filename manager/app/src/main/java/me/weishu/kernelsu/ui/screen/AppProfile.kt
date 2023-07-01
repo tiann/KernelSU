@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -64,8 +63,10 @@ import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.forceStopApp
+import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
 import me.weishu.kernelsu.ui.util.restartApp
+import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 
 /**
@@ -83,10 +84,16 @@ fun AppProfileScreen(
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile =
         stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
+    val failToUpdateSepolicy =
+        stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
 
     val packageName = appInfo.packageName
+    val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
+    if (initialProfile.allowSu) {
+        initialProfile.rules = getSepolicy(packageName)
+    }
     var profile by rememberSaveable {
-        mutableStateOf(Natives.getAppProfile(packageName, appInfo.uid))
+        mutableStateOf(initialProfile)
     }
 
     Scaffold(
@@ -114,6 +121,12 @@ fun AppProfileScreen(
             profile = profile,
             onProfileChange = {
                 scope.launch {
+                    if (it.allowSu && !it.rootUseDefault && it.rules.isNotEmpty()) {
+                        if (!setSepolicy(profile.name, it.rules)) {
+                            snackbarHost.showSnackbar(failToUpdateSepolicy)
+                            return@launch
+                        }
+                    }
                     if (!Natives.setAppProfile(it)) {
                         snackbarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
                     } else {

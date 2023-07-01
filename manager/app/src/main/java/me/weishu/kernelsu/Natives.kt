@@ -93,6 +93,7 @@ object Natives {
 
         val nonRootUseDefault: Boolean = true,
         val umountModules: Boolean = true,
+        var rules: String = "", // this field is save in ksud!!
     ) : Parcelable {
         enum class Namespace {
             Inherited,

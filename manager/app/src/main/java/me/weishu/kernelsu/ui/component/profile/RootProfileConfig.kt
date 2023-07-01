@@ -175,6 +175,7 @@ fun RootProfileConfig(
             onProfileChange(
                 profile.copy(
                     context = domain,
+                    rules = rules,
                     rootUseDefault = false
                 )
             )
@@ -357,11 +358,14 @@ private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
 }
 
 @Composable
-private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: String, rules: String) -> Unit) {
+private fun SELinuxPanel(
+    profile: Natives.Profile,
+    onSELinuxChange: (domain: String, rules: String) -> Unit
+) {
     var showDialog by remember { mutableStateOf(false) }
     if (showDialog) {
         var domain by remember { mutableStateOf(profile.context) }
-        var rules by remember { mutableStateOf("") }
+        var rules by remember { mutableStateOf(profile.rules) }
 
         val inputOptions = listOf(
             InputTextField(
@@ -382,7 +386,7 @@ private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: Str
                     // value can be a-zA-Z0-9_
                     val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
                     if (value?.matches(regex) == true) ValidationResult.Valid
-                    else ValidationResult.Invalid("Domain must be valid sepolicy")
+                    else ValidationResult.Invalid("Domain must be in the format of \"user:role:type:level\"")
                 }
             ),
             InputTextField(
@@ -393,7 +397,6 @@ private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: Str
                 type = InputTextFieldType.OUTLINED,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Ascii,
-                    imeAction = ImeAction.Done
                 ),
                 singleLine = false,
                 resultListener = {
@@ -401,8 +404,8 @@ private fun SELinuxPanel(profile: Natives.Profile, onSELinuxChange: (domain: Str
                 },
                 validationListener = { value ->
                     if (isSepolicyValid(value)) ValidationResult.Valid
-                    else ValidationResult.Invalid("Rules must be valid sepolicy")
-                },
+                    else ValidationResult.Invalid("SELinux rules is invalid!")
+                }
             )
         )
 
