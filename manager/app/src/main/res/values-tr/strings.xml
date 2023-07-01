@@ -81,4 +81,5 @@
     <string name="launch_app">Çalıştır</string>
     <string name="force_stop_app">Durmaya zorla</string>
     <string name="restart_app">Yeniden başlat</string>
+    <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
 </resources>
