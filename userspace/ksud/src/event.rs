@@ -219,10 +219,6 @@ pub fn on_boot_completed() -> Result<()> {
     Ok(())
 }
 
-pub fn daemon() -> Result<()> {
-    Ok(())
-}
-
 pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;

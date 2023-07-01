@@ -18,9 +18,6 @@ struct Args {
 
 #[derive(clap::Subcommand, Debug)]
 enum Commands {
-    /// Start KernelSU userspace daemon
-    Daemon,
-
     /// Manage KernelSU modules
     Module {
         #[command(subcommand)]
@@ -151,7 +148,6 @@ pub fn run() -> Result<()> {
     log::info!("command: {:?}", cli.command);
 
     let result = match cli.command {
-        Commands::Daemon => event::daemon(),
         Commands::PostFsData => event::on_post_data_fs(),
         Commands::BootCompleted => event::on_boot_completed(),
 
