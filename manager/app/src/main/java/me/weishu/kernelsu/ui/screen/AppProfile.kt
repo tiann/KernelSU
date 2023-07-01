@@ -3,7 +3,9 @@ package me.weishu.kernelsu.ui.screen
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +22,8 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
@@ -54,6 +58,9 @@ import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.forceStopApp
+import me.weishu.kernelsu.ui.util.launchApp
+import me.weishu.kernelsu.ui.util.restartApp
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 
 /**
@@ -77,10 +84,8 @@ fun AppProfileScreen(
         mutableStateOf(Natives.getAppProfile(packageName, appInfo.uid))
     }
 
-    Log.i("mylog", "profile: $profile")
-
     Scaffold(
-        topBar = { TopBar { navigator.popBackStack() } }
+        topBar = { TopBar { navigator.popBackStack() } },
     ) { paddingValues ->
         AppProfileInner(
             modifier = Modifier
@@ -128,11 +133,13 @@ private fun AppProfileInner(
     val isRootGranted = profile.allowSu
 
     Column(modifier = modifier) {
-        ListItem(
-            headlineContent = { Text(appLabel) },
-            supportingContent = { Text(packageName) },
-            leadingContent = appIcon,
-        )
+        AppMenuBox(packageName) {
+            ListItem(
+                headlineContent = { Text(appLabel) },
+                supportingContent = { Text(packageName) },
+                leadingContent = appIcon,
+            )
+        }
 
         SwitchItem(
             icon = Icons.Filled.Security,
@@ -289,6 +296,51 @@ private fun ProfileBox(
             )
         }
     })
+}
+
+@Composable
+private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
+
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+
+        Box(modifier = Modifier.clickable {
+            expanded = true
+        }) {
+            content()
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                expanded = false
+            },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.launch_app)) },
+                onClick = {
+                    expanded = false
+                    launchApp(packageName)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.force_stop_app)) },
+                onClick = {
+                    expanded = false
+                    forceStopApp(packageName)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.restart_app)) },
+                onClick = {
+                    expanded = false
+                    restartApp(packageName)
+                },
+            )
+        }
+    }
+
+
 }
 
 @Preview

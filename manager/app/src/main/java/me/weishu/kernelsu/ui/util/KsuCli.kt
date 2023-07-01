@@ -9,7 +9,6 @@ import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import org.json.JSONArray
 import java.io.File
 
@@ -150,4 +149,22 @@ fun isSepolicyValid(rules: String?): Boolean {
     val result =
         shell.newJob().add("ksud sepolicy check '$rules'").to(ArrayList(), null).exec()
     return result.isSuccess
+}
+
+fun forceStopApp(packageName: String) {
+    val shell = getRootShell()
+    val result = shell.newJob().add("am force-stop $packageName").exec()
+    Log.i(TAG, "force stop $packageName result: $result")
+}
+
+fun launchApp(packageName: String) {
+
+    val shell = getRootShell()
+    val result = shell.newJob().add("monkey -p $packageName -c android.intent.category.LAUNCHER 1").exec()
+    Log.i(TAG, "launch $packageName result: $result")
+}
+
+fun restartApp(packageName: String) {
+    forceStopApp(packageName)
+    launchApp(packageName)
 }
