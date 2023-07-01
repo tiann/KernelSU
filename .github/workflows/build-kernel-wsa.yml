@@ -40,7 +40,7 @@ jobs:
           - version: "5.15.94.4"
             device_code: latte-2
             kernel_version: "5.15"
-          - vevsion: "5.15.104.1"
+          - version: "5.15.104.1"
             device_code: latte-2
             kernel_version: "5.15"
 
