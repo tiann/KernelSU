@@ -73,7 +73,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // rules
 #define strip_av(effect, invert) ((effect == AVTAB_AUDITDENY) == !invert)
 
-#define ksu_hash_for_each(node_ptr, n_slot, cur)                                   \
+#define ksu_hash_for_each(node_ptr, n_slot, cur)                               \
 	int i;                                                                 \
 	for (i = 0; i < n_slot; ++i)                                           \
 		for (cur = node_ptr[i]; cur; cur = cur->next)
@@ -81,10 +81,11 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // htable is a struct instead of pointer above 5.8.0:
 // https://elixir.bootlin.com/linux/v5.8-rc1/source/security/selinux/ss/symtab.h
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-#define ksu_hashtab_for_each(htab, cur) ksu_hash_for_each (htab.htable, htab.size, cur)
+#define ksu_hashtab_for_each(htab, cur)                                        \
+	ksu_hash_for_each(htab.htable, htab.size, cur)
 #else
-#define ksu_hashtab_for_each(htab, cur)                                            \
-	ksu_hash_for_each (htab->htable, htab->size, cur)
+#define ksu_hashtab_for_each(htab, cur)                                        \
+	ksu_hash_for_each(htab->htable, htab->size, cur)
 #endif
 
 // symtab_search is introduced on 5.9.0:
@@ -95,8 +96,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 #endif
 
 #define avtab_for_each(avtab, cur)                                             \
-	ksu_hash_for_each (avtab.htable, avtab.nslot, cur)                         \
-		;
+	ksu_hash_for_each(avtab.htable, avtab.nslot, cur);
 
 static struct avtab_node *get_avtab_node(struct policydb *db,
 					 struct avtab_key *key,
@@ -693,7 +693,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	int i;
 	for (i = 0; i < db->p_roles.nprim; ++i) {
 		ebitmap_set_bit(&db->role_val_to_struct[i]->types, value - 1,
-				0);
+				1);
 	}
 
 	return true;
@@ -743,7 +743,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	int i;
 	for (i = 0; i < db->p_roles.nprim; ++i) {
 		ebitmap_set_bit(&db->role_val_to_struct[i]->types, value - 1,
-				0);
+				1);
 	}
 
 	return true;
@@ -854,7 +854,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	int i;
 	for (i = 0; i < db->p_roles.nprim; ++i) {
 		ebitmap_set_bit(&db->role_val_to_struct[i]->types, value - 1,
-				0);
+				1);
 	}
 	return true;
 #endif
