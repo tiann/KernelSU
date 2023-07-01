@@ -746,9 +746,6 @@ pub fn check_rule(policy: &str) -> Result<()> {
     } else {
         policy.to_string()
     };
-    let result = parse_sepolicy(policy.trim(), true)?;
-    for statement in result {
-        apply_one_rule(&statement, true)?;
-    }
+    parse_sepolicy(policy.trim(), true)?;
     Ok(())
 }
