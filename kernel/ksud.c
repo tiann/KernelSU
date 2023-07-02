@@ -138,8 +138,9 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 	return i;
 }
 
+// the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-			     void *argv, void *envp, int *flags)
+			     struct user_arg_ptr *argv, void *__never_use_envp, int *__never_use_flags)
 {
 #ifndef CONFIG_KPROBES
 	if (!ksu_execveat_hook) {
@@ -163,13 +164,12 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 
 	if (unlikely(!memcmp(filename->name, system_bin_init,
 		    sizeof(system_bin_init) - 1))) {
-#ifdef __aarch64__
+#if defined(__aarch64__) || defined(__x86_64__)
 		// /system/bin/init executed
-		struct user_arg_ptr *ptr = (struct user_arg_ptr*) argv;
-		int argc = count(*ptr, MAX_ARG_STRINGS);
+		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/system/bin/init argc: %d\n", argc);
 		if (argc > 1 && !init_second_stage_executed) {
-			const char __user *p = get_user_arg_ptr(*ptr, 1);
+			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
                                 ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
@@ -394,11 +394,19 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *fd = (int *)&PT_REGS_PARM1(regs);
 	struct filename **filename_ptr =
 		(struct filename **)&PT_REGS_PARM2(regs);
-	void *argv = (void *)&PT_REGS_PARM3(regs);
-	void *envp = (void *)&PT_REGS_PARM4(regs);
-	int *flags = (int *)&PT_REGS_PARM5(regs);
+	struct user_arg_ptr argv;
+#ifdef CONFIG_COMPAT
+	argv.is_compat = PT_REGS_PARM3(regs);
+	if (unlikely(argv.is_compat)) {
+		argv.ptr.compat = PT_REGS_CCALL_PARM4(regs);
+	} else {
+		argv.ptr.native = PT_REGS_CCALL_PARM4(regs);
+	}
+#else
+	argv.ptr.native = PT_REGS_PARM3(regs);
+#endif
 
-	return ksu_handle_execveat_ksud(fd, filename_ptr, argv, envp, flags);
+	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
 }
 
 static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -406,7 +414,7 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
 	char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
 	size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
-	loff_t **pos_ptr = (loff_t **)&PT_REGS_PARM4(regs);
+	loff_t **pos_ptr = (loff_t **)&PT_REGS_CCALL_PARM4(regs);
 
 	return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
 }
@@ -416,7 +424,7 @@ static int input_handle_event_handler_pre(struct kprobe *p,
 {
 	unsigned int *type = (unsigned int *)&PT_REGS_PARM2(regs);
 	unsigned int *code = (unsigned int *)&PT_REGS_PARM3(regs);
-	int *value = (int *)&PT_REGS_PARM4(regs);
+	int *value = (int *)&PT_REGS_CCALL_PARM4(regs);
 	return ksu_handle_input_handle_event(type, code, value);
 }
 

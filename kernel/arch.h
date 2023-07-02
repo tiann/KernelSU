@@ -8,7 +8,8 @@
 #define __PT_PARM1_REG regs[0]
 #define __PT_PARM2_REG regs[1]
 #define __PT_PARM3_REG regs[2]
-#define __PT_PARM4_REG regs[3]
+#define __PT_SYSCALL_PARM4_REG regs[3]
+#define __PT_CCALL_PARM4_REG regs[3]
 #define __PT_PARM5_REG regs[4]
 #define __PT_PARM6_REG regs[5]
 #define __PT_RET_REG regs[30]
@@ -29,8 +30,8 @@
 #define __PT_PARM2_REG si
 #define __PT_PARM3_REG dx
 /* syscall uses r10 for PARM4 */
-#define __PT_PARM4_REG r10
-// #define __PT_PARM4_REG cx
+#define __PT_SYSCALL_PARM4_REG r10
+#define __PT_CCALL_PARM4_REG cx
 #define __PT_PARM5_REG r8
 #define __PT_PARM6_REG r9
 #define __PT_RET_REG sp
@@ -56,7 +57,8 @@
 #define PT_REGS_PARM1(x) (__PT_REGS_CAST(x)->__PT_PARM1_REG)
 #define PT_REGS_PARM2(x) (__PT_REGS_CAST(x)->__PT_PARM2_REG)
 #define PT_REGS_PARM3(x) (__PT_REGS_CAST(x)->__PT_PARM3_REG)
-#define PT_REGS_PARM4(x) (__PT_REGS_CAST(x)->__PT_PARM4_REG)
+#define PT_REGS_SYSCALL_PARM4(x) (__PT_REGS_CAST(x)->__PT_SYSCALL_PARM4_REG)
+#define PT_REGS_CCALL_PARM4(x) (__PT_REGS_CAST(x)->__PT_CCALL_PARM4_REG)
 #define PT_REGS_PARM5(x) (__PT_REGS_CAST(x)->__PT_PARM5_REG)
 #define PT_REGS_PARM6(x) (__PT_REGS_CAST(x)->__PT_PARM6_REG)
 #define PT_REGS_RET(x) (__PT_REGS_CAST(x)->__PT_RET_REG)
