@@ -22,8 +22,8 @@ features:
     details: KernelSU is working in Linux kernel mode, it has more control over userspace applications.
   - title: Whitelist access control
     details: Only App that is granted root permission can access `su`, other apps cannot perceive su.
-  - title: Module support
-    details: KernelSU supports modify /system systemlessly by overlayfs, it can even make system writable.
-  - title: Open source
-    details: KernelSU is a open source project under GPL-3 License.
+  - title: Restricted root permission
+    details: KernelSU allows you to customize the uid, gid, groups, capabilities and SELinux rules of su. Lock up the root power in a cage.
+  - title: Module & Open source
+    details: KernelSU supports modify /system systemlessly by overlayfs and it is open-sourced under GPL-3.
 
