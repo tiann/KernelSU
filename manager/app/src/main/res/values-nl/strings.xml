@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">KernelSU</string>
-
     <string name="home">Home</string>
     <string name="home_not_installed">Niet geïnstalleerd</string>
     <string name="home_click_to_install">Klik om te installeren</string>

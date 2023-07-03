@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">KernelSU</string>
-
     <string name="home">الرئيسية</string>
     <string name="home_not_installed">غير مثبت</string>
     <string name="home_click_to_install">إضغط للتثبيت</string>
