@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">কার্নেলএসইউ</string>
-
     <string name="home">হোম</string>
     <string name="home_not_installed">ইনস্টল করা হয়নি</string>
     <string name="home_click_to_install">ইনস্টল করার জন্য ক্লিক করুন</string>
