@@ -164,7 +164,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 
 	if (unlikely(!memcmp(filename->name, system_bin_init,
 		    sizeof(system_bin_init) - 1))) {
-#if defined(__aarch64__) || defined(__x86_64__)
 		// /system/bin/init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/system/bin/init argc: %d\n", argc);
@@ -184,16 +183,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				pr_err("/system/bin/init parse args err!\n");
 			}
 		}
-#else
-		static int init_count = 0;
-		if (++init_count == 2) {
-			// 1: /system/bin/init selinux_setup
-			// 2: /system/bin/init second_stage
-			pr_info("/system/bin/init second_stage executed\n");
-			apply_kernelsu_rules();
-			ksu_android_ns_fs_check();
-		}
-#endif
 	}
 
 	if (unlikely(first_app_process &&
