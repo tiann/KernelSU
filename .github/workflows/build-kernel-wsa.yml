@@ -11,6 +11,10 @@ on:
       - ".github/workflows/build-kernel-wsa.yml"
       - "kernel/**"
   workflow_call:
+    inputs:
+      use_cache:
+        required: true
+        type: boolean
   workflow_dispatch:
 
 jobs:
@@ -87,6 +91,7 @@ jobs:
           path: WSA-Linux-Kernel
 
       - name: Setup Ccache
+        if: ${{ inputs.use_cache != 'false' }}
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
@@ -104,8 +109,10 @@ jobs:
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
-          echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/${{ matrix.kernel_version }}/*.patch
+          if [ ${{ inputs.use_cache != 'false' }} ]; then
+            echo "[+] Apply KernelSU patches"
+            cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/${{ matrix.kernel_version }}/*.patch
+          fi
           echo "[+] KernelSU setup done."
           cd $GITHUB_WORKSPACE/KernelSU
           VERSION=$(($(git rev-list --count HEAD) + 10200))
@@ -117,7 +124,11 @@ jobs:
         run: |
           cp configs/wsa/${{ matrix.make_config }} .config
           make olddefconfig
-          make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
+          COMMAND_LINE=(-j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }})
+          if [ ${{ inputs.use_cache != 'false' }} ]; then
+            COMMAND_LINE+=(CCACHE="/usr/bin/ccache")
+          fi
+          make "${COMMAND_LINE[@]}"
           echo "file_path=WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}

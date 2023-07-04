@@ -15,6 +15,10 @@ on:
       - ".github/scripts/build-a13.sh"
       - "kernel/**"
   workflow_call:
+    inputs:
+      use_cache:
+        required: false
+        type: boolean
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request'
@@ -59,6 +63,7 @@ jobs:
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
+      use_cache: ${{ inputs.use_cache }}
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest

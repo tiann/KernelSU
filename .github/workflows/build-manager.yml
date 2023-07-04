@@ -12,6 +12,10 @@ on:
     paths:
       - 'manager/**'
   workflow_call:
+    inputs:
+      use_cache:
+        required: true
+        type: boolean
 
 jobs:
   build-ksud:
@@ -23,6 +27,7 @@ jobs:
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
+      use_cache: ${{ inputs.use_cache }}
 
   build-manager:
     needs: build-ksud
@@ -67,6 +72,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-home-cache-cleanup: true
+          cache-disabled: ${{ inputs.use_cache == 'false' }}
 
       - name: Download arm64 ksud
         uses: actions/download-artifact@v3
@@ -90,7 +96,6 @@ jobs:
       - name: Build with Gradle
         run: |
           echo 'org.gradle.parallel=true' >> gradle.properties
-          echo 'org.gradle.vfs.watch=true' >> gradle.properties
           echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
           echo 'android.native.buildOutput=verbose' >> gradle.properties
           sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties

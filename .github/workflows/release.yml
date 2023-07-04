@@ -9,14 +9,22 @@ jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
     secrets: inherit
+    with:
+      use_cache: false
   build-a12-kernel:
     uses: ./.github/workflows/build-kernel-a12.yml
+    with:
+      use_cache: false
   build-a13-kernel:
     uses: ./.github/workflows/build-kernel-a13.yml
+    with:
+      use_cache: false
   build-wsa-kernel:
     uses: ./.github/workflows/build-kernel-wsa.yml
+    with:
+      use_cache: false
   release:
-    needs: 
+    needs:
       - build-manager
       - build-a12-kernel
       - build-a13-kernel
