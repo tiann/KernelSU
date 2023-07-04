@@ -118,7 +118,8 @@ jobs:
           cp configs/wsa/${{ matrix.make_config }} .config
           make olddefconfig
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
-          echo "file_path=WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
+          declare -A ARCH_MAP=(["x86_64"]="x86" ["arm64"]="arm64")
+          echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP[${{ matrix.arch }}]}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
         uses: actions/upload-artifact@v3
