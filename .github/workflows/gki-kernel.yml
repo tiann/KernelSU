@@ -151,7 +151,7 @@ jobs:
           if [ ${{ inputs.use_cache != 'false' }} ]; then
             COMMAND_LINE+=(CCACHE="/usr/bin/ccache")
           fi
-          "${COMMAND_LINE[@]}" build/build.sh
+          ${COMMAND_LINE[@]} build/build.sh
 
       - name: Prepare artifacts
         id: prepareArtifacts
