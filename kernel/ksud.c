@@ -185,10 +185,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			}
 		}
 #else
-		// The argument parse is incorrect becuase of the struct user_arg_ptr has 16bytes
-		// and it is passed by value(not pointer), in arm64, it is correct becuase the register
-		// is just arranged correct accidentally, but is not correct in x86_64
-		// i have no device to test, so revert it for x86_64
 		static int init_count = 0;
 		if (++init_count == 2) {
 			// 1: /system/bin/init selinux_setup
