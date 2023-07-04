@@ -129,7 +129,8 @@ jobs:
             COMMAND_LINE+=(CCACHE="/usr/bin/ccache")
           fi
           make "${COMMAND_LINE[@]}"
-          echo "file_path=WSA-Linux-Kernel/arch/${{ matrix.arch }}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
+          declare -A ARCH_MAP=(["x86_64"]="x86" ["arm64"]="arm64")
+          echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP[${{ matrix.arch }}]}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
         uses: actions/upload-artifact@v3
