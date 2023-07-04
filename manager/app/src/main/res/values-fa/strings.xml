@@ -1,5 +1,4 @@
 <resources>
-<string name="app_name" translatable="false">KernelSU</string>
 <string name="home">خانه</string>
 <string name="home_not_installed">نصب نشده است</string>
 <string name="home_click_to_install">برای نصب ضربه بزنید</string>

@@ -110,7 +110,7 @@ KernelSU provides a systemless mechanism for modifying system partitions, achiev
 
 Additionally, the settings interface of the KernelSU manager provides a switch for "umount modules by default". By default, this switch is **enabled**, which means that KernelSU or some modules will unload modules for this app unless additional settings are applied. If you do not prefer this setting or if it affects certain apps, you have the following options:
 
-1. Keep the switch for "umount modules by default" and individually disable the "umount modules" option in the App Profile for apps requiring module unloading (acting as a "whitelist").
+1. Keep the switch for "umount modules by default" and individually disable the "umount modules" option in the App Profile for apps requiring module loading (acting as a "whitelist").
 2. Disable the switch for "umount modules by default" and individually enable the "umount modules" option in the App Profile for apps requiring module unloading (acting as a "blacklist").
 
 :::info
