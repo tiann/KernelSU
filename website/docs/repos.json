@@ -21,11 +21,11 @@
         "devices": "Poco F1 | MI8 | MiMix2S"
     },
     {
-        "maintainer": "SpectreDev-007",
-        "maintainer_link": "https://github.com/SpectreDev-007",
-        "kernel_name": "kernel_sony_sm8250",
-        "kernel_link": "https://github.com/XperiaBrickers/kernel_sony_sm8250",
-        "devices": "Sony sm8250 device"
+        "maintainer": "th1nhhdk",
+        "maintainer_link": "https://github.com/th1nhhdk",
+        "kernel_name": "android_kernel_sony_sm8250-kernelsu",
+        "kernel_link": "https://github.com/th1nhhdk/android_kernel_sony_sm8250-kernelsu",
+        "devices": "Sony Xperia 1 II | Sony Xperia 5 II"
     },
     {
         "maintainer": "akash07k",
