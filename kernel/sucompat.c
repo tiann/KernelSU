@@ -85,8 +85,9 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	return 0;
 }
 
+// the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
 int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
-				 void *argv, void *envp, int *flags)
+				 void *__never_use_argv, void *__never_use_envp, int *__never_use_flags)
 {
 	struct filename *filename;
 	const char sh[] = KSUD_PATH;
@@ -121,7 +122,8 @@ static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *dfd = (int *)PT_REGS_PARM1(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
 	int *mode = (int *)&PT_REGS_PARM3(regs);
-	int *flags = (int *)&PT_REGS_PARM4(regs);
+	// Both sys_ and do_ is C function
+	int *flags = (int *)&PT_REGS_CCALL_PARM4(regs);
 
 	return ksu_handle_faccessat(dfd, filename_user, mode, flags);
 }
@@ -135,7 +137,7 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *flags = (int *)&PT_REGS_PARM3(regs);
 #else
 // int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
-	int *flags = (int *)&PT_REGS_PARM4(regs);
+	int *flags = (int *)&PT_REGS_CCALL_PARM4(regs);
 #endif
 
 	return ksu_handle_stat(dfd, filename_user, flags);
@@ -147,12 +149,8 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *fd = (int *)&PT_REGS_PARM1(regs);
 	struct filename **filename_ptr =
 		(struct filename **)&PT_REGS_PARM2(regs);
-	void *argv = (void *)&PT_REGS_PARM3(regs);
-	void *envp = (void *)&PT_REGS_PARM4(regs);
-	int *flags = (int *)&PT_REGS_PARM5(regs);
 
-	return ksu_handle_execveat_sucompat(fd, filename_ptr, argv, envp,
-					    flags);
+	return ksu_handle_execveat_sucompat(fd, filename_ptr, NULL, NULL, NULL);
 }
 
 static struct kprobe faccessat_kp = {

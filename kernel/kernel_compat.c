@@ -65,11 +65,11 @@ void ksu_android_ns_fs_check()
 	if (current->nsproxy && current->fs &&
 	    current->nsproxy->mnt_ns != init_task.nsproxy->mnt_ns) {
 		android_context_saved_enabled = true;
-		pr_info("android contex saved enabled due to init mnt_ns(%p) != android mnt_ns(%p)\n",
+		pr_info("android context saved enabled due to init mnt_ns(%p) != android mnt_ns(%p)\n",
 			current->nsproxy->mnt_ns, init_task.nsproxy->mnt_ns);
 		ksu_save_ns_fs(&android_context_saved);
 	} else {
-		pr_info("android contex saved disabled\n");
+		pr_info("android context saved disabled\n");
 	}
 	task_unlock(current);
 }
