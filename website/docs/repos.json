@@ -362,5 +362,19 @@
         "kernel_name": "Quicksilver Kernel",
         "kernel_link": "https://github.com/likkai/ksu_kernel_xiaomi_lisa",
         "devices": "Xiaomi 11 Lite 5G NE (lisa)"
+    },
+    {
+        "maintainer": "awakened1712",
+        "maintainer_link": "https://github.com/awakened1712",
+        "kernel_name": "android_kernel_samsung_exynos9820",
+        "kernel_link": "https://github.com/awakened1712/android_kernel_samsung_exynos9820",
+        "devices": "Samsung S10/N10"
+    },
+    {
+        "maintainer": "awakened1712",
+        "maintainer_link": "https://github.com/awakened1712",
+        "kernel_name": "android_kernel_oneplus_sm8350",
+        "kernel_link": "https://github.com/awakened1712/android_kernel_oneplus_sm8350",
+        "devices": "Oneplus 9/9Pro"
     }
 ]
