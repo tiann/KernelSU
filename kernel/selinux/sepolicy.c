@@ -12,12 +12,20 @@
 /*
  * Adapt to Huawei HISI kernel without affecting other kernels ,
  * Huawei Hisi Kernel EBITMAP Enable or Disable Flag ,
- * From ss/ebitmap.h
+ * From ss/ebitmap.h.
+ * If the kernel is designed for HarmonyOS(Based EMUI 10),
+ * the Kernel Version is 4.14.x.
+ * Huawei changed the "ebitmap_init".We need fix it. 
  */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) &&                           \
 	LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 #ifdef HISI_SELINUX_EBITMAP_RO
 #define CONFIG_IS_HW_HISI
+#endif
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) &&                           \
+	LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
+#ifdef HISI_SELINUX_EBITMAP_RO
+#define CONFIG_IS_HW_HISI_HMOS
 #endif
 #endif
 
@@ -831,7 +839,17 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 		flex_array_free(old_fa);
 	}
 
+	/*
+	* Huawei HarmonyOS use "static inline void ebitmap_init(struct ebitmap *e, const bool protectable)"
+	* not "static inline void ebitmap_init(struct ebitmap *e)"
+	*/
+
+	#if defined(CONFIG_IS_HW_HISI_HMOS)
+	ebitmap_init(flex_array_get(db->type_attr_map_array, value - 1), false);
+	#else
 	ebitmap_init(flex_array_get(db->type_attr_map_array, value - 1));
+	#endif
+
 	ebitmap_set_bit(flex_array_get(db->type_attr_map_array, value - 1),
 			value - 1, 1);
 
