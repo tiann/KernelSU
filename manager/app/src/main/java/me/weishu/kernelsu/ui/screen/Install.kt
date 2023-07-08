@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,8 +39,8 @@ import java.util.*
 @Destination
 fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
 
-    var text by remember { mutableStateOf("") }
-    var showFloatAction by remember { mutableStateOf(false) }
+    var text by rememberSaveable { mutableStateOf("") }
+    var showFloatAction by rememberSaveable { mutableStateOf(false) }
 
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
