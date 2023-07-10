@@ -19,6 +19,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -201,7 +202,7 @@ private fun ModuleList(
                     }
                 } else {
                     items(viewModel.moduleList) { module ->
-                        var isChecked by remember(module) { mutableStateOf(module.enabled) }
+                        var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         val scope = rememberCoroutineScope()
                         val updateUrl by produceState(initialValue = "") {
                             viewModel.checkUpdate(module) { value = it.orEmpty() }
