@@ -5,6 +5,10 @@ pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
 pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
 pub const LOG_DIR: &str = concatcp!(WORKING_DIR, "log/");
 
+pub const PROFILE_DIR: &str = concatcp!(WORKING_DIR, "profile/");
+pub const PROFILE_SELINUX_DIR: &str = concatcp!(PROFILE_DIR, "selinux/");
+pub const PROFILE_TEMPLATE_DIR: &str = concatcp!(PROFILE_DIR, "templates/");
+
 pub const KSURC_PATH: &str = concatcp!(WORKING_DIR, ".ksurc");
 pub const KSU_OVERLAY_SOURCE: &str = "KSU";
 pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
@@ -24,6 +28,7 @@ pub const MODULE_UPDATE_TMP_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
 pub const DISABLE_FILE_NAME: &str = "disable";
 pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
+pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
 
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));

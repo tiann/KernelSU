@@ -50,6 +50,11 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
             info!("module: {} is disabled, ignore!", module.display());
             continue;
         }
+        let skip_mount = module.join(defs::SKIP_MOUNT_FILE_NAME).exists();
+        if skip_mount {
+            info!("module: {} skip_mount exist, skip!", module.display());
+            continue;
+        }
 
         let module_system = Path::new(&module).join("system");
         if module_system.is_dir() {
@@ -153,6 +158,10 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("load sepolicy.rule failed");
     }
 
+    if let Err(e) = crate::profile::apply_sepolies() {
+        warn!("apply root profile sepolicy failed: {}", e);
+    }
+
     // exec modules post-fs-data scripts
     // TODO: Add timeout
     if let Err(e) = crate::module::exec_post_fs_data() {
@@ -211,10 +220,6 @@ pub fn on_boot_completed() -> Result<()> {
             std::fs::remove_file(module_update_img).with_context(|| "Failed to remove image!")?;
         }
     }
-    Ok(())
-}
-
-pub fn daemon() -> Result<()> {
     Ok(())
 }
 

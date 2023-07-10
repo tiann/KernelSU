@@ -52,11 +52,21 @@ static inline bool is_isolated_uid(uid_t uid)
 		appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
 }
 
+static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+
 static void setup_groups(struct root_profile *profile, struct cred *cred)
 {
 	if (profile->groups_count > KSU_MAX_GROUPS) {
 		pr_warn("Failed to setgroups, too large group: %d!\n",
 			profile->uid);
+		return;
+	}
+
+	if (profile->groups_count == 1 && profile->groups[0] == 0) {
+		// setgroup to root and return early.
+		if (cred->group_info)
+			put_group_info(cred->group_info);
+		cred->group_info = get_group_info(&root_groups);
 		return;
 	}
 
@@ -465,12 +475,7 @@ static bool should_umount(struct path *path)
 
 	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
 		const char *fstype = path->mnt->mnt_sb->s_type->name;
-		if (strcmp(fstype, "overlay") == 0) {
-			return ksu_uid_should_umount(current_uid().val);
-		}
-#ifdef CONFIG_KSU_DEBUG
-		pr_info("uid: %d should not umount!\n", current_uid().val);
-#endif
+		return strcmp(fstype, "overlay") == 0;
 	}
 	return false;
 }
@@ -522,6 +527,14 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
+	if (!ksu_uid_should_umount(new_uid.val)) {
+		return 0;
+	} else {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("uid: %d should not umount!\n", current_uid().val);
+#endif
+	}
+
 	// umount the target mnt
 	pr_info("handle umount for uid: %d\n", new_uid.val);
 
@@ -546,7 +559,14 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int option = (int)PT_REGS_PARM1(real_regs);
 	unsigned long arg2 = (unsigned long)PT_REGS_PARM2(real_regs);
 	unsigned long arg3 = (unsigned long)PT_REGS_PARM3(real_regs);
-	unsigned long arg4 = (unsigned long)PT_REGS_PARM4(real_regs);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
+	// PRCTL_SYMBOL is the arch-specificed one, which receive raw pt_regs from syscall
+	unsigned long arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+#else
+	// PRCTL_SYMBOL is the common one, called by C convention in do_syscall_64
+	// https://elixir.bootlin.com/linux/v4.15.18/source/arch/x86/entry/common.c#L287
+	unsigned long arg4 = (unsigned long)PT_REGS_CCALL_PARM4(real_regs);
+#endif
 	unsigned long arg5 = (unsigned long)PT_REGS_PARM5(real_regs);
 
 	return ksu_handle_prctl(option, arg2, arg3, arg4, arg5);
@@ -566,7 +586,7 @@ static int renameat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	struct dentry *new_entry = rd->new_dentry;
 #else
 	struct dentry *old_entry = (struct dentry *)PT_REGS_PARM2(regs);
-	struct dentry *new_entry = (struct dentry *)PT_REGS_PARM4(regs);
+	struct dentry *new_entry = (struct dentry *)PT_REGS_CCALL_PARM4(regs);
 #endif
 
 	return ksu_handle_rename(old_entry, new_entry);

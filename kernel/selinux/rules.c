@@ -114,6 +114,10 @@ void apply_kernelsu_rules()
 	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "process",
 		  "getattr");
 
+	// For mounting loop devices, mirrors, tmpfs
+	ksu_allow(db, "kernel", ALL, "file", "read");
+	ksu_allow(db, "kernel", ALL, "file", "write");
+
 	// Allow all binder transactions
 	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "binder", ALL);
 

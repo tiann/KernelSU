@@ -22,8 +22,8 @@ features:
     details: KernelSU 运行在内核空间，对用户空间应用有更强的掌控。
   - title: 白名单访问控制
     details: 只有被授权的 App 才可以访问 `su`，而其他 App 无法感知其存在。
-  - title: 模块支持
-    details: KernelSU 支持通过 overlayfs 修改 /system，它甚至可以使 /system 可写。
-  - title: 开源
-    details: KernelSU 是 GPL-3 许可下的开源项目。
+  - title: 受限制的 root 权限
+    details: KernelSU 可以自定义 `su` 的 uid, gid, groups, capabilities 和 SELinux 规则：把 root 权限关进笼子里。
+  - title: 模块系统 & 开源
+    details: KernelSU 支持通过 overlayfs 修改 /system，并且是 GPL-3 许可下的开源项目。
 

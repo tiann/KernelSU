@@ -9,7 +9,6 @@ import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import org.json.JSONArray
 import java.io.File
 
@@ -148,6 +147,40 @@ fun isSepolicyValid(rules: String?): Boolean {
     }
     val shell = getRootShell()
     val result =
-        shell.newJob().add("ksud sepolicy check '$rules'").to(ArrayList(), null).exec()
+        shell.newJob().add("${getKsuDaemonPath()} sepolicy check '$rules'").to(ArrayList(), null).exec()
     return result.isSuccess
+}
+
+fun getSepolicy(pkg: String): String {
+    val shell = getRootShell()
+    val result =
+        shell.newJob().add("${getKsuDaemonPath()} profile get-sepolicy $pkg").to(ArrayList(), null).exec()
+    Log.i(TAG, "code: ${result.code}, out: ${result.out}, err: ${result.err}")
+    return result.out.joinToString("\n")
+}
+
+fun setSepolicy(pkg: String, rules: String): Boolean {
+    val shell = getRootShell()
+    val result =
+        shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'").to(ArrayList(), null).exec()
+    Log.i(TAG, "set sepolicy result: ${result.code}")
+    return result.isSuccess
+}
+
+fun forceStopApp(packageName: String) {
+    val shell = getRootShell()
+    val result = shell.newJob().add("am force-stop $packageName").exec()
+    Log.i(TAG, "force stop $packageName result: $result")
+}
+
+fun launchApp(packageName: String) {
+
+    val shell = getRootShell()
+    val result = shell.newJob().add("monkey -p $packageName -c android.intent.category.LAUNCHER 1").exec()
+    Log.i(TAG, "launch $packageName result: $result")
+}
+
+fun restartApp(packageName: String) {
+    forceStopApp(packageName)
+    launchApp(packageName)
 }

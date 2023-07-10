@@ -15,7 +15,8 @@ object Natives {
     // 10931: app profile struct add 'version' field
     // 10946: add capabilities
     // 10977: change groups_count and groups to avoid overflow write
-    const val MINIMAL_SUPPORTED_KERNEL = 10977
+    // 11071: Fix the issue of failing to set a custom SELinux type.
+    const val MINIMAL_SUPPORTED_KERNEL = 11071
 
     init {
         System.loadLibrary("kernelsu")
@@ -93,6 +94,7 @@ object Natives {
 
         val nonRootUseDefault: Boolean = true,
         val umountModules: Boolean = true,
+        var rules: String = "", // this field is save in ksud!!
     ) : Parcelable {
         enum class Namespace {
             Inherited,

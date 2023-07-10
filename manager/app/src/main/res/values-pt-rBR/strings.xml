@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">KernelSU</string>
-
     <string name="home">Início</string>
     <string name="home_not_installed">Não instalado</string>
     <string name="home_click_to_install">Clique para instalar</string>
@@ -25,7 +23,7 @@
     <string name="module_failed_to_disable">Falha ao desativar o módulo: %s</string>
     <string name="module_empty">Nenhum módulo instalado</string>
 
-    <string name="module">Módulo</string>
+    <string name="module">Módulos</string>
     <string name="uninstall">Desinstalar</string>
     <string name="module_install">Instalar</string>
     <string name="install">Instalar</string>
@@ -74,4 +72,14 @@
     <string name="settings_umount_modules_default">Não montar módulos por padrão</string>
     <string name="settings_umount_modules_default_summary">O valor padrão global para \"Módulos não montados\" em perfis de aplicativos. Se ativado, removerá todas as modificações do módulo do sistema para aplicativos que não possuem um perfil definido.</string>
     <string name="profile_umount_modules_summary">Ativar esta opção permitirá que o KernelSU restaure quaisquer arquivos modificados pelos módulos para este aplicativo.</string>
+    <string name="profile_selinux_domain">Domínio</string>
+    <string name="profile_selinux_rules">Regras</string>
+    <string name="module_update">Atualizar</string>
+    <string name="module_downloading">Baixando módulo: %s</string>
+    <string name="module_start_downloading">Comece a baixar: %s</string>
+    <string name="new_version_available">Nova versão: %s está disponível, clique para baixar</string>
+    <string name="launch_app">Iniciar</string>
+    <string name="force_stop_app">Forçar parada</string>
+    <string name="restart_app">Reiniciar</string>
+    <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
 </resources>

@@ -21,11 +21,11 @@
         "devices": "Poco F1 | MI8 | MiMix2S"
     },
     {
-        "maintainer": "SpectreDev-007",
-        "maintainer_link": "https://github.com/SpectreDev-007",
-        "kernel_name": "kernel_sony_sm8250",
-        "kernel_link": "https://github.com/XperiaBrickers/kernel_sony_sm8250",
-        "devices": "Sony sm8250 device"
+        "maintainer": "th1nhhdk",
+        "maintainer_link": "https://github.com/th1nhhdk",
+        "kernel_name": "android_kernel_sony_sm8250-kernelsu",
+        "kernel_link": "https://github.com/th1nhhdk/android_kernel_sony_sm8250-kernelsu",
+        "devices": "Sony Xperia 1 II | Sony Xperia 5 II"
     },
     {
         "maintainer": "akash07k",
@@ -171,7 +171,7 @@
         "maintainer": "SoDebug",
         "maintainer_link": "https://github.com/SoDebug",
         "kernel_name": "kernel_xiaomi_raphael",
-        "kernel_link": "https://github.com/SoDebug/kernel_xiaomi_raphael",
+        "kernel_link": "https://github.com/SoDebug/KernelSU_Kernel_Raphael",
         "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
     },
     {
@@ -355,5 +355,26 @@
         "kernel_name": "Miyo Toku",
         "kernel_link": "https://github.com/Miiyo/android_kernel_sony_sdm845/tree/KSU/Toku",
         "devices": "Sony Tama (akari, apollo, aurora, akatsuki) (Linux 4.9)"
+    },
+    {
+        "maintainer": "likkai",
+        "maintainer_link": "https://github.com/likkai",
+        "kernel_name": "Quicksilver Kernel",
+        "kernel_link": "https://github.com/likkai/ksu_kernel_xiaomi_lisa",
+        "devices": "Xiaomi 11 Lite 5G NE (lisa)"
+    },
+    {
+        "maintainer": "awakened1712",
+        "maintainer_link": "https://github.com/awakened1712",
+        "kernel_name": "android_kernel_samsung_exynos9820",
+        "kernel_link": "https://github.com/awakened1712/android_kernel_samsung_exynos9820",
+        "devices": "Samsung S10/N10"
+    },
+    {
+        "maintainer": "awakened1712",
+        "maintainer_link": "https://github.com/awakened1712",
+        "kernel_name": "android_kernel_oneplus_sm8350",
+        "kernel_link": "https://github.com/awakened1712/android_kernel_oneplus_sm8350",
+        "devices": "Oneplus 9/9Pro"
     }
 ]

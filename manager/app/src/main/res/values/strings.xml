@@ -76,4 +76,12 @@
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU to restore any modified files by the modules for this application.</string>
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
+    <string name="module_update">Update</string>
+    <string name="module_downloading">Downloading module: %s</string>
+    <string name="module_start_downloading">Start downloading: %s</string>
+    <string name="new_version_available">New version: %s is available, click to download</string>
+    <string name="launch_app">Launch</string>
+    <string name="force_stop_app">Force Stop</string>
+    <string name="restart_app">Restart</string>
+    <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
 </resources>

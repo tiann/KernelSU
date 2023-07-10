@@ -1,11 +1,13 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +22,8 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
@@ -38,10 +42,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -54,6 +62,11 @@ import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.forceStopApp
+import me.weishu.kernelsu.ui.util.getSepolicy
+import me.weishu.kernelsu.ui.util.launchApp
+import me.weishu.kernelsu.ui.util.restartApp
+import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 
 /**
@@ -71,16 +84,20 @@ fun AppProfileScreen(
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile =
         stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
+    val failToUpdateSepolicy =
+        stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
 
     val packageName = appInfo.packageName
+    val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
+    if (initialProfile.allowSu) {
+        initialProfile.rules = getSepolicy(packageName)
+    }
     var profile by rememberSaveable {
-        mutableStateOf(Natives.getAppProfile(packageName, appInfo.uid))
+        mutableStateOf(initialProfile)
     }
 
-    Log.i("mylog", "profile: $profile")
-
     Scaffold(
-        topBar = { TopBar { navigator.popBackStack() } }
+        topBar = { TopBar { navigator.popBackStack() } },
     ) { paddingValues ->
         AppProfileInner(
             modifier = Modifier
@@ -104,6 +121,12 @@ fun AppProfileScreen(
             profile = profile,
             onProfileChange = {
                 scope.launch {
+                    if (it.allowSu && !it.rootUseDefault && it.rules.isNotEmpty()) {
+                        if (!setSepolicy(profile.name, it.rules)) {
+                            snackbarHost.showSnackbar(failToUpdateSepolicy)
+                            return@launch
+                        }
+                    }
                     if (!Natives.setAppProfile(it)) {
                         snackbarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
                     } else {
@@ -128,11 +151,13 @@ private fun AppProfileInner(
     val isRootGranted = profile.allowSu
 
     Column(modifier = modifier) {
-        ListItem(
-            headlineContent = { Text(appLabel) },
-            supportingContent = { Text(packageName) },
-            leadingContent = appIcon,
-        )
+        AppMenuBox(packageName) {
+            ListItem(
+                headlineContent = { Text(appLabel) },
+                supportingContent = { Text(packageName) },
+                leadingContent = appIcon,
+            )
+        }
 
         SwitchItem(
             icon = Icons.Filled.Security,
@@ -289,6 +314,64 @@ private fun ProfileBox(
             )
         }
     })
+}
+
+@Composable
+private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
+
+    var expanded by remember { mutableStateOf(false) }
+    var touchPoint: Offset by remember { mutableStateOf(Offset.Zero) }
+    val density = LocalDensity.current
+
+    BoxWithConstraints(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    touchPoint = it
+                    expanded = true
+                }
+            }
+    ) {
+
+        content()
+
+        val (offsetX, offsetY) = with(density) {
+            (touchPoint.x.toDp()) to (touchPoint.y.toDp())
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            offset = DpOffset(offsetX, -offsetY),
+            onDismissRequest = {
+                expanded = false
+            },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.launch_app)) },
+                onClick = {
+                    expanded = false
+                    launchApp(packageName)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.force_stop_app)) },
+                onClick = {
+                    expanded = false
+                    forceStopApp(packageName)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.restart_app)) },
+                onClick = {
+                    expanded = false
+                    restartApp(packageName)
+                },
+            )
+        }
+    }
+
+
 }
 
 @Preview
