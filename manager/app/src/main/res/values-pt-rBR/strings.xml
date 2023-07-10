@@ -78,4 +78,8 @@
     <string name="module_downloading">Baixando módulo: %s</string>
     <string name="module_start_downloading">Comece a baixar: %s</string>
     <string name="new_version_available">Nova versão: %s está disponível, clique para baixar</string>
+    <string name="launch_app">Iniciar</string>
+    <string name="force_stop_app">Forçar parada</string>
+    <string name="restart_app">Reiniciar</string>
+    <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
 </resources>
