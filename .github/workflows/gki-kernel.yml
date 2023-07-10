@@ -147,10 +147,11 @@ jobs:
       - name: Build boot.img
         working-directory: android-kernel
         run: |
-          BUILD_ENV=(LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64)
+          BUILD_ENV="LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64"
           if [ ${{ inputs.use_cache != 'false' }} ]; then
-          BUILD_ENV+=(CCACHE="/usr/bin/ccache")
+          BUILD_ENV+=" CCACHE="/usr/bin/ccache""
           fi
+          echo $BUILD_ENV build/build.sh 
           env $BUILD_ENV build/build.sh
 
       - name: Prepare artifacts
