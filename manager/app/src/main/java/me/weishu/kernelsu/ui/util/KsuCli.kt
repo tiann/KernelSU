@@ -91,7 +91,7 @@ fun uninstallModule(id: String): Boolean {
     return result
 }
 
-fun installModule(uri: Uri, onFinish: (Boolean) -> Unit, onOutput: (String) -> Unit): Boolean {
+fun installModule(uri: Uri, onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit): Boolean {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
         val file = File(ksuApp.cacheDir, "module.zip")
@@ -102,14 +102,20 @@ fun installModule(uri: Uri, onFinish: (Boolean) -> Unit, onOutput: (String) -> U
 
         val shell = getRootShell()
 
-        val callbackList: CallbackList<String?> = object : CallbackList<String?>() {
+        val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
-                onOutput(s ?: "")
+                onStdout(s ?: "")
+            }
+        }
+
+        val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+            override fun onAddElement(s: String?) {
+                onStderr(s ?: "")
             }
         }
 
         val result =
-            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(callbackList, callbackList).exec()
+            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
         Log.i("KernelSU", "install module $uri result: $result")
 
         file.delete()

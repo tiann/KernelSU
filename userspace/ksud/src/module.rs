@@ -56,7 +56,6 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
-        .stderr(Stdio::null())
         .status()?;
     ensure!(result.success(), "Failed to install module script");
     Ok(())
