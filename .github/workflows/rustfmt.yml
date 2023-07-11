@@ -30,3 +30,4 @@ jobs:
       - uses: LoliGothick/rustfmt-check@master
         with:
           token: ${{ github.token }}
+          working-directory: userspace/ksud
