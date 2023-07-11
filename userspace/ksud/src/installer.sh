@@ -313,7 +313,7 @@ handle_partition() {
         ui_print "- Handle partition /$1"
         # we create a symlink if module want to access $MODPATH/system/$1
         # but it doesn't always work(ie. write it in post-fs-data.sh would fail because it is readonly)
-        mv -f $MODPATH/system/$1 $MODPATH/$1 && ln -sf /$1 $MODPATH/system/$1
+        mv -f $MODPATH/system/$1 $MODPATH/$1 && ln -sf ../$1 $MODPATH/system/$1
     fi
 }
 
@@ -438,6 +438,8 @@ install_module() {
 
 NVBASE=/data/adb
 TMPDIR=/dev/tmp
+POSTFSDATAD=$NVBASE/post-fs-data.d
+SERVICED=$NVBASE/service.d
 
 # Some modules dependents on this
 export MAGISK_VER=25.2
