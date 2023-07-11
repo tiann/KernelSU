@@ -158,9 +158,12 @@ pub fn load_sepolicy_rule() -> Result<()> {
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
+        if path.join(defs::DISABLE_FILE_NAME).exists() {
             info!("{} is disabled, skip", path.display());
+            continue;
+        }
+        if path.join(defs::REMOVE_FILE_NAME).exists() {
+            warn!("{} is removed, skip", path.display());
             continue;
         }
 
@@ -225,9 +228,12 @@ pub fn exec_post_fs_data() -> Result<()> {
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
-            warn!("{} is disabled, skip", path.display());
+        if path.join(defs::DISABLE_FILE_NAME).exists() {
+            info!("{} is disabled, skip", path.display());
+            continue;
+        }
+        if path.join(defs::REMOVE_FILE_NAME).exists() {
+            warn!("{} is removed, skip", path.display());
             continue;
         }
 
@@ -270,9 +276,12 @@ pub fn exec_services() -> Result<()> {
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
-            warn!("{} is disabled, skip", path.display());
+        if path.join(defs::DISABLE_FILE_NAME).exists() {
+            info!("{} is disabled, skip", path.display());
+            continue;
+        }
+        if path.join(defs::REMOVE_FILE_NAME).exists() {
+            warn!("{} is removed, skip", path.display());
             continue;
         }
 
@@ -292,9 +301,12 @@ pub fn load_system_prop() -> Result<()> {
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
+        if path.join(defs::DISABLE_FILE_NAME).exists() {
             info!("{} is disabled, skip", path.display());
+            continue;
+        }
+        if path.join(defs::REMOVE_FILE_NAME).exists() {
+            warn!("{} is removed, skip", path.display());
             continue;
         }
 
@@ -311,6 +323,33 @@ pub fn load_system_prop() -> Result<()> {
             .arg(&system_prop)
             .status()
             .with_context(|| format!("Failed to exec {}", system_prop.display()))?;
+    }
+
+    Ok(())
+}
+
+pub fn prune_modules() -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        let remove = path.join(defs::REMOVE_FILE_NAME);
+        if !remove.exists() {
+            continue;
+        }
+
+        info!("remove module: {}", path.display());
+
+        let uninstaller = path.join("uninstall.sh");
+        if uninstaller.exists() {
+            if let Err(e) = exec_script(uninstaller, true) {
+                warn!("Failed to exec uninstaller: {}", e);
+            }
+        }
+
+        if let Err(e) = remove_dir_all(&path) {
+            warn!("Failed to remove {}: {}", path.display(), e);
+        }
     }
 
     Ok(())
@@ -557,11 +596,8 @@ pub fn uninstall_module(id: &str) -> Result<()> {
                     }
                 })?;
             if module_id.eq(mid) {
-                let uninstall_script = path.join("uninstall.sh");
-                if uninstall_script.exists() {
-                    exec_script(uninstall_script, true)?;
-                }
-                remove_dir_all(path)?;
+                let remove_file = path.join(defs::REMOVE_FILE_NAME);
+                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
                 break;
             }
         }
@@ -570,7 +606,10 @@ pub fn uninstall_module(id: &str) -> Result<()> {
         let target_module_path = format!("{update_dir}/{mid}");
         let target_module = Path::new(&target_module_path);
         if target_module.exists() {
-            remove_dir_all(target_module)?;
+            let remove_file = target_module.join(defs::REMOVE_FILE_NAME);
+            if !remove_file.exists() {
+                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
+            }
         }
 
         let _ = mark_module_state(id, defs::REMOVE_FILE_NAME, true);
