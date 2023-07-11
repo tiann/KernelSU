@@ -89,20 +89,21 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
     }
 }
 
-fn foreach_active_module(mut f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
+fn foreach_module(active_only: bool, mut f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
     let modules_dir = Path::new(defs::MODULE_DIR);
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
         if !path.is_dir() {
+            warn!("{} is not a directory, skip", path.display());
             continue;
         }
 
-        if path.join(defs::DISABLE_FILE_NAME).exists() {
+        if active_only && path.join(defs::DISABLE_FILE_NAME).exists() {
             info!("{} is disabled, skip", path.display());
             continue;
         }
-        if path.join(defs::REMOVE_FILE_NAME).exists() {
+        if active_only && path.join(defs::REMOVE_FILE_NAME).exists() {
             warn!("{} is removed, skip", path.display());
             continue;
         }
@@ -111,6 +112,10 @@ fn foreach_active_module(mut f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn foreach_active_module(f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
+    foreach_module(true, f)
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
@@ -308,7 +313,7 @@ pub fn load_system_prop() -> Result<()> {
 }
 
 pub fn prune_modules() -> Result<()> {
-    foreach_active_module(|module| {
+    foreach_module(false, |module| {
         remove_file(module.join(defs::UPDATE_FILE_NAME)).ok();
 
         if !module.join(defs::REMOVE_FILE_NAME).exists() {
