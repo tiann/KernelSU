@@ -141,7 +141,7 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
         humansize::format_size(target_size, humansize::DECIMAL)
     );
     let target_size = target_size / 1024 + 1024;
-
+    info!("resize image to {target_size}K, minimal size is {minimal_size}K");
     let result = Command::new("resize2fs")
         .args([img, &format!("{target_size}K")])
         .stdout(Stdio::null())
@@ -392,6 +392,8 @@ fn _install_module(zip: &str) -> Result<()> {
 
         // format the img to ext4 filesystem
         let result = Command::new("mkfs.ext4")
+            .arg("-b")
+            .arg("1024")
             .arg(tmp_module_img)
             .stdout(Stdio::null())
             .output()?;
