@@ -376,7 +376,7 @@
         "kernel_name": "android_kernel_oneplus_sm8350",
         "kernel_link": "https://github.com/awakened1712/android_kernel_oneplus_sm8350",
         "devices": "Oneplus 9/9Pro"
-    }
+    },
         {
         "maintainer": "siimsek",
         "maintainer_link": "https://github.com/siimsek",
