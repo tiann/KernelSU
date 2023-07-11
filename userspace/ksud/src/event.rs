@@ -29,8 +29,8 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
     // construct overlay mount params
     let dir = std::fs::read_dir(module_dir);
     let Ok(dir) = dir else {
-            bail!("open {} failed", defs::MODULE_DIR);
-        };
+        bail!("open {} failed", defs::MODULE_DIR);
+    };
 
     let mut system_lowerdir: Vec<String> = Vec::new();
 
