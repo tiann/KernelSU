@@ -376,5 +376,12 @@
         "kernel_name": "android_kernel_oneplus_sm8350",
         "kernel_link": "https://github.com/awakened1712/android_kernel_oneplus_sm8350",
         "devices": "Oneplus 9/9Pro"
+    },
+    {
+        "maintainer": "siimsek",
+        "maintainer_link": "https://github.com/siimsek",
+        "kernel_name": "Lightning Kernel",
+        "kernel_link": "https://github.com/siimsek/Lightning-Kernel",
+        "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
     }
 ]
