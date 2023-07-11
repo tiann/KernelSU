@@ -14,7 +14,7 @@ use log::{info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, set_permissions, File, Permissions},
+    fs::{remove_dir_all, set_permissions, File, Permissions, remove_file},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -333,8 +333,10 @@ pub fn prune_modules() -> Result<()> {
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
-        let remove = path.join(defs::REMOVE_FILE_NAME);
-        if !remove.exists() {
+
+        remove_file(path.join(defs::UPDATE_FILE_NAME)).ok();
+
+        if !path.join(defs::REMOVE_FILE_NAME).exists() {
             continue;
         }
 
