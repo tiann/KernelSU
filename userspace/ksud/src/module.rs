@@ -14,7 +14,7 @@ use log::{info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, set_permissions, File, Permissions, remove_file},
+    fs::{remove_dir_all, remove_file, set_permissions, File, Permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -89,6 +89,30 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
     }
 }
 
+fn foreach_active_module(mut f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+
+        if path.join(defs::DISABLE_FILE_NAME).exists() {
+            info!("{} is disabled, skip", path.display());
+            continue;
+        }
+        if path.join(defs::REMOVE_FILE_NAME).exists() {
+            warn!("{} is removed, skip", path.display());
+            continue;
+        }
+
+        f(&path)?;
+    }
+
+    Ok(())
+}
+
 fn get_minimal_image_size(img: &str) -> Result<u64> {
     check_image(img)?;
 
@@ -154,29 +178,18 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
 }
 
 pub fn load_sepolicy_rule() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        if path.join(defs::DISABLE_FILE_NAME).exists() {
-            info!("{} is disabled, skip", path.display());
-            continue;
-        }
-        if path.join(defs::REMOVE_FILE_NAME).exists() {
-            warn!("{} is removed, skip", path.display());
-            continue;
-        }
-
+    foreach_active_module(|path| {
         let rule_file = path.join("sepolicy.rule");
         if !rule_file.exists() {
-            continue;
+            return Ok(());
         }
         info!("load policy: {}", &rule_file.display());
 
         if sepolicy::apply_file(&rule_file).is_err() {
             warn!("Failed to load sepolicy.rule for {}", &rule_file.display());
         }
-    }
+        Ok(())
+    })?;
 
     Ok(())
 }
@@ -224,26 +237,14 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
 
 /// execute every modules' post-fs-data.sh
 pub fn exec_post_fs_data() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        if path.join(defs::DISABLE_FILE_NAME).exists() {
-            info!("{} is disabled, skip", path.display());
-            continue;
-        }
-        if path.join(defs::REMOVE_FILE_NAME).exists() {
-            warn!("{} is removed, skip", path.display());
-            continue;
-        }
-
-        let post_fs_data = path.join("post-fs-data.sh");
+    foreach_active_module(|module| {
+        let post_fs_data = module.join("post-fs-data.sh");
         if !post_fs_data.exists() {
-            continue;
+            return Ok(());
         }
 
-        exec_script(&post_fs_data, true)?;
-    }
+        exec_script(&post_fs_data, true)
+    })?;
 
     Ok(())
 }
@@ -272,49 +273,25 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
 
 /// execute every modules' service.sh
 pub fn exec_services() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        if path.join(defs::DISABLE_FILE_NAME).exists() {
-            info!("{} is disabled, skip", path.display());
-            continue;
-        }
-        if path.join(defs::REMOVE_FILE_NAME).exists() {
-            warn!("{} is removed, skip", path.display());
-            continue;
-        }
-
-        let service = path.join("service.sh");
+    foreach_active_module(|module| {
+        let service = module.join("service.sh");
         if !service.exists() {
-            continue;
+            return Ok(());
         }
 
-        exec_script(&service, false)?;
-    }
+        exec_script(&service, false)
+    })?;
 
     Ok(())
 }
 
 pub fn load_system_prop() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        if path.join(defs::DISABLE_FILE_NAME).exists() {
-            info!("{} is disabled, skip", path.display());
-            continue;
-        }
-        if path.join(defs::REMOVE_FILE_NAME).exists() {
-            warn!("{} is removed, skip", path.display());
-            continue;
-        }
-
-        let system_prop = path.join("system.prop");
+    foreach_active_module(|module| {
+        let system_prop = module.join("system.prop");
         if !system_prop.exists() {
-            continue;
+            return Ok(());
         }
-        info!("load {} system.prop", path.display());
+        info!("load {} system.prop", module.display());
 
         // resetprop -n --file system.prop
         Command::new(assets::RESETPROP_PATH)
@@ -323,36 +300,36 @@ pub fn load_system_prop() -> Result<()> {
             .arg(&system_prop)
             .status()
             .with_context(|| format!("Failed to exec {}", system_prop.display()))?;
-    }
+
+        Ok(())
+    })?;
 
     Ok(())
 }
 
 pub fn prune_modules() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
+    foreach_active_module(|module| {
+        remove_file(module.join(defs::UPDATE_FILE_NAME)).ok();
 
-        remove_file(path.join(defs::UPDATE_FILE_NAME)).ok();
-
-        if !path.join(defs::REMOVE_FILE_NAME).exists() {
-            continue;
+        if !module.join(defs::REMOVE_FILE_NAME).exists() {
+            return Ok(());
         }
 
-        info!("remove module: {}", path.display());
+        info!("remove module: {}", module.display());
 
-        let uninstaller = path.join("uninstall.sh");
+        let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists() {
             if let Err(e) = exec_script(uninstaller, true) {
                 warn!("Failed to exec uninstaller: {}", e);
             }
         }
 
-        if let Err(e) = remove_dir_all(&path) {
-            warn!("Failed to remove {}: {}", path.display(), e);
+        if let Err(e) = remove_dir_all(module) {
+            warn!("Failed to remove {}: {}", module.display(), e);
         }
-    }
+
+        Ok(())
+    })?;
 
     Ok(())
 }
