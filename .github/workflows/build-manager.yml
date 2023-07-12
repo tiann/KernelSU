@@ -95,12 +95,19 @@ jobs:
           echo 'android.native.buildOutput=verbose' >> gradle.properties
           sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
           ./gradlew clean assembleRelease
-
-      - name: Upload build artifact
+          ./gradlew assembleDebug
+          
+      - name: Upload Release manager
         uses: actions/upload-artifact@v3
         with:
-          name: manager
+          name: manager-release
           path: manager/app/build/outputs/apk/release/*.apk
+
+      - name: Upload Debug manager
+        uses: actions/upload-artifact@v3
+        with:
+          name: manager-debug
+          path: manager/app/build/outputs/apk/debug/*.apk
 
       - name: Setup mutex for uploading
         uses: ben-z/gh-action-mutex@v1.0-alpha-7
