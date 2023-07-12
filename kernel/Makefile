@@ -24,6 +24,13 @@ $(warning "KSU_GIT_VERSION not defined! It is better to make KernelSU a git subm
 ccflags-y += -DKSU_VERSION=16
 endif
 
+ifeq ($(shell test ! -z "$KSU_EXPECTED_SIZE"),0)
+ifeq ($(shell test ! -z "$KSU_EXPECTED_HASH"),0)
+EXPECTED_SIZE := $(shell echo "$KSU_EXPECTED_SIZE")
+EXPECTED_HASH := $(shell echo "$KSU_EXPECTED_HASH")
+endif
+endif
+
 ifndef EXPECTED_SIZE
 EXPECTED_SIZE := 0x033b
 endif
@@ -31,6 +38,9 @@ endif
 ifndef EXPECTED_HASH
 EXPECTED_HASH := 0xb0b91415
 endif
+
+$(info -- KernelSU Manager signature size: $(EXPECTED_SIZE))
+$(info -- KernelSU Manager signature hash: $(EXPECTED_HASH))
 
 ccflags-y += -DEXPECTED_SIZE=$(EXPECTED_SIZE)
 ccflags-y += -DEXPECTED_HASH=$(EXPECTED_HASH)
