@@ -9,7 +9,7 @@
 :::
 
 <script setup>
-import data from '../repos.json'
+import data from '../../repos.json'
 </script>
 
 <table>
