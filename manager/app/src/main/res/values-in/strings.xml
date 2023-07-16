@@ -28,10 +28,10 @@
     <string name="reboot">Menyalakan ulang</string>
     <string name="settings">Pengaturan</string>
     <string name="reboot_userspace">Reboot Lembut</string>
-    <string name="reboot_recovery">Reboot ke Recovery</string>
-    <string name="reboot_bootloader">Reboot ke Bootloader</string>
-    <string name="reboot_download">Reboot ke Download</string>
-    <string name="reboot_edl">Reboot ke EDL</string>
+    <string name="reboot_recovery">Mulai ulang ke Pemulihan</string>
+    <string name="reboot_bootloader">Mulai ulang ke Bootloader</string>
+    <string name="reboot_download">Mulai ulang ke Download</string>
+    <string name="reboot_edl">Mulai ulang ke EDL</string>
     <string name="about">Tentang</string>
     <string name="module_uninstall_confirm">Apakah Anda yakin ingin mencopot modul %s?</string>
     <string name="module_uninstall_success">%s Tercopot</string>
@@ -44,7 +44,7 @@
     <string name="hide_system_apps">Sembunyikan apl sistem</string>
     <string name="send_log">Kirim Log</string>
     <string name="safe_mode">Mode aman</string>
-    <string name="reboot_to_apply">Reboot untuk menerapkan</string>
+    <string name="reboot_to_apply">Mulai ulang untuk menerapkan</string>
     <string name="module_magisk_conflict">Modul dinonaktifkan karena bertentangan dengan Magisk!</string>
     <string name="home_learn_kernelsu">Pelajari KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
