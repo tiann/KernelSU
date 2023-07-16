@@ -3,4 +3,27 @@
     <string name="home_not_installed">Não instalado</string>
     <string name="home">Início</string>
     <string name="home_click_to_install">Clique para instalar</string>
+    <string name="home_working">Funcionando</string>
+    <string name="home_superuser_count">Super Usuário: %d</string>
+    <string name="home_module_count">Módulos: %d</string>
+    <string name="home_working_version">Versão: %d</string>
+    <string name="home_kernel">Kernel</string>
+    <string name="install">Instalar</string>
+    <string name="home_unsupported">Sem suporte</string>
+    <string name="home_unsupported_reason">KernelSU suporta apenas kernels GKI agora</string>
+    <string name="home_selinux_status">Status do SELinux</string>
+    <string name="home_manager_version">Versão do aplicativo</string>
+    <string name="module_failed_to_disable">Falha ao desativar o módulo: %s</string>
+    <string name="home_fingerprint">Impressão digital</string>
+    <string name="selinux_status_disabled">Desabilitado</string>
+    <string name="selinux_status_enforcing">Impondo</string>
+    <string name="selinux_status_permissive">Permissivo</string>
+    <string name="selinux_status_unknown">Desconhecido</string>
+    <string name="superuser">Super Usuário</string>
+    <string name="module_failed_to_enable">Falha ao ativar o módulo: %s</string>
+    <string name="module_empty">Nenhum módulo instalado</string>
+    <string name="uninstall">Desinstalar</string>
+    <string name="module">Modulos</string>
+    <string name="reboot">Reiniciar</string>
+    <string name="module_install">Instalar</string>
 </resources>
