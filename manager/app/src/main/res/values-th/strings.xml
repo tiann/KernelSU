@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="home">หน้าหลัก</string>
+    <string name="home_not_installed">ยังไม่ได้ติดตั้ง</string>
+    <string name="home_click_to_install">กดเพื่อติดตั้ง</string>
+    <string name="home_working">กำลังทำงาน</string>
+    <string name="home_working_version">เวอร์ชั่น: %d</string>
+</resources>
