@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="home_not_installed">इंस्टॉल केले नाही</string>
+    <string name="home">होम</string>
+    <string name="home_click_to_install">इंस्टॉल साठी क्लिक करा</string>
+</resources>
