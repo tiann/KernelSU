@@ -25,4 +25,10 @@
     <string name="module_failed_to_disable">Modulu deaktiv etmək mümkün olmadı: %s</string>
     <string name="module_empty">Heç bir modul quraşdırılmayıb</string>
     <string name="module">Modul</string>
+    <string name="reboot">Yenidən başlat</string>
+    <string name="settings">Parametrlər</string>
+    <string name="reboot_recovery">Bərpa rejimində yenidən başlat</string>
+    <string name="reboot_userspace">Yüngül vəziyyətdə yenodən başlat</string>
+    <string name="reboot_bootloader">Bootloader rejimində yenidən başlat</string>
+    <string name="reboot_download">Yükləmə rejimində yenidən başlat</string>
 </resources>
