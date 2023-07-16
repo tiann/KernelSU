@@ -65,4 +65,12 @@
     <string name="profile_capabilities">Capacités</string>
     <string name="profile_umount_modules">démontez le module</string>
     <string name="failed_to_update_app_profile">Échec de la mise à jour du profil d\'application pour %s</string>
+    <string name="profile_umount_modules_summary">L\'activation de cette option permettra à KernelSU de restaurer tous les fichiers modifiés par les modules pour cette application.</string>
+    <string name="require_kernel_version">La version actuel du noyau %d est trop faible pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou supérieure !</string>
+    <string name="settings_umount_modules_default">Démonte le module par défaut</string>
+    <string name="settings_umount_modules_default_summary">La valeur globale par défaut pour \"Démontez le module\" est dans les profils d\'applications. S\'il est activé, il supprimera toutes les modifications du module dans le système pour les applications qui n\'ont pas de profil défini.</string>
+    <string name="profile_selinux_domain">Le Domaine</string>
+    <string name="profile_selinux_rules">Les règles</string>
+    <string name="module_update">Mise à jour</string>
+    <string name="module_downloading">Téléchargement du module: %s</string>
 </resources>
