@@ -45,4 +45,7 @@
     <string name="refresh">Yenilə</string>
     <string name="safe_mode">Təhlükəsiz rejimi</string>
     <string name="reboot_to_apply">Qüvvəyə minməsi üçün yenidən başlat</string>
+    <string name="module_magisk_conflict">Modular deaktiv edilir,çünki o Magisk-in modulları ilə toqquşur!</string>
+    <string name="home_learn_kernelsu">KernelSU-yu öyrən</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
 </resources>
