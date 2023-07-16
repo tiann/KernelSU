@@ -10,4 +10,10 @@
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="selinux_status_unknown">Unbekannt</string>
     <string name="selinux_status_enforcing">erzwingen</string>
+    <string name="reboot_bootloader">Zum Bootloader-Modus neustarten</string>
+    <string name="reboot_download">Zum Download-Modus neustarten</string>
+    <string name="reboot_edl">Zum EDL-Modus neustarten</string>
+    <string name="module_author">Autor</string>
+    <string name="module_overlay_fs_not_available">overlayfs ist nicht verfügbar, Modul kann nicht funktionieren!</string>
+    <string name="about">Über</string>
 </resources>
