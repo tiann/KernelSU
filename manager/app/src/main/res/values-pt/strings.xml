@@ -62,4 +62,21 @@
     <string name="profile_groups">Grupos</string>
     <string name="profile_capabilities">Capacidades</string>
     <string name="profile_selinux_context">contexto SELinux</string>
+    <string name="profile_selinux_domain">Domínio</string>
+    <string name="module_update">Atualização</string>
+    <string name="profile_umount_modules">Desativar modulos</string>
+    <string name="failed_to_update_app_profile">Falha ao atualizar o perfil do aplicativo para %s</string>
+    <string name="require_kernel_version">A versão atual do kernel %d é muito baixa para o gerenciador funcionar corretamente. Atualize para a versão %d ou superior!</string>
+    <string name="settings_umount_modules_default">Módulos desativados por padrão</string>
+    <string name="settings_umount_modules_default_summary">O valor padrão global para \"Módulos Umount\" em Perfis de Aplicativos. Se ativado, removerá todas as modificações de módulo do sistema para aplicativos que não possuem um Perfil definido.</string>
+    <string name="profile_selinux_rules">Regras</string>
+    <string name="profile_umount_modules_summary">Ativar esta opção permitirá que o KernelSU restaure quaisquer arquivos modificados pelos módulos para este aplicativo.</string>
+    <string name="module_start_downloading">Iniciar o download: %s</string>
+    <string name="module_downloading">Baixando módulo: %s</string>
+    <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="restart_app">Reiniciar</string>
+    <string name="launch_app">Lançar</string>
+    <string name="force_stop_app">Forçar parada</string>
+    <string name="new_version_available">Nova versão: %s está disponível, clique para baixar</string>
 </resources>
