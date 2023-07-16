@@ -6,7 +6,7 @@
     <string name="home_working">Funktioniert</string>
     <string name="home_working_version">Version: %d</string>
     <string name="superuser">Superuser</string>
-    <string name="home_click_to_install">Klicke um zu installieren</string>
+    <string name="home_click_to_install">Klicken Sie zum Installieren</string>
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="selinux_status_unknown">Unbekannt</string>
     <string name="selinux_status_enforcing">erzwingen</string>
@@ -16,4 +16,9 @@
     <string name="module_author">Autor</string>
     <string name="module_overlay_fs_not_available">overlayfs ist nicht verfügbar, Modul kann nicht funktionieren!</string>
     <string name="about">Über</string>
+    <string name="module_magisk_conflict">Module sind deaktiviert, weil es einen Konflikt mit Magisks gibt!</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">Erfahren Sie, wie Sie KernelSU installieren und Module verwenden</string>
+    <string name="home_support_title">Unterstütze uns</string>
+    <string name="home_support_content">"KernelSU ist und bleibt kostenlos und Open Source.  Sie können uns jedoch zeigen, dass Sie sich für uns interessieren, indem Sie eine Spende tätigen."</string>
 </resources>
