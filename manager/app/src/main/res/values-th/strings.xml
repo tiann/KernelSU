@@ -60,7 +60,12 @@
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_inherited">Inherited</string>
     <string name="profile_namespace_individual">Individual</string>
-    <string name="profile_groups">กลุ่ม</string>
+    <string name="profile_groups">หมวดหมู่</string>
     <string name="profile_capabilities">ความสามารถ</string>
     <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปพลิเคชันนี้ได้</string>
+    <string name="profile_selinux_context">บริบท SELinux</string>
+    <string name="profile_umount_modules">Umount โมดูล</string>
+    <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s</string>
+    <string name="settings_umount_modules_default">Umount โมดูลตามค่าเริ่มต้น</string>
+    <string name="require_kernel_version">เวอร์ชั่นเคอร์เนลปัจจุบันคือ %d ต่ำเกินไปสำหรับตัวจัดการ โปรดอัปเกรดเป็นเวอร์ชั่น %d หรือสูงกว่า!</string>
 </resources>
