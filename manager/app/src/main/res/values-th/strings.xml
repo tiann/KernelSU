@@ -51,4 +51,5 @@
     <string name="home_click_to_learn_kernelsu">เรียนรู้วิธีการติดตั้ง KernelSU และใช้โมดูลต่าง ๆ</string>
     <string name="home_support_title">สนับสนุนพวกเรา</string>
     <string name="home_support_content">"KernelSU เป็นโอเพ่นซอร์สฟรีและจะเป็นตลอดไป  อย่างไรก็ตาม คุณสามารถแสดงให้เราเห็นว่าคุณห่วงใยด้วยการบริจาค"</string>
+    <string name="about_source_code">ดูซอร์สโค้ดที่ %1$s<br/>เข้าร่วมช่อง %2$s ช่อง</string>
 </resources>
