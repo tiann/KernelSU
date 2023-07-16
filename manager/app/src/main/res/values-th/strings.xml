@@ -62,7 +62,7 @@
     <string name="profile_namespace_individual">Individual</string>
     <string name="profile_groups">หมวดหมู่</string>
     <string name="profile_capabilities">ความสามารถ</string>
-    <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปพลิเคชันนี้ได้</string>
+    <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปพลิเคชั่นนี้ได้</string>
     <string name="profile_selinux_context">บริบท SELinux</string>
     <string name="profile_umount_modules">Umount โมดูล</string>
     <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s</string>
@@ -72,8 +72,10 @@
     <string name="module_update">อัปเดต</string>
     <string name="profile_selinux_rules">กฎ</string>
     <string name="module_downloading">กำลังดาวน์โหลดโมดูล: %s</string>
-    <string name="module_start_downloading">เริ่มดาวน์โหลด: %s</string>
-    <string name="new_version_available">เวอร์ชันใหม่: %s พร้อมใช้งาน คลิกเพื่อดาวน์โหลด</string>
-    <string name="force_stop_app">บังคับให้หยุด</string>
+    <string name="module_start_downloading">กำลังเริ่มดาวน์โหลด: %s</string>
+    <string name="new_version_available">เวอร์ชั่นใหม่: %s พร้อมใช้งาน คลิกเพื่อดาวน์โหลด</string>
+    <string name="force_stop_app">บังคับหยุด</string>
     <string name="restart_app">รีสตาร์ท</string>
+    <string name="settings_umount_modules_default_summary">หากเปิดใช้งานค่าเริ่มต้นโดยทั่วไปสำหรับ \"Umount โมดูล\" ในโปรไฟล์แอป จะเป็นการลบการแก้ไขโมดูลทั้งหมดในระบบสำหรับแอปพลิเคชั่นที่ไม่มีการตั้งค่าโปรไฟล์</string>
+    <string name="launch_app">เปิด</string>
 </resources>
