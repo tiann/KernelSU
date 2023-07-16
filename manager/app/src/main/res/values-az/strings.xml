@@ -68,4 +68,11 @@
     <string name="failed_to_update_app_profile">%s görə tətbiq profillərini güncəlləmək mümkün olmadı</string>
     <string name="require_kernel_version">İndiki nüvə versiyası %d menecerin düzgün işləməsi üçün çox aşağıdır. Zəhmət olmasa %d versiyasına yaxud daha yüksək versiyaya güncəlləyin!</string>
     <string name="settings_umount_modules_default_summary">Tətbiq Profillərində \"Umount modulları\" üçün qlobal standart dəyər. Aktivləşdirilərsə, o, Profil dəsti olmayan proqramlar üçün sistemdəki bütün modul dəyişikliklərini siləcək.</string>
+    <string name="profile_selinux_domain">Domen</string>
+    <string name="profile_selinux_rules">Qaydalar</string>
+    <string name="module_update">Güncəllə</string>
+    <string name="module_start_downloading">Endirməni başlat: %s</string>
+    <string name="new_version_available">Yeni versiya: %s əlçatandır, endirmək üçün toxunun</string>
+    <string name="module_downloading">Modul yüklənir: %s</string>
+    <string name="profile_umount_modules_summary">Bu seçimi aktivləşdirmək KernelSU-ya bu proqram üçün modullar tərəfindən hər hansı dəyişdirilmiş faylları bərpa etməyə imkan verəcək.</string>
 </resources>
