@@ -1,2 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="home">Startseite</string>
+    <string name="home_not_installed">Nicht installiert</string>
+    <string name="selinux_status_permissive">Permissiv</string>
+    <string name="home_working">Funktioniert</string>
+    <string name="home_working_version">Version: %d</string>
+    <string name="superuser">Superuser</string>
+    <string name="home_click_to_install">Klicke um zu installieren</string>
+    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="selinux_status_unknown">Unbekannt</string>
+    <string name="selinux_status_enforcing">erzwingen</string>
+</resources>
