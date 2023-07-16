@@ -43,4 +43,23 @@
     <string name="send_log">Enviar log</string>
     <string name="module_uninstall_success">%s desinstalado</string>
     <string name="show_system_apps">Mostrar aplicativos do sistema</string>
+    <string name="home_click_to_learn_kernelsu">Aprenda a instalar o KernelSU e usar os módulos</string>
+    <string name="home_support_content">O KernelSU é, e sempre será, gratuito e de código aberto. No entanto, você pode nos mostrar que se importa fazendo uma doação.</string>
+    <string name="about_source_code">Veja o código-fonte em %1$s<br/>Junte-se ao nosso canal %2$s</string>
+    <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_namespace_inherited">Herdado</string>
+    <string name="profile_default">Padrão</string>
+    <string name="profile_template">Modelo</string>
+    <string name="profile_custom">Personalizado</string>
+    <string name="profile_name">Nome do perfil</string>
+    <string name="profile_namespace">Montar namespace</string>
+    <string name="safe_mode">Modo de segurança</string>
+    <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
+    <string name="home_learn_kernelsu">Aprender KernelSU</string>
+    <string name="module_magisk_conflict">Os módulos estão desativados porque estão em conflito com os do Magisk!</string>
+    <string name="home_support_title">Apoie-nos</string>
+    <string name="profile_groups">Grupos</string>
+    <string name="profile_capabilities">Capacidades</string>
+    <string name="profile_selinux_context">contexto SELinux</string>
 </resources>
