@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Головна</string>
     <string name="home_not_installed">Не встановлено</string>
@@ -8,11 +9,9 @@
     <string name="home_module_count">Модулі: %d</string>
     <string name="home_unsupported">Не підтримується</string>
     <string name="home_unsupported_reason">KernelSU підтримує лише ядра GKI</string>
-
     <string name="home_kernel">Ядро</string>
     <string name="home_manager_version">Версія менеджера</string>
     <string name="home_fingerprint">Відбиток</string>
-
     <string name="home_selinux_status">Статус SELinux</string>
     <string name="selinux_status_disabled">Вимкнено</string>
     <string name="selinux_status_enforcing">Примусовий</string>
@@ -22,7 +21,6 @@
     <string name="module_failed_to_enable">Не вдалося ввімкнути модуль: %s</string>
     <string name="module_failed_to_disable">Не вдалося вимкнути модуль: %s</string>
     <string name="module_empty">Немає встановлених модулів</string>
-
     <string name="module">Модулі</string>
     <string name="uninstall">Видалити</string>
     <string name="module_install">Встановити</string>
@@ -72,4 +70,14 @@
     <string name="settings_umount_modules_default">Розмонтувати модулі за замовчуванням</string>
     <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
     <string name="profile_umount_modules_summary">Увімкнення даної опції дозволить KernelSU відновити для цього додатка будь-які файли, змінені модулями.</string>
+    <string name="profile_selinux_domain">Домен</string>
+    <string name="profile_selinux_rules">Правила</string>
+    <string name="module_update">Оновити</string>
+    <string name="module_downloading">Завантаження модуля: %s</string>
+    <string name="module_start_downloading">Початок завантаження: %s</string>
+    <string name="launch_app">Запустити</string>
+    <string name="force_stop_app">Примусово зупинити</string>
+    <string name="restart_app">Перезапустити</string>
+    <string name="new_version_available">Нова версія: %s доступна, натисніть, щоб завантажити</string>
+    <string name="failed_to_update_sepolicy">Не вдалося оновити правила SELinux для: %s</string>
 </resources>
