@@ -26,4 +26,19 @@
     <string name="module_failed_to_disable">मॉड्यूल अक्षम करण्यात अयशस्वी: %s</string>
     <string name="module">मॉड्यूल</string>
     <string name="module_install">स्थापित करा</string>
+    <string name="settings">सेटिंग्ज</string>
+    <string name="reboot_userspace">सॉफ्ट रीबूट</string>
+    <string name="about">बद्दल</string>
+    <string name="reboot_edl">EDL वर रीबूट करा</string>
+    <string name="module_uninstall_confirm">तुमची खात्री आहे की तुम्ही मॉड्यूल %s विस्थापित करू इच्छिता\?</string>
+    <string name="module_uninstall_failed">विस्थापित करण्यात अयशस्वी: %s</string>
+    <string name="module_overlay_fs_not_available">overlayfs उपलब्ध नाही, मॉड्यूल काम करू शकत नाही!</string>
+    <string name="show_system_apps">सिस्टम अॅप्स दाखवा</string>
+    <string name="reboot_bootloader">बूटलोडरवर रीबूट करा</string>
+    <string name="module_uninstall_success">%s विस्थापित</string>
+    <string name="module_version">आवृत्ती</string>
+    <string name="module_author">लेखक</string>
+    <string name="refresh">रिफ्रेश करा</string>
+    <string name="reboot_recovery">रिकवरी मध्ये रिबुट करा</string>
+    <string name="reboot_download">डाउनलोड करण्यासाठी रीबूट करा</string>
 </resources>
