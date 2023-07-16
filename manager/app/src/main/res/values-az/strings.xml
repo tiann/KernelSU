@@ -10,4 +10,19 @@
     <string name="home_module_count">Modullar: %d</string>
     <string name="home_unsupported_reason">Hal-hazırda KernelSU yalnız GKI nüvələrini dəstəkləyir</string>
     <string name="home_unsupported">Dəstəklənmir</string>
+    <string name="module_install">Yüklə</string>
+    <string name="install">Yüklə</string>
+    <string name="selinux_status_unknown">Naməlum</string>
+    <string name="home_fingerprint">Barmaq izi</string>
+    <string name="home_manager_version">Menecer versiyası</string>
+    <string name="selinux_status_disabled">Qeyri-aktiv</string>
+    <string name="home_selinux_status">SELinux vəziyyəti</string>
+    <string name="selinux_status_permissive">Sərbəst</string>
+    <string name="selinux_status_enforcing">Məcburi</string>
+    <string name="superuser">Super istifadəçi</string>
+    <string name="uninstall">Sil</string>
+    <string name="module_failed_to_enable">Modulu aktiv etmək mümkün olmadı: %s</string>
+    <string name="module_failed_to_disable">Modulu deaktiv etmək mümkün olmadı: %s</string>
+    <string name="module_empty">Heç bir modul quraşdırılmayıb</string>
+    <string name="module">Modul</string>
 </resources>
