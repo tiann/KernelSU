@@ -58,4 +58,11 @@
     <string name="profile_name">Nom du profil</string>
     <string name="profile_namespace">monté l\'espace de nom</string>
     <string name="profile_namespace_inherited">Hérité</string>
+    <string name="profile_namespace_individual">Individuel</string>
+    <string name="profile_selinux_context">Le contexte SELinux</string>
+    <string name="profile_namespace_global">Global</string>
+    <string name="profile_groups">Groupe</string>
+    <string name="profile_capabilities">Capacités</string>
+    <string name="profile_umount_modules">démontez le module</string>
+    <string name="failed_to_update_app_profile">Échec de la mise à jour du profil d\'application pour %s</string>
 </resources>
