@@ -29,4 +29,5 @@
     <string name="module_install">ติดตั้ง</string>
     <string name="install">ติดตั้ง</string>
     <string name="reboot">รีบูต</string>
+    <string name="reboot_bootloader">รีบูตเข้าสู่ Bootloader</string>
 </resources>
