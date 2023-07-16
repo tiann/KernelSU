@@ -67,15 +67,16 @@
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
     <string name="require_kernel_version">当前内核版本 %d 过低，管理器无法正常工作，请升级内核版本至 %d 或以上！</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
-    <string name="settings_umount_modules_default_summary">App Profile 中\"卸载模块\"的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改</string>
-    <string name="profile_umount_modules_summary">启用后将允许 KernelSU 为本应用还原被模块修改过的文件</string>
+    <string name="settings_umount_modules_default_summary">App Profile 中\"卸载模块\"的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改。</string>
+    <string name="profile_umount_modules_summary">启用后将允许 KernelSU 为本应用还原被模块修改过的文件。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">规则</string>
     <string name="module_update">更新</string>
     <string name="module_downloading">正在下载模块：%s</string>
     <string name="module_start_downloading">开始下载：%s</string>
-    <string name="new_version_available">发现新版本：%d，点击下载</string>
+    <string name="new_version_available">发现新版本：%s，点击下载</string>
     <string name="launch_app">启动</string>
     <string name="force_stop_app">强制停止</string>
     <string name="restart_app">重新启动</string>
+    <string name="failed_to_update_sepolicy">为：%s 更新翻译失败</string>
 </resources>

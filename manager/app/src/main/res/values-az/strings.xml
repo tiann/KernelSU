@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">Ana səhifə</string>
+    <string name="home_superuser_count">Super istifadəçilər: %d</string>
+    <string name="home_kernel">Nüvə</string>
+    <string name="home_not_installed">Quraşdırıla bilmədi</string>
+    <string name="home_click_to_install">Yükləmək üçün toxunun</string>
+    <string name="home_working">İşləyir</string>
+    <string name="home_working_version">Versiya: %d</string>
+    <string name="home_module_count">Modullar: %d</string>
+    <string name="home_unsupported_reason">Hal-hazırda KernelSU yalnız GKI nüvələrini dəstəkləyir</string>
+    <string name="home_unsupported">Dəstəklənmir</string>
+</resources>

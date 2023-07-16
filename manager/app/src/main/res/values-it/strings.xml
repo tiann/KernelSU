@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Home</string>
     <string name="home_not_installed">Non installato</string>
@@ -8,11 +9,9 @@
     <string name="home_module_count">Moduli: %d</string>
     <string name="home_unsupported">Non supportato</string>
     <string name="home_unsupported_reason">KernelSU ora supporta solo i kernel GKI</string>
-
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versione del manager</string>
     <string name="home_fingerprint">Fingerprint</string>
-
     <string name="home_selinux_status">Stato SELinux</string>
     <string name="selinux_status_disabled">Disabilitato</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -22,7 +21,6 @@
     <string name="module_failed_to_enable">Impossibile abilitare il modulo: %s</string>
     <string name="module_failed_to_disable">Impossibile disabilitare il modulo: %s</string>
     <string name="module_empty">Nessun modulo installato</string>
-
     <string name="module">Moduli</string>
     <string name="uninstall">Disinstalla</string>
     <string name="module_install">Installa</string>
@@ -54,4 +52,13 @@
     <string name="home_support_title">Supportaci</string>
     <string name="home_support_content">KernelSU è, e sempre sarà, gratuito e open source. Puoi comunque mostrarci il tuo apprezzamento facendo una donazione.</string>
     <string name="about_source_code"><![CDATA[Visualizza il codice sorgente su %1$s<br/>Unisciti al nostro canale %2$s]]></string>
+    <string name="profile_name">Nome profilo</string>
+    <string name="profile_namespace">Namespace di mount</string>
+    <string name="profile_namespace_global">Globale</string>
+    <string name="profile_groups">Gruppi</string>
+    <string name="profile_namespace_inherited">Ereditato</string>
+    <string name="profile_namespace_individual">Individuale</string>
+    <string name="profile_default">Predefinito</string>
+    <string name="profile_custom">Personalizzato</string>
+    <string name="profile_template">Template</string>
 </resources>

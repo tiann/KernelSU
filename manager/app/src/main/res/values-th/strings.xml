@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">หน้าหลัก</string>
+    <string name="home_not_installed">ยังไม่ได้ติดตั้ง</string>
+    <string name="home_click_to_install">กดเพื่อติดตั้ง</string>
+    <string name="home_working">กำลังทำงาน</string>
+    <string name="home_working_version">เวอร์ชั่น: %d</string>
+    <string name="home_manager_version">เวอร์ชั่นตัวจัดการ</string>
+    <string name="home_superuser_count">สิทธิ์ผู้ใช้ขั้นสูง: %d</string>
+    <string name="home_module_count">โมดูล: %d</string>
+    <string name="home_unsupported">ไม่รองรับ</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="reboot_recovery">รีบูตเข้าสู่โหมดกู้คืน</string>
+    <string name="reboot_userspace">ซอฟต์รีบูต</string>
+    <string name="home_unsupported_reason">ตอนนี้ KernelSU รองรับเคอร์เนลประเภท GKI เท่านั้น</string>
+    <string name="home_kernel">เคอร์เนล</string>
+    <string name="selinux_status_disabled">ปิดใช้งาน</string>
+    <string name="home_fingerprint">ลายนิ้วมือ</string>
+    <string name="home_selinux_status">สถานะ SELinux</string>
+    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_unknown">ไม่ทราบ</string>
+    <string name="superuser">สิทธิ์ผู้ใช้ขั้นสูง</string>
+    <string name="module_failed_to_enable">ล้มเหลวในการเปิดใช้งานโมดูล: %s</string>
+    <string name="module_failed_to_disable">ล้มเหลวในการปิดใช้งานโมดูล: %s</string>
+    <string name="module_empty">ไม่มีโมดูลที่ติดตั้ง</string>
+    <string name="module">โมดูล</string>
+    <string name="uninstall">ถอนการติดตั้ง</string>
+    <string name="settings">ตั้งค่า</string>
+    <string name="module_install">ติดตั้ง</string>
+    <string name="install">ติดตั้ง</string>
+    <string name="reboot">รีบูต</string>
+</resources>

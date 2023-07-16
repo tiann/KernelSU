@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Início</string>
     <string name="home_not_installed">Não instalado</string>
@@ -8,21 +9,18 @@
     <string name="home_module_count">Módulos: %d</string>
     <string name="home_unsupported">Sem Suporte</string>
     <string name="home_unsupported_reason">Por enquanto, KernelSU suporta apenas kernels GKI</string>
-
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versão do gerenciador</string>
     <string name="home_fingerprint">Impressão digital</string>
-
     <string name="home_selinux_status">Status do SELinux</string>
     <string name="selinux_status_disabled">Desabilitado</string>
     <string name="selinux_status_enforcing">Enforcing</string>
-    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_permissive">Permissivo</string>
     <string name="selinux_status_unknown">Desconhecido</string>
     <string name="superuser">Superusuário</string>
     <string name="module_failed_to_enable">Falha ao ativar o módulo: %s</string>
     <string name="module_failed_to_disable">Falha ao desativar o módulo: %s</string>
     <string name="module_empty">Nenhum módulo instalado</string>
-
     <string name="module">Módulos</string>
     <string name="uninstall">Desinstalar</string>
     <string name="module_install">Instalar</string>
@@ -60,7 +58,7 @@
     <string name="profile_custom">Personalizado</string>
     <string name="profile_name">Nome do perfil</string>
     <string name="profile_namespace">Montar namespace</string>
-    <string name="profile_namespace_inherited">Padrão</string>
+    <string name="profile_namespace_inherited">Herdada</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_individual">Individual</string>
     <string name="profile_groups">Grupos</string>
