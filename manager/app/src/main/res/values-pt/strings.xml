@@ -30,4 +30,17 @@
     <string name="settings">Configurações</string>
     <string name="reboot_bootloader">Reinicializar modo Bootloader</string>
     <string name="reboot_recovery">Reiniciar modo recuperação</string>
+    <string name="module_uninstall_failed">Falha ao desinstalar: %s</string>
+    <string name="module_version">Versão</string>
+    <string name="module_author">Autor</string>
+    <string name="refresh">Atualizar</string>
+    <string name="hide_system_apps">Esconder apps do sistema</string>
+    <string name="reboot_download">Reiniciar para baixar</string>
+    <string name="reboot_edl">Reiniciar em EDL</string>
+    <string name="module_uninstall_confirm">Tem certeza de que deseja desinstalar o módulo %s\?</string>
+    <string name="about">Sobre</string>
+    <string name="module_overlay_fs_not_available">overlayfs não está disponível, o módulo não pode funcionar!</string>
+    <string name="send_log">Enviar log</string>
+    <string name="module_uninstall_success">%s desinstalado</string>
+    <string name="show_system_apps">Mostrar aplicativos do sistema</string>
 </resources>
