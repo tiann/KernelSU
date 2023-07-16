@@ -48,6 +48,12 @@
     <string name="module_magisk_conflict">Modular deaktiv edilir,çünki o Magisk-in modulları ilə toqquşur!</string>
     <string name="home_learn_kernelsu">KernelSU-yu öyrən</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_support_title">Bizi dəstəklə</string>
+    <string name="home_support_title">Bizi dəstəkləyin</string>
     <string name="home_click_to_learn_kernelsu">KernelSU-yu necə quraşdırılacağını və modulların necə istifadə ediləcəyini öyrən</string>
+    <string name="profile_template">Şablon</string>
+    <string name="profile_default">Defolt</string>
+    <string name="profile_custom">Özəl</string>
+    <string name="home_support_content">KernelSU pulsuz və açıq mənbəlidir,həmişə belə olacaqdır. Bununla belə, ianə etməklə bizə qayğı göstərdiyinizi göstərə bilərsiniz.</string>
+    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br/>Kanalımıza %2$s qoşulun</string>
+    <string name="profile_name">Profil adı</string>
 </resources>
