@@ -33,4 +33,21 @@
     <string name="about">เกี่ยวกับ</string>
     <string name="reboot_download">รีบูตเข้าสู่โหมดดาวน์โหลด</string>
     <string name="reboot_edl">รีบูตเข้าสู่โหมด EDL</string>
+    <string name="module_uninstall_success">%s ถอนการติดตั้งสำเร็จ</string>
+    <string name="module_uninstall_failed">ล้มเหลวในการถอนการติดตั้ง: %s</string>
+    <string name="module_overlay_fs_not_available">overlayfs ไม่สามารถใช้งานได้ โมดูลหยุดทำงาน!</string>
+    <string name="module_uninstall_confirm">คุณแน่ใจว่าจะถอนการติดตั้งโมดูล %s หรือไม่\?</string>
+    <string name="module_author">ผู้สร้าง</string>
+    <string name="module_version">เวอร์ชั่น</string>
+    <string name="show_system_apps">แสดงแอประบบ</string>
+    <string name="hide_system_apps">ซ่อนแอประบบ</string>
+    <string name="refresh">รีเฟรช</string>
+    <string name="send_log">ส่ง Log</string>
+    <string name="safe_mode">โหมดปลอดภัย</string>
+    <string name="reboot_to_apply">รีบูตเพื่อให้มีผล</string>
+    <string name="module_magisk_conflict">โมดูลถูกปิดใช้งานเนื่องจากขัดแย้งกับ Magisk!</string>
+    <string name="home_learn_kernelsu">เรียนรู้เกี่ยวกับ KernelSU</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_click_to_learn_kernelsu">เรียนรู้วิธีการติดตั้ง KernelSU และใช้โมดูลต่าง ๆ</string>
+    <string name="home_support_title">สนับสนุนพวกเรา</string>
 </resources>
