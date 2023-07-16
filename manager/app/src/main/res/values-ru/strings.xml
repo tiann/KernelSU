@@ -1,28 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Главная</string>
     <string name="home_not_installed">Не установлен</string>
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Superusers: %d</string> <!--Don't translate this string!-->
+    <string name="home_superuser_count">Superusers: %d</string>
+    <!--Don't translate this string!-->
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
-
     <string name="home_kernel">Ядро</string>
     <string name="home_manager_version">Версия менеджера</string>
     <string name="home_fingerprint">Подпись</string>
-
     <string name="home_selinux_status">Состояние SELinux</string>
     <string name="selinux_status_disabled">Выключен</string>
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Superuser</string> <!--Don't translate this string!-->
+    <string name="superuser">Superuser</string>
+    <!--Don't translate this string!-->
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
-
     <string name="module">Модули</string>
     <string name="uninstall">Удалить</string>
     <string name="module_install">Установить</string>
@@ -54,7 +54,8 @@
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s<br/>Присоединяйтесь к нашему %2$s каналу]]></string>
-    <string name="profile" translatable="false">App Profile</string> <!--Don't translate this string!-->
+    <string name="profile" translatable="false">App Profile</string>
+    <!--Don't translate this string!-->
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
     <string name="profile_custom">Пользовательский</string>
@@ -78,4 +79,8 @@
     <string name="module_downloading">Скачивание модуля: %s</string>
     <string name="module_start_downloading">Начало скачивания: %s</string>
     <string name="new_version_available">Новая версия: %s доступна, нажмите, чтобы скачать</string>
+    <string name="force_stop_app">Принудительно остановить</string>
+    <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
+    <string name="launch_app">Запустить</string>
+    <string name="restart_app">Перезапустить</string>
 </resources>
