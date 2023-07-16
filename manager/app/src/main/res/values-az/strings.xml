@@ -48,4 +48,6 @@
     <string name="module_magisk_conflict">Modular deaktiv edilir,çünki o Magisk-in modulları ilə toqquşur!</string>
     <string name="home_learn_kernelsu">KernelSU-yu öyrən</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_support_title">Bizi dəstəklə</string>
+    <string name="home_click_to_learn_kernelsu">KernelSU-yu necə quraşdırılacağını və modulların necə istifadə ediləcəyini öyrən</string>
 </resources>
