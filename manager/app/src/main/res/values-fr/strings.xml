@@ -4,7 +4,7 @@
     <string name="home_working">Fonctionne</string>
     <string name="home_working_version">Version: %d</string>
     <string name="home_superuser_count">Super utilisateurs: %d</string>
-    <string name="home_module_count">Modules: %d</string>
+    <string name="home_module_count">Modules : %d</string>
     <string name="home_unsupported_reason">KernelSU supporte que Le noyau GKI actuellement</string>
     <string name="home_kernel">Noyau</string>
     <string name="home_fingerprint">Empreinte digitale</string>
@@ -17,15 +17,15 @@
     <string name="home">Acceuil</string>
     <string name="home_click_to_install">cliquez pour installer</string>
     <string name="home_unsupported">Non supporté</string>
-    <string name="module_uninstall_failed">Echec pour désinstaller: %s</string>
+    <string name="module_uninstall_failed">Echec pour désinstaller : %s</string>
     <string name="module_version">Version</string>
     <string name="home_manager_version">Version du gestionnaire</string>
     <string name="selinux_status_enforcing">Strict</string>
-    <string name="module_failed_to_enable">Echec pour activer le module: %s</string>
+    <string name="module_failed_to_enable">Echec pour activer le module : %s</string>
     <string name="module">Module</string>
     <string name="uninstall">Désinstalle</string>
     <string name="module_install">Installe</string>
-    <string name="module_failed_to_disable">Echec pour désactiver le module: %s</string>
+    <string name="module_failed_to_disable">Echec pour désactiver le module : %s</string>
     <string name="reboot">Redémarre</string>
     <string name="install">installe</string>
     <string name="settings">Paramètre</string>
@@ -37,7 +37,7 @@
     <string name="module_uninstall_success">%s désinstaller</string>
     <string name="reboot_download">Rédemarre en mode Télechargement</string>
     <string name="module_author">Auteur</string>
-    <string name="module_uninstall_confirm">Êtes-vous sûr de vouloir désinstaller le module %s\?</string>
+    <string name="module_uninstall_confirm">Êtes-vous sûr de vouloir désinstaller le module %s \?</string>
     <string name="home_learn_kernelsu">Apprend KernelSU</string>
     <string name="module_overlay_fs_not_available">overlayfs n\'est pas disponible, le module ne peut pas fonctionner !</string>
     <string name="refresh">Rafraîchir</string>
@@ -72,5 +72,11 @@
     <string name="profile_selinux_domain">Le Domaine</string>
     <string name="profile_selinux_rules">Les règles</string>
     <string name="module_update">Mise à jour</string>
-    <string name="module_downloading">Téléchargement du module: %s</string>
+    <string name="module_downloading">Téléchargement du module : %s</string>
+    <string name="launch_app">Lancer</string>
+    <string name="new_version_available">Une nouvelle version : %s est disponible, clique pour le télécharger</string>
+    <string name="module_start_downloading">Début du téléchargement : %s</string>
+    <string name="force_stop_app">Forcer l\'arrêt</string>
+    <string name="restart_app">Redémarre</string>
+    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
 </resources>
