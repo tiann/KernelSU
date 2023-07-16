@@ -14,4 +14,7 @@
     <string name="home_manager_version">व्यवस्थापक आवृत्ती</string>
     <string name="home_selinux_status">SELinux स्थिती</string>
     <string name="selinux_status_disabled">अक्षम</string>
+    <string name="selinux_status_enforcing">एनफोर्सिंग</string>
+    <string name="selinux_status_permissive">परमिसिव</string>
+    <string name="selinux_status_unknown">अज्ञात</string>
 </resources>
