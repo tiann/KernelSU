@@ -56,4 +56,15 @@
     <string name="home_support_content">KernelSU pulsuz və açıq mənbəlidir,həmişə belə olacaqdır. Bununla belə, ianə etməklə bizə qayğı göstərdiyinizi göstərə bilərsiniz.</string>
     <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br/>Kanalımıza %2$s qoşulun</string>
     <string name="profile_name">Profil adı</string>
+    <string name="profile_capabilities">Bacarıqlar</string>
+    <string name="profile_umount_modules">Modulları umount et</string>
+    <string name="profile_namespace_inherited">Miras qalmış</string>
+    <string name="profile_namespace_global">Qlobal</string>
+    <string name="profile_namespace">Bölmənin ad sahəsi</string>
+    <string name="profile_namespace_individual">Fərdi</string>
+    <string name="profile_groups">Qruplar</string>
+    <string name="settings_umount_modules_default">Defolt olaraq modulları umount et</string>
+    <string name="profile_selinux_context">SELinux konteksi</string>
+    <string name="failed_to_update_app_profile">%s görə proqram profillərini güncəlləmək mümkün olmadı</string>
+    <string name="require_kernel_version">İndiki nüvə versiyası %d menecerin düzgün işləməsi üçün çox aşağıdır. Zəhmət olmasa %d versiyasına yaxud daha yüksək versiyaya güncəlləyin!</string>
 </resources>
