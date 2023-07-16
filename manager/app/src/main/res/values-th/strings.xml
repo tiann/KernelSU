@@ -60,4 +60,7 @@
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_inherited">Inherited</string>
     <string name="profile_namespace_individual">Individual</string>
+    <string name="profile_groups">กลุ่ม</string>
+    <string name="profile_capabilities">ความสามารถ</string>
+    <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปพลิเคชันนี้ได้</string>
 </resources>
