@@ -26,4 +26,8 @@
     <string name="module">Modulos</string>
     <string name="reboot">Reiniciar</string>
     <string name="module_install">Instalar</string>
+    <string name="reboot_userspace">Reinicialização Suave</string>
+    <string name="settings">Configurações</string>
+    <string name="reboot_bootloader">Reinicializar modo Bootloader</string>
+    <string name="reboot_recovery">Reiniciar modo recuperação</string>
 </resources>
