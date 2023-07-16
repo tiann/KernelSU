@@ -1,6 +1,6 @@
-Marathi
+Portuguese
 语言名称
-mr
+pt
 语言代码
 100.0
 已翻译百分比
@@ -8,7 +8,7 @@ mr
 字符串数量
 0
 已翻译字符串的数量
-manager/app/src/main/res/values-mr/strings.xml
+manager/app/src/main/res/values-pt/strings.xml
 翻译文件名
 Manager
 部件名称
