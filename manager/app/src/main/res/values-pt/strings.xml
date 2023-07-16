@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="home_not_installed">Não instalado</string>
+    <string name="home">Início</string>
+    <string name="home_click_to_install">Clique para instalar</string>
+</resources>
