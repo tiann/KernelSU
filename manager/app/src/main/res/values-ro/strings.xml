@@ -72,4 +72,11 @@
     <string name="profile_selinux_domain">Domeniu</string>
     <string name="profile_selinux_rules">Reguli</string>
     <string name="module_update">Actualizează</string>
+    <string name="module_downloading">Se descarcă modulul: %s</string>
+    <string name="module_start_downloading">Începe descărcarea: %s</string>
+    <string name="new_version_available">Versiune nouă: %s disponibilă, clic pentru a descărca</string>
+    <string name="failed_to_update_sepolicy">Nu s-au reușit actualizările regulilor SELinux pentru: %s</string>
+    <string name="launch_app">Lansare</string>
+    <string name="force_stop_app">Oprire forțată</string>
+    <string name="restart_app">Repornește</string>
 </resources>
