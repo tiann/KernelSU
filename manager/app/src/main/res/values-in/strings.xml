@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Beranda</string>
     <string name="home_not_installed">Tidak terpasang</string>
@@ -8,11 +9,9 @@
     <string name="home_module_count">Modul: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">KernelSU hanya mendukung kernel GKI saat ini</string>
-
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versi Manager</string>
     <string name="home_fingerprint">Sidik jari</string>
-
     <string name="home_selinux_status">status SELinux</string>
     <string name="selinux_status_disabled">Dinonaktifkan</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -22,18 +21,17 @@
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
     <string name="module_empty">Tidak ada modul terpasang</string>
-
     <string name="module">Modul</string>
     <string name="uninstall">Copot</string>
     <string name="module_install">Pasang</string>
     <string name="install">Pasang</string>
-    <string name="reboot">Reboot</string>
+    <string name="reboot">Menyalakan ulang</string>
     <string name="settings">Pengaturan</string>
     <string name="reboot_userspace">Reboot Lembut</string>
-    <string name="reboot_recovery">Reboot ke Recovery</string>
-    <string name="reboot_bootloader">Reboot ke Bootloader</string>
-    <string name="reboot_download">Reboot ke Download</string>
-    <string name="reboot_edl">Reboot ke EDL</string>
+    <string name="reboot_recovery">Mulai ulang ke Pemulihan</string>
+    <string name="reboot_bootloader">Mulai ulang ke Bootloader</string>
+    <string name="reboot_download">Mulai ulang ke Download</string>
+    <string name="reboot_edl">Mulai ulang ke EDL</string>
     <string name="about">Tentang</string>
     <string name="module_uninstall_confirm">Apakah Anda yakin ingin mencopot modul %s?</string>
     <string name="module_uninstall_success">%s Tercopot</string>
@@ -46,7 +44,7 @@
     <string name="hide_system_apps">Sembunyikan apl sistem</string>
     <string name="send_log">Kirim Log</string>
     <string name="safe_mode">Mode aman</string>
-    <string name="reboot_to_apply">Reboot untuk menerapkan</string>
+    <string name="reboot_to_apply">Mulai ulang untuk menerapkan</string>
     <string name="module_magisk_conflict">Modul dinonaktifkan karena bertentangan dengan Magisk!</string>
     <string name="home_learn_kernelsu">Pelajari KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
@@ -80,5 +78,6 @@
     <string name="new_version_available">Versi baru: %s telah tersedia, tap untuk mengunduh</string>
     <string name="launch_app">Jalankan</string>
     <string name="force_stop_app">Paksa berhenti</string>
-    <string name="restart_app">Restar</string>
+    <string name="restart_app">Mulai ulang</string>
+    <string name="failed_to_update_sepolicy">Gagal memperbarui aturan SELinux untuk: %s</string>
 </resources>
