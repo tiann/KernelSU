@@ -8,11 +8,9 @@
     <string name="home_superuser_count">已授權 Root：%d 個</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現在僅支援 GKI 核心</string>
-
     <string name="home_kernel">核心</string>
     <string name="home_manager_version">管理器版本</string>
-    <string name="home_fingerprint">設備指紋</string>
-
+    <string name="home_fingerprint">指紋</string>
     <string name="home_selinux_status">SELinux 狀態</string>
     <string name="selinux_status_disabled">已停用</string>
     <string name="selinux_status_enforcing">強制</string>
@@ -22,14 +20,13 @@
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
     <string name="module_failed_to_disable">無法停用模組：%s</string>
     <string name="module_empty">尚未安裝模組</string>
-
     <string name="module">模組</string>
     <string name="uninstall">解除安裝</string>
     <string name="module_install">安裝</string>
     <string name="install">安裝</string>
     <string name="reboot">重新啟動</string>
     <string name="settings">設定</string>
-    <string name="reboot_userspace">軟啟動</string>
+    <string name="reboot_userspace">軟重新啟動</string>
     <string name="reboot_recovery">重新啟動至 Recovery</string>
     <string name="reboot_bootloader">重新啟動至 Bootloader</string>
     <string name="reboot_download">重新啟動至 Download</string>
@@ -56,9 +53,30 @@
     <string name="home_support_content">KernelSU 將保持免費和開源，您可以考慮向開發人員捐贈以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 中檢視原始碼<br/>加入我們的 %2$s 頻道]]></string>
     <string name="profile_umount_modules">解除安裝模組</string>
-    <string name="failed_to_update_app_profile">為 %s 更新 App Profile 失敗</string>
+    <string name="failed_to_update_app_profile">無法更新 %s 應用程式設定檔</string>
     <string name="require_kernel_version">目前安裝的核心版本 %d 過低，管理器無法正常工作，請升級核心版本至 %d 或以上！</string>
     <string name="settings_umount_modules_default">預設解除安裝模組</string>
-    <string name="settings_umount_modules_default_summary">App Profile 中\"解除安裝模組\"的全域性預設值，如果啟用，將會為沒有設定 Profile 的應用移除所有模組針對系統的修改</string>
-    <string name="profile_umount_modules_summary">啟用後將允許 KernelSU 為本應用還原被模組修改過的檔案</string>
+    <string name="settings_umount_modules_default_summary">應用程式設定檔中「解除安裝模組」的全域預設值，如果啟用，將會為沒有設定檔的應用程式移除所有模組針對系統的修改。</string>
+    <string name="profile_umount_modules_summary">啟用後將允許 KernelSU 為本應用程式還原被模組修改過的檔案。</string>
+    <string name="profile_default">預設</string>
+    <string name="profile_custom">自訂</string>
+    <string name="profile_capabilities">功能</string>
+    <string name="profile_selinux_rules">規則</string>
+    <string name="module_downloading">正在下載模組：%s</string>
+    <string name="restart_app">重新啟動</string>
+    <string name="profile_template">範本</string>
+    <string name="profile_name">設定檔名稱</string>
+    <string name="profile_namespace">掛載命名空間</string>
+    <string name="profile_namespace_inherited">繼承</string>
+    <string name="profile_namespace_global">全域</string>
+    <string name="profile_namespace_individual">個人</string>
+    <string name="profile_groups">群組</string>
+    <string name="profile_selinux_context">SELinux 環境</string>
+    <string name="profile_selinux_domain">網域</string>
+    <string name="module_update">更新</string>
+    <string name="module_start_downloading">開始下載：%s</string>
+    <string name="new_version_available">發現新版本：%s 已可供使用，按一下即可下載</string>
+    <string name="launch_app">啟動</string>
+    <string name="force_stop_app">強制停止</string>
+    <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux</string>
 </resources>
