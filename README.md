@@ -41,6 +41,6 @@ To translate KernelSU into your language, or to improve an existing translation,
 ## Credits
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): the KernelSU idea.
+- [Magisk](https://github.com/topjohnwu/Magisk): the powerful root tool.
 - [genuine](https://github.com/brevent/genuine/): apk v2 signature validation.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): some rootkit skills.
-- [Magisk](https://github.com/topjohnwu/Magisk): the powerful root tool.
