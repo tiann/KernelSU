@@ -262,7 +262,7 @@ pub fn root_shell() -> Result<()> {
 fn add_path_to_env(path: &str) -> Result<()> {
     let mut paths =
         env::var_os("PATH").map_or(Vec::new(), |val| env::split_paths(&val).collect::<Vec<_>>());
-    let new_path = PathBuf::from(path);
+    let new_path = PathBuf::from(path.trim_end_matches('/'));
     paths.push(new_path);
     let new_path_env = env::join_paths(paths)?;
     env::set_var("PATH", new_path_env);
