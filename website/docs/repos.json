@@ -177,7 +177,7 @@
     {
         "maintainer": "rxuglr",
         "maintainer_link": "https://github.com/rxuglr",
-        "kernel_name": "android_kernel_xiaomi_surya",
+        "kernel_name": "kernel_xiaomi_surya",
         "kernel_link": "https://github.com/rxuglr/kernel_xiaomi_surya",
         "devices": "Xiaomi POCO X3 / NFC (surya)"
     },
