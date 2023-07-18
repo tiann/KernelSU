@@ -115,6 +115,10 @@ jobs:
         run: |
           cp configs/wsa/${{ matrix.make_config }} .config
           make olddefconfig
+          if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
+            export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
+            export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
+          fi
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
           declare -A ARCH_MAP=(["x86_64"]="x86" ["arm64"]="arm64")
           echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP[${{ matrix.arch }}]}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
