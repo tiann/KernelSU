@@ -47,7 +47,7 @@
     <string name="reboot_to_apply">Mulai ulang untuk menerapkan</string>
     <string name="module_magisk_conflict">Modul dinonaktifkan karena bertentangan dengan Magisk!</string>
     <string name="home_learn_kernelsu">Pelajari KernelSU</string>
-    <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
+    <string name="home_learn_kernelsu_url">https://kernelsu.org/id_ID/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Pelajari cara memasang KernelSU dan menggunakan modul</string>
     <string name="home_support_title">Dukung Kami</string>
     <string name="home_support_content">KernelSU gratis dan bersumber terbuka, dan akan selalu seperti itu. Bagaimanapun juga Anda dapat menunjukan kepedulian Anda kepada kami dengan mengirimkan sedikit donasi.</string>
