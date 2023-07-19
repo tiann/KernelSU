@@ -69,4 +69,6 @@
     <string name="profile_selinux_rules">ルール</string>
     <string name="new_version_available">新しいバージョン:%s アップデートが可能です、リンクを開いてからダウンロードしてください</string>
     <string name="module_update">アップデート</string>
+    <string name="module_start_downloading">ダウンロードを開始:%s</string>
+    <string name="launch_app">起動</string>
 </resources>
