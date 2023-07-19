@@ -23,7 +23,7 @@ WSA 、ChromeOSとコンテナ上で動作する Android でも KernelSU を統�
 - [ビルド方法はこちら](https://kernelsu.org/guide/how-to-build.html)
 - [公式サイト](https://kernelsu.org)
 
-### 翻訳
+## 翻訳
 
 KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善するには、[Weblate](https://hosted.weblate.org/engage/kernelsu/) を使用してください。
 
@@ -39,7 +39,7 @@ KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善す�
 ## クレジット
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU のアイデア元
-- [Magisk](https://github.com/topjohnwu/Magisk)：sepolicy の実装
+- [Magisk](https://github.com/topjohnwu/Magisk)：強力な root ツール
 - [genuine](https://github.com/brevent/genuine/)：apk v2 の署名検証
 - [Diamorphine](https://github.com/m0nad/Diamorphine): rootkit のスキル
 
