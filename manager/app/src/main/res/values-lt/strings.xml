@@ -4,12 +4,12 @@
     <string name="selinux_status_disabled">Išjungta</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_unknown">Nežinomas</string>
-    <string name="superuser">Supernaudotojas</string>
+    <string name="superuser">Supernaudotojai</string>
     <string name="module_failed_to_enable">Nepavyko įjungti modulio: %s</string>
     <string name="module_failed_to_disable">Nepavyko išjungti modulio: %s</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="module_empty">Nėra įdiegtų modulių</string>
-    <string name="module">Modulis</string>
+    <string name="module">Moduliai</string>
     <string name="reboot_userspace">Perkrovimas neišjungus</string>
     <string name="reboot_recovery">Perkrauti į atkūrimo rėžimą</string>
     <string name="reboot_bootloader">Perkrauti į įkrovos tvarkyklę</string>

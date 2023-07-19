@@ -9,11 +9,9 @@
     <string name="home_module_count">模組：%d 個</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現在僅支援 GKI 核心</string>
-
     <string name="home_kernel">核心</string>
     <string name="home_manager_version">管理員版本</string>
     <string name="home_fingerprint">指紋</string>
-
     <string name="home_selinux_status">SELinux 狀態</string>
     <string name="selinux_status_disabled">已停用</string>
     <string name="selinux_status_enforcing">強制</string>
@@ -23,7 +21,6 @@
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
     <string name="module_failed_to_disable">無法停用模組：%s</string>
     <string name="module_empty">尚未安裝模組</string>
-
     <string name="module">模組</string>
     <string name="uninstall">解除安裝</string>
     <string name="module_install">安裝</string>
@@ -55,4 +52,31 @@
     <string name="home_support_title">支持我們</string>
     <string name="home_support_content">KernelSU 是免費且開源的，您可以透過捐贈來向我們展示您對我們的關心。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 中檢視原始碼<br/>加入我們的 %2$s 頻道]]></string>
+    <string name="profile_default">預設</string>
+    <string name="profile_name">設定檔名稱</string>
+    <string name="profile_template">範本</string>
+    <string name="profile_namespace_inherited">繼承</string>
+    <string name="profile_namespace_global">全域</string>
+    <string name="profile_capabilities">功能</string>
+    <string name="profile_umount_modules">卸載模組</string>
+    <string name="failed_to_update_app_profile">無法更新 %s 應用程式設定檔</string>
+    <string name="profile_selinux_rules">規則</string>
+    <string name="require_kernel_version">目前核心版本 %d 過低，管理員無法正常運作。請升級至 %d 或更高版本！</string>
+    <string name="settings_umount_modules_default_summary">應用程式設定檔中「卸載模組」的全域預設值。如果啟用，將會為沒有設定檔的應用程式移除所有模組對系統的修改。</string>
+    <string name="profile_umount_modules_summary">啟用此選項將允許 KernelSU 為這個應用程式還原任何被模組修改過的檔案。</string>
+    <string name="profile_selinux_domain">網域</string>
+    <string name="module_update">更新</string>
+    <string name="profile_custom">自訂</string>
+    <string name="profile_namespace">掛載命名空間</string>
+    <string name="profile_namespace_individual">個人</string>
+    <string name="profile_groups">群組</string>
+    <string name="profile_selinux_context">SELinux 內容</string>
+    <string name="settings_umount_modules_default">預設卸載模組</string>
+    <string name="module_downloading">正在下載模組：%s</string>
+    <string name="module_start_downloading">開始下載：%s</string>
+    <string name="new_version_available">新版本：%s 已可供使用，按一下以下載</string>
+    <string name="launch_app">啟動</string>
+    <string name="force_stop_app">強制停止</string>
+    <string name="restart_app">重新啟動</string>
+    <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux 規則</string>
 </resources>

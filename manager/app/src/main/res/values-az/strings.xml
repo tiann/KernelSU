@@ -3,7 +3,7 @@
     <string name="home">Ana səhifə</string>
     <string name="home_superuser_count">Super istifadəçilər: %d</string>
     <string name="home_kernel">Nüvə</string>
-    <string name="home_not_installed">Quraşdırıla bilmədi</string>
+    <string name="home_not_installed">Yüklənmədi</string>
     <string name="home_click_to_install">Yükləmək üçün toxunun</string>
     <string name="home_working">İşləyir</string>
     <string name="home_working_version">Versiya: %d</string>
@@ -75,4 +75,8 @@
     <string name="new_version_available">Yeni versiya: %s əlçatandır, endirmək üçün toxunun</string>
     <string name="module_downloading">Modul yüklənir: %s</string>
     <string name="profile_umount_modules_summary">Bu seçimi aktivləşdirmək KernelSU-ya bu proqram üçün modullar tərəfindən hər hansı dəyişdirilmiş faylları bərpa etməyə imkan verəcək.</string>
+    <string name="launch_app">Aç</string>
+    <string name="force_stop_app">Məcburi dayandır</string>
+    <string name="restart_app">Yenidən başlat</string>
+    <string name="failed_to_update_sepolicy">%s görə SELinux qaydalarını güncəlləmək mümkün olmadı</string>
 </resources>
