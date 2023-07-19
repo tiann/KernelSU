@@ -8,6 +8,8 @@ Android におけるカーネルベースの root ソリューションです。
 
 1. カーネルベースの `su` と権限管理
 2. OverlayFS に基づくモジュールシステム
+3. [アプリのプロファイル](https://kernelsu.org/guide/app-profile.html): root の権限をケージ内に閉じ込めます。
+
 
 ## 対応状況
 
