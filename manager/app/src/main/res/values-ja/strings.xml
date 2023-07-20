@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="home">ホーム</string>
     <string name="home_not_installed">未インストール</string>
     <string name="home_click_to_install">タップでインストール</string>
@@ -9,11 +9,9 @@
     <string name="home_module_count">モジュール: %d</string>
     <string name="home_unsupported">非対応</string>
     <string name="home_unsupported_reason">KernelSU は現在、GKI カーネルにのみ対応しています</string>
-
     <string name="home_kernel">カーネル</string>
     <string name="home_manager_version">バージョン</string>
     <string name="home_fingerprint">フィンガープリント</string>
-
     <string name="home_selinux_status">SELinux の状態</string>
     <string name="selinux_status_disabled">無効</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -23,7 +21,6 @@
     <string name="module_failed_to_enable">モジュールの有効化に失敗: %s</string>
     <string name="module_failed_to_disable">モジュールの無効化に失敗: %s</string>
     <string name="module_empty">モジュールをインストールしていません</string>
-
     <string name="module">モジュール</string>
     <string name="uninstall">アンインストール</string>
     <string name="module_install">インストール</string>
@@ -65,4 +62,11 @@
     <string name="profile_namespace_global">グローバル</string>
     <string name="profile_namespace_individual">分離</string>
     <string name="profile_umount_modules">モジュールのアンマウント</string>
+    <string name="profile_groups">グループ</string>
+    <string name="profile_selinux_context">SELinux コンテキスト</string>
+    <string name="failed_to_update_app_profile">%sのアプリのプロファイルの更新をできませでした</string>
+    <string name="profile_selinux_domain">ドメイン</string>
+    <string name="profile_selinux_rules">ルール</string>
+    <string name="new_version_available">新しいバージョン:%s アップデートが可能です、リンクを開いてからダウンロードしてください</string>
+    <string name="module_update">アップデート</string>
 </resources>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">الرئيسية</string>
     <string name="home_not_installed">غير مثبت</string>
@@ -8,11 +9,9 @@
     <string name="home_module_count">الوحدات: %d</string>
     <string name="home_unsupported">غير مدعوم</string>
     <string name="home_unsupported_reason">KernelSU يدعم GKI kernels فقط</string>
-
     <string name="home_kernel">إصدار النواة</string>
     <string name="home_manager_version">إصدار المدير</string>
     <string name="home_fingerprint">البصمة</string>
-
     <string name="home_selinux_status">وضع SELinux</string>
     <string name="selinux_status_disabled">غير مفعل</string>
     <string name="selinux_status_enforcing">مفروض</string>
@@ -22,7 +21,6 @@
     <string name="module_failed_to_enable">فشل في تمكين الوحدة: %s</string>
     <string name="module_failed_to_disable">فشل تعطيل الوحدة : %s</string>
     <string name="module_empty">لا توجد وحدة مثبتة</string>
-
     <string name="module">وحدة</string>
     <string name="uninstall">إلغاء التثبيت</string>
     <string name="module_install">تثبيت الوحدة</string>
@@ -47,13 +45,38 @@
     <string name="send_log">إرسال السجلات</string>
     <string name="safe_mode">الوضع الآمن</string>
     <string name="reboot_to_apply">إعادة التشغيل لتطبيق التغييرات</string>
-    <string name="module_magisk_conflict">تم تعطيل الوحدة لأنها تتعارض مع وحدات Magisk</string>
+    <string name="module_magisk_conflict">تم تعطيل الوحدات النمطية لأنها تتعارض مع Magisk!</string>
     <string name="home_learn_kernelsu">تعلم KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">تعرف على كيفية تثبيت KernelSU واستخدام الوحدات</string>
     <string name="home_support_title">إدعمنا</string>
     <string name="home_support_content">KernelSU سيظل دائماً مجانياً ومفتوح المصدر. مع ذلك، يمكنك أن تظهر لنا أنك تهتم بالتبرع.</string>
     <string name="about_source_code"><![CDATA[أنظر إلى مصدر البرمجة في %1$s<br/>إنضم إلى قناتنا في %2$s ]]></string>
+    <string name="profile_capabilities">القدرات</string>
+    <string name="module_update">تحديث</string>
+    <string name="module_downloading">تحمبل الوحدة : %s</string>
+    <string name="module_start_downloading">ابدأ التنزيل: %s</string>
+    <string name="new_version_available">الإصدار الجديد: %s متاح ، انقر للتنزيل</string>
+    <string name="launch_app">تشغيل</string>
+    <string name="profile_default">الإفتراضي</string>
+    <string name="profile_template">نموذج</string>
+    <string name="profile_namespace_inherited">موروث</string>
+    <string name="profile_namespace_global">عالمي</string>
+    <string name="profile_namespace_individual">فردي</string>
+    <string name="profile_groups">مجموعات</string>
+    <string name="profile_custom">مُخصّص</string>
+    <string name="profile_namespace">تركيب مساحة الاسم</string>
+    <string name="profile_umount_modules">الغاء تحميل الوحدات</string>
+    <string name="failed_to_update_app_profile">فشل تحديث ملف تعريف التطبيق لـ %s</string>
+    <string name="profile_selinux_context">سياق SELinux</string>
+    <string name="require_kernel_version">إصدار kernel الحالي %d منخفض جدا بحيث لا يعمل المدير بشكل صحيح. يرجى الترقية إلى الإصدار %d أو أعلى!</string>
+    <string name="force_stop_app">ايقاف إجباري</string>
+    <string name="settings_umount_modules_default">الغاء تحميل الوحدات بشكل افتراضي</string>
+    <string name="settings_umount_modules_default_summary">القيمة الافتراضية العامة ل \"إلغاء تحميل الوحدات \" في ملفات تعريف التطبيقات. إذا تم تمكينه ، إزالة جميع تعديلات الوحدة النمطية على النظام للتطبيقات التي لا تحتوي على مجموعة ملف تعريف.</string>
+    <string name="profile_umount_modules_summary">سيسمح تمكين هذا الخيار ل KernelSU باستعادة أي ملفات معدلة بواسطة الوحدات النمطية لهذا التطبيق.</string>
+    <string name="profile_selinux_domain">المجال</string>
+    <string name="profile_selinux_rules">القواعد</string>
+    <string name="restart_app">إعادة تشغيل التطبيق</string>
+    <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لما يلي: %s</string>
+    <string name="profile_name">اسم الملف الشخصي</string>
 </resources>
-
-

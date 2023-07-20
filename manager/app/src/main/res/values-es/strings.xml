@@ -9,13 +9,10 @@
     <string name="home_module_count">Módulos: %d</string>
     <string name="home_unsupported">No soportado</string>
     <string name="home_unsupported_reason">Por el momento, KernelSU solo es compatible con kernels genéricos (GKIs)</string>
-
     <string name="home_kernel">Versión del kernel</string>
     <string name="home_manager_version">Versión del manager</string>
     <string name="home_fingerprint">Huella del dispositivo</string>
-
     <string name="home_selinux_status">Estado de SELinux</string>
-
     <!-- It may be better to leave SELinux statuses untranslated -->
     <string name="selinux_status_disabled">Disabled</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -25,7 +22,6 @@
     <string name="module_failed_to_enable">No se pudo habilitar el módulo \"%s\"</string>
     <string name="module_failed_to_disable">No se pudo deshabilitar el módulo \"%s\"</string>
     <string name="module_empty">No hay ningún módulo instalado</string>
-
     <string name="module">Módulo</string>
     <string name="uninstall">Desinstalar</string>
     <string name="module_install">Instalar módulo</string>
@@ -80,4 +76,8 @@
     <string name="module_downloading">Descargando módulo: \"%s\"</string>
     <string name="module_start_downloading">Descargar</string>
     <string name="new_version_available">Hay una nueva versión disponible (%s). Toca para descargar</string>
+    <string name="launch_app">Lanzar Aplicacion</string>
+    <string name="force_stop_app">Forzar cierre de la aplicacion</string>
+    <string name="restart_app">Reiniciar aplicacion</string>
+    <string name="failed_to_update_sepolicy">Falló al actualizar reglas de SEpolicy por: %s</string>
 </resources>

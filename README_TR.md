@@ -1,4 +1,4 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | **Türkçe**
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | **Türkçe** | [Русский](README_RU.md)
 
 # KernelSU
 
@@ -8,6 +8,7 @@ Android cihazlar için kernel tabanlı bir root çözümü.
 
 1. Kernel-tabanlı `su` ve root erişimi yönetimi.
 2. Overlayfs'ye dayalı modül sistemi.
+3. [Uygulama profili](https://kernelsu.org/guide/app-profile.html): Root gücünü bir kafese kapatın.
 
 ## Uyumluluk Durumu
 
@@ -19,11 +20,13 @@ Ve desteklenen mevcut ABI'ler : `arm64-v8a` ve `x86_64`
 
 ## Kullanım
 
-[Yükleme](https://kernelsu.org/guide/installation.html)
+- [Yükleme](https://kernelsu.org/guide/installation.html)
+- [Nasıl inşa edilir?](https://kernelsu.org/guide/how-to-build.html)
+- [Resmi WEB sitesi](https://kernelsu.org/)
 
-## İnşaa
+## Çeviri
 
-[Nasıl inşa edilir?](https://kernelsu.org/guide/how-to-build.html)
+KernelSU'yu kendi dilinize çevirmek veya varolan bir çeviriyi geliştirmek istiyorsanız, lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/)'i kullanın.
 
 ### Tartışma
 
@@ -37,6 +40,6 @@ Ve desteklenen mevcut ABI'ler : `arm64-v8a` ve `x86_64`
 ## Krediler
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU fikri.
+- [Magisk](https://github.com/topjohnwu/Magisk): güçlü root aracı.
 - [genuine](https://github.com/brevent/genuine/): apk v2 imza doğrulama.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): bazı rootkit becerileri.
-- [Magisk](https://github.com/topjohnwu/Magisk): sepolicy uygulaması.

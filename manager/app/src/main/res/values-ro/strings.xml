@@ -9,11 +9,9 @@
     <string name="home_module_count">Module: %d</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
-
     <string name="home_kernel">Nucleu</string>
     <string name="home_manager_version">Versiune Manager</string>
     <string name="home_fingerprint">Amprentă</string>
-
     <string name="home_selinux_status">Stare SELinux</string>
     <string name="selinux_status_disabled">Dezactivat</string>
     <string name="selinux_status_enforcing">Obligatoriu</string>
@@ -23,7 +21,6 @@
     <string name="module_failed_to_enable">Activarea modulului %s a eșuat</string>
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
-
     <string name="module">Module</string>
     <string name="uninstall">Dezinstalează</string>
     <string name="module_install">Instalează</string>
@@ -74,4 +71,12 @@
     <string name="profile_umount_modules_summary">Activarea acestei opțiuni va permite KernelSU să restaureze orice fișiere modificate de către modulele pentru această aplicație.</string>
     <string name="profile_selinux_domain">Domeniu</string>
     <string name="profile_selinux_rules">Reguli</string>
+    <string name="module_update">Actualizează</string>
+    <string name="module_downloading">Se descarcă modulul: %s</string>
+    <string name="module_start_downloading">Începe descărcarea: %s</string>
+    <string name="new_version_available">Versiune nouă: %s disponibilă, clic pentru a descărca</string>
+    <string name="failed_to_update_sepolicy">Nu s-au reușit actualizările regulilor SELinux pentru: %s</string>
+    <string name="launch_app">Lansare</string>
+    <string name="force_stop_app">Oprire forțată</string>
+    <string name="restart_app">Repornește</string>
 </resources>

@@ -28,6 +28,7 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.installModule
 import me.weishu.kernelsu.ui.util.reboot
 import java.io.File
+import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,6 +41,7 @@ import java.util.*
 fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
 
     var text by rememberSaveable { mutableStateOf("") }
+    val logContent = StringBuilder()
     var showFloatAction by rememberSaveable { mutableStateOf(false) }
 
     val snackBarHost = LocalSnackbarHost.current
@@ -54,9 +56,12 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                 if (success) {
                     showFloatAction = true
                 }
-            }) {
+            }, onStdout = {
                 text += "$it\n"
-            }
+                logContent.append(it).append("\n")
+            }, onStderr = {
+                logContent.append(it).append("\n")
+            });
         }
     }
 
@@ -74,7 +79,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                             "KernelSU_install_log_${date}.log"
                         )
-                        file.writeText(text)
+                        file.writeText(logContent.toString())
                         snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
                     }
                 }

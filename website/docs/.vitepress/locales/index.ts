@@ -5,6 +5,7 @@ import zh_TW from './zh_TW'
 import vi_VN from './vi_VN'
 import id_ID from './id_ID'
 import ja_JP from './ja_JP'
+import ru_RU from './ru_RU'
 
 export default defineConfig({
   locales: {
@@ -43,6 +44,12 @@ export default defineConfig({
       lang: id_ID.lang,
       themeConfig: id_ID.themeConfig,
       description: id_ID.description
+    },
+    ru_RU: {
+      label: 'Русский',
+      lang: ru_RU.lang,
+      themeConfig: ru_RU.themeConfig,
+      description: ru_RU.description
     }
   }
 })

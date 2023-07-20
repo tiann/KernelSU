@@ -1,4 +1,4 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | **日本語** | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md)
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | **日本語** | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md)
 
 # KernelSU
 
@@ -8,24 +8,28 @@ Android におけるカーネルベースの root ソリューションです。
 
 1. カーネルベースの `su` と権限管理
 2. OverlayFS に基づくモジュールシステム
+3. [アプリのプロファイル](https://kernelsu.org/guide/app-profile.html): root の権限をケージ内に閉じ込めます。
+
 
 ## 対応状況
 
 KernelSU は GKI 2.0 デバイス（カーネルバージョン 5.10 以上）を公式にサポートしています。古いカーネル（4.14以上）とも互換性がありますが、自分でカーネルをビルドする必要があります。
 
-WSA とコンテナ上で動作する Android でも KernelSU を統合して動かせます。
+WSA 、ChromeOS とコンテナ上で動作する Android でも KernelSU を統合して動かせます。
 
 現在サポートしているアーキテクチャは `arm64-v8a` および `x86_64` です。
 
 ## 使用方法
 
-[インストール方法はこちら](https://kernelsu.org/ja_JP/guide/installation.html)
+- [インストール方法はこちら](https://kernelsu.org/ja_JP/guide/installation.html)
+- [ビルド方法はこちら](https://kernelsu.org/guide/how-to-build.html)
+- [公式サイト](https://kernelsu.org)
 
-## ビルド
+## 翻訳
 
-[ビルド方法はこちら](https://kernelsu.org/guide/how-to-build.html)
+KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善するには、[Weblate](https://hosted.weblate.org/engage/kernelsu/) を使用してください。
 
-### ディスカッション
+## ディスカッション
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
@@ -37,6 +41,7 @@ WSA とコンテナ上で動作する Android でも KernelSU を統合して動
 ## クレジット
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU のアイデア元
+- [Magisk](https://github.com/topjohnwu/Magisk)：強力な root ツール
 - [genuine](https://github.com/brevent/genuine/)：apk v2 の署名検証
 - [Diamorphine](https://github.com/m0nad/Diamorphine): rootkit のスキル
-- [Magisk](https://github.com/topjohnwu/Magisk)：sepolicy の実装
+

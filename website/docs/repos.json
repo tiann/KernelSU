@@ -121,7 +121,7 @@
     {
         "maintainer": "Sreeshankar K",
         "maintainer_link": "https://github.com/Sanju0910",
-        "kernel_name": "android_kernel_oneplus_avicii",
+        "kernel_name": "NeverSettle Kernel",
         "kernel_link": "https://github.com/Sanju0910/android_kernel_oneplus_avicii",
         "devices": "OnePlus Nord (avicii)"
     },
@@ -177,8 +177,8 @@
     {
         "maintainer": "rxuglr",
         "maintainer_link": "https://github.com/rxuglr",
-        "kernel_name": "android_kernel_xiaomi_surya",
-        "kernel_link": "https://github.com/rxuglr/android_kernel_xiaomi_surya",
+        "kernel_name": "kernel_xiaomi_surya",
+        "kernel_link": "https://github.com/rxuglr/kernel_xiaomi_surya",
         "devices": "Xiaomi POCO X3 / NFC (surya)"
     },
     {
@@ -280,13 +280,6 @@
         "devices": "XK20 Pro Raphael  DSP & A only SAR support "
     },
     {
-        "maintainer": "AkariOficial",
-        "maintainer_link": "https://github.com/AkariOficial",
-        "kernel_name": "kernel_Moe_ginkgo",
-        "kernel_link": "https://github.com/AkariOficial/kernel_Moe_ginkgo",
-        "devices": "Xiaomi Redmi Note 8 (Ginkgo)"
-    },
-    {
         "maintainer": "Coconutat",
         "maintainer_link": "https://github.com/Coconutat",
         "kernel_name": "android_kernel_huawei_vtr_emui9_KernelSU",
@@ -376,5 +369,12 @@
         "kernel_name": "android_kernel_oneplus_sm8350",
         "kernel_link": "https://github.com/awakened1712/android_kernel_oneplus_sm8350",
         "devices": "Oneplus 9/9Pro"
+    },
+    {
+        "maintainer": "siimsek",
+        "maintainer_link": "https://github.com/siimsek",
+        "kernel_name": "Lightning Kernel",
+        "kernel_link": "https://github.com/siimsek/Lightning-Kernel",
+        "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
     }
 ]

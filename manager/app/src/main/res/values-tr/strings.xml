@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Ana menü</string>
     <string name="home_not_installed">Yüklü değil</string>
@@ -7,12 +8,10 @@
     <string name="home_superuser_count">Süper kullanıcılar: %d</string>
     <string name="home_module_count">Modüller: %d</string>
     <string name="home_unsupported">Desteklenmiyor</string>
-    <string name="home_unsupported_reason">KernelSU artık yalnızca GKI çekirdeklerini destekliyor</string>
-
+    <string name="home_unsupported_reason">KernelSU şu an yalnızca GKI çekirdeklerini destekliyor</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Yönetici Sürümü</string>
     <string name="home_fingerprint">Parmak İzi</string>
-
     <string name="home_selinux_status">SELinux Durumu</string>
     <string name="selinux_status_disabled">Devre dışı</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -22,7 +21,6 @@
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
     <string name="module_empty">Yüklü modül yok</string>
-
     <string name="module">Modül</string>
     <string name="uninstall">Kaldır</string>
     <string name="module_install">Yükle</string>
@@ -46,7 +44,7 @@
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
     <string name="send_log">Log gönder</string>
     <string name="safe_mode">Güvenli mod</string>
-    <string name="reboot_to_apply">Etkili olması için yeniden başlat</string>
+    <string name="reboot_to_apply">Değişiklilerin kaydedilmesi için yeniden başlat</string>
     <string name="module_magisk_conflict">Modüller Magisk ile çakıştığı için devre dışı bırakıldı!</string>
     <string name="home_learn_kernelsu">KernelSU\'yu öğren</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
@@ -72,7 +70,7 @@
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kesin</string>
     <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kesme\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi ile, bu uygulama için modüller tarafından değiştirilen tüm dosyaların KernelSU tarafından geri alınmasına izin verilecektir.</string>
-    <string name="profile_selinux_domain">Etki alanı</string>
+    <string name="profile_selinux_domain">Alan adı</string>
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
@@ -80,6 +78,6 @@
     <string name="new_version_available">Yeni versiyon: %s mevcut, indirmek için tıklayın</string>
     <string name="launch_app">Çalıştır</string>
     <string name="force_stop_app">Durmaya zorla</string>
-    <string name="restart_app">Yeniden başlat</string>
+    <string name="restart_app">Uygulamayı yeniden başlat</string>
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
 </resources>

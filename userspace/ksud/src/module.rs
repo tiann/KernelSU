@@ -14,7 +14,7 @@ use log::{info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, set_permissions, File, Permissions},
+    fs::{remove_dir_all, remove_file, set_permissions, File, Permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -56,7 +56,6 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
-        .stderr(Stdio::null())
         .status()?;
     ensure!(result.success(), "Failed to install module script");
     Ok(())
@@ -88,6 +87,35 @@ fn mark_module_state(module: &str, flag_file: &str, create_or_delete: bool) -> R
         }
         Ok(())
     }
+}
+
+fn foreach_module(active_only: bool, mut f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            warn!("{} is not a directory, skip", path.display());
+            continue;
+        }
+
+        if active_only && path.join(defs::DISABLE_FILE_NAME).exists() {
+            info!("{} is disabled, skip", path.display());
+            continue;
+        }
+        if active_only && path.join(defs::REMOVE_FILE_NAME).exists() {
+            warn!("{} is removed, skip", path.display());
+            continue;
+        }
+
+        f(&path)?;
+    }
+
+    Ok(())
+}
+
+fn foreach_active_module(f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
+    foreach_module(true, f)
 }
 
 fn get_minimal_image_size(img: &str) -> Result<u64> {
@@ -141,7 +169,7 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
         humansize::format_size(target_size, humansize::DECIMAL)
     );
     let target_size = target_size / 1024 + 1024;
-
+    info!("resize image to {target_size}K, minimal size is {minimal_size}K");
     let result = Command::new("resize2fs")
         .args([img, &format!("{target_size}K")])
         .stdout(Stdio::null())
@@ -155,26 +183,18 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
 }
 
 pub fn load_sepolicy_rule() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
-            info!("{} is disabled, skip", path.display());
-            continue;
-        }
-
+    foreach_active_module(|path| {
         let rule_file = path.join("sepolicy.rule");
         if !rule_file.exists() {
-            continue;
+            return Ok(());
         }
         info!("load policy: {}", &rule_file.display());
 
         if sepolicy::apply_file(&rule_file).is_err() {
             warn!("Failed to load sepolicy.rule for {}", &rule_file.display());
         }
-    }
+        Ok(())
+    })?;
 
     Ok(())
 }
@@ -222,23 +242,14 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
 
 /// execute every modules' post-fs-data.sh
 pub fn exec_post_fs_data() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
-            warn!("{} is disabled, skip", path.display());
-            continue;
-        }
-
-        let post_fs_data = path.join("post-fs-data.sh");
+    foreach_active_module(|module| {
+        let post_fs_data = module.join("post-fs-data.sh");
         if !post_fs_data.exists() {
-            continue;
+            return Ok(());
         }
 
-        exec_script(&post_fs_data, true)?;
-    }
+        exec_script(&post_fs_data, true)
+    })?;
 
     Ok(())
 }
@@ -267,43 +278,25 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
 
 /// execute every modules' service.sh
 pub fn exec_services() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
-            warn!("{} is disabled, skip", path.display());
-            continue;
-        }
-
-        let service = path.join("service.sh");
+    foreach_active_module(|module| {
+        let service = module.join("service.sh");
         if !service.exists() {
-            continue;
+            return Ok(());
         }
 
-        exec_script(&service, false)?;
-    }
+        exec_script(&service, false)
+    })?;
 
     Ok(())
 }
 
 pub fn load_system_prop() -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
-    let dir = std::fs::read_dir(modules_dir)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        let disabled = path.join(defs::DISABLE_FILE_NAME);
-        if disabled.exists() {
-            info!("{} is disabled, skip", path.display());
-            continue;
-        }
-
-        let system_prop = path.join("system.prop");
+    foreach_active_module(|module| {
+        let system_prop = module.join("system.prop");
         if !system_prop.exists() {
-            continue;
+            return Ok(());
         }
-        info!("load {} system.prop", path.display());
+        info!("load {} system.prop", module.display());
 
         // resetprop -n --file system.prop
         Command::new(assets::RESETPROP_PATH)
@@ -312,7 +305,36 @@ pub fn load_system_prop() -> Result<()> {
             .arg(&system_prop)
             .status()
             .with_context(|| format!("Failed to exec {}", system_prop.display()))?;
-    }
+
+        Ok(())
+    })?;
+
+    Ok(())
+}
+
+pub fn prune_modules() -> Result<()> {
+    foreach_module(false, |module| {
+        remove_file(module.join(defs::UPDATE_FILE_NAME)).ok();
+
+        if !module.join(defs::REMOVE_FILE_NAME).exists() {
+            return Ok(());
+        }
+
+        info!("remove module: {}", module.display());
+
+        let uninstaller = module.join("uninstall.sh");
+        if uninstaller.exists() {
+            if let Err(e) = exec_script(uninstaller, true) {
+                warn!("Failed to exec uninstaller: {}", e);
+            }
+        }
+
+        if let Err(e) = remove_dir_all(module) {
+            warn!("Failed to remove {}: {}", module.display(), e);
+        }
+
+        Ok(())
+    })?;
 
     Ok(())
 }
@@ -392,6 +414,8 @@ fn _install_module(zip: &str) -> Result<()> {
 
         // format the img to ext4 filesystem
         let result = Command::new("mkfs.ext4")
+            .arg("-b")
+            .arg("1024")
             .arg(tmp_module_img)
             .stdout(Stdio::null())
             .output()?;
@@ -556,11 +580,8 @@ pub fn uninstall_module(id: &str) -> Result<()> {
                     }
                 })?;
             if module_id.eq(mid) {
-                let uninstall_script = path.join("uninstall.sh");
-                if uninstall_script.exists() {
-                    exec_script(uninstall_script, true)?;
-                }
-                remove_dir_all(path)?;
+                let remove_file = path.join(defs::REMOVE_FILE_NAME);
+                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
                 break;
             }
         }
@@ -569,7 +590,10 @@ pub fn uninstall_module(id: &str) -> Result<()> {
         let target_module_path = format!("{update_dir}/{mid}");
         let target_module = Path::new(&target_module_path);
         if target_module.exists() {
-            remove_dir_all(target_module)?;
+            let remove_file = target_module.join(defs::REMOVE_FILE_NAME);
+            if !remove_file.exists() {
+                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
+            }
         }
 
         let _ = mark_module_state(id, defs::REMOVE_FILE_NAME, true);

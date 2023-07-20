@@ -3,6 +3,7 @@ use log::{info, warn};
 use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
+use crate::module::prune_modules;
 use crate::{
     assets, defs, mount, restorecon,
     utils::{self, ensure_clean_dir, ensure_dir_exists},
@@ -29,8 +30,8 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
     // construct overlay mount params
     let dir = std::fs::read_dir(module_dir);
     let Ok(dir) = dir else {
-            bail!("open {} failed", defs::MODULE_DIR);
-        };
+        bail!("open {} failed", defs::MODULE_DIR);
+    };
 
     let mut system_lowerdir: Vec<String> = Vec::new();
 
@@ -146,6 +147,10 @@ pub fn on_post_data_fs() -> Result<()> {
             warn!("disable all modules failed: {}", e);
         }
         return Ok(());
+    }
+
+    if let Err(e) = prune_modules() {
+        warn!("prune modules failed: {}", e);
     }
 
     // Then exec common post-fs-data scripts
