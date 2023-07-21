@@ -381,8 +381,14 @@
         "maintainer": "GiovanYCringe",
         "maintainer_link": "https://github.com/GiovanYCringe",
         "kernel_name": "kernel_a50",
-        "kernel_link": "https://github.com/GiovanYCringe-Experiments/kernel_a50"
+        "kernel_link": "https://github.com/GiovanYCringe-Experiments/kernel_a50",
         "devices": "Galaxy A50 (A505f,fn,g,gn,gt)"
+    },
+        "maintainer": "GiovanYCringe",
+        "maintainer_link": "https://github.com/GiovanYCringe",
+        "kernel_name": "kernel_m30s",
+        "kernel_link": "https://github.com/GiovanYCringe-Experime/Kernel_m30s",
+        "devices": "Galaxy M30s"
     },
     {
         "maintainer": "Asriadi Rahim",
@@ -390,5 +396,5 @@
         "kernel_name": "android_kernel_google_wahoo",
         "kernel_link": "https://github.com/Google-Pixel2-2XL/kernel_google_wahoo",
         "devices": "Google Pixel 2/2XL"
-    }
+    }  
 ]
