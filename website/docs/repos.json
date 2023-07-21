@@ -390,5 +390,12 @@
         "kernel_name": "kernel_m30s",
         "kernel_link": "https://github.com/GiovanYCringe-Experime/Kernel_m30s",
         "devices": "Galaxy M30s"
+    },
+    {
+        "maintainer": "Asriadi Rahim",
+        "maintainer_link": "https://github.com/asriadirahim",
+        "kernel_name": "android_kernel_google_wahoo",
+        "kernel_link": "https://github.com/Google-Pixel2-2XL/kernel_google_wahoo",
+        "devices": "Google Pixel 2/2XL"
     }
 ]
