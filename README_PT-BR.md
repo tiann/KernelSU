@@ -10,6 +10,8 @@ Uma solução raiz baseada em Kernel para dispositivos Android.
 
 2. Sistema modular baseado em overlayfs.
 
+3. [App Perfil](https://kernelsu.org/guide/app-profile.html): Tranque o poder raiz em uma gaiola.
+
 ## Estado de compatibilidade
 
 O KernelSU suporta oficialmente dispositivos Android GKI 2.0 (com kernel 5.10+), kernels antigos (4.14+) também são compatíveis, mas você mesmo precisa construir o kernel.
@@ -19,12 +21,12 @@ O Android baseado em WSA e contêiner também deve funcionar com o KernelSU inte
 E os ABIs atualmente suportados são: `arm64-v8a` e `x86_64`
 
 ## Uso
+- [Instalação](https://kernelsu.org/guide/installation.html)
+ - [Como construir?](https://kernelsu.org/guide/how-to-build.html)
+ - [Site Oficial](https://kernelsu.org/)
 
-[Instalação](https://kernelsu.org/guide/installation.html)
-
-## Construir
-
-[Como construir?](https://kernelsu.org/guide/how-to-build.html)
+## Tradução
+Para traduzir o KernelSU para o seu idioma, ou para melhorar uma tradução existente, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/), por favor.
 
 ### Discussão
 
@@ -39,9 +41,6 @@ E os ABIs atualmente suportados são: `arm64-v8a` e `x86_64`
 ## Créditos
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): a ideia do KernelSU.
-
-- [genuine](https://github.com/brevent/genuine/): validação de assinatura apk v2.
-
-- [Diamorphine](https://github.com/m0nad/Diamorphine): algumas habilidades de rootkit.
-
 - [Magisk](https://github.com/topjohnwu/Magisk): a implementação da sepolicy.
+- [genuine](https://github.com/brevent/genuine/): validação de assinatura apk v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): algumas habilidades de rootkit.
