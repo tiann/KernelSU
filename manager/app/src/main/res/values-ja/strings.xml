@@ -71,7 +71,10 @@
     <string name="module_update">アップデート</string>
     <string name="module_start_downloading">ダウンロードを開始:%s</string>
     <string name="launch_app">起動</string>
-    <string name="force_stop_app">強制的に止める</string>
+    <string name="force_stop_app">強制停止</string>
     <string name="restart_app">再起動</string>
     <string name="failed_to_update_sepolicy">次の SELinux ルールの更新に失敗しました: %s</string>
+    <string name="profile_capabilities">資格</string>
+    <string name="require_kernel_version">現在のカーネル バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
+    <string name="module_downloading">モジュールをダウンロード中: %s</string>
 </resources>
