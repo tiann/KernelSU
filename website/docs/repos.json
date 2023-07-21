@@ -376,5 +376,12 @@
         "kernel_name": "Lightning Kernel",
         "kernel_link": "https://github.com/siimsek/Lightning-Kernel",
         "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
+    },
+    {
+        "maintainer": "GiovanYCringe",
+        "maintainer_link": "https://github.com/GiovanYCringe",
+        "kernel_name": "kernel_a50",
+        "kernel_link": "https://github.com/GiovanYCringe-Experiments/kernel_a50"
+        "devices": "Galaxy A50 (A505f,fn,g,gn,gt)"
     }
 ]
