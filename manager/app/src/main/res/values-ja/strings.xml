@@ -14,8 +14,8 @@
     <string name="home_fingerprint">フィンガープリント</string>
     <string name="home_selinux_status">SELinux の状態</string>
     <string name="selinux_status_disabled">無効</string>
-    <string name="selinux_status_enforcing">Enforcing</string>
-    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_enforcing">実施するために</string>
+    <string name="selinux_status_permissive">寛容</string>
     <string name="selinux_status_unknown">不明</string>
     <string name="superuser">スーパーユーザー</string>
     <string name="module_failed_to_enable">モジュールの有効化に失敗: %s</string>
@@ -69,4 +69,15 @@
     <string name="profile_selinux_rules">ルール</string>
     <string name="new_version_available">新しいバージョン:%s アップデートが可能です、リンクを開いてからダウンロードしてください</string>
     <string name="module_update">アップデート</string>
+    <string name="module_start_downloading">ダウンロードを開始:%s</string>
+    <string name="launch_app">起動</string>
+    <string name="force_stop_app">強制停止</string>
+    <string name="restart_app">再起動</string>
+    <string name="failed_to_update_sepolicy">次の SELinux ルールの更新に失敗しました: %s</string>
+    <string name="profile_capabilities">資格</string>
+    <string name="require_kernel_version">現在のカーネル バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
+    <string name="module_downloading">モジュールをダウンロード中: %s</string>
+    <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリケーションのモジュールによって変更されたファイルを復元できるようになります。</string>
+    <string name="settings_umount_modules_default">デフォルトでモジュールをアンインストールする</string>
+    <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」のグローバルデフォルト値。 有効にすると、プロファイル セットを持たないアプリケーションのシステムに対するすべてのモジュール変更が削除されます。</string>
 </resources>

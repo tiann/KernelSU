@@ -48,7 +48,7 @@
     <string name="module_magisk_conflict">โมดูลถูกปิดใช้งานเนื่องจากขัดแย้งกับ Magisk!</string>
     <string name="home_learn_kernelsu">เรียนรู้เกี่ยวกับ KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">เรียนรู้วิธีการติดตั้ง KernelSU และใช้โมดูลต่าง ๆ</string>
+    <string name="home_click_to_learn_kernelsu">เรียนรู้วิธีการติดตั้ง KernelSU และวิธีใช้งานโมดูลต่าง ๆ</string>
     <string name="home_support_title">สนับสนุนพวกเรา</string>
     <string name="home_support_content">KernelSU เป็นโอเพ่นซอร์สฟรีและจะเป็นตลอดไป อย่างไรก็ตาม คุณสามารถแสดงให้เราเห็นว่าคุณห่วงใยด้วยการบริจาค</string>
     <string name="about_source_code">ดูซอร์สโค้ดที่ %1$s<br/>เข้าร่วมช่อง %2$s ของเรา</string>
@@ -56,7 +56,7 @@
     <string name="profile_default">ค่าเริ่มต้น</string>
     <string name="profile_template">เทมเพลต</string>
     <string name="profile_name">ชื่อโปรไฟล์</string>
-    <string name="profile_namespace">Mount namespace</string>
+    <string name="profile_namespace">Mount เนมสเปซ</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_inherited">Inherited</string>
     <string name="profile_namespace_individual">Individual</string>
@@ -65,9 +65,9 @@
     <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปพลิเคชั่นนี้ได้</string>
     <string name="profile_selinux_context">บริบท SELinux</string>
     <string name="profile_umount_modules">Umount โมดูล</string>
-    <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s</string>
+    <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s ได้</string>
     <string name="settings_umount_modules_default">Umount โมดูลตามค่าเริ่มต้น</string>
-    <string name="require_kernel_version">เวอร์ชั่นเคอร์เนลปัจจุบันคือ %d ต่ำเกินไปสำหรับตัวจัดการ โปรดอัปเกรดเป็นเวอร์ชั่น %d หรือสูงกว่า!</string>
+    <string name="require_kernel_version">เวอร์ชั่นเคอร์เนลปัจจุบัน %d ต่ำเกินไปสำหรับตัวจัดการ โปรดอัปเกรดเป็นเวอร์ชั่น %d หรือสูงกว่า!</string>
     <string name="profile_selinux_domain">โดเมน</string>
     <string name="module_update">อัปเดต</string>
     <string name="profile_selinux_rules">กฎ</string>
@@ -78,5 +78,5 @@
     <string name="restart_app">รีสตาร์ท</string>
     <string name="settings_umount_modules_default_summary">หากเปิดใช้งานค่าเริ่มต้นโดยทั่วไปสำหรับ \"Umount โมดูล\" ในโปรไฟล์แอป จะเป็นการลบการแก้ไขโมดูลทั้งหมดในระบบสำหรับแอปพลิเคชั่นที่ไม่มีการตั้งค่าโปรไฟล์</string>
     <string name="launch_app">เปิด</string>
-    <string name="failed_to_update_sepolicy">ไม่สามารถอัปเดตกฎ SElinux สำหรับ: %s</string>
+    <string name="failed_to_update_sepolicy">ไม่สามารถอัปเดตกฎ SElinux สำหรับ: %s ได้</string>
 </resources>

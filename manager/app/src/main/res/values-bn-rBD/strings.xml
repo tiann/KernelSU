@@ -39,4 +39,14 @@
     <string name="profile_capabilities">ক্যাপাবিলিটিস</string>
     <string name="profile_umount_modules">আনমাউন্ট মোডিউলস</string>
     <string name="require_kernel_version">বর্তমান কর্নেল ভারসন %d আউটডেটেড। আপডেট করুণ %d তে বা নতুন ভারশনে।</string>
+    <string name="reboot_recovery">রিকভারিতে বুট</string>
+    <string name="reboot_bootloader">বুটলোডারে বুট</string>
+    <string name="reboot_download">ডাউনলোড মডে বুট</string>
+    <string name="reboot_edl">ইমারজেন্সি ডাউনলোড মডে বুট</string>
+    <string name="about">অ্যাবাউট</string>
+    <string name="module_uninstall_confirm">%s মোডিউল আনইনস্টলের বেপারে নিশ্চিৎ\?</string>
+    <string name="module_uninstall_success">%s আনইনস্টলড</string>
+    <string name="module_uninstall_failed">%s আনইনস্টল করা যায়নি</string>
+    <string name="module_version">ভার্সন</string>
+    <string name="module_author">অথার</string>
 </resources>
