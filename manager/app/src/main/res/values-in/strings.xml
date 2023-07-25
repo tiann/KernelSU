@@ -12,7 +12,7 @@
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versi Manager</string>
     <string name="home_fingerprint">Sidik jari</string>
-    <string name="home_selinux_status">status SELinux</string>
+    <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Dinonaktifkan</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
@@ -25,9 +25,9 @@
     <string name="uninstall">Copot</string>
     <string name="module_install">Pasang</string>
     <string name="install">Pasang</string>
-    <string name="reboot">Menyalakan ulang</string>
+    <string name="reboot">Mulai ulang</string>
     <string name="settings">Pengaturan</string>
-    <string name="reboot_userspace">Reboot Lembut</string>
+    <string name="reboot_userspace">Soft Reboot</string>
     <string name="reboot_recovery">Mulai ulang ke Pemulihan</string>
     <string name="reboot_bootloader">Mulai ulang ke Bootloader</string>
     <string name="reboot_download">Mulai ulang ke Download</string>
@@ -77,7 +77,7 @@
     <string name="module_start_downloading">Mulai mengunduh: %s</string>
     <string name="new_version_available">Versi baru: %s telah tersedia, tap untuk mengunduh</string>
     <string name="launch_app">Jalankan</string>
-    <string name="force_stop_app">Paksa berhenti</string>
+    <string name="force_stop_app">Paksa Berhenti</string>
     <string name="restart_app">Mulai ulang</string>
     <string name="failed_to_update_sepolicy">Gagal memperbarui aturan SELinux untuk: %s</string>
 </resources>
