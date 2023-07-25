@@ -38,7 +38,7 @@
     <string name="module_uninstall_failed">%s kaldırılamadı</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Geliştirici</string>
-    <string name="module_overlay_fs_not_available">overlayfs mevcut değil, modül çalışamıyor!</string>
+    <string name="module_overlay_fs_not_available">overlayfs mevcut değil, modül çalışamaz!</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
@@ -68,7 +68,7 @@
     <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
     <string name="require_kernel_version">Mevcut kernel sürümü %d olup, yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya yukarısına yükseltin!</string>
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kesin</string>
-    <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kesme\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
+    <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kes\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi ile, bu uygulama için modüller tarafından değiştirilen tüm dosyaların KernelSU tarafından geri alınmasına izin verilecektir.</string>
     <string name="profile_selinux_domain">Ad alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
