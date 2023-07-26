@@ -205,7 +205,8 @@ private fun ModuleList(
                 if (isEmpty) {
                     item {
                         Box(
-                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(stringResource(R.string.module_empty))
                         }
