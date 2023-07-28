@@ -1,0 +1,11 @@
+name: Custom issue template
+description: Ask questions about other aspects of the project
+title: '[Custom]'
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe your problem."
+    validations:
+      required: true
+
