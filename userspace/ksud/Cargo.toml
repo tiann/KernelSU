@@ -46,4 +46,4 @@ android_logger = "0.13"
 [profile.release]
 strip = true
 opt-level = "z"
-# lto = true
+lto = true
