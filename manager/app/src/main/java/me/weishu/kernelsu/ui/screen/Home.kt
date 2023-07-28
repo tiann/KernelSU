@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
@@ -232,7 +231,7 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
 
 @Composable
 fun WarningCard(
-    message: String, color: Color = MaterialTheme.colorScheme.error, onClick: () -> Unit = {}
+    message: String, color: Color = MaterialTheme.colorScheme.error, onClick: (() -> Unit)? = null
 ) {
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(
@@ -242,16 +241,12 @@ fun WarningCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(onClick?.let { Modifier.clickable { it() } } ?: Modifier)
                 .padding(24.dp)
-                .clickable {
-                    onClick()
-                }, verticalAlignment = Alignment.CenterVertically
         ) {
-            Column() {
-                Text(
-                    text = message, style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(
+                text = message, style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -361,5 +356,14 @@ private fun StatusCardPreview() {
         StatusCard(KernelVersion(5, 10, 101), 1)
         StatusCard(KernelVersion(5, 10, 101), null)
         StatusCard(KernelVersion(4, 10, 101), null)
+    }
+}
+
+@Preview
+@Composable
+private fun WarningCardPreview() {
+    Column {
+        WarningCard(message = "Warning message")
+        WarningCard(message =  "Warning message ", MaterialTheme.colorScheme.outlineVariant, onClick = {})
     }
 }
