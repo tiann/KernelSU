@@ -1,0 +1,12 @@
+name: Custom issue template
+about: Describe this issue template's purpose here.
+title: '[Custom]'
+labels: custom
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe your problem."
+    validations:
+      required: true
+
