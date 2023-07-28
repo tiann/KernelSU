@@ -1,5 +1,5 @@
 name: Custom issue template
-about: Describe this issue template's purpose here.
+description: Describe this issue template's purpose here.
 title: '[Custom]'
 labels: custom
 body:
