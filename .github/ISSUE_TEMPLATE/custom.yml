@@ -1,7 +1,6 @@
 name: Custom issue template
-description: Describe this issue template's purpose here.
+description: Ask questions about other aspects of the project
 title: '[Custom]'
-labels: custom
 body:
   - type: textarea
     id: description
