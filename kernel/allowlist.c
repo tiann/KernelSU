@@ -349,7 +349,8 @@ void do_save_allow_list(struct work_struct *work)
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 	loff_t off = 0;
-
+        
+	KWORKER_INSTALL_KEYRING();
 	struct file *fp =
 		ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
 	if (IS_ERR(fp)) {
@@ -391,6 +392,7 @@ void do_load_allow_list(struct work_struct *work)
 	struct file *fp = NULL;
 	u32 magic;
 	u32 version;
+        KWORKER_INSTALL_KEYRING();
 
 #ifdef CONFIG_KSU_DEBUG
 	// always allow adb shell by default
