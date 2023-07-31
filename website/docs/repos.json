@@ -404,5 +404,12 @@
         "kernel_name": "android_kernel_xiaomi_sm8250",
         "kernel_link": "https://github.com/vyrine/android_kernel_xiaomi_sm8250/tree/lineage-20-kernelsu",
         "devices": "POCO F3/Redmi K40/Mi 11X (alioth)"
+    },
+    {
+        "maintainer": "DawfukFR",
+        "maintainer_link": "https://github.com/DawfukFR",
+        "kernel_name": "kernel_oneplus_sm8250 (Stellaris-Kernel)",
+        "kernel_link": "https://github.com/DawfukFR/kernel_oneplus_sm8250",
+        "devices": "Oneplus 8 (Instantnoodle), Oneplus 8T (Kebab), Oneplus 8 Pro (Instantnoodlep), Oneplus 9R (lemonades) [msm-4.19]"
     }
 ]
