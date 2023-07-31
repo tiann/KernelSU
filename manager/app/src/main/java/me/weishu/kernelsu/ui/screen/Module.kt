@@ -52,7 +52,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
 
     LaunchedEffect(Unit) {
-        if (viewModel.moduleList.isEmpty()) {
+        if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
             viewModel.fetchModuleList()
         }
     }
@@ -79,6 +79,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 val uri = data.data ?: return@rememberLauncherForActivityResult
 
                 navigator.navigate(InstallScreenDestination(uri))
+
+                viewModel.markNeedRefresh()
 
                 Log.i("ModuleScreen", "select zip result: ${it.data}")
             }
