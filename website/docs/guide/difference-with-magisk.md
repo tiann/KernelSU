@@ -24,3 +24,4 @@ Here are some differences:
 - The method for replacing or deleting files in KernelSU modules is completely different from Magisk. KernelSU does not support the `.replace` method. Instead, you need to create a same-named file with `mknod filename c 0 0` to delete the corresponding file.
 - The directories for BusyBox are different. The built-in BusyBox in KernelSU is located in `/data/adb/ksu/bin/busybox`, while in Magisk it is in `/data/adb/magisk/busybox`. **Note that this is an internal behavior of KernelSU and may change in the future!**
 - KernelSU does not support `.replace` files; however, KernelSU supports the `REMOVE` and `REPLACE` variable to remove or replace files and folders.
+- KernelSU adds `boot-completed` stage to run some scripts on boot completed. 

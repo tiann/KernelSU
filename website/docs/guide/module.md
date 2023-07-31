@@ -54,6 +54,7 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 │   │
 │   ├── post-fs-data.sh     <--- This script will be executed in post-fs-data
 │   ├── service.sh          <--- This script will be executed in late_start service
+│   ├── boot-completed.sh   <--- This script will be executed on boot completed
 |   ├── uninstall.sh        <--- This script will be executed when KernelSU removes your module
 │   ├── system.prop         <--- Properties in this file will be loaded as system properties by resetprop
 │   ├── sepolicy.rule       <--- Additional custom sepolicy rules
@@ -102,7 +103,7 @@ description=<string>
 
 ### Shell scripts
 
-Please read the [Boot Scripts](#boot-scripts) section to understand the difference between `post-fs-data.sh` and `service.sh`. For most module developers, `service.sh` should be good enough if you just need to run a boot script.
+Please read the [Boot Scripts](#boot-scripts) section to understand the difference between `post-fs-data.sh` and `service.sh`. For most module developers, `service.sh` should be good enough if you just need to run a boot script, if you need to run the script after boot completed, please use `boot-completed.sh`.
 
 In all scripts of your module, please use `MODDIR=${0%/*}` to get your module's base directory path; do **NOT** hardcode your module path in scripts.
 
@@ -243,13 +244,13 @@ In KernelSU, scripts are divided into two types based on their running mode: pos
 In KernelSU, startup scripts are divided into two types based on their storage location: general scripts and module scripts:
 
 - General Scripts
-  - Placed in `/data/adb/post-fs-data.d` or `/data/adb/service.d`
+  - Placed in `/data/adb/post-fs-data.d`, `/data/adb/service.d` or `/data/adb/boot-completed.d`
   - Only executed if the script is set as executable (`chmod +x script.sh`)
   - Scripts in `post-fs-data.d` runs in post-fs-data mode, and scripts in `service.d` runs in late_start service mode.
   - Modules should **NOT** add general scripts during installation
 - Module Scripts
   - Placed in the module's own folder
   - Only executed if the module is enabled
-  - `post-fs-data.sh` runs in post-fs-data mode, and `service.sh` runs in late_start service mode.
+  - `post-fs-data.sh` runs in post-fs-data mode, `service.sh` runs in late_start service mode, `boot-completed.sh` runs on boot completed.
 
 All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
