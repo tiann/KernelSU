@@ -46,6 +46,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
 
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
@@ -58,6 +59,9 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                 }
             }, onStdout = {
                 text += "$it\n"
+                scope.launch {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
                 logContent.append(it).append("\n")
             }, onStderr = {
                 logContent.append(it).append("\n")
@@ -107,7 +111,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
             modifier = Modifier
                 .fillMaxSize(1f)
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scrollState),
         ) {
             Text(
                 modifier = Modifier.padding(8.dp),
