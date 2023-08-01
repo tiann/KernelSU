@@ -47,7 +47,7 @@ int __init kernelsu_init(void)
 
 	ksu_core_init();
 
-	ksu_workqueue = alloc_workqueue("kernelsu_work_queue", 0, 0);
+	ksu_workqueue = alloc_ordered_workqueue("kernelsu_work_queue", 0);
 
 	ksu_allowlist_init();
 
