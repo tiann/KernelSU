@@ -1,28 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Home</string>
     <string name="home_not_installed">Niet geïnstalleerd</string>
     <string name="home_click_to_install">Klik om te installeren</string>
     <string name="home_working">Werkend</string>
     <string name="home_working_version">Versie: %d</string>
-    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="home_superuser_count">Supergebruikers: %d</string>
     <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Niet ondersteund</string>
     <string name="home_unsupported_reason">KernelSU ondersteunt alleen GKI kernels</string>
-
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Manager Versie</string>
     <string name="home_fingerprint">Fingerprint</string>
-
     <string name="home_selinux_status">SELinux status</string>
     <string name="selinux_status_disabled">Uitgeschakeld</string>
     <string name="selinux_status_enforcing">Afgedwongen</string>
     <string name="selinux_status_permissive">Permissief</string>
     <string name="selinux_status_unknown">Niet gekend</string>
-    <string name="superuser">Superuser</string>
+    <string name="superuser">Supergebruiker</string>
     <string name="module_failed_to_enable">Mislukt om module in te schakelen: %s</string>
     <string name="module_failed_to_disable">Mislukt om module uit te schakelen: %s</string>
     <string name="module_empty">Geen module geïnstalleerd</string>
-
     <string name="module">Module</string>
     <string name="uninstall">Verwijderen</string>
     <string name="module_install">Installeren</string>
@@ -80,4 +78,6 @@
     <string name="launch_app">Start</string>
     <string name="force_stop_app">Forceer Stop</string>
     <string name="restart_app">Herstart</string>
+    <string name="module_start_downloading">Begin met downloaden: %s</string>
+    <string name="failed_to_update_sepolicy">Kan SELinux-regels niet bijwerken voor: %s</string>
 </resources>

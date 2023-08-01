@@ -2,7 +2,7 @@
 <resources>
     <string name="home">Ana menü</string>
     <string name="home_not_installed">Yüklü değil</string>
-    <string name="home_click_to_install">Yüklemek için dokun</string>
+    <string name="home_click_to_install">Yüklemek için tıkla</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
     <string name="home_superuser_count">Süper kullanıcılar: %d</string>
@@ -25,7 +25,7 @@
     <string name="uninstall">Kaldır</string>
     <string name="module_install">Yükle</string>
     <string name="install">Yükle</string>
-    <string name="reboot">Yeniden başlat</string>
+    <string name="reboot">Cihazı yeniden başlat</string>
     <string name="settings">Ayarlar</string>
     <string name="reboot_userspace">Hızlı yeniden başlat</string>
     <string name="reboot_recovery">Kurtarma modunda başlat</string>
@@ -44,7 +44,7 @@
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
     <string name="send_log">Log gönder</string>
     <string name="safe_mode">Güvenli mod</string>
-    <string name="reboot_to_apply">Değişiklilerin kaydedilmesi için yeniden başlat</string>
+    <string name="reboot_to_apply">Değişiklilerin kaydedilmesi için cihazı yeniden başlat</string>
     <string name="module_magisk_conflict">Modüller Magisk ile çakıştığı için devre dışı bırakıldı!</string>
     <string name="home_learn_kernelsu">KernelSU\'yu öğren</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
@@ -70,14 +70,14 @@
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kesin</string>
     <string name="settings_umount_modules_default_summary">Uygulama profillerindeki \"Modüllerin bağlantısını kesme\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi ile, bu uygulama için modüller tarafından değiştirilen tüm dosyaların KernelSU tarafından geri alınmasına izin verilecektir.</string>
-    <string name="profile_selinux_domain">Alan adı</string>
+    <string name="profile_selinux_domain">Ad alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
     <string name="module_start_downloading">İndirme başladı: %s</string>
-    <string name="new_version_available">Yeni versiyon: %s mevcut, indirmek için tıklayın</string>
-    <string name="launch_app">Çalıştır</string>
-    <string name="force_stop_app">Durmaya zorla</string>
+    <string name="new_version_available">Yeni sürüm: %s mevcut, indirmek için tıklayın</string>
+    <string name="launch_app">Uygulamayı çalıştır</string>
+    <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
 </resources>

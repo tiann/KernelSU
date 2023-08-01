@@ -376,5 +376,40 @@
         "kernel_name": "Lightning Kernel",
         "kernel_link": "https://github.com/siimsek/Lightning-Kernel",
         "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
+    },
+    {
+        "maintainer": "GiovanYCringe",
+        "maintainer_link": "https://github.com/GiovanYCringe",
+        "kernel_name": "kernel_a50",
+        "kernel_link": "https://github.com/GiovanYCringe-Experiments/kernel_a50",
+        "devices": "Galaxy A50 (A505f,fn,g,gn,gt)"
+    },
+    {
+        "maintainer": "GiovanYCringe",
+        "maintainer_link": "https://github.com/GiovanYCringe",
+        "kernel_name": "kernel_m30s",
+        "kernel_link": "https://github.com/GiovanYCringe-Experime/Kernel_m30s",
+        "devices": "Galaxy M30s"
+    },
+    {
+        "maintainer": "Asriadi Rahim",
+        "maintainer_link": "https://github.com/asriadirahim",
+        "kernel_name": "android_kernel_google_wahoo",
+        "kernel_link": "https://github.com/Google-Pixel2-2XL/kernel_google_wahoo",
+        "devices": "Google Pixel 2/2XL"
+    },
+    {
+        "maintainer": "Flame",
+        "maintainer_link": "https://github.com/flame-0",
+        "kernel_name": "android_kernel_xiaomi_sm8250",
+        "kernel_link": "https://github.com/vyrine/android_kernel_xiaomi_sm8250/tree/lineage-20-kernelsu",
+        "devices": "POCO F3/Redmi K40/Mi 11X (alioth)"
+    },
+    {
+        "maintainer": "DawfukFR",
+        "maintainer_link": "https://github.com/DawfukFR",
+        "kernel_name": "kernel_oneplus_sm8250 (Stellaris-Kernel)",
+        "kernel_link": "https://github.com/DawfukFR/kernel_oneplus_sm8250",
+        "devices": "Oneplus 8 (Instantnoodle), Oneplus 8T (Kebab), Oneplus 8 Pro (Instantnoodlep), Oneplus 9R (lemonades) [msm-4.19]"
     }
 ]

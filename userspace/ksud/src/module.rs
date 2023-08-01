@@ -276,10 +276,10 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
     Ok(())
 }
 
-/// execute every modules' service.sh
-pub fn exec_services() -> Result<()> {
+/// execute every modules' [stage].sh (service.sh, boot-completed.sh)
+pub fn exec_stage_scripts(stage: &str) -> Result<()> {
     foreach_active_module(|module| {
-        let service = module.join("service.sh");
+        let service = module.join(format!("{stage}.sh"));
         if !service.exists() {
             return Ok(());
         }

@@ -52,7 +52,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
 
     LaunchedEffect(Unit) {
-        if (viewModel.moduleList.isEmpty()) {
+        if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
             viewModel.fetchModuleList()
         }
     }
@@ -79,6 +79,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 val uri = data.data ?: return@rememberLauncherForActivityResult
 
                 navigator.navigate(InstallScreenDestination(uri))
+
+                viewModel.markNeedRefresh()
 
                 Log.i("ModuleScreen", "select zip result: ${it.data}")
             }
@@ -186,31 +188,42 @@ private fun ModuleList(
     val refreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing,
         onRefresh = { viewModel.fetchModuleList() })
     Box(modifier.pullRefresh(refreshState)) {
-        if (viewModel.isOverlayAvailable) {
-            val context = LocalContext.current
+        val context = LocalContext.current
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = remember {
-                    PaddingValues(
-                        start = 16.dp,
-                        top = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
-                    )
-                },
-            ) {
-                val isEmpty = viewModel.moduleList.isEmpty()
-                if (isEmpty) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = remember {
+                PaddingValues(
+                    start = 16.dp,
+                    top = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
+                )
+            },
+        ) {
+            when {
+                !viewModel.isOverlayAvailable -> {
                     item {
                         Box(
-                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(stringResource(R.string.module_empty))
+                            Text(stringResource(R.string.module_overlay_fs_not_available), textAlign = TextAlign.Center)
                         }
                     }
-                } else {
+                }
+                viewModel.moduleList.isEmpty() -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(R.string.module_empty), textAlign = TextAlign.Center)
+                        }
+                    }
+                }
+                else -> {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         val scope = rememberCoroutineScope()
@@ -273,14 +286,9 @@ private fun ModuleList(
                     }
                 }
             }
-
-            DownloadListener(context, onInstallModule)
-
-        } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.module_overlay_fs_not_available))
-            }
         }
+
+        DownloadListener(context, onInstallModule)
 
         PullRefreshIndicator(
             refreshing = viewModel.isRefreshing, state = refreshState, modifier = Modifier.align(
