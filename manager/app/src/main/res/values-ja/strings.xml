@@ -14,7 +14,7 @@
     <string name="home_fingerprint">フィンガープリント</string>
     <string name="home_selinux_status">SELinux の状態</string>
     <string name="selinux_status_disabled">無効</string>
-    <string name="selinux_status_enforcing">実施するために</string>
+    <string name="selinux_status_enforcing">強制実施</string>
     <string name="selinux_status_permissive">寛容</string>
     <string name="selinux_status_unknown">不明</string>
     <string name="superuser">スーパーユーザー</string>
@@ -38,7 +38,7 @@
     <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
     <string name="module_version">バージョン</string>
     <string name="module_author">制作者</string>
-    <string name="module_overlay_fs_not_available">OverlayFS が有効でないためモジュールは動作しません</string>
+    <string name="module_overlay_fs_not_available">OverlayFS が有効でないためモジュールは動作しません！</string>
     <string name="refresh">更新</string>
     <string name="show_system_apps">システムアプリを表示</string>
     <string name="hide_system_apps">システムアプリを非表示</string>
@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/ja_JP/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU のインストール方法やモジュールの使い方はこちら</string>
     <string name="home_support_title">支援する</string>
-    <string name="home_support_content">KernelSU は無料かつオープンソースです。寄付していただくことで開発を支援できます。</string>
+    <string name="home_support_content">KernelSU は、現在も、今後も、無料のオープン ソースです。ただし、寄付をすることで私たちを気にかけていることを示すことができます。</string>
     <string name="about_source_code"><![CDATA[%1$s でソースコードを表示<br/>%2$s チャンネルに参加]]></string>
     <string name="profile">アプリのプロファイル</string>
     <string name="profile_default">デフォルト</string>
@@ -67,16 +67,16 @@
     <string name="failed_to_update_app_profile">%sのアプリのプロファイルの更新をできませでした</string>
     <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
-    <string name="new_version_available">新しいバージョン:%s アップデートが可能です、リンクを開いてからダウンロードしてください</string>
+    <string name="new_version_available">新しいバージョン: %s が利用可能です。クリックしてダウンロードしてください</string>
     <string name="module_update">アップデート</string>
     <string name="module_start_downloading">ダウンロードを開始:%s</string>
     <string name="launch_app">起動</string>
     <string name="force_stop_app">強制停止</string>
     <string name="restart_app">再起動</string>
-    <string name="failed_to_update_sepolicy">次の SELinux ルールの更新に失敗しました: %s</string>
-    <string name="profile_capabilities">資格</string>
+    <string name="failed_to_update_sepolicy">SELinux ルールの更新に失敗しました: %s</string>
+    <string name="profile_capabilities">ケイパビリティ</string>
     <string name="require_kernel_version">現在のカーネル バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
-    <string name="module_downloading">モジュールをダウンロード中: %s</string>
+    <string name="module_downloading">ダウンロードモジュール:%s</string>
     <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリケーションのモジュールによって変更されたファイルを復元できるようになります。</string>
     <string name="settings_umount_modules_default">デフォルトでモジュールをアンインストールする</string>
     <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」のグローバルデフォルト値。 有効にすると、プロファイル セットを持たないアプリケーションのシステムに対するすべてのモジュール変更が削除されます。</string>
