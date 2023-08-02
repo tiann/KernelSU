@@ -60,6 +60,7 @@ KernelSU 模块就是一个放置在 `/data/adb/modules` 内且满足如下结�
 │   │
 │   ├── post-fs-data.sh     <--- 这个脚本将会在 post-fs-data 模式下运行
 │   ├── service.sh          <--- 这个脚本将会在 late_start 服务模式下运行
+│   ├── boot-completed.sh   <--- 这个脚本将会在 Android 系统启动完毕后以服务模式运行
 |   ├── uninstall.sh        <--- 这个脚本将会在模块被卸载时运行
 │   ├── system.prop         <--- 这个文件中指定的属性将会在系统启动时通过 resetprop 更改
 │   ├── sepolicy.rule       <--- 这个文件中的 SELinux 策略将会在系统启动时加载
@@ -106,7 +107,7 @@ description=<string>
 
 ### Shell 脚本 {#shell-scripts}
 
-请阅读 [启动脚本](#boot-scripts) 一节，以了解 `post-fs-data.sh` 和 `service.sh` 之间的区别。对于大多数模块开发者来说，如果您只需要运行一个启动脚本，`service.sh` 应该已经足够了。
+请阅读 [启动脚本](#boot-scripts) 一节，以了解 `post-fs-data.sh`, `service.sh` 和 `boot-completed.sh` 之间的区别。对于大多数模块开发者来说，如果您只需要运行一个启动脚本，`service.sh` 应该已经足够了。
 
 在您的模块的所有脚本中，请使用 `MODDIR=${0%/*}`来获取您的模块的基本目录路径；请勿在脚本中硬编码您的模块路径。
 
@@ -250,7 +251,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 在 KernelSU 中，启动脚本根据存放位置的不同还分为两种：通用脚本和模块脚本。
 
 - 通用脚本
-  - 放置在 `/data/adb/post-fs-data.d` 或 `/data/adb/service.d` 中。
+  - 放置在 `/data/adb/post-fs-data.d`, `/data/adb/service.d` 或 `/data/adb/boot-completed.d` 中。
   - 只有在脚本被设置为可执行（`chmod +x script.sh`）时才会被执行。
   - 在 `post-fs-data.d` 中的脚本以 post-fs-data 模式运行，在 `service.d` 中的脚本以 late_start 服务模式运行。
   - 模块**不应**在安装过程中添加通用脚本。
@@ -258,6 +259,6 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 - 模块脚本
   - 放置在模块自己的文件夹中。
   - 只有当模块被启用时才会执行。
-  - `post-fs-data.sh` 以 post-fs-data 模式运行，而 `service.sh` 则以 late_start 服务模式运行。
+  - `post-fs-data.sh` 以 post-fs-data 模式运行，而 `service.sh` 则以 late_start 服务模式运行，`boot-completed` 在 Android 系统启动完毕后以服务模式运行。
 
 所有启动脚本都将在 KernelSU 的 BusyBox ash shell 中运行，并启用“独立模式”。

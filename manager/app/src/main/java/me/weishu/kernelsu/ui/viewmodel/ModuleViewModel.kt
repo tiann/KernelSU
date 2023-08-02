@@ -58,6 +58,13 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
+    var isNeedRefresh by mutableStateOf(false)
+        private set
+
+    fun markNeedRefresh() {
+        isNeedRefresh = true
+    }
+
     fun fetchModuleList() {
         viewModelScope.launch(Dispatchers.IO) {
             isRefreshing = true
@@ -91,6 +98,7 @@ class ModuleViewModel : ViewModel() {
                             obj.optString("updateJson", "")
                         )
                     }.toList()
+                isNeedRefresh = false
             }.onFailure { e ->
                 Log.e(TAG, "fetchModuleList: ", e)
                 isRefreshing = false

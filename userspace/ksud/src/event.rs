@@ -195,25 +195,29 @@ pub fn on_post_data_fs() -> Result<()> {
     Ok(())
 }
 
-pub fn on_services() -> Result<()> {
+fn run_stage(stage: &str) {
     utils::umask(0);
 
     if utils::has_magisk() {
-        warn!("Magisk detected, skip services!");
-        return Ok(());
+        warn!("Magisk detected, skip {stage}");
+        return;
     }
 
     if crate::utils::is_safe_mode() {
-        warn!("safe mode, skip service.d scripts");
-        return Ok(());
+        warn!("safe mode, skip {stage} scripts");
+        return;
     }
 
-    if let Err(e) = crate::module::exec_common_scripts("service.d", false) {
-        warn!("Failed to exec common service scripts: {}", e);
+    if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), false) {
+        warn!("Failed to exec common {stage} scripts: {e}");
     }
-    if let Err(e) = crate::module::exec_services() {
-        warn!("Failed to exec service scripts: {}", e);
+    if let Err(e) = crate::module::exec_stage_scripts(stage) {
+        warn!("Failed to exec {stage} scripts: {e}");
     }
+}
+
+pub fn on_services() -> Result<()> {
+    run_stage("service");
 
     Ok(())
 }
@@ -232,6 +236,9 @@ pub fn on_boot_completed() -> Result<()> {
             std::fs::remove_file(module_update_img).with_context(|| "Failed to remove image!")?;
         }
     }
+
+    run_stage("boot-completed");
+
     Ok(())
 }
 
