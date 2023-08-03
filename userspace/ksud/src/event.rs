@@ -245,7 +245,7 @@ pub fn on_boot_completed() -> Result<()> {
 pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
-    restorecon::setcon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
+    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
     // install binary assets
     assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
 
