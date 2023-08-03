@@ -165,6 +165,10 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("prune modules failed: {}", e);
     }
 
+    if let Err(e) = restorecon::restorecon() {
+        warn!("restorecon failed: {}", e);
+    }
+
     // load sepolicy.rule
     if crate::module::load_sepolicy_rule().is_err() {
         warn!("load sepolicy.rule failed");
