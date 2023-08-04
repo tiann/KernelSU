@@ -74,7 +74,7 @@
     <string name="module_update">Mettre à jour</string>
     <string name="module_downloading">Téléchargement du module : %s</string>
     <string name="launch_app">Lancer</string>
-    <string name="new_version_available">La nouvelle version %s est disponible, cliquez ici pour la télécharger</string>
+    <string name="new_version_available">Nouvelle version : la %s est disponible, cliquez ici pour la télécharger</string>
     <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
