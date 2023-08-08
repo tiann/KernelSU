@@ -96,8 +96,9 @@ jobs:
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' .repo/manifests/default.xml
             cat .repo/manifests/default.xml
           fi
+          sed -i '/prebuilts\/ndk-*/d' .repo/manifests/default.xml
+          sed -i '/prebuilts\/jdk/d' .repo/manifests/default.xml
           ../git-repo/repo sync -j$(nproc --all)
-          rm -rf prebuilts/ndk-*
           ls -d prebuilts/clang/host/linux-x86/clang-r* | grep -v $(sed -n 's/^CLANG_VERSION=//p' common/build.config.constants) | xargs rm -rf
 
       - name: Setup KernelSU
