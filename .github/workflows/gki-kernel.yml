@@ -70,15 +70,6 @@ jobs:
       CCACHE_NOHASHDIR: "true"
       CCACHE_HARDLINK: "true"
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
-
       - uses: actions/checkout@v3
         with:
           path: KernelSU
@@ -95,6 +86,8 @@ jobs:
 
       - name: Setup kernel source
         run: |
+          echo "Free space:"
+          df -h
           cd $GITHUB_WORKSPACE
           git clone https://gerrit.googlesource.com/git-repo
           mkdir android-kernel && cd android-kernel
@@ -105,7 +98,7 @@ jobs:
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' .repo/manifests/default.xml
             cat .repo/manifests/default.xml
           fi
-          CLANG_REV=$(grep prebuilts/clang/host/linux-x86 default.xml | sed -n 's/.*revision="\([^"]*\)".*/\1/p')
+          CLANG_REV=$(grep prebuilts/clang/host/linux-x86 .repo/manifests/default.xml | sed -n 's/.*revision="\([^"]*\)".*/\1/p')
           if [ "$CLANG_REV" != "" ]; then
             echo "Fuck stupid Google clone whole clang!!!"
             wget -o clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/$CLANG_REV.tar.gz
