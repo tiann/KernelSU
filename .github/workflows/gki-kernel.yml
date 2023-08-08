@@ -97,6 +97,7 @@ jobs:
             cat .repo/manifests/default.xml
           fi
           ../git-repo/repo sync -j$(nproc --all)
+          rm -rf prebuilts/ndk-*
 
       - name: Setup KernelSU
         env:
