@@ -91,24 +91,13 @@ jobs:
           cd $GITHUB_WORKSPACE
           git clone https://gerrit.googlesource.com/git-repo
           mkdir android-kernel && cd android-kernel
-          ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
+          ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }} --repo-rev=v2.16
           REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${{ inputs.tag }})
           DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
           if grep -q deprecated <<< $REMOTE_BRANCH; then
             echo "Found deprecated branch: ${{ inputs.tag }}"
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' $DEFAULT_MANIFEST_PATH
             cat $DEFAULT_MANIFEST_PATH
-          fi
-          CLANG_REV=$(grep 'path="prebuilts/clang/host/linux-x86"' $DEFAULT_MANIFEST_PATH | sed -n 's/.*revision="\([^"]*\)".*/\1/p')
-          if [ "$CLANG_REV" != "" ]; then
-            echo "Fuck stupid Google clone whole clang!!!"
-            wget -q -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/$CLANG_REV.tar.gz
-            mkdir -p prebuilts/clang/host/linux-x86
-            ls -alh clang.tar.gz
-            tar -xzf clang.tar.gz -C prebuilts/clang/host/linux-x86
-            rm clang.tar.gz
-            sed -i '/prebuilts\/clang\/host\/linux-x86/d' $DEFAULT_MANIFEST_PATH
-            sed -i '/prebuilts\/jdk/d' $DEFAULT_MANIFEST_PATH
           fi
           ../git-repo/repo sync -c -j$(nproc --all)
 
