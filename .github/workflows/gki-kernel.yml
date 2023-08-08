@@ -102,12 +102,12 @@ jobs:
           CLANG_REV=$(grep prebuilts/clang/host/linux-x86 $DEFAULT_MANIFEST_PATH | sed -n 's/.*revision="\([^"]*\)".*/\1/p')
           if [ "$CLANG_REV" != "" ]; then
             echo "Fuck stupid Google clone whole clang!!!"
-            wget -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/$CLANG_REV.tar.gz
+            wget -q -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/$CLANG_REV.tar.gz
             mkdir -p prebuilts/clang/host/linux-x86
+            ls -alh clang.tar.gz
             tar -xvf clang.tar.gz -C prebuilts/clang/host/linux-x86
             rm clang.tar.gz
             sed -i '/prebuilts\/clang\/host\/linux-x86/d' $DEFAULT_MANIFEST_PATH
-            sed -i '/prebuilts\/ndk-*/d' $DEFAULT_MANIFEST_PATH
             sed -i '/prebuilts\/jdk/d' $DEFAULT_MANIFEST_PATH
           fi
           ../git-repo/repo sync -c -j$(nproc --all)
