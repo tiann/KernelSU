@@ -65,7 +65,6 @@
     <string name="profile_selinux_context">Context SELinux</string>
     <string name="profile_umount_modules">Module u-montate</string>
     <string name="failed_to_update_app_profile">Nu s-a putut actualiza profilul aplicației pentru %s</string>
-    <string name="require_kernel_version">Versiunea actuală a nucleului %d este prea mică pentru ca managerul să funcționeze corect. Actualizează la versiunea %d sau o versiune superioară!</string>
     <string name="settings_umount_modules_default">U-montează modulele în mod implicit</string>
     <string name="settings_umount_modules_default_summary">Valoarea implicită globală pentru „Module u-montate” în Profilurile aplicațiilor. Dacă este activat, va elimina toate modificările modulelor aduse sistemului pentru aplicațiile care nu au un profil setat.</string>
     <string name="profile_umount_modules_summary">Activarea acestei opțiuni va permite KernelSU să restaureze orice fișiere modificate de către modulele pentru această aplicație.</string>

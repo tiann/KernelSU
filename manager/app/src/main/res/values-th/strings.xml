@@ -67,7 +67,6 @@
     <string name="profile_umount_modules">Umount โมดูล</string>
     <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s ได้</string>
     <string name="settings_umount_modules_default">Umount โมดูลตามค่าเริ่มต้น</string>
-    <string name="require_kernel_version">เวอร์ชั่นเคอร์เนลปัจจุบัน %d ต่ำเกินไปสำหรับตัวจัดการ โปรดอัปเกรดเป็นเวอร์ชั่น %d หรือสูงกว่า!</string>
     <string name="profile_selinux_domain">โดเมน</string>
     <string name="module_update">อัปเดต</string>
     <string name="profile_selinux_rules">กฎ</string>

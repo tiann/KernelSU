@@ -7,7 +7,6 @@
     <string name="profile_name">Tên hồ sơ</string>
     <string name="profile_groups">Nhóm</string>
     <string name="failed_to_update_app_profile">Không thể cập nhật Hồ sơ ứng dụng cho %s</string>
-    <string name="require_kernel_version" formatted="false">Phiên bản KernelSU hiện tại %d quá thấp để trình quản lý hoạt động bình thường. Vui lòng nâng cấp lên phiên bản %d hoặc cao hơn!</string>
     <string name="settings_umount_modules_default">Ngắt mô-đun theo mặc định</string>
     <string name="settings_umount_modules_default_summary">Giá trị mặc định của \"Ngắt mô-đun\" trong Cấu hình ứng dụng. Nếu bật, KernelSU sẽ khôi phục mọi tệp hệ thống đã sửa đổi bởi mô-đun cho các ứng dụng chưa thiết lập Cấu hình.</string>
     <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ khôi phục mọi tệp đã sửa đổi bởi các mô-đun cho ứng dụng này.</string>
