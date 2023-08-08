@@ -95,8 +95,6 @@ jobs:
 
       - name: Setup kernel source
         run: |
-          echo "Free space:"
-          df -h
           cd $GITHUB_WORKSPACE
           git clone https://gerrit.googlesource.com/git-repo
           mkdir android-kernel && cd android-kernel
@@ -107,10 +105,17 @@ jobs:
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' .repo/manifests/default.xml
             cat .repo/manifests/default.xml
           fi
+          CLANG_REV=$(grep prebuilts/clang/host/linux-x86 default.xml | sed -n 's/.*revision="\([^"]*\)".*/\1/p')
+          if [ "$CLANG_REV" != "" ]; then
+            echo "Fuck stupid Google clone whole clang!!!"
+            wget -o clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/$CLANG_REV.tar.gz
+            mkdir -p prebuilts/clang/host/linux-x86
+            tar -xvf clang.tar.gz -C prebuilts/clang/host/linux-x86
+            sed -i '/prebuilts\/clang\/host\/linux-x86/d' .repo/manifests/default.xml
+          fi
           sed -i '/prebuilts\/ndk-*/d' .repo/manifests/default.xml
           sed -i '/prebuilts\/jdk/d' .repo/manifests/default.xml
-          ../git-repo/repo sync -j$(nproc --all)
-          ls -d prebuilts/clang/host/linux-x86/clang-r* | grep -v $(sed -n 's/^CLANG_VERSION=//p' common/build.config.constants) | xargs rm -rf
+          ../git-repo/repo sync -c -j$(nproc --all)
 
       - name: Setup KernelSU
         env:
