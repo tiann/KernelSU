@@ -98,6 +98,7 @@ jobs:
           fi
           ../git-repo/repo sync -j$(nproc --all)
           rm -rf prebuilts/ndk-*
+          ls -d prebuilts/clang/host/linux-x86/clang-r* | grep -v $(sed -n 's/^CLANG_VERSION=//p' common/build.config.constants) | xargs rm -rf
 
       - name: Setup KernelSU
         env:
