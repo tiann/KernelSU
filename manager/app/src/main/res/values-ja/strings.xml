@@ -75,7 +75,6 @@
     <string name="restart_app">再起動</string>
     <string name="failed_to_update_sepolicy">SELinux ルールの更新に失敗しました: %s</string>
     <string name="profile_capabilities">ケイパビリティ</string>
-    <string name="require_kernel_version">現在のカーネル バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
     <string name="module_downloading">ダウンロードモジュール:%s</string>
     <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリケーションのモジュールによって変更されたファイルを復元できるようになります。</string>
     <string name="settings_umount_modules_default">デフォルトでモジュールをアンインストールする</string>

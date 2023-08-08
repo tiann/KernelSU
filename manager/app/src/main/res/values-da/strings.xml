@@ -74,7 +74,6 @@
     <string name="profile_name">Profilnavn</string>
     <string name="profile_namespace_individual">Individuel</string>
     <string name="failed_to_update_app_profile">Opdatering af App Profil for %s fejlede</string>
-    <string name="require_kernel_version">Den nuværende kernel version %d er for lav for at manageren kan fungere ordentligt. Opgrader til version %d eller højere!</string>
     <string name="settings_umount_modules_default_summary">Den globale standard værdi for \"Afmonter moduler\" i App Profiler. Hvis aktiveret vil den fjerne alle modulers modifikationer til system applikationerne der ikke har en sat Profil.</string>
     <string name="profile_selinux_domain">Domæne</string>
     <string name="profile_selinux_rules">Regler</string>

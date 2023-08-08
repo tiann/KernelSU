@@ -69,7 +69,6 @@
     <string name="profile_umount_modules">الغاء تحميل الوحدات</string>
     <string name="failed_to_update_app_profile">فشل تحديث ملف تعريف التطبيق لـ %s</string>
     <string name="profile_selinux_context">سياق SELinux</string>
-    <string name="require_kernel_version">إصدار kernel الحالي %d منخفض جدا بحيث لا يعمل المدير بشكل صحيح. يرجى الترقية إلى الإصدار %d أو أعلى!</string>
     <string name="force_stop_app">ايقاف إجباري</string>
     <string name="settings_umount_modules_default">الغاء تحميل الوحدات بشكل افتراضي</string>
     <string name="settings_umount_modules_default_summary">القيمة الافتراضية العامة ل \"إلغاء تحميل الوحدات \" في ملفات تعريف التطبيقات. إذا تم تمكينه ، إزالة جميع تعديلات الوحدة النمطية على النظام للتطبيقات التي لا تحتوي على مجموعة ملف تعريف.</string>

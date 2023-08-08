@@ -22,7 +22,6 @@
     <string name="home_support_title">Unterstütze uns</string>
     <string name="home_support_content">"KernelSU ist und bleibt kostenlos und Open Source.  Sie können uns jedoch zeigen, dass Sie sich für uns interessieren, indem Sie eine Spende tätigen."</string>
     <string name="profile_selinux_context">SELinux-Kontext</string>
-    <string name="require_kernel_version">Die aktuelle Kernel-Version %d ist zu niedrig, um den Verweiser richtig funktionieren zu lassen. Bitte erneuer die Version zu %d oder höher!</string>
     <string name="settings_umount_modules_default">Demontiere Module als Standard</string>
     <string name="settings_umount_modules_default_summary">Der globale Standard-Wert für „Demontiere Module“ in App-Profilen. Falls aktiviert, werden alle Modul-Modifikationen zu dem System deaktiviert; für Applikationen, welche kein Profil gesetzt haben.</string>
     <string name="profile_default">Standard</string>
