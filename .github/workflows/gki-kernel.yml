@@ -98,9 +98,9 @@ jobs:
           echo "Free space:"
           df -h
           cd $GITHUB_WORKSPACE
-          git clone https://gerrit.googlesource.com/git-repo
+          sudo apt-get install repo -y
           mkdir android-kernel && cd android-kernel
-          ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }} --repo-rev=v2.16
+          repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }} --repo-rev=v2.16
           REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${{ inputs.tag }})
           DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
           if grep -q deprecated <<< $REMOTE_BRANCH; then
@@ -108,8 +108,8 @@ jobs:
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' $DEFAULT_MANIFEST_PATH
             cat $DEFAULT_MANIFEST_PATH
           fi
-          ./.repo/repo/repo --version
-          ./.repo/repo/repo sync -c -j$(nproc --all) --no-tags
+          repo --version
+          repo sync -c -j$(nproc --all) --no-tags
 
       - name: Setup KernelSU
         env:
