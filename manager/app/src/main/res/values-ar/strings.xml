@@ -78,4 +78,5 @@
     <string name="restart_app">إعادة تشغيل التطبيق</string>
     <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لما يلي: %s</string>
     <string name="profile_name">اسم الملف الشخصي</string>
+    <string name="require_kernel_version">إصدار KernelSU الحالي %d منخفض جدًا بحيث لا يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %d أو أعلى!</string>
 </resources>

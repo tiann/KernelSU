@@ -79,4 +79,5 @@
     <string name="profile_namespace_individual">Riêng</string>
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Ngắt mô-đun</string>
+    <string name="require_kernel_version">KernelSU phiên bản %d quá thấp để trình quản lý hoạt động, hãy cập nhật lên %d hoặc mới hơn!</string>
 </resources>
