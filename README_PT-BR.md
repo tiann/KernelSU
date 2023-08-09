@@ -16,7 +16,7 @@ Uma solução raiz baseada em Kernel para dispositivos Android.
 
 O KernelSU suporta oficialmente dispositivos Android GKI 2.0 (com kernel 5.10+), kernels antigos (4.14+) também são compatíveis, mas você mesmo precisa construir o kernel.
 
-O Android baseado em WSA e contêiner também deve funcionar com o KernelSU integrado.
+WSA, ChromeOS e Android baseado em contêiner também deve funcionar com o KernelSU integrado.
 
 E os ABIs atualmente suportados são: `arm64-v8a` e `x86_64`
 
