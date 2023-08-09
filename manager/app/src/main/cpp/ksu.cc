@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 #include "ksu.h"
 
@@ -33,18 +34,32 @@ static bool ksuctl(int cmd, void* arg1, void* arg2) {
     prctl(KERNEL_SU_OPTION, cmd, arg1, arg2, &result);
     return result == KERNEL_SU_OPTION;
 }
+#include <android/log.h>
+#define LOG_TAG "KernelSU"
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 
 bool become_manager(const char* pkg) {
-    char param[128];
-    uid_t uid = getuid();
-    uint32_t userId = uid / 100000;
-    if (userId == 0) {
-        sprintf(param, "/data/data/%s", pkg);
-    } else {
-        snprintf(param, sizeof(param), "/data/user/%d/%s", userId, pkg);
-    }
+    char addr[128];
+//    uid_t uid = getuid();
+//    uint32_t userId = uid / 100000;
+//    if (userId == 0) {
+//        sprintf(param, "/data/data/%s", pkg);
+//    } else {
+//        snprintf(param, sizeof(param), "/data/user/%d/%s", userId, pkg);
+//    }
 
-    return ksuctl(CMD_BECOME_MANAGER, param, nullptr);
+    int page = getpagesize();
+//    void *addr = mmap(nullptr, page, PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+    madvise(addr, page, MADV_PAGEOUT);
+
+    bool result = ksuctl(CMD_BECOME_MANAGER, addr, nullptr);
+    bool found = false;
+    mincore(addr, page, reinterpret_cast<unsigned char *>(&found));
+//    munmap(addr, page);
+    LOGD("found: %d\n", found);
+
+    return result;
 }
 
 int get_version() {
