@@ -4,7 +4,6 @@
 #include "linux/fs.h"
 #include "linux/key.h"
 #include "linux/version.h"
-#include "linux/uaccess.h"
 
 extern long ksu_strncpy_from_user_nofault(char *dst,
 					  const void __user *unsafe_addr,

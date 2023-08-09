@@ -3,6 +3,7 @@
 #include "linux/nsproxy.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #include "linux/sched/task.h"
+#include "linux/uaccess.h"
 #else
 #include "linux/sched.h"
 #endif
