@@ -86,17 +86,26 @@ jobs:
 
       - name: Setup kernel source
         run: |
+          echo "Free space:"
+          df -h
           cd $GITHUB_WORKSPACE
-          git clone https://gerrit.googlesource.com/git-repo
+          sudo apt-get install repo -y
           mkdir android-kernel && cd android-kernel
-          ../git-repo/repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }}
+          repo init --depth=1 --u https://android.googlesource.com/kernel/manifest -b common-${{ inputs.tag }} --repo-rev=v2.16
           REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${{ inputs.tag }})
+          DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
           if grep -q deprecated <<< $REMOTE_BRANCH; then
             echo "Found deprecated branch: ${{ inputs.tag }}"
-            sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' .repo/manifests/default.xml
-            cat .repo/manifests/default.xml
+            sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' $DEFAULT_MANIFEST_PATH
+            cat $DEFAULT_MANIFEST_PATH
           fi
-          ../git-repo/repo sync -j$(nproc --all)
+          repo --version
+          repo --trace sync -q -c -j$(nproc --all) --no-tags
+          if [ -d prebuilts/clang/host/linux-x86 ] && [ -f common/build.config.constants ]; then
+            ls -d prebuilts/clang/host/linux-x86/clang-r* | grep -v $(sed -n 's/^CLANG_VERSION=//p' common/build.config.constants)
+          fi
+          rm -rf .repo
+          df -h
 
       - name: Setup KernelSU
         env:
