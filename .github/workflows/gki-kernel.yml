@@ -101,6 +101,9 @@ jobs:
           fi
           repo --version
           repo --trace sync -q -c -j$(nproc --all) --no-tags
+          ls -d prebuilts/clang/host/linux-x86/clang-r* | grep -v $(sed -n 's/^CLANG_VERSION=//p' common/build.config.constants)
+          rm -rf .repo
+          df -h
 
       - name: Setup KernelSU
         env:
