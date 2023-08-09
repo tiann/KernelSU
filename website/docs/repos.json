@@ -411,5 +411,12 @@
         "kernel_name": "kernel_oneplus_sm8250 (Stellaris-Kernel)",
         "kernel_link": "https://github.com/DawfukFR/kernel_oneplus_sm8250",
         "devices": "Oneplus 8 (Instantnoodle), Oneplus 8T (Kebab), Oneplus 8 Pro (Instantnoodlep), Oneplus 9R (lemonades) [msm-4.19]"
+    },
+    {
+        "maintainer": "Tejas Singh",
+        "maintainer_link": "https://github.com/tejas101k",
+        "kernel_name": "kernel_xiaomi_ginkgo (Cuh Kernel)",
+        "kernel_link": "https://github.com/tejas101k/Cuh-KerneL",
+        "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
     }
 ]
