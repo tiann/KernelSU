@@ -104,7 +104,6 @@ jobs:
           if [ -d prebuilts/clang/host/linux-x86 ] && [ -f common/build.config.constants ]; then
             ls -d prebuilts/clang/host/linux-x86/clang-r* | grep -v $(sed -n 's/^CLANG_VERSION=//p' common/build.config.constants)
           fi
-          rm -rf .repo
           df -h
 
       - name: Setup KernelSU
