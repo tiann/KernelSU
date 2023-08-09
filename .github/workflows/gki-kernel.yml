@@ -109,7 +109,7 @@ jobs:
             cat $DEFAULT_MANIFEST_PATH
           fi
           repo --version
-          repo sync -c -j$(nproc --all) --no-tags
+          repo --trace sync -q -c -j$(nproc --all) --no-tags
 
       - name: Setup KernelSU
         env:
