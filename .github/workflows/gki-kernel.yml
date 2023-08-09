@@ -108,7 +108,8 @@ jobs:
             sed -i 's/"${{ inputs.tag }}"/"deprecated\/${{ inputs.tag }}"/g' $DEFAULT_MANIFEST_PATH
             cat $DEFAULT_MANIFEST_PATH
           fi
-          ../git-repo/repo sync -c -j$(nproc --all) --no-tags
+          ./.repo/repo/repo --version
+          ./.repo/repo/repo sync -c -j$(nproc --all) --no-tags
 
       - name: Setup KernelSU
         env:
