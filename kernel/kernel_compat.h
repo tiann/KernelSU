@@ -11,7 +11,7 @@
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0)
 #define ksu_strncpy_from_user_nofault strncpy_from_unsafe_user
 #else
-#define ksu_strncpy_from_user_nofault strncpy_from_user
+#define ksu_strncpy_from_user_nofault probe_kernel_read
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
