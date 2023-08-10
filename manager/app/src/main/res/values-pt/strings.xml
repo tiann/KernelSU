@@ -78,4 +78,5 @@
     <string name="launch_app">Lançar</string>
     <string name="force_stop_app">Forçar parada</string>
     <string name="new_version_available">Nova versão: %s está disponível, clique para baixar</string>
+    <string name="require_kernel_version">A versão atual do KernelSU %d é muito baixa para o gerenciador funcionar corretamente. Atualize para a versão %d ou superior!</string>
 </resources>
