@@ -418,5 +418,12 @@
         "kernel_name": "kernel_xiaomi_ginkgo (Cuh Kernel)",
         "kernel_link": "https://github.com/tejas101k/Cuh-KerneL",
         "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
+    },
+    {
+        "maintainer": "Coconutat",
+        "maintainer_link": "https://github.com/Coconutat",
+        "kernel_name": "android_kernel_xiaomi_ruby_exp",
+        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_ruby_exp",
+        "devices": "Redmi Note 12 Pro / Pro+ For MIUI 14"
     }
 ]
