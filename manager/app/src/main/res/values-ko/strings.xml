@@ -71,7 +71,6 @@
     <string name="profile_selinux_context">SELinux 컨텍스트</string>
     <string name="profile_capabilities">권한</string>
     <string name="failed_to_update_app_profile">%s에 대한 앱 프로필 업데이트 실패</string>
-    <string name="require_kernel_version">현재 %d 커널 버전은 너무 낮아 매니저가 정상적으로 작동할 수 없습니다. 커널 버전 %d 이상으로 업데이트가 필요합니다!</string>
     <string name="settings_umount_modules_default">기본값으로 모듈 사용 해제</string>
     <string name="profile_umount_modules_summary">이 옵션이 활성화되면, KernelSU는 이 애플리케이션에 대한 모듈의 모든 수정사항을 복구합니다.</string>
     <string name="module_update">업데이트</string>

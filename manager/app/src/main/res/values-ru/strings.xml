@@ -69,7 +69,6 @@
     <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Размонтировать модули</string>
     <string name="failed_to_update_app_profile">Не удалось обновить App Profile для %s</string>
-    <string name="require_kernel_version">Текущая версия ядра %d слишком низкая для правильной работы менеджера. Пожалуйста, обновитесь до версии %d или выше!</string>
     <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые измененные модулями файлы для данного приложения.</string>

@@ -78,5 +78,4 @@
     <string name="home_support_content">KernelSU yra ir visada bus nemokamas ir atvirojo kodo. Tačiau galite parodyti, kad jums rūpi, paaukodami mums.</string>
     <string name="failed_to_update_app_profile">Nepavyko atnaujinti programos profilio %s</string>
     <string name="settings_umount_modules_default_summary">Visuotinė numatytoji „Modulių atjungimo“ reikšmė programų profiliuose. Jei įjungta, ji pašalins visus sistemos modulio pakeitimus programoms, kurios neturi profilio.</string>
-    <string name="require_kernel_version">Dabartinė branduolio versija %d yra per žema, kad tvarkyklė tinkamai veiktų. Atnaujinkite į %d ar naujesnę versiją!</string>
 </resources>
