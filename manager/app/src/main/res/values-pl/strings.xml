@@ -70,7 +70,6 @@
     <string name="profile_selinux_context">Kontekst SELinux</string>
     <string name="profile_umount_modules">Odmontuj moduły</string>
     <string name="failed_to_update_app_profile">Nie udało się zaktualizować profilu aplikacji dla %s</string>
-    <string name="require_kernel_version">Bieżąca wersja jądra %d jest zbyt niska, aby menedżer działał poprawnie. Zaktualizuj do wersji %d lub nowszej!</string>
     <string name="settings_umount_modules_default">Domyślnie odmontuj moduły</string>
     <string name="settings_umount_modules_default_summary">Globalna wartość domyślna opcji \"Odmontuj moduły\" w profilach aplikacji. Jeśli jest włączona, odwraca wszystkie modyfikacje dokonane przez moduły dla aplikacji, które nie mają ustawionego profilu.</string>
     <string name="profile_umount_modules_summary">Włączenie tej opcji umożliwi KernelSU przywrócenie wszelkich zmodyfikowanych plików przez moduły dla tej aplikacji.</string>

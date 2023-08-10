@@ -38,7 +38,6 @@
     <string name="profile_namespace_individual">ইন্ডিভিজুয়াল</string>
     <string name="profile_capabilities">ক্যাপাবিলিটিস</string>
     <string name="profile_umount_modules">আনমাউন্ট মোডিউলস</string>
-    <string name="require_kernel_version">বর্তমান কর্নেল ভারসন %d আউটডেটেড। আপডেট করুণ %d তে বা নতুন ভারশনে।</string>
     <string name="reboot_recovery">রিকভারিতে বুট</string>
     <string name="reboot_bootloader">বুটলোডারে বুট</string>
     <string name="reboot_download">ডাউনলোড মডে বুট</string>

@@ -165,6 +165,10 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("prune modules failed: {}", e);
     }
 
+    if let Err(e) = restorecon::restorecon() {
+        warn!("restorecon failed: {}", e);
+    }
+
     // load sepolicy.rule
     if crate::module::load_sepolicy_rule().is_err() {
         warn!("load sepolicy.rule failed");
@@ -245,7 +249,7 @@ pub fn on_boot_completed() -> Result<()> {
 pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
-    restorecon::setcon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
+    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
     // install binary assets
     assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
 

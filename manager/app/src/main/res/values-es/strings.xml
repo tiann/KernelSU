@@ -66,7 +66,6 @@
     <string name="profile_selinux_context">Contexto de SELinux</string>
     <string name="profile_umount_modules">Desmontar módulos</string>
     <string name="failed_to_update_app_profile">No se pudo actualizar el perfil de la app para %s</string>
-    <string name="require_kernel_version">Necesitas una versión del kernel más reciente para poder usar el manager sin problemas. Actualiza a la versión %d o superior.</string>
     <string name="settings_umount_modules_default">Desmontar módulos por defecto</string>
     <string name="settings_umount_modules_default_summary">El valor global predeterminado para \"Desmontar módulos\" en los perfiles de las aplicaciones. Si la habilitas, se desharán todas las modificaciones al sistema hechas por el módulo para las apps que no tengan un perfil establecido.</string>
     <string name="profile_umount_modules_summary">Si habilitas esta opción, KernelSU podrá restaurar cualquier archivo modificado por los módulos para esta app.</string>

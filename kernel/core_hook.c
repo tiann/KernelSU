@@ -232,8 +232,10 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		// someone wants to be root manager, just check it!
 		// arg3 should be `/data/user/<userId>/<manager_package_name>`
 		char param[128];
-		if (copy_from_user(param, arg3, sizeof(param))) {
+		if (ksu_strncpy_from_user_nofault(param, arg3, sizeof(param)) == -EFAULT) {
+#ifdef CONFIG_KSU_DEBUG
 			pr_err("become_manager: copy param err\n");
+#endif
 			return 0;
 		}
 

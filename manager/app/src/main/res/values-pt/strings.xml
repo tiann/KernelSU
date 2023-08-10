@@ -66,7 +66,6 @@
     <string name="module_update">Atualização</string>
     <string name="profile_umount_modules">Desativar modulos</string>
     <string name="failed_to_update_app_profile">Falha ao atualizar o perfil do aplicativo para %s</string>
-    <string name="require_kernel_version">A versão atual do kernel %d é muito baixa para o gerenciador funcionar corretamente. Atualize para a versão %d ou superior!</string>
     <string name="settings_umount_modules_default">Módulos desativados por padrão</string>
     <string name="settings_umount_modules_default_summary">O valor padrão global para \"Módulos Umount\" em Perfis de Aplicativos. Se ativado, removerá todas as modificações de módulo do sistema para aplicativos que não possuem um Perfil definido.</string>
     <string name="profile_selinux_rules">Regras</string>

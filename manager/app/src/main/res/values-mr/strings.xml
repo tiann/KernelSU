@@ -66,7 +66,6 @@
     <string name="profile_umount_modules">उमाउंट मॉड्यूल्स</string>
     <string name="failed_to_update_app_profile">%s साठी अॅप प्रोफाइल अपडेट करण्यात अयशस्वी</string>
     <string name="settings_umount_modules_default">डीफॉल्टनुसार मॉड्यूल्स उमाउंट करा</string>
-    <string name="require_kernel_version">सध्याची कर्नल आवृत्ती %d व्यवस्थापक योग्यरित्या कार्य करण्यासाठी खूप कमी आहे. कृपया %d किंवा उच्च आवृत्तीवर अपग्रेड करा!</string>
     <string name="settings_umount_modules_default_summary">अॅप प्रोफाइलमधील \"उमाउंट मॉड्यूल्स\" साठी जागतिक डीफॉल्ट मूल्य. सक्षम असल्यास, ते प्रोफाइल सेट नसलेल्या ॲप्लिकेशनचे सिस्टममधील सर्व मॉड्यूल बदल काढून टाकेल.</string>
     <string name="profile_umount_modules_summary">हा पर्याय सक्षम केल्याने KernelSU ला या ऍप्लिकेशनसाठी मॉड्यूल्सद्वारे कोणत्याही सुधारित फाइल्स पुनर्संचयित करण्यास अनुमती मिळेल.</string>
     <string name="failed_to_update_sepolicy">यासाठी SELinux नियम अपडेट करण्यात अयशस्वी: %s</string>
