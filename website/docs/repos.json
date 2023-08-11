@@ -432,5 +432,19 @@
         "kernel_name": "android_kernel_xiaomi_sdm845_exp",
         "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_exp",
         "devices": "Xiaomi Mi 8 Pro(UD)[equuleus]/Explorer Edition[ursa]"
+    },
+    {
+        "maintainer": "Abdul Wahid Khan",
+        "maintainer_link": "https://github.com/Wahid7852",
+        "kernel_name": "kernel_xiaomi_begonia",
+        "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_mt6785",
+        "devices": "Redmi Note 8 Pro (Begonia/Begoniain)"
+    },
+    {
+        "maintainer": "Abdul Wahid Khan",
+        "maintainer_link": "https://github.com/Wahid7852",
+        "kernel_name": "kernel_xiaomi_marble",
+        "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_marble",
+        "devices": "Xiaomi Poco F5 / Redmi Note 12 Turbo (Marble)"
     }
 ]
