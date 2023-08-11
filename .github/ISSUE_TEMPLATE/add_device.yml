@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for supporting KernelSU !
+        Thanks for supporting KernelSU!
   - type: input
     id: repo-url
     attributes:
