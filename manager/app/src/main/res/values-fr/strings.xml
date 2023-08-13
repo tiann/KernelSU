@@ -78,4 +78,5 @@
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
     <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
+    <string name="require_kernel_version">La version actuelle de KernelSU %d est trop ancienne pour le gestionnaire pour fonctionner correctement. Merci de mettre à jour vers la version %d ou une plus réçente !</string>
 </resources>

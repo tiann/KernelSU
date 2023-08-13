@@ -9,11 +9,9 @@
     <string name="home_module_count">মডিউল: %d</string>
     <string name="home_unsupported">অসমর্থিত</string>
     <string name="home_unsupported_reason">কার্নেলএসইউ শুধুমাত্র জিকেআই কার্নেল সমর্থন করে</string>
-
     <string name="home_kernel">কার্নেল</string>
     <string name="home_manager_version">ম্যানেজার সংস্করণ</string>
     <string name="home_fingerprint">ফিঙ্গারপ্রিন্ট</string>
-
     <string name="home_selinux_status">সেলিনাক্স স্ট্যাটাস</string>
     <string name="selinux_status_disabled">ডিজেবল</string>
     <string name="selinux_status_enforcing">এনফোর্সিং</string>
@@ -23,7 +21,6 @@
     <string name="module_failed_to_enable">মডিউল সক্ষম করতে ব্যর্থ হয়েছে: %s</string>
     <string name="module_failed_to_disable">মডিউল নিষ্ক্রিয় করতে ব্যর্থ হয়েছে: %s</string>
     <string name="module_empty">কোন মডিউল ইনস্টল করা নেই</string>
-
     <string name="module">মডিউল</string>
     <string name="uninstall">আনইন্সটল</string>
     <string name="module_install">মডিউল ইনস্টল</string>
@@ -55,4 +52,15 @@
     <string name="home_support_title">সাপোর্ট টাইটেল</string>
     <string name="home_support_content">কার্নেলএসইউ বিনামূল্যে এবং ওপেন সোর্স, এবং সবসময় থাকবে। আপনি সবসময় একটি অনুদান দিয়ে আপনার কৃতজ্ঞতা প্রদর্শন করতে পারেন.</string>
     <string name="about_source_code"><![CDATA[Bekijk source code op %1$s<br/>আমাদের %2$s চ্যানেল মার্জ করুন]]></string>
+    <string name="profile_name">প্রফাইলের নাম</string>
+    <string name="profile_namespace">নেমস্পেস মাউন্ট</string>
+    <string name="profile_groups">গ্রুপস</string>
+    <string name="profile_capabilities">যোগ্যতা</string>
+    <string name="profile_selinux_context">এসই লিনাক্স কনটেক্সট</string>
+    <string name="profile_default">ডিফল্ট</string>
+    <string name="profile_template">টেমপ্লেট</string>
+    <string name="profile_custom">কাস্টম</string>
+    <string name="profile_namespace_global">গ্লোবাল</string>
+    <string name="profile_namespace_individual">আলাদাভাবে</string>
+    <string name="profile_umount_modules">আনমাউন্ট মোডিউল</string>
 </resources>
