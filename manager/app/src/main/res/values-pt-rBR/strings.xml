@@ -14,7 +14,7 @@
     <string name="home_fingerprint">Impressão digital</string>
     <string name="home_selinux_status">Status do SELinux</string>
     <string name="selinux_status_disabled">Desabilitado</string>
-    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_enforcing">Impondo</string>
     <string name="selinux_status_permissive">Permissivo</string>
     <string name="selinux_status_unknown">Desconhecido</string>
     <string name="superuser">Superusuário</string>
@@ -79,4 +79,5 @@
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
     <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
+    <string name="require_kernel_version">A versão atual do KernelSU %d é muito antiga para o gerenciador funcionar corretamente. Por favor atualize para a versão %d ou mais recente!</string>
 </resources>
