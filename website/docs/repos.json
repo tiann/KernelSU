@@ -21,6 +21,20 @@
         "devices": "Poco F1 | MI8 | MiMix2S"
     },
     {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_SM8350",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_SM8350/tree/13",
+        "devices": "Vili"
+    },
+    {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_Marble",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_Marble/tree/op",
+        "devices": "Poco F5 | Redmi Note 12 Turbo | Marble"
+    },
+    {
         "maintainer": "th1nhhdk",
         "maintainer_link": "https://github.com/th1nhhdk",
         "kernel_name": "android_kernel_sony_sm8250-kernelsu",
