@@ -14,8 +14,8 @@
     <string name="home_fingerprint">フィンガープリント</string>
     <string name="home_selinux_status">SELinux の状態</string>
     <string name="selinux_status_disabled">無効</string>
-    <string name="selinux_status_enforcing">強制実施</string>
-    <string name="selinux_status_permissive">寛容</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">不明</string>
     <string name="superuser">スーパーユーザー</string>
     <string name="module_failed_to_enable">モジュールの有効化に失敗: %s</string>

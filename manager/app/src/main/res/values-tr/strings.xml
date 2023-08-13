@@ -79,4 +79,5 @@
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
+    <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışması için çok düşük. Lütfen %d veya daha yüksek bir sürüme yükseltin!</string>
 </resources>
