@@ -25,3 +25,4 @@ Here are some differences:
 - The directories for BusyBox are different. The built-in BusyBox in KernelSU is located in `/data/adb/ksu/bin/busybox`, while in Magisk it is in `/data/adb/magisk/busybox`. **Note that this is an internal behavior of KernelSU and may change in the future!**
 - KernelSU does not support `.replace` files; however, KernelSU supports the `REMOVE` and `REPLACE` variable to remove or replace files and folders.
 - KernelSU adds `boot-completed` stage to run some scripts on boot completed. 
+- KernelSU adds `post-mount` stage to run some scripts after mounting overlayfs
