@@ -78,4 +78,5 @@
     <string name="launch_app">Lansare</string>
     <string name="force_stop_app">Oprire forțată</string>
     <string name="restart_app">Repornește</string>
+    <string name="require_kernel_version">Versiunea actuală a KernelSU %d este prea mică pentru ca managerul să funcționeze corect. Actualizează la versiunea %d sau o versiune superioară!</string>
 </resources>
