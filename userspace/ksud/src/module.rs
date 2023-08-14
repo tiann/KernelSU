@@ -242,8 +242,13 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
 
 /// execute every modules' post-fs-data.sh
 pub fn exec_post_fs_data() -> Result<()> {
+    exec_module_script("post-fs-data.sh")?;
+    Ok(())
+}
+
+pub fn exec_module_script(path: &str) -> Result<()> {
     foreach_active_module(|module| {
-        let post_fs_data = module.join("post-fs-data.sh");
+        let post_fs_data = module.join(path);
         if !post_fs_data.exists() {
             return Ok(());
         }

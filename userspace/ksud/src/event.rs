@@ -224,8 +224,12 @@ fn run_stage(stage: &str) {
 
 pub fn on_post_mount() -> Result<()> {
     info!("on_post_mount triggered!");
-    run_stage("post-mount");
-
+    if let Err(e) = crate::module::exec_common_scripts("post-mount.d", true) {
+        warn!("exec common post-mount scripts failed: {}", e);
+    }
+    if let Err(e) = crate::module::exec_module_script("post-mount.sh") {
+        warn!("exec post-mount scripts failed: {}", e);
+    }
     Ok(())
 }
 
