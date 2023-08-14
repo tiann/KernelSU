@@ -194,6 +194,8 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("do systemless mount failed: {}", e);
     }
 
+    on_post_mount()?;
+
     std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
 
     Ok(())
@@ -220,7 +222,15 @@ fn run_stage(stage: &str) {
     }
 }
 
+pub fn on_post_mount() -> Result<()> {
+    info!("on_post_mount triggered!");
+    run_stage("post-mount");
+
+    Ok(())
+}
+
 pub fn on_services() -> Result<()> {
+    info!("on_services triggered!");
     run_stage("service");
 
     Ok(())
@@ -307,3 +317,4 @@ fn catch_bootlog() -> Result<()> {
 
     Ok(())
 }
+
