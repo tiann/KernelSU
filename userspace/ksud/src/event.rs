@@ -317,4 +317,3 @@ fn catch_bootlog() -> Result<()> {
 
     Ok(())
 }
-
