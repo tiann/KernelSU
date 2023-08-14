@@ -21,6 +21,20 @@
         "devices": "Poco F1 | MI8 | MiMix2S"
     },
     {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_SM8350",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_SM8350/tree/13",
+        "devices": "Vili"
+    },
+    {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "D8G_Kernel_Marble",
+        "kernel_link": "https://github.com/diphons/D8G_Kernel_Marble/tree/op",
+        "devices": "Poco F5 | Redmi Note 12 Turbo | Marble"
+    },
+    {
         "maintainer": "th1nhhdk",
         "maintainer_link": "https://github.com/th1nhhdk",
         "kernel_name": "android_kernel_sony_sm8250-kernelsu",
@@ -432,5 +446,19 @@
         "kernel_name": "android_kernel_xiaomi_sdm845_exp",
         "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_exp",
         "devices": "Xiaomi Mi 8 Pro(UD)[equuleus]/Explorer Edition[ursa]"
+    },
+    {
+        "maintainer": "Abdul Wahid Khan",
+        "maintainer_link": "https://github.com/Wahid7852",
+        "kernel_name": "kernel_xiaomi_begonia",
+        "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_mt6785",
+        "devices": "Redmi Note 8 Pro (Begonia/Begoniain)"
+    },
+    {
+        "maintainer": "Abdul Wahid Khan",
+        "maintainer_link": "https://github.com/Wahid7852",
+        "kernel_name": "kernel_xiaomi_marble",
+        "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_marble",
+        "devices": "Xiaomi Poco F5 / Redmi Note 12 Turbo (Marble)"
     }
 ]
