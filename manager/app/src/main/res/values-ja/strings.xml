@@ -11,9 +11,9 @@
     <string name="home_unsupported_reason">KernelSU は現在、GKI カーネルにのみ対応しています</string>
     <string name="home_kernel">カーネル</string>
     <string name="home_manager_version">バージョン</string>
-    <string name="home_fingerprint">フィンガープリント</string>
+    <string name="home_fingerprint">Fingerprint</string>
     <string name="home_selinux_status">SELinux の状態</string>
-    <string name="selinux_status_disabled">無効</string>
+    <string name="selinux_status_disabled">Disabled</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">不明</string>
