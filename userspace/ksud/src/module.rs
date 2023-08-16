@@ -240,15 +240,14 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     result.map_err(|err| anyhow!("Failed to exec {}: {}", path.as_ref().display(), err))
 }
 
-/// execute every modules' post-fs-data.sh
-pub fn exec_post_fs_data() -> Result<()> {
+pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
     foreach_active_module(|module| {
-        let post_fs_data = module.join("post-fs-data.sh");
-        if !post_fs_data.exists() {
+        let script_path = module.join(format!("{stage}.sh"));
+        if !script_path.exists() {
             return Ok(());
         }
 
-        exec_script(&post_fs_data, true)
+        exec_script(&script_path, block)
     })?;
 
     Ok(())
@@ -272,20 +271,6 @@ pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
 
         exec_script(path, wait)?;
     }
-
-    Ok(())
-}
-
-/// execute every modules' [stage].sh (service.sh, boot-completed.sh)
-pub fn exec_stage_scripts(stage: &str) -> Result<()> {
-    foreach_active_module(|module| {
-        let service = module.join(format!("{stage}.sh"));
-        if !service.exists() {
-            return Ok(());
-        }
-
-        exec_script(&service, false)
-    })?;
 
     Ok(())
 }
