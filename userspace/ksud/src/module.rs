@@ -240,9 +240,9 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     result.map_err(|err| anyhow!("Failed to exec {}: {}", path.as_ref().display(), err))
 }
 
-pub fn exec_module_script(path: &str, block: bool) -> Result<()> {
+pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
     foreach_active_module(|module| {
-        let script_path = module.join(path);
+        let script_path = module.join(format!("{stage}.sh"));
         if !script_path.exists() {
             return Ok(());
         }
