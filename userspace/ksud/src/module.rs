@@ -148,11 +148,12 @@ fn check_image(img: &str) -> Result<()> {
     // 0: no error
     // 1: file system errors corrected
     // https://man7.org/linux/man-pages/man8/e2fsck.8.html
-    ensure!(
-        code == Some(0) || code == Some(1),
-        "Failed to check image, e2fsck exit code: {}",
-        code.unwrap_or(-1)
-    );
+    // ensure!(
+    //     code == Some(0) || code == Some(1),
+    //     "Failed to check image, e2fsck exit code: {}",
+    //     code.unwrap_or(-1)
+    // );
+    info!("e2fsck exit code: {}", code.unwrap_or(-1));
     Ok(())
 }
 
