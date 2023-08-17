@@ -140,8 +140,7 @@ fn get_minimal_image_size(img: &str) -> Result<u64> {
 fn check_image(img: &str) -> Result<()> {
     let result = Command::new("e2fsck")
         .args(["-yf", img])
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(Stdio::piped())
         .status()
         .with_context(|| format!("Failed to exec e2fsck {img}"))?;
     let code = result.code();
@@ -172,7 +171,7 @@ fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     info!("resize image to {target_size}K, minimal size is {minimal_size}K");
     let result = Command::new("resize2fs")
         .args([img, &format!("{target_size}K")])
-        .stdout(Stdio::null())
+        .stdout(Stdio::piped())
         .status()
         .with_context(|| format!("Failed to exec resize2fs {img}"))?;
     ensure!(result.success(), "Failed to resize2fs: {}", result);
@@ -402,7 +401,7 @@ fn _install_module(zip: &str) -> Result<()> {
             .arg("-b")
             .arg("1024")
             .arg(tmp_module_img)
-            .stdout(Stdio::null())
+            .stdout(Stdio::piped())
             .output()?;
         ensure!(
             result.status.success(),
