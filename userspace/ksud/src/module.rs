@@ -157,7 +157,7 @@ fn check_image(img: &str) -> Result<()> {
     Ok(())
 }
 
-fn resize_image(img: &str, extra_size: u64) -> Result<()> {
+fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
     let minimal_size = get_minimal_image_size(img)?; // the minimal size is in KB
     let target_size = minimal_size * 1024 + extra_size;
 
@@ -422,7 +422,7 @@ fn _install_module(zip: &str) -> Result<()> {
             )
         })?;
         // grow size of the tmp image
-        resize_image(tmp_module_img, grow_size)?;
+        grow_image_size(tmp_module_img, grow_size)?;
     } else {
         // modules.img exists, we should use it as tmp img
         info!("Using existing modules.img as tmp image");
@@ -434,7 +434,7 @@ fn _install_module(zip: &str) -> Result<()> {
             )
         })?;
         // grow size of the tmp image
-        resize_image(tmp_module_img, grow_size)?;
+        grow_image_size(tmp_module_img, grow_size)?;
     }
 
     // ensure modules_update exists
@@ -467,11 +467,6 @@ fn _install_module(zip: &str) -> Result<()> {
     }
 
     exec_install_script(zip)?;
-
-    // shrink the image, because there may be some wasted space
-    if let Err(e) = resize_image(tmp_module_img, default_reserve_size) {
-        warn!("Failed to shrink image: {}", e);
-    }
 
     info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
