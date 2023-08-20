@@ -662,6 +662,16 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
                 module_prop_map.insert(k, v);
             });
 
+        if module_prop_map["id"].is_empty() {
+            if let Some(id) = entry.file_name().to_str() {
+                info!("Use dir name as module id: {}", id);
+                module_prop_map.insert("id".to_owned(), id.to_owned());
+            } else {
+                info!("Failed to get module id: {:?}", module_prop);
+                continue;
+            }
+        }
+
         // Add enabled, update, remove flags
         let enabled = !path.join(defs::DISABLE_FILE_NAME).exists();
         let update = path.join(defs::UPDATE_FILE_NAME).exists();
