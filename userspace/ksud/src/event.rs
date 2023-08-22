@@ -180,7 +180,7 @@ pub fn on_post_data_fs() -> Result<()> {
 
     // exec modules post-fs-data scripts
     // TODO: Add timeout
-    if let Err(e) = crate::module::exec_post_fs_data() {
+    if let Err(e) = crate::module::exec_stage_script("post-fs-data", true) {
         warn!("exec post-fs-data scripts failed: {}", e);
     }
 
@@ -194,12 +194,14 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("do systemless mount failed: {}", e);
     }
 
+    run_stage("post-mount", true);
+
     std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
 
     Ok(())
 }
 
-fn run_stage(stage: &str) {
+fn run_stage(stage: &str, block: bool) {
     utils::umask(0);
 
     if utils::has_magisk() {
@@ -212,16 +214,17 @@ fn run_stage(stage: &str) {
         return;
     }
 
-    if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), false) {
+    if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), block) {
         warn!("Failed to exec common {stage} scripts: {e}");
     }
-    if let Err(e) = crate::module::exec_stage_scripts(stage) {
+    if let Err(e) = crate::module::exec_stage_script(stage, block) {
         warn!("Failed to exec {stage} scripts: {e}");
     }
 }
 
 pub fn on_services() -> Result<()> {
-    run_stage("service");
+    info!("on_services triggered!");
+    run_stage("service", false);
 
     Ok(())
 }
@@ -241,7 +244,7 @@ pub fn on_boot_completed() -> Result<()> {
         }
     }
 
-    run_stage("boot-completed");
+    run_stage("boot-completed", false);
 
     Ok(())
 }

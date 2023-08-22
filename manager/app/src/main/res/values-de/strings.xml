@@ -78,4 +78,5 @@
     <string name="reboot_userspace">Leichter Neustart</string>
     <string name="module_uninstall_confirm">Bist du dir sicher, dass du das Modul %s deinstallieren möchtest\?</string>
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
+    <string name="require_kernel_version">Die jetzige Kernel-Version %d ist zu alt für diese Manager-Version. Bitte upgrade auf Version %d oder höher!</string>
 </resources>

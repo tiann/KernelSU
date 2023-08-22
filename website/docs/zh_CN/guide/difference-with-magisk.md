@@ -25,3 +25,4 @@
 4. BusyBox 的目录不同；KernelSU 内置的 BusyBox 在 `/data/adb/ksu/bin/busybox` 而 Magisk 在 `/data/adb/magisk/busybox`；**注意此为 KernelSU 内部行为，未来可能会更改！**
 5. KernelSU 不支持 `.replace` 文件；但 KernelSU 支持 `REPLACE` 和 `REMOVE` 变量。
 6. KernelSU 新增了一种脚本 `boot-completed.sh`，以便在 Android 系统启动后运行某些任务。
+7. KernelSU 新增了一种脚本 `post-moount.sh`，以便在 Overlayfs 挂载后运行某些任务。

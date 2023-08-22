@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: ["5.15.94.4", "5.15.104.1"]
+        version: ["5.15.94.4", "5.15.104.1", "5.15.104.2"]
         include:
           - arch: x86_64
             file_name: "bzImage"
@@ -37,10 +37,19 @@ jobs:
           - version: "5.15.104.1"
             arch: arm64
             make_config: config-wsa-arm64
+          - version: "5.15.104.2"
+            arch: x86_64
+            make_config: config-wsa-x64
+          - version: "5.15.104.2"
+            arch: arm64
+            make_config: config-wsa-arm64
           - version: "5.15.94.4"
             device_code: latte-2
             kernel_version: "5.15"
           - version: "5.15.104.1"
+            device_code: latte-2
+            kernel_version: "5.15"
+          - version: "5.15.104.2"
             device_code: latte-2
             kernel_version: "5.15"
 
