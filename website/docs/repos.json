@@ -460,5 +460,12 @@
         "kernel_name": "kernel_xiaomi_marble",
         "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_marble",
         "devices": "Xiaomi Poco F5 / Redmi Note 12 Turbo (Marble)"
+    },
+    {
+        "maintainer": "zfdx123",
+        "maintainer_link": "https://github.com/zfdx123",
+        "kernel_name": "kernel_xiaomi_alioth",
+        "kernel_link": "https://github.com/zfdx123/kernel_xiaomi_alioth",
+        "devices": "Redmi K40 (alioth)"
     }
 ]
