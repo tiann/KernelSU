@@ -15,6 +15,7 @@
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 #include "linux/key.h"
 #include "linux/errno.h"
+#include "linux/cred.h"
 struct key *init_session_keyring = NULL;
 
 static inline int install_session_keyring(struct key *keyring)

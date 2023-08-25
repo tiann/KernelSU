@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_selinux_status">Status ng SELinux</string>
+    <string name="selinux_status_disabled">Hindi gumagana</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
+    <string name="home_not_installed">Hindi naka-install</string>
+    <string name="home">Home</string>
+    <string name="home_click_to_install">Pindutin para mag-install</string>
+    <string name="home_working">Gumagana</string>
+    <string name="home_working_version">Bersyon: %d</string>
+    <string name="selinux_status_unknown">Hindi matukoy</string>
+</resources>
