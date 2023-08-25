@@ -28,7 +28,7 @@ Hiên tại Giao diện nhị phân của ứng dụng (ABI) được hỗ trợ
 
 Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặc cải thiện bản dịch trước, vui lòng sử dụng [Weblate](https://hosted.weblate.org/engage/kernelsu/).
 
-### Thảo luận
+## Thảo luận
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
