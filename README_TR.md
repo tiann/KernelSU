@@ -28,7 +28,7 @@ Ve desteklenen mevcut ABI'ler : `arm64-v8a` ve `x86_64`
 
 KernelSU'yu kendi dilinize çevirmek veya varolan bir çeviriyi geliştirmek istiyorsanız, lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/)'i kullanın.
 
-### Tartışma
+## Tartışma
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
