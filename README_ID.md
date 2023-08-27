@@ -28,7 +28,7 @@ Dan ABI yang didukung saat ini adalah: `arm64-v8a` dan `x86_64`
 
 Untuk menerjemahkan KernelSU ke dalam bahasa Anda atau menyempurnakan terjemahan yang sudah ada, harap gunakan [Weblat](https://hosted.weblate.org/engage/kernelsu/).
 
-### Diskusi
+## Diskusi
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
