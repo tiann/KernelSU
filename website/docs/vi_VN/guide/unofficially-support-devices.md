@@ -6,7 +6,7 @@
 :::
 
 ::: warning
-Trang này chỉ để cho bạn tìm thấy source cho thiết bị của bạn, nó **HOÀN TOÀN KHÔNG** được review bởi _lập trình viên của KernelSU_. Vậy nên hãy tự chấp nhận rủi ro khi sử dụng chúng.
+Trang này chỉ để cho bạn tìm thấy source cho thiết bị của bạn, nó **HOÀN TOÀN KHÔNG** được review bởi _lập trình viên của KernelSU_. Vậy nên hãy chấp nhận rủi ro khi sử dụng chúng.
 
 :::
 
