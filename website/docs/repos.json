@@ -56,13 +56,6 @@
         "devices": "Generic x86_64 devices running Android-x86"
     },
     {
-        "maintainer": "Vincent4440",
-        "maintainer_link": "https://github.com/Vincent4440",
-        "kernel_name": "noxious_kernel_xiaomi_sm8250",
-        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250/tree/thirteen",
-        "devices": "Poco F4: munch"
-    },
-    {
         "maintainer": "Asuka-mio",
         "maintainer_link": "https://github.com/asuka-mio",
         "kernel_name": "android_kernel_xiaomi_cas",
@@ -157,7 +150,7 @@
         "maintainer": "LeviMarvin",
         "maintainer_link": "https://github.com/LeviMarvin",
         "kernel_name": "kernel_xiaomi_alioth",
-        "kernel_link": "https://github.com/LeviMarvin/kernel_xiaomi_alioth",
+        "kernel_link": "https://github.com/LeviMarvin/android_kernel_xiaomi_alioth",
         "devices": "Redmi K40 / POCO F3"
     },
     {
@@ -205,7 +198,7 @@
     {
         "maintainer": "SonalSingh18",
         "maintainer_link": "https://github.com/SonalSingh18",
-        "kernel_name": "android_kernel_xiaomi_sm6250.git",
+        "kernel_name": "android_kernel_xiaomi_sm6250",
         "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250.git",
         "devices": "Miatoll [curtana, excalibur, gram, joyeuse]"
     },
@@ -404,13 +397,6 @@
         "kernel_name": "kernel_m30s",
         "kernel_link": "https://github.com/GiovanYCringe-Experime/Kernel_m30s",
         "devices": "Galaxy M30s"
-    },
-    {
-        "maintainer": "Asriadi Rahim",
-        "maintainer_link": "https://github.com/asriadirahim",
-        "kernel_name": "android_kernel_google_wahoo",
-        "kernel_link": "https://github.com/Google-Pixel2-2XL/kernel_google_wahoo",
-        "devices": "Google Pixel 2/2XL"
     },
     {
         "maintainer": "Flame",
