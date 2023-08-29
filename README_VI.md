@@ -42,4 +42,4 @@ Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặ
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ý tưởng cho KernelSU.
 - [Magisk](https://github.com/topjohnwu/Magisk): một công cụ root mạnh mẽ.
 - [genuine](https://github.com/brevent/genuine/): phương pháp xác thực apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): vì các phương pháp ẩn của rootkit .
+- [Diamorphine](https://github.com/m0nad/Diamorphine): các phương pháp ẩn của rootkit .
