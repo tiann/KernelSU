@@ -182,13 +182,6 @@
         "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
     },
     {
-        "maintainer": "rxuglr",
-        "maintainer_link": "https://github.com/rxuglr",
-        "kernel_name": "kernel_xiaomi_surya",
-        "kernel_link": "https://github.com/rxuglr/kernel_xiaomi_surya",
-        "devices": "Xiaomi POCO X3 / NFC (surya)"
-    },
-    {
         "maintainer": "H1mJT",
         "maintainer_link": "https://github.com/H1mJT",
         "kernel_name": "kernel_realme_RMX1901",
@@ -325,7 +318,7 @@
         "maintainer": "Sr-Han",
         "maintainer_link": "https://github.com/Sr-Han",
         "kernel_name": "kernel_xiaomi_mojito.git",
-        "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito.git",
+        "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito",
         "devices": "Redmi Note 10 (Sunny/Mojito)"
     },
     {
