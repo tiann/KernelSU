@@ -26,7 +26,7 @@ Hiên tại Giao diện nhị phân của ứng dụng (ABI) được hỗ trợ
 
 ## Hỗ trợ dịch
 
-Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặc cải thiện bản dịch trước, vui lòng sử dụng [Weblate](https://hosted.weblate.org/engage/kernelsu/).
+Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặc cải thiện các bản dịch trước, vui lòng sử dụng [Weblate](https://hosted.weblate.org/engage/kernelsu/).
 
 ## Thảo luận
 
@@ -40,6 +40,6 @@ Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặ
 ## Lời cảm ơn
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ý tưởng cho KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): một công cụ root mạnh mẽ.
+- [Magisk](https://github.com/topjohnwu/Magisk): công cụ root mạnh mẽ.
 - [genuine](https://github.com/brevent/genuine/): phương pháp xác thực apk v2.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): các phương pháp ẩn của rootkit .
