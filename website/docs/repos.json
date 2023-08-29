@@ -101,7 +101,7 @@
         "maintainer": "RooGhz720",
         "maintainer_link": "https://github.com/RooGhz720",
         "kernel_name": "Aghisna_Sweet_Kernel",
-        "kernel_link": "https://github.com/RooGhz720/Aghisna_Sweet_Kernel",
+        "kernel_link": "https://github.com/RooGhz720/kernel_xiaomi_sm6150",
         "devices": "REDMI NOTE 10 PRO (sweet)"
     },
     {
@@ -192,7 +192,7 @@
         "maintainer": "SonalSingh18",
         "maintainer_link": "https://github.com/SonalSingh18",
         "kernel_name": "android_kernel_xiaomi_sm6250",
-        "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250.git",
+        "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250",
         "devices": "Miatoll [curtana, excalibur, gram, joyeuse]"
     },
     {
