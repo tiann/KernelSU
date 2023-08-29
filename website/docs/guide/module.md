@@ -19,27 +19,7 @@ To make sure all subsequent `sh` shell executed also runs in standalone mode, op
 
 ::: tip difference with Magisk
 
-KernelSU's BusyBox is now using the binary file compiled directly from the Magisk project. **Thanks to Magisk!** Therefore, you don't have to worry about compatibility issues between BusyBox scripts in Magisk and KernelSU because they are exactly the same!
-:::
-
-## KernelSU modules
-
-A KernelSU module is a folder placed in `/data/adb/modules` with the structure below:
-
-```txt
-/data/adb/modules
-├── .
-├── .
-|
-├── $MODID                  <--- Thư mục được đặt tên bằng ID của mô-đun
-│   │
-│   │      *** Nhận Dạng Mô-đun ***
-│   │
-│   ├── module.prop         <--- Tệp này lưu trữ metadata của mô-đun
-│   │
-│   │      *** Nội Dung Chính ***
-│   │
-│   ├── system              <--- This folder will be mounted if skip_mount does not exist
+KernelSU's BusyBox is now using the binary file compiled directly from the Magisk project. **Thanks to Magisk!** Therefore, you don't have to worry about compatibility issues between Busskip_mount không tồn tại
 │   │   ├── ...
 │   │   ├── ...
 │   │   └── ...
