@@ -2,7 +2,7 @@
 
 # KernelSU
 
-Giải pháp root thông qua thay đổi trên nhân hệ điều hành cho các thiết bị Android.
+Giải pháp root thông qua thay đổi trên Kernel hệ điều hành cho các thiết bị Android.
 
 ## Tính năng
 
@@ -12,7 +12,7 @@ Giải pháp root thông qua thay đổi trên nhân hệ điều hành cho các
 
 ## Tình trạng tương thích
 
-KernelSU chính thức hỗ trợ các thiết bị Android với nhân GKI 2.0(phiên bản nhân 5.10+), các phiên bản nhân cũ hơn (4.14+) cũng tương thích, nhưng bạn cần phải tự biên dịch.
+KernelSU chính thức hỗ trợ các thiết bị Android với kernel GKI 2.0(phiên bản nhân 5.10+), các phiên bản kernel cũ hơn (4.14+) cũng tương thích, nhưng bạn cần phải tự biên dịch.
 
 WSA, ChromeOS và Android dựa trên container(container-based) cũng được hỗ trợ bởi KernelSU.
 
