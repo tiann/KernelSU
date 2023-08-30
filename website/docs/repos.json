@@ -317,7 +317,7 @@
     {
         "maintainer": "Sr-Han",
         "maintainer_link": "https://github.com/Sr-Han",
-        "kernel_name": "kernel_xiaomi_mojito.git",
+        "kernel_name": "kernel_xiaomi_mojito",
         "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito",
         "devices": "Redmi Note 10 (Sunny/Mojito)"
     },
