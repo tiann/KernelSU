@@ -29,7 +29,7 @@ And the current supported ABIs are: `arm64-v8a` and `x86_64`
 
 To translate KernelSU into your language or improve an existing translation, please use [Weblate](https://hosted.weblate.org/engage/kernelsu/).
 
-### Discussion
+## Discussion
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 

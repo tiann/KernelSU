@@ -25,7 +25,7 @@ Aktualnie obsługiwane ABI to : `arm64-v8a` i `x86_64`.
 
 [Jak skompilować?](https://kernelsu.org/guide/how-to-build.html)
 
-### Dyskusja
+## Dyskusja
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
