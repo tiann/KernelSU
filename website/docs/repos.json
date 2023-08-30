@@ -56,11 +56,11 @@
         "devices": "Generic x86_64 devices running Android-x86"
     },
     { 
-         "maintainer": "Vincent4440", 
-         "maintainer_link": "https://github.com/Vincent4440", 
-         "kernel_name": "noxious_kernel_xiaomi_sm8250", 
-         "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250", 
-         "devices": "Poco F4: munch" 
+        "maintainer": "Vincent4440", 
+        "maintainer_link": "https://github.com/Vincent4440", 
+        "kernel_name": "noxious_kernel_xiaomi_sm8250", 
+        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250", 
+        "devices": "Poco F4: munch" 
     },
     {
         "maintainer": "Asuka-mio",
