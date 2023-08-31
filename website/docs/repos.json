@@ -453,5 +453,12 @@
         "kernel_name": "kernel_xiaomi_alioth",
         "kernel_link": "https://github.com/zfdx123/kernel_xiaomi_alioth",
         "devices": "Redmi K40 (alioth)"
+    },
+    {
+        "maintainer": "wxt1221",
+        "maintainer_link": "https://github.com/wxt1221",
+        "kernel_name": "android_kernel_oneplus_sdm845",
+        "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
+        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
     }
 ]
