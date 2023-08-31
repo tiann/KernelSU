@@ -38,7 +38,7 @@ Có hai cách để vào Chế độ an toàn:
 1. Chế Độ An Toàn tích hợp (built-in Safe Mode) của một số hệ thống; một số hệ thống có Chế độ an toàn tích hợp có thể được truy cập bằng cách nhấn và giữ nút giảm âm lượng, trong khi những hệ thống khác (chẳng hạn như MIUI) có thể bật Chế Độ An Toàn trong Recovery. Khi vào Chế Độ An Toàn của hệ thống, KernelSU cũng sẽ vào Chế Độ An Toàn và tự động tắt các mô-đun.
 2. Chế Độ An Toàn tích hợp (built-in Safe Mode) của KernelSU; phương pháp thao tác là **nhấn phím giảm âm lượng liên tục hơn ba lần** sau màn hình khởi động đầu tiên. Lưu ý là nhấn-thả, nhấn-thả, nhấn-thả chứ không phải nhấn giữ.
 
-Sau khi vào chế độ an toàn, tất cả các mô-đun trên trang mô-đun của Trình quản lý KernelSU đều bị tắt nhưng bạn có thể thực hiện thao tác "gỡ cài đặt" để gỡ cài đặt bất kỳ mô-đun nào có thể gây ra sự cố.
+Sau khi vào chế độ an toàn, tất cả các mô-đun trên trang mô-đun của KernelSU Manager đều bị tắt nhưng bạn có thể thực hiện thao tác "gỡ cài đặt" để gỡ cài đặt bất kỳ mô-đun nào có thể gây ra sự cố.
 
 Chế độ an toàn tích hợp được triển khai trong kernel, do đó không có khả năng thiếu các sự kiện chính do bị chặn. Tuy nhiên, đối với các hạt nhân không phải GKI, có thể cần phải tích hợp mã thủ công và bạn có thể tham khảo tài liệu chính thức để được hướng dẫn.
 
