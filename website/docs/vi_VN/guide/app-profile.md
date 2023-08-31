@@ -99,7 +99,7 @@ Ví dụ: nếu bạn cấp quyền root cho người dùng shell ADB (đây là
 :::warning Ghi chú
 Hành vi này hoàn toàn được mong đợi và không phải là lỗi. Vì vậy, chúng tôi khuyến nghị như sau:
 
-Nếu bạn thực sự cần cấp quyền root cho ADB (ví dụ: với tư cách là nhà phát triển), bạn không nên thay đổi UID thành `2000` khi định cấu hình Root ProfileProfile. Sử dụng `1000` (hệ thống) sẽ là lựa chọn tốt hơn.
+Nếu bạn thực sự cần cấp quyền root cho ADB (ví dụ: với tư cách là nhà phát triển), bạn không nên thay đổi UID thành `2000` khi định cấu hình Root Profile. Sử dụng `1000` (hệ thống) sẽ là lựa chọn tốt hơn.
 :::
 
 ## Non-Root Profile
@@ -111,7 +111,7 @@ KernelSU cung cấp một cơ chế systemless để sửa đổi các phân vù
 Ngoài ra, giao diện cài đặt của trình quản lý KernelSU cung cấp một công tắc cho "umount modules by default". Theo mặc định, công tắc này được **bật**, có nghĩa là KernelSU hoặc một số mô-đun sẽ hủy tải các mô-đun cho ứng dụng này trừ khi áp dụng cài đặt bổ sung. Nếu bạn không thích cài đặt này hoặc nếu nó ảnh hưởng đến một số ứng dụng nhất định, bạn có các tùy chọn sau:
 
 1. Giữ nút chuyển cho "umount modules by default" và tắt riêng tùy chọn "umount modules" trong App Profile đối với các ứng dụng yêu cầu tải mô-đun (hoạt động như "whitelist").
-2. Tắt khóa chuyển cho "umount modules by default" và bật riêng tùy chọn "umount modules" trong App Profile cho các ứng dụng yêu cầu dỡ bỏ mô-đun (hoạt động như một "blacklist").
+2. Tắt khóa chuyển cho "umount modules by default" và bật riêng tùy chọn "umount modules" trong App Profile cho các ứng dụng yêu cầu dỡ bỏ mô-đun (hoạt động như "blacklist").
 
 :::info
 Trong các thiết bị sử dụng kernel phiên bản 5.10 trở lên, kernel thực hiện việc dỡ tải các mô-đun. Tuy nhiên, đối với các thiết bị chạy phiên bản kernel dưới 5.10, công tắc này chỉ đơn thuần là một tùy chọn cấu hình và bản thân KernelSU không thực hiện bất kỳ hành động nào. Một số mô-đun, chẳng hạn như Zygisksu, có thể sử dụng công tắc này để xác định xem có cần thiết phải dỡ bỏ mô-đun hay không.
