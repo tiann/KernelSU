@@ -107,7 +107,7 @@
     {
         "maintainer": "RooGhz720",
         "maintainer_link": "https://github.com/RooGhz720",
-        "kernel_name": "Aghisna_Sweet_Kernel",
+        "kernel_name": "kernel_xiaomi_sm6150",
         "kernel_link": "https://github.com/RooGhz720/kernel_xiaomi_sm6150",
         "devices": "REDMI NOTE 10 PRO (sweet)"
     },
@@ -156,7 +156,7 @@
     {
         "maintainer": "LeviMarvin",
         "maintainer_link": "https://github.com/LeviMarvin",
-        "kernel_name": "kernel_xiaomi_alioth",
+        "kernel_name": "android_kernel_xiaomi_alioth",
         "kernel_link": "https://github.com/LeviMarvin/android_kernel_xiaomi_alioth",
         "devices": "Redmi K40 / POCO F3"
     },
