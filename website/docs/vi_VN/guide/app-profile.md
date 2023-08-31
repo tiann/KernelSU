@@ -12,12 +12,12 @@ App Profile là một cơ chế do KernelSU cung cấp để tùy chỉnh cấu 
 
 Hệ thống Linux có hai khái niệm: người dùng (user) và nhóm (group). Mỗi người dùng có một user ID (UID) và một người dùng có thể thuộc nhiều nhóm, mỗi nhóm có group ID (GID) riêng. Những ID này được sử dụng để xác định người dùng trong hệ thống và xác định tài nguyên hệ thống nào họ có thể truy cập.
 
-Người dùng có UID bằng 0 được gọi là người dùng root và các nhóm có GID bằng 0 được gọi là nhóm gốc. Nhóm người dùng root thường giữ các đặc quyền hệ thống cao nhất.
+Người dùng có UID bằng 0 được gọi là người dùng root và các nhóm có GID bằng 0 được gọi là nhóm root. Nhóm người dùng root thường giữ các đặc quyền hệ thống cao nhất.
 
 Trong trường hợp hệ thống Android, mỗi ứng dụng là một người dùng riêng biệt (không bao gồm các trường hợp UID dùng chung) với một UID duy nhất. Ví dụ: `0` đại diện cho người dùng root, `1000` đại diện cho `system`, `2000` đại diện cho ADB shell và các UID từ 10000 đến 19999 đại diện cho các ứng dụng thông thường.
 
 :::info
-Ở đây, UID được đề cập không giống với khái niệm nhiều người dùng hoặc hồ sơ công việc trong hệ thống Android. Hồ sơ công việc thực sự được triển khai bằng cách phân vùng phạm vi UID. Ví dụ: 10000-19999 đại diện cho người dùng chính, trong khi 110000-119999 đại diện cho hồ sơ công việc. Mỗi ứng dụng thông thường trong số đó đều có UID riêng.
+Ở đây, UID được đề cập không giống với khái niệm nhiều người dùng hoặc hồ sơ công việc (Work profile) trong hệ thống Android. Hồ sơ công việc thực sự được triển khai bằng cách phân vùng phạm vi UID. Ví dụ: 10000-19999 đại diện cho người dùng chính, trong khi 110000-119999 đại diện cho hồ sơ công việc. Mỗi ứng dụng thông thường trong số đó đều có UID riêng.
 :::
 
 Mỗi ứng dụng có thể có nhiều nhóm, với GID đại diện cho nhóm chính, thường khớp với UID. Các nhóm khác được gọi là nhóm bổ sung. Một số quyền nhất định được kiểm soát thông qua các nhóm, chẳng hạn như quyền truy cập mạng hoặc truy cập Bluetooth.
@@ -39,9 +39,9 @@ Hồ sơ ứng dụng chỉ kiểm soát các quyền của tiến trình gốc 
 
 Root Profile được thực thi trong kernel và không dựa vào hành vi tự nguyện của các ứng dụng root, không giống như việc chuyển đổi người dùng hoặc nhóm thông qua `su`, việc cấp quyền `su` hoàn toàn phụ thuộc vào người dùng chứ không phải nhà phát triển.
 
-### Khả năng
+### Capabilities
 
-Khả năng là một cơ chế phân tách đặc quyền trong Linux.
+Capabilities (khả năng) là một cơ chế phân tách đặc quyền trong Linux.
 
 Với mục đích thực hiện kiểm tra quyền, việc triển khai UNIX truyền thống phân biệt hai loại quy trình: quy trình đặc quyền (có ID người dùng hiệu quả là 0, được gọi là siêu người dùng hoặc root) và quy trình không có đặc quyền (có UID hiệu dụng khác 0). Các quy trình đặc quyền bỏ qua tất cả các bước kiểm tra quyền của kernel, trong khi các quy trình không có đặc quyền phải chịu sự kiểm tra quyền đầy đủ dựa trên thông tin xác thực của quy trình (thường là: UID hiệu quả, GID hiệu quả và danh sách nhóm bổ sung).
 
@@ -51,32 +51,32 @@ Mỗi Khả năng đại diện cho một hoặc nhiều đặc quyền. Ví d�
 
 Cấu hình gốc của KernelSU cho phép tùy chỉnh các Khả năng của tiến trình gốc sau khi thực thi `su`, nhờ đó đạt được việc cấp một phần "quyền root". Không giống như UID và GID đã nói ở trên, một số ứng dụng gốc nhất định yêu cầu UID là `0` sau khi sử dụng `su`. Trong những trường hợp như vậy, việc giới hạn Khả năng của người dùng root này bằng UID `0` có thể hạn chế các hoạt động được phép của họ.
 
-:::tip Strong Recommendation
-Linux's Capability [official documentation](https://man7.org/linux/man-pages/man7/capabilities.7.html) provides detailed explanations of the abilities represented by each Capability. If you intend to customize Capabilities, it is strongly recommended that you read this document first.
+:::tip Rất Khuyến Nghị
+Capabilities của Linux [tài liệu chính thức](https://man7.org/linux/man-pages/man7/capabilities.7.html) cung cấp giải thích chi tiết về các khả năng mà mỗi Capabilities thể hiện. Nếu bạn có ý định tùy chỉnh Capabilities, bạn nên đọc tài liệu này trước.
 :::
 
 ### SELinux
 
-SELinux is a powerful Mandatory Access Control (MAC) mechanism. It operates on the principle of **default deny**: any action not explicitly allowed is denied.
+SELinux là một cơ chế Kiểm Soát Truy Cập Bắt Buộc (Mandatory Access Control: MAC) mạnh mẽ. Nó hoạt động theo nguyên tắc **từ chối mặc định**: bất kỳ hành động nào không được cho phép rõ ràng đều bị từ chối.
 
-SELinux can run in two global modes:
+SELinux có thể chạy ở hai chế độ chung:
 
-1. Permissive mode: Denial events are logged but not enforced.
-2. Enforcing mode: Denial events are logged and enforced.
+1. Chế độ cho phép (Permissive mode): Các sự kiện từ chối được ghi lại nhưng không được thực thi.
+2. Chế độ thực thi (Enforcing mode): Các sự kiện từ chối được ghi lại và thực thi.
 
-:::warning Warning
-Modern Android systems heavily rely on SELinux to ensure overall system security. It is highly recommended not to use any custom systems running in "permissive mode" since it provides no significant advantages over a completely open system.
+:::warning Cảnh báo
+Các hệ thống Android hiện đại phụ thuộc rất nhiều vào SELinux để đảm bảo an ninh hệ thống tổng thể. Chúng tôi khuyên bạn không nên sử dụng bất kỳ hệ thống tùy chỉnh nào chạy ở "chế độ cho phép" vì nó không mang lại lợi thế đáng kể nào so với hệ thống mở hoàn toàn.
 :::
 
-Explaining the full concept of SELinux is complex and beyond the scope of this document. It is recommended to first understand its workings through the following resources:
+Việc giải thích khái niệm đầy đủ về SELinux rất phức tạp và nằm ngoài phạm vi của tài liệu này. Trước tiên nên hiểu hoạt động của nó thông qua các tài nguyên sau:
 
 1. [Wikipedia](https://en.wikipedia.org/wiki/Security-Enhanced_Linux)
 2. [Red Hat: What Is SELinux?](https://www.redhat.com/en/topics/linux/what-is-selinux)
 3. [ArchLinux: SELinux](https://wiki.archlinux.org/title/SELinux)
 
-KernelSU's Root Profile allows customization of the SELinux context of the root process after executing `su`. Specific access control rules can be set for this context to enable fine-grained control over root permissions.
+Root Profile của KernelSU cho phép tùy chỉnh ngữ cảnh SELinux của tiến trình gốc sau khi thực thi `su`. Các quy tắc kiểm soát truy cập cụ thể có thể được đặt cho bối cảnh này để cho phép kiểm soát chi tiết hơn các quyền .
 
-In typical scenarios, when an app executes `su`, it switches the process to a SELinux domain with **unrestricted access**, such as `u:r:su:s0`. Through the Root Profile, this domain can be switched to a custom domain, such as `u:r:app1:s0`, and a series of rules can be defined for this domain:
+Trong các trường hợp điển hình, khi một ứng dụng thực thi `su`, nó sẽ chuyển quy trình sang miền SELinux với **quyền truy cập không hạn chế**, chẳng hạn như `u:r:su:s0`. Thông qua Root Profile, miền này có thể được chuyển sang miền tùy chỉnh, chẳng hạn như `u:r:app1:s0` và một loạt quy tắc có thể được xác định cho miền này:
 
 ```sh
 type app1
@@ -85,34 +85,34 @@ typeattribute app1 mlstrustedsubject
 allow app1 * * *
 ```
 
-Note that the `allow app1 * * *` rule is used for demonstration purposes only. In practice, this rule should not be used extensively since it doesn't differ much from permissive mode.
+Lưu ý rằng quy tắc `allow app1 * * *` chỉ được sử dụng cho mục đích minh họa. Trong thực tế, quy tắc này không nên được sử dụng rộng rãi vì nó không khác nhiều so với chế độ cho phép.
 
 ### Escalation
 
-If the configuration of the Root Profile is not set properly, an escalation scenario may occur: the restrictions imposed by the Root Profile can unintentionally fail.
+Nếu cấu hình của Root Profile không được đặt đúng cách, một tình huống escalation (leo thang) có thể xảy ra: các hạn chế do Root Profile áp đặt có thể vô tình bị lỗi.
 
-For example, if you grant root permission to an ADB shell user (which is a common case), and then you grant root permission to a regular application but configure its root profile with UID 2000 (which is the UID of the ADB shell user), the application can obtain full root access by executing the `su` command twice:
+Ví dụ: nếu bạn cấp quyền root cho người dùng shell ADB (đây là trường hợp phổ biến), sau đó bạn cấp quyền root cho một ứng dụng thông thường nhưng định cấu hình cấu hình gốc của nó bằng UID 2000 (là UID của người dùng shell ADB) , ứng dụng có thể có được quyền truy cập root đầy đủ bằng cách thực hiện lệnh `su` hai lần:
 
-1. The first `su` execution is subject to the enforcement of the App Profile and will switch to UID `2000` (adb shell) instead of `0` (root).
-2. The second `su` execution, since the UID is `2000`, and you have granted root access to the UID `2000` (adb shell) in the configuration, the application will gain full root privileges.
+1. Lần thực thi `su` đầu tiên phải tuân theo sự thực thi của App Profile và sẽ chuyển sang UID `2000` (adb shell) thay vì `0` (root).
+2. Lần thực thi `su` thứ hai, vì UID là `2000` và bạn đã cấp quyền truy cập root cho UID `2000` (adb shell) trong cấu hình, ứng dụng sẽ có toàn quyền root.
 
-:::warning Note
-This behavior is entirely expected and not a bug. Therefore, we recommend the following:
+:::warning Ghi chú
+Hành vi này hoàn toàn được mong đợi và không phải là lỗi. Vì vậy, chúng tôi khuyến nghị như sau:
 
-If you genuinely need to grant root permissions to ADB (e.g., as a developer), it is not advisable to change the UID to `2000` when configuring the Root Profile. Using `1000` (system) would be a better choice.
+Nếu bạn thực sự cần cấp quyền root cho ADB (ví dụ: với tư cách là nhà phát triển), bạn không nên thay đổi UID thành `2000` khi định cấu hình Root ProfileProfile. Sử dụng `1000` (hệ thống) sẽ là lựa chọn tốt hơn.
 :::
 
 ## Non-Root Profile
 
 ### Umount Modules
 
-KernelSU provides a systemless mechanism for modifying system partitions, achieved through overlayfs mounting. However, some apps may be sensitive to such behavior. Thus, we can unload modules mounted on these apps by setting the "umount modules" option.
+KernelSU cung cấp một cơ chế systemless để sửa đổi các phân vùng hệ thống, đạt được thông qua việc gắn overlayfs. Tuy nhiên, một số ứng dụng có thể nhạy cảm với hành vi đó. Do đó, chúng ta có thể dỡ bỏ các mô-đun được gắn trên các ứng dụng này bằng cách đặt tùy chọn "umount modules".
 
-Additionally, the settings interface of the KernelSU manager provides a switch for "umount modules by default". By default, this switch is **enabled**, which means that KernelSU or some modules will unload modules for this app unless additional settings are applied. If you do not prefer this setting or if it affects certain apps, you have the following options:
+Ngoài ra, giao diện cài đặt của trình quản lý KernelSU cung cấp một công tắc cho "umount modules by default". Theo mặc định, công tắc này được **bật**, có nghĩa là KernelSU hoặc một số mô-đun sẽ hủy tải các mô-đun cho ứng dụng này trừ khi áp dụng cài đặt bổ sung. Nếu bạn không thích cài đặt này hoặc nếu nó ảnh hưởng đến một số ứng dụng nhất định, bạn có các tùy chọn sau:
 
-1. Keep the switch for "umount modules by default" and individually disable the "umount modules" option in the App Profile for apps requiring module loading (acting as a "whitelist").
-2. Disable the switch for "umount modules by default" and individually enable the "umount modules" option in the App Profile for apps requiring module unloading (acting as a "blacklist").
+1. Giữ nút chuyển cho "umount modules by default" và tắt riêng tùy chọn "umount modules" trong App Profile đối với các ứng dụng yêu cầu tải mô-đun (hoạt động như "whitelist").
+2. Tắt khóa chuyển cho "umount modules by default" và bật riêng tùy chọn "umount modules" trong App Profile cho các ứng dụng yêu cầu dỡ bỏ mô-đun (hoạt động như một "blacklist").
 
 :::info
-In devices using kernel version 5.10 and above, the kernel performs the unloading of modules. However, for devices running kernel versions below 5.10, this switch is merely a configuration option, and KernelSU itself does not take any action. Some modules, such as Zygisksu, may use this switch to determine whether module unloading is necessary.
+Trong các thiết bị sử dụng kernel phiên bản 5.10 trở lên, kernel thực hiện việc dỡ tải các mô-đun. Tuy nhiên, đối với các thiết bị chạy phiên bản kernel dưới 5.10, công tắc này chỉ đơn thuần là một tùy chọn cấu hình và bản thân KernelSU không thực hiện bất kỳ hành động nào. Một số mô-đun, chẳng hạn như Zygisksu, có thể sử dụng công tắc này để xác định xem có cần thiết phải dỡ bỏ mô-đun hay không.
 :::
