@@ -21,9 +21,9 @@ Việc cài đặt mô-đun có thể là nguyên nhân phổ biến hơn khiế
 Nếu bạn đã flash một mô-đun đã được chứng minh là an toàn nhưng khiến thiết bị của bạn không khởi động được thì tình huống này có thể dễ dàng phục hồi trong KernelSU mà không phải lo lắng gì. KernelSU có các cơ chế tích hợp sẵn để giải cứu thiết bị của bạn, bao gồm:
 
 1. Cập nhật AB
-2. Cứu hộ bằng cách nhấn Giảm âm lượng
+2. Cứu bằng cách nhấn Giảm âm lượng
 
-#### cập nhật AB
+#### Cập nhật AB
 
 Các bản cập nhật mô-đun của KernelSU lấy cảm hứng từ cơ chế cập nhật AB của hệ thống Android được sử dụng trong các bản cập nhật OTA. Nếu bạn cài đặt một mô-đun mới hoặc cập nhật mô-đun hiện có, nó sẽ không trực tiếp sửa đổi tệp mô-đun hiện đang sử dụng. Thay vào đó, tất cả các mô-đun sẽ được tích hợp vào một hình ảnh cập nhật khác. Sau khi hệ thống được khởi động lại, nó sẽ cố gắng bắt đầu sử dụng hình ảnh cập nhật này. Nếu hệ thống Android khởi động thành công, các mô-đun sẽ được cập nhật thực sự.
 
