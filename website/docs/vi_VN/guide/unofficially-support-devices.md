@@ -17,8 +17,8 @@ import data from '../../repos.json'
 <table>
    <thead>
       <tr>
-         <th>Maintainer</th>
-         <th>Repository</th>
+         <th>Người bảo trì</th>
+         <th>Kho lưu trữ</th>
          <th>Thiết bị hỗ trợ</th>
       </tr>
    </thead>
