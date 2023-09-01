@@ -14,7 +14,7 @@ Chắc chắn có.
 
 Có, nhưng đây là phiên bản đầu tiên nên có thể bị lỗi. Đợi nó ổn định nhé :)
 
-## KernelSU có hỗ trợ Xpose không?
+## KernelSU có hỗ trợ Xposed không?
 
 Có, [Dreamland](https://github.com/canyie/Dreamland) và [TaiChi](https://taichi.cool) hiện đã hoạt động. Đối với LSPosed, bạn có thể làm cho nó hoạt động bằng [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
 
