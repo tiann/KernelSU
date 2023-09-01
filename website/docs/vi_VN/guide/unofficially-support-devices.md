@@ -6,7 +6,7 @@
 :::
 
 ::: warning
-Trang này chỉ để cho bạn tìm thấy source cho thiết bị của bạn, nó **HOÀN TOÀN KHÔNG** được review bởi _lập trình viên của KernelSU_. Vậy nên hãy tự chấp nhận rủi ro khi sử dụng chúng.
+Trang này chỉ để cho bạn tìm thấy source cho thiết bị của bạn, nó **HOÀN TOÀN KHÔNG** được review bởi _lập trình viên của KernelSU_. Vậy nên hãy chấp nhận rủi ro khi sử dụng chúng.
 
 :::
 
@@ -17,8 +17,8 @@ import data from '../../repos.json'
 <table>
    <thead>
       <tr>
-         <th>Maintainer</th>
-         <th>Repository</th>
+         <th>Người bảo trì</th>
+         <th>Kho lưu trữ</th>
          <th>Thiết bị hỗ trợ</th>
       </tr>
    </thead>
