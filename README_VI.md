@@ -8,7 +8,7 @@ Giải pháp root thông qua thay đổi trên Kernel hệ điều hành cho cá
 
 1. Hỗ trợ gói thực thi `su` và quản lý quyền root.
 2. Hệ thống mô-đun thông qua overlayfs.
-3. [Hồ Sơ Ứng Dụng](https://kernelsu.org/guide/app-profile.html): Hạn chế quyền root của ứng dụng.
+3. [App Profile](https://kernelsu.org/guide/app-profile.html): Hạn chế quyền root của ứng dụng.
 
 ## Tình trạng tương thích
 
