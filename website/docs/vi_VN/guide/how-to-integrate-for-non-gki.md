@@ -18,19 +18,19 @@ KernelSU sử dụng kprobe để thực hiện hook kernel, nếu *kprobe* ch�
 
 Đầu tiên, thêm KernelSU vào mã nguồn kernel của bạn:
 
-- Latest tag(stable)
+- Thẻ mới nhất (ổn định)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- main branch(dev)
+- Nhánh chính (dev)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 
-- Select tag(Such as v0.5.2)
+- Chọn thẻ (chẳng hạn như v0.5.2)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
