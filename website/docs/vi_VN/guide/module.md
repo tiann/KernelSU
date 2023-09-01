@@ -62,9 +62,9 @@ Mô-đun KernelSU là một thư mục được đặt trong `/data/adb/modules`
 │   │
 │   │      *** Được Tạo Tự Động, KHÔNG TẠO HOẶC SỬA ĐỔI THỦ CÔNG ***
 │   │
-│   ├── vendor              <--- A symlink to $MODID/system/vendor
-│   ├── product             <--- A symlink to $MODID/system/product
-│   ├── system_ext          <--- A symlink to $MODID/system/system_ext
+│   ├── vendor              <--- Một liên kết tượng trưng đến $MODID/system/vendor
+│   ├── product             <--- Một liên kết tượng trưng đến $MODID/system/product
+│   ├── system_ext          <--- Một liên kết tượng trưng đến $MODID/system/system_ext
 │   │
 │   │      *** Mọi tập tin / thư mục bổ sung đều được phép ***
 │   │
