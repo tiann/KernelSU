@@ -58,112 +58,114 @@ Có một số phương pháp cài đặt KernelSU, mỗi phương pháp phù h�
 3. Cài đặt thông qua fastboot bằng boot.img do KernelSU cung cấp
 4. Sửa boot.img theo cách thủ công và cài đặt nó
 
-## Install with custom Recovery
+## Cài đặt với Recovery tùy chỉnh
 
-Prerequisite: Your device must have a custom Recovery, such as TWRP; if not or only official Recovery is available, use another method.
+Điều kiện chắc chắn: Thiết bị của bạn phải có Recovery tùy chỉnh, chẳng hạn như TWRP; nếu không hoặc chỉ có Recovery chính thức, hãy sử dụng phương pháp khác.
 
-Step:
+Các bước:
 
-1. From the [Release page](https://github.com/tiann/KernelSU/releases) of KernelSU, download the zip package starting with AnyKernel3 that matches your phone version; for example, the phone kernel version is `android12-5.10. 66`, then you should download the file `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (where `yyyy` is the year and `MM` is the month).
-2. Reboot the phone into TWRP.
-3. Use adb to put AnyKernel3-*.zip into the phone /sdcard and choose to install it in the TWRP GUI; or you can directly `adb sideload AnyKernel-*.zip` to install.
+1. Từ [Release page](https://github.com/tiann/KernelSU/releases) của KernelSU, tải xuống gói zip bắt đầu bằng AnyKernel3 phù hợp với phiên bản điện thoại của bạn; ví dụ: phiên bản kernel của điện thoại là `android12-5.10. 66`, thì bạn nên tải xuống tệp `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (trong đó `yyyy` là năm và `MM` là tháng).
+2. Khởi động lại điện thoại vào TWRP.
+3. Sử dụng adb để đặt AnyKernel3-*.zip vào điện thoại /sdcard và chọn cài đặt nó trong GUI TWRP; hoặc bạn có thể trực tiếp `adb sideload AnyKernel-*.zip` để cài đặt.
 
-PS. This method is suitable for any installation (not limited to initial installation or subsequent upgrades), as long as you use TWRP.
+PS. Phương pháp này phù hợp với mọi cài đặt (không giới hạn cài đặt ban đầu hoặc các nâng cấp tiếp theo), miễn là bạn sử dụng TWRP.
 
-## Install with Kernel Flasher
+## Cài đặt bằng Kernel Flasher
 
-Prerequisite: Your device must be rooted. For example, you have installed Magisk to get root, or you have installed an old version of KernelSU and need to upgrade to another version of KernelSU; if your device is not rooted, please try other methods.
+Điều kiện chắc chắn: Thiết bị của bạn phải được root. Ví dụ: bạn đã cài đặt Magisk để root hoặc bạn đã cài đặt phiên bản KernelSU cũ và cần nâng cấp lên phiên bản KernelSU khác; nếu thiết bị của bạn chưa được root, vui lòng thử các phương pháp khác.
 
-Step:
+Các bước:
 
-1. Download the AnyKernel3 zip; refer to the section *Installing with Custom Recovery* for downloading instructions.
-2. Open the Kernel Flash App and use the provided AnyKernel3 zip to flash.
+1. Tải xuống zip AnyKernel3; hãy tham khảo phần *Cài đặt bằng Custom Recovery* để biết hướng dẫn tải xuống.
+2. Mở Ứng dụng Kernel Flash và sử dụng zip AnyKernel3 được cung cấp để flash.
 
-If you haven't used the Kernel flash App before, the following are the more popular ones.
+Nếu trước đây bạn chưa từng sử dụng Ứng dụng Kernel flash thì sau đây là những ứng dụng phổ biến hơn.
 
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
 
-PS. This method is more convenient when upgrading KernelSU and can be done without a computer (backup first!). .
+PS. Phương pháp này thuận tiện hơn khi nâng cấp KernelSU và có thể thực hiện mà không cần máy tính (sao lưu trước!). .
 
-## Install with boot.img provided by KernelSU
+Các bước:
 
-This method does not require you to have TWRP, nor does it require your phone to have root privileges; it is suitable for your first installation of KernelSU.
+## Cài đặt bằng boot.img do KernelSU cung cấp
 
-### Find proper boot.img
+Phương pháp này không yêu cầu bạn phải có TWRP, cũng như không yêu cầu điện thoại của bạn phải có quyền root; nó phù hợp cho lần cài đặt KernelSU đầu tiên của bạn.
 
-KernelSU provides a generic boot.img for GKI devices and you should flush the boot.img to the boot partition of the device.
+### Tìm boot.img thích hợp
 
-You can download boot.img from [GitHub Release](https://github.com/tiann/KernelSU/releases), please note that you should use the correct version of boot.img. For example, if your device displays the kernel `android12-5.10.101` , you need to download `android-5.10.101_yyyy-MM.boot-<format>.img`. (Keep KMI consistent!)
+KernelSU cung cấp boot.img chung cho các thiết bị GKI và bạn nên chuyển boot.img vào phân vùng boot của thiết bị.
 
-Where `<format>` refers to the kernel compression format of your official boot.img, please check the kernel compression format of your original boot.img, you should use the correct format, e.g. `lz4`, `gz`; if you use an incorrect compression format, you may encounter bootloop.
+Bạn có thể tải xuống boot.img từ [GitHub Release](https://github.com/tiann/KernelSU/releases), xin lưu ý rằng bạn nên sử dụng đúng phiên bản boot.img. Ví dụ: nếu thiết bị của bạn hiển thị kernel `android12-5.10.101` , bạn cần tải xuống `android-5.10.101_yyyy-MM.boot-<format>.img`. (Giữ KMI nhất quán!)
+
+Trong đó `<format>` đề cập đến định dạng nén kernel của boot.img chính thức của bạn, vui lòng kiểm tra định dạng nén kernel của boot.img ban đầu của bạn, bạn nên sử dụng đúng định dạng, ví dụ: `lz4`, `gz`; nếu bạn sử dụng định dạng nén không chính xác, bạn có thể gặp phải bootloop.
 
 ::: info
-1. You can use magiskboot to get the compression format of your original boot; of course you can also ask other, more experienced kids with the same model as your device. Also, the compression format of the kernel usually does not change, so if you boot successfully with a certain compression format, you can try that format later.
-2. Xiaomi devices usually use `gz` or **uncompressed**.
-3. For Pixel devices, follow below instructions.
+1. Bạn có thể sử dụng magiskboot để lấy định dạng nén của boot ban đầu; Tất nhiên, bạn cũng có thể hỏi những người khác, có kinh nghiệm hơn có cùng kiểu máy với thiết bị của bạn. Ngoài ra, định dạng nén của kernel thường không thay đổi nên nếu bạn khởi động thành công với một định dạng nén nào đó thì bạn có thể thử định dạng đó sau.
+2. Các thiết bị Xiaomi thường sử dụng `gz` hoặc **uncompressed** (không nén).
+3. Đối với thiết bị Pixel, hãy làm theo hướng dẫn bên dưới.
 :::
 
-### flash boot.img to device
+### flash boot.img vào thiết bị
 
-Use `adb` to connect your device, then execute `adb reboot bootloader` to enter fastboot mode, then use this command to flash KernelSU:
+Sử dụng `adb` để kết nối thiết bị của bạn, sau đó thực thi `adb restart bootloader` để vào chế độ fastboot, sau đó sử dụng lệnh này để flash KernelSU:
 
 ```sh
 fastboot flash boot boot.img
 ```
 
 ::: info
-If your device supports `fastboot boot`, you can first use `fastboot boot boot.img` to try to use boot.img to boot the system first. If something unexpected happens, restart it again to boot.
+Nếu thiết bị của bạn hỗ trợ `fastboot boot`, trước tiên bạn có thể sử dụng `fastboot boot boot.img` để thử sử dụng boot.img để khởi động hệ thống trước. Nếu có điều gì bất ngờ xảy ra, hãy khởi động lại để boot.
 :::
 
-### reboot
+### khởi động lại
 
-After flashing is complete, you should reboot your device:
+Sau khi flash xong bạn nên khởi động lại máy:
 
 ```sh
 fastboot reboot
 ```
 
-## Patch boot.img manually
+## Vá boot.img theo cách thủ công
 
-For some devices, the boot.img format is not so common, such as not `lz4`, `gz` and uncompressed; the most typical is Pixel, its boot.img format is `lz4_legacy` compressed, ramdisk may be `gz` may also be `lz4_legacy` compression; at this time, if you directly flash the boot.img provided by KernelSU, the phone may not be able to boot; at this time, you can manually patch the boot.img to achieve.
+Đối với một số thiết bị, định dạng boot.img không quá phổ biến, chẳng hạn như không `lz4`, `gz` và không nén; điển hình nhất là Pixel, định dạng boot.img của nó là nén `lz4_legacy`, ramdisk có thể là `gz` cũng có thể là nén `lz4_legacy`; tại thời điểm này, nếu bạn trực tiếp flash boot.img do KernelSU cung cấp, điện thoại có thể không khởi động được; Tại thời điểm này, bạn có thể vá boot.img theo cách thủ công để dùng được.
 
-There are generally two patch methods:
+Nhìn chung có hai phương pháp vá:
 
 1. [Android-Image-Kitchen](https://forum.xda-developers.com/t/tool-android-image-kitchen-unpack-repack-kernel-ramdisk-win-android-linux-mac.2073775/)
 2. [magiskboot](https://github.com/topjohnwu/Magisk/releases)
 
-Among them, Android-Image-Kitchen is suitable for operation on PC, and magiskboot needs the cooperation of mobile phone.
+Trong số đó, Android-Image-Kitchen phù hợp để hoạt động trên PC và magiskboot cần sự kết nối của điện thoại di động.
 
-### Preparation
+### Chuẩn bị
 
-1. Get your phone's stock boot.img; you can get it from your device manufacturers, you may need [payload-dumper-go](https://github.com/ssut/payload-dumper-go)
-2. Download the AnyKernel3 zip file provided by KernelSU that matches the KMI version of your device (you can refer to the *Install with custom Recovery*).
-3. Unpack the AnyKernel3 package and get the `Image` file, which is the kernel file of KernelSU.
+1. Lấy stock boot.img của điện thoại; bạn có thể lấy nó từ nhà sản xuất thiết bị của mình, bạn có thể cần [payload-dumper-go](https://github.com/ssut/payload-dumper-go)
+2. Tải xuống tệp zip AnyKernel3 do KernelSU cung cấp phù hợp với phiên bản KMI của thiết bị của bạn (bạn có thể tham khảo *Cài đặt với Khôi phục tùy chỉnh*).
+3. Giải nén gói AnyKernel3 và lấy tệp `Image`, đây là tệp kernel của KernelSU.
 
-### Using Android-Image-Kitchen
+### Sử dụng Android-Image-Kitchen
 
-1. Download Android-Image-Kitchen to your computer.
-2. Put stock boot.img to Android-Image-Kitchen's root folder.
-3. Execute `./unpackimg.sh boot.img` at root directory of Android-Image-Kitchen, this command would unpack boot.img and you will get some files.
-4. Replace `boot.img-kernel` in the `split_img` directory with the `Image` you extracted from AnyKernel3 (note the name change to boot.img-kernel).
-5. Execute `./repackimg.sh` at root directory of 在 Android-Image-Kitchen; And you will get a file named `image-new.img`; Flash this boot.img by fastboot(Refer to the previous section).
+1. Tải Android-Image-Kitchen về máy tính.
+2. Đặt stock boot.img vào thư mục gốc của Android-Image-Kitchen.
+3. Thực thi `./unpackimg.sh boot.img` tại thư mục gốc của Android-Image-Kitchen, lệnh này sẽ giải nén boot.img và bạn sẽ nhận được một số tệp.
+4. Thay thế `boot.img-kernel` trong thư mục `split_img` bằng `Image` bạn đã trích xuất từ AnyKernel3 (lưu ý đổi tên thành boot.img-kernel).
+5. Thực thi `./repackimg.sh` tại thư mục gốc của 在 Android-Image-Kitchen; Và bạn sẽ nhận được một file có tên `image-new.img`; Flash boot.img này bằng fastboot(Tham khảo phần trước).
 
-### Using magiskboot
+### Sử dụng Magiskboot
 
-1. Download latest Magisk from [Release Page](https://github.com/topjohnwu/Magisk/releases)
-2. Rename Magisk-*.apk to Magisk-vesion.zip and unzip it.
-3. Push `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` to your device by adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
-4. Push stock boot.img and Image in AnyKernel3 to your device.
-5. Enter adb shell and cd `/data/local/tmp/` directory, then `chmod +x magiskboot`
-6. Enter adb shell and cd `/data/local/tmp/` directory, execute `./magiskboot unpack boot.img` to unpack `boot.img`, you will get a `kernel` file, this is your stock kernel.
-7. Replace `kernel` with `Image`: `mv -f Image kernel`
-8. Execute `./magiskboot repack boot.img` to repack boot img, and you will get a `new-boot.img` file, flash this file to device by fastboot.
+1. Tải xuống Magisk mới nhất từ [Trang phát hành](https://github.com/topjohnwu/Magisk/releases)
+2. Đổi tên Magisk-*.apk thành Magisk-vesion.zip và giải nén nó.
+3. Đẩy `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` vào thiết bị của bạn bằng adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp /magiskboot`
+4. Đẩy stock boot.img và Image trong AnyKernel3 vào thiết bị của bạn.
+5. Nhập thư mục adb shell và cd `/data/local/tmp/`, sau đó `chmod +x magiskboot`
+6. Nhập adb shell và cd `/data/local/tmp/`, thực thi `./magiskboot unpack boot.img` để giải nén `boot.img`, bạn sẽ nhận được file `kernel`, đây là kernel gốc của bạn.
+7. Thay thế `kernel` bằng `Image`: `mv -f Image kernel`
+8. Thực thi `./magiskboot repack boot.img` để đóng gói lại boot img và bạn sẽ nhận được một tệp `new-boot.img`, flash tệp này vào thiết bị bằng fastboot.
 
-## Other methods
+## Các phương pháp khác
 
-In fact, all these installation methods have only one main idea, which is to **replace the original kernel for the one provided by KernelSU**; as long as this can be achieved, it can be installed; for example, the following are other possible methods.
+Trên thực tế, tất cả các phương pháp cài đặt này chỉ có một ý tưởng chính, đó là **thay thế kernel gốc bằng kernel do KernelSU cung cấp**; chỉ cần đạt được điều này là có thể cài đặt được; ví dụ, sau đây là các phương pháp có thể khác.
 
-1. First install Magisk, get root privileges through Magisk and then use the kernel flasher to flash in the AnyKernel zip from KernelSU.
-2. Use some flashing toolkit on PCs to flash in the kernel provided KernelSU.
+1. Trước tiên hãy cài đặt Magisk, nhận quyền root thông qua Magisk, sau đó sử dụng flasher kernel để flash trong zip AnyKernel từ KernelSU.
+2. Sử dụng một số bộ công cụ flash trên PC để flash trong kernel do KernelSU cung cấp.
