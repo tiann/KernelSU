@@ -11,7 +11,7 @@ Mặc dù có nhiều điểm tương đồng giữa mô-đun KernelSU và mô-�
 - service.sh: thời gian thực hiện và ngữ nghĩa hoàn toàn giống nhau
 - system.prop: hoàn toàn giống nhau
 - sepolicy.rule: hoàn toàn giống nhau
-- BusyBox: các tập lệnh được chạy trong BusyBox với "chế độ độc lập" được bật trong cả hai trường hợp
+- BusyBox: các tập lệnh được chạy trong BusyBox với "standalone mode" được bật trong cả hai trường hợp
 
 ## Điểm khác biệt
 
