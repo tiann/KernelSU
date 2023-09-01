@@ -4,7 +4,7 @@
 
 Đầu tiên, thiết bị của bạn sẽ có thể mở khóa bootloader. Nếu không thể thì nó không được hỗ trợ.
 
-Sau đó, cài đặt Ứng dụng KernelSU manager vào thiết bị của bạn và mở nó, nếu nó hiển thị `Unsupported` thì thiết bị của bạn không thể được hỗ trợ ngay lập tức, nhưng bạn có thể tạo nguồn kernel và tích hợp KernelSU để nó hoạt động hoặc sử dụng [unofficially-support-devices](unofficially-support-devices).
+Sau đó, cài đặt Ứng dụng KernelSU manager vào thiết bị của bạn và mở nó, nếu nó hiển thị `Unsupported` thì thiết bị của bạn chưa được hỗ trợ ngay, nhưng bạn có thể tạo nguồn kernel và tích hợp KernelSU để nó hoạt động hoặc sử dụng [unofficially-support-devices](unofficially-support-devices).
 
 ## KernelSU có cần mở khóa Bootloader không?
 
@@ -12,7 +12,7 @@ Chắc chắn có.
 
 ## KernelSU có hỗ trợ các mô-đun không?
 
-Có, nhưng đây là phiên bản đầu tiên nên có thể có lỗi. Đợi nó ổn định nhé :)
+Có, nhưng đây là phiên bản đầu tiên nên có thể bị lỗi. Đợi nó ổn định nhé :)
 
 ## KernelSU có hỗ trợ Xpose không?
 
@@ -34,7 +34,7 @@ Chúng tôi không nghĩ như vậy và đó không phải là mục tiêu của
 
 ## KernelSU có thể hỗ trợ các thiết bị không phải GKI không?
 
-Điều đó là có thể. Nhưng bạn nên tải nguồn kernel về và tích hợp KernelSU vào  source tree rồi tự biên dịch kernel.
+Điều đó là có thể. Nhưng bạn nên tải nguồn kernel về và tích hợp KernelSU vào source tree rồi tự biên dịch kernel.
 
 ## KernelSU có thể hỗ trợ các thiết bị dưới Android 12 không?
 
