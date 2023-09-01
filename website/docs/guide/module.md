@@ -31,42 +31,42 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 ├── .
 ├── .
 |
-├── $MODID                  <--- Thư mục được đặt tên bằng ID của mô-đun
+├── $MODID                  <--- The folder is named with the ID of the module
 │   │
-│   │      *** Nhận Dạng Mô-đun ***
+│   │      *** Module Identity ***
 │   │
-│   ├── module.prop         <--- Tệp này lưu trữ metadata của mô-đun
+│   ├── module.prop         <--- This file stores the metadata of the module
 │   │
-│   │      *** Nội Dung Chính ***
+│   │      *** Main Contents ***
 │   │
-│   ├── system              <--- Thư mục này sẽ được gắn kết nếu skip_mount không tồn tại
+│   ├── system              <--- This folder will be mounted if skip_mount does not exist
 │   │   ├── ...
 │   │   ├── ...
 │   │   └── ...
 │   │
-│   │      *** Cờ Trạng Thái ***
+│   │      *** Status Flags ***
 │   │
-│   ├── skip_mount          <--- Nếu tồn tại, KernelSU sẽ KHÔNG gắn kết thư mục hệ thống của bạn
-│   ├── disable             <--- Nếu tồn tại, mô-đun sẽ bị vô hiệu hóa
-│   ├── remove              <--- Nếu tồn tại, mô-đun sẽ bị xóa trong lần khởi động lại tiếp theo
+│   ├── skip_mount          <--- If exists, KernelSU will NOT mount your system folder
+│   ├── disable             <--- If exists, the module will be disabled
+│   ├── remove              <--- If exists, the module will be removed next reboot
 │   │
-│   │      *** Tệp Tùy Chọn ***
+│   │      *** Optional Files ***
 │   │
-│   ├── post-fs-data.sh     <--- Tập lệnh này sẽ được thực thi trong post-fs-data
-│   ├── post-mount.sh       <--- Tập lệnh này sẽ được thực thi trong post-mount
-│   ├── service.sh          <--- Tập lệnh này sẽ được thực thi trong late_start service
-│   ├── boot-completed.sh   <--- Tập lệnh này sẽ được thực thi khi khởi động xong
-|   ├── uninstall.sh        <--- Tập lệnh này sẽ được thực thi khi KernelSU xóa mô-đun của bạn
-│   ├── system.prop         <--- Các thuộc tính trong tệp này sẽ được tải dưới dạng thuộc tính hệ thống bằng resetprop
-│   ├── sepolicy.rule       <--- Quy tắc riêng biệt tùy chỉnh bổ sung
+│   ├── post-fs-data.sh     <--- This script will be executed in post-fs-data
+│   ├── post-mount.sh       <--- This script will be executed in post-mount
+│   ├── service.sh          <--- This script will be executed in late_start service
+│   ├── boot-completed.sh   <--- This script will be executed on boot completed
+|   ├── uninstall.sh        <--- This script will be executed when KernelSU removes your module
+│   ├── system.prop         <--- Properties in this file will be loaded as system properties by resetprop
+│   ├── sepolicy.rule       <--- Additional custom sepolicy rules
 │   │
-│   │      *** Được Tạo Tự Động, KHÔNG TẠO HOẶC SỬA ĐỔI THỦ CÔNG ***
+│   │      *** Auto Generated, DO NOT MANUALLY CREATE OR MODIFY ***
 │   │
-│   ├── vendor              <--- Một liên kết tượng trưng đến $MODID/system/vendor
-│   ├── product             <--- Một liên kết tượng trưng đến $MODID/system/product
-│   ├── system_ext          <--- Một liên kết tượng trưng đến $MODID/system/system_ext
+│   ├── vendor              <--- A symlink to $MODID/system/vendor
+│   ├── product             <--- A symlink to $MODID/system/product
+│   ├── system_ext          <--- A symlink to $MODID/system/system_ext
 │   │
-│   │      *** Mọi tập tin/thư mục bổ sung đều được phép ***
+│   │      *** Any additional files / folders are allowed ***
 │   │
 │   ├── ...
 │   └── ...
