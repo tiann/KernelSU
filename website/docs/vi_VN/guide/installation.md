@@ -152,7 +152,7 @@ Trong số đó, Android-Image-Kitchen phù hợp để hoạt động trên PC 
 4. Thay thế `boot.img-kernel` trong thư mục `split_img` bằng `Image` bạn đã trích xuất từ AnyKernel3 (lưu ý đổi tên thành boot.img-kernel).
 5. Thực thi `./repackimg.sh` tại thư mục gốc của 在 Android-Image-Kitchen; Và bạn sẽ nhận được một file có tên `image-new.img`; Flash boot.img này bằng fastboot(Tham khảo phần trước).
 
-### Sử dụng Magiskboot
+### Sử dụng magiskboot
 
 1. Tải xuống Magisk mới nhất từ [Trang phát hành](https://github.com/topjohnwu/Magisk/releases)
 2. Đổi tên Magisk-*.apk thành Magisk-vesion.zip và giải nén nó.
