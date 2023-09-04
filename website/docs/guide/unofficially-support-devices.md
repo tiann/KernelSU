@@ -15,9 +15,9 @@ import data from '../repos.json'
 <table>
    <thead>
       <tr>
-         <th>Maintainer</th>
-         <th>Repository</th>
-         <th>Support devices</th>
+         <th>DrBrown28r</th>
+         <th>https://github.com/DrBrown28/Scalpel-LOS-20-KSU.git</th>
+         <th>Red_Magic_5s/5g_NX659J</th>
       </tr>
    </thead>
    <tbody>
