@@ -55,12 +55,12 @@
         "kernel_link": "https://github.com/hmtheboy154/Darkmatter-kernel",
         "devices": "Generic x86_64 devices running Android-x86"
     },
-    {
-        "maintainer": "Vincent4440",
-        "maintainer_link": "https://github.com/Vincent4440",
-        "kernel_name": "noxious_kernel_xiaomi_sm8250",
-        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250/tree/thirteen",
-        "devices": "Poco F4: munch"
+    { 
+        "maintainer": "Vincent4440", 
+        "maintainer_link": "https://github.com/Vincent4440", 
+        "kernel_name": "noxious_kernel_xiaomi_sm8250", 
+        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250", 
+        "devices": "Poco F4: munch" 
     },
     {
         "maintainer": "Asuka-mio",
@@ -107,8 +107,8 @@
     {
         "maintainer": "RooGhz720",
         "maintainer_link": "https://github.com/RooGhz720",
-        "kernel_name": "Aghisna_Sweet_Kernel",
-        "kernel_link": "https://github.com/RooGhz720/Aghisna_Sweet_Kernel",
+        "kernel_name": "kernel_xiaomi_sm6150",
+        "kernel_link": "https://github.com/RooGhz720/kernel_xiaomi_sm6150",
         "devices": "REDMI NOTE 10 PRO (sweet)"
     },
     {
@@ -156,8 +156,8 @@
     {
         "maintainer": "LeviMarvin",
         "maintainer_link": "https://github.com/LeviMarvin",
-        "kernel_name": "kernel_xiaomi_alioth",
-        "kernel_link": "https://github.com/LeviMarvin/kernel_xiaomi_alioth",
+        "kernel_name": "android_kernel_xiaomi_alioth",
+        "kernel_link": "https://github.com/LeviMarvin/android_kernel_xiaomi_alioth",
         "devices": "Redmi K40 / POCO F3"
     },
     {
@@ -189,13 +189,6 @@
         "devices": "Xiaomi Redmi K20 Pro / Mi 9T Pro (raphael)"
     },
     {
-        "maintainer": "rxuglr",
-        "maintainer_link": "https://github.com/rxuglr",
-        "kernel_name": "kernel_xiaomi_surya",
-        "kernel_link": "https://github.com/rxuglr/kernel_xiaomi_surya",
-        "devices": "Xiaomi POCO X3 / NFC (surya)"
-    },
-    {
         "maintainer": "H1mJT",
         "maintainer_link": "https://github.com/H1mJT",
         "kernel_name": "kernel_realme_RMX1901",
@@ -205,8 +198,8 @@
     {
         "maintainer": "SonalSingh18",
         "maintainer_link": "https://github.com/SonalSingh18",
-        "kernel_name": "android_kernel_xiaomi_sm6250.git",
-        "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250.git",
+        "kernel_name": "android_kernel_xiaomi_sm6250",
+        "kernel_link": "https://github.com/SonalSingh18/android_kernel_xiaomi_sm6250",
         "devices": "Miatoll [curtana, excalibur, gram, joyeuse]"
     },
     {
@@ -331,8 +324,8 @@
     {
         "maintainer": "Sr-Han",
         "maintainer_link": "https://github.com/Sr-Han",
-        "kernel_name": "kernel_xiaomi_mojito.git",
-        "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito.git",
+        "kernel_name": "kernel_xiaomi_mojito",
+        "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito",
         "devices": "Redmi Note 10 (Sunny/Mojito)"
     },
     {
@@ -399,13 +392,6 @@
         "devices": "Galaxy A50 (A505f,fn,g,gn,gt)"
     },
     {
-        "maintainer": "GiovanYCringe",
-        "maintainer_link": "https://github.com/GiovanYCringe",
-        "kernel_name": "kernel_m30s",
-        "kernel_link": "https://github.com/GiovanYCringe-Experime/Kernel_m30s",
-        "devices": "Galaxy M30s"
-    },
-    {
         "maintainer": "Asriadi Rahim",
         "maintainer_link": "https://github.com/asriadirahim",
         "kernel_name": "android_kernel_google_wahoo",
@@ -460,5 +446,19 @@
         "kernel_name": "kernel_xiaomi_marble",
         "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_marble",
         "devices": "Xiaomi Poco F5 / Redmi Note 12 Turbo (Marble)"
+    },
+    {
+        "maintainer": "zfdx123",
+        "maintainer_link": "https://github.com/zfdx123",
+        "kernel_name": "kernel_xiaomi_alioth",
+        "kernel_link": "https://github.com/zfdx123/kernel_xiaomi_alioth",
+        "devices": "Redmi K40 (alioth)"
+    },
+    {
+        "maintainer": "wxt1221",
+        "maintainer_link": "https://github.com/wxt1221",
+        "kernel_name": "android_kernel_oneplus_sdm845",
+        "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
+        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
     }
 ]

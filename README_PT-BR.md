@@ -1,4 +1,4 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | **Portuguese-Brazil** | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md)
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | **Portuguese-Brazil** | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md)
 
 # KernelSU
 
@@ -28,7 +28,7 @@ E os ABIs atualmente suportados são: `arm64-v8a` e `x86_64`
 ## Tradução
 Para traduzir o KernelSU para o seu idioma, ou para melhorar uma tradução existente, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/), por favor.
 
-### Discussão
+## Discussão
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 

@@ -438,7 +438,7 @@ fn _install_module(zip: &str) -> Result<()> {
     }
 
     // ensure modules_update exists
-    ensure_clean_dir(module_update_tmp_dir)?;
+    ensure_dir_exists(module_update_tmp_dir)?;
 
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");

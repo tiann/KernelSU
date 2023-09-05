@@ -2,7 +2,7 @@ menu "KernelSU"
 
 config KSU
 	tristate "KernelSU function support"
-	select OVERLAY_FS
+	depends on OVERLAY_FS
 	default y
 	help
 	Enable kernel-level root privileges on Android System.
