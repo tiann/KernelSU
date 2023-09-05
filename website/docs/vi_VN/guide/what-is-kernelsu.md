@@ -1,12 +1,12 @@
 # KernelSU là gì?
 
-KernelSU là một giải pháp root dành cho các thiết bị Android GKI, nó hoạt động ở chế độ kernel và sẽ cho phép truy cập quyền root cho ứng dụng ở userspace ngay trên không gian của kernel.
+KernelSU là một giải pháp root cho các thiết bị Android GKI, nó hoạt động ở chế độ kernel và cấp quyền root cho ứng dụng không gian người dùng trực tiếp trong không gian kernel.
 
 ## Tính năng
 
-Tính năng chính của KernelSU là nó **Kernel-based** (dựa trên Kernel ?). KernelSU hoạt động ở chế độ kernel, vật nên nó sẽ cung cấp các giao diên của kernel mà từ trước tới nay ta chưa từng có. Ví dụ, chúng ta có thể thêm hardware breakpoint vào bất kì tiến trình nào trong chế độ kernel; Chúng ta có thể truy cập vào bố nhớ vật lí của bất kì tiến trình nào mà không ai có thể phát hiện ra; Hoặc chúng ta có thể chặn bất kì syscall nào ở không gian kernel; etc.
+Tính năng chính của KernelSU là **Kernel-based** (dựa trên Kernel). KernelSU hoạt động ở chế độ kernel nên nó có thể cung cấp giao diện kernel mà chúng ta chưa từng có trước đây. Ví dụ: chúng ta có thể thêm điểm dừng phần cứng vào bất kỳ quy trình nào ở chế độ kernel; Chúng ta có thể truy cập bộ nhớ vật lý của bất kỳ quy trình nào mà không bị phát hiện; Chúng ta còn có thể chặn bất kỳ syscall nào trong không gian kernel; v.v.
 
-Đồng thời, KernelSU cung cấp một hệ thống module sử dụng overlayfs, cho phép bạn có thể thêm plugin của bạn vào trong hệ thống. Nó còn có thể cung cấp một cơ chế giúp chỉnh sửa được các file trên phân vùng `/system`
+Ngoài ra, KernelSU còn cung cấp hệ thống mô-đun thông qua lớp phủ, cho phép bạn tải plugin tùy chỉnh vào hệ thống. Nó cũng cung cấp một cơ chế để sửa đổi các tập tin trong phân vùng `/system`.
 
 ## Hướng dẫn sử dụng
 
