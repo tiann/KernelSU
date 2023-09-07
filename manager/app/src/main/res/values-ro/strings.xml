@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Click pentru a instala</string>
     <string name="home_working">Funcționează</string>
     <string name="home_working_version">Versiune: %d</string>
-    <string name="home_superuser_count">Superuseri: %d</string>
+    <string name="home_superuser_count">Super-utilizatori: %d</string>
     <string name="home_module_count">Module: %d</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
@@ -17,7 +17,7 @@
     <string name="selinux_status_enforcing">Obligatoriu</string>
     <string name="selinux_status_permissive">Permisiv</string>
     <string name="selinux_status_unknown">Necunoscut</string>
-    <string name="superuser">Superutilizator</string>
+    <string name="superuser">Super-utilizator</string>
     <string name="module_failed_to_enable">Activarea modulului %s a eșuat</string>
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
