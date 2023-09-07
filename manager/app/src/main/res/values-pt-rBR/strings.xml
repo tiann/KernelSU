@@ -3,7 +3,7 @@
     <string name="home">Início</string>
     <string name="home_not_installed">Não instalado</string>
     <string name="home_click_to_install">Clique para instalar</string>
-    <string name="home_working">Em Execução</string>
+    <string name="home_working">Em execução</string>
     <string name="home_working_version">Versão: %d</string>
     <string name="home_superuser_count">Superusuários: %d</string>
     <string name="home_module_count">Módulos: %d</string>
@@ -28,10 +28,10 @@
     <string name="reboot">Reiniciar</string>
     <string name="settings">Configurações</string>
     <string name="reboot_userspace">Reinicialização Suave</string>
-    <string name="reboot_recovery">Reiniciar para Recuperação</string>
-    <string name="reboot_bootloader">Reiniciar para Bootloader</string>
-    <string name="reboot_download">Reiniciar para Download</string>
-    <string name="reboot_edl">Reiniciar para EDL</string>
+    <string name="reboot_recovery">Reiniciar em modo Recovery</string>
+    <string name="reboot_bootloader">Reiniciar em modo Bootloader</string>
+    <string name="reboot_download">Reiniciar em modo Download</string>
+    <string name="reboot_edl">Reiniciar em modo EDL</string>
     <string name="about">Sobre</string>
     <string name="module_uninstall_confirm">Tem certeza de que deseja desinstalar o módulo %s?</string>
     <string name="module_uninstall_success">%s desinstalado</string>
