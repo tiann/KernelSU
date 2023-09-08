@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Суперпользователи: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string>
     <!--Don't translate this string!-->
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
@@ -18,7 +18,7 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Суперпользователь</string>
+    <string name="superuser">Superuser</string>
     <!--Don't translate this string!-->
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
@@ -82,4 +82,5 @@
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
     <string name="launch_app">Запустить</string>
     <string name="restart_app">Перезапустить</string>
+    <string name="require_kernel_version">Текущая версия KernelSU %d слишком низкая для правильной работы менеджера. Пожалуйста, обновите до версии %d или выше!</string>
 </resources>

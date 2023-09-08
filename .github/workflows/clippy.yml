@@ -21,7 +21,7 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # cross build failed after Rust 1.68, see https://github.com/cross-rs/cross/issues/1222
       - run: rustup default 1.67.0
       - uses: Swatinem/rust-cache@v2

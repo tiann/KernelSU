@@ -18,7 +18,7 @@ jobs:
   build-arcvm-kernel:
     uses: ./.github/workflows/build-kernel-arcvm.yml
   release:
-    needs: 
+    needs:
       - build-manager
       - build-a12-kernel
       - build-a13-kernel
