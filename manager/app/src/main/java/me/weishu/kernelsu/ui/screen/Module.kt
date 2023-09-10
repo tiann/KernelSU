@@ -227,14 +227,16 @@ private fun ModuleList(
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         val scope = rememberCoroutineScope()
-                        val updateUrl by produceState(initialValue = "") {
-                            viewModel.checkUpdate(module) { value = it.orEmpty() }
+                        val updatedModule by produceState(initialValue = "" to "") {
+                            scope.launch(Dispatchers.IO) {
+                                value = viewModel.checkUpdate(module)
+                            }
                         }
 
                         val downloadingText = stringResource(R.string.module_downloading)
                         val startDownloadingText = stringResource(R.string.module_start_downloading)
 
-                        ModuleItem(module, isChecked, updateUrl, onUninstall = {
+                        ModuleItem(module, isChecked, updatedModule.first, onUninstall = {
                             scope.launch { onModuleUninstall(module) }
                         }, onCheckChanged = {
                             scope.launch {
@@ -271,8 +273,8 @@ private fun ModuleList(
                             val downloading = downloadingText.format(module.name)
                             download(
                                 context,
-                                updateUrl,
-                                "${module.name}-${module.version}.zip",
+                                updatedModule.first,
+                                "${module.name}-${updatedModule.second}.zip",
                                 downloading,
                                 onDownloaded = onInstallModule,
                                 onDownloading = {
