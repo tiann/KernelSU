@@ -301,20 +301,6 @@ is_legacy_script() {
   return $?
 }
 
-# find_mv [source_directory] [destination_directory]
-find_mv() {
-    for file in $(find "$1" -type f); do
-        # Get the sub directory of the file.
-        sub_dir=$(echo "${file%/*}" | sed "s|$1||")
-        # Create the new directory, if it doesn't already exist.
-        mkdir -p "$2$sub_dir"
-        # Move the file to the new directory.
-        mv -f "$file" "$2$sub_dir"
-    done
-    # Clean old directory.
-    rm -r "$1"
-}
-
 handle_partition() {
     # if /system/vendor is a symlink, we need to move it out of $MODPATH/system, otherwise it will be overlayed
     # if /system/vendor is a normal directory, it is ok to overlay it and we don't need to overlay it separately.
@@ -327,7 +313,7 @@ handle_partition() {
         ui_print "- Handle partition /$1"
         # we create a symlink if module want to access $MODPATH/system/$1
         # but it doesn't always work(ie. write it in post-fs-data.sh would fail because it is readonly)
-        find_mv $MODPATH/system/$1 $MODPATH/$1 && ln -sf ../$1 $MODPATH/system/$1
+        mv -f $MODPATH/system/$1 $MODPATH/$1 && ln -sf ../$1 $MODPATH/system/$1
     fi
 }
 
