@@ -115,8 +115,8 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
-    fun checkUpdate(m: ModuleInfo): Pair<String, String> {
-        val empty = "" to ""
+    fun checkUpdate(m: ModuleInfo): Triple<String, String, String> {
+        val empty = Triple("", "", "")
         if (m.updateJson.isEmpty() || m.remove || m.update || !m.enabled) {
             return empty
         }
@@ -155,6 +155,6 @@ class ModuleViewModel : ViewModel() {
             return empty
         }
 
-        return zipUrl to version
+        return Triple(zipUrl, version, changelog)
     }
 }
