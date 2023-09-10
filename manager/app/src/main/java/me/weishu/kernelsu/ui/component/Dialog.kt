@@ -1,26 +1,46 @@
 package me.weishu.kernelsu.ui.component
 
+import android.graphics.text.LineBreaker
+import android.text.Layout
+import android.text.method.LinkMovementMethod
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.maxkeppeker.sheets.core.CoreDialog
+import com.maxkeppeker.sheets.core.models.CoreSelection
+import com.maxkeppeker.sheets.core.models.base.Header
+import com.maxkeppeker.sheets.core.models.base.SelectionButton
+import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
+import io.noties.markwon.Markwon
+import io.noties.markwon.utils.NoCopySpannableFactory
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ui.util.LocalDialogHost
 import kotlin.coroutines.resume
 
@@ -36,6 +56,7 @@ interface PromptDialogVisuals : DialogVisuals {
 interface ConfirmDialogVisuals : PromptDialogVisuals {
     val confirm: String?
     val dismiss: String?
+    val isMarkdown: Boolean
 }
 
 
@@ -68,15 +89,15 @@ class DialogHostState {
     private object LoadingDialogVisualsImpl : LoadingDialogVisuals
 
     private data class PromptDialogVisualsImpl(
-        override val title: String,
-        override val content: String
+        override val title: String, override val content: String
     ) : PromptDialogVisuals
 
     private data class ConfirmDialogVisualsImpl(
         override val title: String,
         override val content: String,
         override val confirm: String?,
-        override val dismiss: String?
+        override val dismiss: String?,
+        override val isMarkdown: Boolean,
     ) : ConfirmDialogVisuals
 
     private data class LoadingDialogDataImpl(
@@ -121,8 +142,7 @@ class DialogHostState {
             mutex.withLock {
                 suspendCancellableCoroutine { continuation ->
                     currentDialogData = LoadingDialogDataImpl(
-                        visuals = LoadingDialogVisualsImpl,
-                        continuation = continuation
+                        visuals = LoadingDialogVisualsImpl, continuation = continuation
                     )
                 }
             }
@@ -159,15 +179,12 @@ class DialogHostState {
     }
 
     suspend fun showConfirm(
-        title: String,
-        content: String,
-        confirm: String? = null,
-        dismiss: String? = null
+        title: String, content: String, markdown: Boolean = false, confirm: String? = null, dismiss: String? = null
     ): ConfirmResult = mutex.withLock {
         try {
             return@withLock suspendCancellableCoroutine { continuation ->
                 currentDialogData = ConfirmDialogDataImpl(
-                    visuals = ConfirmDialogVisualsImpl(title, content, confirm, dismiss),
+                    visuals = ConfirmDialogVisualsImpl(title, content, confirm, dismiss, markdown),
                     continuation = continuation
                 )
             }
@@ -201,9 +218,7 @@ fun LoadingDialog(
     }
     Dialog(onDismissRequest = {}, properties = dialogProperties) {
         Surface(
-            modifier = Modifier
-                .size(100.dp),
-            shape = RoundedCornerShape(8.dp)
+            modifier = Modifier.size(100.dp), shape = RoundedCornerShape(8.dp)
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -240,11 +255,44 @@ fun PromptDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
     val confirmDialogData = state.currentDialogData.tryInto<ConfirmDialogData>() ?: return
 
     val visuals = confirmDialogData.visuals
+
+    if (visuals.isMarkdown) {
+        CoreDialog(
+            state = rememberUseCaseState(visible = true, onCloseRequest = {
+                confirmDialogData.dismiss()
+            }),
+            header = Header.Default(
+                title = visuals.title
+            ),
+            selection = CoreSelection(
+                withButtonView = true,
+                negativeButton = SelectionButton(
+                    visuals.dismiss ?: stringResource(id = android.R.string.cancel),
+                ),
+                positiveButton = SelectionButton(
+                    visuals.confirm ?: stringResource(id = android.R.string.ok),
+                ),
+                onPositiveClick = {
+                    confirmDialogData.confirm()
+                },
+                onNegativeClick = {
+                    confirmDialogData.dismiss()
+                },
+            ),
+            onPositiveValid = true,
+            body = {
+                MarkdownContent(visuals.content)
+            },
+        )
+        return
+    }
+
     AlertDialog(
         onDismissRequest = {
             confirmDialogData.dismiss()
@@ -266,4 +314,28 @@ fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
             }
         },
     )
+}
+@Composable
+private fun MarkdownContent(content: String) {
+    val contentColor = LocalContentColor.current
+
+    AndroidView(
+        factory = { context ->
+            TextView(context).apply {
+                movementMethod = LinkMovementMethod.getInstance()
+                setSpannableFactory(NoCopySpannableFactory.getInstance())
+                breakStrategy = LineBreaker.BREAK_STRATEGY_SIMPLE
+                hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_NONE
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        update = {
+            Markwon.create(it.context).setMarkdown(it, content)
+            it.setTextColor(contentColor.toArgb())
+        })
 }

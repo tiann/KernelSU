@@ -60,9 +60,9 @@ fun download(
     downloadManager.enqueue(request)
 }
 
-fun checkNewVersion(): Pair<Int, String> {
+fun checkNewVersion(): Triple<Int, String, String> {
     val url = "https://api.github.com/repos/tiann/KernelSU/releases/latest"
-    val defaultValue = 0 to ""
+    val defaultValue = Triple(0, "", "")
     runCatching {
         okhttp3.OkHttpClient().newCall(okhttp3.Request.Builder().url(url).build()).execute()
             .use { response ->
@@ -71,6 +71,7 @@ fun checkNewVersion(): Pair<Int, String> {
                 }
                 val body = response.body?.string() ?: return defaultValue
                 val json = org.json.JSONObject(body)
+                val changelog = json.optString("body")
 
                 val assets = json.getJSONArray("assets")
                 for (i in 0 until assets.length()) {
@@ -86,7 +87,7 @@ fun checkNewVersion(): Pair<Int, String> {
                     val versionCode = matchResult.groupValues[2].toInt()
                     val downloadUrl = asset.getString("browser_download_url")
 
-                    return versionCode to downloadUrl
+                    return Triple(versionCode, downloadUrl, changelog)
                 }
 
             }
