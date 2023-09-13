@@ -67,7 +67,7 @@
     <string name="failed_to_update_app_profile">%sのアプリのプロファイルの更新をできませでした</string>
     <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
-    <string name="new_version_available">新しいバージョン: %s が利用可能です。タップするとダウンロードします</string>
+    <string name="new_version_available">新しいバージョン: %s が利用可能です，クリックしてアップグレード</string>
     <string name="module_update">アップデート</string>
     <string name="module_start_downloading">ダウンロードを開始:%s</string>
     <string name="launch_app">起動</string>
@@ -80,4 +80,5 @@
     <string name="settings_umount_modules_default">デフォルトでモジュールをマウント解除</string>
     <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」のグローバルデフォルト値です。 有効にすると、プロファイル セットを持たないアプリでのシステムに対するすべてのモジュール変更が削除されます。</string>
     <string name="require_kernel_version">現在の KernelSU バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
+    <string name="module_changelog">変更履歴</string>
 </resources>
