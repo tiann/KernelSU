@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
@@ -124,7 +125,7 @@ fun InstallScreen(navigator: DestinationsNavigator, uri: Uri) {
                 modifier = Modifier.padding(8.dp),
                 text = text,
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                fontFamily = FontFamily.Monospace,
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
             )
         }
