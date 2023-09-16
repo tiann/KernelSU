@@ -3,7 +3,7 @@
     <string name="home_not_installed">Non installé</string>
     <string name="home_working">Fonctionnel</string>
     <string name="home_working_version">Version : %d</string>
-    <string name="home_superuser_count">Superutilisateurs : %d</string>
+    <string name="home_superuser_count">Super-utilisateurs : %d</string>
     <string name="home_module_count">Modules : %d</string>
     <string name="home_unsupported_reason">Actuellement, KernelSU ne supporte que les noyaux GKI</string>
     <string name="home_kernel">Noyau</string>
@@ -12,7 +12,7 @@
     <string name="selinux_status_disabled">Désactivé</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Inconnu</string>
-    <string name="superuser">Superutilisateur</string>
+    <string name="superuser">Super-utilisateur</string>
     <string name="module_empty">Aucun module installé</string>
     <string name="home">Accueil</string>
     <string name="home_click_to_install">Appuyez ici pour installer</string>
@@ -22,7 +22,7 @@
     <string name="home_manager_version">Version du gestionnaire</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="module_failed_to_enable">Échec de l\'activation du module : %s</string>
-    <string name="module">Module</string>
+    <string name="module">Modules</string>
     <string name="uninstall">Désinstaller</string>
     <string name="module_install">Installer</string>
     <string name="module_failed_to_disable">Échec de la désactivation du module : %s</string>
@@ -51,7 +51,8 @@
     <string name="home_support_title">Soutenez-nous</string>
     <string name="home_click_to_learn_kernelsu">Découvrez comment installer KernelSU et utiliser les modules</string>
     <string name="home_support_content">KernelSU est et restera toujours gratuit et open source. Vous pouvez cependant nous témoigner de votre soutien en nous faisant un don.</string>
-    <string name="about_source_code">Voir le code source sur %1$s<br/>Rejoindre notre canal %2$s</string>
+    <string name="about_source_code">Voir le code source sur %1$s<br/>
+\nRejoindre notre canal %2$s</string>
     <string name="profile_template">Modèle</string>
     <string name="profile_default">Par défaut</string>
     <string name="profile_custom">Personnalisé</string>
@@ -67,7 +68,7 @@
     <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>
     <string name="profile_umount_modules_summary">L\'activation de cette option permettra à KernelSU de restaurer tous les fichiers modifiés par les modules de cette application.</string>
     <string name="settings_umount_modules_default">Démonter les modules par défaut</string>
-    <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour « Démonter les modules » dans les profils d\'application. Si l\'option est activée, les modifications apportées au système par les modules seront supprimées pour les applications qui n\'ont pas de profil défini.</string>
+    <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour « Démonter les modules » dans les profils d\'application. Si l\'option est activée, les modifications apportées au système par les modules seront supprimées pour les applications qui n\'ont pas de profil défini.</string>
     <string name="profile_selinux_domain">Domaine</string>
     <string name="profile_selinux_rules">Règles</string>
     <string name="module_update">Mettre à jour</string>

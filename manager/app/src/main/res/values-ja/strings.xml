@@ -8,7 +8,7 @@
     <string name="home_superuser_count">スーパーユーザー: %d</string>
     <string name="home_module_count">モジュール: %d</string>
     <string name="home_unsupported">非対応</string>
-    <string name="home_unsupported_reason">KernelSU は現在、GKI カーネルにのみ対応しています</string>
+    <string name="home_unsupported_reason">現在､ KernelSU は GKI カーネルにのみ対応しています</string>
     <string name="home_kernel">カーネル</string>
     <string name="home_manager_version">バージョン</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -27,9 +27,9 @@
     <string name="install">インストール</string>
     <string name="reboot">再起動</string>
     <string name="settings">設定</string>
-    <string name="reboot_userspace">ソフトリブート</string>
+    <string name="reboot_userspace">通常の再起動</string>
     <string name="reboot_recovery">リカバリーへ再起動</string>
-    <string name="reboot_bootloader">Bootloader へ再起動</string>
+    <string name="reboot_bootloader">ブートローダー へ再起動</string>
     <string name="reboot_download">ダウンロードモードへ再起動</string>
     <string name="reboot_edl">EDLへ再起動</string>
     <string name="about">アプリについて</string>
@@ -53,13 +53,13 @@
     <string name="home_support_content">KernelSU はこれからもずっとフリーでオープンソースです。寄付をすることで私たちを気にかけていることを示せます。</string>
     <string name="about_source_code"><![CDATA[%1$s でソースコードを表示<br/>%2$s チャンネルに参加]]></string>
     <string name="profile">アプリのプロファイル</string>
-    <string name="profile_default">デフォルト</string>
+    <string name="profile_default">既定</string>
     <string name="profile_template">テンプレート</string>
     <string name="profile_custom">カスタム</string>
     <string name="profile_name">プロファイル名</string>
-    <string name="profile_namespace">マウント名前空間</string>
+    <string name="profile_namespace">名前空間のマウント</string>
     <string name="profile_namespace_inherited">継承</string>
-    <string name="profile_namespace_global">グローバル</string>
+    <string name="profile_namespace_global">共通</string>
     <string name="profile_namespace_individual">分離</string>
     <string name="profile_umount_modules">モジュールのアンマウント</string>
     <string name="profile_groups">グループ</string>
@@ -67,7 +67,7 @@
     <string name="failed_to_update_app_profile">%sのアプリのプロファイルの更新をできませでした</string>
     <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
-    <string name="new_version_available">新しいバージョン: %s が利用可能です。タップするとダウンロードします</string>
+    <string name="new_version_available">新しいバージョン: %s が利用可能です。タップしてダウンロード</string>
     <string name="module_update">アップデート</string>
     <string name="module_start_downloading">ダウンロードを開始:%s</string>
     <string name="launch_app">起動</string>
@@ -76,8 +76,9 @@
     <string name="failed_to_update_sepolicy">SELinux ルールの更新に失敗しました: %s</string>
     <string name="profile_capabilities">ケーパビリティ</string>
     <string name="module_downloading">モジュールをダウンロード中: %s</string>
-    <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリケーションのモジュールによって変更されたファイルを復元できるようになります。</string>
-    <string name="settings_umount_modules_default">デフォルトでモジュールをマウント解除</string>
-    <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」のグローバルデフォルト値です。 有効にすると、プロファイル セットを持たないアプリでのシステムに対するすべてのモジュール変更が削除されます。</string>
+    <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリのモジュールによって変更されたファイルを復元できるようになります。</string>
+    <string name="settings_umount_modules_default">既定でモジュールのマウントを解除</string>
+    <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」の共通既定値です。 有効にすると、プロファイル セットを持たないアプリでのシステムに対するすべてのモジュール変更が削除されます。</string>
     <string name="require_kernel_version">現在の KernelSU バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
+    <string name="module_changelog">変更履歴</string>
 </resources>

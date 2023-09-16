@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Click pentru a instala</string>
     <string name="home_working">Funcționează</string>
     <string name="home_working_version">Versiune: %d</string>
-    <string name="home_superuser_count">Superuseri: %d</string>
+    <string name="home_superuser_count">Super-utilizatori: %d</string>
     <string name="home_module_count">Module: %d</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
@@ -17,7 +17,7 @@
     <string name="selinux_status_enforcing">Obligatoriu</string>
     <string name="selinux_status_permissive">Permisiv</string>
     <string name="selinux_status_unknown">Necunoscut</string>
-    <string name="superuser">Superutilizator</string>
+    <string name="superuser">Super-utilizator</string>
     <string name="module_failed_to_enable">Activarea modulului %s a eșuat</string>
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
@@ -73,10 +73,11 @@
     <string name="module_update">Actualizează</string>
     <string name="module_downloading">Se descarcă modulul: %s</string>
     <string name="module_start_downloading">Începe descărcarea: %s</string>
-    <string name="new_version_available">Versiune nouă: %s disponibilă, clic pentru a descărca</string>
+    <string name="new_version_available">Versiune nouă: %s este disponibilă, clic pentru a actualiza</string>
     <string name="failed_to_update_sepolicy">Nu s-au reușit actualizările regulilor SELinux pentru: %s</string>
     <string name="launch_app">Lansare</string>
     <string name="force_stop_app">Oprire forțată</string>
     <string name="restart_app">Repornește</string>
     <string name="require_kernel_version">Versiunea actuală a KernelSU %d este prea mică pentru ca managerul să funcționeze corect. Actualizează la versiunea %d sau o versiune superioară!</string>
+    <string name="module_changelog">Jurnalul modificărilor</string>
 </resources>

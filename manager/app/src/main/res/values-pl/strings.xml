@@ -1,6 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">KernelSU</string>
-
     <string name="home">Menu</string>
     <string name="home_not_installed">Nie zainstalowano</string>
     <string name="home_click_to_install">Kliknij, aby zainstalować</string>
@@ -10,11 +10,9 @@
     <string name="home_module_count">Modułów: %d</string>
     <string name="home_unsupported">Nieobsługiwany</string>
     <string name="home_unsupported_reason">KernelSU obsługuje obecnie tylko jądra GKI</string>
-
     <string name="home_kernel">Jądro</string>
     <string name="home_manager_version">Wersja menedżera</string>
     <string name="home_fingerprint">Odcisk</string>
-
     <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Wyłączony</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -24,12 +22,11 @@
     <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
     <string name="module_failed_to_disable">Nie udało się wyłączyć modułu: %s</string>
     <string name="module_empty">Brak zainstalowanych modułów</string>
-
     <string name="module">Moduł</string>
     <string name="uninstall">Odinstaluj</string>
     <string name="module_install">Instaluj</string>
     <string name="install">Instaluj</string>
-    <string name="reboot">Restartuj</string>
+    <string name="reboot">Uruchom ponownie</string>
     <string name="settings">Ustawienia</string>
     <string name="reboot_userspace">Miękki restart</string>
     <string name="reboot_recovery">Restart do trybu Recovery</string>
@@ -52,7 +49,7 @@
     <string name="module_magisk_conflict">Moduły są wyłączone, ponieważ są w konflikcie z modułami Magiska!</string>
     <string name="home_learn_kernelsu">Poznaj KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">Dowiedz się jak zainstalować KernelSU i jak korzystać z modułów.</string>
+    <string name="home_click_to_learn_kernelsu">Dowiedz się jak zainstalować KernelSU i jak korzystać z modułów</string>
     <string name="home_support_title">Wesprzyj nas</string>
     <string name="home_support_content">KernelSU jest i zawsze będzie darmowy oraz otwarty. Niemniej jednak możesz nam pokazać, że Ci zależy, wysyłając darowiznę.</string>
     <string name="about_source_code"><![CDATA[Przejrzyj kod źródłowy na %1$s<br/>Dołącz do kanału %2$s]]></string>
@@ -78,9 +75,11 @@
     <string name="module_update">Zaktualizuj</string>
     <string name="module_downloading">Pobieranie modułu: %s</string>
     <string name="module_start_downloading">Rozpocznij pobieranie: %s</string>
-    <string name="new_version_available">Nowa wersja: %s jest dostępna, kliknij, aby pobrać</string>
+    <string name="new_version_available">Nowa wersja: %s jest dostępna, kliknij, aby zaktualizować</string>
     <string name="launch_app">Uruchom</string>
     <string name="force_stop_app">Wymuś zatrzymanie</string>
     <string name="restart_app">Restartuj</string>
     <string name="failed_to_update_sepolicy">Nie udało się zaktualizować reguł SELinux dla: %s</string>
+    <string name="require_kernel_version">Obecna wersja KernelSU %d jest zbyt stara, aby menedżer działał poprawnie. Prosimy o aktualizację do wersji %d lub nowszej!</string>
+    <string name="module_changelog">Dziennik zmian</string>
 </resources>

@@ -2,20 +2,20 @@ name: Build SU
 on:
   push:
     branches: [ "main" ]
-    paths: 
+    paths:
       - '.github/workflows/build-su.yml'
       - 'userspace/su/**'
       - 'scripts/ksubot.py'
   pull_request:
     branches: [ "main" ]
-    paths: 
+    paths:
       - 'userspace/su/**'
 jobs:
   build-su:
     name: Build userspace su
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Setup need_upload

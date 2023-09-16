@@ -79,4 +79,5 @@
     <string name="force_stop_app">Forzar cierre de la aplicacion</string>
     <string name="restart_app">Reiniciar aplicacion</string>
     <string name="failed_to_update_sepolicy">Falló al actualizar reglas de SEpolicy por: %s</string>
+    <string name="require_kernel_version">La versión actual de KernelSU %d es demasiado baja para que el gestor funcione correctamente. ¡Por favor actualiza a la versión %d o superior!</string>
 </resources>

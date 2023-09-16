@@ -45,6 +45,7 @@ import me.weishu.kernelsu.ui.component.LoadingDialog
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
+import okhttp3.OkHttpClient
 
 @Destination
 @Composable
@@ -145,9 +146,68 @@ private fun ModuleList(
     val uninstall = stringResource(id = R.string.uninstall)
     val cancel = stringResource(id = android.R.string.cancel)
     val moduleUninstallConfirm = stringResource(id = R.string.module_uninstall_confirm)
+    val updateText = stringResource(R.string.module_update)
+    val changelogText = stringResource(R.string.module_changelog)
+    val downloadingText = stringResource(R.string.module_downloading)
+    val startDownloadingText = stringResource(R.string.module_start_downloading)
 
     val dialogHost = LocalDialogHost.current
     val snackBarHost = LocalSnackbarHost.current
+    val context = LocalContext.current
+
+    suspend fun onModuleUpdate(
+        module: ModuleViewModel.ModuleInfo,
+        changelogUrl: String,
+        downloadUrl: String,
+        fileName: String
+    ) {
+        val changelog = dialogHost.withLoading {
+            withContext(Dispatchers.IO) {
+                val str = OkHttpClient().newCall(
+                    okhttp3.Request.Builder().url(changelogUrl).build()
+                ).execute().body!!.string()
+                if (str.length > 1000) str.substring(0, 1000) else str
+            }
+        }
+
+        if (changelog.isNotEmpty()) {
+            // changelog is not empty, show it and wait for confirm
+            val confirmResult = dialogHost.showConfirm(
+                changelogText,
+                content = changelog,
+                markdown = true,
+                confirm = updateText,
+            )
+
+            if (confirmResult != ConfirmResult.Confirmed) {
+                return
+            }
+        }
+
+        withContext(Dispatchers.Main) {
+            Toast.makeText(
+                context,
+                startDownloadingText.format(module.name),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        val downloading = downloadingText.format(module.name)
+        withContext(Dispatchers.IO) {
+            download(
+                context,
+                downloadUrl,
+                fileName,
+                downloading,
+                onDownloaded = onInstallModule,
+                onDownloading = {
+                    launch(Dispatchers.Main) {
+                        Toast.makeText(context, downloading, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+        }
+    }
 
     suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
         val confirmResult = dialogHost.showConfirm(
@@ -209,32 +269,39 @@ private fun ModuleList(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(stringResource(R.string.module_overlay_fs_not_available), textAlign = TextAlign.Center)
+                            Text(
+                                stringResource(R.string.module_overlay_fs_not_available),
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
+
                 viewModel.moduleList.isEmpty() -> {
                     item {
                         Box(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(stringResource(R.string.module_empty), textAlign = TextAlign.Center)
+                            Text(
+                                stringResource(R.string.module_empty),
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
+
                 else -> {
                     items(viewModel.moduleList) { module ->
                         var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         val scope = rememberCoroutineScope()
-                        val updateUrl by produceState(initialValue = "") {
-                            viewModel.checkUpdate(module) { value = it.orEmpty() }
+                        val updatedModule by produceState(initialValue = Triple("", "", "")) {
+                            scope.launch(Dispatchers.IO) {
+                                value = viewModel.checkUpdate(module)
+                            }
                         }
 
-                        val downloadingText = stringResource(R.string.module_downloading)
-                        val startDownloadingText = stringResource(R.string.module_start_downloading)
-
-                        ModuleItem(module, isChecked, updateUrl, onUninstall = {
+                        ModuleItem(module, isChecked, updatedModule.first, onUninstall = {
                             scope.launch { onModuleUninstall(module) }
                         }, onCheckChanged = {
                             scope.launch {
@@ -259,26 +326,14 @@ private fun ModuleList(
                                 }
                             }
                         }, onUpdate = {
-
                             scope.launch {
-                                Toast.makeText(
-                                    context,
-                                    startDownloadingText.format(module.name),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                onModuleUpdate(
+                                    module,
+                                    updatedModule.third,
+                                    updatedModule.first,
+                                    "${module.name}-${updatedModule.second}.zip"
+                                )
                             }
-
-                            val downloading = downloadingText.format(module.name)
-                            download(
-                                context,
-                                updateUrl,
-                                "${module.name}-${module.version}.zip",
-                                downloading,
-                                onDownloaded = onInstallModule,
-                                onDownloading = {
-                                    Toast.makeText(context, downloading, Toast.LENGTH_SHORT).show()
-                                }
-                            )
                         })
 
                         // fix last item shadow incomplete in LazyColumn

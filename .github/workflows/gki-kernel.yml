@@ -80,7 +80,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: KernelSU
           fetch-depth: 0

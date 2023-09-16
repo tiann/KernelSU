@@ -15,12 +15,12 @@
     <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Dinonaktifkan</string>
     <string name="selinux_status_enforcing">Enforcing</string>
-    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_permissive">Permasif</string>
     <string name="selinux_status_unknown">Tidak dikenal</string>
     <string name="superuser">Superuser</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
-    <string name="module_empty">Tidak ada modul terpasang</string>
+    <string name="module_empty">Tidak ada modul yang terpasang</string>
     <string name="module">Modul</string>
     <string name="uninstall">Copot</string>
     <string name="module_install">Pasang</string>
@@ -28,7 +28,7 @@
     <string name="reboot">Mulai ulang</string>
     <string name="settings">Pengaturan</string>
     <string name="reboot_userspace">Soft Reboot</string>
-    <string name="reboot_recovery">Mulai ulang ke Pemulihan</string>
+    <string name="reboot_recovery">Mulai ulang ke Recovery</string>
     <string name="reboot_bootloader">Mulai ulang ke Bootloader</string>
     <string name="reboot_download">Mulai ulang ke Download</string>
     <string name="reboot_edl">Mulai ulang ke EDL</string>
@@ -74,9 +74,11 @@
     <string name="module_update">Perbarui</string>
     <string name="module_downloading">Mengunduh module: %s</string>
     <string name="module_start_downloading">Mulai mengunduh: %s</string>
-    <string name="new_version_available">Versi baru: %s telah tersedia, tap untuk mengunduh</string>
+    <string name="new_version_available">Versi baru: %s sudah tersedia, tap untuk mengunduh</string>
     <string name="launch_app">Jalankan</string>
     <string name="force_stop_app">Paksa Berhenti</string>
     <string name="restart_app">Mulai ulang</string>
     <string name="failed_to_update_sepolicy">Gagal memperbarui aturan SELinux untuk: %s</string>
+    <string name="require_kernel_version">Versi KernelSU saat ini %d terlalu rendah bagi manajer untuk dapat berfungsi dengan baik. Harap tingkatkan ke versi %d atau yang lebih tinggi!</string>
+    <string name="module_changelog">Catatan Perubahan</string>
 </resources>
