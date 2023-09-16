@@ -48,7 +48,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 		return 0;
 	}
 
-	char path[sizeof(su)];
+	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
 	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
@@ -73,7 +73,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 		return 0;
 	}
 
-	char path[sizeof(su)];
+	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
 	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
