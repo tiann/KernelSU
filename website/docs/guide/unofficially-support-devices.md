@@ -22,9 +22,9 @@ import data from '../repos.json'
    </thead>
    <tbody>
     <tr v-for="repo in data" :key="repo.devices">
-        <td><a :href="repo.maintainer_link" target="_blank" rel="noreferrer">{{ repo.maintainer }}</a></td>
-        <td><a :href="repo.kernel_link" target="_blank" rel="noreferrer">{{ repo.kernel_name }}</a></td>
-        <td>{{ repo.devices }}</td>
+        <td><a :href="https://github.com/zharzinhoo" target="_blank" rel="noreferrer">zharzinhoo</a></td>
+        <td><a :href="https://github.com/zharzinhoo/Kernel-Oriente-Guamp" target="_blank" rel="noreferrer">Oriente Kernel Guamp</a></td>
+        <td>guamp</td>
     </tr>
    </tbody>
 </table>
