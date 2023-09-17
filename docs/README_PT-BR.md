@@ -1,4 +1,4 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | **Portuguese-Brazil** | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md)
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | **Português (Brasil)** | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md)
 
 # KernelSU
 
@@ -18,7 +18,7 @@ O KernelSU suporta oficialmente dispositivos Android GKI 2.0 (com kernel 5.10+),
 
 WSA, ChromeOS e Android baseado em contêiner também deve funcionar com o KernelSU integrado.
 
-E os ABIs atualmente suportadas são: `arm64-v8a` e `x86_64`
+E as ABIs atualmente suportadas são: `arm64-v8a` e `x86_64`
 
 ## Uso
  - [Instrução de instalação](https://kernelsu.org/guide/installation.html)
