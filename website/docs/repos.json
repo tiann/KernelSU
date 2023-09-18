@@ -55,12 +55,12 @@
         "kernel_link": "https://github.com/hmtheboy154/Darkmatter-kernel",
         "devices": "Generic x86_64 devices running Android-x86"
     },
-    { 
-        "maintainer": "Vincent4440", 
-        "maintainer_link": "https://github.com/Vincent4440", 
-        "kernel_name": "noxious_kernel_xiaomi_sm8250", 
-        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250", 
-        "devices": "Poco F4: munch" 
+    {
+        "maintainer": "Vincent4440",
+        "maintainer_link": "https://github.com/Vincent4440",
+        "kernel_name": "noxious_kernel_xiaomi_sm8250",
+        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250",
+        "devices": "Poco F4: munch"
     },
     {
         "maintainer": "Asuka-mio",
@@ -460,5 +460,12 @@
         "kernel_name": "android_kernel_oneplus_sdm845",
         "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
         "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
+    },
+    {
+        "maintainer": "zharzinhoo",
+        "maintainer_link": "https://github.com/zharzinhoo",
+        "kernel_name": "Kernel-Oriente-Cebu",
+        "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Cebu",
+        "devices": "Moto g9 power"
     }
 ]
