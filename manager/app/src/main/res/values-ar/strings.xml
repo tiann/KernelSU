@@ -21,7 +21,7 @@
     <string name="module_failed_to_enable">فشل في تمكين الوحدة: %s</string>
     <string name="module_failed_to_disable">فشل تعطيل الوحدة : %s</string>
     <string name="module_empty">لا توجد وحدة مثبتة</string>
-    <string name="module">وحدة</string>
+    <string name="module">الوحدات</string>
     <string name="uninstall">إلغاء التثبيت</string>
     <string name="module_install">تثبيت الوحدة</string>
     <string name="install">تثبيت</string>
@@ -56,7 +56,7 @@
     <string name="module_update">تحديث</string>
     <string name="module_downloading">تحمبل الوحدة : %s</string>
     <string name="module_start_downloading">ابدأ التنزيل: %s</string>
-    <string name="new_version_available">الإصدار الجديد: %s متاح ، انقر للتنزيل</string>
+    <string name="new_version_available">الإصدار الجديد: %s متاح ، انقر للتحديث</string>
     <string name="launch_app">تشغيل</string>
     <string name="profile_default">الإفتراضي</string>
     <string name="profile_template">نموذج</string>
@@ -79,4 +79,5 @@
     <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لما يلي: %s</string>
     <string name="profile_name">اسم الملف الشخصي</string>
     <string name="require_kernel_version">إصدار KernelSU الحالي %d منخفض جدًا بحيث لا يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %d أو أعلى!</string>
+    <string name="module_changelog">سجل التغييرات</string>
 </resources>

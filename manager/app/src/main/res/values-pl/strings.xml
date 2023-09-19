@@ -15,8 +15,8 @@
     <string name="home_fingerprint">Odcisk</string>
     <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Wyłączony</string>
-    <string name="selinux_status_enforcing">Wymuszone</string>
-    <string name="selinux_status_permissive">Zezwalający</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Nieznany</string>
     <string name="superuser">Superużytkownik</string>
     <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
@@ -75,10 +75,11 @@
     <string name="module_update">Zaktualizuj</string>
     <string name="module_downloading">Pobieranie modułu: %s</string>
     <string name="module_start_downloading">Rozpocznij pobieranie: %s</string>
-    <string name="new_version_available">Nowa wersja: %s jest dostępna, kliknij, aby pobrać</string>
+    <string name="new_version_available">Nowa wersja: %s jest dostępna, kliknij, aby zaktualizować</string>
     <string name="launch_app">Uruchom</string>
     <string name="force_stop_app">Wymuś zatrzymanie</string>
     <string name="restart_app">Restartuj</string>
     <string name="failed_to_update_sepolicy">Nie udało się zaktualizować reguł SELinux dla: %s</string>
     <string name="require_kernel_version">Obecna wersja KernelSU %d jest zbyt stara, aby menedżer działał poprawnie. Prosimy o aktualizację do wersji %d lub nowszej!</string>
+    <string name="module_changelog">Dziennik zmian</string>
 </resources>

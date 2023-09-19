@@ -6,6 +6,7 @@ import vi_VN from './vi_VN'
 import id_ID from './id_ID'
 import ja_JP from './ja_JP'
 import ru_RU from './ru_RU'
+import pt_BR from './pt_BR'
 
 export default defineConfig({
   locales: {
@@ -50,6 +51,12 @@ export default defineConfig({
       lang: ru_RU.lang,
       themeConfig: ru_RU.themeConfig,
       description: ru_RU.description
+    },
+    pt_BR: {
+      label: 'Português (Brasil)',
+      lang: pt_BR.lang,
+      themeConfig: pt_BR.themeConfig,
+      description: pt_BR.description
     }
   }
 })
