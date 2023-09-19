@@ -59,11 +59,11 @@ void on_post_fs_data(void)
 {
 	static bool done = false;
 	if (done) {
-		pr_info("on_post_fs_data already done");
+		pr_info("on_post_fs_data already done\n");
 		return;
 	}
 	done = true;
-	pr_info("on_post_fs_data!");
+	pr_info("on_post_fs_data!\n");
 	ksu_load_allow_list();
 	// sanity check, this may influence the performance
 	stop_input_hook();
@@ -262,7 +262,7 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
 	bool first_read = file->f_pos == 0;
 	ssize_t ret = orig_read(file, buf, count, pos);
 	if (first_read) {
-		pr_info("read_proxy append %ld + %ld", ret, read_count_append);
+		pr_info("read_proxy append %ld + %ld\n", ret, read_count_append);
 		ret += read_count_append;
 	}
 	return ret;
@@ -273,7 +273,7 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 	bool first_read = iocb->ki_pos == 0;
 	ssize_t ret = orig_read_iter(iocb, to);
 	if (first_read) {
-		pr_info("read_iter_proxy append %ld + %ld", ret,
+		pr_info("read_iter_proxy append %ld + %ld\n", ret,
 			read_count_append);
 		ret += read_count_append;
 	}
@@ -342,7 +342,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 		current->comm, count, rc_count);
 
 	if (count < rc_count) {
-		pr_err("count: %d < rc_count: %d", count, rc_count);
+		pr_err("count: %d < rc_count: %d\n", count, rc_count);
 		return 0;
 	}
 

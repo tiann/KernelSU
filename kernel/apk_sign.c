@@ -18,7 +18,7 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	int i;
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("open %s error.", path);
+		pr_err("open %s error.\n", path);
 		return PTR_ERR(fp);
 	}
 
@@ -138,7 +138,7 @@ static int set_expected_size(const char *val, const struct kernel_param *kp)
 {
 	int rv = param_set_uint(val, kp);
 	ksu_invalidate_manager_uid();
-	pr_info("ksu_expected_size set to %x", ksu_expected_size);
+	pr_info("ksu_expected_size set to %x\n", ksu_expected_size);
 	return rv;
 }
 
@@ -146,7 +146,7 @@ static int set_expected_hash(const char *val, const struct kernel_param *kp)
 {
 	int rv = param_set_uint(val, kp);
 	ksu_invalidate_manager_uid();
-	pr_info("ksu_expected_hash set to %x", ksu_expected_hash);
+	pr_info("ksu_expected_hash set to %x\n", ksu_expected_hash);
 	return rv;
 }
 
