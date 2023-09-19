@@ -103,44 +103,6 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
 	return native;
 }
 
-static const bool get_env_bool(struct user_arg_ptr envp, const char *name) {
-	const char __user *const __user *env;
-
-	// Traverse the list of environment variables
-    for (env = envp.ptr.native; *env != NULL; env++) {
-        const char __user *entry = *env;
-        char buf[256];
-        
-        // Reading environment variable strings from user space
-        if (ksu_strncpy_from_user_nofault(buf, entry, sizeof(buf)) < 0)
-            continue;
-        
-        // Parsing environment variable names and values
-        char *env_name = buf;
-        char *env_value = strchr(buf, '=');
-        if (env_value == NULL)
-            continue;
-        
-        // Replace equal sign with string terminator
-        *env_value = '\0';
-        env_value++;
-        
-        // pr_info("env %s=%s\n", env_name, env_value);
-        // Check if the environment variable names are matching
-        if (strcmp(env_name, name) == 0) {
-            // If matched, returns a Boolean value based on the environment variable's value
-            if (strcmp(env_value, "1") == 0 || strcmp(env_value, "true") == 0)
-                return true;
-            else
-                return false;
-        }
-    }
-    
-    // If the specified environment variable is not found, return the default value
-	pr_info("not found env %s\n", name);
-    return false;
-}
-
 /*
  * count() counts the number of strings in array ARGV.
  */
@@ -178,7 +140,7 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 
 // the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-			     struct user_arg_ptr *argv, struct user_arg_ptr *envp, int *__never_use_flags)
+				struct user_arg_ptr *argv, struct user_arg_ptr *envp, int *__never_use_flags)
 {
 #ifndef CONFIG_KPROBES
 	if (!ksu_execveat_hook) {
@@ -190,9 +152,9 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	static const char app_process[] = "/system/bin/app_process";
 	static bool first_app_process = true;
 
-	/* This applies to Android 10 and above versions */
+	/* This applies to versions Android 10+ */
 	static const char system_bin_init[] = "/system/bin/init";
-	/* This applies to versions between Android 6 and Android 9  */
+	/* This applies to versions between Android 6 ~ 9  */
 	static const char old_system_init[] = "/init";
 	static bool init_second_stage_executed = false;
 
@@ -204,44 +166,84 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	if (unlikely(!memcmp(filename->name, system_bin_init,
-		    sizeof(system_bin_init) - 1)) || 
-			unlikely(!memcmp(filename->name, old_system_init,
-			sizeof(old_system_init) - 1))) {
-		// init executed
+	if (unlikely(!memcmp(filename->name, system_bin_init, 
+				sizeof(system_bin_init) - 1))) {
+		// /system/bin/init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
-		pr_info("init argc: %d\n", argc);
+		pr_info("/system/bin/init argc: %d\n", argc);
 		if (argc > 1 && !init_second_stage_executed) {
 			const char __user *p = get_user_arg_ptr(*argv, 1);
-			/* This applies to versions Android 6 ~ 7 and Android 10+  */
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-                ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-				pr_info("init first arg: %s\n", first_arg);
-				if (!strcmp(first_arg, "second_stage") || !strcmp(first_arg, "--second-stage")) {
-					pr_info("init second_stage executed\n");
+				ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
+				pr_info("/system/bin/init first arg: %s\n", first_arg);
+				if (!strcmp(first_arg, "second_stage")) {
+					pr_info("/system/bin/init second_stage executed\n");
 					apply_kernelsu_rules();
 					init_second_stage_executed = true;
 					ksu_android_ns_fs_check();
 				}
 			} else {
-				pr_err("init parse args err!\n");
+				pr_err("/system/bin/init parse args err!\n");
+			}
+		}
+	} else if (unlikely(!memcmp(filename->name, old_system_init,
+				sizeof(old_system_init) - 1))) {
+		// /init executed
+		int argc = count(*argv, MAX_ARG_STRINGS);
+		pr_info("/init argc: %d\n", argc);
+		if (argc > 1 && !init_second_stage_executed) {
+			/* This applies to versions between Android 6 ~ 7 */
+			const char __user *p = get_user_arg_ptr(*argv, 1);
+			if (p && !IS_ERR(p)) {
+				char first_arg[16];
+				ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
+				pr_info("/init first arg: %s\n", first_arg);
+				if (!strcmp(first_arg, "--second-stage")) {
+					pr_info("/init second_stage executed\n");
+					apply_kernelsu_rules();
+					init_second_stage_executed = true;
+					ksu_android_ns_fs_check();
+				}
+			} else {
+				pr_err("/init parse args err!\n");
 			}
 		} else if (argc == 1 && !init_second_stage_executed) {
-			/* This applies to versions between Android 8 and Android 9  */
-			const bool init_second_stage = get_env_bool(*envp, "INIT_SECOND_STAGE");
-			pr_info("init env INIT_SECOND_STAGE = %s\n", init_second_stage ? "true" : "false");
-			if (init_second_stage) {
-				pr_info("init second_stage executed\n");
-				apply_kernelsu_rules();
-				init_second_stage_executed = true;
-				ksu_android_ns_fs_check();
+			/* This applies to versions between Android 8 ~ 9  */
+			int envc = count(*envp, MAX_ARG_STRINGS);
+			if (envc > 0) {
+				int n;
+				for (n = 1; n <= envc; n++) {
+					const char __user *p = get_user_arg_ptr(*envp, n);
+					if (!p || IS_ERR(p)) {
+						continue;
+					}
+					char env[256];
+					// Reading environment variable strings from user space
+					if (ksu_strncpy_from_user_nofault(env, p, sizeof(env)) < 0)
+						continue;
+					// Parsing environment variable names and values
+					char *env_name = env;
+					char *env_value = strchr(env, '=');
+					if (env_value == NULL)
+						continue;
+					// Replace equal sign with string terminator
+					*env_value = '\0';
+					env_value++;
+					// Check if the environment variable name and value are matching
+					if (!strcmp(env_name, "INIT_SECOND_STAGE") && (!strcmp(env_value, "1") || !strcmp(env_value, "true"))) {
+						pr_info("/init second_stage executed\n");
+						apply_kernelsu_rules();
+						init_second_stage_executed = true;
+						ksu_android_ns_fs_check();
+					}
+				}
 			}
 		}
 	}
 
 	if (unlikely(first_app_process &&
-	    !memcmp(filename->name, app_process, sizeof(app_process) - 1))) {
+		!memcmp(filename->name, app_process, sizeof(app_process) - 1))) {
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared, second_stage: %d\n", init_second_stage_executed);
 		on_post_fs_data(); // we keep this for old ksud
