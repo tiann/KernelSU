@@ -32,7 +32,7 @@ Por exemplo, precisamos construir a imagem do kernel aarch64:
 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
 ```
 
-Não se esqueça de adicionar o sinalizador `LTO=thin`, caso contrário a compilação poderá falhar se a memória do seu computador for inferior a 24 Gb.
+Não se esqueça de adicionar o sinalizador `LTO=thin`, caso contrário a compilação poderá falhar se a memória do seu computador for inferior a 24GB.
 
 A partir do Android 13, o kernel é construído pelo `bazel`:
 
@@ -44,13 +44,13 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 
 Se você conseguir construir o kernel com sucesso, então construir o KernelSU é muito fácil. Selecione qualquer um executado no diretório raiz de origem do kernel:
 
-- Tag mais recente(estável)
+- Tag mais recente (estável)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- branch principal(dev)
+- branch principal (dev)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
