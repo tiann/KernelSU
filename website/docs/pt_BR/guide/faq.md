@@ -4,7 +4,7 @@
 
 Primeiro, seus dispositivos devem ser capazes de desbloquear o bootloader. Se não puder, então não há suporte.
 
-Em seguida, instale o app gerenciador KernelSU em seu dispositivo e abra-o, se mostrar `Unsupported` então seu dispositivo não pode ser suportado imediatamente, mas você pode construir a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [dispositivos de suporte não oficial](unofficially-support-devices).
+Em seguida, instale o app gerenciador KernelSU em seu dispositivo e abra-o, se mostrar `Sem suporte` então seu dispositivo não pode ser suportado imediatamente, mas você pode construir a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [dispositivos de suporte não oficial](unofficially-support-devices).
 
 ## O KernelSU precisa desbloquear o Bootloader?
 
@@ -60,7 +60,7 @@ A versão do Kernel não tem nada a ver com a versão do Android, se você preci
 Não existe agora (talvez no futuro), mas há muitas maneiras de mudar manualmente para o namespace de montagem global, como:
 
 1. `nsenter -t 1 -m sh` para obter um shell no namespace de montagem global.
-2. adicione `nsenter --mount=/proc/1/ns/mnt` ao comando que você deseja executar, o comando será executado no namespace de montagem global. O KernelSU também está [usando desta forma](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
+2. Adicione `nsenter --mount=/proc/1/ns/mnt` ao comando que você deseja executar, o comando será executado no namespace de montagem global. O KernelSU também está [usando desta forma](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
 
 ## Eu sou GKI1.0, posso usar isso?
 
