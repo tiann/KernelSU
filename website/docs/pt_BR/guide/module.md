@@ -6,7 +6,7 @@ O mecanismo de módulo do KernelSU é quase o mesmo do Magisk. Se você está fa
 
 ## Busybox
 
-O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta o "ASH Standalone Shell Mode" alternável em tempo de execução. O que este modo autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido como `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android por padrão será `/system/bin/ls`, ` /system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a _não_ usar o BusyBox, você deve chamar o executável com caminhos completos.
+O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta o "ASH Standalone Shell Mode" alternável em tempo de execução. O que este modo autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido como `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android por padrão será `/system/bin/ls`, `/system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a _não_ usar o BusyBox, você deve chamar o executável com caminhos completos.
 
 Cada script de shell executado no contexto do KernelSU será executado no shell `ash` do BusyBox com o modo autônomo ativado. Para o que é relevante para desenvolvedores terceirizados, isso inclui todos os scripts de inicialização e scripts de instalação de módulos.
 
@@ -130,9 +130,9 @@ REMOVE="
 "
 ```
 
-A lista acima irá executar `mknod $MODPATH/system/app/YouTuBe c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
+A lista acima irá executar `mknod $MODPATH/system/app/YouTube c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
 
-Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n Trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema overlayfs substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
+Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema overlayfs substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
 
 Você pode declarar uma variável chamada `REPLACE` em seu arquivo `customize.sh`, que inclui uma lista de diretórios a serem substituídos, e o KernelSU executará automaticamente as operações correspondentes em seu diretório de módulo. Por exemplo:
 
