@@ -2,7 +2,7 @@
 <resources>
     <string name="home">Inicio</string>
     <string name="home_not_installed">No instalado</string>
-    <string name="home_click_to_install">Instalar</string>
+    <string name="home_click_to_install">Haga clic para instalar</string>
     <string name="home_working">Activo</string>
     <string name="home_working_version">Versión: %d</string>
     <string name="home_superuser_count">Superusuarios: %d</string>
@@ -35,18 +35,18 @@
     <string name="reboot_edl">Reiniciar en modo EDL</string>
     <string name="about">Acerca de</string>
     <string name="module_uninstall_confirm">¿Estás seguro de que quieres desinstalar el módulo \"%s\"?</string>
-    <string name="module_uninstall_success">\"%s\" desinstalado.</string>
-    <string name="module_uninstall_failed">No se pudo desinstalar \"%s\".</string>
+    <string name="module_uninstall_success">\"%s\" desinstalado</string>
+    <string name="module_uninstall_failed">No se pudo desinstalar \"%s\"</string>
     <string name="module_version">Versión</string>
     <string name="module_author">Autor</string>
-    <string name="module_overlay_fs_not_available">El módulo no puede funcionar ya que OverlayFS no está disponible</string>
+    <string name="module_overlay_fs_not_available">El módulo no puede funcionar ya que OverlayFS no está disponible!</string>
     <string name="refresh">Recargar</string>
     <string name="show_system_apps">Mostrar apps del sistema</string>
     <string name="hide_system_apps">Ocultar apps del sistema</string>
     <string name="send_log">Enviar registro</string>
     <string name="safe_mode">Modo seguro</string>
     <string name="reboot_to_apply">Reiniciar para aplicar cambios</string>
-    <string name="module_magisk_conflict">Se deshabilitaron los módulos ya que entran en conflicto con Magisk.</string>
+    <string name="module_magisk_conflict">Se deshabilitaron los módulos ya que entran en conflicto con Magisk!</string>
     <string name="home_learn_kernelsu">Descubre KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Descubre cómo instalar KernelSU y utilizar módulos</string>
@@ -73,11 +73,12 @@
     <string name="profile_selinux_rules">Reglas</string>
     <string name="module_update">Actualizar</string>
     <string name="module_downloading">Descargando módulo: \"%s\"</string>
-    <string name="module_start_downloading">Descargar</string>
-    <string name="new_version_available">Hay una nueva versión disponible (%s). Toca para descargar</string>
+    <string name="module_start_downloading">Iniciar descarga: %s</string>
+    <string name="new_version_available">Nueva versión: %s está disponible, haga clic para actualizar</string>
     <string name="launch_app">Lanzar Aplicacion</string>
     <string name="force_stop_app">Forzar cierre de la aplicacion</string>
     <string name="restart_app">Reiniciar aplicacion</string>
     <string name="failed_to_update_sepolicy">Falló al actualizar reglas de SEpolicy por: %s</string>
     <string name="require_kernel_version">La versión actual de KernelSU %d es demasiado baja para que el gestor funcione correctamente. ¡Por favor actualiza a la versión %d o superior!</string>
+    <string name="module_changelog">Registro de cambios</string>
 </resources>
