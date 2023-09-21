@@ -34,10 +34,10 @@ Aqui, o UID é `2000` e o GID (ID do grupo primário) também é `2000`. Além d
 O Perfil Raiz do KernelSU permite a personalização do UID, GID e grupos para o processo raiz após a execução de `su`. Por exemplo, o Perfil Raiz de um app raiz pode definir seu UID como `2000`, o que significa que ao usar `su`, as permissões reais do app estão no nível do ADB shell. O grupo `inet` pode ser removido, evitando que o comando `su` acesse a rede.
 
 :::tip OBSERVAÇÃO
-O Perfil Raiz do KernelSU permite a personalização do UID, GID e grupos para o processo raiz após a execução de `su`. Por exemplo, o Perfil Raiz de um app raiz pode definir seu UID como `2000`, o que significa que ao usar `su`, as permissões reais do app estão no nível do shell ADB. O grupo `inet` pode ser removido, evitando que o comando `su` acesse a rede.
+O Perfil do Aplicativo controla apenas as permissões do processo root após usar `su`; ele não controla as permissões do próprio app. Se um app solicitou permissão de acesso à rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
 :::
 
-O Perfil Raiz é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos através do `su`, a concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
+O Perfil Raiz é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos por meio do `su`, a concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
 
 ### Capacidades
 
