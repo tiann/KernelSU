@@ -46,7 +46,6 @@ Observe que o SubLevel na versão do kernel não faz parte do KMI! Isso signific
 ### Versão do kernel vs Versão do Android
 
 Por favor, observe: **A versão do kernel e a versão do Android não são necessariamente iguais!**
-
 Se você descobrir que a versão do seu kernel é `android12-5.10.101`, mas a versão do seu sistema Android é Android 13 ou outra; não se surpreenda, pois o número da versão do sistema Android não é necessariamente igual ao número da versão do kernel Linux; O número da versão do kernel Linux geralmente é consistente com a versão do sistema Android que acompanha o **dispositivo quando ele é enviado**. Se o sistema Android for atualizado posteriormente, a versão do kernel geralmente não será alterada. Se você precisar atualizar, **por favor, consulte sempre a versão do kernel!!**
 
 ## Introdução

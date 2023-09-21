@@ -26,4 +26,3 @@ features:
     details: KernelSU permite que você personalize o uid, gid, grupos, recursos e regras SELinux do su. Tranque o poder root em uma gaiola.
   - title: Módulo e Código aberto
     details: KernelSU suporta modificação /system sem sistema por overlayfs e é de código aberto sob GPL-3.
-
