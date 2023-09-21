@@ -464,6 +464,13 @@
     {
         "maintainer": "zharzinhoo",
         "maintainer_link": "https://github.com/zharzinhoo",
+        "kernel_name": "Kernel-Oriente-Guamp",
+        "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Guamp",
+        "devices": "Moto g9 play"
+    },
+    {
+        "maintainer": "zharzinhoo",
+        "maintainer_link": "https://github.com/zharzinhoo",
         "kernel_name": "Kernel-Oriente-Cebu",
         "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Cebu",
         "devices": "Moto g9 power"
