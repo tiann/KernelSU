@@ -7,7 +7,7 @@
     <string name="home_working_version">Versão: %d</string>
     <string name="home_superuser_count">Superusuários: %d</string>
     <string name="home_module_count">Módulos: %d</string>
-    <string name="home_unsupported">Sem Suporte</string>
+    <string name="home_unsupported">Sem suporte</string>
     <string name="home_unsupported_reason">KernelSU suporta apenas kernels GKI agora</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versão do gerenciador</string>
@@ -27,7 +27,7 @@
     <string name="install">Instalar</string>
     <string name="reboot">Reiniciar</string>
     <string name="settings">Configurações</string>
-    <string name="reboot_userspace">Reinicialização Suave</string>
+    <string name="reboot_userspace">Reinicialização suave</string>
     <string name="reboot_recovery">Reiniciar em modo Recovery</string>
     <string name="reboot_bootloader">Reiniciar em modo Bootloader</string>
     <string name="reboot_download">Reiniciar em modo Download</string>
