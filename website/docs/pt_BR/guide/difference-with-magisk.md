@@ -11,17 +11,17 @@ Embora existam muitas semelhanças entre os módulos KernelSU e os módulos Magi
 - service.sh: o tempo de execução e a semântica são exatamente os mesmos
 - system.prop: completamente o mesmo
 - sepolicy.rule: completamente o mesmo
-- BusyBox: os scripts são executados no BusyBox com o "modo autônomo" habilitado em ambos os casos
+- BusyBox: os scripts são executados no BusyBox com o "Modo Autônomo" ativado em ambos os casos
 
 ## Diferenças
 
-Antes de entender as diferenças, você precisa saber diferenciar se o seu módulo está rodando no KernelSU ou Magisk. Você pode usar a variável de ambiente `KSU` para diferenciá-la em todos os locais onde você pode executar scripts do módulo (`customize.sh`, `post-fs-data.sh`, `service.sh`). No KernelSU, esta variável de ambiente será definida como `true`.
+Antes de entender as diferenças, você precisa saber diferenciar se o seu módulo está rodando no KernelSU ou Magisk. Você pode usar a variável de ambiente `KSU` para diferenciá-la em todos os locais onde você pode executar os scripts do módulo (`customize.sh`, `post-fs-data.sh`, `service.sh`). No KernelSU, esta variável de ambiente será definida como `true`.
 
 Aqui estão algumas diferenças:
 
 - Os módulos KernelSU não podem ser instalados no modo Recovery.
 - Os módulos KernelSU não têm suporte integrado para Zygisk (mas você pode usar módulos Zygisk através do [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
-- O método para substituir ou excluir arquivos nos módulos KernelSU é completamente diferente do Magisk. KernelSU não suporta o método `.replace`. Em vez disso, você precisa criar um arquivo com o mesmo nome `mknod filename c 0 0` para excluir o arquivo correspondente.
+- O método para substituir ou excluir arquivos nos módulos KernelSU é completamente diferente do Magisk. O KernelSU não suporta o método `.replace`. Em vez disso, você precisa criar um arquivo com o mesmo nome `mknod filename c 0 0` para excluir o arquivo correspondente.
 - Os diretórios do BusyBox são diferentes. O BusyBox integrado no KernelSU está localizado em `/data/adb/ksu/bin/busybox`, enquanto no Magisk está em `/data/adb/magisk/busybox`. **Observe que este é um comportamento interno do KernelSU e pode mudar no futuro!**
 - KernelSU não suporta arquivos `.replace`; entretanto, KernelSU suporta as variáveis ​​`REMOVE` e `REPLACE` para remover ou substituir arquivos e pastas.
 - KernelSU adiciona o estágio `boot-completed` para executar alguns scripts na inicialização concluída.
