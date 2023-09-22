@@ -14,7 +14,7 @@ Os sistemas Linux possuem dois conceitos: usuários e grupos. Cada usuário poss
 
 Os usuários com UID 0 são conhecidos como usuários root e os grupos com GID 0 são conhecidos como grupos raiz. O grupo de usuários root normalmente possui os privilégios de sistema mais altos.
 
-No caso do sistema Android, cada app é um usuário separado (excluindo cenários de UID compartilhados) com um UID exclusivo. Por exemplo, `0` representa o usuário root, `1000` representa `system`, `2000` representa o shell ADB e UIDs variando de 10.000 a 19.999 representam apps comuns.
+No caso do sistema Android, cada app é um usuário separado (excluindo cenários de UID compartilhados) com um UID exclusivo. Por exemplo, `0` representa o usuário root, `1000` representa `system`, `2000` representa o ADB shell e UIDs variando de `10.000` a `19.999` representam apps comuns.
 
 :::informações
 Aqui, o UID mencionado não é o mesmo que o conceito de múltiplos usuários ou perfis de trabalho no sistema Android. Os perfis de trabalho são, na verdade, implementados particionando o intervalo UID. Por exemplo, 10000-19999 representa o usuário principal, enquanto 110000-119999 representa um perfil de trabalho. Cada app comum entre eles possui seu próprio UID exclusivo.
@@ -22,7 +22,7 @@ Aqui, o UID mencionado não é o mesmo que o conceito de múltiplos usuários ou
 
 Cada app pode ter vários grupos, com o GID representando o grupo principal, que geralmente corresponde ao UID. Outros grupos são conhecidos como grupos suplementares. Certas permissões são controladas por meio de grupos, como permissões de acesso à rede ou acesso Bluetooth.
 
-Por exemplo, se executarmos o comando `id` no shell ADB, a saída pode ser semelhante a esta:
+Por exemplo, se executarmos o comando `id` no ADB shell, a saída pode ser semelhante a esta:
 
 ```sh
 oriole:/ $ id
@@ -31,13 +31,13 @@ uid=2000(shell) gid=2000(shell) groups=2000(shell),1004(input),1007(log),1011(ad
 
 Aqui, o UID é `2000` e o GID (ID do grupo primário) também é `2000`. Além disso, pertence a vários grupos suplementares, como `inet` (indicando a capacidade de criar soquetes `AF_INET` e `AF_INET6`) e `sdcard_rw` (indicando permissões de leitura/gravação para o cartão SD).
 
-O Perfil Raiz do KernelSU permite a personalização do UID, GID e grupos para o processo raiz após a execução de `su`. Por exemplo, o Perfil Raiz de um app raiz pode definir seu UID como `2000`, o que significa que ao usar `su`, as permissões reais do app estão no nível do shell ADB. O grupo `inet` pode ser removido, evitando que o comando `su` acesse a rede.
+O Perfil Raiz do KernelSU permite a personalização do UID, GID e grupos para o processo raiz após a execução de `su`. Por exemplo, o Perfil Raiz de um app raiz pode definir seu UID como `2000`, o que significa que ao usar `su`, as permissões reais do app estão no nível do ADB shell. O grupo `inet` pode ser removido, evitando que o comando `su` acesse a rede.
 
-:::tip Observação
+:::tip OBSERVAÇÃO
 O Perfil do Aplicativo controla apenas as permissões do processo root após usar `su`; ele não controla as permissões do próprio app. Se um app solicitou permissão de acesso à rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
 :::
 
-O Perfil Raiz é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos através do `su`, a concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
+O Perfil Raiz é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos por meio do `su`, a concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
 
 ### Capacidades
 
@@ -51,7 +51,7 @@ Cada capacidade representa um ou mais privilégios. Por exemplo, `CAP_DAC_READ_S
 
 O Perfil Raiz do KernelSU permite a personalização das Capacidades do processo raiz após a execução de `su`, conseguindo assim conceder parcialmente "permissões de root". Ao contrário do UID e GID mencionados acima, certos apps root exigem um UID de `0` após usar `su`. Nesses casos, limitar as capacidades deste usuário root com UID `0` pode restringir suas operações permitidas.
 
-:::tip Forte Recomendação
+:::tip FORTE RECOMENDAÇÃO
 Capacidade do Linux [documentação oficial](https://man7.org/linux/man-pages/man7/capabilities.7.html) fornece explicações detalhadas das habilidades representadas por cada capacidade. Se você pretende customizar Capacidades, é altamente recomendável que você leia este documento primeiro.
 :::
 
@@ -64,7 +64,7 @@ O SELinux pode ser executado em dois modos globais:
 1. Modo permissivo: Os eventos de negação são registrados, mas não aplicados.
 2. Modo de aplicação: Os eventos de negação são registrados e aplicados.
 
-:::warning Aviso
+:::warning AVISO
 Os sistemas Android modernos dependem fortemente do SELinux para garantir a segurança geral do sistema. É altamente recomendável não usar nenhum sistema personalizado executado em "modo permissivo", pois não oferece vantagens significativas em relação a um sistema completamente aberto..
 :::
 
@@ -96,7 +96,7 @@ Por exemplo, se você conceder permissão root a um usuário shell ADB (que é u
 1. A primeira execução `su` está sujeita à aplicação do Perfil do Aplicativo e mudará para UID `2000` (adb shell) em vez de `0` (root).
 2. A segunda execução `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (adb shell) na configuração, o app obterá privilégios de root completos.
 
-:::warning Observação
+:::warning OBSERVAÇÃO
 Este comportamento é totalmente esperado e não é um bug. Portanto, recomendamos o seguinte:
 
 Se você realmente precisa conceder permissões de root ao ADB (por exemplo, como desenvolvedor), não é aconselhável alterar o UID para `2000` ao configurar o Perfil Raiz. Usar `1000` (sistema) seria uma escolha melhor.
@@ -113,6 +113,6 @@ Além disso, a interface de configurações do gerenciador KernelSU fornece uma 
 1. Mantenha a opção "desmontar módulos por padrão" e desative individualmente a opção "desmontar módulos" no Perfil do Aplicativo para apps que exigem carregamento de módulo (agindo como uma "lista de permissões").
 2. Desative a opção "desmontar módulos por padrão" e ative individualmente a opção "desmontar módulos" no Perfil do Aplicativo para apps que exigem descarregamento de módulo (agindo como uma "lista negra").
 
-:::informações
+:::INFORMAÇÕES
 Em dispositivos que utilizam kernel versão 5.10 e superior, o kernel realiza o descarregamento dos módulos. No entanto, para dispositivos que executam versões de kernel abaixo de 5.10, essa opção é apenas uma opção de configuração e o próprio KernelSU não executa nenhuma ação. Alguns módulos, como Zygisksu, podem usar essa opção para determinar se o descarregamento do módulo é necessário.
 :::

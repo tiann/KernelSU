@@ -21,7 +21,7 @@ Primeiro, adicione o KernelSU à árvore de origem do kernel:
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-Então, você deve verificar se *kprobe* está habilitado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
+Então, você deve verificar se *kprobe* está ativado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
 
 ```
 CONFIG_KPROBES=y
@@ -35,7 +35,7 @@ Se você descobrir que o KPROBES ainda não está ativado, você pode tentar ati
 
 Mas se você encontrar um loop de inicialização quando o KernelSU integrado, talvez *kprobe esteja quebrado em seu kernel*, você deve corrigir o bug do kprobe ou usar o segundo caminho.
 
-:::tip Como verificar se o kprobe está quebrado?
+:::tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
 
 comente `ksu_enable_sucompat()` e `ksu_enable_ksud()` em `KernelSU/kernel/ksu.c`, se o dispositivo inicializar normalmente, então o kprobe pode estar quebrado.
 :::
@@ -52,13 +52,14 @@ Primeiro, adicione o KernelSU à árvore de origem do kernel:
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- branch principal(dev)
+- branch principal (dev)
 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 
-- Selecione a tag(Como v0.5.2)
+- Selecione a tag (Como v0.5.2)
+
 - 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
@@ -218,10 +219,10 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
-Para ativar o SafeMode integrado do KernelSU, você também deve modificar `input_handle_event` em `drivers/input/input.c`:
+Para ativar o Modo de Segurança integrado do KernelSU, você também deve modificar `input_handle_event` em `drivers/input/input.c`:
 
 :::dica
-É altamente recomendável habilitar este recurso, é muito útil para evitar bootloops!
+É altamente recomendável ativar este recurso, é muito útil para evitar bootloops!
 :::
 
 ```diff
@@ -248,4 +249,4 @@ index 45306f9ef247..815091ebfca4 100755
  		add_input_randomness(type, code, value);
 ```
 
-Finalmente, construa seu kernel novamente, o KernelSU deve funcionar bem.
+Finalmente, construa seu kernel novamente, e então, o KernelSU deve funcionar bem.

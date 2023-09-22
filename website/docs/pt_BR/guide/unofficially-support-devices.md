@@ -1,15 +1,15 @@
-# Dispositivos não oficialmente suportados
+# Dispositivos com suporte não oficial
 
 ::: aviso
-Nesta página, existem kernels para dispositivos não GKI que suportam KernelSU mantidos por outros desenvolvedores.
+Nesta página, existem kernels para dispositivos não GKI que suportam o KernelSU mantidos por outros desenvolvedores.
 :::
 
 ::: aviso
-Esta página é apenas para você encontrar o código-fonte correspondente ao seu dispositivo. **NÃO** significa que o código-fonte foi revisado por _KernelSU Developers_. Você deve usá-lo por sua própria conta e risco.
+Esta página é apenas para você encontrar o código-fonte correspondente ao seu dispositivo, **NÃO** significa que o código-fonte foi revisado pelos desenvolvedores do KernelSU. Você deve usá-lo por sua própria conta e risco.
 :::
 
 <script setup>
-import data from '../repos.json'
+import data from '../../repos.json'
 </script>
 
 <table>

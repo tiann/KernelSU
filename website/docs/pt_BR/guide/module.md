@@ -2,22 +2,22 @@
 
 O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é comumente conhecido como "sem sistema".
 
-O mecanismo do módulo do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [diferença com Magisk](difference-with-magisk.md).
+O mecanismo de módulo do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferença com Magisk](difference-with-magisk.md).
 
 ## Busybox
 
-O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo a SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta o "ASH Standalone Shell Mode" alternável em tempo de execução. O que este modo autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido como `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android por padrão será `/system/bin/ls`, ` /system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando _não_ a usar o BusyBox, você deve chamar o executável com caminhos completos.
+O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta o "ASH Standalone Shell Mode" alternável em tempo de execução. O que este modo autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido como `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android por padrão será `/system/bin/ls`, `/system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a _não_ usar o BusyBox, você deve chamar o executável com caminhos completos.
 
-Cada script de shell executado no contexto do KernelSU será executado no shell `ash` do BusyBox com o modo autônomo habilitado. Para o que é relevante para desenvolvedores terceirizados, isso inclui todos os scripts de inicialização e scripts de instalação de módulos.
+Cada script de shell executado no contexto do KernelSU será executado no shell `ash` do BusyBox com o modo autônomo ativado. Para o que é relevante para desenvolvedores terceirizados, isso inclui todos os scripts de inicialização e scripts de instalação de módulos.
 
-Para aqueles que desejam usar este recurso de “Modo Autônomo” fora do KernelSU, existem 2 maneiras de habilitá-lo:
+Para aqueles que desejam usar este recurso “Modo Autônomo” fora do KernelSU, existem 2 maneiras de ativá-los:
 
 1. Defina a variável de ambiente `ASH_STANDALONE` como `1`<br>Exemplo: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
 2. Alternar com opções de linha de comando:<br>`/data/adb/ksu/bin/busybox sh -o standalone <script>`
 
-Para garantir que todos os shells `sh` subsequentes executados também sejam executados em modo autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os processos filhos.
+Para garantir que todos os shells `sh` subsequentes executados também sejam executados em modo autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
-::: tip diferença com Magisk
+::: tip Diferença com Magisk
 
 O BusyBox do KernelSU agora está usando o arquivo binário compilado diretamente do projeto Magisk. **Obrigado ao Magisk!** Portanto, você não precisa se preocupar com problemas de compatibilidade entre scripts BusyBox no Magisk e KernelSU porque eles são exatamente iguais!
 :::
@@ -31,42 +31,42 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ├── .
 ├── .
 |
-├── $MODID                  <--- The folder is named with the ID of the module
+├── $MODID                  <--- A pasta é nomeada com o ID do módulo
 │   │
-│   │      *** Module Identity ***
+│   │      *** Identidade do Módulo ***
 │   │
-│   ├── module.prop         <--- This file stores the metadata of the module
+│   ├── module.prop         <--- Este arquivo armazena os metadados do módulo
 │   │
-│   │      *** Main Contents ***
+│   │      *** Conteúdo Principal ***
 │   │
-│   ├── system              <--- This folder will be mounted if skip_mount does not exist
+│   ├── system              <--- Esta pasta será montada se skip_mount não existir
 │   │   ├── ...
 │   │   ├── ...
 │   │   └── ...
 │   │
-│   │      *** Status Flags ***
+│   │      *** Sinalizadores de Status ***
 │   │
-│   ├── skip_mount          <--- If exists, KernelSU will NOT mount your system folder
-│   ├── disable             <--- If exists, the module will be disabled
-│   ├── remove              <--- If exists, the module will be removed next reboot
+│   ├── skip_mount          <--- Se existir, o KernelSU NÃO montará sua pasta de sistema
+│   ├── disable             <--- Se existir, o módulo será desabilitado
+│   ├── remove              <--- Se existir, o módulo será removido na próxima reinicialização
 │   │
-│   │      *** Optional Files ***
+│   │      *** Arquivos Opcionais ***
 │   │
-│   ├── post-fs-data.sh     <--- This script will be executed in post-fs-data
-│   ├── post-mount.sh       <--- This script will be executed in post-mount
-│   ├── service.sh          <--- This script will be executed in late_start service
-│   ├── boot-completed.sh   <--- This script will be executed on boot completed
-|   ├── uninstall.sh        <--- This script will be executed when KernelSU removes your module
-│   ├── system.prop         <--- Properties in this file will be loaded as system properties by resetprop
-│   ├── sepolicy.rule       <--- Additional custom sepolicy rules
+│   ├── post-fs-data.sh     <--- Este script será executado em post-fs-data
+│   ├── post-mount.sh       <--- Este script será executado em post-mount
+│   ├── service.sh          <--- Este script será executado no late_start service
+│   ├── boot-completed.sh   <--- Este script será executado na inicialização concluída
+|   ├── uninstall.sh        <--- Este script será executado quando o KernelSU remover seu módulo
+│   ├── system.prop         <--- As propriedades neste arquivo serão carregadas como propriedades do sistema por resetprop
+│   ├── sepolicy.rule       <--- Regras adicionais de sepolicy personalizadas
 │   │
-│   │      *** Auto Generated, DO NOT MANUALLY CREATE OR MODIFY ***
+│   │      *** Gerado Automaticamente, NÃO CRIE OU MODIFIQUE MANUALMENTE ***
 │   │
-│   ├── vendor              <--- A symlink to $MODID/system/vendor
-│   ├── product             <--- A symlink to $MODID/system/product
-│   ├── system_ext          <--- A symlink to $MODID/system/system_ext
+│   ├── vendor              <--- Um link simbólico para $MODID/system/vendor
+│   ├── product             <--- Um link simbólico para $MODID/system/product
+│   ├── system_ext          <--- Um link simbólico para $MODID/system/system_ext
 │   │
-│   │      *** Any additional files / folders are allowed ***
+│   │      *** Quaisquer arquivos/pastas adicionais são permitidos ***
 │   │
 │   ├── ...
 │   └── ...
@@ -78,8 +78,8 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ├── .
 ```
 
-::: tip diferença com Magisk
-KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
+::: tip Diferença com Magisk
+O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
 :::
 
 ### module.prop
@@ -108,11 +108,11 @@ Por favor, leia a seção [Scripts de inicialização](#boot-scripts) para enten
 
 Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo; **NÃO** codifique o caminho do seu módulo em scripts.
 
-::: tip diferença com Magisk
-Você pode usar a variável de ambiente KSU para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando em KernelSU, esse valor será definido como verdadeiro.
+::: tip Diferença com Magisk
+Você pode usar a variável de ambiente `KSU` para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando em KernelSU, esse valor será definido como `true`.
 :::
 
-### `system` diretório
+### Diretório `system`
 
 O conteúdo deste diretório será sobreposto à partição /system do sistema usando overlayfs após a inicialização do sistema. Isso significa que:
 
@@ -121,7 +121,7 @@ O conteúdo deste diretório será sobreposto à partição /system do sistema u
 
 Se você deseja excluir um arquivo ou pasta no diretório original do sistema, você precisa criar um arquivo com o mesmo nome do arquivo/pasta no diretório do módulo usando `mknod filename c 0 0`. Dessa forma, o sistema overlayfs irá automaticamente "branquear" este arquivo como se ele tivesse sido excluído (a partição /system não foi realmente alterada).
 
-Você também pode declarar uma variável chamada `REMOVE` contendo uma lista de diretórios em `customize.sh` para executar operações de remoção, e KernelSU executará automaticamente `mknod <TARGET> c 0 0` nos diretórios correspondentes do módulo. Por exemplo:
+Você também pode declarar uma variável chamada `REMOVE` contendo uma lista de diretórios em `customize.sh` para executar operações de remoção, e o KernelSU executará automaticamente `mknod <TARGET> c 0 0` nos diretórios correspondentes do módulo. Por exemplo:
 
 ```sh
 REMOVE="
@@ -130,20 +130,22 @@ REMOVE="
 "
 ```
 
-A lista acima irá executar `mknod $MODPATH/system/app/YouTuBe c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
+A lista acima irá executar `mknod $MODPATH/system/app/YouTube c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
 
-Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n Trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema overlayfs substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
+Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema overlayfs substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
 
-Você pode declarar uma variável chamada `REPLACE` em seu arquivo `customize.sh`, que inclui uma lista de diretórios a serem substituídos, e KernelSU executará automaticamente as operações correspondentes em seu diretório de módulo. Por exemplo:
+Você pode declarar uma variável chamada `REPLACE` em seu arquivo `customize.sh`, que inclui uma lista de diretórios a serem substituídos, e o KernelSU executará automaticamente as operações correspondentes em seu diretório de módulo. Por exemplo:
 
+```sh
 REPLACE="
 /system/app/YouTube
 /system/app/Bloatware
 "
+```
 
-Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n Trusted.overlay.opaque -v e $MODPATH/system/app/ YouTube` e `setfattr -n Trusted.overlay.opaque -v e $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
+Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` e `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
 
-::: tip diferença com Magisk
+::: tip Diferença com Magisk
 
 O mecanismo sem sistema do KernelSU é implementado através do overlayfs do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
@@ -152,7 +154,7 @@ Se você estiver interessado em overlayfs, é recomendável ler a [documentaçã
 
 ### system.prop
 
-Este arquivo segue o mesmo formato de `build.prop`. Cada linha é composta por `[chave]=[valor]`.
+Este arquivo segue o mesmo formato de `build.prop`. Cada linha é composta por `[key]=[value]`.
 
 ### sepolicy.rule
 
@@ -165,24 +167,24 @@ Um instalador de módulo KernelSU é um módulo KernelSU empacotado em um arquiv
 ```txt
 module.zip
 │
-├── customize.sh                       <--- (Optional, more details later)
-│                                           This script will be sourced by update-binary
+├── customize.sh                       <--- (Opcional, mais detalhes posteriormente)
+│                                           Este script será fornecido por update-binary
 ├── ...
-├── ...  /* The rest of module's files */
+├── ...  /* O resto dos arquivos do módulo */
 │
 ```
 
 :::aviso
-O módulo KernelSU NÃO é compatível para instalação no recovery personalizado!!
+O módulo KernelSU **NÃO** é compatível para instalação no recovery personalizado!
 :::
 
 ### Costumização
 
-Se precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será _sourced_ (não executado!) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na ABI do dispositivo ou se você precisar definir permissões/segundo contexto especiais para alguns dos arquivos do seu módulo.
+Se você precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será _sourced_ (não executado!) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na ABI do dispositivo ou se você precisar definir permissões/segundo contexto especiais para alguns dos arquivos do seu módulo.
 
 Se você quiser controlar e personalizar totalmente o processo de instalação, declare `SKIPUNZIP=1` em `customize.sh` para pular todas as etapas de instalação padrão. Ao fazer isso, seu `customize.sh` será responsável por instalar tudo sozinho.
 
-O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o "Modo autônomo" ativado. As seguintes variáveis ​​e funções estão disponíveis:
+O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o "Modo Autônomo" ativado. As seguintes variáveis ​​e funções estão disponíveis:
 
 #### Variáveis
 
@@ -196,35 +198,35 @@ O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o "M
 - `ZIPFILE` (path): zip de instalação do seu módulo
 - `ARCH` (string): a arquitetura da CPU do dispositivo. O valor é `arm`, `arm64`, `x86` ou `x64`
 - `IS64BIT` (bool): `true` se `$ARCH` for `arm64` ou `x64`
-- `API` (int): o nível da API (versão Android) do dispositivo (por exemplo, `23` para Android 6.0)
+- `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo, `23` para Android 6.0)
 
 ::: aviso
-No KernelSU, MAGISK_VER_CODE é sempre 25200 e MAGISK_VER é sempre v25.2. Por favor, não use essas duas variáveis ​​para determinar se ele está sendo executado no KernelSU ou não.
+No KernelSU, `MAGISK_VER_CODE` é sempre `25200` e `MAGISK_VER` é sempre `v25.2`. Por favor, não use essas duas variáveis ​​para determinar se ele está sendo executado no KernelSU ou não.
 :::
 
 #### Funções
 
 ```txt
 ui_print <msg>
-    print <msg> to console
-    Avoid using 'echo' as it will not display in custom recovery's console
+    imprima <msg> no console
+    Evite usar 'echo', pois ele não será exibido no console de recuperação personalizado
 
 abort <msg>
-    print error message <msg> to console and terminate the installation
-    Avoid using 'exit' as it will skip the termination cleanup steps
+    imprima mensagem de erro <msg> para consolar e encerrar a instalação
+    Evite usar 'exit', pois isso irá pular as etapas de limpeza de encerramento
 
 set_perm <target> <owner> <group> <permission> [context]
-    if [context] is not set, the default is "u:object_r:system_file:s0"
-    this function is a shorthand for the following commands:
+    se [context] não estiver definido, o padrão é "u:object_r:system_file:s0"
+    esta função é uma abreviação para os seguintes comandos:
        chown owner.group target
        chmod permission target
        chcon context target
 
 set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> [context]
-    if [context] is not set, the default is "u:object_r:system_file:s0"
-    for all files in <directory>, it will call:
-       set_perm file owner group filepermission context
-    for all directories in <directory> (including itself), it will call:
+    se [context] não está definido, o padrão é "u:object_r:system_file:s0"
+    para todos os arquivos em <directory>, ele chamará:
+       contexto de permissão de arquivo do grupo proprietário do arquivo set_perm
+    para todos os diretórios em <directory> (including itself), ele vai ligar:
        set_perm dir owner group dirpermission context
 ```
 
@@ -244,14 +246,14 @@ No KernelSU, os scripts são divididos em dois tipos com base em seu modo de exe
 
 No KernelSU, os scripts de inicialização são divididos em dois tipos com base no local de armazenamento: scripts gerais e scripts de módulo:
 
-- Scripts Gerais
-  - Colocado em `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` ou `/data/adb/boot- concluído.d`
+- Scripts gerais
+  - Colocado em `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` ou `/data/adb/boot-completed.d`
   - Somente executado se o script estiver definido como executável (`chmod +x script.sh`)
   - Os scripts em `post-fs-data.d` são executados no modo post-fs-data e os scripts em `service.d` são executados no modo de serviço late_start.
   - Os módulos **NÃO** devem adicionar scripts gerais durante a instalação
-- Scripts de Módulo
+- Scripts de módulo
   - Colocado na própria pasta do módulo
-  - Executado apenas se o módulo estiver habilitado
+  - Executado apenas se o módulo estiver ativado
   - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída, `post-mount.sh` é executado em overlayfs montado.
 
 Todos os scripts de inicialização serão executados no shell BusyBox `ash` do KernelSU com o "Modo Autônomo" ativado.
