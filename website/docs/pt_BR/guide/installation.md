@@ -2,20 +2,20 @@
 
 ## Verifique se o seu dispositivo é compatível
 
-Baixe o app gerenciador KernelSU em [Lançamentos do GitHub](https://github.com/tiann/KernelSU/releases) ou [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu), e instale-o no seu dispositivo:
+Baixe o app gerenciador KernelSU em [GitHub Releases](https://github.com/tiann/KernelSU/releases) ou [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu), e instale-o no seu dispositivo:
 
-- Se o app mostrar `Sem suporte`, significa que **Você deve compilar o kernel sozinho**, o KernelSU não fornecerá e nunca fornecerá uma imagem de inicialização para você atualizar.
+- Se o app mostrar `Sem suporte`, significa que **Você deve compilar o kernel sozinho**, o KernelSU não fornecerá e nunca fornecerá uma boot image para você atualizar.
 - Se o app mostrar `Não instalado`, então seus dispositivos são oficialmente suportados pelo KernelSU.
 
-:::informações
-Para dispositivos mostrando `Sem suporte`, aqui está um [Dispositivos com suporte não oficial](unofficially-support-devices.md), você mesmo pode compilar o kernel.
+::: info INFORMAÇÕES
+Para dispositivos mostrando `Sem suporte`, aqui está os [Dispositivos com suporte não oficial](unofficially-support-devices.md), você mesmo pode compilar o kernel.
 :::
 
 ## Backup padrão boot.img
 
 Antes de atualizar, você deve primeiro fazer backup do seu boot.img padrão. Se você encontrar algum bootloop, você sempre pode restaurar o sistema voltando para o boot de fábrica usando o fastboot.
 
-::: aviso
+::: warning AVISO
 Flashar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu telefone, se necessário.
 :::
 
@@ -39,7 +39,7 @@ w      .x         .y       -zzz           -k            -something
 
 `w.x-zzz-k` é a versão KMI. Por exemplo, se a versão do kernel de um dispositivo for `5.10.101-android12-9-g30979850fc20`, então seu KMI será `5.10-android12-9`; teoricamente, ele pode inicializar normalmente com outros kernels KMI.
 
-::: dica
+::: tip DICA
 Observe que o SubLevel na versão do kernel não faz parte do KMI! Isso significa que `5.10.101-android12-9-g30979850fc20` tem o mesmo KMI que `5.10.137-android12-9-g30979850fc20`!
 :::
 
@@ -99,7 +99,7 @@ Você pode baixar o boot.img em [Lançamento do GitHub](https://github.com/tiann
 
 Onde `<format>` se refere ao formato de compactação do kernel do seu boot.img oficial, verifique o formato de compactação do kernel do seu boot.img original, você deve usar o formato correto, por exemplo. `lz4`, `gz`; se você usar um formato de compactação incorreto, poderá encontrar bootloop.
 
-::: informações
+::: info INFORMAÇÕES
 1. Você pode usar o magiskboot para obter o formato de compactação da sua inicialização original; é claro que você também pode perguntar a outras crianças mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda; portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
 2. Os dispositivos Xiaomi geralmente usam `gz` ou **uncompressed**.
 3. Para dispositivos Pixel, siga as instruções abaixo.
@@ -113,7 +113,7 @@ Use `adb` para conectar seu dispositivo, execute `adb reboot bootloader` para en
 fastboot flash boot boot.img
 ```
 
-::: informações
+::: info INFORMAÇÕES
 Se o seu dispositivo suportar `fastboot boot`, você pode primeiro usar `fastboot boot boot.img` para tentar usar o boot.img para inicializar o sistema primeiro. Se algo inesperado acontecer, reinicie-o novamente para inicializar.
 :::
 
@@ -152,7 +152,7 @@ Entre eles, o Android-Image-Kitchen é adequado para operação no PC e o magisk
 
 ### Usando magiskboot
 
-1. Baixe o Magisk mais recente em [Página de lançamento](https://github.com/topjohnwu/Magisk/releases)
+1. Baixe o Magisk mais recente em [GitHub Releases](https://github.com/topjohnwu/Magisk/releases)
 2. Renomeie o Magisk-*.apk para Magisk-vesion.zip e descompacte-o.
 3. Envie `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
 4. Envie stock boot.img e Image em AnyKernel3 para o seu dispositivo.
