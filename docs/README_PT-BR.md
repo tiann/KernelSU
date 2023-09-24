@@ -2,7 +2,7 @@
 
 # KernelSU
 
-Uma solução raiz baseada em kernel para dispositivos Android.
+Uma solução root baseada em kernel para dispositivos Android.
 
 ## Características
 
@@ -10,7 +10,7 @@ Uma solução raiz baseada em kernel para dispositivos Android.
 
 2. Sistema modular baseado em overlayfs.
 
-3. [Perfil do Aplicativo](https://kernelsu.org/guide/app-profile.html): Tranque o poder raiz em uma gaiola.
+3. [Perfil do Aplicativo](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
 
 ## Estado de Compatibilidade
 
@@ -21,9 +21,9 @@ WSA, ChromeOS e Android baseado em contêiner também deve funcionar com o Kerne
 E as ABIs atualmente suportadas são: `arm64-v8a` e `x86_64`
 
 ## Uso
- - [Instrução de instalação](https://kernelsu.org/guide/installation.html)
- - [Como construir?](https://kernelsu.org/guide/how-to-build.html)
- - [Site Oficial](https://kernelsu.org/)
+ - [Instrução de instalação](https://kernelsu.org/pt_BR/guide/installation.html)
+ - [Como construir?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
+ - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
 Para traduzir o KernelSU para o seu idioma ou melhorar uma tradução existente, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/), por favor.
@@ -36,7 +36,7 @@ Para traduzir o KernelSU para o seu idioma ou melhorar uma tradução existente,
 
 - Os arquivos no diretório `kernel` são [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
-- Todas as outras partes, exceto o diretório `kernel`, são [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- Todas as outras partes, exceto o diretório `kernel` são [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## Créditos
 

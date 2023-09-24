@@ -5,8 +5,8 @@ Primeiro, você deve ler a documentação oficial do Android para construção d
 1. [Construindo Kernels](https://source.android.com/docs/setup/build/building-kernels)
 2. [Versões de lançamento do GKI](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
 
-::: aviso
-Esta página é para dispositivos GKI, se você usa um kernel antigo, consulte [como integrar o KernelSU para kernel antigo](how-to-integrate-for-non-gki)
+::: warning AVISO
+Esta página é para dispositivos GKI, se você usa um kernel antigo, consulte [Como integrar o KernelSU para kernels não GKI](how-to-integrate-for-non-gki)
 :::
 
 ## Construir Kernel
@@ -24,7 +24,7 @@ O `<kernel_manifest.xml>` é um arquivo de manifesto que pode determinar uma con
 
 ### Construir
 
-Por favor, verifique os [documentos oficiais](https://source.android.com/docs/setup/build/building-kernels) first.
+Por favor, verifique os [documentos oficiais](https://source.android.com/docs/setup/build/building-kernels) primeiro.
 
 Por exemplo, precisamos construir a imagem do kernel aarch64:
 

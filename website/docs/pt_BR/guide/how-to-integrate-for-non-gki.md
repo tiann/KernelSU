@@ -37,7 +37,7 @@ Mas se você encontrar um loop de inicialização quando o KernelSU integrado, t
 
 :::tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
 
-comente `ksu_enable_sucompat()` e `ksu_enable_ksud()` em `KernelSU/kernel/ksu.c`, se o dispositivo inicializar normalmente, então o kprobe pode estar quebrado.
+Comente `ksu_enable_sucompat()` e `ksu_enable_ksud()` em `KernelSU/kernel/ksu.c`, se o dispositivo inicializar normalmente, então o kprobe pode estar quebrado.
 :::
 
 ## Modifique manualmente a fonte do kernel
@@ -221,7 +221,7 @@ index 2ff887661237..e758d7db7663 100644
 
 Para ativar o Modo de Segurança integrado do KernelSU, você também deve modificar `input_handle_event` em `drivers/input/input.c`:
 
-:::dica
+:::tip DICA
 É altamente recomendável ativar este recurso, é muito útil para evitar bootloops!
 :::
 
