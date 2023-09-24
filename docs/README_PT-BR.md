@@ -10,7 +10,7 @@ Uma solução root baseada em kernel para dispositivos Android.
 
 2. Sistema modular baseado em overlayfs.
 
-3. [Perfil do Aplicativo](https://kernelsu.org/guide/app-profile.html): Tranque o poder root em uma gaiola.
+3. [Perfil do Aplicativo](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
 
 ## Estado de Compatibilidade
 
