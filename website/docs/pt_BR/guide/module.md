@@ -17,7 +17,7 @@ Para aqueles que desejam usar este recurso “Modo Autônomo” fora do KernelSU
 
 Para garantir que todos os shells `sh` subsequentes executados também sejam executados em modo autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
-::: tip Diferença com Magisk
+::: tip DIFERENÇA COM MAGISK
 
 O BusyBox do KernelSU agora está usando o arquivo binário compilado diretamente do projeto Magisk. **Obrigado ao Magisk!** Portanto, você não precisa se preocupar com problemas de compatibilidade entre scripts BusyBox no Magisk e KernelSU porque eles são exatamente iguais!
 :::
@@ -78,7 +78,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ├── .
 ```
 
-::: tip Diferença com Magisk
+::: tip DIFERENÇA COM MAGISK
 O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
 :::
 
@@ -108,8 +108,8 @@ Por favor, leia a seção [Scripts de inicialização](#boot-scripts) para enten
 
 Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo; **NÃO** codifique o caminho do seu módulo em scripts.
 
-::: tip Diferença com Magisk
-Você pode usar a variável de ambiente `KSU` para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando em KernelSU, esse valor será definido como `true`.
+::: tip DIFERENÇA COM MAGISK
+Você pode usar a variável de ambiente `KSU` para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando no KernelSU, esse valor será definido como `true`.
 :::
 
 ### Diretório `system`
@@ -145,7 +145,7 @@ REPLACE="
 
 Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` e `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
 
-::: tip Diferença com Magisk
+::: tip DIFERENÇA COM MAGISK
 
 O mecanismo sem sistema do KernelSU é implementado através do overlayfs do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
@@ -160,9 +160,9 @@ Este arquivo segue o mesmo formato de `build.prop`. Cada linha é composta por `
 
 Se o seu módulo exigir alguns patches adicionais de sepolicy, adicione essas regras a este arquivo. Cada linha neste arquivo será tratada como uma declaração de política.
 
-## Instalador de módulo
+## Instalador do módulo
 
-Um instalador de módulo KernelSU é um módulo KernelSU empacotado em um arquivo zip que pode ser atualizado no app gerenciador KernelSU. O instalador de módulo KernelSU mais simples é apenas um módulo KernelSU compactado como um arquivo zip.
+Um instalador do módulo KernelSU é um módulo KernelSU empacotado em um arquivo zip que pode ser atualizado no app gerenciador KernelSU. O instalador do módulo KernelSU mais simples é apenas um módulo KernelSU compactado como um arquivo zip.
 
 ```txt
 module.zip
@@ -174,8 +174,8 @@ module.zip
 │
 ```
 
-:::aviso
-O módulo KernelSU **NÃO** é compatível para instalação no recovery personalizado!
+::: warning AVISO
+O módulo KernelSU **NÃO** é compatível para instalação no Recovery personalizado!
 :::
 
 ### Costumização
@@ -200,7 +200,7 @@ O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o "M
 - `IS64BIT` (bool): `true` se `$ARCH` for `arm64` ou `x64`
 - `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo, `23` para Android 6.0)
 
-::: aviso
+::: warning AVISO
 No KernelSU, `MAGISK_VER_CODE` é sempre `25200` e `MAGISK_VER` é sempre `v25.2`. Por favor, não use essas duas variáveis ​​para determinar se ele está sendo executado no KernelSU ou não.
 :::
 
