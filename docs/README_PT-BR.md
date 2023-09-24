@@ -21,9 +21,9 @@ WSA, ChromeOS e Android baseado em contêiner também deve funcionar com o Kerne
 E as ABIs atualmente suportadas são: `arm64-v8a` e `x86_64`
 
 ## Uso
- - [Instrução de instalação](https://kernelsu.org/guide/installation.html)
- - [Como construir?](https://kernelsu.org/guide/how-to-build.html)
- - [Site oficial](https://kernelsu.org/)
+ - [Instrução de instalação](https://kernelsu.org/pt_BR/guide/installation.html)
+ - [Como construir?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
+ - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
 Para traduzir o KernelSU para o seu idioma ou melhorar uma tradução existente, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/), por favor.
