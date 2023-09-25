@@ -4,8 +4,8 @@
 
 Baixe o app gerenciador KernelSU em [GitHub Releases](https://github.com/tiann/KernelSU/releases) ou [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu), e instale-o no seu dispositivo:
 
-- Se o app mostrar `Sem suporte`, significa que **Você deve compilar o kernel sozinho**, o KernelSU não fornecerá e nunca fornecerá uma boot image para você atualizar.
-- Se o app mostrar `Não instalado`, então seus dispositivos são oficialmente suportados pelo KernelSU.
+- Se o app mostrar `Sem suporte`, significa que **você deve compilar o kernel sozinho**, o KernelSU não fornecerá e nunca fornecerá uma boot image para você atualizar.
+- Se o app mostrar `Não instalado`, então seu dispositivo é oficialmente suportado pelo KernelSU.
 
 ::: info INFORMAÇÕES
 Para dispositivos mostrando `Sem suporte`, aqui está os [Dispositivos com suporte não oficial](unofficially-support-devices.md), você mesmo pode compilar o kernel.
@@ -66,26 +66,26 @@ Etapa:
 
 1. Na [página de lançamento](https://github.com/tiann/KernelSU/releases) do KernelSU, baixe o pacote zip começando com AnyKernel3 que corresponde à versão do seu telefone; por exemplo, a versão do kernel do telefone é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
 2. Reinicie o telefone no TWRP.
-3. Use adb para colocar AnyKernel3-*.zip no telefone /sdcard e escolha instalá-lo na interface do TWRP; ou você pode diretamente `adb sideload AnyKernel-*.zip` para instalar.
+3. Use o adb para colocar AnyKernel3-*.zip no telefone /sdcard e escolha instalá-lo na interface do TWRP; ou você pode diretamente `adb sideload AnyKernel-*.zip` para instalar.
 
 PS. Este método é adequado para qualquer instalação (não limitado à instalação inicial ou atualizações subsequentes), desde que você use TWRP.
 
 ## Instalar com Kernel Flasher
 
-Pré-requisito: Seu dispositivo deve estar enraizado. Por exemplo, você instalou o Magisk para obter root ou instalou uma versão antiga do KernelSU e precisa atualizar para outra versão do KernelSU; se o seu dispositivo não estiver enraizado, tente outros métodos.
+Pré-requisito: Seu dispositivo deve estar rooteado. Por exemplo, você instalou o Magisk para obter root ou instalou uma versão antiga do KernelSU e precisa atualizar para outra versão do KernelSU; se o seu dispositivo não estiver rooteado, tente outros métodos.
 
 Etapa:
 
 1. Baixe o zip AnyKernel3; consulte a seção *Instalando com Recovery Personalizado* para obter instruções de download.
 2. Abra o app Kernel Flash e use o zip AnyKernel3 fornecido para fazer o flash.
 
-Se você nunca usou o app Kernel flash antes, os seguintes são os mais populares.
+Se você nunca usou algum app kernel flash antes, os seguintes são os mais populares.
 
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
 
-PS. Este método é mais conveniente ao atualizar o KernelSU e pode ser feito sem um computador (backup primeiro!).
+PS. Este método é mais conveniente ao atualizar o KernelSU e pode ser feito sem um computador (backup primeiro).
 
 ## Instale com boot.img fornecido por KernelSU
 
@@ -95,19 +95,19 @@ Este método não requer que você tenha TWRP, nem que seu telefone tenha privil
 
 O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve liberar o boot.img para a partição de inicialização do dispositivo.
 
-Você pode baixar o boot.img em [Lançamento do GitHub](https://github.com/tiann/KernelSU/releases), por favor, observe que você deve usar a versão correta do boot.img. Por exemplo, se o seu dispositivo exibe o kernel `android12-5.10.101` , você precisa baixar `android-5.10.101_yyyy-MM.boot-<format>.img`. (Mantenha o KMI consistente!)
+Você pode baixar o boot.img em [GitHub Release](https://github.com/tiann/KernelSU/releases), por favor, observe que você deve usar a versão correta do boot.img. Por exemplo, se o seu dispositivo exibe o kernel `android12-5.10.101` , você precisa baixar `android-5.10.101_yyyy-MM.boot-<format>.img`. (Mantenha o KMI consistente!)
 
-Onde `<format>` se refere ao formato de compactação do kernel do seu boot.img oficial, verifique o formato de compactação do kernel do seu boot.img original, você deve usar o formato correto, por exemplo. `lz4`, `gz`; se você usar um formato de compactação incorreto, poderá encontrar bootloop.
+Onde `<format>` se refere ao formato de compactação do kernel do seu boot.img oficial, por favor, verifique o formato de compactação do kernel do seu boot.img original, você deve usar o formato correto, por exemplo: `lz4`, `gz`; se você usar um formato de compactação incorreto, poderá encontrar bootloop.
 
 ::: info INFORMAÇÕES
-1. Você pode usar o magiskboot para obter o formato de compactação da sua inicialização original; é claro que você também pode perguntar a outras crianças mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda; portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
+1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; é claro que você também pode perguntar a outras crianças mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda; portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
 2. Os dispositivos Xiaomi geralmente usam `gz` ou **uncompressed**.
 3. Para dispositivos Pixel, siga as instruções abaixo.
 :::
 
 ### Flash boot.img para o dispositivo
 
-Use `adb` para conectar seu dispositivo, execute `adb reboot bootloader` para entrar no modo fastboot e use este comando para atualizar o KernelSU:
+Use o `adb` para conectar seu dispositivo, execute `adb reboot bootloader` para entrar no modo fastboot e use este comando para atualizar o KernelSU:
 
 ```sh
 fastboot flash boot boot.img
@@ -117,7 +117,7 @@ fastboot flash boot boot.img
 Se o seu dispositivo suportar `fastboot boot`, você pode primeiro usar `fastboot boot boot.img` para tentar usar o boot.img para inicializar o sistema primeiro. Se algo inesperado acontecer, reinicie-o novamente para inicializar.
 :::
 
-### Reniciar
+### Reiniciar
 
 Após a conclusão do flash, você deve reiniciar o dispositivo:
 
