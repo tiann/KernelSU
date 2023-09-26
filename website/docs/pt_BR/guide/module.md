@@ -150,7 +150,7 @@ Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` 
 O mecanismo sem sistema do KernelSU é implementado através do overlayfs do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
 
-Se você estiver interessado em overlayfs, é recomendável ler a [documentação sobre overlayfs do Kernel Linux](https://docs.kernel.org/filesystems/overlayfs.html).
+Se você estiver interessado em overlayfs, é recomendável ler a [documentação sobre overlayfs](https://docs.kernel.org/filesystems/overlayfs.html) do Kernel Linux.
 
 ### system.prop
 
@@ -178,7 +178,7 @@ module.zip
 O módulo KernelSU **NÃO** é compatível para instalação no Recovery personalizado!
 :::
 
-### Costumização
+### Personalização
 
 Se você precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será _sourced_ (não executado!) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na ABI do dispositivo ou se você precisar definir permissões/segundo contexto especiais para alguns dos arquivos do seu módulo.
 
@@ -188,17 +188,17 @@ O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o "M
 
 #### Variáveis
 
-- `KSU` (bool): uma variável para marcar que o script está sendo executado no ambiente KernelSU, e o valor desta variável sempre será true. Você pode usá-lo para distinguir entre KernelSU e Magisk.
+- `KSU` (bool): uma variável para marcar que o script está sendo executado no ambiente KernelSU, e o valor desta variável sempre será `true`. Você pode usá-lo para distinguir entre KernelSU e Magisk.
 - `KSU_VER` (string): a string da versão do KernelSU atualmente instalado (por exemplo, `v0.4.0`)
-- `KSU_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do usuário (por exemplo, `10672`)
-- `KSU_KERNEL_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do kernel (por exemplo, `10672`)
+- `KSU_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do usuário (por exemplo: `10672`)
+- `KSU_KERNEL_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do kernel (por exemplo: `10672`)
 - `BOOTMODE` (bool): sempre seja `true` no KernelSU
 - `MODPATH` (path): o caminho onde os arquivos do seu módulo devem ser instalados
 - `TMPDIR` (path): um lugar onde você pode armazenar arquivos temporariamente
 - `ZIPFILE` (path): zip de instalação do seu módulo
 - `ARCH` (string): a arquitetura da CPU do dispositivo. O valor é `arm`, `arm64`, `x86` ou `x64`
 - `IS64BIT` (bool): `true` se `$ARCH` for `arm64` ou `x64`
-- `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo, `23` para Android 6.0)
+- `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo: `23` para Android 6.0)
 
 ::: warning AVISO
 No KernelSU, `MAGISK_VER_CODE` é sempre `25200` e `MAGISK_VER` é sempre `v25.2`. Por favor, não use essas duas variáveis ​​para determinar se ele está sendo executado no KernelSU ou não.
@@ -238,7 +238,7 @@ No KernelSU, os scripts são divididos em dois tipos com base em seu modo de exe
   - Esta etapa está BLOQUEANDO. O processo de inicialização é pausado antes da execução ser concluída ou 10 segundos se passaram.
   - Os scripts são executados antes de qualquer módulo ser montado. Isso permite que um desenvolvedor de módulo ajuste dinamicamente seus módulos antes de serem montados.
   - Este estágio acontece antes do início do Zygote, o que significa praticamente tudo no Android
-  - **AVISO:** usar `setprop` irá bloquear o processo de inicialização! Por favor, use `resetprop -n <prop_name> <prop_value>` em vez disso.
+  - **AVISO:** Usar `setprop` irá bloquear o processo de inicialização! Por favor, use `resetprop -n <prop_name> <prop_value>` em vez disso.
   - **Execute scripts neste modo apenas se necessário.**
 - modo de serviço late_start
   - Esta etapa é SEM BLOQUEIO. Seu script é executado em paralelo com o restante do processo de inicialização.
