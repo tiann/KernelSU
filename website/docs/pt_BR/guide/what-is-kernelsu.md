@@ -14,7 +14,7 @@ Por favor, consulte: [Instalação](installation)
 
 ## Como construir
 
-[Como construir o KernelSU](how-to-build)
+[Como construir o KernelSU?](how-to-build)
 
 ## Discussão
 
