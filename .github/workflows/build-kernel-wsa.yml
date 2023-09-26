@@ -18,31 +18,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: ["5.15.104.2", "5.15.104.3"]
-        include:
-          - arch: x86_64
-            file_name: "bzImage"
-          - arch: arm64
-            file_name: "Image"
-            cross_compile: "aarch64-linux-gnu"
-          - version: "5.15.104.2"
-            arch: x86_64
-            make_config: config-wsa-x64
-          - version: "5.15.104.2"
-            arch: arm64
-            make_config: config-wsa-arm64
-          - version: "5.15.104.3"
-            arch: x86_64
-            make_config: config-wsa-x64
-          - version: "5.15.104.3"
-            arch: arm64
-            make_config: config-wsa-arm64
-          - version: "5.15.104.2"
-            device_code: latte-2
-            kernel_version: "5.15"
-          - version: "5.15.104.3"
-            device_code: latte-2
-            kernel_version: "5.15"
+        version: ["5.15.94.2", "5.15.104.1", "5.15.104.2", "5.15.104.3"]
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
@@ -57,19 +33,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
           export LLVM_VERSION=12
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh $LLVM_VERSION
-          rm ./llvm.sh
-          sudo ln -s --force /usr/bin/clang-$LLVM_VERSION /usr/bin/clang
-          sudo ln -s --force /usr/bin/ld.lld-$LLVM_VERSION /usr/bin/ld.lld
-          sudo ln -s --force /usr/bin/llvm-objdump-$LLVM_VERSION /usr/bin/llvm-objdump
-          sudo ln -s --force /usr/bin/llvm-ar-$LLVM_VERSION /usr/bin/llvm-ar
-          sudo ln -s --force /usr/bin/llvm-nm-$LLVM_VERSION /usr/bin/llvm-nm
-          sudo ln -s --force /usr/bin/llvm-strip-$LLVM_VERSION /usr/bin/llvm-strip
-          sudo ln -s --force /usr/bin/llvm-objcopy-$LLVM_VERSION /usr/bin/llvm-objcopy
-          sudo ln -s --force /usr/bin/llvm-readelf-$LLVM_VERSION /usr/bin/llvm-readelf
-          sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
+          wget -q https://apt.llvm.org/llvm.sh
+          sudo bash ./llvm.sh $LLVM_VERSION
+          cd /usr/bin
+          sudo ln -sf clang-$LLVM_VERSION clang
+          sudo ln -sf ld.lld-$LLVM_VERSION ld.lld
+          sudo ln -sf llvm-objdump-$LLVM_VERSION llvm-objdump
+          sudo ln -sf llvm-ar-$LLVM_VERSION llvm-ar
+          sudo ln -sf llvm-nm-$LLVM_VERSION llvm-nm
+          sudo ln -sf llvm-strip-$LLVM_VERSION llvm-strip
+          sudo ln -sf llvm-objcopy-$LLVM_VERSION llvm-objcopy
+          sudo ln -sf llvm-readelf-$LLVM_VERSION llvm-readelf
+          sudo ln -sf clang++-$LLVM_VERSION clang++
 
       - name: Checkout KernelSU
         uses: actions/checkout@v4
@@ -78,10 +53,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup kernel source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: microsoft/WSA-Linux-Kernel
-          ref: android-lts/${{ matrix.device_code }}/${{ matrix.version }}
+          ref: android-lts/latte-2/${{ matrix.version }}
           path: WSA-Linux-Kernel
 
       - name: Setup Ccache
@@ -103,7 +78,7 @@ jobs:
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/${{ matrix.kernel_version }}/*.patch
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.15/*.patch
           echo "[+] KernelSU setup done."
           cd $GITHUB_WORKSPACE/KernelSU
           VERSION=$(($(git rev-list --count HEAD) + 10200))
@@ -113,15 +88,17 @@ jobs:
       - name: Build Kernel
         working-directory: WSA-Linux-Kernel
         run: |
-          cp configs/wsa/${{ matrix.make_config }} .config
+          declare -A ARCH_MAP=(["x86_64"]="x64" ["arm64"]="arm64")
+          cp configs/wsa/config-wsa-${ARCH_MAP[${{ matrix.arch }}]} .config
           make olddefconfig
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
-          make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} CROSS_COMPILE=${{ matrix.cross_compile }} ${{ matrix.file_name }} CCACHE="/usr/bin/ccache"
-          declare -A ARCH_MAP=(["x86_64"]="x86" ["arm64"]="arm64")
-          echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP[${{ matrix.arch }}]}/boot/${{ matrix.file_name }}" >> $GITHUB_ENV
+          declare -A FILE_NAME=(["x86_64"]="bzImage" ["arm64"]="Image")
+          make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} $(if [ "${{ matrix.arch }}" == "arm64" ]; then echo CROSS_COMPILE=aarch64-linux-gnu; fi) ${FILE_NAME[${{ matrix.arch }}]} CCACHE="/usr/bin/ccache"
+          declare -A ARCH_MAP_FILE=(["x86_64"]="x86" ["arm64"]="arm64")
+          echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP_FILE[${{ matrix.arch }}]}/boot/${FILE_NAME[${{ matrix.arch }}]}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
         uses: actions/upload-artifact@v3
@@ -130,7 +107,7 @@ jobs:
           path: "${{ env.file_path }}"
 
       - name: Post to Telegram
-        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref_type == 'tag'
         env:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}

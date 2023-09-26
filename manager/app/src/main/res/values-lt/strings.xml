@@ -2,12 +2,12 @@
 <resources>
     <string name="home_fingerprint">Pirštų atspaudas</string>
     <string name="selinux_status_disabled">Išjungta</string>
-    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_enforcing">Priverstinas</string>
     <string name="selinux_status_unknown">Nežinomas</string>
     <string name="superuser">Supernaudotojai</string>
     <string name="module_failed_to_enable">Nepavyko įjungti modulio: %s</string>
     <string name="module_failed_to_disable">Nepavyko išjungti modulio: %s</string>
-    <string name="selinux_status_permissive">Permissive</string>
+    <string name="selinux_status_permissive">Leistinas</string>
     <string name="module_empty">Nėra įdiegtų modulių</string>
     <string name="module">Moduliai</string>
     <string name="reboot_userspace">Perkrovimas neišjungus</string>
@@ -51,7 +51,7 @@
     <string name="module_update">Atnaujinti</string>
     <string name="module_downloading">Atsisiunčiamas modulis: %s</string>
     <string name="module_start_downloading">Pradedamas atsisiuntimas: %s</string>
-    <string name="new_version_available">Nauja versija: %s pasiekiama, spustelėkite norėdami atsisiųsti</string>
+    <string name="new_version_available">Nauja versija: %s pasiekiama, spustelėkite norėdami atsinaujinti</string>
     <string name="launch_app">Paleisti</string>
     <string name="force_stop_app">Priversti sustoti</string>
     <string name="restart_app">Perkrauti</string>
@@ -78,4 +78,6 @@
     <string name="home_support_content">KernelSU yra ir visada bus nemokamas ir atvirojo kodo. Tačiau galite parodyti, kad jums rūpi, paaukodami mums.</string>
     <string name="failed_to_update_app_profile">Nepavyko atnaujinti programos profilio %s</string>
     <string name="settings_umount_modules_default_summary">Visuotinė numatytoji „Modulių atjungimo“ reikšmė programų profiliuose. Jei įjungta, ji pašalins visus sistemos modulio pakeitimus programoms, kurios neturi profilio.</string>
+    <string name="module_changelog">Keitimų žurnalas</string>
+    <string name="require_kernel_version">Ši KernelSU versija %d yra per žema, kad šis vadybininkas galėtų tinkamai funkcionuoti. Prašome atsinaujinti į versiją %d ar aukščiau!</string>
 </resources>

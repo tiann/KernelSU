@@ -6,7 +6,7 @@ const pkg = require('vitepress/package.json')
 
 export default defineConfig({
   lang: 'pt-BR',
-  description: 'Uma solução raiz baseada em kernel para dispositivos Android GKI.',
+  description: 'Uma solução root baseada em kernel para dispositivos Android GKI.',
 
   themeConfig: {
     nav: nav(),
@@ -50,10 +50,10 @@ function sidebarGuide() {
           { text: 'Como construir?', link: '/pt_BR/guide/how-to-build' },
           { text: 'Integração para dispositivos não GKI', link: '/pt_BR/guide/how-to-integrate-for-non-gki'},
           { text: 'Dispositivos com suporte não oficial', link: '/pt_BR/guide/unofficially-support-devices.md' },
-          { text: 'Guia do Módulo', link: '/guide/module.md' },
+          { text: 'Guias de módulo', link: '/pt_BR/guide/module.md' },
           { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
-          { text: 'FAQ', link: '/guide/faq' },
+          { text: 'FAQ', link: '/pt_BR/guide/faq' },
           { text: 'Recursos ocultos', link: '/pt_BR/guide/hidden-features' },
         ]
     }
