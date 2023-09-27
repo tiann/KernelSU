@@ -1,5 +1,5 @@
 name: Build debug kernel
-on:
+runs-on: self-hosted
   workflow_dispatch:
 
 jobs:
@@ -20,3 +20,5 @@ jobs:
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
       debug: true
+
+    
