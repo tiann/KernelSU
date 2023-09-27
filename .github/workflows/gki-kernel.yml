@@ -64,7 +64,7 @@ on:
 jobs:
   build:
     name: Build ${{ inputs.version_name }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
