@@ -1,5 +1,5 @@
 name: Build Kernel - Android 13
-on:
+runs-on: self-hosted
   push:
     branches: ["main", "ci"]
     paths:
@@ -70,7 +70,7 @@ jobs:
       patch_path: ${{ matrix.version }}
   upload-artifacts:
     needs: build-kernel
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' || github.ref == 'refs/heads/ci' }}
     env:
       CHAT_ID: ${{ secrets.CHAT_ID }}
