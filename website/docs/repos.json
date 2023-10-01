@@ -481,5 +481,12 @@
         "kernel_name": "Kernel-Oriente-Cebu",
         "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Cebu",
         "devices": "Moto g9 power"
+    },
+    {
+        "maintainer": "hc841",
+        "maintainer_link": "https://github.com/hc841",
+        "kernel_name": "NovaCore_kernel",
+        "kernel_link": "https://github.com/hc841/NovaCore_kernel",
+        "devices": "Moto g9 play"
     }
 ]
