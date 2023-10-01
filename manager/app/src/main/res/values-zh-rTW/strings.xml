@@ -75,8 +75,9 @@
     <string name="profile_selinux_domain">網域</string>
     <string name="module_update">更新</string>
     <string name="module_start_downloading">開始下載：%s</string>
-    <string name="new_version_available">發現新版本：%s 已可供使用，按一下即可下載</string>
+    <string name="new_version_available">發現新版本：%s 已可供使用，按一下即可升級</string>
     <string name="launch_app">啟動</string>
     <string name="force_stop_app">強制停止</string>
     <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux</string>
+    <string name="module_changelog">變更記錄</string>
 </resources>
