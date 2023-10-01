@@ -273,6 +273,13 @@
         "devices": "Nokia 6.1 (2018)"
     },
     {
+        "maintainer": "Tuan Anh",
+        "maintainer_link": "https://github.com/log1cs",
+        "kernel_name": "kernel_nokia_msm8998",
+        "kernel_link": "https://github.com/log1cs/kernel_nokia_msm8998",
+        "devices": "Nokia 8 (Repartitioned)/8 Sirocco (NLA/A1N)"
+    },
+    {
         "maintainer": "bggRGjQaUbCoE",
         "maintainer_link": "https://github.com/bggRGjQaUbCoE",
         "kernel_name": "android_kernel_samsung_sm8250",
