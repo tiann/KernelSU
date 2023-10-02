@@ -11,12 +11,12 @@ Baixe o app gerenciador KernelSU em [GitHub Releases](https://github.com/tiann/K
 Para dispositivos mostrando `Sem suporte`, aqui está os [Dispositivos com suporte não oficial](unofficially-support-devices.md), você mesmo pode compilar o kernel.
 :::
 
-## Backup padrão boot.img
+## Backup padrão do boot.img
 
-Antes de atualizar, você deve primeiro fazer backup do seu boot.img padrão. Se você encontrar algum bootloop, você sempre pode restaurar o sistema voltando para o boot de fábrica usando o fastboot.
+Antes de fleshar, você deve primeiro fazer backup do seu boot.img padrão. Se você encontrar algum bootloop, você sempre pode restaurar o sistema voltando para o boot de fábrica usando o fastboot.
 
 ::: warning AVISO
-Flashar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu telefone, se necessário.
+Fleshar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu telefone, se necessário.
 :::
 
 ## Conhecimento necessário
@@ -27,7 +27,7 @@ Por padrão, você usará as ferramentas ADB e fastboot neste tutorial, portanto
 
 ### KMI
 
-Kernel Module Interface (KMI), versões de kernel com o mesmo KMI são **compatíveis** Isso é o que "geral" significa no GKI; por outro lado, se o KMI for diferente, então esses kernels não são compatíveis entre si, e atualizar uma imagem do kernel com um KMI diferente do seu dispositivo pode causar um bootloop.
+Kernel Module Interface (KMI), versões de kernel com o mesmo KMI são **compatíveis**, isso é o que "geral" significa no GKI; por outro lado, se o KMI for diferente, então esses kernels não são compatíveis entre si, e atualizar uma imagem do kernel com um KMI diferente do seu dispositivo pode causar um bootloop.
 
 Especificamente, para dispositivos GKI, o formato da versão do kernel deve ser o seguinte:
 
@@ -47,7 +47,7 @@ Observe que o SubLevel na versão do kernel não faz parte do KMI! Isso signific
 
 Por favor, observe: **A versão do kernel e a versão do Android não são necessariamente iguais!**
 
-Se você descobrir que a versão do seu kernel é `android12-5.10.101`, mas a versão do seu sistema Android é Android 13 ou outra; não se surpreenda, pois o número da versão do sistema Android não é necessariamente igual ao número da versão do kernel Linux; O número da versão do kernel Linux geralmente é consistente com a versão do sistema Android que acompanha o **dispositivo quando ele é enviado**. Se o sistema Android for atualizado posteriormente, a versão do kernel geralmente não será alterada. Se você precisar atualizar, **por favor, consulte sempre a versão do kernel!!**
+Se você descobrir que a versão do seu kernel é `android12-5.10.101`, mas a versão do seu sistema Android é Android 13 ou outra, não se surpreenda, pois o número da versão do sistema Android não é necessariamente igual ao número da versão do kernel Linux. O número da versão do kernel Linux geralmente é consistente com a versão do sistema Android que acompanha o **dispositivo quando ele é enviado**. Se o sistema Android for atualizado posteriormente, a versão do kernel geralmente não será alterada. Se você precisar fazer o flash, **por favor, consulte sempre a versão do kernel!**
 
 ## Introdução
 
@@ -55,12 +55,12 @@ Existem vários métodos de instalação do KernelSU, cada um adequado para um c
 
 1. Instalar com Recovery personalizado (por exemplo, TWRP)
 2. Instalar com um app kernel flash, como Franco Kernel Manager
-3. Instalar com fastboot usando boot.img fornecido por KernelSU
+3. Instalar com fastboot usando o boot.img fornecido por KernelSU
 4. Repare o boot.img manualmente e instale-o
 
 ## Instalar com Recovery personalizado
 
-Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP; se não ou apenas o Recovery oficial estiver disponível, use outro método.
+Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP; se apenas o Recovery oficial estiver disponível, use outro método.
 
 Etapa:
 
@@ -76,7 +76,7 @@ Pré-requisito: Seu dispositivo deve estar rooteado. Por exemplo, você instalou
 
 Etapa:
 
-1. Baixe o zip AnyKernel3; consulte a seção *Instalando com Recovery Personalizado* para obter instruções de download.
+1. Baixe o zip AnyKernel3; consulte a seção *Instalar com Recovery personalizado* para obter instruções de download.
 2. Abra o app Kernel Flash e use o zip AnyKernel3 fornecido para fazer o flash.
 
 Se você nunca usou algum app kernel flash antes, os seguintes são os mais populares.
@@ -87,21 +87,21 @@ Se você nunca usou algum app kernel flash antes, os seguintes são os mais popu
 
 PS. Este método é mais conveniente ao atualizar o KernelSU e pode ser feito sem um computador (backup primeiro).
 
-## Instale com boot.img fornecido por KernelSU
+## Instalar com o boot.img fornecido por KernelSU
 
 Este método não requer que você tenha TWRP, nem que seu telefone tenha privilégios de root; é adequado para sua primeira instalação do KernelSU.
 
 ### Encontre o boot.img adequado
 
-O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve liberar o boot.img para a partição de inicialização do dispositivo.
+O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve liberar o boot.img para a partição boot do dispositivo.
 
 Você pode baixar o boot.img em [GitHub Release](https://github.com/tiann/KernelSU/releases), por favor, observe que você deve usar a versão correta do boot.img. Por exemplo, se o seu dispositivo exibe o kernel `android12-5.10.101` , você precisa baixar `android-5.10.101_yyyy-MM.boot-<format>.img`. (Mantenha o KMI consistente!)
 
-Onde `<format>` se refere ao formato de compactação do kernel do seu boot.img oficial, por favor, verifique o formato de compactação do kernel do seu boot.img original, você deve usar o formato correto, por exemplo: `lz4`, `gz`; se você usar um formato de compactação incorreto, poderá encontrar bootloop.
+Onde `<format>` se refere ao formato de compactação do kernel do seu boot.img oficial, por favor, verifique o formato de compactação do kernel de seu boot.img original. Você deve usar o formato correto, por exemplo: `lz4`, `gz`; se você usar um formato de compactação incorreto, poderá encontrar bootloop.
 
 ::: info INFORMAÇÕES
-1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; é claro que você também pode perguntar a outras crianças mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda; portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
-2. Os dispositivos Xiaomi geralmente usam `gz` ou **uncompressed**.
+1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; é claro que você também pode perguntar a outras pessoas mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda, portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
+2. Os dispositivos Xiaomi geralmente usam `gz` ou `uncompressed`.
 3. Para dispositivos Pixel, siga as instruções abaixo.
 :::
 
@@ -114,7 +114,7 @@ fastboot flash boot boot.img
 ```
 
 ::: info INFORMAÇÕES
-Se o seu dispositivo suportar `fastboot boot`, você pode primeiro usar `fastboot boot boot.img` para tentar usar o boot.img para inicializar o sistema primeiro. Se algo inesperado acontecer, reinicie-o novamente para inicializar.
+Se o seu dispositivo suportar `fastboot boot`, você pode usar primeiro `fastboot boot boot.img` para tentar usar o boot.img para inicializar o sistema primeiro. Se algo inesperado acontecer, reinicie-o novamente para inicializar.
 :::
 
 ### Reiniciar
@@ -127,7 +127,7 @@ fastboot reboot
 
 ## Corrigir boot.img manualmente
 
-Para alguns dispositivos, o formato boot.img não é tão comum, como `lz4`, `gz` e `uncompressed`; o mais típico é o Pixel, seu formato boot.img é `lz4_legacy` compactado, ramdisk pode ser `gz` também pode ser compactado `lz4_legacy`; neste momento, se você atualizar diretamente o boot.img fornecido pelo KernelSU, o telefone pode não conseguir inicializar; neste momento, você pode corrigir manualmente o boot.img para conseguir isso.
+Para alguns dispositivos, o formato boot.img não é tão comum, como `lz4`, `gz` e `uncompressed`; o mais típico é o Pixel, seu formato boot.img é `lz4_legacy` compactado, ramdisk pode ser `gz` também pode ser compactado `lz4_legacy`; neste momento, se você fleshar diretamente o boot.img fornecido pelo KernelSU, o telefone pode não conseguir inicializar. Neste momento, você pode corrigir manualmente o boot.img para conseguir isso.
 
 Geralmente existem dois métodos de patch:
 
@@ -138,32 +138,32 @@ Entre eles, o Android-Image-Kitchen é adequado para operação no PC e o magisk
 
 ### Preparação
 
-1. Obtenha o stock boot.img do telefone; você pode obtê-lo com os fabricantes do seu dispositivo, você pode precisar do [payload-dumper-go](https://github.com/ssut/payload-dumper-go)
+1. Obtenha o boot.img padrão do telefone; você pode obtê-lo com os fabricantes do seu dispositivo, você pode precisar do [payload-dumper-go](https://github.com/ssut/payload-dumper-go)
 2. Baixe o arquivo zip AnyKernel3 fornecido pelo KernelSU que corresponde à versão KMI do seu dispositivo (você pode consultar *Instalar com Recovery personalizado*).
 3. Descompacte o pacote AnyKernel3 e obtenha o arquivo `Image`, que é o arquivo do kernel do KernelSU.
 
-### Usando Android-Image-Kitchen
+### Usando o Android-Image-Kitchen
 
 1. Baixe o Android-Image-Kitchen para o seu computador.
-2. Coloque o stock boot.img na pasta raiz do Android-Image-Kitchen.
+2. Coloque o boot.img padrão na pasta raiz do Android-Image-Kitchen.
 3. Execute `./unpackimg.sh boot.img` no diretório raiz do Android-Image-Kitchen, este comando descompactará o boot.img e você obterá alguns arquivos.
 4. Substitua `boot.img-kernel` no diretório `split_img` pela `Image` que você extraiu do AnyKernel3 (observe a mudança de nome para boot.img-kernel).
-5. Execute `./repackimg.sh` no diretório raiz de 在 Android-Image-Kitchen; E você obterá um arquivo chamado `image-new.img`; Atualize este boot.img por fastboot (consulte a seção anterior).
+5. Execute `./repackimg.sh` no diretório raiz de 在 Android-Image-Kitchen, e você obterá um arquivo chamado `image-new.img`. Faça o flash deste boot.img por fastboot (consulte a seção anterior).
 
-### Usando magiskboot
+### Usando o magiskboot
 
 1. Baixe o Magisk mais recente em [GitHub Releases](https://github.com/topjohnwu/Magisk/releases)
 2. Renomeie o Magisk-*.apk para Magisk-vesion.zip e descompacte-o.
 3. Envie `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
-4. Envie stock boot.img e Image em AnyKernel3 para o seu dispositivo.
+4. Envie o boot.img padrão e Image em AnyKernel3 para o seu dispositivo.
 5. Entre no diretório adb shell e cd `/data/local/tmp/` e, em seguida, `chmod +x magiskboot`
 6. Entre no shell adb e no diretório cd `/data/local/tmp/`, execute `./magiskboot unpack boot.img` para descompactar `boot.img`, você obterá um arquivo `kernel`, este é o seu kernel padrão.
 7. Substitua `kernel` por `Image`: `mv -f Image kernel`
-8. Execute `./magiskboot repack boot.img` para reembalar o boot img, e você obterá um arquivo `new-boot.img`, atualize este arquivo para o dispositivo por fastboot.
+8. Execute `./magiskboot repack boot.img` para reembalar o boot.img, e você obterá um arquivo `new-boot.img`, faça o flash deste arquivo para o dispositivo por fastboot.
 
 ## Outros métodos
 
-Na verdade, todos esses métodos de instalação têm apenas uma ideia principal, que é **substituir o kernel original pelo fornecido pelo KernelSU**; desde que isso possa ser alcançado, ele pode ser instalado; por exemplo, a seguir estão outros métodos possíveis.
+Na verdade, todos esses métodos de instalação têm apenas uma ideia principal, que é **substituir o kernel original pelo fornecido pelo KernelSU**, desde que isso possa ser alcançado, ele pode ser instalado. Por exemplo, a seguir estão outros métodos possíveis.
 
-1. Primeiro instale o Magisk, obtenha privilégios de root através do Magisk e então use o kernel flasher para atualizar no zip AnyKernel do KernelSU.
-2. Use algum kit de ferramentas de atualização em PCs para atualizar no kernel fornecido KernelSU.
+1. Primeiro instale o Magisk, obtenha privilégios de root através do Magisk e então use o kernel flasher para fazer o flash no zip AnyKernel do KernelSU.
+2. Use algum kit de ferramentas de flash em PCs para fleshar no kernel fornecido pelo KernelSU.
