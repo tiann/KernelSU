@@ -592,14 +592,14 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 		trans = (struct filename_trans_datum *)kcalloc(sizeof(*trans),
 							       1, GFP_ATOMIC);
 		if (!trans) {
-			pr_err("add_filename_trans: Failed to alloc datum");
+			pr_err("add_filename_trans: Failed to alloc datum\n");
 			return false;
 		}
 		struct filename_trans *new_key =
 			(struct filename_trans *)kmalloc(sizeof(*new_key),
 							 GFP_ATOMIC);
 		if (!new_key) {
-			pr_err("add_filename_trans: Failed to alloc new_key");
+			pr_err("add_filename_trans: Failed to alloc new_key\n");
 			return false;
 		}
 		*new_key = key;
