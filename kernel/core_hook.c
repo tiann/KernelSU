@@ -184,7 +184,7 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 	if (strcmp(buf, "/system/packages.list")) {
 		return 0;
 	}
-	pr_info("renameat: %s -> %s, new path: %s", old_dentry->d_iname,
+	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
 		new_dentry->d_iname, buf);
 
 	update_uid();
@@ -313,7 +313,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			static bool post_fs_data_lock = false;
 			if (!post_fs_data_lock) {
 				post_fs_data_lock = true;
-				pr_info("post-fs-data triggered");
+				pr_info("post-fs-data triggered\n");
 				on_post_fs_data();
 			}
 			break;
@@ -322,7 +322,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			static bool boot_complete_lock = false;
 			if (!boot_complete_lock) {
 				boot_complete_lock = true;
-				pr_info("boot_complete triggered");
+				pr_info("boot_complete triggered\n");
 			}
 			break;
 		}
@@ -641,7 +641,7 @@ static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 		return 0;
 	}
 	init_session_keyring = cred->session_keyring;
-	pr_info("kernel_compat: got init_session_keyring");
+	pr_info("kernel_compat: got init_session_keyring\n");
 	return 0;
 }
 #endif

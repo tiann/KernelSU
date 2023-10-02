@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="home_superuser_count">Superkorisnici</string>
+    <string name="home_module_count">Moduli: %d</string>
+    <string name="home_click_to_install">Kliknite da instalirate</string>
+    <string name="home">дом</string>
+    <string name="home_not_installed">Nije instalirano</string>
+</resources>

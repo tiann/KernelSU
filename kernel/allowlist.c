@@ -97,7 +97,7 @@ void ksu_show_allow_list(void)
 {
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
-	pr_info("ksu_show_allow_list");
+	pr_info("ksu_show_allow_list\n");
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		pr_info("uid :%d, allow: %d\n", p->profile.current_uid,

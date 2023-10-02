@@ -5,7 +5,7 @@
     <string name="home_click_to_install">إضغط للتثبيت</string>
     <string name="home_working">يعمل</string>
     <string name="home_working_version">الإصدار: %d</string>
-    <string name="home_superuser_count">مستخدمين الجذر: %d</string>
+    <string name="home_superuser_count">المستخدمين الخارقين: %d</string>
     <string name="home_module_count">الوحدات: %d</string>
     <string name="home_unsupported">غير مدعوم</string>
     <string name="home_unsupported_reason">KernelSU يدعم GKI kernels فقط</string>
@@ -13,7 +13,7 @@
     <string name="home_manager_version">إصدار المدير</string>
     <string name="home_fingerprint">البصمة</string>
     <string name="home_selinux_status">وضع SELinux</string>
-    <string name="selinux_status_disabled">غير مفعل</string>
+    <string name="selinux_status_disabled">معطل</string>
     <string name="selinux_status_enforcing">مفروض</string>
     <string name="selinux_status_permissive">متساهل</string>
     <string name="selinux_status_unknown">مجهول</string>
