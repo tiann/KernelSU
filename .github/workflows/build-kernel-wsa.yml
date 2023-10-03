@@ -31,24 +31,27 @@ jobs:
       - name: Install Build Tools
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip clang-12 lldb-12 lld-12 clangd-12
+          packages: bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
           version: 1.0
+
+      - name: Cache LLVM
+        id: cache-llvm
+        uses: actions/cache@v3
+        with:
+          path: ./llvm
+          key: llvm-12.0.1
     
       - name: Setup LLVM
-        run: |
-          export LLVM_VERSION=12
-          wget -q https://apt.llvm.org/llvm.sh
-          sudo bash ./llvm.sh $LLVM_VERSION
-          cd /usr/bin
-          sudo ln -sf clang-$LLVM_VERSION clang
-          sudo ln -sf ld.lld-$LLVM_VERSION ld.lld
-          sudo ln -sf llvm-objdump-$LLVM_VERSION llvm-objdump
-          sudo ln -sf llvm-ar-$LLVM_VERSION llvm-ar
-          sudo ln -sf llvm-nm-$LLVM_VERSION llvm-nm
-          sudo ln -sf llvm-strip-$LLVM_VERSION llvm-strip
-          sudo ln -sf llvm-objcopy-$LLVM_VERSION llvm-objcopy
-          sudo ln -sf llvm-readelf-$LLVM_VERSION llvm-readelf
-          sudo ln -sf clang++-$LLVM_VERSION clang++
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "12.0.1"
+          force-version: true
+          ubuntu-version: "20.04"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+
+      - name: Symlink libclang.so
+        run: sudo ln -s libclang-11.so.1 /lib/x86_64-linux-gnu/libclang.so
+        working-directory: ${{ env.LLVM_PATH }}/lib
 
       - name: Checkout KernelSU
         uses: actions/checkout@v4
