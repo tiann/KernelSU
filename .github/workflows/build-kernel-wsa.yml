@@ -31,8 +31,8 @@ jobs:
       - name: Install Build Tools
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          packages: bc bison build-essential flex libelf-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu gzip
-          version: 1.0
+          packages: bc bison build-essential flex libelf-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu gzip ccache
+          version: 1.1
 
       - name: Cache LLVM
         id: cache-llvm
@@ -40,7 +40,7 @@ jobs:
         with:
           path: ./llvm
           key: llvm-12.0.1
-    
+
       - name: Setup LLVM
         uses: KyleMayes/install-llvm-action@v1
         with:
