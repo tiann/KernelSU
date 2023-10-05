@@ -71,7 +71,7 @@ Os sistemas Android modernos dependem fortemente do SELinux para garantir a segu
 Explicar o conceito completo do SELinux é complexo e está além do objetivo deste documento. Recomenda-se primeiro entender seu funcionamento através dos seguintes recursos:
 
 1. [Wikipédia](https://en.wikipedia.org/wiki/Security-Enhanced_Linux)
-2. [Red Hat: What is SELinux?](https://www.redhat.com/en/topics/linux/what-is-selinux)
+2. [Red Hat: O que é SELinux?](https://www.redhat.com/pt-br/topics/linux/what-is-selinux)
 3. [ArchLinux: SELinux](https://wiki.archlinux.org/title/SELinux)
 
 O Perfil Root do KernelSU permite a personalização do contexto SELinux do processo root após a execução de `su`. Regras específicas de controle de acesso podem ser definidas para este contexto para permitir um controle refinado sobre as permissões de root.
