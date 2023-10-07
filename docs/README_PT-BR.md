@@ -14,19 +14,19 @@ Uma solução root baseada em kernel para dispositivos Android.
 
 ## Estado de Compatibilidade
 
-O KernelSU suporta oficialmente dispositivos Android GKI 2.0 (com kernel 5.10+), kernels antigos (4.14+) também são compatíveis, mas você mesmo precisa construir o kernel.
+O KernelSU oferece suporte oficial a dispositivos Android GKI 2.0 (kernel 5.10+). Kernels mais antigos (4.14+) também são compatíveis, mas o kernel terá que ser construído manualmente.
 
-WSA, ChromeOS e Android baseado em contêiner também deve funcionar com o KernelSU integrado.
+Com isso, WSA, ChromeOS e Android baseado em contêiner são todos suportados.
 
-E as ABIs atualmente suportadas são: `arm64-v8a` e `x86_64`
+Atualmente, apenas `arm64-v8a` e `x86_64` são suportados.
 
 ## Uso
- - [Instrução de instalação](https://kernelsu.org/pt_BR/guide/installation.html)
- - [Como construir?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
+ - [Instalação](https://kernelsu.org/pt_BR/guide/installation.html)
+ - [Como construir o KernelSU?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
  - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
-Para traduzir o KernelSU para o seu idioma ou melhorar uma tradução existente, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/), por favor.
+Para ajudar a traduzir o KernelSU ou melhorar as traduções existentes, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/), por favor.
 
 ## Discussão
 
@@ -41,6 +41,6 @@ Para traduzir o KernelSU para o seu idioma ou melhorar uma tradução existente,
 ## Créditos
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): a ideia do KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): a poderosa ferramenta raiz.
+- [Magisk](https://github.com/topjohnwu/Magisk): a poderosa ferramenta root.
 - [genuine](https://github.com/brevent/genuine/): validação de assinatura apk v2.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): algumas habilidades de rootkit.

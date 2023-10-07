@@ -34,7 +34,7 @@ Aqui, o UID é `2000` e o GID (ID do grupo primário) também é `2000`. Além d
 O Perfil Raiz do KernelSU permite a personalização do UID, GID e grupos para o processo root após a execução de `su`. Por exemplo, o Perfil Raiz de um app root pode definir seu UID como `2000`, o que significa que ao usar `su`, as permissões reais do app estão no nível do ADB shell. O grupo `inet` pode ser removido, evitando que o comando `su` acesse a rede.
 
 :::tip OBSERVAÇÃO
-O Perfil do Aplicativo controla apenas as permissões do processo root após usar `su`; ele não controla as permissões do próprio app. Se um app solicitou permissão de acesso à rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
+O Perfil do Aplicativo controla apenas as permissões do processo root após usar `su`, e ele não controla as permissões do próprio app. Se um app solicitou permissão de acesso à rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
 :::
 
 O Perfil Raiz é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos por meio do `su`, a concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
@@ -43,13 +43,13 @@ O Perfil Raiz é aplicado no kernel e não depende do comportamento voluntário 
 
 As capacidades são um mecanismo para separação de privilégios no Linux.
 
-Para realizar verificações de permissão, as implementações tradicionais do UNIX distinguem duas categorias de processos: processos privilegiados (cujo ID de usuário efetivo é 0, referido como superusuário ou root) e processos sem privilégios (cujo UID efetivo é diferente de zero). Os processos privilegiados ignoram todas as verificações de permissão do kernel, enquanto os processos não privilegiados estão sujeitos à verificação completa de permissão com base nas credenciais do processo (geralmente: UID efetivo, GID efetivo e lista de grupos suplementares).
+Para realizar verificações de permissão, as implementações tradicionais do `UNIX` distinguem duas categorias de processos: processos privilegiados (cujo ID de usuário efetivo é `0`, referido como superusuário ou root) e processos sem privilégios (cujo UID efetivo é diferente de zero). Os processos privilegiados ignoram todas as verificações de permissão do kernel, enquanto os processos não privilegiados estão sujeitos à verificação completa de permissão com base nas credenciais do processo (Geralmente: UID efetivo, GID efetivo e lista de grupos suplementares).
 
-A partir do Linux 2.2, o Linux divide os privilégios tradicionalmente associados ao superusuário em unidades distintas, conhecidas como capacidades, que podem ser habilitadas e desabilitadas de forma independente.
+A partir do Linux 2.2, o Linux divide os privilégios tradicionalmente associados ao superusuário em unidades distintas, conhecidas como capacidades, que podem ser ativadas e desativadas de forma independente.
 
 Cada capacidade representa um ou mais privilégios. Por exemplo, `CAP_DAC_READ_SEARCH` representa a capacidade de ignorar verificações de permissão para leitura de arquivos, bem como permissões de leitura e execução de diretório. Se um usuário com um UID efetivo `0` (usuário root) não tiver recursos `CAP_DAC_READ_SEARCH` ou superiores, isso significa que mesmo sendo root, ele não pode ler arquivos à vontade.
 
-O Perfil Raiz do KernelSU permite a personalização das Capacidades do processo raiz após a execução de `su`, conseguindo assim conceder parcialmente "permissões de root". Ao contrário do UID e GID mencionados acima, certos apps root exigem um UID de `0` após usar `su`. Nesses casos, limitar as capacidades deste usuário root com UID `0` pode restringir suas operações permitidas.
+O Perfil Raiz do KernelSU permite a personalização das capacidades do processo root após a execução de `su`, conseguindo assim conceder parcialmente "permissões de root". Ao contrário do UID e GID mencionados acima, certos apps root exigem um UID de `0` após usar `su`. Nesses casos, limitar as capacidades deste usuário root com UID `0` pode restringir suas operações permitidas.
 
 :::tip FORTE RECOMENDAÇÃO
 Capacidade do Linux [documentação oficial](https://man7.org/linux/man-pages/man7/capabilities.7.html) fornece explicações detalhadas das habilidades representadas por cada capacidade. Se você pretende customizar Capacidades, é altamente recomendável que você leia este documento primeiro.
@@ -71,12 +71,12 @@ Os sistemas Android modernos dependem fortemente do SELinux para garantir a segu
 Explicar o conceito completo do SELinux é complexo e está além do objetivo deste documento. Recomenda-se primeiro entender seu funcionamento através dos seguintes recursos:
 
 1. [Wikipédia](https://en.wikipedia.org/wiki/Security-Enhanced_Linux)
-2. [Red Hat: O que é SELinux?](https://www.redhat.com/en/topics/linux/what-is-selinux)
+2. [Red Hat: O que é SELinux?](https://www.redhat.com/pt-br/topics/linux/what-is-selinux)
 3. [ArchLinux: SELinux](https://wiki.archlinux.org/title/SELinux)
 
-O Perfil Raiz do KernelSU permite a personalização do contexto SELinux do processo root após a execução de `su`. Regras específicas de controle de acesso podem ser definidas para este contexto para permitir um controle refinado sobre as permissões de root.
+O Perfil Root do KernelSU permite a personalização do contexto SELinux do processo root após a execução de `su`. Regras específicas de controle de acesso podem ser definidas para este contexto para permitir um controle refinado sobre as permissões de root.
 
-Em cenários típicos, quando um app executa `su`, ele alterna o processo para um domínio SELinux com **acesso irrestrito**, como `u:r:su:s0`. Através do Perfil Raiz, este domínio pode ser mudado para um domínio personalizado, como `u:r:app1:s0`, e uma série de regras podem ser definidas para este domínio:
+Em cenários típicos, quando um app executa `su`, ele alterna o processo para um domínio SELinux com **acesso irrestrito**, como `u:r:su:s0`. Através do Perfil Root, este domínio pode ser mudado para um domínio personalizado, como `u:r:app1:s0`, e uma série de regras podem ser definidas para este domínio:
 
 ```sh
 type app1
@@ -89,20 +89,20 @@ Observe que a regra `allow app1 * * *` é usada apenas para fins de demonstraç�
 
 ### Escalação
 
-Se a configuração do Perfil Raiz não estiver definida corretamente, poderá ocorrer um cenário de escalonamento: as restrições impostas pelo Perfil Raiz poderão falhar involuntariamente.
+Se a configuração do Perfil Root não estiver definida corretamente, poderá ocorrer um cenário de escalonamento: as restrições impostas pelo Perfil Root poderão falhar involuntariamente.
 
-Por exemplo, se você conceder permissão root a um usuário shell ADB (que é um caso comum) e, em seguida, conceder permissão root a um app normal, mas configurar seu perfil root com UID 2000 (que é o UID do usuário ADB shell), o app pode obter acesso root completo executando o comando `su` duas vezes:
+Por exemplo, se você conceder permissão root a um usuário ADB shell (que é um caso comum) e, em seguida, conceder permissão root a um app normal, mas configurar seu perfil root com UID 2000 (que é o UID do usuário ADB shell), o app pode obter acesso root completo executando o comando `su` duas vezes:
 
 1. A primeira execução `su` está sujeita à aplicação do Perfil do Aplicativo e mudará para UID `2000` (adb shell) em vez de `0` (root).
-2. A segunda execução `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (adb shell) na configuração, o app obterá privilégios de root completos.
+2. A segunda execução `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (adb shell) na configuração, o app obterá privilégio de root completo.
 
 :::warning OBSERVAÇÃO
 Este comportamento é totalmente esperado e não é um bug. Portanto, recomendamos o seguinte:
 
-Se você realmente precisa conceder permissões de root ao ADB (por exemplo, como desenvolvedor), não é aconselhável alterar o UID para `2000` ao configurar o Perfil Raiz. Usar `1000` (sistema) seria uma melhor escolha.
+Se você realmente precisa conceder permissões de root ao ADB (por exemplo, como desenvolvedor), não é aconselhável alterar o UID para `2000` ao configurar o Perfil Root. Usar `1000` (sistema) seria uma melhor escolha.
 :::
 
-## Perfil não Raiz
+## Perfil não Root
 
 ### Desmontar Módulos
 

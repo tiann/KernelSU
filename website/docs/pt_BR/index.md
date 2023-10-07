@@ -19,10 +19,10 @@ hero:
 
 features:
   - title: Baseado em kernel
-    details: KernelSU está funcionando no modo kernel Linux, tem mais controle sobre os apps do espaço do usuário.
-  - title: Controle de acesso à lista de permissões
-    details: Somente apps que recebem permissão de root podem acessar su, outros apps não podem perceber su.
-  - title: Permissão de root restrita
-    details: KernelSU permite que você personalize o uid, gid, grupos, recursos e regras SELinux do su. Tranque o poder root em uma gaiola.
-  - title: Módulo e Código aberto
-    details: KernelSU suporta modificação /system sem sistema por overlayfs e é de código aberto sob GPL-3.
+    details: Como o nome sugere, KernelSU funciona no kernel Linux, dando-lhe mais controle sobre os apps do espaço do usuário.
+  - title: Controle de acesso root
+    details: Somente apps permitidos podem acessar ou ver su, todos os outros apps não estão cientes disso.
+  - title: Privilégios de root personalizáveis
+    details: KernelSU permite a personalização de uid, gid, grupos, capacidades e regras SELinux do su, bloqueando privilégios de root.
+  - title: Módulo
+    details: Os módulos podem modificar /system sem sistema usando overlayfs permitindo grande potência.
