@@ -1,8 +1,8 @@
 # Resgate do bootloop
 
-Ao atualizar um dispositivo, podemos encontrar situações em que o dispositivo fica "bricked". Em teoria, se você usar o fastboot apenas para atualizar a partição de boot ou instalar módulos inadequados que causam falha na inicialização do dispositivo, isso poderá ser restaurado por meio de operações apropriadas. Este documento tem como objetivo fornecer alguns métodos de emergência para ajudá-lo a se recuperar de um dispositivo "bricked".
+Ao atualizar um dispositivo, podemos encontrar situações em que o dispositivo fica "bloqueado". Em teoria, se você usar o fastboot apenas para atualizar a partição de boot ou instalar módulos inadequados que causam falha na inicialização do dispositivo, isso poderá ser restaurado por meio de operações apropriadas. Este documento tem como objetivo fornecer alguns métodos de emergência para ajudá-lo a se recuperar de um dispositivo "bloqueado".
 
-## Brick por flashear partição boot
+## Bloqueio por flashear partição boot
 
 No KernelSU, as seguintes situações podem causar bloqueio de inicialização ao atualizar a partição boot:
 
@@ -10,11 +10,11 @@ No KernelSU, as seguintes situações podem causar bloqueio de inicialização a
 2. Seu telefone precisa desativar a verificação AVB para inicializar corretamente (geralmente exigindo a limpeza de todos os dados do telefone).
 3. Seu kernel tem alguns bugs ou não é adequado para o flash do seu telefone.
 
-Não importa qual seja a situação, você pode recuperar **flashando a imagem de boot padrão**. Portanto, no início do tutorial de instalação, recomendamos fortemente que você faça backup de seu boot padrão antes de atualizar. Se você não fez backup, poderá obter o boot original de fábrica de outros usuários com o mesmo dispositivo que você ou do firmware oficial.
+Não importa qual seja a situação, você pode recuperar **fleshando a imagem de boot padrão**. Portanto, no início do tutorial de instalação, recomendamos fortemente que você faça backup de seu boot padrão antes de fleshar. Se você não fez backup, poderá obter o boot original de fábrica de outros usuários com o mesmo dispositivo que você ou do firmware oficial.
 
-## Brick por módulos
+## Bloqueio por módulos
 
-A instalação de módulos pode ser uma causa mais comum de brick do seu dispositivo, mas devemos avisá-lo seriamente: **Não instale módulos de fontes desconhecidas**! Como os módulos têm privilégios de root, eles podem causar danos irreversíveis ao seu dispositivo!
+A instalação de módulos pode ser uma causa mais comum de bloqueio do seu dispositivo, mas devemos avisá-lo seriamente: **Não instale módulos de fontes desconhecidas**! Como os módulos têm privilégios de root, eles podem causar danos irreversíveis ao seu dispositivo!
 
 ### Módulos normais
 
@@ -31,14 +31,14 @@ Portanto, o método mais simples e comumente usado para recuperar seu dispositiv
 
 #### Recupere pressionando o botão de diminuir volume
 
-Se as atualizações AB ainda não resolverem o problema, você pode tentar usar o **Modo de Segurança**. No Modo de Segurança, todos os módulos estão desabilitados.
+Se as Atualizações AB ainda não resolverem o problema, você pode tentar usar o **Modo de Segurança**. No Modo de Segurança, todos os módulos estão desabilitados.
 
 Existem duas maneiras de entrar no Modo de Segurança:
 
 1. O Modo de Segurança integrado de alguns sistemas; alguns sistemas possuem um Modo de Segurança integrado que pode ser acessado pressionando longamente o botão de diminuir volume, enquanto outros (como a MIUI) podem ativar o Modo de Segurança no Recovery. Ao entrar no Modo de Segurança do sistema, o KernelSU também entrará no Modo de Segurança e desativará automaticamente os módulos.
 2. O Modo de Segurança integrado do KernelSU; o método de operação é **pressionar a tecla de diminuir volume continuamente por mais de três vezes** após a primeira tela de inicialização. Observe que é um comunicado à imprensa, um comunicado à imprensa, um comunicado à imprensa, não pressione e segure.
 
-Após entrar no Modo de Segurança, todos os módulos na página de módulos do Gerenciador KernelSU são desabilitados, mas você pode executar operações de "desinstalação" para desinstalar quaisquer módulos que possam estar causando problemas.
+Após entrar no Modo de Segurança, todos os módulos na página de módulos do gerenciador KernelSU são desabilitados, mas você pode executar operações de "desinstalação" para desinstalar quaisquer módulos que possam estar causando problemas.
 
 O Modo de Segurança integrado é implementado no kernel, portanto não há possibilidade de perder eventos importantes devido à interceptação. No entanto, para kernels não GKI, a integração manual do código pode ser necessária e você pode consultar a documentação oficial para obter orientação.
 

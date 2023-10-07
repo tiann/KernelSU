@@ -2,7 +2,7 @@
 
 O KernelSU pode ser integrado em kernels não GKI e foi portado para 4.14 e versões anteriores.
 
-Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer imagens de inicialização não GKI. Mas você mesmo pode construir o kernel com o KernelSU integrado.
+Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer boot images não GKI. Mas você mesmo pode construir o kernel com o KernelSU integrado.
 
 Primeiro, você deve ser capaz de construir um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU no seu dispositivo.
 
@@ -21,7 +21,7 @@ Primeiro, adicione o KernelSU à árvore de origem do kernel:
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-Então, você deve verificar se *kprobe* está ativado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
+Então, você deve verificar se o *kprobe* está ativado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
 
 ```
 CONFIG_KPROBES=y
@@ -33,7 +33,7 @@ E construa seu kernel novamente, KernelSU deve funcionar bem.
 
 Se você descobrir que o KPROBES ainda não está ativado, você pode tentar ativar `CONFIG_MODULES`. (Se ainda assim não surtir efeito, use `make menuconfig` para procurar outras dependências do KPROBES)
 
-Mas se você encontrar um loop de inicialização quando o KernelSU integrado, talvez *kprobe esteja quebrado em seu kernel*, você deve corrigir o bug do kprobe ou usar o segundo caminho.
+Mas se você encontrar em um bootloop quando o KernelSU for integrado, talvez o **kprobe esteja quebrado em seu kernel**, você deve corrigir o bug do kprobe ou usar o segundo caminho.
 
 :::tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
 
@@ -60,7 +60,6 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 - Selecione a tag (Como v0.5.2)
 
-- 
 ```sh
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
