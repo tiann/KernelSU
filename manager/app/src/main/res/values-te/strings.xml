@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="selinux_status_unknown">తెలియదు</string>
+    <string name="module_failed_to_enable">మాడ్యూల్‌ని ప్రారంభించడంలో విఫలమైంది: %s</string>
+    <string name="force_stop_app">బలవంతంగా ఆపడం</string>
+    <string name="restart_app">పునఃప్రారంభించండి</string>
+    <string name="module">మాడ్యూల్</string>
+    <string name="about">గురించి</string>
+    <string name="home_selinux_status">SELinux స్థితి</string>
+    <string name="home">హోమ్</string>
+    <string name="superuser">సూపర్యూజర్</string>
+    <string name="module_failed_to_disable">మాడ్యూల్‌ని నిలిపివేయడంలో విఫలమైంది: %s</string>
+    <string name="module_empty">మాడ్యూల్ ఏదీ ఇన్‌స్టాల్ చేయబడలేదు</string>
+    <string name="home_not_installed">ఇన్‌స్టాల్ చేయలేదు</string>
+</resources>
