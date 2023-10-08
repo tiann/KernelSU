@@ -3,6 +3,7 @@
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/init.h"
+#include "linux/init_task.h"
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
 #include "linux/lsm_hooks.h"
@@ -482,7 +483,18 @@ static bool should_umount(struct path *path)
 	return false;
 }
 
-static void try_umount(const char *mnt)
+static void ksu_umount_mnt(struct path *path, int flags) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+	int err = path_umount(path, flags);
+	if (err) {
+		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
+	}
+#else
+	// TODO: umount for non GKI kernel
+#endif
+}
+
+static void try_umount(const char *mnt, bool check_mnt, int flags)
 {
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
@@ -491,16 +503,11 @@ static void try_umount(const char *mnt)
 	}
 
 	// we are only interest in some specific mounts
-	if (!should_umount(&path)) {
+	if (check_mnt && !should_umount(&path)) {
 		return;
 	}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
-	err = path_umount(&path, 0);
-	if (err) {
-		pr_info("umount %s failed: %d\n", mnt, err);
-	}
-#endif
+	ksu_umount_mnt(&path, flags);
 }
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
@@ -519,8 +526,8 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 	// todo: check old process's selinux context, if it is not zygote, ignore it!
 
-	if (!is_appuid(new_uid)) {
-		// pr_info("handle setuid ignore non application uid: %d\n", new_uid.val);
+	if (!is_appuid(new_uid) || is_isolated_uid(new_uid.val)) {
+		// pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
 		return 0;
 	}
 
@@ -542,9 +549,10 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
 	// filter the mountpoint whose target is `/data/adb`
-	try_umount("/system");
-	try_umount("/vendor");
-	try_umount("/product");
+	try_umount("/system", true, 0);
+	try_umount("/vendor", true, 0);
+	try_umount("/product", true, 0);
+	try_umount("/data/adb/modules", false, MNT_DETACH);
 
 	return 0;
 }

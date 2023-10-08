@@ -1,21 +1,21 @@
 # Guias de módulo
 
-O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é comumente conhecido como "sem sistema".
+O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é conhecido como "sem sistema".
 
 O mecanismo de módulo do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferença com Magisk](difference-with-magisk.md).
 
 ## Busybox
 
-O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta o "ASH Standalone Shell Mode" alternável em tempo de execução. O que este modo autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido como `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android por padrão será `/system/bin/ls`, `/system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a _não_ usar o BusyBox, você deve chamar o executável com caminhos completos.
+O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta o "ASH Standalone Shell Mode" alternável em tempo de execução. O que este modo autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido como `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android por padrão será `/system/bin/ls`, `/system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a **não** usar o BusyBox, você deve chamar o executável com caminhos completos.
 
-Cada script de shell executado no contexto do KernelSU será executado no shell `ash` do BusyBox com o modo autônomo ativado. Para o que é relevante para desenvolvedores terceirizados, isso inclui todos os scripts de inicialização e scripts de instalação de módulos.
+Cada script de shell executado no contexto do KernelSU será executado no shell `ash` do BusyBox com o Modo Autônomo ativado. Para o que é relevante para desenvolvedores terceirizados, isso inclui todos os scripts de inicialização e scripts de instalação de módulos.
 
-Para aqueles que desejam usar este recurso “Modo Autônomo” fora do KernelSU, existem 2 maneiras de ativá-los:
+Para aqueles que desejam usar o recurso “Modo Autônomo” fora do KernelSU, existem 2 maneiras de ativá-los:
 
 1. Defina a variável de ambiente `ASH_STANDALONE` como `1`<br>Exemplo: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
 2. Alternar com opções de linha de comando:<br>`/data/adb/ksu/bin/busybox sh -o standalone <script>`
 
-Para garantir que todos os shells `sh` subsequentes executados também sejam executados em modo autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
+Para garantir que todos os shells `sh` subsequentes executados também sejam executados em Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
 ::: tip DIFERENÇA COM MAGISK
 
@@ -84,7 +84,7 @@ O KernelSU não possui suporte integrado para o Zygisk, portanto não há conte�
 
 ### module.prop
 
-module.prop é um arquivo de configuração para um módulo. No KernelSU, se um módulo não contiver este arquivo, ele não será reconhecido como um módulo. O formato deste arquivo é o seguinte:
+`module.prop` é um arquivo de configuração para um módulo. No KernelSU, se um módulo não contiver este arquivo, ele não será reconhecido como um módulo. O formato deste arquivo é o seguinte:
 
 ```txt
 id=<string>
@@ -96,7 +96,7 @@ description=<string>
 ```
 
 - `id` deve corresponder a esta expressão regular: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
-  ex: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
+  Exemplo: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
   Este é o **identificador exclusivo** do seu módulo. Você não deve alterá-lo depois de publicado.
 - `versionCode` deve ser um **inteiro**. Isso é usado para comparar versões
 - Outros que não foram mencionados acima podem ser qualquer string de **linha única**.
@@ -106,7 +106,7 @@ description=<string>
 
 Por favor, leia a seção [Scripts de inicialização](#boot-scripts) para entender a diferença entre `post-fs-data.sh` e `service.sh`. Para a maioria dos desenvolvedores de módulos, `service.sh` deve ser bom o suficiente se você precisar apenas executar um script de inicialização. Se precisar executar o script após a inicialização ser concluída, use `boot-completed.sh`. Se você quiser fazer algo após montar overlayfs, use `post-mount.sh`.
 
-Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo; **NÃO** codifique o caminho do seu módulo em scripts.
+Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo, **NÃO** codifique o caminho do seu módulo em scripts.
 
 ::: tip DIFERENÇA COM MAGISK
 Você pode usar a variável de ambiente `KSU` para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando no KernelSU, esse valor será definido como `true`.
@@ -180,7 +180,7 @@ O módulo KernelSU **NÃO** é compatível para instalação no Recovery persona
 
 ### Personalização
 
-Se você precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será _sourced_ (não executado!) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na ABI do dispositivo ou se você precisar definir permissões/segundo contexto especiais para alguns dos arquivos do seu módulo.
+Se você precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será **sourced** (não executado!) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na API do dispositivo ou se você precisar definir permissões/segundo contexto especiais para alguns dos arquivos do seu módulo.
 
 Se você quiser controlar e personalizar totalmente o processo de instalação, declare `SKIPUNZIP=1` em `customize.sh` para pular todas as etapas de instalação padrão. Ao fazer isso, seu `customize.sh` será responsável por instalar tudo sozinho.
 
@@ -254,6 +254,6 @@ No KernelSU, os scripts de inicialização são divididos em dois tipos com base
 - Scripts de módulo
   - Colocado na própria pasta do módulo
   - Executado apenas se o módulo estiver ativado
-  - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída, `post-mount.sh` é executado em overlayfs montado.
+  - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado em overlayfs montado.
 
 Todos os scripts de inicialização serão executados no shell BusyBox `ash` do KernelSU com o "Modo Autônomo" ativado.

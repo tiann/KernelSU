@@ -26,21 +26,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.maxkeppeker.sheets.core.CoreDialog
-import com.maxkeppeker.sheets.core.models.CoreSelection
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.SelectionButton
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import io.noties.markwon.Markwon
 import io.noties.markwon.utils.NoCopySpannableFactory
 import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ui.util.LocalDialogHost
 import kotlin.coroutines.resume
 
@@ -179,7 +172,11 @@ class DialogHostState {
     }
 
     suspend fun showConfirm(
-        title: String, content: String, markdown: Boolean = false, confirm: String? = null, dismiss: String? = null
+        title: String,
+        content: String,
+        markdown: Boolean = false,
+        confirm: String? = null,
+        dismiss: String? = null
     ): ConfirmResult = mutex.withLock {
         try {
             return@withLock suspendCancellableCoroutine { continuation ->
@@ -262,37 +259,6 @@ fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
 
     val visuals = confirmDialogData.visuals
 
-    if (visuals.isMarkdown) {
-        CoreDialog(
-            state = rememberUseCaseState(visible = true, onCloseRequest = {
-                confirmDialogData.dismiss()
-            }),
-            header = Header.Default(
-                title = visuals.title
-            ),
-            selection = CoreSelection(
-                withButtonView = true,
-                negativeButton = SelectionButton(
-                    visuals.dismiss ?: stringResource(id = android.R.string.cancel),
-                ),
-                positiveButton = SelectionButton(
-                    visuals.confirm ?: stringResource(id = android.R.string.ok),
-                ),
-                onPositiveClick = {
-                    confirmDialogData.confirm()
-                },
-                onNegativeClick = {
-                    confirmDialogData.dismiss()
-                },
-            ),
-            onPositiveValid = true,
-            body = {
-                MarkdownContent(visuals.content)
-            },
-        )
-        return
-    }
-
     AlertDialog(
         onDismissRequest = {
             confirmDialogData.dismiss()
@@ -301,7 +267,11 @@ fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
             Text(text = visuals.title)
         },
         text = {
-            Text(text = visuals.content)
+            if (visuals.isMarkdown) {
+                MarkdownContent(content = visuals.content)
+            } else {
+                Text(text = visuals.content)
+            }
         },
         confirmButton = {
             TextButton(onClick = { confirmDialogData.confirm() }) {

@@ -163,10 +163,9 @@ private fun ModuleList(
     ) {
         val changelog = dialogHost.withLoading {
             withContext(Dispatchers.IO) {
-                val str = OkHttpClient().newCall(
+                OkHttpClient().newCall(
                     okhttp3.Request.Builder().url(changelogUrl).build()
                 ).execute().body!!.string()
-                if (str.length > 1000) str.substring(0, 1000) else str
             }
         }
 

@@ -54,7 +54,7 @@
     <string name="selinux_status_enforcing">Érvényesítés</string>
     <string name="selinux_status_permissive">Megengedő</string>
     <string name="selinux_status_unknown">Ismeretlen</string>
-    <string name="superuser">Alkalmazások</string>
+    <string name="superuser">Superuser</string>
     <string name="module_failed_to_enable">Nem sikerült engedélyezni a következő modult: %s</string>
     <string name="module_failed_to_disable">Nem sikerült letiltani a következő modulokat: %s</string>
     <string name="module_empty">Nincs modul telepítve</string>
