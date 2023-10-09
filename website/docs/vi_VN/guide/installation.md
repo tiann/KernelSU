@@ -84,6 +84,7 @@ Nếu trước đây bạn chưa từng sử dụng Ứng dụng Kernel flash th
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
+4. [SmartPack Kernel Manager](https://github.com/SmartPack/SmartPack-Kernel-Manager/releases)
 
 PS. Phương pháp này thuận tiện hơn khi nâng cấp KernelSU và có thể thực hiện mà không cần máy tính (sao lưu trước!). .
 

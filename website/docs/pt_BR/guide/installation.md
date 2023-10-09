@@ -84,6 +84,7 @@ Se você nunca usou algum app kernel flash antes, os seguintes são os mais popu
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
+4. [SmartPack Kernel Manager](https://github.com/SmartPack/SmartPack-Kernel-Manager/releases)
 
 PS. Este método é mais conveniente ao atualizar o KernelSU e pode ser feito sem um computador (backup primeiro).
 

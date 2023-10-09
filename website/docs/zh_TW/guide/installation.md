@@ -84,6 +84,7 @@ PS. 這種方法適用於任何狀況下的安裝 (不限於初次安裝或後�
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
+4. [SmartPack Kernel Manager](https://github.com/SmartPack/SmartPack-Kernel-Manager/releases)
 
 PS. 這種方法在更新 KernelSU 時比較方便，無需電腦即可完成 (注意備份！)。
 

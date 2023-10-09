@@ -84,6 +84,7 @@ PS. Данный способ подходит для любой установ�
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
+4. [SmartPack Kernel Manager](https://github.com/SmartPack/SmartPack-Kernel-Manager/releases)
 
 PS. Этот способ более удобен при обновлении KernelSU и может быть выполнен без компьютера (сначала сделайте резервную копию!). .
 
