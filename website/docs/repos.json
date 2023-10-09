@@ -488,5 +488,12 @@
         "kernel_name": "NovaCore_kernel",
         "kernel_link": "https://github.com/hc841/NovaCore_kernel",
         "devices": "Moto g9 play"
+    },
+    {
+        "maintainer": "zlm324",
+        "maintainer_link": "https://github.com/zlm324",
+        "kernel_name": "android_kernel_xiaomi_msm8998_ksu",
+        "kernel_link": "https://github.com/zlm324/android_kernel_xiaomi_msm8998_ksu",
+        "devices": "a lineage kernel forked from LineageOS official repository, version 4.4.302, added ksu."
     }
 ]
