@@ -8,7 +8,7 @@
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Modul: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
-    <string name="home_unsupported_reason">KernelSU hanya mendukung kernel GKI saat ini</string>
+    <string name="home_unsupported_reason">KernelSU saat ini hanya mendukung kernel GKI</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versi Manager</string>
     <string name="home_fingerprint">Sidik jari</string>
