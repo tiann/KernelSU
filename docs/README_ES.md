@@ -1,4 +1,4 @@
-[ 🇬🇧 English](README.md) | 🇪🇸 **Español** | [🇨🇳 简体中文](README_CN.md) | [🇹🇼 繁體中文](README_TW.md) | [ 🇯🇵 日本語](README_JP.md) | [🇵🇱 Polski](README_PL.md) | [🇧🇷 Portuguese-Brazil](README_PT-BR.md) | [🇹🇷 Türkçe](README_TR.md) | [🇷🇺Русский](README_RU.md) | [🇻🇳Tiếng Việt](README_VI.md) | [ɪᴅ indonesia](README_ID.md)
+[ 🇬🇧 English](README.md) | 🇪🇸 **Español** | [🇨🇳 简体中文](README_CN.md) | [🇹🇼 繁體中文](README_TW.md) | [ 🇯🇵 日本語](README_JP.md) | [🇵🇱 Polski](README_PL.md) | [🇧🇷 Portuguese-Brazil](README_PT-BR.md) | [🇹🇷 Türkçe](README_TR.md) | [🇷🇺Русский](README_RU.md) | [🇻🇳Tiếng Việt](README_VI.md) | [ɪᴅ indonesia](README_ID.md) | [עברית](README_iw.md) | [🇮🇳हिंदी](README_IN.md)
 
 <div style="display: flex; align-items: center;">
     <img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="">
