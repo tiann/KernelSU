@@ -5,7 +5,42 @@
 #include "klog.h" // IWYU pragma: keep
 #include "kernel_compat.h"
 
-static __always_inline int
+static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
+			unsigned expected_size, unsigned expected_hash)
+{
+	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer-sequence length
+	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer length
+	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signed data length
+
+	*offset += 0x4 * 3;
+
+	ksu_kernel_read_compat(fp, size4, 0x4, pos); // digests-sequence length
+
+	*pos += *size4;
+	*offset += 0x4 + *size4;
+
+	ksu_kernel_read_compat(fp, size4, 0x4, pos); // certificates length
+	ksu_kernel_read_compat(fp, size4, 0x4, pos); // certificate length
+	*offset += 0x4 * 2;
+
+	if (*size4 == expected_size) {
+		int hash = 1;
+		signed char c;
+		int i;
+		for (i = 0; i < *size4; ++i) {
+			ksu_kernel_read_compat(fp, &c, 0x1, pos);
+			hash = 31 * hash + c;
+		}
+		*offset += *size4;
+		pr_info("size: 0x%04x, hash: 0x%08x\n", *size4, ((unsigned) hash) ^ 0x14131211u);
+		if ((((unsigned)hash) ^ 0x14131211u) == expected_hash) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static __always_inline bool
 check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 {
 	unsigned char buffer[0x11] = { 0 };
@@ -13,8 +48,14 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	u64 size8, size_of_block;
 
 	loff_t pos;
+	bool block_valid;
 
-	int sign = -1;
+	const int NOT_EXIST = 0;
+	const int INVALID = 1;
+	const int VALID = 2;
+	int v2_signing_status = NOT_EXIST;
+	int v3_signing_status = NOT_EXIST;
+
 	int i;
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
@@ -25,7 +66,6 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	// disable inotify for this file
 	fp->f_mode |= FMODE_NONOTIFY;
 
-	sign = 1;
 	// https://en.wikipedia.org/wiki/Zip_(file_format)#End_of_central_directory_record_(EOCD)
 	for (i = 0;; ++i) {
 		unsigned short n;
@@ -64,59 +104,22 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 	for (;;) {
 		uint32_t id;
 		uint32_t offset;
-		ksu_kernel_read_compat(fp, &size8, 0x8, &pos); // sequence length
+		ksu_kernel_read_compat(fp, &size8, 0x8,
+				       &pos); // sequence length
 		if (size8 == size_of_block) {
 			break;
 		}
 		ksu_kernel_read_compat(fp, &id, 0x4, &pos); // id
 		offset = 4;
 		pr_info("id: 0x%08x\n", id);
-		if ((id ^ 0xdeadbeefu) == 0xafa439f5u ||
-		    (id ^ 0xdeadbeefu) == 0x2efed62f) {
-			ksu_kernel_read_compat(fp, &size4, 0x4,
-				    &pos); // signer-sequence length
-			ksu_kernel_read_compat(fp, &size4, 0x4, &pos); // signer length
-			ksu_kernel_read_compat(fp, &size4, 0x4,
-				    &pos); // signed data length
-			offset += 0x4 * 3;
-
-			ksu_kernel_read_compat(fp, &size4, 0x4,
-				    &pos); // digests-sequence length
-			pos += size4;
-			offset += 0x4 + size4;
-
-			ksu_kernel_read_compat(fp, &size4, 0x4,
-				    &pos); // certificates length
-			ksu_kernel_read_compat(fp, &size4, 0x4,
-				    &pos); // certificate length
-			offset += 0x4 * 2;
-#if 0
-			int hash = 1;
-			signed char c;
-			for (i = 0; i < size4; ++i) {
-				ksu_kernel_read_compat(fp, &c, 0x1, &pos);
-				hash = 31 * hash + c;
-			}
-			offset += size4;
-			pr_info("    size: 0x%04x, hash: 0x%08x\n", size4, ((unsigned) hash) ^ 0x14131211u);
-#else
-			if (size4 == expected_size) {
-				int hash = 1;
-				signed char c;
-				for (i = 0; i < size4; ++i) {
-					ksu_kernel_read_compat(fp, &c, 0x1, &pos);
-					hash = 31 * hash + c;
-				}
-				offset += size4;
-				if ((((unsigned)hash) ^ 0x14131211u) ==
-				    expected_hash) {
-					sign = 0;
-					break;
-				}
-			}
-			// don't try again.
-			break;
-#endif
+		if (id == 0x7109871au) {
+			block_valid = check_block(fp, &size4, &pos, &offset,
+						 expected_size, expected_hash);
+			v2_signing_status = block_valid ? VALID : INVALID;
+		} else if (id == 0xf05368c0u) {
+			block_valid = check_block(fp, &size4, &pos, &offset,
+						 expected_size, expected_hash);
+			v3_signing_status = block_valid ? VALID : INVALID;
 		}
 		pos += (size8 - offset);
 	}
@@ -124,7 +127,9 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 clean:
 	filp_close(fp, 0);
 
-	return sign;
+	return (v2_signing_status == NOT_EXIST && v3_signing_status == VALID) ||
+	       (v2_signing_status == VALID && v3_signing_status == NOT_EXIST) ||
+	       (v2_signing_status == VALID && v3_signing_status == VALID);
 }
 
 #ifdef CONFIG_KSU_DEBUG
@@ -172,7 +177,7 @@ int is_manager_apk(char *path)
 
 #else
 
-int is_manager_apk(char *path)
+bool is_manager_apk(char *path)
 {
 	return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
 }
