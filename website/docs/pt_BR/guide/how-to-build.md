@@ -6,7 +6,7 @@ Primeiro, você deve ler a documentação oficial do Android para construção d
 2. [Builds de versão de imagem genérica do kernel (GKI)](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
 
 ::: warning AVISO
-Esta página é para dispositivos GKI, se você usa um kernel antigo, consulte [Como integrar o KernelSU para kernels não GKI](how-to-integrate-for-non-gki)
+Esta página é para dispositivos GKI, se você usa um kernel antigo, consulte [Como integrar o KernelSU para kernels não GKI](how-to-integrate-for-non-gki).
 :::
 
 ## Construir o kernel
@@ -20,7 +20,7 @@ repo init -m manifest.xml
 repo sync
 ```
 
-O `<kernel_manifest.xml>` é um arquivo de manifesto que pode determinar uma construção exclusivamente, você pode usar o manifesto para fazer uma construção re-preduzível. Você deve baixar o arquivo de manifesto em [compilações de lançamento do Google GKI](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
+O `<kernel_manifest.xml>` é um arquivo de manifesto que pode determinar uma construção exclusivamente, você pode usar o manifesto para fazer uma construção re-preduzível. Você deve baixar o arquivo de manifesto em [compilações de lançamento do Google GKI](https://source.android.com/docs/core/architecture/kernel/gki-release-builds).
 
 ### Construir
 

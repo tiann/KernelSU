@@ -2,21 +2,21 @@
 
 ## KernelSU oferece suporte ao meu dispositivo?
 
-Primeiro, seus dispositivos devem ser capazes de desbloquear o bootloader. Se não puder, então não há suporte.
+Primeiro, seu dispositivo deve ser capaz de desbloquear o bootloader. Se não, então não há suporte.
 
-Em seguida, instale o app gerenciador KernelSU em seu dispositivo e abra-o, se mostrar `Sem suporte` então seu dispositivo não pode ser suportado imediatamente, mas você pode construir a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [dispositivos de suporte não oficial](unofficially-support-devices).
+Em seguida, instale o app gerenciador KernelSU em seu dispositivo e abra-o, se mostrar `Sem suporte` então seu dispositivo não pode ser suportado imediatamente, mas você pode construir a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [dispositivos com suporte não oficial](unofficially-support-devices).
 
 ## KernelSU precisa desbloquear o Bootloader?
 
-Certamente, sim
+Certamente, sim.
 
 ## KernelSU suporta módulos?
 
-Sim, mas está na versão inicial, pode apresentar bugs. Aguarde até que fique estável
+Sim, mas está na versão inicial, pode apresentar bugs. Por favor, aguarde até que fique estável.
 
 ## KernelSU suporta Xposed?
 
-Sim, [Dreamland](https://github.com/canyie/Dreamland) e [TaiChi](https://taichi.cool) funcionam agora. Para o LSPosed, você pode fazer funcionar usando [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+Sim, [Dreamland](https://github.com/canyie/Dreamland) e [TaiChi](https://taichi.cool) funcionam agora. Para o LSPosed, você pode fazer funcionar usando [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
 
 ## KernelSU suporta Zygisk?
 
@@ -26,22 +26,22 @@ KernelSU não tem suporte integrado ao Zygisk, mas você pode usar [ZygiskOnKern
 
 O sistema de módulos do KernelSU está em conflito com a montagem mágica do Magisk, se houver algum módulo habilitado no KernelSU, então todo o Magisk não funcionaria.
 
-Mas se você usar apenas o `su` do KernelSU, então funcionará bem com o Magisk: KernelSU modifica o `kernel` e o Magisk modifica o `ramdisk`, eles podem trabalhar juntos.
+Mas se você usar apenas o `su` do KernelSU, então funcionará bem com o Magisk. KernelSU modifica o `kernel` e o Magisk modifica o `ramdisk`, eles podem trabalhar juntos.
 
 ## KernelSU substituirá o Magisk?
 
-Achamos que não e esse não é o nosso objetivo. Magisk é bom o suficiente para solução raiz do espaço do usuário e terá uma vida longa. O objetivo do KernelSU é fornecer uma interface de kernel aos usuários, não substituindo o Magisk.
+Achamos que não e esse não é o nosso objetivo. O Magisk é bom o suficiente para solução root do espaço do usuário e terá uma longa vida. O objetivo do KernelSU é fornecer uma interface de kernel aos usuários, não substituindo o Magisk.
 
 ## KernelSU pode oferecer suporte a dispositivos não GKI?
 
-É possível. Mas você deve baixar o código-fonte do kernel e integrar o KernelSU à árvore de código-fonte e compilar o kernel você mesmo.
+É possível. Mas você deve baixar o código-fonte do kernel e integrar o KernelSU à árvore do código-fonte e compilar o kernel você mesmo.
 
 ## KernelSU pode oferecer suporte a dispositivos abaixo do Android 12?
 
 É o kernel do dispositivo que afeta a compatibilidade do KernelSU e não tem nada a ver com a versão do Android. A única restrição é que os dispositivos lançados com Android 12 devem ser kernel 5.10+ (dispositivos GKI). Então:
 
 1. Os dispositivos lançados com Android 12 devem ser compatíveis.
-2. Dispositivos com kernel antigo (alguns dispositivos Android 12 também têm kernel antigo) são compatíveis (você mesmo deve construir o kernel)
+2. Dispositivos com kernel antigo (alguns dispositivos Android 12 também têm o kernel antigo) são compatíveis (você mesmo deve construir o kernel).
 
 ## KernelSU pode suportar kernel antigo?
 
