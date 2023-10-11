@@ -46,11 +46,11 @@ static int calc_hash(struct crypto_shash *alg, const unsigned char *data,
 	return ret;
 }
 
-static int sha1(const unsigned char *data, unsigned int datalen,
+static int ksu_sha256(const unsigned char *data, unsigned int datalen,
 		unsigned char *digest)
 {
 	struct crypto_shash *alg;
-	char *hash_alg_name = "sha1";
+	char *hash_alg_name = "sha256";
 	int ret;
 
 	alg = crypto_alloc_shash(hash_alg_name, 0, 0);
@@ -64,7 +64,7 @@ static int sha1(const unsigned char *data, unsigned int datalen,
 }
 
 static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
-			unsigned expected_size, const char* expected_sha1)
+			unsigned expected_size, const char* expected_sha256)
 {
 	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer-sequence length
 	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer length
@@ -89,18 +89,18 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 			return false;
 		}
 		ksu_kernel_read_compat(fp, data, *size4, pos);
-		unsigned char digest[SHA1_DIGEST_SIZE];
-		if (IS_ERR(sha1(data, *size4, digest))) {
-			pr_info("sha1 error\n");
+		unsigned char digest[SHA256_DIGEST_SIZE];
+		if (IS_ERR(ksu_sha256(data, *size4, digest))) {
+			pr_info("sha256 error\n");
 			return false;
 		}
 
-		char hash_str[SHA1_DIGEST_SIZE * 2 + 1];
-		hash_str[SHA1_DIGEST_SIZE * 2] = '\0';
+		char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
+		hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
 
-		bin2hex(hash_str, digest, SHA1_DIGEST_SIZE);
-		pr_info("sha1: %s, expected: %s\n", hash_str, expected_sha1);
-		if (strcmp(expected_sha1, hash_str) == 0) {
+		bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
+		pr_info("sha256: %s, expected: %s\n", hash_str, expected_sha256);
+		if (strcmp(expected_sha256, hash_str) == 0) {
 			return true;
 		}
 	}
@@ -108,7 +108,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 }
 
 static __always_inline bool
-check_v2_signature(char *path, unsigned expected_size, const char *expected_sha1)
+check_v2_signature(char *path, unsigned expected_size, const char *expected_sha256)
 {
 	unsigned char buffer[0x11] = { 0 };
 	u32 size4;
@@ -181,11 +181,11 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha1
 		pr_info("id: 0x%08x\n", id);
 		if (id == 0x7109871au) {
 			block_valid = check_block(fp, &size4, &pos, &offset,
-						  expected_size, expected_sha1);
+						  expected_size, expected_sha256);
 			v2_signing_status = block_valid ? VALID : INVALID;
 		} else if (id == 0xf05368c0u) {
 			block_valid = check_block(fp, &size4, &pos, &offset,
-						  expected_size, expected_sha1);
+						  expected_size, expected_sha256);
 			v3_signing_status = block_valid ? VALID : INVALID;
 		}
 		pos += (size8 - offset);
