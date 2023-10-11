@@ -50,7 +50,9 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
     ensure!(size_of_block == size8, "not a signed apk");
 
     let mut v2_signing: Option<(u32, String)> = None;
-    let mut v3_signing: Option<(u32, String)> = None;
+    let mut v3_signing_exist = false;
+    let mut v3_1_signing_exist = false;
+
     loop {
         let mut id = [0u8; 4];
         let mut offset = 4u32;
@@ -66,7 +68,11 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
         if id == 0x7109_871a_u32 {
             v2_signing = Some(calc_cert_sha256(&mut f, &mut size4, &mut offset)?);
         } else if id == 0xf053_68c0_u32 {
-            v3_signing = Some(calc_cert_sha256(&mut f, &mut size4, &mut offset)?);
+            // v3 signature scheme
+            v3_signing_exist = true;
+        } else if id == 0x1b93_ad61_u32 {
+            // v3.1 signature scheme: credits to vvb2060
+            v3_1_signing_exist = true;
         }
 
         f.seek(SeekFrom::Current(
@@ -74,22 +80,14 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
         ))?;
     }
 
-    match (v2_signing, v3_signing) {
-        (None, Some(s)) => Ok(s),
-        (Some(s), None) => Ok(s),
-        (Some(s1), Some(s2)) => {
-            if s1 == s2 {
-                Ok(s1)
-            } else {
-                Err(anyhow::anyhow!(
-                    "Inconsisent signature, v2: {}, v3: {}!",
-                    s1.1,
-                    s2.1
-                ))
-            }
-        }
-        _ => Err(anyhow::anyhow!("Unknown signature!")),
+    if v3_signing_exist || v3_1_signing_exist {
+        return Err(anyhow::anyhow!(
+            "Unexpected v3 signature found!",
+        ));
     }
+
+    v2_signing.ok_or(anyhow::anyhow!("No signature found!"))
+
 }
 
 fn calc_cert_sha256(
