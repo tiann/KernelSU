@@ -70,7 +70,7 @@ bool become_manager(char *pkg)
 			pr_info("invalid pkg: %s\n", pkg);
 			continue;
 		}
-		if (is_manager_apk(cwd) == 0) {
+		if (is_manager_apk(cwd)) {
 			// check passed
 			uid_t uid = current_uid().val;
 			pr_info("manager uid: %d\n", uid);

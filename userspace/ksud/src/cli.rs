@@ -228,7 +228,7 @@ pub fn run() -> Result<()> {
             Debug::SetManager { apk } => debug::set_manager(&apk),
             Debug::GetSign { apk } => {
                 let sign = apk_sign::get_apk_signature(&apk)?;
-                println!("size: {:#x}, hash: {:#x}", sign.0, sign.1);
+                println!("size: {:#x}, hash: {}", sign.0, sign.1);
                 Ok(())
             }
             Debug::Version => {
