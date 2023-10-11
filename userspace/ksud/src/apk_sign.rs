@@ -1,7 +1,7 @@
 use anyhow::{ensure, Result};
 use std::io::{Read, Seek, SeekFrom};
 
-pub fn get_apk_signature(apk: &str) -> Result<String> {
+pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
     let mut buffer = [0u8; 0x10];
     let mut size4 = [0u8; 4];
     let mut size8 = [0u8; 8];
@@ -49,8 +49,8 @@ pub fn get_apk_signature(apk: &str) -> Result<String> {
 
     ensure!(size_of_block == size8, "not a signed apk");
 
-    let mut v2_signing: Option<String> = None;
-    let mut v3_signing: Option<String> = None;
+    let mut v2_signing: Option<(u32, String)> = None;
+    let mut v3_signing: Option<(u32, String)> = None;
     loop {
         let mut id = [0u8; 4];
         let mut offset = 4u32;
@@ -83,8 +83,8 @@ pub fn get_apk_signature(apk: &str) -> Result<String> {
             } else {
                 Err(anyhow::anyhow!(
                     "Inconsisent signature, v2: {}, v3: {}!",
-                    s1,
-                    s2
+                    s1.1,
+                    s2.1
                 ))
             }
         }
@@ -96,7 +96,7 @@ fn calc_cert_sha256(
     f: &mut std::fs::File,
     size4: &mut [u8; 4],
     offset: &mut u32,
-) -> Result<String> {
+) -> Result<(u32, String)> {
     f.read_exact(size4)?; // signer-sequence length
     f.read_exact(size4)?; // signer length
     f.read_exact(size4)?; // signed data length
@@ -116,5 +116,5 @@ fn calc_cert_sha256(
     f.read_exact(&mut cert)?;
     *offset += cert_len;
 
-    Ok(sha256::digest(&cert))
+    Ok((cert_len, sha256::digest(&cert)))
 }
