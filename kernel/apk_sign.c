@@ -1,4 +1,3 @@
-#include "crypto/sha.h"
 #include "linux/err.h"
 #include "linux/fs.h"
 #include "linux/gfp.h"
@@ -10,6 +9,13 @@
 #include "kernel_compat.h"
 #include "crypto/hash.h"
 #include "linux/slab.h"
+#include "linux/version.h"
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#include "crypto/sha2.h"
+#else
+#include "crypto/sha.h"
+#endif
 
 struct sdesc {
 	struct shash_desc shash;
@@ -204,7 +210,7 @@ clean:
 #ifdef CONFIG_KSU_DEBUG
 
 unsigned ksu_expected_size = EXPECTED_SIZE;
-unsigned ksu_expected_hash = EXPECTED_HASH;
+const char *ksu_expected_hash = EXPECTED_HASH;
 
 #include "manager.h"
 
@@ -218,9 +224,10 @@ static int set_expected_size(const char *val, const struct kernel_param *kp)
 
 static int set_expected_hash(const char *val, const struct kernel_param *kp)
 {
-	int rv = param_set_uint(val, kp);
+	pr_info("set_expected_hash: %s\n", val);
+	int rv = param_set_charp(val, kp);
 	ksu_invalidate_manager_uid();
-	pr_info("ksu_expected_hash set to %x\n", ksu_expected_hash);
+	pr_info("ksu_expected_hash set to %s\n", ksu_expected_hash);
 	return rv;
 }
 
@@ -231,7 +238,8 @@ static struct kernel_param_ops expected_size_ops = {
 
 static struct kernel_param_ops expected_hash_ops = {
 	.set = set_expected_hash,
-	.get = param_get_uint,
+	.get = param_get_charp,
+	.free = param_free_charp,
 };
 
 module_param_cb(ksu_expected_size, &expected_size_ops, &ksu_expected_size,
@@ -239,7 +247,7 @@ module_param_cb(ksu_expected_size, &expected_size_ops, &ksu_expected_size,
 module_param_cb(ksu_expected_hash, &expected_hash_ops, &ksu_expected_hash,
 		S_IRUSR | S_IWUSR);
 
-int is_manager_apk(char *path)
+bool is_manager_apk(char *path)
 {
 	return check_v2_signature(path, ksu_expected_size, ksu_expected_hash);
 }
