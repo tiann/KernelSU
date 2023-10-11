@@ -56,13 +56,6 @@
         "devices": "Generic x86_64 devices running Android-x86"
     },
     {
-        "maintainer": "Vincent4440",
-        "maintainer_link": "https://github.com/Vincent4440",
-        "kernel_name": "noxious_kernel_xiaomi_sm8250",
-        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250",
-        "devices": "Poco F4: munch"
-    },
-    {
         "maintainer": "Asuka-mio",
         "maintainer_link": "https://github.com/asuka-mio",
         "kernel_name": "android_kernel_xiaomi_cas",
@@ -85,9 +78,9 @@
     },
     {
         "maintainer": "SakuraNotStupid",
-        "maintainer_link": "https://github.com/SakuraNotStupid",
+        "maintainer_link": "https://github.com/SakuraKyuo",
         "kernel_name": "android_kernel_xiaomi_sdm710",
-        "kernel_link": "https://github.com/SakuraNotStupid/android_kernel_xiaomi_sdm710",
+        "kernel_link": "https://github.com/SakuraKyuo/android_kernel_xiaomi_sdm710",
         "devices": "Xiaomi MI 8 SE(sirius/xmsirius)"
     },
     {
@@ -134,9 +127,9 @@
     },
     {
         "maintainer": "Sreeshankar K",
-        "maintainer_link": "https://github.com/Sanju0910",
+        "maintainer_link": "https://github.com/sreeshankark",
         "kernel_name": "NeverSettle Kernel",
-        "kernel_link": "https://github.com/Sanju0910/android_kernel_oneplus_avicii",
+        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
         "devices": "OnePlus Nord (avicii)"
     },
     {
@@ -474,13 +467,6 @@
         "kernel_name": "Kernel-Oriente-Guamp",
         "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Guamp",
         "devices": "Moto g9 play"
-    },
-    {
-        "maintainer": "zharzinhoo",
-        "maintainer_link": "https://github.com/zharzinhoo",
-        "kernel_name": "Kernel-Oriente-Cebu",
-        "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Cebu",
-        "devices": "Moto g9 power"
     },
     {
         "maintainer": "hc841",
