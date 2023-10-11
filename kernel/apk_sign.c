@@ -123,13 +123,10 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha2
 	u64 size8, size_of_block;
 
 	loff_t pos;
-	bool block_valid;
 
-	const int NOT_EXIST = 0;
-	const int INVALID = 1;
-	const int VALID = 2;
-	int v2_signing_status = NOT_EXIST;
-	int v3_signing_status = NOT_EXIST;
+	bool v2_signing_valid = false;
+	bool v3_signing_exist = false;
+	bool v3_1_signing_exist = false;
 
 	int i;
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
@@ -188,13 +185,14 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha2
 		offset = 4;
 		pr_info("id: 0x%08x\n", id);
 		if (id == 0x7109871au) {
-			block_valid = check_block(fp, &size4, &pos, &offset,
+			v2_signing_valid = check_block(fp, &size4, &pos, &offset,
 						  expected_size, expected_sha256);
-			v2_signing_status = block_valid ? VALID : INVALID;
 		} else if (id == 0xf05368c0u) {
-			block_valid = check_block(fp, &size4, &pos, &offset,
-						  expected_size, expected_sha256);
-			v3_signing_status = block_valid ? VALID : INVALID;
+			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
+			v3_signing_exist = true;
+		} else if (id == 0x1b93ad61u) {
+			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
+			v3_1_signing_exist = true;
 		}
 		pos += (size8 - offset);
 	}
@@ -202,9 +200,12 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha2
 clean:
 	filp_close(fp, 0);
 
-	return (v2_signing_status == NOT_EXIST && v3_signing_status == VALID) ||
-	       (v2_signing_status == VALID && v3_signing_status == NOT_EXIST) ||
-	       (v2_signing_status == VALID && v3_signing_status == VALID);
+	if (v3_signing_exist || v3_1_signing_exist) {
+		pr_err("Unexpected v3 signature scheme found!\n");
+		return false;
+	}
+
+	return v2_signing_valid;
 }
 
 #ifdef CONFIG_KSU_DEBUG
