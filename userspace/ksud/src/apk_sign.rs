@@ -1,7 +1,7 @@
 use anyhow::{ensure, Result};
 use std::io::{Read, Seek, SeekFrom};
 
-pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
+pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
     let mut buffer = [0u8; 0x10];
     let mut size4 = [0u8; 4];
     let mut size8 = [0u8; 8];
@@ -65,32 +65,21 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
             f.read_exact(&mut size4)?; // signer-sequence length
             f.read_exact(&mut size4)?; // signer length
             f.read_exact(&mut size4)?; // signed data length
-                                       // offset += 0x4 * 3;
 
             f.read_exact(&mut size4)?; // digests-sequcence length
             let pos = u32::from_le_bytes(size4);
             f.seek(SeekFrom::Current(i64::from(pos)))?;
-            // offset += 0x4 + pos;
 
             f.read_exact(&mut size4)?; // certificates length
             f.read_exact(&mut size4)?; // certificate length
-                                       // offset += 0x4 * 2;
 
-            let mut hash = 1i32;
-            let mut c = [0u8; 1];
+            let cert_len = u32::from_le_bytes(size4);
+            let mut cert: Vec<u8> = vec![];
+            f.read_exact(&mut cert)?;
 
-            let j = u32::from_le_bytes(size4);
-            for _ in 0..j {
-                f.read_exact(&mut c)?;
-                hash = hash.wrapping_mul(31).wrapping_add(i32::from(c[0] as i8));
-            }
+            let sha256sum = sha256::digest(&cert);
 
-            // offset += j;
-
-            let out_size = j;
-            let out_hash = (hash as u32) ^ 0x1413_1211_u32;
-
-            return Ok((out_size, out_hash));
+            return Ok((cert_len, sha256sum));
         }
 
         f.seek(SeekFrom::Current(
