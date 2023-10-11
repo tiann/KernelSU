@@ -1,5 +1,8 @@
 use anyhow::{ensure, Context, Ok, Result};
-use std::{path::{Path, PathBuf}, process::Command};
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use crate::apk_sign::get_apk_signature;
 
