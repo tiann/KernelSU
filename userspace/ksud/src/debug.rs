@@ -15,24 +15,25 @@ fn read_u32(path: &PathBuf) -> Result<u32> {
     Ok(content)
 }
 
-fn set_kernel_param(size: u32, hash: u32) -> Result<()> {
+fn set_kernel_param(size: u32, hash: String) -> Result<()> {
     let kernel_param_path = Path::new(KERNEL_PARAM_PATH).join("parameters");
+
     let expeced_size_path = kernel_param_path.join("ksu_expected_size");
     let expeced_hash_path = kernel_param_path.join("ksu_expected_hash");
 
     println!(
-        "before size: {:#x} hash: {:#x}",
+        "before size: {:#x} hash: {}",
         read_u32(&expeced_size_path)?,
-        read_u32(&expeced_hash_path)?
+        std::fs::read_to_string(&expeced_hash_path)?
     );
 
     std::fs::write(&expeced_size_path, size.to_string())?;
-    std::fs::write(&expeced_hash_path, hash.to_string())?;
+    std::fs::write(&expeced_hash_path, hash)?;
 
     println!(
-        "after size: {:#x} hash: {:#x}",
+        "after size: {:#x} hash: {}",
         read_u32(&expeced_size_path)?,
-        read_u32(&expeced_hash_path)?
+        std::fs::read_to_string(&expeced_hash_path)?
     );
 
     Ok(())
