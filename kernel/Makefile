@@ -29,13 +29,13 @@ KSU_EXPECTED_SIZE := 0x033b
 endif
 
 ifndef KSU_EXPECTED_HASH
-KSU_EXPECTED_HASH := 0xb0b91415
+KSU_EXPECTED_HASH := b507b9f10f640c0dcbd40ba763ed99e192964e99
 endif
 
 $(info -- KernelSU Manager signature size: $(KSU_EXPECTED_SIZE))
 $(info -- KernelSU Manager signature hash: $(KSU_EXPECTED_HASH))
 
 ccflags-y += -DEXPECTED_SIZE=$(KSU_EXPECTED_SIZE)
-ccflags-y += -DEXPECTED_HASH=$(KSU_EXPECTED_HASH)
+ccflags-y += -DEXPECTED_HASH=\"$(KSU_EXPECTED_HASH)\"
 ccflags-y += -Wno-implicit-function-declaration -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat
 ccflags-y += -Wno-declaration-after-statement

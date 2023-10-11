@@ -1,12 +1,70 @@
+#include "crypto/sha.h"
+#include "linux/err.h"
 #include "linux/fs.h"
+#include "linux/gfp.h"
+#include "linux/kernel.h"
 #include "linux/moduleparam.h"
 
 #include "apk_sign.h"
 #include "klog.h" // IWYU pragma: keep
 #include "kernel_compat.h"
+#include "crypto/hash.h"
+#include "linux/slab.h"
+
+struct sdesc {
+	struct shash_desc shash;
+	char ctx[];
+};
+
+static struct sdesc *init_sdesc(struct crypto_shash *alg)
+{
+	struct sdesc *sdesc;
+	int size;
+
+	size = sizeof(struct shash_desc) + crypto_shash_descsize(alg);
+	sdesc = kmalloc(size, GFP_KERNEL);
+	if (!sdesc)
+		return ERR_PTR(-ENOMEM);
+	sdesc->shash.tfm = alg;
+	return sdesc;
+}
+
+static int calc_hash(struct crypto_shash *alg, const unsigned char *data,
+		     unsigned int datalen, unsigned char *digest)
+{
+	struct sdesc *sdesc;
+	int ret;
+
+	sdesc = init_sdesc(alg);
+	if (IS_ERR(sdesc)) {
+		pr_info("can't alloc sdesc\n");
+		return PTR_ERR(sdesc);
+	}
+
+	ret = crypto_shash_digest(&sdesc->shash, data, datalen, digest);
+	kfree(sdesc);
+	return ret;
+}
+
+static int sha1(const unsigned char *data, unsigned int datalen,
+		unsigned char *digest)
+{
+	struct crypto_shash *alg;
+	char *hash_alg_name = "sha1";
+	int ret;
+
+	alg = crypto_alloc_shash(hash_alg_name, 0, 0);
+	if (IS_ERR(alg)) {
+		pr_info("can't alloc alg %s\n", hash_alg_name);
+		return PTR_ERR(alg);
+	}
+	ret = calc_hash(alg, data, datalen, digest);
+	crypto_free_shash(alg);
+	return ret;
+}
 
 static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
-			unsigned expected_size, unsigned expected_hash)
+			unsigned expected_size, const char* expected_sha1)
 {
 	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer-sequence length
 	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer length
@@ -24,16 +82,25 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 	*offset += 0x4 * 2;
 
 	if (*size4 == expected_size) {
-		int hash = 1;
-		signed char c;
-		int i;
-		for (i = 0; i < *size4; ++i) {
-			ksu_kernel_read_compat(fp, &c, 0x1, pos);
-			hash = 31 * hash + c;
-		}
 		*offset += *size4;
-		pr_info("size: 0x%04x, hash: 0x%08x\n", *size4, ((unsigned) hash) ^ 0x14131211u);
-		if ((((unsigned)hash) ^ 0x14131211u) == expected_hash) {
+
+		char *data = kmalloc(*size4, GFP_KERNEL);
+		if (IS_ERR(data)) {
+			return false;
+		}
+		ksu_kernel_read_compat(fp, data, *size4, pos);
+		unsigned char digest[SHA1_DIGEST_SIZE];
+		if (IS_ERR(sha1(data, *size4, digest))) {
+			pr_info("sha1 error\n");
+			return false;
+		}
+
+		char hash_str[SHA1_DIGEST_SIZE * 2 + 1];
+		hash_str[SHA1_DIGEST_SIZE * 2] = '\0';
+
+		bin2hex(hash_str, digest, SHA1_DIGEST_SIZE);
+		pr_info("sha1: %s, expected: %s\n", hash_str, expected_sha1);
+		if (strcmp(expected_sha1, hash_str) == 0) {
 			return true;
 		}
 	}
@@ -41,7 +108,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 }
 
 static __always_inline bool
-check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
+check_v2_signature(char *path, unsigned expected_size, const char *expected_sha1)
 {
 	unsigned char buffer[0x11] = { 0 };
 	u32 size4;
@@ -114,11 +181,11 @@ check_v2_signature(char *path, unsigned expected_size, unsigned expected_hash)
 		pr_info("id: 0x%08x\n", id);
 		if (id == 0x7109871au) {
 			block_valid = check_block(fp, &size4, &pos, &offset,
-						 expected_size, expected_hash);
+						  expected_size, expected_sha1);
 			v2_signing_status = block_valid ? VALID : INVALID;
 		} else if (id == 0xf05368c0u) {
 			block_valid = check_block(fp, &size4, &pos, &offset,
-						 expected_size, expected_hash);
+						  expected_size, expected_sha1);
 			v3_signing_status = block_valid ? VALID : INVALID;
 		}
 		pos += (size8 - offset);
