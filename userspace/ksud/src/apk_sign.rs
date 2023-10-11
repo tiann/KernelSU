@@ -1,7 +1,7 @@
 use anyhow::{ensure, Result};
 use std::io::{Read, Seek, SeekFrom};
 
-pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
+pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
     let mut buffer = [0u8; 0x10];
     let mut size4 = [0u8; 4];
     let mut size8 = [0u8; 8];
@@ -49,9 +49,13 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
 
     ensure!(size_of_block == size8, "not a signed apk");
 
+    let mut v2_signing: Option<(u32, String)> = None;
+    let mut v3_signing_exist = false;
+    let mut v3_1_signing_exist = false;
+
     loop {
         let mut id = [0u8; 4];
-        let offset = 4u32;
+        let mut offset = 4u32;
 
         f.read_exact(&mut size8)?; // sequence length
         if size8 == size_of_block {
@@ -61,36 +65,14 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
         f.read_exact(&mut id)?; // id
 
         let id = u32::from_le_bytes(id);
-        if (id ^ 0xdead_beef_u32) == 0xafa4_39f5_u32 || (id ^ 0xdead_beef_u32) == 0x2efe_d62f_u32 {
-            f.read_exact(&mut size4)?; // signer-sequence length
-            f.read_exact(&mut size4)?; // signer length
-            f.read_exact(&mut size4)?; // signed data length
-                                       // offset += 0x4 * 3;
-
-            f.read_exact(&mut size4)?; // digests-sequcence length
-            let pos = u32::from_le_bytes(size4);
-            f.seek(SeekFrom::Current(i64::from(pos)))?;
-            // offset += 0x4 + pos;
-
-            f.read_exact(&mut size4)?; // certificates length
-            f.read_exact(&mut size4)?; // certificate length
-                                       // offset += 0x4 * 2;
-
-            let mut hash = 1i32;
-            let mut c = [0u8; 1];
-
-            let j = u32::from_le_bytes(size4);
-            for _ in 0..j {
-                f.read_exact(&mut c)?;
-                hash = hash.wrapping_mul(31).wrapping_add(i32::from(c[0] as i8));
-            }
-
-            // offset += j;
-
-            let out_size = j;
-            let out_hash = (hash as u32) ^ 0x1413_1211_u32;
-
-            return Ok((out_size, out_hash));
+        if id == 0x7109_871a_u32 {
+            v2_signing = Some(calc_cert_sha256(&mut f, &mut size4, &mut offset)?);
+        } else if id == 0xf053_68c0_u32 {
+            // v3 signature scheme
+            v3_signing_exist = true;
+        } else if id == 0x1b93_ad61_u32 {
+            // v3.1 signature scheme: credits to vvb2060
+            v3_1_signing_exist = true;
         }
 
         f.seek(SeekFrom::Current(
@@ -98,5 +80,39 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, u32)> {
         ))?;
     }
 
-    Err(anyhow::anyhow!("Unknown error"))
+    if v3_signing_exist || v3_1_signing_exist {
+        return Err(anyhow::anyhow!(
+            "Unexpected v3 signature found!",
+        ));
+    }
+
+    v2_signing.ok_or(anyhow::anyhow!("No signature found!"))
+
+}
+
+fn calc_cert_sha256(
+    f: &mut std::fs::File,
+    size4: &mut [u8; 4],
+    offset: &mut u32,
+) -> Result<(u32, String)> {
+    f.read_exact(size4)?; // signer-sequence length
+    f.read_exact(size4)?; // signer length
+    f.read_exact(size4)?; // signed data length
+    *offset += 0x4 * 3;
+
+    f.read_exact(size4)?; // digests-sequence length
+    let pos = u32::from_le_bytes(*size4); // skip digests
+    f.seek(SeekFrom::Current(i64::from(pos)))?;
+    *offset += 0x4 + pos;
+
+    f.read_exact(size4)?; // certificates length
+    f.read_exact(size4)?; // certificate length
+    *offset += 0x4 * 2;
+
+    let cert_len = u32::from_le_bytes(*size4);
+    let mut cert: Vec<u8> = vec![0; cert_len as usize];
+    f.read_exact(&mut cert)?;
+    *offset += cert_len;
+
+    Ok((cert_len, sha256::digest(&cert)))
 }
