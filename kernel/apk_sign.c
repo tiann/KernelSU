@@ -84,13 +84,15 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 	if (*size4 == expected_size) {
 		*offset += *size4;
 
-		char *data = kmalloc(*size4, GFP_KERNEL);
-		if (IS_ERR(data)) {
+		#define CERT_MAX_LENGTH 1024
+		char cert[CERT_MAX_LENGTH];
+		if (*size4 > CERT_MAX_LENGTH) {
+			pr_info("cert length overlimit\n");
 			return false;
 		}
-		ksu_kernel_read_compat(fp, data, *size4, pos);
+		ksu_kernel_read_compat(fp, cert, *size4, pos);
 		unsigned char digest[SHA256_DIGEST_SIZE];
-		if (IS_ERR(ksu_sha256(data, *size4, digest))) {
+		if (IS_ERR(ksu_sha256(cert, *size4, digest))) {
 			pr_info("sha256 error\n");
 			return false;
 		}
