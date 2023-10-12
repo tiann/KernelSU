@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: ["5.15.94.2", "5.15.104.1", "5.15.104.2", "5.15.104.3"]
+        version: ["5.15.94.2", "5.15.104.1", "5.15.104.2", "5.15.104.3", "5.15.104.4"]
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
