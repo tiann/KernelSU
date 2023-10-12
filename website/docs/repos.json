@@ -55,13 +55,6 @@
         "kernel_link": "https://github.com/hmtheboy154/Darkmatter-kernel",
         "devices": "Generic x86_64 devices running Android-x86"
     },
-    { 
-        "maintainer": "Vincent4440", 
-        "maintainer_link": "https://github.com/Vincent4440", 
-        "kernel_name": "noxious_kernel_xiaomi_sm8250", 
-        "kernel_link": "https://github.com/Vincent4440/noxious_kernel_xiaomi_sm8250", 
-        "devices": "Poco F4: munch" 
-    },
     {
         "maintainer": "Asuka-mio",
         "maintainer_link": "https://github.com/asuka-mio",
@@ -85,9 +78,9 @@
     },
     {
         "maintainer": "SakuraNotStupid",
-        "maintainer_link": "https://github.com/SakuraNotStupid",
+        "maintainer_link": "https://github.com/SakuraKyuo",
         "kernel_name": "android_kernel_xiaomi_sdm710",
-        "kernel_link": "https://github.com/SakuraNotStupid/android_kernel_xiaomi_sdm710",
+        "kernel_link": "https://github.com/SakuraKyuo/android_kernel_xiaomi_sdm710",
         "devices": "Xiaomi MI 8 SE(sirius/xmsirius)"
     },
     {
@@ -134,9 +127,9 @@
     },
     {
         "maintainer": "Sreeshankar K",
-        "maintainer_link": "https://github.com/Sanju0910",
+        "maintainer_link": "https://github.com/sreeshankark",
         "kernel_name": "NeverSettle Kernel",
-        "kernel_link": "https://github.com/Sanju0910/android_kernel_oneplus_avicii",
+        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
         "devices": "OnePlus Nord (avicii)"
     },
     {
@@ -271,6 +264,13 @@
         "kernel_name": "android_kernel_nokia_sdm660_ksu",
         "kernel_link": "https://github.com/reocat/android_kernel_nokia_sdm660_ksu",
         "devices": "Nokia 6.1 (2018)"
+    },
+    {
+        "maintainer": "Tuan Anh",
+        "maintainer_link": "https://github.com/log1cs",
+        "kernel_name": "kernel_nokia_msm8998",
+        "kernel_link": "https://github.com/log1cs/kernel_nokia_msm8998",
+        "devices": "Nokia 8 (Repartitioned)/8 Sirocco (NLA/A1N)"
     },
     {
         "maintainer": "bggRGjQaUbCoE",
@@ -460,5 +460,33 @@
         "kernel_name": "android_kernel_oneplus_sdm845",
         "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
         "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
+    },
+    {
+        "maintainer": "zharzinhoo",
+        "maintainer_link": "https://github.com/zharzinhoo",
+        "kernel_name": "Kernel-Oriente-Guamp",
+        "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Guamp",
+        "devices": "Moto g9 play"
+    },
+    {
+        "maintainer": "hc841",
+        "maintainer_link": "https://github.com/hc841",
+        "kernel_name": "NovaCore_kernel",
+        "kernel_link": "https://github.com/hc841/NovaCore_kernel",
+        "devices": "Moto g9 play"
+    },
+    {
+        "maintainer": "zlm324",
+        "maintainer_link": "https://github.com/zlm324",
+        "kernel_name": "android_kernel_xiaomi_msm8998_ksu",
+        "kernel_link": "https://github.com/zlm324/android_kernel_xiaomi_msm8998_ksu",
+        "devices": "a lineage kernel forked from LineageOS official repository, version 4.4.302, added ksu."
+    },
+    {
+        "maintainer": "zlm324",
+        "maintainer_link": "https://github.com/zlm324",
+        "kernel_name": "android_kernel_xiaomi_msm8953_ksu",
+        "kernel_link": "https://github.com/zlm324/android_kernel_xiaomi_msm8953_ksu",
+        "devices": "Xiaomi 5X (tiffany)"
     }
 ]

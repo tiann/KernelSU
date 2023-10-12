@@ -44,7 +44,7 @@ static int transive_to_domain(const char *domain)
 void setup_selinux(const char *domain)
 {
 	if (transive_to_domain(domain)) {
-		pr_err("transive domain failed.");
+		pr_err("transive domain failed.\n");
 		return;
 	}
 

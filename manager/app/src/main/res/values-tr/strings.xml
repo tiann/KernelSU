@@ -74,10 +74,11 @@
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
     <string name="module_start_downloading">İndirme başladı: %s</string>
-    <string name="new_version_available">Yeni sürüm: %s mevcut, indirmek için tıklayın</string>
+    <string name="new_version_available">Yeni sürüm: %s mevcut, güncellemek için tıklayın</string>
     <string name="launch_app">Uygulamayı çalıştır</string>
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
     <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışması için çok düşük. Lütfen %d veya daha yüksek bir sürüme yükseltin!</string>
+    <string name="module_changelog">Değişiklik listesi</string>
 </resources>

@@ -7,7 +7,7 @@
     <string name="home_working_version">Versão: %d</string>
     <string name="home_superuser_count">Superusuários: %d</string>
     <string name="home_module_count">Módulos: %d</string>
-    <string name="home_unsupported">Sem Suporte</string>
+    <string name="home_unsupported">Sem suporte</string>
     <string name="home_unsupported_reason">KernelSU suporta apenas kernels GKI agora</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versão do gerenciador</string>
@@ -27,7 +27,7 @@
     <string name="install">Instalar</string>
     <string name="reboot">Reiniciar</string>
     <string name="settings">Configurações</string>
-    <string name="reboot_userspace">Reinicialização Suave</string>
+    <string name="reboot_userspace">Reinicialização suave</string>
     <string name="reboot_recovery">Reiniciar em modo Recovery</string>
     <string name="reboot_bootloader">Reiniciar em modo Bootloader</string>
     <string name="reboot_download">Reiniciar em modo Download</string>
@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Aprenda a instalar o KernelSU e usar os módulos</string>
     <string name="home_support_title">Apoie-nos</string>
-    <string name="home_support_content">O KernelSU é, e sempre será, gratuito e de código aberto. No entanto, você pode mostrar seu apoio fazendo uma doação.</string>
+    <string name="home_support_content">KernelSU sempre foi e sempre será, gratuito e de código aberto. No entanto, você pode agradecer enviando uma pequena doação.</string>
     <string name="about_source_code"><![CDATA[Veja o código-fonte no %1$s<br/>Junte-se ao nosso canal do %2$s]]></string>
     <string name="profile" translatable="false">Perfil do Aplicativo</string>
     <string name="profile_default">Padrão</string>
@@ -74,10 +74,11 @@
     <string name="module_update">Atualizar</string>
     <string name="module_downloading">Baixando módulo: %s</string>
     <string name="module_start_downloading">Iniciar o download: %s</string>
-    <string name="new_version_available">Nova versão: %s está disponível, clique para baixar</string>
+    <string name="new_version_available">Nova versão: %s está disponível, clique para atualizar</string>
     <string name="launch_app">Iniciar</string>
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
     <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
     <string name="require_kernel_version">A versão atual do KernelSU %d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %d ou superior!</string>
+    <string name="module_changelog">Registro de alterações</string>
 </resources>
