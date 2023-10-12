@@ -31,7 +31,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 	bool exist = false;
 	list_for_each_entry (np, list, list) {
 		if (np->uid == uid % 100000 &&
-		    strcmp(np->package, package) == 0) {
+		    strncmp(np->package, package, KSU_MAX_PACKAGE_NAME) == 0) {
 			exist = true;
 			break;
 		}
@@ -89,7 +89,7 @@ static void do_update_uid(struct work_struct *work)
 			continue;
 		}
 		data->uid = res;
-		strcpy(data->package, package);
+		strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
 		list_add_tail(&data->list, &uid_list);
 		// reset line start
 		line_start = pos;
