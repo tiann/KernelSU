@@ -441,7 +441,7 @@ exit:
 	filp_close(fp, 0);
 }
 
-void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
+void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data)
 {
 	struct perm_data *np = NULL;
 	struct perm_data *n = NULL;
@@ -451,11 +451,12 @@ void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, void *), void *data)
 	mutex_lock(&allowlist_mutex);
 	list_for_each_entry_safe (np, n, &allow_list, list) {
 		uid_t uid = np->profile.current_uid;
+		char *package = np->profile.key;
 		// we use this uid for special cases, don't prune it!
 		bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID;
-		if (!is_preserved_uid && !is_uid_exist(uid, data)) {
+		if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
 			modified = true;
-			pr_info("prune uid: %d\n", uid);
+			pr_info("prune uid: %d, package: %s\n", uid, package);
 			list_del(&np->list);
 			allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
 			remove_uid_from_arr(uid);
