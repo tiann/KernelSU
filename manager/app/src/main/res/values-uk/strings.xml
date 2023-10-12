@@ -39,7 +39,7 @@
     <string name="module_version">Версія</string>
     <string name="module_author">Автор</string>
     <string name="module_overlay_fs_not_available">overlayfs не доступний, модуль не може працювати!</string>
-    <string name="refresh">Оновити</string>
+    <string name="refresh">освіжати(Оновити)</string>
     <string name="show_system_apps">Показати системні додатки</string>
     <string name="hide_system_apps">Сховати системні додатки</string>
     <string name="send_log">Надіслати лог</string>
@@ -79,4 +79,6 @@
     <string name="restart_app">Перезапустити</string>
     <string name="new_version_available">Нова версія: %s доступна, натисніть, щоб завантажити</string>
     <string name="failed_to_update_sepolicy">Не вдалося оновити правила SELinux для: %s</string>
+    <string name="module_changelog">Журнал змін</string>
+    <string name="require_kernel_version">Поточна версія KernelSU %d занадто низька, щоб менеджер міг працювати належним чином. Будь ласка, оновіть до версії %d або вище!</string>
 </resources>

@@ -1,5 +1,5 @@
 
-**English** | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md)
+**English** | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_iw.md) | [हिंदी](README_IN.md)
 
 # KernelSU
 
@@ -13,11 +13,11 @@ A Kernel-based root solution for Android devices.
 
 ## Compatibility State
 
-KernelSU officially supports Android GKI 2.0 devices(with kernel 5.10+), old kernels(4.14+) are also compatible, but you need to build the kernel yourself.
+KernelSU officially supports Android GKI 2.0 devices (kernel 5.10+). Older kernels (4.14+) are also compatible, but the kernel will have to be built manually.
 
-WSA, ChromeOS and container-based Android can also work with KernelSU integrated.
+With this, WSA, ChromeOS, and container-based Android are all supported.
 
-And the current supported ABIs are: `arm64-v8a` and `x86_64`
+Currently, only `arm64-v8a` and `x86_64` are supported.
 
 ## Usage
 
@@ -27,7 +27,7 @@ And the current supported ABIs are: `arm64-v8a` and `x86_64`
 
 ## Translation
 
-To translate KernelSU into your language or improve an existing translation, please use [Weblate](https://hosted.weblate.org/engage/kernelsu/).
+To help translate KernelSU or improve existing translations, please use [Weblate](https://hosted.weblate.org/engage/kernelsu/).
 
 ## Discussion
 
