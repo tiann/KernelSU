@@ -854,6 +854,7 @@ dependencies = [
  "is_executable",
  "java-properties",
  "jwalk",
+ "lazy_static",
  "libc",
  "log",
  "nom",
