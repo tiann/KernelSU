@@ -1,6 +1,7 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
+use std::{process::Command, os::unix::process::CommandExt};
 
 use crate::module::KsuModuleApi;
 
@@ -27,7 +28,7 @@ pub struct ModuleApiProxy {
 lazy_static! {
     static ref MODULE_API_PROXY: ModuleApiProxy = if should_use_external_module_api() {
         ModuleApiProxy {
-            api: Box::new(KsuModuleApi {}),
+            api: Box::new(ExternalModuleApi {}),
         }
     } else {
         ModuleApiProxy {
@@ -82,5 +83,37 @@ impl ModuleApi for ModuleApiProxy {
 
     fn mount_modules(&self) -> Result<()> {
         self.api.mount_modules()
+    }
+}
+
+struct ExternalModuleApi;
+
+impl ModuleApi for ExternalModuleApi{
+    fn on_post_data_fs(&self) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args("post-fs-data").exec().into())
+    }
+    fn on_boot_completed(&self) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args("boot-completed").exec().into())
+    }
+    fn on_services(&self) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args("services").exec().into())
+    }
+    fn install_module(&self, zip: &str) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args(["install", zip]).exec().into())
+    }
+    fn uninstall_module(&self, id: &str) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args(["uninstall", id]).exec().into())
+    }
+    fn enable_module(&self, id: &str) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args(["enable", id]).exec().into())
+    }
+    fn disable_module(&self, id: &str) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args(["disable", id]).exec().into())
+    }
+    fn list_modules(&self) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args(["list"]).exec().into())
+    }
+    fn mount_modules(&self) -> Result<()>{
+        Err(Command::new("/data/adb/ksu/module").args(["mount"]).exec().into())
     }
 }
