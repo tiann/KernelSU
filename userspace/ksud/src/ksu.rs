@@ -1,4 +1,4 @@
-use anyhow::{Ok, Result};
+use anyhow::{Context, Ok, Result};
 
 #[cfg(unix)]
 use anyhow::ensure;
@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::{ffi::CStr, process::Command};
 
 use crate::{
-    defs,
+    assets, defs, restorecon,
     utils::{self, umask},
 };
 
@@ -309,4 +309,27 @@ pub fn report_post_fs_data() {
 
 pub fn report_boot_complete() {
     report_event(EVENT_BOOT_COMPLETED);
+}
+
+pub fn install() -> Result<()> {
+    utils::ensure_dir_exists(defs::ADB_DIR)?;
+    std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
+    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
+    // install binary assets
+    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
+
+    #[cfg(target_os = "android")]
+    link_ksud_to_bin()?;
+
+    Ok(())
+}
+
+#[cfg(target_os = "android")]
+fn link_ksud_to_bin() -> Result<()> {
+    let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
+    let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
+    if ksu_bin.exists() && !ksu_bin_link.exists() {
+        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link)?;
+    }
+    Ok(())
 }
