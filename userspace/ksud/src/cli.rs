@@ -6,7 +6,11 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, debug, defs, event, module, utils};
+use crate::{
+    apk_sign, debug, defs, ksu,
+    module_api::{self, ModuleApi},
+    utils,
+};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -190,12 +194,14 @@ pub fn run() -> Result<()> {
     }
 
     let cli = Args::parse();
+    let api = module_api::ModuleApiProxy::get();
 
     log::info!("command: {:?}", cli.command);
 
     let result = match cli.command {
-        Commands::PostFsData => event::on_post_data_fs(),
-        Commands::BootCompleted => event::on_boot_completed(),
+        Commands::PostFsData => api.on_post_data_fs(),
+        Commands::BootCompleted => api.on_boot_completed(),
+        Commands::Services => api.on_services(),
 
         Commands::Module { command } => {
             #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -204,20 +210,20 @@ pub fn run() -> Result<()> {
                 utils::unshare_mnt_ns()?;
             }
             match command {
-                Module::Install { zip } => module::install_module(&zip),
-                Module::Uninstall { id } => module::uninstall_module(&id),
-                Module::Enable { id } => module::enable_module(&id),
-                Module::Disable { id } => module::disable_module(&id),
-                Module::List => module::list_modules(),
+                Module::Install { zip } => api.install_module(&zip),
+                Module::Uninstall { id } => api.uninstall_module(&id),
+                Module::Enable { id } => api.enable_module(&id),
+                Module::Disable { id } => api.disable_module(&id),
+                Module::List => api.list_modules(),
             }
         }
-        Commands::Install => event::install(),
+        Commands::Install => ksu::install(),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::Services => event::on_services(),
+
         Commands::Profile { command } => match command {
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
@@ -241,7 +247,7 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su => crate::ksu::grant_root(),
-            Debug::Mount => event::mount_systemlessly(defs::MODULE_DIR),
+            Debug::Mount => api.mount_modules(),
             Debug::Test => todo!(),
         },
     };

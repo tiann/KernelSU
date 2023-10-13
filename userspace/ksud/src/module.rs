@@ -1,9 +1,12 @@
 #[allow(clippy::wildcard_imports)]
 use crate::utils::*;
 use crate::{
-    assets, defs, mount,
-    restorecon::{restore_syscon, setsyscon},
+    assets, defs,
+    module_api::ModuleApi,
+    mount,
+    restorecon::{restore_syscon, restorecon, setsyscon},
     sepolicy,
+    utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
@@ -34,6 +37,143 @@ const INSTALL_MODULE_SCRIPT: &str = concatcp!(
     "exit 0",
     "\n"
 );
+
+fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
+    if lowerdir.is_empty() {
+        warn!("partition: {partition} lowerdir is empty");
+        return Ok(());
+    }
+
+    let partition = format!("/{partition}");
+
+    // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
+    if Path::new(&partition).read_link().is_ok() {
+        warn!("partition: {partition} is a symlink");
+        return Ok(());
+    }
+
+    mount::mount_overlay(&partition, lowerdir)
+}
+
+pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
+    // construct overlay mount params
+    let dir = std::fs::read_dir(module_dir);
+    let Ok(dir) = dir else {
+        bail!("open {} failed", defs::MODULE_DIR);
+    };
+
+    let mut system_lowerdir: Vec<String> = Vec::new();
+
+    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
+    let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
+    for ele in &partition {
+        partition_lowerdir.insert((*ele).to_string(), Vec::new());
+    }
+
+    for entry in dir.flatten() {
+        let module = entry.path();
+        if !module.is_dir() {
+            continue;
+        }
+        let disabled = module.join(defs::DISABLE_FILE_NAME).exists();
+        if disabled {
+            info!("module: {} is disabled, ignore!", module.display());
+            continue;
+        }
+        let skip_mount = module.join(defs::SKIP_MOUNT_FILE_NAME).exists();
+        if skip_mount {
+            info!("module: {} skip_mount exist, skip!", module.display());
+            continue;
+        }
+
+        let module_system = Path::new(&module).join("system");
+        if module_system.is_dir() {
+            system_lowerdir.push(format!("{}", module_system.display()));
+        }
+
+        for part in &partition {
+            // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
+            // otherwise it must be a symlink and we don't need to overlay!
+            let part_path = Path::new(&module).join(part);
+            if part_path.is_dir() {
+                if let Some(v) = partition_lowerdir.get_mut(*part) {
+                    v.push(format!("{}", part_path.display()));
+                }
+            }
+        }
+    }
+
+    // mount /system first
+    if let Err(e) = mount_partition("system", &system_lowerdir) {
+        warn!("mount system failed: {:#}", e);
+    }
+
+    // mount other partitions
+    for (k, v) in partition_lowerdir {
+        if let Err(e) = mount_partition(&k, &v) {
+            warn!("mount {k} failed: {:#}", e);
+        }
+    }
+
+    Ok(())
+}
+
+fn run_stage(stage: &str, block: bool) {
+    utils::umask(0);
+
+    if utils::has_magisk() {
+        warn!("Magisk detected, skip {stage}");
+        return;
+    }
+
+    if crate::utils::is_safe_mode() {
+        warn!("safe mode, skip {stage} scripts");
+        return;
+    }
+
+    if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), block) {
+        warn!("Failed to exec common {stage} scripts: {e}");
+    }
+    if let Err(e) = crate::module::exec_stage_script(stage, block) {
+        warn!("Failed to exec {stage} scripts: {e}");
+    }
+}
+
+#[cfg(unix)]
+fn catch_bootlog() -> Result<()> {
+    let logdir = Path::new(defs::LOG_DIR);
+    utils::ensure_dir_exists(logdir)?;
+    let bootlog = logdir.join("boot.log");
+    let oldbootlog = logdir.join("boot.old.log");
+
+    if bootlog.exists() {
+        std::fs::rename(&bootlog, oldbootlog)?;
+    }
+
+    let bootlog = std::fs::File::create(bootlog)?;
+
+    // timeout -s 9 30s logcat > boot.log
+    let result = unsafe {
+        std::process::Command::new("timeout")
+            .process_group(0)
+            .pre_exec(|| {
+                utils::switch_cgroups();
+                Ok(())
+            })
+            .arg("-s")
+            .arg("9")
+            .arg("30s")
+            .arg("logcat")
+            .stdout(Stdio::from(bootlog))
+            .spawn()
+    };
+
+    if let Err(e) = result {
+        warn!("Failed to start logcat: {:#}", e);
+    }
+
+    Ok(())
+}
 
 fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
@@ -484,17 +624,6 @@ fn _install_module(zip: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn install_module(zip: &str) -> Result<()> {
-    let result = _install_module(zip);
-    if let Err(ref e) = result {
-        // error happened, do some cleanup!
-        let _ = std::fs::remove_file(defs::MODULE_UPDATE_TMP_IMG);
-        let _ = mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
-        println!("- Error: {e}");
-    }
-    result
-}
-
 fn update_module<F>(update_dir: &str, id: &str, func: F) -> Result<()>
 where
     F: Fn(&str, &str) -> Result<()>,
@@ -543,50 +672,6 @@ where
     result
 }
 
-pub fn uninstall_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
-        let dir = Path::new(update_dir);
-        ensure!(dir.exists(), "No module installed");
-
-        // iterate the modules_update dir, find the module to be removed
-        let dir = std::fs::read_dir(dir)?;
-        for entry in dir.flatten() {
-            let path = entry.path();
-            let module_prop = path.join("module.prop");
-            if !module_prop.exists() {
-                continue;
-            }
-            let content = std::fs::read(module_prop)?;
-            let mut module_id: String = String::new();
-            PropertiesIter::new_with_encoding(Cursor::new(content), encoding::all::UTF_8)
-                .read_into(|k, v| {
-                    if k.eq("id") {
-                        module_id = v;
-                    }
-                })?;
-            if module_id.eq(mid) {
-                let remove_file = path.join(defs::REMOVE_FILE_NAME);
-                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
-                break;
-            }
-        }
-
-        // santity check
-        let target_module_path = format!("{update_dir}/{mid}");
-        let target_module = Path::new(&target_module_path);
-        if target_module.exists() {
-            let remove_file = target_module.join(defs::REMOVE_FILE_NAME);
-            if !remove_file.exists() {
-                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
-            }
-        }
-
-        let _ = mark_module_state(id, defs::REMOVE_FILE_NAME, true);
-
-        Ok(())
-    })
-}
-
 fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
     let src_module_path = format!("{module_dir}/{mid}");
     let src_module = Path::new(&src_module_path);
@@ -606,18 +691,6 @@ fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
     let _ = mark_module_state(mid, defs::DISABLE_FILE_NAME, !enable);
 
     Ok(())
-}
-
-pub fn enable_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
-        _enable_module(update_dir, mid, true)
-    })
-}
-
-pub fn disable_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
-        _enable_module(update_dir, mid, false)
-    })
 }
 
 pub fn disable_all_modules() -> Result<()> {
@@ -691,8 +764,215 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
     modules
 }
 
-pub fn list_modules() -> Result<()> {
-    let modules = _list_modules(defs::MODULE_DIR);
-    println!("{}", serde_json::to_string_pretty(&modules)?);
-    Ok(())
+pub struct KsuModuleApi {}
+
+impl ModuleApi for KsuModuleApi {
+    fn on_post_data_fs(&self) -> Result<()> {
+        utils::umask(0);
+
+        #[cfg(unix)]
+        let _ = catch_bootlog();
+
+        if utils::has_magisk() {
+            warn!("Magisk detected, skip post-fs-data!");
+            return Ok(());
+        }
+
+        let safe_mode = crate::utils::is_safe_mode();
+
+        if safe_mode {
+            // we should still mount modules.img to `/data/adb/modules` in safe mode
+            // becuase we may need to operate the module dir in safe mode
+            warn!("safe mode, skip common post-fs-data.d scripts");
+        } else {
+            // Then exec common post-fs-data scripts
+            if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
+                warn!("exec common post-fs-data scripts failed: {}", e);
+            }
+        }
+
+        let module_update_img = defs::MODULE_UPDATE_IMG;
+        let module_img = defs::MODULE_IMG;
+        let module_dir = defs::MODULE_DIR;
+        let module_update_flag = Path::new(defs::WORKING_DIR).join(defs::UPDATE_FILE_NAME);
+
+        // modules.img is the default image
+        let mut target_update_img = &module_img;
+
+        // we should clean the module mount point if it exists
+        ensure_clean_dir(module_dir)?;
+
+        assets::ensure_binaries().with_context(|| "Failed to extract bin assets")?;
+
+        if Path::new(module_update_img).exists() {
+            if module_update_flag.exists() {
+                // if modules_update.img exists, and the the flag indicate this is an update
+                // this make sure that if the update failed, we will fallback to the old image
+                // if we boot succeed, we will rename the modules_update.img to modules.img #on_boot_complete
+                target_update_img = &module_update_img;
+                // And we should delete the flag immediately
+                std::fs::remove_file(module_update_flag)?;
+            } else {
+                // if modules_update.img exists, but the flag not exist, we should delete it
+                std::fs::remove_file(module_update_img)?;
+            }
+        }
+
+        if !Path::new(target_update_img).exists() {
+            return Ok(());
+        }
+
+        // we should always mount the module.img to module dir
+        // becuase we may need to operate the module dir in safe mode
+        info!("mount module image: {target_update_img} to {module_dir}");
+        mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
+            .with_context(|| "mount module image failed".to_string())?;
+
+        // if we are in safe mode, we should disable all modules
+        if safe_mode {
+            warn!("safe mode, skip post-fs-data scripts and disable all modules!");
+            if let Err(e) = crate::module::disable_all_modules() {
+                warn!("disable all modules failed: {}", e);
+            }
+            return Ok(());
+        }
+
+        if let Err(e) = prune_modules() {
+            warn!("prune modules failed: {}", e);
+        }
+
+        if let Err(e) = restorecon() {
+            warn!("restorecon failed: {}", e);
+        }
+
+        // load sepolicy.rule
+        if crate::module::load_sepolicy_rule().is_err() {
+            warn!("load sepolicy.rule failed");
+        }
+
+        if let Err(e) = crate::profile::apply_sepolies() {
+            warn!("apply root profile sepolicy failed: {}", e);
+        }
+
+        // exec modules post-fs-data scripts
+        // TODO: Add timeout
+        if let Err(e) = crate::module::exec_stage_script("post-fs-data", true) {
+            warn!("exec post-fs-data scripts failed: {}", e);
+        }
+
+        // load system.prop
+        if let Err(e) = crate::module::load_system_prop() {
+            warn!("load system.prop failed: {}", e);
+        }
+
+        // mount module systemlessly by overlay
+        if let Err(e) = mount_systemlessly(module_dir) {
+            warn!("do systemless mount failed: {}", e);
+        }
+
+        run_stage("post-mount", true);
+
+        std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
+
+        Ok(())
+    }
+
+    fn on_boot_completed(&self) -> Result<()> {
+        let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
+        let module_img = Path::new(defs::MODULE_IMG);
+        if module_update_img.exists() {
+            // this is a update and we successfully booted
+            if std::fs::rename(module_update_img, module_img).is_err() {
+                warn!("Failed to rename images, copy it now.",);
+                std::fs::copy(module_update_img, module_img)
+                    .with_context(|| "Failed to copy images")?;
+                std::fs::remove_file(module_update_img)
+                    .with_context(|| "Failed to remove image!")?;
+            }
+        }
+        run_stage("boot-completed", false);
+        Ok(())
+    }
+
+    fn on_services(&self) -> Result<()> {
+        run_stage("service", false);
+        Ok(())
+    }
+
+    fn install_module(&self, zip: &str) -> Result<()> {
+        let result = _install_module(zip);
+        if let Err(ref e) = result {
+            // error happened, do some cleanup!
+            let _ = std::fs::remove_file(defs::MODULE_UPDATE_TMP_IMG);
+            let _ = mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
+            println!("- Error: {e}");
+        }
+        result
+    }
+
+    fn uninstall_module(&self, id: &str) -> Result<()> {
+        update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+            let dir = Path::new(update_dir);
+            ensure!(dir.exists(), "No module installed");
+
+            // iterate the modules_update dir, find the module to be removed
+            let dir = std::fs::read_dir(dir)?;
+            for entry in dir.flatten() {
+                let path = entry.path();
+                let module_prop = path.join("module.prop");
+                if !module_prop.exists() {
+                    continue;
+                }
+                let content = std::fs::read(module_prop)?;
+                let mut module_id: String = String::new();
+                PropertiesIter::new_with_encoding(Cursor::new(content), encoding::all::UTF_8)
+                    .read_into(|k, v| {
+                        if k.eq("id") {
+                            module_id = v;
+                        }
+                    })?;
+                if module_id.eq(mid) {
+                    let remove_file = path.join(defs::REMOVE_FILE_NAME);
+                    File::create(remove_file).with_context(|| "Failed to create remove file.")?;
+                    break;
+                }
+            }
+
+            // santity check
+            let target_module_path = format!("{update_dir}/{mid}");
+            let target_module = Path::new(&target_module_path);
+            if target_module.exists() {
+                let remove_file = target_module.join(defs::REMOVE_FILE_NAME);
+                if !remove_file.exists() {
+                    File::create(remove_file).with_context(|| "Failed to create remove file.")?;
+                }
+            }
+
+            let _ = mark_module_state(id, defs::REMOVE_FILE_NAME, true);
+
+            Ok(())
+        })
+    }
+
+    fn enable_module(&self, id: &str) -> Result<()> {
+        update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+            _enable_module(update_dir, mid, true)
+        })
+    }
+
+    fn disable_module(&self, id: &str) -> Result<()> {
+        update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+            _enable_module(update_dir, mid, false)
+        })
+    }
+
+    fn list_modules(&self) -> Result<()> {
+        let modules = _list_modules(defs::MODULE_DIR);
+        println!("{}", serde_json::to_string_pretty(&modules)?);
+        Ok(())
+    }
+
+    fn mount_modules(&self) -> Result<()> {
+        mount_systemlessly(defs::MODULE_DIR)
+    }
 }
