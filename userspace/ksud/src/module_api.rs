@@ -1,6 +1,6 @@
 use anyhow::Result;
+use lazy_static::lazy_static;
 use log::info;
-use std::sync::Once;
 
 use crate::module::KsuModuleApi;
 
@@ -17,27 +17,28 @@ pub trait ModuleApi {
     fn mount_modules(&self) -> Result<()>;
 }
 
+fn should_use_external_module_api() -> bool{
+    false
+}
 pub struct ModuleApiProxy {
-    api: Box<dyn ModuleApi>,
+    api: Box<dyn ModuleApi + Send + Sync>,
 }
 
-// TODO: remove unsafe
+lazy_static! {
+    static ref MODULE_API_PROXY: ModuleApiProxy = if should_use_external_module_api() {
+        ModuleApiProxy {
+            api: Box::new(KsuModuleApi {}),
+        }
+    } else {
+        ModuleApiProxy {
+            api: Box::new(KsuModuleApi {}),
+        }
+    };
+}
+
 impl ModuleApiProxy {
     pub fn get() -> &'static ModuleApiProxy {
-        static mut INSTANCE: *const ModuleApiProxy = std::ptr::null();
-        static ONCE: Once = Once::new();
-
-        ONCE.call_once(|| {
-            let instance: ModuleApiProxy = ModuleApiProxy {
-                api: Box::new(KsuModuleApi {}),
-            };
-
-            unsafe {
-                INSTANCE = std::mem::transmute(Box::new(instance));
-            }
-        });
-
-        unsafe { &*INSTANCE }
+        &MODULE_API_PROXY
     }
 }
 
