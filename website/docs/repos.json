@@ -488,5 +488,19 @@
         "kernel_name": "android_kernel_xiaomi_msm8953_ksu",
         "kernel_link": "https://github.com/zlm324/android_kernel_xiaomi_msm8953_ksu",
         "devices": "Xiaomi 5X (tiffany)"
+    },
+    {
+        "maintainer": "Vincent4440",
+        "maintainer_link": "https://github.com/Vincent4440",
+        "kernel_name": "android_kernel_xiaomi_sm8250",
+        "kernel_link": "https://github.com/Vincent4440/android_kernel_xiaomi_sm8250",
+        "devices": "Poco F4: munch"
+    },
+    {
+        "maintainer": "zharzinhoo",
+        "maintainer_link": "https://github.com/zharzinhoo",
+        "kernel_name": "android_kernel_motorola_cebu",
+        "kernel_link": "https://github.com/zharzinhoo/android_kernel_motorola_cebu",
+        "devices": "Moto g9 power"
     }
 ]
