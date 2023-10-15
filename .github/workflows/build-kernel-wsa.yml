@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-        version: ["5.15.94.2", "5.15.104.1", "5.15.104.2", "5.15.104.3"]
+        version: ["5.15.94.2", "5.15.104.1", "5.15.104.2", "5.15.104.3", "5.15.104.4"]
 
     name: Build WSA-Kernel-${{ matrix.version }}-${{ matrix.arch }}
     runs-on: ubuntu-20.04
@@ -29,22 +29,25 @@ jobs:
 
     steps:
       - name: Install Build Tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends bc bison build-essential ca-certificates flex git gnupg libelf-dev libssl-dev lsb-release software-properties-common wget libncurses-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu nuget gzip
-          export LLVM_VERSION=12
-          wget -q https://apt.llvm.org/llvm.sh
-          sudo bash ./llvm.sh $LLVM_VERSION
-          cd /usr/bin
-          sudo ln -sf clang-$LLVM_VERSION clang
-          sudo ln -sf ld.lld-$LLVM_VERSION ld.lld
-          sudo ln -sf llvm-objdump-$LLVM_VERSION llvm-objdump
-          sudo ln -sf llvm-ar-$LLVM_VERSION llvm-ar
-          sudo ln -sf llvm-nm-$LLVM_VERSION llvm-nm
-          sudo ln -sf llvm-strip-$LLVM_VERSION llvm-strip
-          sudo ln -sf llvm-objcopy-$LLVM_VERSION llvm-objcopy
-          sudo ln -sf llvm-readelf-$LLVM_VERSION llvm-readelf
-          sudo ln -sf clang++-$LLVM_VERSION clang++
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: bc bison build-essential flex libelf-dev binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu gzip ccache
+          version: 1.0
+
+      - name: Cache LLVM
+        id: cache-llvm
+        uses: actions/cache@v3
+        with:
+          path: ./llvm
+          key: llvm-12.0.1
+
+      - name: Setup LLVM
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "12.0.1"
+          force-version: true
+          ubuntu-version: "16.04"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Checkout KernelSU
         uses: actions/checkout@v4
@@ -88,13 +91,13 @@ jobs:
       - name: Build Kernel
         working-directory: WSA-Linux-Kernel
         run: |
-          declare -A ARCH_MAP=(["x86_64"]="x64" ["arm64"]="arm64")
-          cp configs/wsa/config-wsa-${ARCH_MAP[${{ matrix.arch }}]} .config
-          make olddefconfig
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
+          declare -A ARCH_MAP=(["x86_64"]="x64" ["arm64"]="arm64")
+          cp configs/wsa/config-wsa-${ARCH_MAP[${{ matrix.arch }}]} .config
+          make olddefconfig
           declare -A FILE_NAME=(["x86_64"]="bzImage" ["arm64"]="Image")
           make -j`nproc` LLVM=1 ARCH=${{ matrix.arch }} $(if [ "${{ matrix.arch }}" == "arm64" ]; then echo CROSS_COMPILE=aarch64-linux-gnu; fi) ${FILE_NAME[${{ matrix.arch }}]} CCACHE="/usr/bin/ccache"
           declare -A ARCH_MAP_FILE=(["x86_64"]="x86" ["arm64"]="arm64")

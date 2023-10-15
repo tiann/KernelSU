@@ -233,7 +233,8 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		// someone wants to be root manager, just check it!
 		// arg3 should be `/data/user/<userId>/<manager_package_name>`
 		char param[128];
-		if (ksu_strncpy_from_user_nofault(param, arg3, sizeof(param)) == -EFAULT) {
+		if (ksu_strncpy_from_user_nofault(param, arg3, sizeof(param)) ==
+		    -EFAULT) {
 #ifdef CONFIG_KSU_DEBUG
 			pr_err("become_manager: copy param err\n");
 #endif
@@ -483,7 +484,8 @@ static bool should_umount(struct path *path)
 	return false;
 }
 
-static void ksu_umount_mnt(struct path *path, int flags) {
+static void ksu_umount_mnt(struct path *path, int flags)
+{
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	int err = path_umount(path, flags);
 	if (err) {
@@ -499,6 +501,11 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
 	if (err) {
+		return;
+	}
+
+	if (path.dentry != path.mnt->mnt_root) {
+		// it is not root mountpoint, maybe umounted by others already.
 		return;
 	}
 
