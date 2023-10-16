@@ -502,5 +502,12 @@
         "kernel_name": "android_kernel_motorola_cebu",
         "kernel_link": "https://github.com/zharzinhoo/android_kernel_motorola_cebu",
         "devices": "Moto g9 power"
+    },
+    {
+        "maintainer": "tiandoufayale",
+        "maintainer_link": "https://github.com/tiandoufayale",
+        "kernel_name": "android_kernel_samsung_sm8250",
+        "kernel_link": "https://github.com/tiandoufayale/android_kernel_samsung_sm8250",
+        "devices": "Samsung Tab S7 WIFI(T870)"
     }
 ]
