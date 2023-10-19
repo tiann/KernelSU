@@ -6,7 +6,7 @@
     <string name="home_click_to_install">Click to install</string>
     <string name="home_working">Working</string>
     <string name="home_working_version">Version: %d</string>
-    <string name="home_superuser_count">RootApplications: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Unsupported</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
@@ -18,7 +18,7 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
-    <string name="superuser">RootUser</string>
+    <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No installed modules</string>
