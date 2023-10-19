@@ -112,4 +112,5 @@ jobs:
       version: android14-${{ matrix.version }}
       version_name: android14-${{ matrix.version }}.${{ matrix.sub_level }}
       tag: android14-${{ matrix.version }}-${{ matrix.os_patch_level }}
+      os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
