@@ -531,8 +531,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	// todo: check old process's selinux context, if it is not zygote, ignore it!
-
 	if (!is_appuid(new_uid) || is_isolated_uid(new_uid.val)) {
 		// pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
 		return 0;
@@ -551,8 +549,16 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 #endif
 	}
 
+	// check old process's selinux context, if it is not zygote, ignore it!
+	// because some su apps may setuid to untrusted_app but they are in global mount namespace
+	// when we umount for such process, that is a disaster!
+	bool is_zygote_child = is_zygote(old->security);
+	if (!is_zygote_child) {
+		pr_info("handle umount ignore non zygote child: %d\n", current->pid);
+		return 0;
+	}
 	// umount the target mnt
-	pr_info("handle umount for uid: %d\n", new_uid.val);
+	pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val, current->pid);
 
 	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
 	// filter the mountpoint whose target is `/data/adb`
