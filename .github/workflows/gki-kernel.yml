@@ -163,8 +163,6 @@ jobs:
         with:
           key: gki-kernel-aarch64-${{ inputs.version }}
           path: "/home/runner/.cache/bazel"
-          max-size: 2G
-          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Build boot.img
         working-directory: android-kernel
