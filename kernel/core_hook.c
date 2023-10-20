@@ -33,7 +33,7 @@
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 extern inline bool may_mount(void);
 extern inline int check_mnt(struct mount *mnt);
 extern void mntput_no_expire(struct mount *mnt);
@@ -538,7 +538,7 @@ static void ksu_umount_mnt(struct path *path, int flags)
 	if (err) {
 		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
 	}
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 	int err = ksu_path_umount(path, flags);
 	if (err) {
 		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
