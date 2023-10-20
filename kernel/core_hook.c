@@ -542,8 +542,6 @@ static void ksu_umount_mnt(struct path *path, int flags)
 	int err = ksu_path_umount(path, flags);
 	if (err) {
 		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
-	}else{
-		pr_info("umount %s successful: %d\n", path->dentry->d_iname, err);
 	}
 #else
 	//not tested
