@@ -157,6 +157,15 @@ jobs:
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
+      - name: Setup bazel disk cache
+        if: inputs.use_cache == true
+        uses: actions/cache@v3
+        with:
+          key: gki-kernel-aarch64-${{ inputs.version }}
+          path: "/home/runner/.cache/bazel"
+          max-size: 2G
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
       - name: Build boot.img
         working-directory: android-kernel
         run: |
@@ -167,7 +176,7 @@ jobs:
           if [ -e build/build.sh ]; then
             CCACHE="/usr/bin/ccache" LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
           else 
-            tools/bazel run --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+            tools/bazel run --disk_cache=/home/runner/.cache/bazel --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
 
       - name: Prepare artifacts
