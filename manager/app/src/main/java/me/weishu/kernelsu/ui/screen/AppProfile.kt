@@ -58,6 +58,7 @@ import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
+import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
 import me.weishu.kernelsu.ui.screen.destinations.TemplateEditorScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.forceStopApp
@@ -117,9 +118,12 @@ fun AppProfileScreen(
             },
             profile = profile,
             onViewTemplate = {
-                getTemplateInfoById(it)?.let { info->
+                getTemplateInfoById(it)?.let { info ->
                     navigator.navigate(TemplateEditorScreenDestination(info))
                 }
+            },
+            onManageTemplate = {
+                navigator.navigate(AppProfileTemplateScreenDestination())
             },
             onProfileChange = {
                 scope.launch {
@@ -148,6 +152,7 @@ private fun AppProfileInner(
     appIcon: @Composable () -> Unit,
     profile: Natives.Profile,
     onViewTemplate: (id: String) -> Unit = {},
+    onManageTemplate: () -> Unit = {},
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = profile.allowSu
@@ -190,9 +195,12 @@ private fun AppProfileInner(
                     }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         if (currentMode == Mode.Template) {
-                            TemplateConfig(profile = profile,
+                            TemplateConfig(
+                                profile = profile,
                                 onViewTemplate = onViewTemplate,
-                                onProfileChange = onProfileChange)
+                                onManageTemplate = onManageTemplate,
+                                onProfileChange = onProfileChange
+                            )
                         } else if (mode == Mode.Custom) {
                             RootProfileConfig(
                                 fixedName = true,
