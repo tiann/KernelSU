@@ -1,0 +1,16 @@
+{
+    "id":"incompetent.root",
+    "name":"incompetent root",
+    "author":"kernelsu.org",
+    "description":"A incompetent root user with minimal capability",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "capabilities":[
+        "CAP_DAC_READ_SEARCH"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED"
+}
