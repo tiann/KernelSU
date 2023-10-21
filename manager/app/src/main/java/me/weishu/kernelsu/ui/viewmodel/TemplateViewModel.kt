@@ -59,9 +59,9 @@ class TemplateViewModel : ViewModel() {
         private set
 
     val templateList by derivedStateOf {
-        val comparator = compareBy(TemplateInfo::local).then(
+        val comparator = compareBy(TemplateInfo::local).reversed().then(
             compareBy(
-                Collator.getInstance(Locale.getDefault()), TemplateInfo::name
+                Collator.getInstance(Locale.getDefault()), TemplateInfo::id
             )
         )
         templates.sortedWith(comparator).apply {
@@ -157,6 +157,18 @@ fun getTemplateInfoById(id: String): TemplateViewModel.TemplateInfo? {
     }.getOrNull()
 }
 
+private fun getLocaleString(json: JSONObject, key: String): String {
+    val fallback = json.getString(key)
+    val locale = Locale.getDefault()
+    val localeKey = "${locale.language}_${locale.country}"
+    json.optJSONObject("locales")?.let { locale ->
+        locale.optJSONObject(localeKey)?.let {
+            return it.optString(key, fallback)
+        }
+    }
+    return fallback
+}
+
 private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? {
     return runCatching {
         val groupsJsonArray = templateJson.getJSONArray("groups")
@@ -164,8 +176,9 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
         val rulesJsonArray = templateJson.optJSONArray("rules")
         val templateInfo = TemplateViewModel.TemplateInfo(
             id = templateJson.getString("id"),
-            name = templateJson.getString("name"),
-            description = templateJson.getString("description"),
+            name = getLocaleString(templateJson, "name"),
+            description = getLocaleString(templateJson, "description"),
+            author = templateJson.optString("author"),
             local = templateJson.optBoolean("local"),
             namespace = Natives.Profile.Namespace.valueOf(
                 templateJson.getString("namespace").uppercase()

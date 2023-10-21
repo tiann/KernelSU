@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,7 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.ResultBackNavigator
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
@@ -55,7 +56,7 @@ import org.json.JSONObject
 @Destination
 @Composable
 fun TemplateEditorScreen(
-    navigator: DestinationsNavigator,
+    navigator: ResultBackNavigator<Boolean>,
     initialTemplate: TemplateViewModel.TemplateInfo,
     readOnly: Boolean = true,
 ) {
@@ -65,6 +66,10 @@ fun TemplateEditorScreen(
 
     var template by rememberSaveable {
         mutableStateOf(initialTemplate)
+    }
+
+    BackHandler {
+        navigator.navigateBack(result = !readOnly)
     }
 
     Scaffold(
@@ -88,15 +93,15 @@ fun TemplateEditorScreen(
                 },
                 readOnly = readOnly,
                 summary = titleSummary,
-                onBack = { navigator.popBackStack() },
+                onBack = { navigator.navigateBack(result = !readOnly) },
                 onDelete = {
                     if (deleteAppProfileTemplate(template.id)) {
-                        navigator.popBackStack()
+                        navigator.navigateBack(result = true)
                     }
                 },
                 onSave = {
                     if (saveTemplate(template, isCreation)) {
-                        navigator.popBackStack()
+                        navigator.navigateBack(result = true)
                     }
                 })
         },

@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -33,6 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.ResultRecipient
+import com.ramcosta.composedestinations.result.getOr
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.TemplateEditorScreenDestination
@@ -46,13 +49,23 @@ import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
-fun AppProfileTemplateScreen(navigator: DestinationsNavigator) {
+fun AppProfileTemplateScreen(
+    navigator: DestinationsNavigator,
+    resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
+) {
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         if (viewModel.templateList.isEmpty()) {
             viewModel.fetchTemplates()
+        }
+    }
+
+    // handle result from TemplateEditorScreen, refresh if needed
+    resultRecipient.onNavResult { result ->
+        if (result.getOr { false }) {
+            scope.launch { viewModel.fetchTemplates() }
         }
     }
 
@@ -103,12 +116,18 @@ private fun TemplateItem(
     template: TemplateViewModel.TemplateInfo
 ) {
     ListItem(
-        modifier = Modifier.clickable {
-            navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
-        },
+        modifier = Modifier
+            .clickable {
+                navigator.navigate(TemplateEditorScreenDestination(template, !template.local))
+            },
         headlineContent = { Text(template.name) },
         supportingContent = {
             Column {
+                Text(
+                    text = "${template.id}${if (template.author.isEmpty()) "" else "@${template.author}"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                )
                 Text(template.description)
                 FlowRow {
                     LabelText(label = "UID: ${template.uid}")
@@ -121,7 +140,8 @@ private fun TemplateItem(
                     }
                 }
             }
-        })
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
