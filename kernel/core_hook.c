@@ -414,7 +414,7 @@ static int my_register__breakpoint(pid_t pid, uintptr_t addr, size_t len,
 	attr.disabled = 0;
 	sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
 						 NULL, task);
-put_task_struct:
+//put_task_struct:
 	put_task_struct(task);
 	return 0;
 }
