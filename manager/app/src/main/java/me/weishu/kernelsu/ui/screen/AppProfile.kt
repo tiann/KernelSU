@@ -18,19 +18,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -61,6 +57,9 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
+import me.weishu.kernelsu.ui.component.profile.TemplateConfig
+import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
+import me.weishu.kernelsu.ui.screen.destinations.TemplateEditorScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
@@ -68,6 +67,7 @@ import me.weishu.kernelsu.ui.util.launchApp
 import me.weishu.kernelsu.ui.util.restartApp
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
 
 /**
  * @author weishu
@@ -107,9 +107,7 @@ fun AppProfileScreen(
             appLabel = appInfo.label,
             appIcon = {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(appInfo.packageInfo)
-                        .crossfade(true)
+                    model = ImageRequest.Builder(context).data(appInfo.packageInfo).crossfade(true)
                         .build(),
                     contentDescription = appInfo.label,
                     modifier = Modifier
@@ -119,6 +117,14 @@ fun AppProfileScreen(
                 )
             },
             profile = profile,
+            onViewTemplate = {
+                getTemplateInfoById(it)?.let { info ->
+                    navigator.navigate(TemplateEditorScreenDestination(info))
+                }
+            },
+            onManageTemplate = {
+                navigator.navigate(AppProfileTemplateScreenDestination())
+            },
             onProfileChange = {
                 scope.launch {
                     if (it.allowSu && !it.rootUseDefault && it.rules.isNotEmpty()) {
@@ -138,7 +144,6 @@ fun AppProfileScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AppProfileInner(
     modifier: Modifier = Modifier,
@@ -146,6 +151,8 @@ private fun AppProfileInner(
     appLabel: String,
     appIcon: @Composable () -> Unit,
     profile: Natives.Profile,
+    onViewTemplate: (id: String) -> Unit = {},
+    onManageTemplate: () -> Unit = {},
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = profile.allowSu
@@ -179,7 +186,7 @@ private fun AppProfileInner(
                     var mode by remember {
                         mutableStateOf(initialMode)
                     }
-                    ProfileBox(mode, false) {
+                    ProfileBox(mode, true) {
                         // template mode shouldn't change profile here!
                         if (it == Mode.Default || it == Mode.Custom) {
                             onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
@@ -188,43 +195,12 @@ private fun AppProfileInner(
                     }
                     Crossfade(targetState = mode, label = "") { currentMode ->
                         if (currentMode == Mode.Template) {
-                            var expanded by remember { mutableStateOf(false) }
-                            val templateNone = "None"
-                            var template by rememberSaveable {
-                                mutableStateOf(
-                                    profile.rootTemplate
-                                        ?: templateNone
-                                )
-                            }
-                            ListItem(headlineContent = {
-                                ExposedDropdownMenuBox(
-                                    expanded = expanded,
-                                    onExpandedChange = { expanded = it },
-                                ) {
-                                    OutlinedTextField(
-                                        modifier = Modifier.menuAnchor(),
-                                        readOnly = true,
-                                        label = { Text(stringResource(R.string.profile_template)) },
-                                        value = template,
-                                        onValueChange = {
-                                            if (template != templateNone) {
-                                                onProfileChange(
-                                                    profile.copy(
-                                                        rootTemplate = it,
-                                                        rootUseDefault = false
-                                                    )
-                                                )
-                                                template = it
-                                            }
-                                        },
-                                        trailingIcon = {
-                                            if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
-                                            else Icon(Icons.Filled.ArrowDropDown, null)
-                                        },
-                                    )
-                                    // TODO: Template
-                                }
-                            })
+                            TemplateConfig(
+                                profile = profile,
+                                onViewTemplate = onViewTemplate,
+                                onManageTemplate = onManageTemplate,
+                                onProfileChange = onProfileChange
+                            )
                         } else if (mode == Mode.Custom) {
                             RootProfileConfig(
                                 fixedName = true,
@@ -254,9 +230,7 @@ private fun AppProfileInner(
 }
 
 private enum class Mode(@StringRes private val res: Int) {
-    Default(R.string.profile_default),
-    Template(R.string.profile_template),
-    Custom(R.string.profile_custom);
+    Default(R.string.profile_default), Template(R.string.profile_template), Custom(R.string.profile_custom);
 
     val text: String
         @Composable get() = stringResource(res)
@@ -292,8 +266,7 @@ private fun ProfileBox(
     Divider(thickness = Dp.Hairline)
     ListItem(headlineContent = {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             FilterChip(
                 selected = mode == Mode.Default,
@@ -331,8 +304,7 @@ private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
                     touchPoint = it
                     expanded = true
                 }
-            }
-    ) {
+            }) {
 
         content()
 

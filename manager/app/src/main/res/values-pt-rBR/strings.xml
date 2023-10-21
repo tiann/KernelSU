@@ -64,10 +64,10 @@
     <string name="profile_groups">Grupos</string>
     <string name="profile_capabilities">Capacidades</string>
     <string name="profile_selinux_context">Contexto do SELinux</string>
-    <string name="profile_umount_modules">Módulos não montados</string>
+    <string name="profile_umount_modules">Desmontar módulos</string>
     <string name="failed_to_update_app_profile">Falha ao atualizar o Perfil do Aplicativo para %s</string>
-    <string name="settings_umount_modules_default">Não montar módulos por padrão</string>
-    <string name="settings_umount_modules_default_summary">O valor padrão global para \"Módulos não montados\" em Perfis de Aplicativos. Se ativado, removerá todas as modificações do módulo do sistema para apps que não possuem um Perfil definido.</string>
+    <string name="settings_umount_modules_default">Desmontar módulos por padrão</string>
+    <string name="settings_umount_modules_default_summary">O valor padrão global para \"Desmontar módulos\" em Perfis de Aplicativos. Se ativado, removerá todas as modificações do módulo do sistema para apps que não possuem um Perfil definido.</string>
     <string name="profile_umount_modules_summary">Ativar esta opção permitirá que o KernelSU restaure quaisquer arquivos modificados pelos módulos para este app.</string>
     <string name="profile_selinux_domain">Domínio</string>
     <string name="profile_selinux_rules">Regras</string>

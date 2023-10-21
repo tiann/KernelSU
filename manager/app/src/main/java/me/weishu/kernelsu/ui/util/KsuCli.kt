@@ -91,7 +91,12 @@ fun uninstallModule(id: String): Boolean {
     return result
 }
 
-fun installModule(uri: Uri, onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit): Boolean {
+fun installModule(
+    uri: Uri,
+    onFinish: (Boolean) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+): Boolean {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
         val file = File(ksuApp.cacheDir, "module.zip")
@@ -115,7 +120,8 @@ fun installModule(uri: Uri, onFinish: (Boolean) -> Unit, onStdout: (String) -> U
         }
 
         val result =
-            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback)
+                .exec()
         Log.i("KernelSU", "install module $uri result: $result")
 
         file.delete()
@@ -153,14 +159,16 @@ fun isSepolicyValid(rules: String?): Boolean {
     }
     val shell = getRootShell()
     val result =
-        shell.newJob().add("${getKsuDaemonPath()} sepolicy check '$rules'").to(ArrayList(), null).exec()
+        shell.newJob().add("${getKsuDaemonPath()} sepolicy check '$rules'").to(ArrayList(), null)
+            .exec()
     return result.isSuccess
 }
 
 fun getSepolicy(pkg: String): String {
     val shell = getRootShell()
     val result =
-        shell.newJob().add("${getKsuDaemonPath()} profile get-sepolicy $pkg").to(ArrayList(), null).exec()
+        shell.newJob().add("${getKsuDaemonPath()} profile get-sepolicy $pkg").to(ArrayList(), null)
+            .exec()
     Log.i(TAG, "code: ${result.code}, out: ${result.out}, err: ${result.err}")
     return result.out.joinToString("\n")
 }
@@ -168,9 +176,37 @@ fun getSepolicy(pkg: String): String {
 fun setSepolicy(pkg: String, rules: String): Boolean {
     val shell = getRootShell()
     val result =
-        shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'").to(ArrayList(), null).exec()
+        shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'")
+            .to(ArrayList(), null).exec()
     Log.i(TAG, "set sepolicy result: ${result.code}")
     return result.isSuccess
+}
+
+fun listAppProfileTemplates(): List<String> {
+    val shell = getRootShell()
+    return shell.newJob().add("${getKsuDaemonPath()} profile list-templates").to(ArrayList(), null)
+        .exec().out
+}
+
+fun getAppProfileTemplate(id: String): String {
+    val shell = getRootShell()
+    return shell.newJob().add("${getKsuDaemonPath()} profile get-template '${id}'")
+        .to(ArrayList(), null)
+        .exec().out.joinToString("\n")
+}
+
+fun setAppProfileTemplate(id: String, template: String): Boolean {
+    val shell = getRootShell()
+    return shell.newJob().add("${getKsuDaemonPath()} profile set-template '${id}' '${template}'")
+        .to(ArrayList(), null)
+        .exec().isSuccess
+}
+
+fun deleteAppProfileTemplate(id: String): Boolean {
+    val shell = getRootShell()
+    return shell.newJob().add("${getKsuDaemonPath()} profile delete-template '${id}'")
+        .to(ArrayList(), null)
+        .exec().isSuccess
 }
 
 fun forceStopApp(packageName: String) {
@@ -182,7 +218,8 @@ fun forceStopApp(packageName: String) {
 fun launchApp(packageName: String) {
 
     val shell = getRootShell()
-    val result = shell.newJob().add("monkey -p $packageName -c android.intent.category.LAUNCHER 1").exec()
+    val result =
+        shell.newJob().add("monkey -p $packageName -c android.intent.category.LAUNCHER 1").exec()
     Log.i(TAG, "launch $packageName result: $result")
 }
 
