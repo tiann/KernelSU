@@ -165,6 +165,7 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
         val templateInfo = TemplateViewModel.TemplateInfo(
             id = templateJson.getString("id"),
             name = templateJson.getString("name"),
+            author = templateJson.optString("author"),
             description = templateJson.getString("description"),
             local = templateJson.optBoolean("local"),
             namespace = Natives.Profile.Namespace.valueOf(
