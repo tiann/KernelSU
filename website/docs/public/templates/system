@@ -2,19 +2,16 @@
     "id":"system",
     "author":"kernelsu.org",
     "name":"system ",
-    "description":"The permission level at which the Android system runs without capabilities",
+    "description":"The permission level at which the Android system runs without any capability",
     "uid":1000,
     "gid":1000,
     "groups":[
         "SYSTEM"
     ],
-    "capabilities":[],
-    "context":"u:r:su:s0",
-    "namespace":"INHERITED",
     "locales": {
         "zh_CN": {
             "name": "Android 系统",
-            "description": "Android 系统运行的权限级别，但没有多数权能"
+            "description": "Android 系统运行的权限级别，但没有任何权能"
         }
     }
 }

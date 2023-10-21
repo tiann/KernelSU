@@ -8,9 +8,6 @@
     "groups":[
         "ADB"
     ],
-    "capabilities":[],
-    "context":"u:r:su:s0",
-    "namespace":"INHERITED",
     "locales": {
         "zh_CN": {
             "name": "Adb 模版",

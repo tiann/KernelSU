@@ -2,19 +2,16 @@
     "id":"incompetent.root",
     "name":"incompetent root",
     "author":"kernelsu.org",
-    "description":"A incompetent root user with minimal capability",
+    "description":"A incompetent root user without any capability",
     "uid":0,
     "gid":0,
     "groups":[
         "ROOT"
     ],
-    "capabilities":[],
-    "context":"u:r:su:s0",
-    "namespace":"INHERITED",
     "locales": {
         "zh_CN": {
             "name": "无能的 Root",
-            "description": "权能极低的无能 root 用户"
+            "description": "无任何权能的 root 用户"
         }
     }
 }
