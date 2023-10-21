@@ -384,40 +384,7 @@ put_task_struct:
 	return written;
 }
 
-static void sample_hbp_handler(struct perf_event *bp,
-			       struct perf_sample_data *data,
-			       struct pt_regs *regs)
-{
-	struct user_fpsimd_state *fpsimd_state = &current->thread.uw.fpsimd_state;
-	float s0 = 1.f;
-	fpsimd_state->vregs[0] = (__uint128_t)s0;
-	
-}
 
-static int my_register__breakpoint(pid_t pid, uintptr_t addr, size_t len,
-				   int type)
-{
-	struct perf_event_attr attr;
-	struct perf_event *sample_hbp;
-	struct task_struct *task;
-
-	task = find_get_task_by_vpid(pid);
-	if (!task)
-		return 0;
-
-	//hw_breakpoint_init(&attr);
-	ptrace_breakpoint_init(&attr);
-
-	attr.bp_addr = addr;
-	attr.bp_len = len;
-	attr.bp_type = type;
-	attr.disabled = 0;
-	sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
-						 NULL, task);
-//put_task_struct:
-	put_task_struct(task);
-	return 0;
-}
 static int hack_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			     unsigned long arg4, unsigned long arg5)
 {
