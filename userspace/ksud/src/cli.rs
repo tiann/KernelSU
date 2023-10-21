@@ -224,9 +224,7 @@ pub fn run() -> Result<()> {
                 crate::profile::set_sepolicy(package, policy)
             }
             Profile::GetTemplate { id } => crate::profile::get_template(id),
-            Profile::SetTemplate { id, template } => {
-                crate::profile::set_template(id, template)
-            },
+            Profile::SetTemplate { id, template } => crate::profile::set_template(id, template),
             Profile::DeleteTemplate { id } => crate::profile::delete_template(id),
             Profile::ListTemplates => crate::profile::list_templates(),
         },

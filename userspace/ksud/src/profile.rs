@@ -42,7 +42,7 @@ pub fn delete_template(id: String) -> Result<()> {
 pub fn list_templates() -> Result<()> {
     let templates = std::fs::read_dir(defs::PROFILE_TEMPLATE_DIR);
     let Ok(templates) = templates else {
-        return Ok(())
+        return Ok(());
     };
     for template in templates {
         let template = template?;
