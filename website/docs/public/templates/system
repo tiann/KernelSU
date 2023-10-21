@@ -1,12 +1,12 @@
 {
-    "id":"adb",
-    "name":"Adb",
+    "id":"system",
     "author":"kernelsu.org",
-    "description":"Minimal rules required by most apps using ADB privilege.",
-    "uid":2000,
-    "gid":2000,
+    "name":"system ",
+    "description":"Run as Android System",
+    "uid":1000,
+    "gid":1000,
     "groups":[
-        "ADB"
+        "SYSTEM"
     ],
     "capabilities":[
         "CAP_DAC_READ_SEARCH"
