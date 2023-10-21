@@ -128,7 +128,7 @@ jobs:
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
-          cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
+          cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
           echo "[+] Patch script/setlocalversion"
           sed -i 's/-dirty//g' $GKI_ROOT/common/scripts/setlocalversion
 
