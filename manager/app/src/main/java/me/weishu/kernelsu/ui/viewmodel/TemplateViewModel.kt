@@ -59,9 +59,9 @@ class TemplateViewModel : ViewModel() {
         private set
 
     val templateList by derivedStateOf {
-        val comparator = compareBy(TemplateInfo::local).then(
+        val comparator = compareBy(TemplateInfo::local).reversed().then(
             compareBy(
-                Collator.getInstance(Locale.getDefault()), TemplateInfo::name
+                Collator.getInstance(Locale.getDefault()), TemplateInfo::id
             )
         )
         templates.sortedWith(comparator).apply {
