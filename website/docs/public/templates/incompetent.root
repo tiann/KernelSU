@@ -8,9 +8,7 @@
     "groups":[
         "ROOT"
     ],
-    "capabilities":[
-        "CAP_DAC_READ_SEARCH"
-    ],
+    "capabilities":[],
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
     "locales": {
