@@ -47,11 +47,11 @@ class TemplateViewModel : ViewModel() {
         val local: Boolean = true,
 
         val namespace: Int = Natives.Profile.Namespace.INHERITED.ordinal,
-        val uid: Int = 0,
-        val gid: Int = 0,
+        val uid: Int = Natives.ROOT_UID,
+        val gid: Int = Natives.ROOT_GID,
         val groups: List<Int> = mutableListOf(),
         val capabilities: List<Int> = mutableListOf(),
-        val context: String = "u:r:su:s0",
+        val context: String = Natives.KERNEL_SU_DOMAIN,
         val rules: List<String> = mutableListOf(),
     ) : Parcelable
 
@@ -140,13 +140,13 @@ private fun <T, R> JSONArray.mapCatching(
 }
 
 private inline fun <reified T : Enum<T>> getEnumOrdinals(
-    jsonArray: JSONArray, enumClass: Class<T>
+    jsonArray: JSONArray?, enumClass: Class<T>
 ): List<T> {
-    return jsonArray.mapCatching<String, T>({ name ->
+    return jsonArray?.mapCatching<String, T>({ name ->
         enumValueOf(name.uppercase())
     }, {
         Log.e(TAG, "ignore invalid enum ${enumClass.simpleName}: $it", it)
-    })
+    }).orEmpty()
 }
 
 fun getTemplateInfoById(id: String): TemplateViewModel.TemplateInfo? {
@@ -171,8 +171,13 @@ private fun getLocaleString(json: JSONObject, key: String): String {
 
 private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? {
     return runCatching {
-        val groupsJsonArray = templateJson.getJSONArray("groups")
-        val capabilitiesJsonArray = templateJson.getJSONArray("capabilities")
+        val groupsJsonArray = templateJson.optJSONArray("groups")
+        val capabilitiesJsonArray = templateJson.optJSONArray("capabilities")
+        val context = templateJson.optString("context").takeIf { it.isNotEmpty() }
+            ?: Natives.KERNEL_SU_DOMAIN;
+        val namespace = templateJson.optString("namespace").takeIf { it.isNotEmpty() }
+            ?: Natives.Profile.Namespace.INHERITED.name
+
         val rulesJsonArray = templateJson.optJSONArray("rules")
         val templateInfo = TemplateViewModel.TemplateInfo(
             id = templateJson.getString("id"),
@@ -181,15 +186,15 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
             author = templateJson.optString("author"),
             local = templateJson.optBoolean("local"),
             namespace = Natives.Profile.Namespace.valueOf(
-                templateJson.getString("namespace").uppercase()
+                namespace.uppercase()
             ).ordinal,
-            uid = templateJson.getInt("uid"),
-            gid = templateJson.getInt("gid"),
+            uid = templateJson.optInt("uid", Natives.ROOT_UID),
+            gid = templateJson.optInt("gid", Natives.ROOT_GID),
             groups = getEnumOrdinals(groupsJsonArray, Groups::class.java).map { it.gid },
             capabilities = getEnumOrdinals(
                 capabilitiesJsonArray, Capabilities::class.java
             ).map { it.cap },
-            context = templateJson.getString("context"),
+            context = context,
             rules = rulesJsonArray?.mapCatching<String, String>({ it }, {
                 Log.e(TAG, "ignore invalid rule: $it", it)
             }).orEmpty()
