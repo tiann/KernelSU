@@ -340,17 +340,17 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 
 	size_t rc_count = strlen(KERNEL_SU_RC);
 
-	pr_info("vfs_read: %s, comm: %s, count: %d, rc_count: %d\n", dpath,
+	pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
 		current->comm, count, rc_count);
 
 	if (count < rc_count) {
-		pr_err("count: %d < rc_count: %d\n", count, rc_count);
+		pr_err("count: %zu < rc_count: %zu\n", count, rc_count);
 		return 0;
 	}
 
 	size_t ret = copy_to_user(buf, KERNEL_SU_RC, rc_count);
 	if (ret) {
-		pr_err("copy ksud.rc failed: %d\n", ret);
+		pr_err("copy ksud.rc failed: %zu\n", ret);
 		return 0;
 	}
 
