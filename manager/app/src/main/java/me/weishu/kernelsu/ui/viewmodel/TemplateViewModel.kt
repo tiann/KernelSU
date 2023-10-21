@@ -27,12 +27,9 @@ import java.util.Locale
  * @author weishu
  * @date 2023/10/20.
  */
+const val TEMPLATE_INDEX_URL = "https://kernelsu.org/templates/index.json"
+const val TEMPLATE_URL = "https://kernelsu.org/templates/%s"
 
-//const val TEMPLATE_INDEX_URL = "https://kernelsu.org/templates/index.json"
-//const val TEMPLATE_URL = "https://kernelsu.org/templates/%s"
-
-const val TEMPLATE_INDEX_URL = "http://192.168.31.99/templates/index.json"
-const val TEMPLATE_URL = "http://192.168.31.99/templates/%s"
 const val TAG = "TemplateViewModel"
 
 class TemplateViewModel : ViewModel() {
@@ -133,6 +130,7 @@ private fun fetchRemoteTemplates() {
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 private fun <T, R> JSONArray.mapCatching(
     transform: (T) -> R, onFail: (Throwable) -> Unit
 ): List<R> {
@@ -191,6 +189,7 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
     }.getOrNull()
 }
 
+@Suppress("unused")
 fun generateTemplates() {
     val templateJson = JSONObject()
     templateJson.put("id", "com.example")
