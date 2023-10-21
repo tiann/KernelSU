@@ -88,10 +88,10 @@ class TemplateViewModel : ViewModel() {
 }
 
 private fun fetchRemoteTemplates() {
-    OkHttpClient().newCall(
-        Request.Builder().url(TEMPLATE_INDEX_URL).build()
-    ).runCatching {
-        execute().use { response ->
+    runCatching {
+        OkHttpClient().newCall(
+            Request.Builder().url(TEMPLATE_INDEX_URL).build()
+        ).execute().use { response ->
             if (!response.isSuccessful) {
                 return
             }
@@ -125,9 +125,7 @@ private fun fetchRemoteTemplates() {
                 }
             }
         }
-    }.onFailure {
-        Log.e(TAG, "fetchRemoteTemplates error", it)
-    }
+    }.onFailure { Log.e(TAG, "fetchRemoteTemplates: $it", it) }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -168,7 +166,7 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
             id = templateJson.getString("id"),
             name = templateJson.getString("name"),
             description = templateJson.getString("description"),
-            local = templateJson.getBoolean("local"),
+            local = templateJson.optBoolean("local"),
             namespace = Natives.Profile.Namespace.valueOf(
                 templateJson.getString("namespace").uppercase()
             ).ordinal,
