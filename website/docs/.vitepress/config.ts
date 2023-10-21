@@ -12,6 +12,7 @@ export default defineConfig( {
         let files = [];
         try {
             files = await readdir(templateDir);
+            files = files.filter(file => !file.startsWith('.'));
         } catch(e) {
             // ignore
         }
