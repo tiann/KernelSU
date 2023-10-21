@@ -148,18 +148,24 @@ enum Profile {
         policy: String,
     },
 
-    /// get template of <package-name>
+    /// get template of <id>
     GetTemplate {
-        /// package name
-        package: String,
+        /// template id
+        id: String,
     },
 
-    /// set template of <package-name> to <template>
+    /// set template of <id> to <template string>
     SetTemplate {
-        /// package name
-        package: String,
-        /// template
+        /// template id
+        id: String,
+        /// template string
         template: String,
+    },
+
+    /// delete template of <id>
+    DeleteTemplate {
+        /// template id
+        id: String,
     },
 
     /// list all templates
@@ -217,10 +223,9 @@ pub fn run() -> Result<()> {
             Profile::SetSepolicy { package, policy } => {
                 crate::profile::set_sepolicy(package, policy)
             }
-            Profile::GetTemplate { package } => crate::profile::get_template(package),
-            Profile::SetTemplate { package, template } => {
-                crate::profile::set_template(package, template)
-            }
+            Profile::GetTemplate { id } => crate::profile::get_template(id),
+            Profile::SetTemplate { id, template } => crate::profile::set_template(id, template),
+            Profile::DeleteTemplate { id } => crate::profile::delete_template(id),
             Profile::ListTemplates => crate::profile::list_templates(),
         },
 

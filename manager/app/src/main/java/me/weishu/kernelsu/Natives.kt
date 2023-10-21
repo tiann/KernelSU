@@ -45,7 +45,6 @@ object Natives {
     external fun setAppProfile(profile: Profile?): Boolean
 
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
-    private const val ROOT_DEFAULT_PROFILE_KEY = "#"
     private const val NOBODY_UID = 9999
 
     fun setDefaultUmountModules(umountModules: Boolean): Boolean {
@@ -90,16 +89,16 @@ object Natives {
         val groups: List<Int> = mutableListOf(),
         val capabilities: List<Int> = mutableListOf(),
         val context: String = "u:r:su:s0",
-        val namespace: Int = Namespace.Inherited.ordinal,
+        val namespace: Int = Namespace.INHERITED.ordinal,
 
         val nonRootUseDefault: Boolean = true,
         val umountModules: Boolean = true,
         var rules: String = "", // this field is save in ksud!!
     ) : Parcelable {
         enum class Namespace {
-            Inherited,
-            Global,
-            Individual,
+            INHERITED,
+            GLOBAL,
+            INDIVIDUAL,
         }
 
         constructor() : this("")

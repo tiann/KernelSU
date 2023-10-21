@@ -18,22 +18,32 @@ pub fn get_sepolicy(pkg: String) -> Result<()> {
     Ok(())
 }
 
-pub fn set_template(name: String, template: String) -> Result<()> {
+// ksud doesn't guarteen the correctness of template, it just save
+pub fn set_template(id: String, template: String) -> Result<()> {
     ensure_dir_exists(defs::PROFILE_TEMPLATE_DIR)?;
-    let template_file = Path::new(defs::PROFILE_TEMPLATE_DIR).join(name);
+    let template_file = Path::new(defs::PROFILE_TEMPLATE_DIR).join(id);
     std::fs::write(template_file, template)?;
     Ok(())
 }
 
-pub fn get_template(name: String) -> Result<()> {
-    let template_file = Path::new(defs::PROFILE_TEMPLATE_DIR).join(name);
+pub fn get_template(id: String) -> Result<()> {
+    let template_file = Path::new(defs::PROFILE_TEMPLATE_DIR).join(id);
     let template = std::fs::read_to_string(template_file)?;
     println!("{template}");
     Ok(())
 }
 
+pub fn delete_template(id: String) -> Result<()> {
+    let template_file = Path::new(defs::PROFILE_TEMPLATE_DIR).join(id);
+    std::fs::remove_file(template_file)?;
+    Ok(())
+}
+
 pub fn list_templates() -> Result<()> {
-    let templates = std::fs::read_dir(defs::PROFILE_TEMPLATE_DIR)?;
+    let templates = std::fs::read_dir(defs::PROFILE_TEMPLATE_DIR);
+    let Ok(templates) = templates else {
+        return Ok(());
+    };
     for template in templates {
         let template = template?;
         let template = template.file_name();

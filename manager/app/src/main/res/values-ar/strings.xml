@@ -5,7 +5,7 @@
     <string name="home_click_to_install">إضغط للتثبيت</string>
     <string name="home_working">يعمل</string>
     <string name="home_working_version">الإصدار: %d</string>
-    <string name="home_superuser_count">المستخدمين الخارقين: %d</string>
+    <string name="home_superuser_count">مستخدمين الجذر: %d</string>
     <string name="home_module_count">الوحدات: %d</string>
     <string name="home_unsupported">غير مدعوم</string>
     <string name="home_unsupported_reason">KernelSU يدعم GKI kernels فقط</string>
@@ -20,7 +20,7 @@
     <string name="superuser">مستخدم خارق</string>
     <string name="module_failed_to_enable">فشل في تمكين الوحدة: %s</string>
     <string name="module_failed_to_disable">فشل تعطيل الوحدة : %s</string>
-    <string name="module_empty">لا توجد وحدة مثبتة</string>
+    <string name="module_empty">لا توجد وحدات مثبتة</string>
     <string name="module">الوحدات</string>
     <string name="uninstall">إلغاء التثبيت</string>
     <string name="module_install">تثبيت الوحدة</string>
@@ -34,7 +34,7 @@
     <string name="reboot_edl">إعادة تشغيل إلى وضع EDL</string>
     <string name="about">من نحن</string>
     <string name="module_uninstall_confirm">هل أنت متأكد أنك تريد إلغاء تثبيت الوحدة  %s ?</string>
-    <string name="module_uninstall_success">تم إلغاء التثبيت %s</string>
+    <string name="module_uninstall_success">تم إلغاء تثبيتها %s</string>
     <string name="module_uninstall_failed">فشل إلغاء التثبيت: %s</string>
     <string name="module_version">الإصدار</string>
     <string name="module_author">المطور</string>
