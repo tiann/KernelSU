@@ -7,9 +7,14 @@ export default defineConfig( {
     title: 'KernelSU',
     locales: locales.locales,
     buildEnd: async (config: SiteConfig) => {
-        const templateDir = resolve(config.outDir, 'templates')
-        const files = await readdir(templateDir);
-        const templateList = resolve(templateDir, "index.json")
-        await writeFile(templateList, JSON.stringify(files))
+        const templateDir = resolve(config.outDir, 'templates');
+        const templateList = resolve(templateDir, "index.json");
+        let files = [];
+        try {
+            files = await readdir(templateDir);
+        } catch(e) {
+            // ignore
+        }
+        await writeFile(templateList, JSON.stringify(files));
     }
 })
