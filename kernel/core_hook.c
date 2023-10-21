@@ -192,10 +192,261 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 
 	return 0;
 }
+#include <linux/sched/mm.h>
+#include <linux/perf_event.h>
+#include <linux/hw_breakpoint.h>
 
+static inline unsigned long size_inside_page(unsigned long start,
+					     unsigned long size)
+{
+	unsigned long sz;
+	sz = PAGE_SIZE - (start & (PAGE_SIZE - 1));
+	return min(sz, size);
+}
+static inline bool should_stop_iteration(void)
+{
+	if (need_resched())
+		cond_resched();
+	return fatal_signal_pending(current);
+}
+#ifndef ARCH_HAS_VALID_PHYS_ADDR_RANGE
+static inline int valid_phys_addr_range(phys_addr_t addr, size_t count)
+{
+	return addr + count <= __pa(high_memory);
+}
+static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
+{
+	return 1;
+}
+#endif
+static inline int page_is_allowed(unsigned long pfn)
+{
+	return 1;
+}
+static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+{
+	return 1;
+}
+
+static phys_addr_t translate_linear_address(struct mm_struct *mm, uintptr_t va)
+{
+	p4d_t *p4d;
+	pgd_t *pgd;
+	pmd_t *pmd;
+	pte_t *pte;
+	pud_t *pud;
+
+	phys_addr_t page_addr;
+	uintptr_t page_offset;
+
+	pgd = pgd_offset(mm, va);
+	if (pgd_none(*pgd) || pgd_bad(*pgd)) {
+		return 0;
+	}
+	p4d = p4d_offset(pgd, va);
+	if (p4d_none(*p4d) || p4d_bad(*p4d)) {
+		return 0;
+	}
+	pud = pud_offset(p4d, va);
+	if (pud_none(*pud) || pud_bad(*pud)) {
+		return 0;
+	}
+	pmd = pmd_offset(pud, va);
+	if (pmd_none(*pmd)) {
+		return 0;
+	}
+	pte = pte_offset_kernel(pmd, va);
+	if (pte_none(*pte)) {
+		return 0;
+	}
+	if (!pte_present(*pte)) {
+		return 0;
+	}
+	//页物理地址
+	page_addr = (phys_addr_t)(pte_pfn(*pte) << PAGE_SHIFT);
+	//页内偏移
+	page_offset = va & (PAGE_SIZE - 1);
+
+	return page_addr + page_offset;
+}
+
+static size_t read_process_memory(pid_t pid, uintptr_t addr, void *buffer,
+				  size_t size)
+{
+	struct task_struct *task;
+	struct mm_struct *mm;
+	phys_addr_t pa;
+	size_t sz, read = 0;
+	void *ptr;
+	char *bounce;
+	int probe;
+
+	task = find_get_task_by_vpid(pid);
+	if (!task)
+		return 0;
+
+	mm = get_task_mm(task);
+	if (!mm || IS_ERR(mm))
+		goto put_task_struct;
+
+	bounce = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!bounce)
+		goto mmput;
+
+	while (size > 0) {
+		sz = size_inside_page(addr, size);
+
+		pa = translate_linear_address(mm, addr);
+		if (!pa)
+			goto out;
+
+		if (!valid_phys_addr_range(pa, sz))
+			goto out;
+
+		ptr = xlate_dev_mem_ptr(pa);
+		if (!ptr)
+			goto out;
+
+		probe = copy_from_kernel_nofault(bounce, ptr, sz);
+		unxlate_dev_mem_ptr(pa, ptr);
+		if (probe)
+			goto out;
+
+		if (copy_to_user(buffer, bounce, sz))
+			goto out;
+
+		size -= sz;
+		addr += sz;
+		buffer += sz;
+		read += sz;
+		if (should_stop_iteration())
+			break;
+	}
+
+out:
+	kfree(bounce);
+mmput:
+	mmput(mm);
+put_task_struct:
+	put_task_struct(task);
+	return read;
+}
+
+static size_t write_process_memory(pid_t pid, uintptr_t addr, void *buffer,
+				   size_t size)
+{
+	struct task_struct *task;
+	struct mm_struct *mm;
+	phys_addr_t pa;
+	size_t sz, written = 0;
+	void *ptr;
+	unsigned long copied;
+
+	task = find_get_task_by_vpid(pid);
+	if (!task)
+		return 0;
+
+	mm = get_task_mm(task);
+	if (!mm || IS_ERR(mm))
+		goto put_task_struct;
+
+	while (size > 0) {
+		sz = size_inside_page(addr, size);
+
+		pa = translate_linear_address(mm, addr);
+		if (!pa)
+			goto out;
+
+		if (!valid_phys_addr_range(pa, sz))
+			goto out;
+
+		ptr = xlate_dev_mem_ptr(pa);
+		if (!ptr)
+			goto out;
+
+		copied = copy_from_user(ptr, buffer, sz);
+		unxlate_dev_mem_ptr(pa, ptr);
+		if (copied)
+			goto out;
+
+		size -= sz;
+		addr += sz;
+		buffer += sz;
+		written += sz;
+		if (should_stop_iteration())
+			break;
+	}
+
+out:
+	mmput(mm);
+put_task_struct:
+	put_task_struct(task);
+	return written;
+}
+
+static void sample_hbp_handler(struct perf_event *bp,
+			       struct perf_sample_data *data,
+			       struct pt_regs *regs)
+{
+	struct user_fpsimd_state *fpsimd_state = &current->thread.uw.fpsimd_state;
+	float s0 = 1.f;
+	fpsimd_state->vregs[0] = (__uint128_t)s0;
+	
+}
+
+static int my_register__breakpoint(pid_t pid, uintptr_t addr, size_t len,
+				   int type)
+{
+	struct perf_event_attr attr;
+	struct perf_event *sample_hbp;
+	struct task_struct *task;
+
+	task = find_get_task_by_vpid(pid);
+	if (!task)
+		return 0;
+
+	//hw_breakpoint_init(&attr);
+	ptrace_breakpoint_init(&attr);
+
+	attr.bp_addr = addr;
+	attr.bp_len = len;
+	attr.bp_type = type;
+	attr.disabled = 0;
+	sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
+						 NULL, task);
+put_task_struct:
+	put_task_struct(task);
+	return 0;
+}
+static int hack_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
+			     unsigned long arg4, unsigned long arg5)
+{
+	if (KERNEL_SU_OPTION - 1 != option) {
+		return 0;
+	}
+	//只给root用，防止被其他应用调用
+	if (current_uid().val != 0) {
+		return 0;
+	}
+
+	if (option == 1) {
+		read_process_memory((pid_t)arg2, (uintptr_t)arg3, (void *)arg4,
+				    (size_t)arg5);
+		return 0;
+	}
+
+	if (option == 2) {
+		write_process_memory((pid_t)arg2, (uintptr_t)arg3, (void *)arg4,
+				     (size_t)arg5);
+		return 0;
+	}
+
+	return 0;
+}
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		     unsigned long arg4, unsigned long arg5)
 {
+	hack_handle_prctl(option, arg2, arg3, arg4, arg5);
 	// if success, we modify the arg5 as result!
 	u32 *result = (u32 *)arg5;
 	u32 reply_ok = KERNEL_SU_OPTION;
