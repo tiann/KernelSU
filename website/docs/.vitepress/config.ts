@@ -1,13 +1,15 @@
-
-
-import { createRequire } from 'module'
-import { defineConfig } from 'vitepress'
+import { defineConfig, SiteConfig } from 'vitepress'
 import locales from './locales'
-
-const require = createRequire(import.meta.url)
-const pkg = require('vitepress/package.json')
+import { readdir, writeFile } from 'fs/promises'
+import { resolve } from 'path'
 
 export default defineConfig( {
     title: 'KernelSU',
-    locales: locales.locales
+    locales: locales.locales,
+    buildEnd: async (config: SiteConfig) => {
+        const templateDir = resolve(config.outDir, 'templates')
+        const files = await readdir(templateDir);
+        const templateList = resolve(templateDir, "index.json")
+        await writeFile(templateList, JSON.stringify(files))
+    }
 })
