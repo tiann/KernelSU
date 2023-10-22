@@ -176,6 +176,11 @@ jobs:
           else 
             tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
+      
+      - name: Check bazel cache
+        if: inputs.use_cache == true
+        run:
+          du -sh /home/runner/.cache/bazel
 
       - name: Prepare artifacts
         id: prepareArtifacts
