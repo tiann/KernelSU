@@ -181,10 +181,10 @@ jobs:
       
       - name: Check bazel cache
         if: inputs.use_cache == true
-        run:
+        run: |
           if [ -e /home/runner/.cache/bazel ]; then
             du -sh /home/runner/.cache/bazel
-            find /home/runner/.cache/bazel -type f -size +10M | xargs rm -f
+            find /home/runner/.cache/bazel -type f -size +10M -exec rm -f {} \;
             du -sh /home/runner/.cache/bazel
           fi
 
