@@ -289,7 +289,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 	if (arg2 == CMD_GRANT_ROOT) {
 		if (is_allow_su()) {
-			pr_info("allow root for: %d\n", current_uid());
+			pr_info("allow root for: %d\n", current_uid().val);
 			escape_to_root();
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("grant_root: prctl reply error\n");
@@ -303,7 +303,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		if (is_manager() || 0 == current_uid().val) {
 			u32 version = KERNEL_SU_VERSION;
 			if (copy_to_user(arg3, &version, sizeof(version))) {
-				pr_err("prctl reply error, cmd: %d\n", arg2);
+				pr_err("prctl reply error, cmd: %lu\n", arg2);
 			}
 		}
 		return 0;
@@ -377,7 +377,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 						  sizeof(u32) * array_length)) {
 					if (copy_to_user(result, &reply_ok,
 							 sizeof(reply_ok))) {
-						pr_err("prctl reply error, cmd: %d\n",
+						pr_err("prctl reply error, cmd: %lu\n",
 						       arg2);
 					}
 				} else {
@@ -397,16 +397,16 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			} else if (arg2 == CMD_UID_SHOULD_UMOUNT) {
 				allow = ksu_uid_should_umount(target_uid);
 			} else {
-				pr_err("unknown cmd: %d\n", arg2);
+				pr_err("unknown cmd: %lu\n", arg2);
 			}
 			if (!copy_to_user(arg4, &allow, sizeof(allow))) {
 				if (copy_to_user(result, &reply_ok,
 						 sizeof(reply_ok))) {
-					pr_err("prctl reply error, cmd: %d\n",
+					pr_err("prctl reply error, cmd: %lu\n",
 					       arg2);
 				}
 			} else {
-				pr_err("prctl copy err, cmd: %d\n", arg2);
+				pr_err("prctl copy err, cmd: %lu\n", arg2);
 			}
 		}
 		return 0;
@@ -433,7 +433,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 				return 0;
 			}
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
-				pr_err("prctl reply error, cmd: %d\n", arg2);
+				pr_err("prctl reply error, cmd: %lu\n", arg2);
 			}
 		}
 		return 0;
@@ -449,7 +449,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		// todo: validate the params
 		if (ksu_set_app_profile(&profile, true)) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
-				pr_err("prctl reply error, cmd: %d\n", arg2);
+				pr_err("prctl reply error, cmd: %lu\n", arg2);
 			}
 		}
 		return 0;
