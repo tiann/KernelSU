@@ -129,8 +129,8 @@ jobs:
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
-          echo "[+] Patch script/setlocalversion"
-          sed -i 's/-dirty//g' $GKI_ROOT/common/scripts/setlocalversion
+          echo "[+] Commit to avoid dirty"
+          git add -A && git commit -a -m "Add KernelSU"
 
           if [ "$IS_DEBUG_KERNEL" = "true" ]; then
             echo "[+] Enable debug features for kernel"
@@ -174,7 +174,7 @@ jobs:
           if [ -e build/build.sh ]; then
             CCACHE="/usr/bin/ccache" LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
           else 
-            tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+            tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
 
       - name: Prepare artifacts
