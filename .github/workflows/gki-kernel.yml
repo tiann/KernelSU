@@ -156,13 +156,6 @@ jobs:
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
-      - name: Setup bazel disk cache
-        if: inputs.use_cache == true
-        uses: actions/cache@v3
-        with:
-          key: gki-kernel-aarch64-${{ inputs.version_name }}
-          path: "/home/runner/.cache/bazel"
-
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
         run: |
@@ -184,15 +177,6 @@ jobs:
             tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
       
-      - name: Check bazel cache
-        if: inputs.use_cache == true
-        run: |
-          if [ -e /home/runner/.cache/bazel ]; then
-            du -sh /home/runner/.cache/bazel
-            find /home/runner/.cache/bazel -type f -size +5M -exec rm -f {} \;
-            du -sh /home/runner/.cache/bazel
-          fi
-
       - name: Prepare artifacts
         id: prepareArtifacts
         run: |
