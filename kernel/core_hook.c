@@ -388,21 +388,18 @@ put_task_struct:
 static int hack_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			     unsigned long arg4, unsigned long arg5)
 {
-	if (KERNEL_SU_OPTION - 1 != option) {
-		return 0;
-	}
 	//只给root用，防止被其他应用调用
 	if (current_uid().val != 0) {
 		return 0;
 	}
 
-	if (option == 1) {
+	if (option == KERNEL_SU_OPTION+1) {
 		read_process_memory((pid_t)arg2, (uintptr_t)arg3, (void *)arg4,
 				    (size_t)arg5);
 		return 0;
 	}
 
-	if (option == 2) {
+	if (option == KERNEL_SU_OPTION+2) {
 		write_process_memory((pid_t)arg2, (uintptr_t)arg3, (void *)arg4,
 				     (size_t)arg5);
 		return 0;
