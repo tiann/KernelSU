@@ -516,5 +516,12 @@
         "kernel_name": "android_kernel_oneplus_msm8998",
         "kernel_link": "https://github.com/Bro-Xun/kernel_op5t_ksu",
         "devices": "Oneplus 5/5T, kernel version 4.4.302"
+    },
+    {
+        "maintainer": "supechicken",
+        "maintainer_link": "https://github.com/supechicken",
+        "kernel_name": "kernel_xiaomi_sm8350",
+        "kernel_link": "https://github.com/supechicken/kernel_xiaomi_sm8350",
+        "devices": " Xiaomi 11T Pro (vili)"
     }
 ]
