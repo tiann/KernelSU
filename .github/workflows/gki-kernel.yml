@@ -138,6 +138,7 @@ jobs:
             echo "[+] Enable debug features for kernel"
             echo "ccflags-y += -DCONFIG_KSU_DEBUG" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
           fi
+          repo status
           echo "[+] KernelSU setup done."
 
       - name: Symbol magic
