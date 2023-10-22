@@ -130,6 +130,8 @@ jobs:
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
           echo "[+] Commit to avoid dirty"
+          git config --global user.email "bot@kernelsu.org"
+          git config --global user.name "KernelSUBot"
           git add -A && git commit -a -m "Add KernelSU"
 
           if [ "$IS_DEBUG_KERNEL" = "true" ]; then
