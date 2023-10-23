@@ -24,6 +24,15 @@ bool become_manager(char *pkg)
 	char *buf;
 	bool result = false;
 
+#ifdef KSU_MANAGER_PACKAGE
+	// pkg is `/<real package>`
+	if (strncmp(pkg + 1, KSU_MANAGER_PACKAGE,
+		    sizeof(KSU_MANAGER_PACKAGE) - 1) != 0) {
+		pr_info("manager package is inconsistent with kernel build: %s\n",
+			KSU_MANAGER_PACKAGE);
+		return false;
+	}
+#endif
 	// must be zygote's direct child, otherwise any app can fork a new process and
 	// open manager's apk
 	if (task_uid(current->real_parent).val != 0) {
