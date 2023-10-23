@@ -1,0 +1,17 @@
+{
+    "id":"incompetent.root",
+    "name":"incompetent root",
+    "author":"kernelsu.org",
+    "description":"A incompetent root user without any capability",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "locales": {
+        "zh_CN": {
+            "name": "无能的 Root",
+            "description": "无任何权能的 root 用户"
+        }
+    }
+}
