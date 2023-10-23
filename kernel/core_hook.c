@@ -396,18 +396,26 @@ static int hack_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	if (option == KERNEL_SU_OPTION+1) {
+	if (option == KERNEL_SU_OPTION + 1) {
 		read_process_memory((pid_t)arg2, (uintptr_t)arg3, (void *)arg4,
 				    (size_t)arg5);
 		return 0;
 	}
 
-	if (option == KERNEL_SU_OPTION+2) {
+	if (option == KERNEL_SU_OPTION + 2) {
 		write_process_memory((pid_t)arg2, (uintptr_t)arg3, (void *)arg4,
 				     (size_t)arg5);
 		return 0;
 	}
 
+	if (option == KERNEL_SU_OPTION + 3) {
+		u32 *result = (u32 *)arg5;
+		u32 reply_ok = KERNEL_SU_OPTION;
+		if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+			pr_err("hack_handle_prctl: prctl reply error\n");
+		}
+		return 0;
+	}
 	return 0;
 }
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
