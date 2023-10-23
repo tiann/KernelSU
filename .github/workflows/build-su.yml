@@ -45,7 +45,6 @@ jobs:
       if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
       env:
         CHAT_ID: ${{ secrets.CHAT_ID }}
-        CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -55,7 +54,7 @@ jobs:
       run: |
         if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
           export VERSION=$(git rev-list --count HEAD)
-          pip3 install python-telegram-bot
+          pip3 install telethon==1.31.1
           mv ./userspace/su/libs/arm64-v8a/su su-arm64
           mv ./userspace/su/libs/x86_64/su su-x86_64
           python3 scripts/ksubot.py su-arm64 su-x86_64
