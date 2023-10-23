@@ -27,7 +27,7 @@ bool become_manager(char *pkg)
 #ifdef KSU_MANAGER_PACKAGE
 	// pkg is `/<real package>`
 	if (strncmp(pkg + 1, KSU_MANAGER_PACKAGE,
-		    sizeof(KSU_MANAGER_PACKAGE) - 1) != 0) {
+		    sizeof(KSU_MANAGER_PACKAGE)) != 0) {
 		pr_info("manager package is inconsistent with kernel build: %s\n",
 			KSU_MANAGER_PACKAGE);
 		return false;
