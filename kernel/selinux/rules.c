@@ -63,6 +63,7 @@ void apply_kernelsu_rules()
 		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "blk_file", ALL);
 		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "fifo_file", ALL);
 		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "chr_file", ALL);
+		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "file", ALL);
 	}
 
 	// we need to save allowlist in /data/adb/ksu
