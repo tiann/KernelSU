@@ -135,6 +135,6 @@ jobs:
           echo "[+] Image to upload"
           ls -l "${{ env.file_path }}.gz"
           if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
-            pip3 install python-telegram-bot
+            pip3 install telethon==1.31.1
             python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}.gz"
           fi
