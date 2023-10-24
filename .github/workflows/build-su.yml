@@ -1,7 +1,7 @@
 name: Build SU
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths:
       - '.github/workflows/build-su.yml'
       - 'userspace/su/**'
@@ -28,7 +28,7 @@ jobs:
         fi
     - uses: nttld/setup-ndk@v1
       with:
-        ndk-version: r25b
+        ndk-version: r25c
         local-cache: true
     - name: Build su
       working-directory: ./userspace/su
