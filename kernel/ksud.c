@@ -138,9 +138,9 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 	return i;
 }
 
-// the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
+// IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-				struct user_arg_ptr *argv, struct user_arg_ptr *envp, int *__never_use_flags)
+				struct user_arg_ptr *argv, struct user_arg_ptr *envp, int *flags)
 {
 #ifndef CONFIG_KPROBES
 	if (!ksu_execveat_hook) {
@@ -167,7 +167,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	}
 
 	if (unlikely(!memcmp(filename->name, system_bin_init, 
-				sizeof(system_bin_init) - 1))) {
+				sizeof(system_bin_init) - 1) && argv)) {
 		// /system/bin/init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/system/bin/init argc: %d\n", argc);
@@ -188,7 +188,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			}
 		}
 	} else if (unlikely(!memcmp(filename->name, old_system_init,
-				sizeof(old_system_init) - 1))) {
+				sizeof(old_system_init) - 1) && argv)) {
 		// /init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/init argc: %d\n", argc);
@@ -208,7 +208,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			} else {
 				pr_err("/init parse args err!\n");
 			}
-		} else if (argc == 1 && !init_second_stage_executed) {
+		} else if (argc == 1 && !init_second_stage_executed && envp) {
 			/* This applies to versions between Android 8 ~ 9  */
 			int envc = count(*envp, MAX_ARG_STRINGS);
 			if (envc > 0) {
