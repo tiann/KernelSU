@@ -192,7 +192,12 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
 
     if (showDialog) {
         val groups = Groups.values().sortedWith(compareBy<Groups> {
-            it != Groups.ROOT
+            when (it) {
+                Groups.ROOT -> 0
+                Groups.SYSTEM -> 1
+                Groups.SHELL -> 2
+                else -> Int.MAX_VALUE
+            }
         }.then(compareBy { it.name }))
         val options = groups.map { value ->
             ListOption(
