@@ -54,8 +54,6 @@ on:
         required: false
       CHAT_ID:
         required: false
-      CACHE_CHAT_ID:
-        required: false
       BOT_TOKEN:
         required: false
       MESSAGE_THREAD_ID:
