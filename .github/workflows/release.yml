@@ -13,6 +13,8 @@ jobs:
     uses: ./.github/workflows/build-kernel-a12.yml
   build-a13-kernel:
     uses: ./.github/workflows/build-kernel-a13.yml
+  build-a14-kernel:
+    uses: ./.github/workflows/build-kernel-a14.yml
   build-wsa-kernel:
     uses: ./.github/workflows/build-kernel-wsa.yml
   build-arcvm-kernel:
@@ -22,6 +24,7 @@ jobs:
       - build-manager
       - build-a12-kernel
       - build-a13-kernel
+      - build-a14-kernel
       - build-wsa-kernel
       - build-arcvm-kernel
     runs-on: ubuntu-latest
