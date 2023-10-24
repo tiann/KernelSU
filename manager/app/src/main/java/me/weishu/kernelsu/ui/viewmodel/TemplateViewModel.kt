@@ -88,8 +88,8 @@ class TemplateViewModel : ViewModel() {
 
     suspend fun importTemplates(
         templates: String,
-        onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
+        onSuccess: suspend () -> Unit,
+        onFailure: suspend (String) -> Unit
     ) {
         withContext(Dispatchers.IO) {
             runCatching {
@@ -208,9 +208,9 @@ private fun getLocaleString(json: JSONObject, key: String): String {
     val fallback = json.getString(key)
     val locale = Locale.getDefault()
     val localeKey = "${locale.language}_${locale.country}"
-    json.optJSONObject("locales")?.let { locale ->
-        locale.optJSONObject(localeKey)?.let {
-            return it.optString(key, fallback)
+    json.optJSONObject("locales")?.let {
+        it.optJSONObject(localeKey)?.let { json->
+            return json.optString(key, fallback)
         }
     }
     return fallback

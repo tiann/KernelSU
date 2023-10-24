@@ -102,4 +102,5 @@
     <string name="app_profile_template_import_success">Imported successfully</string>
     <string name="app_profile_template_sync">Sync online templates</string>
     <string name="app_profile_template_save_failed">Failed to save template</string>
+    <string name="app_profile_template_import_empty">Clipboard is empty!</string>
 </resources>

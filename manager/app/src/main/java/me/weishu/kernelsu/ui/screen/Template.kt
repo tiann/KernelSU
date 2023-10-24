@@ -48,6 +48,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.destinations.TemplateEditorScreenDestination
@@ -86,7 +87,9 @@ fun AppProfileTemplateScreen(
             val clipboardManager = LocalClipboardManager.current
             val context = LocalContext.current
             val showToast = fun(msg: String) {
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                scope.launch(Dispatchers.Main) {
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
             }
             TopBar(onBack = { navigator.popBackStack() },
                 onSync = {
@@ -94,13 +97,18 @@ fun AppProfileTemplateScreen(
                 },
                 onImport = {
                     clipboardManager.getText()?.text?.let {
+                        if (it.isEmpty()) {
+                            showToast(context.getString(R.string.app_profile_template_import_empty))
+                            return@let
+                        }
                         scope.launch {
-                            viewModel.importTemplates(it, {
-                                showToast(context.getString(R.string.app_profile_template_import_success))
-                                scope.launch {
+                            viewModel.importTemplates(
+                                it, {
+                                    showToast(context.getString(R.string.app_profile_template_import_success))
                                     viewModel.fetchTemplates(false)
-                                }
-                            }, showToast)
+                                },
+                                showToast
+                            )
                         }
                     }
                 },
