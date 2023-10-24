@@ -28,7 +28,7 @@ jobs:
         fi
     - uses: nttld/setup-ndk@v1
       with:
-        ndk-version: r25b
+        ndk-version: r25c
         local-cache: true
     - name: Build su
       working-directory: ./userspace/su
