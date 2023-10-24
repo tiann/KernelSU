@@ -9,8 +9,8 @@ API_HASH = "d524b414d21f4d37f08684c1df41ac9c"
 
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
-MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
+CHAT_ID = int(os.environ.get("CHAT_ID"))
+MESSAGE_THREAD_ID = int(os.environ.get("MESSAGE_THREAD_ID"))
 COMMIT_URL = os.environ.get("COMMIT_URL")
 COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 RUN_URL = os.environ.get("RUN_URL")
