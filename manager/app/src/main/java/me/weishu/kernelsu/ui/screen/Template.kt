@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,13 +12,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -27,10 +32,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -71,18 +83,53 @@ fun AppProfileTemplateScreen(
 
     Scaffold(
         topBar = {
+            val clipboardManager = LocalClipboardManager.current
+            val context = LocalContext.current
+            val showToast = fun(msg: String) {
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
             TopBar(onBack = { navigator.popBackStack() },
                 onSync = {
                     scope.launch { viewModel.fetchTemplates(true) }
                 },
-                onClickCreate = {
+                onImport = {
+                    clipboardManager.getText()?.text?.let {
+                        scope.launch {
+                            viewModel.importTemplates(it, {
+                                showToast(context.getString(R.string.app_profile_template_import_success))
+                                scope.launch {
+                                    viewModel.fetchTemplates(false)
+                                }
+                            }, showToast)
+                        }
+                    }
+                },
+                onExport = {
+                    scope.launch {
+                        viewModel.exportTemplates(
+                            {
+                                showToast(context.getString(R.string.app_profile_template_export_empty))
+                            }
+                        ) {
+                            clipboardManager.setText(AnnotatedString(it))
+                        }
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
                     navigator.navigate(
                         TemplateEditorScreenDestination(
                             TemplateViewModel.TemplateInfo(),
                             false
                         )
                     )
-                })
+                },
+                icon = { Icon(Icons.Filled.Add, null) },
+                text = { Text(stringResource(id = R.string.app_profile_template_create)) },
+            )
         },
     ) { innerPadding ->
         val refreshState = rememberPullRefreshState(
@@ -146,7 +193,12 @@ private fun TemplateItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit, onSync: () -> Unit, onClickCreate: () -> Unit) {
+private fun TopBar(
+    onBack: () -> Unit,
+    onSync: () -> Unit = {},
+    onImport: () -> Unit = {},
+    onExport: () -> Unit = {}
+) {
     TopAppBar(
         title = {
             Text(stringResource(R.string.settings_profile_template))
@@ -158,10 +210,37 @@ private fun TopBar(onBack: () -> Unit, onSync: () -> Unit, onClickCreate: () -> 
         },
         actions = {
             IconButton(onClick = onSync) {
-                Icon(Icons.Filled.Sync, contentDescription = null)
+                Icon(
+                    Icons.Filled.Sync,
+                    contentDescription = stringResource(id = R.string.app_profile_template_sync)
+                )
             }
-            IconButton(onClick = onClickCreate) {
-                Icon(Icons.Filled.Create, contentDescription = null)
+
+            var showDropdown by remember { mutableStateOf(false) }
+            IconButton(onClick = {
+                showDropdown = true
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.ImportExport,
+                    contentDescription = stringResource(id = R.string.app_profile_import_export)
+                )
+
+                DropdownMenu(expanded = showDropdown, onDismissRequest = {
+                    showDropdown = false
+                }) {
+                    DropdownMenuItem(text = {
+                        Text(stringResource(id = R.string.app_profile_import_from_clipboard))
+                    }, onClick = {
+                        onImport()
+                        showDropdown = false
+                    })
+                    DropdownMenuItem(text = {
+                        Text(stringResource(id = R.string.app_profile_export_to_clipboard))
+                    }, onClick = {
+                        onExport()
+                        showDropdown = false
+                    })
+                }
             }
         }
     )

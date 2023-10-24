@@ -93,4 +93,11 @@
     <string name="app_profile_template_view">查看模版</string>
     <string name="app_profile_template_readonly">只读</string>
     <string name="app_profile_template_id_exist">模版 id 已存在！</string>
+    <string name="app_profile_import_export">导入/导出</string>
+    <string name="app_profile_import_from_clipboard">从剪切板导入</string>
+    <string name="app_profile_export_to_clipboard">导出到剪切板</string>
+    <string name="app_profile_template_export_empty">没有本地模版可以导出！</string>
+    <string name="app_profile_template_import_success">导入成功！</string>
+    <string name="app_profile_template_sync">同步在线规则</string>
+    <string name="app_profile_template_save_failed">模版保存失败！</string>
 </resources>

@@ -85,6 +85,53 @@ class TemplateViewModel : ViewModel() {
             isRefreshing = false
         }
     }
+
+    suspend fun importTemplates(
+        templates: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        withContext(Dispatchers.IO) {
+            runCatching {
+                JSONArray(templates)
+            }.getOrElse {
+                runCatching {
+                    val json = JSONObject(templates)
+                    JSONArray().apply { put(json) }
+                }.getOrElse {
+                    onFailure("invalid templates: $templates")
+                    return@withContext
+                }
+            }.let {
+                0.until(it.length()).forEach { i ->
+                    runCatching {
+                        val template = it.getJSONObject(i)
+                        val id = template.getString("id")
+                        template.put("local", true)
+                        setAppProfileTemplate(id, template.toString())
+                    }.onFailure { e ->
+                        Log.e(TAG, "ignore invalid template: $it", e)
+                    }
+                }
+                onSuccess()
+            }
+        }
+    }
+
+    suspend fun exportTemplates(onTemplateEmpty: () -> Unit, callback: (String) -> Unit) {
+        withContext(Dispatchers.IO) {
+            val templates = listAppProfileTemplates().mapNotNull(::getTemplateInfoById).filter {
+                it.local
+            }
+            templates.ifEmpty {
+                onTemplateEmpty()
+                return@withContext
+            }
+            JSONArray(templates.map {
+                it.toJSON()
+            }).toString().let(callback)
+        }
+    }
 }
 
 private fun fetchRemoteTemplates() {
@@ -203,6 +250,50 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
     }.onFailure {
         Log.e(TAG, "ignore invalid template: $it", it)
     }.getOrNull()
+}
+
+fun TemplateViewModel.TemplateInfo.toJSON(): JSONObject {
+    val template = this
+    return JSONObject().apply {
+
+        put("id", template.id)
+        put("name", template.name.ifBlank { template.id })
+        put("description", template.description.ifBlank { template.id })
+        if (template.author.isNotEmpty()) {
+            put("author", template.author)
+        }
+        put("namespace", Natives.Profile.Namespace.values()[template.namespace].name)
+        put("uid", template.uid)
+        put("gid", template.gid)
+
+        if (template.groups.isNotEmpty()) {
+            put("groups", JSONArray(
+                Groups.values().filter {
+                    template.groups.contains(it.gid)
+                }.map {
+                    it.name
+                }
+            ))
+        }
+
+        if (template.capabilities.isNotEmpty()) {
+            put("capabilities", JSONArray(
+                Capabilities.values().filter {
+                    template.capabilities.contains(it.cap)
+                }.map {
+                    it.name
+                }
+            ))
+        }
+
+        if (template.context.isNotEmpty()) {
+            put("context", template.context)
+        }
+
+        if (template.rules.isNotEmpty()) {
+            put("rules", JSONArray(template.rules))
+        }
+    }
 }
 
 @Suppress("unused")
