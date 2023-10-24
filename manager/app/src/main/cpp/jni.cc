@@ -156,13 +156,6 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetBooleanField(obj, allowSuField, false);
         env->SetBooleanField(obj, nonRootUseDefaultField, true);
 
-        jobject capList = env->GetObjectField(obj, capabilitiesField);
-        int DEFAULT_CAPS[] = {CAP_DAC_READ_SEARCH};
-
-        for (auto i: DEFAULT_CAPS) {
-            addIntToList(env, capList, i);
-        }
-
         return obj;
     }
 

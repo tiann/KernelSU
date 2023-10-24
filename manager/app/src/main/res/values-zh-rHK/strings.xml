@@ -74,9 +74,10 @@
     <string name="settings_umount_modules_default">預設卸載模組</string>
     <string name="module_downloading">正在下載模組：%s</string>
     <string name="module_start_downloading">開始下載：%s</string>
-    <string name="new_version_available">新版本：%s 已可供使用，按一下以下載</string>
+    <string name="new_version_available">新版本：%s 已可供使用，按一下以升級</string>
     <string name="launch_app">啟動</string>
     <string name="force_stop_app">強制停止</string>
     <string name="restart_app">重新啟動</string>
     <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux 規則</string>
+    <string name="module_changelog">日志</string>
 </resources>

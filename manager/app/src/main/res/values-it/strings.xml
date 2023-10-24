@@ -39,7 +39,7 @@
     <string name="module_version">Versione</string>
     <string name="module_author">Autore</string>
     <string name="module_overlay_fs_not_available">overlayfs non è disponibile, il modulo non può funzionare!</string>
-    <string name="refresh">Aggiorna</string>
+    <string name="refresh">Ricarica</string>
     <string name="show_system_apps">Mostra app di sistema</string>
     <string name="hide_system_apps">Nascondi app di sistema</string>
     <string name="send_log">Invia log</string>
@@ -71,7 +71,7 @@
     <string name="profile_selinux_rules">Regole</string>
     <string name="module_downloading">Sto scaricando il modulo: %s</string>
     <string name="module_start_downloading">Inizia a scaricare:%s</string>
-    <string name="new_version_available">Nuova versione: %s disponibile, tocca per scaricare</string>
+    <string name="new_version_available">Nuova versione: %s disponibile, tocca per aggiornare</string>
     <string name="force_stop_app">Arresto forzato</string>
     <string name="restart_app">Riavvia</string>
     <string name="failed_to_update_sepolicy">Aggiornamento regole SELinux per %s fallito</string>
@@ -79,4 +79,5 @@
     <string name="profile_selinux_domain">Dominio</string>
     <string name="settings_umount_modules_default_summary">Il valore predefinito per \"Scollega moduli\" in Profili App. Se attivato, rimuoverà tutte le modifiche al sistema da parte dei moduli per le applicazioni che non hanno un profilo impostato.</string>
     <string name="require_kernel_version">La versione attualmente installata di KernelSU (%d) è troppo vecchia ed il gestore non può funzionare correttamente. Si prega di aggiornare alla versione %d o successiva!</string>
+    <string name="module_changelog">Registro aggiornamenti</string>
 </resources>

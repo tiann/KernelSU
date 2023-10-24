@@ -1,0 +1,17 @@
+{
+    "id":"adb",
+    "name":"Adb",
+    "author":"kernelsu.org",
+    "description":"Minimal rules required by most apps using ADB privilege.",
+    "uid":2000,
+    "gid":2000,
+    "groups":[
+        "ADB"
+    ],
+    "locales": {
+        "zh_CN": {
+            "name": "Adb 模版",
+            "description": "大多数使用 ADB 权限应用所需要的最小权限"
+        }
+    }
+}

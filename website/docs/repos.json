@@ -502,5 +502,26 @@
         "kernel_name": "android_kernel_motorola_cebu",
         "kernel_link": "https://github.com/zharzinhoo/android_kernel_motorola_cebu",
         "devices": "Moto g9 power"
+    },
+    {
+        "maintainer": "tiandoufayale",
+        "maintainer_link": "https://github.com/tiandoufayale",
+        "kernel_name": "android_kernel_samsung_sm8250",
+        "kernel_link": "https://github.com/tiandoufayale/android_kernel_samsung_sm8250",
+        "devices": "Samsung Tab S7 WIFI(T870)"
+    },
+    {
+        "maintainer": "starmoe",
+        "maintainer_link": "https://github.com/bro-xun",
+        "kernel_name": "android_kernel_oneplus_msm8998",
+        "kernel_link": "https://github.com/Bro-Xun/kernel_op5t_ksu",
+        "devices": "Oneplus 5/5T, kernel version 4.4.302"
+    },
+    {
+        "maintainer": "supechicken",
+        "maintainer_link": "https://github.com/supechicken",
+        "kernel_name": "kernel_xiaomi_sm8350",
+        "kernel_link": "https://github.com/supechicken/kernel_xiaomi_sm8350",
+        "devices": " Xiaomi 11T Pro (vili)"
     }
 ]

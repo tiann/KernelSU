@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Yüklemek için tıkla</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
-    <string name="home_superuser_count">Süper kullanıcılar: %d</string>
+    <string name="home_superuser_count">Superuser: %d</string>
     <string name="home_module_count">Modüller: %d</string>
     <string name="home_unsupported">Desteklenmiyor</string>
     <string name="home_unsupported_reason">KernelSU şu an yalnızca GKI çekirdeklerini destekliyor</string>
@@ -17,7 +17,7 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Bilinmiyor</string>
-    <string name="superuser">Süper kullanıcı</string>
+    <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
     <string name="module_empty">Yüklü modül yok</string>
