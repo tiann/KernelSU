@@ -191,7 +191,9 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        val groups = Groups.values()
+        val groups = Groups.values().sortedWith(compareBy<Groups> {
+            it != Groups.ROOT
+        }.then(compareBy { it.name }))
         val options = groups.map { value ->
             ListOption(
                 titleText = value.display,
@@ -257,7 +259,7 @@ fun CapsPanel(
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        val caps = Capabilities.values()
+        val caps = Capabilities.values().sortedBy { it.name }
         val options = caps.map { value ->
             ListOption(
                 titleText = value.display,
