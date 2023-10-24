@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -45,6 +47,7 @@ import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
+import me.weishu.kernelsu.ui.viewmodel.toJSON
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -82,6 +85,8 @@ fun TemplateEditorScreen(
                 ""
             }
             val titleSummary = "${initialTemplate.id}$author$readOnlyHint"
+            val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
+            val context = LocalContext.current
 
             TopBar(
                 title = if (isCreation) {
@@ -102,6 +107,8 @@ fun TemplateEditorScreen(
                 onSave = {
                     if (saveTemplate(template, isCreation)) {
                         navigator.navigateBack(result = true)
+                    } else {
+                        Toast.makeText(context, saveTemplateFailed, Toast.LENGTH_SHORT).show()
                     }
                 })
         },
@@ -224,39 +231,9 @@ fun saveTemplate(template: TemplateViewModel.TemplateInfo, isCreation: Boolean =
         return false
     }
 
-    template.apply {
-        val json = JSONObject().apply {
-            put("id", id)
-            put("name", name.ifBlank { id })
-            put("description", description.ifBlank { id })
-            put("local", true)
-
-            put("uid", uid)
-            put("gid", gid)
-            put("groups", JSONArray().apply {
-                Groups.values().forEach { group ->
-                    if (group.gid in groups) {
-                        put(group.name)
-                    }
-                }
-            })
-            put("capabilities", JSONArray().apply {
-                Capabilities.values().forEach { capability ->
-                    if (capability.cap in capabilities) {
-                        put(capability.name)
-                    }
-                }
-            })
-            put("context", context)
-            put("namespace", Natives.Profile.Namespace.values()[namespace].name)
-            put("rules", JSONArray().apply {
-                rules.forEach { rule ->
-                    put(rule)
-                }
-            })
-        }
-        return setAppProfileTemplate(id, json.toString())
-    }
+    val json = template.toJSON()
+    json.put("local", true)
+    return setAppProfileTemplate(template.id, json.toString())
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
