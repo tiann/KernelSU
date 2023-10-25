@@ -101,4 +101,5 @@
     <string name="app_profile_template_delete">ลบ</string>
     <string name="app_profile_template_import_empty">คลิปบอร์ดว่างเปล่า!</string>
     <string name="app_profile_template_view">ดูเทมเพลต</string>
+    <string name="module_changelog_failed">ดึงข้อมูลบันทึกการเปลี่ยนแปลงล้มเหลว: %s</string>
 </resources>
