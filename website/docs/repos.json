@@ -523,5 +523,12 @@
         "kernel_name": "kernel_xiaomi_sm8350",
         "kernel_link": "https://github.com/supechicken/kernel_xiaomi_sm8350",
         "devices": " Xiaomi 11T Pro (vili)"
+    },
+    {
+        "maintainer": "whyakari",
+        "maintainer_link": "https://github.com/whyakari",
+        "kernel_name": "android_kernel_xiaomi_ginkgo",
+        "kernel_link": "https://github.com/whyakari/android_kernel_xiaomi_ginkgo",
+        "devices": "non-GKI ginkgo"
     }
 ]
