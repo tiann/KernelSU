@@ -525,6 +525,12 @@
         "devices": " Xiaomi 11T Pro (vili)"
     },
     {
+        "maintainer": "Vaz15k",
+        "maintainer_link": "https://github.com/Vaz15k",
+        "kernel_name": "kernelSU-A70q",
+        "kernel_link": "https://github.com/Vaz15k/kernelSU-A70q",
+        "devices": "Samsung Galaxy A70 ( A705MN / A705FN )"
+    },
         "maintainer": "whyakari",
         "maintainer_link": "https://github.com/whyakari",
         "kernel_name": "android_kernel_xiaomi_ginkgo",
