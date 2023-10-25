@@ -30,6 +30,9 @@ fun getBugreportFile(context: Context): File {
     val appListFile = File(bugreportDir, "packages.txt")
     val propFile = File(bugreportDir, "props.txt")
     val allowListFile = File(bugreportDir, "allowlist.bin")
+    val procModules = File(bugreportDir, "proc_modules.txt")
+    val bootConfig = File(bugreportDir, "boot_config.txt")
+    val kernelConfig = File(bugreportDir, "defconfig.gz")
 
     val shell = getRootShell()
 
@@ -47,8 +50,11 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("cp /data/system/packages.list ${appListFile.absolutePath}").exec()
     shell.newJob().add("getprop > ${propFile.absolutePath}").exec()
     shell.newJob().add("cp /data/adb/ksu/.allowlist ${allowListFile.absolutePath}").exec()
+    shell.newJob().add("cp /proc/modules ${procModules.absolutePath}").exec()
+    shell.newJob().add("cp /proc/bootconfig ${bootConfig.absolutePath}").exec()
+    shell.newJob().add("cp /proc/config.gz ${kernelConfig.absolutePath}").exec()
 
-    val selinux = ShellUtils.fastCmd(shell, "getenforce");
+    val selinux = ShellUtils.fastCmd(shell, "getenforce")
 
     // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
