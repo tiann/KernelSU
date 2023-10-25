@@ -92,8 +92,12 @@ jobs:
             echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
           fi
 
-      - name: Setup mutex for uploading
-        uses: ben-z/gh-action-mutex@v1.0-alpha-7
+      - name: Bot session cache
+        id: bot_session_cache
+        uses: actions/cache@v3
+        with:
+          path: scripts/ksubot.session
+          key: ${{ runner.os }}-bot-session
 
       - name: Build boot images
         run: |
