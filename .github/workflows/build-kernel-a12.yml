@@ -57,7 +57,6 @@ jobs:
     if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' || github.ref == 'refs/heads/ci' }}
     env:
       CHAT_ID: ${{ secrets.CHAT_ID }}
-      CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
       MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
       COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -83,7 +82,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
-          pip3 install python-telegram-bot
+          pip3 install telethon==1.31.1
 
       - name: Set boot sign key
         env:
@@ -93,8 +92,12 @@ jobs:
             echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
           fi
 
-      - name: Setup mutex for uploading
-        uses: ben-z/gh-action-mutex@v1.0-alpha-7
+      - name: Bot session cache
+        id: bot_session_cache
+        uses: actions/cache@v3
+        with:
+          path: scripts/ksubot.session
+          key: ${{ runner.os }}-bot-session
 
       - name: Build boot images
         run: |

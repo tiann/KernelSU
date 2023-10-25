@@ -53,7 +53,7 @@ static int calc_hash(struct crypto_shash *alg, const unsigned char *data,
 }
 
 static int ksu_sha256(const unsigned char *data, unsigned int datalen,
-		unsigned char *digest)
+		      unsigned char *digest)
 {
 	struct crypto_shash *alg;
 	char *hash_alg_name = "sha256";
@@ -70,7 +70,7 @@ static int ksu_sha256(const unsigned char *data, unsigned int datalen,
 }
 
 static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
-			unsigned expected_size, const char* expected_sha256)
+			unsigned expected_size, const char *expected_sha256)
 {
 	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer-sequence length
 	ksu_kernel_read_compat(fp, size4, 0x4, pos); // signer length
@@ -90,7 +90,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 	if (*size4 == expected_size) {
 		*offset += *size4;
 
-		#define CERT_MAX_LENGTH 1024
+#define CERT_MAX_LENGTH 1024
 		char cert[CERT_MAX_LENGTH];
 		if (*size4 > CERT_MAX_LENGTH) {
 			pr_info("cert length overlimit\n");
@@ -107,7 +107,8 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 		hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
 
 		bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
-		pr_info("sha256: %s, expected: %s\n", hash_str, expected_sha256);
+		pr_info("sha256: %s, expected: %s\n", hash_str,
+			expected_sha256);
 		if (strcmp(expected_sha256, hash_str) == 0) {
 			return true;
 		}
@@ -115,8 +116,62 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 	return false;
 }
 
-static __always_inline bool
-check_v2_signature(char *path, unsigned expected_size, const char *expected_sha256)
+struct zip_entry_header {
+	uint32_t signature;
+	uint16_t version;
+	uint16_t flags;
+	uint16_t compression;
+	uint16_t mod_time;
+	uint16_t mod_date;
+	uint32_t crc32;
+	uint32_t compressed_size;
+	uint32_t uncompressed_size;
+	uint16_t file_name_length;
+	uint16_t extra_field_length;
+} __attribute__((packed));
+
+// This is a necessary but not sufficient condition, but it is enough for us
+static bool has_v1_signature_file(struct file *fp)
+{
+	struct zip_entry_header header;
+	const char MANIFEST[] = "META-INF/MANIFEST.MF";
+
+	loff_t pos = 0;
+
+	while (ksu_kernel_read_compat(fp, &header,
+				      sizeof(struct zip_entry_header), &pos) ==
+	       sizeof(struct zip_entry_header)) {
+		if (header.signature != 0x04034b50) {
+			// ZIP magic: 'PK'
+			return false;
+		}
+		// Read the entry file name
+		if (header.file_name_length == sizeof(MANIFEST) - 1) {
+			char fileName[sizeof(MANIFEST)];
+			ksu_kernel_read_compat(fp, fileName,
+					       header.file_name_length, &pos);
+			fileName[header.file_name_length] = '\0';
+
+			// Check if the entry matches META-INF/MANIFEST.MF
+			if (strncmp(MANIFEST, fileName, sizeof(MANIFEST) - 1) ==
+			    0) {
+				return true;
+			}
+		} else {
+			// Skip the entry file name
+			pos += header.file_name_length;
+		}
+
+		// Skip to the next entry
+		pos += header.extra_field_length + header.compressed_size;
+	}
+
+	return false;
+}
+
+static __always_inline bool check_v2_signature(char *path,
+					       unsigned expected_size,
+					       const char *expected_sha256)
 {
 	unsigned char buffer[0x11] = { 0 };
 	u32 size4;
@@ -125,6 +180,7 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha2
 	loff_t pos;
 
 	bool v2_signing_valid = false;
+	int v2_signing_blocks = 0;
 	bool v3_signing_exist = false;
 	bool v3_1_signing_exist = false;
 
@@ -185,8 +241,10 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha2
 		offset = 4;
 		pr_info("id: 0x%08x\n", id);
 		if (id == 0x7109871au) {
-			v2_signing_valid = check_block(fp, &size4, &pos, &offset,
-						  expected_size, expected_sha256);
+			v2_signing_blocks++;
+			v2_signing_valid =
+				check_block(fp, &size4, &pos, &offset,
+					    expected_size, expected_sha256);
 		} else if (id == 0xf05368c0u) {
 			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
 			v3_signing_exist = true;
@@ -197,6 +255,20 @@ check_v2_signature(char *path, unsigned expected_size, const char *expected_sha2
 		pos += (size8 - offset);
 	}
 
+	if (v2_signing_blocks != 1) {
+		pr_err("Unexpected v2 signature count: %d\n",
+		       v2_signing_blocks);
+		v2_signing_valid = false;
+	}
+
+	if (v2_signing_valid) {
+		int has_v1_signing = has_v1_signature_file(fp);
+		if (has_v1_signing) {
+			pr_err("Unexpected v1 signature scheme found!\n");
+			filp_close(fp, 0);
+			return false;
+		}
+	}
 clean:
 	filp_close(fp, 0);
 

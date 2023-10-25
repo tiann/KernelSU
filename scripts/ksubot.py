@@ -1,22 +1,24 @@
+import asyncio
 import os
 import sys
-import asyncio
-import telegram
-from telegram import helpers
+from telethon import TelegramClient
+from telethon.tl.functions.help import GetConfigRequest
+
+API_ID = 611335
+API_HASH = "d524b414d21f4d37f08684c1df41ac9c"
 
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
-CACHE_CHAT_ID = os.environ.get("CACHE_CHAT_ID")
-MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
+CHAT_ID = int(os.environ.get("CHAT_ID"))
+MESSAGE_THREAD_ID = int(os.environ.get("MESSAGE_THREAD_ID"))
 COMMIT_URL = os.environ.get("COMMIT_URL")
 COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 RUN_URL = os.environ.get("RUN_URL")
 TITLE = os.environ.get("TITLE")
 VERSION = os.environ.get("VERSION")
 MSG_TEMPLATE = """
-*{title}*
-\#ci\_{version}
+**{title}**
+#ci_{version}
 ```
 {commit_message}
 ```
@@ -27,13 +29,13 @@ MSG_TEMPLATE = """
 
 def get_caption():
     msg = MSG_TEMPLATE.format(
-        title=helpers.escape_markdown(TITLE, 2),
-        version=helpers.escape_markdown(VERSION, 2),
-        commit_message=helpers.escape_markdown(COMMIT_MESSAGE, 2, telegram.MessageEntity.PRE),
-        commit_url=helpers.escape_markdown(COMMIT_URL, 2, telegram.MessageEntity.TEXT_LINK),
-        run_url=helpers.escape_markdown(RUN_URL, 2, telegram.MessageEntity.TEXT_LINK)
+        title=TITLE,
+        version=VERSION,
+        commit_message=COMMIT_MESSAGE,
+        commit_url=COMMIT_URL,
+        run_url=RUN_URL,
     )
-    if len(msg) > telegram.constants.MessageLimit.CAPTION_LENGTH:
+    if len(msg) > 1024:
         return COMMIT_URL
     return msg
 
@@ -44,9 +46,6 @@ def check_environ():
         exit(1)
     if CHAT_ID is None:
         print("[-] Invalid CHAT_ID")
-        exit(1)
-    if CACHE_CHAT_ID is None:
-        print("[-] Invalid CACHE_CHAT_ID")
         exit(1)
     if COMMIT_URL is None:
         print("[-] Invalid COMMIT_URL")
@@ -68,34 +67,27 @@ def check_environ():
 async def main():
     print("[+] Uploading to telegram")
     check_environ()
-    print("[+] Files:", sys.argv[1:])
-    bot = telegram.Bot(BOT_TOKEN)
-    files = []
-    paths = sys.argv[1:]
-    caption = get_caption()
-    print("[+] Caption: ")
-    print("---")
-    print(caption)
-    print("---")
-    for one in paths:
-        if not os.path.exists(one):
-            print("[-] File not exist: " + one)
-            continue
-        print("[+] Upload: " + one)
-        msg = await bot.send_document(CACHE_CHAT_ID, one, write_timeout=60, connect_timeout=30)
-        if one == paths[-1]:
-            files.append(telegram.InputMediaDocument(msg.document,
-                                                     caption=caption,
-                                                     parse_mode=telegram.constants.ParseMode.MARKDOWN_V2))
-        else:
-            files.append(telegram.InputMediaDocument(msg.document))
-        await bot.delete_message(CACHE_CHAT_ID, msg.message_id)
-    print("[+] Sending")
-    await bot.send_media_group(CHAT_ID, files, message_thread_id=MESSAGE_THREAD_ID)
-    print("[+] Done!")
-
+    files = sys.argv[1:]
+    print("[+] Files:", files)
+    if len(files) <= 0:
+        print("[-] No files to upload")
+        exit(1)
+    print("[+] Logging in Telegram with bot")
+    script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    session_dir = os.path.join(script_dir, "ksubot.session")
+    async with await TelegramClient(session=session_dir, api_id=API_ID, api_hash=API_HASH).start(bot_token=BOT_TOKEN) as bot:
+        caption = [""] * len(files)
+        caption[-1] = get_caption()
+        print("[+] Caption: ")
+        print("---")
+        print(caption)
+        print("---")
+        print("[+] Sending")
+        await bot.send_file(entity=CHAT_ID, file=files, caption=caption, reply_to=MESSAGE_THREAD_ID, parse_mode="markdown")
+        print("[+] Done!")
 
 if __name__ == "__main__":
-    loops = asyncio.new_event_loop()
-    loops.run_until_complete(asyncio.wait([main()]))
-
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f"[-] An error occurred: {e}")

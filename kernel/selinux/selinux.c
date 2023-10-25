@@ -25,7 +25,8 @@ static int transive_to_domain(const char *domain)
 
 	error = security_secctx_to_secid(domain, strlen(domain), &sid);
 	if (error) {
-		pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain, sid, error);
+		pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n",
+			domain, sid, error);
 	}
 	if (!error) {
 		if (!ksu_sid)
@@ -104,4 +105,19 @@ static inline u32 current_sid(void)
 bool is_ksu_domain()
 {
 	return ksu_sid && current_sid() == ksu_sid;
+}
+
+bool is_zygote(void *sec)
+{
+	struct task_security_struct *tsec = (struct task_security_struct *)sec;
+	if (!tsec) {
+		return false;
+	}
+	char *domain;
+	u32 seclen;
+	int err = security_secid_to_secctx(tsec->sid, &domain, &seclen);
+	if (err) {
+		return false;
+	}
+	return strncmp("u:r:zygote:s0", domain, seclen) == 0;
 }

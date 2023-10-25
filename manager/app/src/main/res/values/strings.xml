@@ -1,6 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">KernelSU</string>
-
     <string name="home">Home</string>
     <string name="home_not_installed">Not installed</string>
     <string name="home_click_to_install">Click to install</string>
@@ -10,21 +10,18 @@
     <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Unsupported</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
-
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Manager Version</string>
     <string name="home_fingerprint">Fingerprint</string>
-
     <string name="home_selinux_status">SELinux status</string>
     <string name="selinux_status_disabled">Disabled</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
-    <string name="superuser">Superuser</string>
+    <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
-    <string name="module_empty">No module installed</string>
-
+    <string name="module_empty">No installed modules</string>
     <string name="module">Module</string>
     <string name="uninstall">Uninstall</string>
     <string name="module_install">Install</string>
@@ -38,7 +35,7 @@
     <string name="reboot_edl">Reboot to EDL</string>
     <string name="about">About</string>
     <string name="module_uninstall_confirm">Are you sure you want to uninstall module %s?</string>
-    <string name="module_uninstall_success">%s uninstalled</string>
+    <string name="module_uninstall_success">%s is uninstalled</string>
     <string name="module_uninstall_failed">Failed to uninstall: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
@@ -46,7 +43,7 @@
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
-    <string name="send_log">Send Log</string>
+    <string name="send_log">Report Log</string>
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>
     <string name="module_magisk_conflict">Modules are disabled because it is conflict with Magisk\'s!</string>
@@ -85,4 +82,26 @@
     <string name="restart_app">Restart</string>
     <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
     <string name="module_changelog">Changelog</string>
+    <string name="settings_profile_template">App Profile Template</string>
+    <string name="settings_profile_template_summary">Manage local and online template of App Profile</string>
+    <string name="app_profile_template_create">Create Template</string>
+    <string name="app_profile_template_edit">Edit Template</string>
+    <string name="app_profile_template_id">id</string>
+    <string name="app_profile_template_id_invalid">Invalid template id</string>
+    <string name="app_profile_template_name">Name</string>
+    <string name="app_profile_template_description">Description</string>
+    <string name="app_profile_template_save">Save</string>
+    <string name="app_profile_template_delete">Delete</string>
+    <string name="app_profile_template_view">View Template</string>
+    <string name="app_profile_template_readonly">readonly</string>
+    <string name="app_profile_template_id_exist">template id already exists!</string>
+    <string name="app_profile_import_export">Import/Export</string>
+    <string name="app_profile_import_from_clipboard">Import from clipboard</string>
+    <string name="app_profile_export_to_clipboard">Export to clipboard</string>
+    <string name="app_profile_template_export_empty">Can not find local template to export!</string>
+    <string name="app_profile_template_import_success">Imported successfully</string>
+    <string name="app_profile_template_sync">Sync online templates</string>
+    <string name="app_profile_template_save_failed">Failed to save template</string>
+    <string name="app_profile_template_import_empty">Clipboard is empty!</string>
+    <string name="module_changelog_failed">Fetch changelog failed: %s</string>
 </resources>

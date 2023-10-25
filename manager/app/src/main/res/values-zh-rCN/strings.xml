@@ -80,4 +80,26 @@
     <string name="restart_app">重新启动</string>
     <string name="failed_to_update_sepolicy">为：%s 更新翻译失败</string>
     <string name="module_changelog">更新日志</string>
+    <string name="settings_profile_template">App Profile 模版</string>
+    <string name="settings_profile_template_summary">管理本地和在线的 App Profile 模版</string>
+    <string name="app_profile_template_create">创建模版</string>
+    <string name="app_profile_template_edit">编辑模版</string>
+    <string name="app_profile_template_id">模版 id</string>
+    <string name="app_profile_template_id_invalid">模版 id 不合法！</string>
+    <string name="app_profile_template_name">名字</string>
+    <string name="app_profile_template_description">描述</string>
+    <string name="app_profile_template_save">保存</string>
+    <string name="app_profile_template_delete">删除</string>
+    <string name="app_profile_template_view">查看模版</string>
+    <string name="app_profile_template_readonly">只读</string>
+    <string name="app_profile_template_id_exist">模版 id 已存在！</string>
+    <string name="app_profile_import_export">导入/导出</string>
+    <string name="app_profile_import_from_clipboard">从剪切板导入</string>
+    <string name="app_profile_export_to_clipboard">导出到剪切板</string>
+    <string name="app_profile_template_export_empty">没有本地模版可以导出！</string>
+    <string name="app_profile_template_import_success">导入成功！</string>
+    <string name="app_profile_template_sync">同步在线规则</string>
+    <string name="app_profile_template_save_failed">模版保存失败！</string>
+    <string name="app_profile_template_import_empty">剪切板为空！</string>
+    <string name="module_changelog_failed">获取更新日志失败：%s</string>
 </resources>

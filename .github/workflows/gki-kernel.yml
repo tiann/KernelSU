@@ -54,8 +54,6 @@ on:
         required: false
       CHAT_ID:
         required: false
-      CACHE_CHAT_ID:
-        required: false
       BOT_TOKEN:
         required: false
       MESSAGE_THREAD_ID:
@@ -128,14 +126,13 @@ jobs:
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
           echo "[+] Apply KernelSU patches"
-          cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch
-          echo "[+] Patch script/setlocalversion"
-          sed -i 's/-dirty//g' $GKI_ROOT/common/scripts/setlocalversion
+          cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
           if [ "$IS_DEBUG_KERNEL" = "true" ]; then
             echo "[+] Enable debug features for kernel"
             echo "ccflags-y += -DCONFIG_KSU_DEBUG" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
           fi
+          repo status
           echo "[+] KernelSU setup done."
 
       - name: Symbol magic
@@ -157,6 +154,15 @@ jobs:
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
+      - name: Make working directory clean to avoid dirty
+        working-directory: android-kernel
+        run: |
+          sed -i '/^rfkill_/d' common/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          git config --global user.email "bot@kernelsu.org"
+          git config --global user.name "KernelSUBot"
+          cd common/ && git add -A && git commit -a -m "Add KernelSU"
+          repo status
+
       - name: Build boot.img
         working-directory: android-kernel
         run: |
@@ -164,12 +170,19 @@ jobs:
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
-          CCACHE="/usr/bin/ccache" LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
-
+          if [ -e build/build.sh ]; then
+            CCACHE="/usr/bin/ccache" LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
+          else 
+            tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+          fi
+      
       - name: Prepare artifacts
         id: prepareArtifacts
         run: |
           OUTDIR=android-kernel/out/${{ inputs.version }}/dist
+          if [ ! -e $OUTDIR ]; then
+            OUTDIR=android-kernel/dist
+          fi
           mkdir output
           cp $OUTDIR/Image ./output/
           cp $OUTDIR/Image.lz4 ./output/

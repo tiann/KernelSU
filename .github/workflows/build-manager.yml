@@ -102,15 +102,18 @@ jobs:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
 
-      - name: Setup mutex for uploading
-        uses: ben-z/gh-action-mutex@v1.0-alpha-7
+      - name: Bot session cache
         if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
+        id: bot_session_cache
+        uses: actions/cache@v3
+        with:
+          path: scripts/ksubot.session
+          key: ${{ runner.os }}-bot-session
 
       - name: Upload to telegram
         if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         env:
           CHAT_ID: ${{ secrets.CHAT_ID }}
-          CACHE_CHAT_ID: ${{ secrets.CACHE_CHAT_ID }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -121,6 +124,6 @@ jobs:
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             export VERSION=$(git rev-list --count HEAD)
             APK=$(find ./app/build/outputs/apk/release -name "*.apk")
-            pip3 install python-telegram-bot
+            pip3 install telethon==1.31.1
             python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
           fi
