@@ -81,4 +81,26 @@
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
     <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışması için çok düşük. Lütfen %d veya daha yüksek bir sürüme yükseltin!</string>
     <string name="module_changelog">Değişiklik listesi</string>
+    <string name="app_profile_template_import_success">Başarıyla içe aktarıldı</string>
+    <string name="app_profile_export_to_clipboard">Clipboard\'a dışa aktar</string>
+    <string name="app_profile_template_export_empty">Dışa aktarmak için yerel şablon bulunamadı!</string>
+    <string name="app_profile_template_id_exist">şablon id zaten mevcut!</string>
+    <string name="app_profile_import_from_clipboard">Clipboard\'tan içe aktar</string>
+    <string name="module_changelog_failed">Değişiklik listesi alınamadı: %s</string>
+    <string name="app_profile_template_name">İsim</string>
+    <string name="app_profile_template_id_invalid">Hatalı şablon id</string>
+    <string name="app_profile_template_sync">Online şablonları senkronize et</string>
+    <string name="app_profile_template_create">Şablon Oluştur</string>
+    <string name="app_profile_template_readonly">saltokunur</string>
+    <string name="app_profile_import_export">İçe/Dışa Aktar</string>
+    <string name="app_profile_template_save_failed">Şablon kaydedilemedi</string>
+    <string name="app_profile_template_edit">Şablonu Değiştir</string>
+    <string name="app_profile_template_id">id</string>
+    <string name="settings_profile_template">Uygulama Profili Şablonu</string>
+    <string name="app_profile_template_description">Açıklama</string>
+    <string name="app_profile_template_save">Kaydet</string>
+    <string name="settings_profile_template_summary">Yerel ve online Uygulama Profili şablonlarını yönetin</string>
+    <string name="app_profile_template_delete">Sil</string>
+    <string name="app_profile_template_import_empty">Clipboard boş!</string>
+    <string name="app_profile_template_view">Şablonu Görüntüle</string>
 </resources>
