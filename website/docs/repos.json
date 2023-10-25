@@ -537,5 +537,12 @@
         "kernel_name": "android_kernel_xiaomi_ginkgo",
         "kernel_link": "https://github.com/whyakari/android_kernel_xiaomi_ginkgo",
         "devices": "non-GKI ginkgo"
+    },
+    {
+        "maintainer": "wulan17",
+        "maintainer_link": "https://github.com/wulan17",
+        "kernel_name": "android_kernel_xiaomi_mt6765",
+        "kernel_link": "https://github.com/Mayuri-Chan/android_kernel_xiaomi_mt6765/tree/10-ksu",
+        "devices": "Redmi 6/6A (cereus/cactus)"
     }
 ]
