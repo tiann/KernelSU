@@ -212,24 +212,6 @@ static inline bool should_stop_iteration(void)
 		cond_resched();
 	return fatal_signal_pending(current);
 }
-#ifndef ARCH_HAS_VALID_PHYS_ADDR_RANGE
-static inline int valid_phys_addr_range(phys_addr_t addr, size_t count)
-{
-	return addr + count <= __pa(high_memory);
-}
-static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
-{
-	return 1;
-}
-#endif
-static inline int page_is_allowed(unsigned long pfn)
-{
-	return 1;
-}
-static inline int range_is_allowed(unsigned long pfn, unsigned long size)
-{
-	return 1;
-}
 
 static phys_addr_t translate_linear_address(struct mm_struct *mm, uintptr_t va)
 {
@@ -303,9 +285,6 @@ static size_t read_process_memory(pid_t pid, uintptr_t addr, void *buffer,
 		if (!pa)
 			goto out;
 
-		if (!valid_phys_addr_range(pa, sz))
-			goto out;
-
 		ptr = xlate_dev_mem_ptr(pa);
 		if (!ptr)
 			goto out;
@@ -358,9 +337,6 @@ static size_t write_process_memory(pid_t pid, uintptr_t addr, void *buffer,
 
 		pa = translate_linear_address(mm, addr);
 		if (!pa)
-			goto out;
-
-		if (!valid_phys_addr_range(pa, sz))
 			goto out;
 
 		ptr = xlate_dev_mem_ptr(pa);
