@@ -101,4 +101,5 @@
     <string name="app_profile_template_sync">同步在线规则</string>
     <string name="app_profile_template_save_failed">模版保存失败！</string>
     <string name="app_profile_template_import_empty">剪切板为空！</string>
+    <string name="module_changelog_failed">获取更新日志失败：%s</string>
 </resources>
