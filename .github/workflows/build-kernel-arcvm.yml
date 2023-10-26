@@ -115,6 +115,14 @@ jobs:
           name: kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"
 
+      - name: Bot session cache
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        id: bot_session_cache
+        uses: actions/cache@v3
+        with:
+          path: scripts/ksubot.session
+          key: ${{ runner.os }}-bot-session
+
       - name: Post to Telegram
         if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         env:
