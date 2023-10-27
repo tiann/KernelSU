@@ -73,7 +73,9 @@ async def main():
         print("[-] No files to upload")
         exit(1)
     print("[+] Logging in Telegram with bot")
-    async with await TelegramClient(session=None, api_id=API_ID, api_hash=API_HASH).start(bot_token=BOT_TOKEN) as bot:
+    script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    session_dir = os.path.join(script_dir, "ksubot.session")
+    async with await TelegramClient(session=session_dir, api_id=API_ID, api_hash=API_HASH).start(bot_token=BOT_TOKEN) as bot:
         caption = [""] * len(files)
         caption[-1] = get_caption()
         print("[+] Caption: ")
@@ -83,7 +85,6 @@ async def main():
         print("[+] Sending")
         await bot.send_file(entity=CHAT_ID, file=files, caption=caption, reply_to=MESSAGE_THREAD_ID, parse_mode="markdown")
         print("[+] Done!")
-        await bot.log_out()
 
 if __name__ == "__main__":
     try:

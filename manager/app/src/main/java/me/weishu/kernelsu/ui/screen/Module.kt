@@ -150,6 +150,7 @@ private fun ModuleList(
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
     val startDownloadingText = stringResource(R.string.module_start_downloading)
+    val fetchChangeLogFailed = stringResource(R.string.module_changelog_failed)
 
     val dialogHost = LocalDialogHost.current
     val snackBarHost = LocalSnackbarHost.current
@@ -161,35 +162,47 @@ private fun ModuleList(
         downloadUrl: String,
         fileName: String
     ) {
-        val changelog = dialogHost.withLoading {
+        val changelogResult = dialogHost.withLoading {
             withContext(Dispatchers.IO) {
-                OkHttpClient().newCall(
-                    okhttp3.Request.Builder().url(changelogUrl).build()
-                ).execute().body!!.string()
+                runCatching {
+                    OkHttpClient().newCall(
+                        okhttp3.Request.Builder().url(changelogUrl).build()
+                    ).execute().body!!.string()
+                }
             }
         }
 
-        if (changelog.isNotEmpty()) {
-            // changelog is not empty, show it and wait for confirm
-            val confirmResult = dialogHost.showConfirm(
-                changelogText,
-                content = changelog,
-                markdown = true,
-                confirm = updateText,
-            )
-
-            if (confirmResult != ConfirmResult.Confirmed) {
-                return
+        val showToast: suspend (String) -> Unit = {msg->
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    msg,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
-        withContext(Dispatchers.Main) {
-            Toast.makeText(
-                context,
-                startDownloadingText.format(module.name),
-                Toast.LENGTH_SHORT
-            ).show()
+        val changelog = changelogResult.getOrElse {
+            showToast(fetchChangeLogFailed.format(it.message))
+            return
+        }.ifBlank {
+            showToast(fetchChangeLogFailed.format(module.name))
+            return
         }
+
+        // changelog is not empty, show it and wait for confirm
+        val confirmResult = dialogHost.showConfirm(
+            changelogText,
+            content = changelog,
+            markdown = true,
+            confirm = updateText,
+        )
+
+        if (confirmResult != ConfirmResult.Confirmed) {
+            return
+        }
+
+        showToast(startDownloadingText.format(module.name))
 
         val downloading = downloadingText.format(module.name)
         withContext(Dispatchers.IO) {
