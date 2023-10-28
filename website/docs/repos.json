@@ -544,5 +544,12 @@
         "kernel_name": "android_kernel_xiaomi_mt6765",
         "kernel_link": "https://github.com/Mayuri-Chan/android_kernel_xiaomi_mt6765/tree/10-ksu",
         "devices": "Redmi 6/6A (cereus/cactus)"
+    },
+    {
+        "maintainer": "officialputuid",
+        "maintainer_link": "https://github.com/officialputuid",
+        "kernel_name": "android_kernel_realme_mt6785",
+        "kernel_link": "https://github.com/psionicprjkt/android_kernel_realme_mt6785",
+        "devices": "Realme 6/6i(Indian)/6s/7/Narzo/Narzo 20 Pro/Narzo 30 4G (RM6785)"
     }
 ]
