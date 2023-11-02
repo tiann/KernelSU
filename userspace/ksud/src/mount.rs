@@ -230,6 +230,7 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
         .mountinfo()
         .with_context(|| "get mountinfo")?;
     let mut mount_seq = mounts
+        .0
         .iter()
         .filter(|m| {
             m.mount_point.starts_with(root) && !Path::new(&root).starts_with(&m.mount_point)

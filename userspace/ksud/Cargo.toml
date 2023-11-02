@@ -7,39 +7,39 @@ rust-version = "1.65"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.68"
-clap = { version = "4.0.32", features = ["derive"] }
-const_format = "0.2.30"
-zip = "0.6.3"
-zip-extensions = "0.6.1"
-java-properties = "1.4.1"
-log = "0.4.17"
-env_logger = "0.10.0"
-serde = { version = "1.0" }
-serde_json = "1.0"
-regex = "1.5.4"
-encoding = "0.2.33"
-retry = "2.0.0"
-humansize = "2.0.0"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+const_format = "0.2"
+zip = "0.6"
+zip-extensions = "0.6"
+java-properties = "2.0.0"
+log = "0.4"
+env_logger = "0.10"
+serde = { version = "1" }
+serde_json = "1"
+regex = "1"
+encoding_rs = "0.8"
+retry = "2"
+humansize = "2"
 libc = "0.2"
-extattr = "1.0.0"
-jwalk = "0.8.1"
-is_executable = "1.0.1"
+extattr = "1"
+jwalk = "0.8"
+is_executable = "1"
 nom = "7"
 derive-new = "0.5"
-rust-embed = { version = "6.4.2", features = [
+rust-embed = { version = "6", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "4.2.2"
-getopts = "0.2.21"
-sha256 = "1.4.0"
+which = "5"
+getopts = "0.2"
+sha256 = "1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 sys-mount = { git = "https://github.com/tiann/sys-mount", branch = "loopfix" }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
-procfs = "0.15"
+procfs = "0.16"
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.13"
