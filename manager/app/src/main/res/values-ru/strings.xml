@@ -84,4 +84,26 @@
     <string name="restart_app">Перезапустить</string>
     <string name="require_kernel_version">Текущая версия KernelSU %d слишком низкая для правильной работы менеджера. Пожалуйста, обновите до версии %d или выше!</string>
     <string name="module_changelog">Список изменений</string>
+    <string name="app_profile_template_import_success">Успешный импорт</string>
+    <string name="app_profile_export_to_clipboard">Экспортировать в буфер обмена</string>
+    <string name="app_profile_template_export_empty">Нет локальных шаблонов для экспорта!</string>
+    <string name="app_profile_template_id_exist">Шаблон с таким id уже существует!</string>
+    <string name="app_profile_import_from_clipboard">Импортировать из буфера обмена</string>
+    <string name="module_changelog_failed">Не удалось получить список изменений: %s</string>
+    <string name="app_profile_template_name">Название</string>
+    <string name="app_profile_template_id_invalid">Неверный id шаблона</string>
+    <string name="app_profile_template_sync">Синхронизировать онлайн-шаблоны</string>
+    <string name="app_profile_template_create">Создать шаблон</string>
+    <string name="app_profile_template_readonly">только чтение</string>
+    <string name="app_profile_import_export">Импорт/Экспорт</string>
+    <string name="app_profile_template_save_failed">Не удалось сохранить шаблон</string>
+    <string name="app_profile_template_edit">Редактирование шаблона</string>
+    <string name="app_profile_template_id">Идентификационный номер</string>
+    <string name="settings_profile_template">Шаблон профиля приложения</string>
+    <string name="app_profile_template_description">Описание</string>
+    <string name="app_profile_template_save">Сохранить</string>
+    <string name="settings_profile_template_summary">Управление локальным и онлайн-шаблоном профиля приложения</string>
+    <string name="app_profile_template_delete">Удалить</string>
+    <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
+    <string name="app_profile_template_view">Просмотр шаблона</string>
 </resources>

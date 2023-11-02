@@ -17,7 +17,7 @@
     <string name="selinux_status_enforcing">Obligatoriu</string>
     <string name="selinux_status_permissive">Permisiv</string>
     <string name="selinux_status_unknown">Necunoscut</string>
-    <string name="superuser">Super-utilizator</string>
+    <string name="superuser">Super-Utilizator</string>
     <string name="module_failed_to_enable">Activarea modulului %s a eșuat</string>
     <string name="module_failed_to_disable">Dezactivarea modulului %s a eșuat</string>
     <string name="module_empty">Niciun modul instalat</string>
@@ -42,7 +42,7 @@
     <string name="refresh">Reîmprospătează</string>
     <string name="show_system_apps">Arată aplicațiile de sistem</string>
     <string name="hide_system_apps">Ascunde aplicațiile de sistem</string>
-    <string name="send_log">Trimite jurnal</string>
+    <string name="send_log">Raportează jurnal</string>
     <string name="safe_mode">Mod sigur</string>
     <string name="reboot_to_apply">Repornește pentru ca modificările să intre în vigoare</string>
     <string name="module_magisk_conflict">Modulele sunt dezactivate deoarece sunt în conflict cu cele ale Magisk-ului!</string>
@@ -80,4 +80,26 @@
     <string name="restart_app">Repornește</string>
     <string name="require_kernel_version">Versiunea actuală a KernelSU %d este prea mică pentru ca managerul să funcționeze corect. Actualizează la versiunea %d sau o versiune superioară!</string>
     <string name="module_changelog">Jurnalul modificărilor</string>
+    <string name="app_profile_template_import_success">Importat cu succes</string>
+    <string name="app_profile_export_to_clipboard">Export în clipboard</string>
+    <string name="app_profile_template_export_empty">Nu există șabloane locale de exportat!</string>
+    <string name="app_profile_template_id_exist">ID-ul șablonului există deja!</string>
+    <string name="app_profile_import_from_clipboard">Import din clipboard</string>
+    <string name="module_changelog_failed">Preluarea jurnalului de modificări a eșuat: %s</string>
+    <string name="app_profile_template_name">Nume</string>
+    <string name="app_profile_template_id_invalid">ID șablon nevalid</string>
+    <string name="app_profile_template_sync">Sincronizează șabloanele online</string>
+    <string name="app_profile_template_create">Creează un șablon</string>
+    <string name="app_profile_template_readonly">doar citire</string>
+    <string name="app_profile_import_export">Import/Export</string>
+    <string name="app_profile_template_save_failed">Nu s-a salvat șablonul</string>
+    <string name="app_profile_template_edit">Editează șablonul</string>
+    <string name="app_profile_template_id">ID</string>
+    <string name="settings_profile_template">Șablon de profil al aplicației</string>
+    <string name="app_profile_template_description">Descriere</string>
+    <string name="app_profile_template_save">Salvează</string>
+    <string name="settings_profile_template_summary">Gestionează șablonul local și online al Profilului aplicației</string>
+    <string name="app_profile_template_delete">Șterge</string>
+    <string name="app_profile_template_import_empty">Clipboard-ul este gol!</string>
+    <string name="app_profile_template_view">Vizualizare șablon</string>
 </resources>
