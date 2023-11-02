@@ -393,7 +393,7 @@ static void sample_hbp_handler(struct perf_event *bp,
 	for (i = 0; i < 7; i++) {
 		if (vregs[i] != 0) {
 			fpsimd_state->vregs[i] = vregs[i];
-			pr_info("!! vregs[%d]: %f\n", i, (float)vregs[i]);
+			pr_info("!! vregs[%d]:\n", i);
 		}
 	}
 }
