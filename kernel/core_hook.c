@@ -212,16 +212,7 @@ static inline bool should_stop_iteration(void)
 		cond_resched();
 	return fatal_signal_pending(current);
 }
-#ifndef ARCH_HAS_VALID_PHYS_ADDR_RANGE
-static inline int valid_phys_addr_range(phys_addr_t addr, size_t count)
-{
-	return addr + count <= __pa(high_memory);
-}
-static inline int valid_mmap_phys_addr_range(unsigned long pfn, size_t size)
-{
-	return 1;
-}
-#endif
+
 static inline int page_is_allowed(unsigned long pfn)
 {
 	return 1;
@@ -303,9 +294,6 @@ static size_t read_process_memory(pid_t pid, uintptr_t addr, void *buffer,
 		if (!pa)
 			goto out;
 
-		if (!valid_phys_addr_range(pa, sz))
-			goto out;
-
 		ptr = xlate_dev_mem_ptr(pa);
 		if (!ptr)
 			goto out;
@@ -360,9 +348,6 @@ static size_t write_process_memory(pid_t pid, uintptr_t addr, void *buffer,
 		if (!pa)
 			goto out;
 
-		if (!valid_phys_addr_range(pa, sz))
-			goto out;
-
 		ptr = xlate_dev_mem_ptr(pa);
 		if (!ptr)
 			goto out;
@@ -395,17 +380,20 @@ static void sample_hbp_handler(struct perf_event *bp,
 			       struct perf_sample_data *data,
 			       struct pt_regs *regs)
 {
+	pr_info("sample_hbp_handler: ");
 	int i;
 	for (i = 0; i < 7; i++) {
 		if (xregs[i] != 0) {
 			regs->regs[i] = xregs[i];
+			pr_info("!! xregs[%d]: 0x%lX\n", i, xregs[i]);
 		}
 	}
-	for (i = 0; i < 7; i++) {
-		struct user_fpsimd_state *fpsimd_state =
+	struct user_fpsimd_state *fpsimd_state =
 			&current->thread.uw.fpsimd_state;
+	for (i = 0; i < 7; i++) {
 		if (vregs[i] != 0) {
 			fpsimd_state->vregs[i] = vregs[i];
+			pr_info("!! vregs[%d]: %f\n", i, (float)vregs[i]);
 		}
 	}
 }
@@ -418,7 +406,7 @@ static int my_register_breakpoint(pid_t pid, uintptr_t addr, size_t len,
 
 	task = find_get_task_by_vpid(pid);
 	if (!task)
-		return 0;
+		return -1;
 
 	if (sample_hbp != NULL) {
 		unregister_hw_breakpoint(sample_hbp);
@@ -461,8 +449,8 @@ static int delete_breakpoint(void)
 }
 static int set_register(void *user_xregs, void *user_vregs)
 {
-	char buff_xregs[7 * sizeof(u64)];
-	char buff_vregs[7 * sizeof(__uint128_t)];
+	u64 buff_xregs[7];
+	__uint128_t buff_vregs[7];
 	if (copy_from_user(buff_xregs, user_xregs, sizeof(buff_xregs))) {
 		pr_err("copy xregs failed\n");
 		return -1;
@@ -473,6 +461,8 @@ static int set_register(void *user_xregs, void *user_vregs)
 	}
 	memcpy(xregs, buff_xregs, sizeof(xregs));
 	memcpy(vregs, buff_vregs, sizeof(vregs));
+	pr_info("set_register: 0x%lX\n", xregs[0]);
+	pr_info("set_register: 0x%lX\n", vregs[0]);
 	return 0;
 }
 
@@ -508,15 +498,18 @@ static int hack_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	if (option == KERNEL_SU_OPTION + 4) {
 		my_register_breakpoint((pid_t)arg2, (uintptr_t)arg3,
 				       (size_t)arg4, (int)arg5);
+		pr_info("my_register_breakpoint: 0x%lX\n", arg3);
 		return 0;
 	}
 	if (option == KERNEL_SU_OPTION + 5) {
 		set_register((void *)arg2, (void *)arg3);
+		pr_info("set_register:");
 		return 0;
 	}
 
 	if (option == KERNEL_SU_OPTION + 6) {
 		delete_breakpoint();
+		pr_info("delete_breakpoint:");
 		return 0;
 	}
 	return 0;
