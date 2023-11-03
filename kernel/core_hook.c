@@ -403,7 +403,6 @@ static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
 {
 	struct perf_event_attr attr;
 	struct task_struct *task;
-	int i;
 
 	task = find_get_task_by_vpid(pid);
 	if (!task)
