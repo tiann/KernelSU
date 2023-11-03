@@ -47,9 +47,9 @@
     <string name="safe_mode">Güvenli Mod</string>
     <string name="reboot_to_apply">Değişikliklerin uygulanması için cihazı yeniden başlat</string>
     <string name="module_magisk_conflict">Modüller, Magisk ile çakıştığı için devre dışı bırakıldı!</string>
-    <string name="home_learn_kernelsu">KernelSU'yu Öğrenin</string>
+    <string name="home_learn_kernelsu">KernelSU\'yu Öğrenin</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">KernelSU'yu nasıl yükleyip modüller kullanacağınızı öğrenin</string>
+    <string name="home_click_to_learn_kernelsu">KernelSU\'yu nasıl yükleyip modüller kullanacağınızı öğrenin</string>
     <string name="home_support_title">Bize Destek Olun</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak, bize bağış yaparak destek olduğunuzu gösterebilirsiniz.</string>
     <string name="about_source_code"><![CDATA[Kaynak kodunu görüntüle: %1$s<br/>Bizim %2$s kanalımıza katılın]]></string>
@@ -70,7 +70,7 @@
     <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya daha yüksek bir sürüme güncelleyin!</string>
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kes</string>
     <string name="settings_umount_modules_default_summary">Uygulamalar için "Modüllerin bağlantısını kes" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
-    <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir.</string>
+    <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir.</string>
     <string name="profile_selinux_domain">Ad Alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
