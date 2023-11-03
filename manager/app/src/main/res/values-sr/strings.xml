@@ -5,4 +5,6 @@
     <string name="home_click_to_install">Kliknite da instalirate</string>
     <string name="home">дом</string>
     <string name="home_not_installed">Nije instalirano</string>
+    <string name="home_working_version">Верзија: %д</string>
+    <string name="home_working">рад</string>
 </resources>

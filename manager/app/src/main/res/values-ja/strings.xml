@@ -34,7 +34,7 @@
     <string name="reboot_edl">EDLへ再起動</string>
     <string name="about">アプリについて</string>
     <string name="module_uninstall_confirm">モジュール %s をアンインストールしますか?</string>
-    <string name="module_uninstall_success">%sをアンインストールしました</string>
+    <string name="module_uninstall_success">%s はアンインストールされました</string>
     <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
     <string name="module_version">バージョン</string>
     <string name="module_author">制作者</string>
@@ -81,4 +81,26 @@
     <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」の共通既定値です。 有効にすると、プロファイル セットを持たないアプリでのシステムに対するすべてのモジュール変更が削除されます。</string>
     <string name="require_kernel_version">現在の KernelSU バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
     <string name="module_changelog">変更履歴</string>
+    <string name="app_profile_template_import_success">インポート成功</string>
+    <string name="app_profile_export_to_clipboard">クリップボードからエクスポート</string>
+    <string name="app_profile_template_export_empty">エクスポートするローカル テンプレートが見つかりません!</string>
+    <string name="app_profile_template_id_exist">テンプレート id はすでに存在します！</string>
+    <string name="app_profile_import_from_clipboard">クリップボードからインポート</string>
+    <string name="module_changelog_failed">変更ログの取得に失敗しました: %s</string>
+    <string name="app_profile_template_name">名前</string>
+    <string name="app_profile_template_id_invalid">無効なテンプレート id</string>
+    <string name="app_profile_template_sync">オンラインテンプレートの同期</string>
+    <string name="app_profile_template_create">テンプレートの作成</string>
+    <string name="app_profile_template_readonly">読み取り専用</string>
+    <string name="app_profile_import_export">輸入/輸出</string>
+    <string name="app_profile_template_save_failed">テンプレートの保存に失敗しました</string>
+    <string name="app_profile_template_edit">テンプレートの編集</string>
+    <string name="app_profile_template_id">id</string>
+    <string name="settings_profile_template">アプリケーションプロファイルテンプレート</string>
+    <string name="app_profile_template_description">説明</string>
+    <string name="app_profile_template_save">保存</string>
+    <string name="settings_profile_template_summary">アプリ プロファイルのローカルおよびオンライン テンプレートを管理する</string>
+    <string name="app_profile_template_delete">消去</string>
+    <string name="app_profile_template_import_empty">クリップボードは空です!</string>
+    <string name="app_profile_template_view">テンプレートを表示</string>
 </resources>
