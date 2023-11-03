@@ -374,7 +374,7 @@ put_task_struct:
 
 static u64 xregs[7] = { 0 };
 static __uint128_t vregs[7] = { 0 };
-static struct perf_event *sample_hbp = NULL;
+static struct perf_event *sample_hbp[300] = { 0 };
 
 static void sample_hbp_handler(struct perf_event *bp,
 			       struct perf_sample_data *data,
@@ -389,29 +389,25 @@ static void sample_hbp_handler(struct perf_event *bp,
 		}
 	}
 	struct user_fpsimd_state *fpsimd_state =
-			&current->thread.uw.fpsimd_state;
+		&current->thread.uw.fpsimd_state;
 	for (i = 0; i < 7; i++) {
 		if (vregs[i] != 0) {
 			fpsimd_state->vregs[i] = vregs[i];
-			pr_info("!! vregs[%d]:\n", i);
+			pr_info("!! vregs[%d]: 0x%llX\n", i, vregs[i]);
 		}
 	}
 }
 
-static int my_register_breakpoint(pid_t pid, uintptr_t addr, size_t len,
-				  int type)
+static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
+				  uintptr_t addr, size_t len, int type)
 {
 	struct perf_event_attr attr;
 	struct task_struct *task;
+	int i;
 
 	task = find_get_task_by_vpid(pid);
 	if (!task)
 		return -1;
-
-	if (sample_hbp != NULL) {
-		unregister_hw_breakpoint(sample_hbp);
-		sample_hbp = NULL;
-	}
 
 	//hw_breakpoint_init(&attr);
 	ptrace_breakpoint_init(&attr);
@@ -420,49 +416,17 @@ static int my_register_breakpoint(pid_t pid, uintptr_t addr, size_t len,
 	attr.bp_len = len;
 	attr.bp_type = type;
 	attr.disabled = 0;
-	sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
-						 NULL, task);
+	p_sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
+						   NULL, task);
 
-	if (IS_ERR((void __force *)sample_hbp)) {
-		int ret = PTR_ERR((void __force *)sample_hbp);
+	if (IS_ERR((void __force *)p_sample_hbp)) {
+		int ret = PTR_ERR((void __force *)p_sample_hbp);
 		printk(KERN_INFO "register_user_hw_breakpoint failed: %d\n",
 		       ret);
-		sample_hbp = NULL;
+		p_sample_hbp = NULL;
 		return ret;
 	}
-	memset(&xregs, 0, sizeof(xregs));
-	memset(&vregs, 0, sizeof(vregs));
 	put_task_struct(task);
-	return 0;
-}
-static int delete_breakpoint(void)
-{
-	if (sample_hbp == NULL) {
-		return -1;
-	}
-
-	unregister_hw_breakpoint(sample_hbp);
-	sample_hbp = NULL;
-	memset(&xregs, 0, sizeof(xregs));
-	memset(&vregs, 0, sizeof(vregs));
-	return 0;
-}
-static int set_register(void *user_xregs, void *user_vregs)
-{
-	u64 buff_xregs[7];
-	__uint128_t buff_vregs[7];
-	if (copy_from_user(buff_xregs, user_xregs, sizeof(buff_xregs))) {
-		pr_err("copy xregs failed\n");
-		return -1;
-	}
-	if (copy_from_user(buff_vregs, user_vregs, sizeof(buff_vregs))) {
-		pr_err("copy vregs failed\n");
-		return -1;
-	}
-	memcpy(xregs, buff_xregs, sizeof(xregs));
-	memcpy(vregs, buff_vregs, sizeof(vregs));
-	pr_info("set_register: 0x%lX\n", xregs[0]);
-	pr_info("set_register: 0x%lX\n", vregs[0]);
 	return 0;
 }
 
@@ -496,24 +460,89 @@ static int hack_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (option == KERNEL_SU_OPTION + 4) {
-		my_register_breakpoint((pid_t)arg2, (uintptr_t)arg3,
-				       (size_t)arg4, (int)arg5);
-		pr_info("my_register_breakpoint: 0x%lX\n", arg3);
+		struct {
+			void *pids;
+			size_t pid_size;
+			void *addr;
+			size_t len;
+			unsigned long type;
+		} user_bp;
+		int i;
+		pid_t pids[300];
+
+		memset(&user_bp, 0, sizeof(user_bp));
+		memset(&pids, 0, sizeof(pids));
+		memset(&xregs, 0, sizeof(xregs));
+		memset(&vregs, 0, sizeof(vregs));
+
+		for (i = 0; i < 300; i++) {
+			if (sample_hbp[i] != NULL) {
+				unregister_hw_breakpoint(sample_hbp[i]);
+				sample_hbp[i] = NULL;
+			}
+		}
+
+		if (copy_from_user(&user_bp, (void *)arg2, sizeof(user_bp))) {
+			pr_err("copy user_bp failed\n");
+			return -1;
+		}
+		if (user_bp.pid_size > 300) {
+			user_bp.pid_size = 300;
+			pr_info("pid_size too large, set to 300\n");
+		}
+
+		if (copy_from_user(pids, user_bp.pids,
+				   sizeof(pid_t) * user_bp.pid_size)) {
+			pr_err("copy pids failed\n");
+			return -1;
+		}
+		for (i = 0; i < user_bp.pid_size; i++) {
+			my_register_breakpoint(sample_hbp[i], pids[i],
+					       (uintptr_t)user_bp.addr,
+					       user_bp.len, (int)user_bp.type);
+		}
+		pr_info("user_bp.pid_size: %d\n", user_bp.pid_size);
 		return 0;
 	}
 	if (option == KERNEL_SU_OPTION + 5) {
-		set_register((void *)arg2, (void *)arg3);
-		pr_info("set_register:");
+		void *user_xregs = (void *)arg2;
+		void *user_vregs = (void *)arg3;
+
+		u64 buff_xregs[7];
+		__uint128_t buff_vregs[7];
+		if (copy_from_user(buff_xregs, user_xregs,
+				   sizeof(buff_xregs))) {
+			pr_err("copy xregs failed\n");
+			return -1;
+		}
+		if (copy_from_user(buff_vregs, user_vregs,
+				   sizeof(buff_vregs))) {
+			pr_err("copy vregs failed\n");
+			return -1;
+		}
+		memcpy(xregs, buff_xregs, sizeof(xregs));
+		memcpy(vregs, buff_vregs, sizeof(vregs));
+		pr_info("set_register: 0x%lX\n", xregs[0]);
+		pr_info("set_register: 0x%llX\n", vregs[0]);
 		return 0;
 	}
 
 	if (option == KERNEL_SU_OPTION + 6) {
-		delete_breakpoint();
+		int i;
+		for (i = 0; i < 300; i++) {
+			if (sample_hbp[i] != NULL) {
+				unregister_hw_breakpoint(sample_hbp[i]);
+				sample_hbp[i] = NULL;
+			}
+		}
+		memset(&xregs, 0, sizeof(xregs));
+		memset(&vregs, 0, sizeof(vregs));
 		pr_info("delete_breakpoint:");
 		return 0;
 	}
 	return 0;
 }
+
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		     unsigned long arg4, unsigned long arg5)
 {
