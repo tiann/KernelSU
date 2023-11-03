@@ -381,7 +381,7 @@ static void sample_hbp_handler(struct perf_event *bp,
 			       struct pt_regs *regs)
 {
 	pr_info("sample_hbp_handler: ");
-	int i;
+	/*int i;
 	for (i = 0; i < 7; i++) {
 		if (xregs[i] != 0) {
 			regs->regs[i] = xregs[i];
@@ -395,7 +395,7 @@ static void sample_hbp_handler(struct perf_event *bp,
 			fpsimd_state->vregs[i] = vregs[i];
 			pr_info("!! vregs[%d]: 0x%llX\n", i, vregs[i]);
 		}
-	}
+	}*/
 }
 
 static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
@@ -417,7 +417,8 @@ static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
 	attr.disabled = 0;
 	p_sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
 						   NULL, task);
-
+        put_task_struct(task);
+	
 	if (IS_ERR((void __force *)p_sample_hbp)) {
 		int ret = PTR_ERR((void __force *)p_sample_hbp);
 		printk(KERN_INFO "register_user_hw_breakpoint failed: %d\n",
@@ -425,7 +426,7 @@ static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
 		p_sample_hbp = NULL;
 		return ret;
 	}
-	put_task_struct(task);
+	
 	return 0;
 }
 
