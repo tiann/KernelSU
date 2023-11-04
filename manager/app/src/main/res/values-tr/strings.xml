@@ -38,8 +38,8 @@
     <string name="module_uninstall_success">%s kaldırıldı</string>
     <string name="module_uninstall_failed">Kaldırma başarısız: %s</string>
     <string name="module_version">Sürüm</string>
-    <string name="module_author">Yazar</string>
-    <string name="module_overlay_fs_not_available">overlayfs kullanılamıyor, modül çalışamaz!</string>
+    <string name="module_author">Geliştirici</string>
+    <string name="module_overlay_fs_not_available">Overlayfs kullanılamıyor, modül çalışamaz!</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
@@ -58,7 +58,7 @@
     <string name="profile_template">Şablon</string>
     <string name="profile_custom">Özel</string>
     <string name="profile_name">Profil adı</string>
-    <string name="profile_namespace">Ad alanını bağla</string>
+    <string name="profile_namespace">İsim alanını çıkart</string>
     <string name="profile_namespace_inherited">Kalıtsal</string>
     <string name="profile_namespace_global">Küresel</string>
     <string name="profile_namespace_individual">Bireysel</string>
@@ -71,15 +71,15 @@
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kes</string>
     <string name="settings_umount_modules_default_summary">Uygulamalar için "Modüllerin bağlantısını kes" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir.</string>
-    <string name="profile_selinux_domain">Ad Alanı</string>
+    <string name="profile_selinux_domain">İsim alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
     <string name="module_start_downloading">İndirmeye başlanıyor: %s</string>
     <string name="new_version_available">Yeni sürüm: %s mevcut, yükseltmek için tıklayın</string>
-    <string name="launch_app">Başlat</string>
+    <string name="launch_app">Uygulamayı Başlat</string>
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
-    <string name="restart_app">Uygulamayı Yeniden Başlat</string>
+    <string name="restart_app">Uygulamayı yeniden başlat</string>
     <string name="failed_to_update_sepolicy">Kuralların güncellenmesi başarısız oldu: %s</string>
     <string name="module_changelog">Değişiklik Geçmişi</string>
     <string name="settings_profile_template">Uygulama Profili Şablonu</string>
@@ -88,7 +88,7 @@
     <string name="app_profile_template_edit">Şablonu Düzenle</string>
     <string name="app_profile_template_id">Kimlik</string>
     <string name="app_profile_template_id_invalid">Geçersiz şablon kimliği</string>
-    <string name="app_profile_template_name">Adı</string>
+    <string name="app_profile_template_name">Şablon Adı</string>
     <string name="app_profile_template_description">Açıklama</string>
     <string name="app_profile_template_save">Kaydet</string>
     <string name="app_profile_template_delete">Sil</string>
