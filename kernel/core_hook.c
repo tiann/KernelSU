@@ -380,8 +380,8 @@ static void sample_hbp_handler(struct perf_event *bp,
 			       struct perf_sample_data *data,
 			       struct pt_regs *regs)
 {
-	pr_info("sample_hbp_handler: ");
-	/*int i;
+	pr_info(KERN_INFO "hw_breakpoint HIT!!!!! %p %d\n", regs->pc, bp->id);
+	/* int i;
 	for (i = 0; i < 7; i++) {
 		if (xregs[i] != 0) {
 			regs->regs[i] = xregs[i];
@@ -395,38 +395,48 @@ static void sample_hbp_handler(struct perf_event *bp,
 			fpsimd_state->vregs[i] = vregs[i];
 			pr_info("!! vregs[%d]: 0x%llX\n", i, vregs[i]);
 		}
-	}*/
+	} */
 }
 
 static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
-				  uintptr_t addr, size_t len, int type)
+				  u64 addr, u64 len, u32 type)
 {
 	struct perf_event_attr attr;
 	struct task_struct *task;
+	struct pid *proc_pid_struct = NULL;
 
-	task = find_get_task_by_vpid(pid);
-	if (!task)
+	proc_pid_struct = find_get_pid(pid);
+	if (!proc_pid_struct)
 		return -1;
+	task = get_pid_task(proc_pid_struct, PIDTYPE_PID);
+	if (!task) {
+		return -1;
+	}
 
 	//hw_breakpoint_init(&attr);
 	ptrace_breakpoint_init(&attr);
 
+	/*
+		 * Initialise fields to sane defaults
+		 * (i.e. values that will pass validation).
+
+		 */
 	attr.bp_addr = addr;
 	attr.bp_len = len;
 	attr.bp_type = type;
 	attr.disabled = 0;
 	p_sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
 						   NULL, task);
-        put_task_struct(task);
-	
+	put_task_struct(task);
+
 	if (IS_ERR((void __force *)p_sample_hbp)) {
 		int ret = PTR_ERR((void __force *)p_sample_hbp);
-		printk(KERN_INFO "register_user_hw_breakpoint failed: %d\n",
-		       ret);
+		pr_info(KERN_INFO "register_user_hw_breakpoint failed: %d\n",
+			ret);
 		p_sample_hbp = NULL;
 		return ret;
 	}
-	
+
 	return 0;
 }
 
