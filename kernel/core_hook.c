@@ -403,15 +403,10 @@ static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
 {
 	struct perf_event_attr attr;
 	struct task_struct *task;
-	struct pid *proc_pid_struct = NULL;
 
-	proc_pid_struct = find_get_pid(pid);
-	if (!proc_pid_struct)
+	task = find_get_task_by_vpid(pid);
+	if (!task)
 		return -1;
-	task = get_pid_task(proc_pid_struct, PIDTYPE_PID);
-	if (!task) {
-		return -1;
-	}
 
 	//hw_breakpoint_init(&attr);
 	ptrace_breakpoint_init(&attr);
@@ -422,9 +417,14 @@ static int my_register_breakpoint(struct perf_event *p_sample_hbp, pid_t pid,
 
 		 */
 	attr.bp_addr = addr;
-	attr.bp_len = len;
-	attr.bp_type = type;
+	//attr.bp_len = len;
+	//attr.bp_type = type;
+	attr.bp_len = HW_BREAKPOINT_LEN_4;
+	attr.bp_type = HW_BREAKPOINT_X;
 	attr.disabled = 0;
+	pr_info("register breakpoint: %d, addr: 0x%lX, len: 0x%lX, type: %d\n",
+		p_sample_hbp->id, addr, len, type);
+	pr_info("task->mm: %p\n", task->mm);
 	p_sample_hbp = register_user_hw_breakpoint(&attr, sample_hbp_handler,
 						   NULL, task);
 	put_task_struct(task);
