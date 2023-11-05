@@ -20,7 +20,7 @@
 Вот некоторые отличия:
 
 - Модули KernelSU не могут быть установлены в режиме Recovery.
-- Модули KernelSU не имеют встроенной поддержки Zygisk (но вы можете использовать модули Zygisk через [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
+- Модули KernelSU не имеют встроенной поддержки Zygisk (но вы можете использовать модули Zygisk через [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 - Метод замены или удаления файлов в модулях KernelSU полностью отличается от Magisk. KernelSU не поддерживает метод `.replace`. Вместо этого необходимо создать одноименный файл с помощью команды `mknod filename c 0 0` для удаления соответствующего файла.
 - Каталоги для BusyBox отличаются. Встроенный BusyBox в KernelSU находится в каталоге `/data/adb/ksu/bin/busybox`, а в Magisk - в каталоге `/data/adb/magisk/busybox`. **Обратите внимание, что это внутреннее поведение KernelSU и в будущем оно может измениться!**
 - KernelSU не поддерживает файлы `.replace`; однако KernelSU поддерживает переменные `REMOVE` и `REPLACE` для удаления или замены файлов и папок.

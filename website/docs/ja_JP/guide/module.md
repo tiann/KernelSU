@@ -77,7 +77,7 @@ KernelSU モジュールは、`/data/adb/modules` に配置された以下の構
 ```
 
 ::: tip Magisk との違い
-KernelSU は Zygisk をビルトインでサポートしていないため、モジュール内に Zygisk に関連するコンテンツは存在しません。 しかし、[ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) をインストールすれば Zygisk モジュールを使えます。その場合の Zygisk モジュールのコンテンツは Magisk と同じです。
+KernelSU は Zygisk をビルトインでサポートしていないため、モジュール内に Zygisk に関連するコンテンツは存在しません。 しかし、[ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) をインストールすれば Zygisk モジュールを使えます。その場合の Zygisk モジュールのコンテンツは Magisk と同じです。
 :::
 
 ### module.prop

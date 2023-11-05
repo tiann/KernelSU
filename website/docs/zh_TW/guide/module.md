@@ -82,7 +82,7 @@ KernelSU 模組是一個放置於 `/data/adb/modules` 且滿足下列結構的�
 ```
 
 ::: tip 與 Magisk 的差異
-KernelSU 沒有內建的針對 Zygisk 的支援，因此模組中沒有與 Zygisk 相關的內容，但您可以透過 [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 以支援 Zygisk 模組，此時 Zygisk 模組的內容與 Magisk 所支援的 Zygisk 完全相同。
+KernelSU 沒有內建的針對 Zygisk 的支援，因此模組中沒有與 Zygisk 相關的內容，但您可以透過 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 以支援 Zygisk 模組，此時 Zygisk 模組的內容與 Magisk 所支援的 Zygisk 完全相同。
 :::
 
 ### module.prop
