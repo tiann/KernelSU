@@ -380,7 +380,7 @@ static void sample_hbp_handler(struct perf_event *bp,
 			       struct perf_sample_data *data,
 			       struct pt_regs *regs)
 {
-	pr_info(KERN_INFO "hw_breakpoint HIT!!!!! %p %d\n", regs->pc, bp->id);
+	//pr_info(KERN_INFO "hw_breakpoint HIT!!!!! %p %d\n", regs->pc, bp->id);
 	/* int i;
 	for (i = 0; i < 7; i++) {
 		if (xregs[i] != 0) {
