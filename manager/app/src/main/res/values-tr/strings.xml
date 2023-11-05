@@ -90,17 +90,17 @@
     <string name="app_profile_template_name">İsim</string>
     <string name="app_profile_template_id_invalid">Hatalı şablon id</string>
     <string name="app_profile_template_sync">Online şablonları senkronize et</string>
-    <string name="app_profile_template_create">Şablon Oluştur</string>
+    <string name="app_profile_template_create">Şablon oluştur</string>
     <string name="app_profile_template_readonly">saltokunur</string>
-    <string name="app_profile_import_export">İçe/Dışa Aktar</string>
+    <string name="app_profile_import_export">İçe/Dışa aktar</string>
     <string name="app_profile_template_save_failed">Şablon kaydedilemedi</string>
-    <string name="app_profile_template_edit">Şablonu Değiştir</string>
+    <string name="app_profile_template_edit">Şablonu değiştir</string>
     <string name="app_profile_template_id">id</string>
-    <string name="settings_profile_template">Uygulama Profili Şablonu</string>
+    <string name="settings_profile_template">Uygulama profili şablonu</string>
     <string name="app_profile_template_description">Açıklama</string>
     <string name="app_profile_template_save">Kaydet</string>
-    <string name="settings_profile_template_summary">Yerel ve online Uygulama Profili şablonlarını yönetin</string>
+    <string name="settings_profile_template_summary">Yerel ve online uygulama profili şablonlarını yönetin</string>
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_import_empty">Clipboard boş!</string>
-    <string name="app_profile_template_view">Şablonu Görüntüle</string>
+    <string name="app_profile_template_view">Şablonu görüntüle</string>
 </resources>
