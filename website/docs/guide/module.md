@@ -79,7 +79,7 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 ```
 
 ::: tip difference with Magisk
-KernelSU does not have built-in support for Zygisk, so there is no content related to Zygisk in the module. However, you can use [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) to support Zygisk modules. In this case, the content of the Zygisk module is identical to that supported by Magisk.
+KernelSU does not have built-in support for Zygisk, so there is no content related to Zygisk in the module. However, you can use [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) to support Zygisk modules. In this case, the content of the Zygisk module is identical to that supported by Magisk.
 :::
 
 ### module.prop
