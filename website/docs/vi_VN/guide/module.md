@@ -79,7 +79,7 @@ Mô-đun KernelSU là một thư mục được đặt trong `/data/adb/modules`
 ```
 
 ::: tip sự khác biệt với Magisk
-KernelSU không có hỗ trợ tích hợp cho Zygisk nên không có nội dung liên quan đến Zygisk trong mô-đun. Tuy nhiên, bạn có thể sử dụng [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) để hỗ trợ các mô-đun Zygisk. Trong trường hợp này, nội dung của mô-đun Zygisk giống hệt với nội dung được Magisk hỗ trợ.
+KernelSU không có hỗ trợ tích hợp cho Zygisk nên không có nội dung liên quan đến Zygisk trong mô-đun. Tuy nhiên, bạn có thể sử dụng [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) để hỗ trợ các mô-đun Zygisk. Trong trường hợp này, nội dung của mô-đun Zygisk giống hệt với nội dung được Magisk hỗ trợ.
 :::
 
 ### module.prop

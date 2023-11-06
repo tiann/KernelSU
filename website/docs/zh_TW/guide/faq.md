@@ -16,11 +16,11 @@
 
 ## KernelSU 是否支援 Xposed ？
 
-支援。[Dreamland](https://github.com/canyie/Dreamland) 和 [TaiChi](https://taichi.cool) 可以正常運作。LSPosed 可以在 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 的支援下正常運作。
+支援。[Dreamland](https://github.com/canyie/Dreamland) 和 [TaiChi](https://taichi.cool) 可以正常運作。LSPosed 可以在 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 的支援下正常運作。
 
 ## KernelSU 支援 Zygisk 嗎？
 
-KernelSU 沒有內建 Zygisk 支援，但是您可以用 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 來使用 Zygisk 模組。
+KernelSU 沒有內建 Zygisk 支援，但是您可以用 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 來使用 Zygisk 模組。
 
 ## KernelSU 與 Magisk 相容嗎？
 
