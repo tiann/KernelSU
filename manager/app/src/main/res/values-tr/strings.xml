@@ -15,8 +15,8 @@
     <string name="home_fingerprint">Parmak izi</string>
     <string name="home_selinux_status">SELinux durumu</string>
     <string name="selinux_status_disabled">Devre dışı</string>
-    <string name="selinux_status_enforcing">Etkin</string>
-    <string name="selinux_status_permissive">Boşta</string>
+    <string name="selinux_status_enforcing">Etkin(Enforcing)</string>
+    <string name="selinux_status_permissive">Boşta(Permissive)</string>
     <string name="selinux_status_unknown">Bilinmiyor</string>
     <string name="superuser">Süper kullanıcı</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
@@ -28,7 +28,7 @@
     <string name="install">Yükle</string>
     <string name="reboot">Cihazı yeniden başlat</string>
     <string name="settings">Ayarlar</string>
-    <string name="reboot_userspace">Hızlıca yeniden başlat</string>
+    <string name="reboot_userspace">Hızlı yeniden başlat</string>
     <string name="reboot_recovery">Kurtarma modunda yeniden başlat</string>
     <string name="reboot_bootloader">Önyükleyici modunda yeniden başlat</string>
     <string name="reboot_download">İndirme modunda yeniden başlat</string>
@@ -52,7 +52,7 @@
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak, bize bağış yaparak destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="about_source_code"><![CDATA[Kaynak kodunu görüntüle: %1$s<br/>Bizim %2$s kanalımıza katılın]]></string>
+    <string name="about_source_code"><![CDATA[Kaynak kodunu görüntüle: %1$s<br/>%2$s kanalımıza katılın]]></string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
     <string name="profile_template">Şablon</string>
@@ -75,7 +75,7 @@
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
-    <string name="module_start_downloading">İndirmeye başlanıyor: %s</string>
+    <string name="module_start_downloading">İndirme başladı: %s</string>
     <string name="new_version_available">Yeni sürüm: %s mevcut, güncellemek için tıklayın</string>
     <string name="launch_app">Uygulamayı başlat</string>
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
