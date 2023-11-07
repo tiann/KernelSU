@@ -147,13 +147,6 @@
         "devices": "OPPO Reno Ace (OP4A89)"
     },
     {
-        "maintainer": "LeviMarvin",
-        "maintainer_link": "https://github.com/LeviMarvin",
-        "kernel_name": "android_kernel_xiaomi_alioth",
-        "kernel_link": "https://github.com/LeviMarvin/android_kernel_xiaomi_alioth",
-        "devices": "Redmi K40 / POCO F3"
-    },
-    {
         "maintainer": "cibimo",
         "maintainer_link": "https://github.com/cibimo",
         "kernel_name": "kernel_xiaomi_raphael_ksu",
