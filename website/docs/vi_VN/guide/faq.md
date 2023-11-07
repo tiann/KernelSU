@@ -16,11 +16,11 @@ Có, nhưng đây là phiên bản đầu tiên nên có thể bị lỗi. Đợ
 
 ## KernelSU có hỗ trợ Xposed không?
 
-Có, [Dreamland](https://github.com/canyie/Dreamland) và [TaiChi](https://taichi.cool) hiện đã hoạt động. Đối với LSPosed, bạn có thể làm cho nó hoạt động bằng [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+Có, [Dreamland](https://github.com/canyie/Dreamland) và [TaiChi](https://taichi.cool) hiện đã hoạt động. Đối với LSPosed, bạn có thể làm cho nó hoạt động bằng [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext)
 
 ## KernelSU có hỗ trợ Zygisk không?
 
-KernelSU không có hỗ trợ Zygisk tích hợp sẵn nhưng thay vào đó, bạn có thể sử dụng [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
+KernelSU không có hỗ trợ Zygisk tích hợp sẵn nhưng thay vào đó, bạn có thể sử dụng [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## KernelSU có tương thích với Magisk không?
 
