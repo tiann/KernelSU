@@ -35,7 +35,11 @@ Atualmente, apenas `arm64-v8a` e `x86_64` são suportados.
 
 ## Tradução
 <<<<<<< HEAD
+<<<<<<< HEAD
 Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitas, pois podem entrar em conflito com o Weblate.
+=======
+Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitos, pois podem entrar em conflito com o Weblate.
+>>>>>>> 2226fd1 (docs: Update translation instructions in docs/README_PT-BR.md)
 =======
 Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitos, pois podem entrar em conflito com o Weblate.
 >>>>>>> 2226fd1 (docs: Update translation instructions in docs/README_PT-BR.md)
