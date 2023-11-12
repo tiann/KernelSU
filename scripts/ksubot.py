@@ -41,6 +41,7 @@ def get_caption():
 
 
 def check_environ():
+    global CHAT_ID, MESSAGE_THREAD_ID
     if BOT_TOKEN is None:
         print("[-] Invalid BOT_TOKEN")
         exit(1)
