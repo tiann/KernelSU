@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/deploy-website.yml'
       - 'website/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
