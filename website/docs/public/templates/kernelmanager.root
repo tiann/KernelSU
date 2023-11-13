@@ -6,13 +6,15 @@
     "uid":0,
     "gid":0,
     "groups":[
-        "ROOT"
+        "ROOT",
+        "READPROC"
     ],
     "capabilities":[
-        "CAP_SYS_ADMIN",
+        "CAP_SYS_MODULE",
         "CAP_SYS_NICE",
         "CAP_SYS_RESOURCE",
         "CAP_KILL",
+        "CAP_SYSLOG",
         "CAP_PERFMON"
     ],
     "context":"u:r:su:s0",
