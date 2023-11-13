@@ -8,13 +8,13 @@ A principal característica do KernelSU é que ele é **baseado em kernel**. O K
 
 E também, o KernelSU fornece um sistema de módulos via overlayfs, que permite carregar seu plugin personalizado no sistema. Ele também fornece um mecanismo para modificar arquivos na partição `/system`.
 
-## Como usar
+## Como usar o KernelSU?
 
 Por favor, consulte: [Instalação](installation)
 
-## Como construir
+## Como construir o KernelSU?
 
-[Como construir o KernelSU?](how-to-build)
+Por favor, consulte: [Como construir?](how-to-build)
 
 ## Discussão
 
