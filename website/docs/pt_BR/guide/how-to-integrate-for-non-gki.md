@@ -103,8 +103,8 @@ index 05036d819197..965b84d486b8 100644
 +extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 +			 int *flags);
  /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
-  * We do this by temporarily clearing all FS-related capabilities and
+  * access() precisa usar o uid/gid real, não o uid/gid efetivo.
+  * Fazemos isso limpando temporariamente todos os recursos relacionados ao FS e
 @@ -355,6 +357,7 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
   */
  long do_faccessat(int dfd, const char __user *filename, int mode)
@@ -145,8 +145,8 @@ index 376543199b5a..82adcef03ecc 100644
 +extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
 +
  /**
-  * vfs_statx - Get basic and extra attributes by filename
-  * @dfd: A file descriptor representing the base dir for a relative filename
+  * vfs_statx - Obtenha atributos básicos e extras por filename
+  * @dfd: Um descritor de arquivo que representa o diretório base para um filename relativo
 @@ -170,6 +172,7 @@ int vfs_statx(int dfd, const char __user *filename, int flags,
  	int error = -EINVAL;
  	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_AUTOMOUNT;
@@ -206,8 +206,8 @@ index 2ff887661237..e758d7db7663 100644
 +			        int *flags);
 +
  /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
-  * We do this by temporarily clearing all FS-related capabilities and
+  * access() precisa usar o uid/gid real, não o uid/gid efetivo.
+  * Fazemos isso limpando temporariamente todos os recursos relacionados ao FS e
 @@ -370,6 +373,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
  	int res;
  	unsigned int lookup_flags = LOOKUP_FOLLOW;
