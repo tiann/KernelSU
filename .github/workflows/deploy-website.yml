@@ -26,9 +26,12 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./website
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Not needed if lastUpdated is not enabled
       - name: Setup Node
@@ -36,10 +39,11 @@ jobs:
         with:
           node-version: 18
           cache: yarn # or pnpm / yarn
+          cache-dependency-path: website/yarn.lock
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Install dependencies
-        run: yarn install # or pnpm install / yarn install / bun install
+        run: yarn install --frozen-lockfile
       - name: Build with VitePress
         run: |
           yarn docs:build
