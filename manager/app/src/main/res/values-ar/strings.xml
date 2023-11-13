@@ -80,4 +80,26 @@
     <string name="profile_name">اسم الملف الشخصي</string>
     <string name="require_kernel_version">إصدار KernelSU الحالي %d منخفض جدًا بحيث لا يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %d أو أعلى!</string>
     <string name="module_changelog">سجل التغييرات</string>
+    <string name="app_profile_template_import_success">تم الاستيراد بنجاح</string>
+    <string name="app_profile_export_to_clipboard">تصدير إلى الحافظة</string>
+    <string name="app_profile_template_export_empty">لا يمكن العثور على القالب المحلي للتصدير!</string>
+    <string name="app_profile_template_id_exist">معرف القالب موجود بالفعل!</string>
+    <string name="app_profile_import_from_clipboard">استيراد من الحافظة</string>
+    <string name="module_changelog_failed">فشل في جلب سجل التغيير: %s</string>
+    <string name="app_profile_template_name">الاسم</string>
+    <string name="app_profile_template_id_invalid">معرف القالب غير صالح</string>
+    <string name="app_profile_template_sync">مزامنة القوالب عبر الإنترنت</string>
+    <string name="app_profile_template_create">إنشاء قالب</string>
+    <string name="app_profile_template_readonly">للقراءة فقط</string>
+    <string name="app_profile_import_export">استيراد / تصدير</string>
+    <string name="app_profile_template_save_failed">فشل في حفظ القالب</string>
+    <string name="app_profile_template_edit">تحرير القالب</string>
+    <string name="app_profile_template_id">المعرف</string>
+    <string name="settings_profile_template">قالب ملف تعريف التطبيق</string>
+    <string name="app_profile_template_description">الوصف</string>
+    <string name="app_profile_template_save">حفظ</string>
+    <string name="settings_profile_template_summary">إدارة القالب المحلي وعبر الإنترنت لملف تعريف التطبيق</string>
+    <string name="app_profile_template_delete">حذف</string>
+    <string name="app_profile_template_import_empty">الحافظة فارغة!</string>
+    <string name="app_profile_template_view">عرض القالب</string>
 </resources>

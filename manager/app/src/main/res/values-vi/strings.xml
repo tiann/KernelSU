@@ -37,7 +37,7 @@
     <string name="selinux_status_enforcing">Thực thi</string>
     <string name="selinux_status_permissive">Cho phép</string>
     <string name="selinux_status_unknown">Không rõ</string>
-    <string name="superuser">Superuser</string>
+    <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Không thể kích hoạt mô-đun: %s</string>
     <string name="module_failed_to_disable">Không thể vô hiệu hóa mô-đun: %s</string>
     <string name="module_empty">Chưa có mô-đun nào được cài đặt</string>
@@ -53,7 +53,7 @@
     <string name="reboot_download">Khởi động lại vào Download Mode</string>
     <string name="reboot_edl">Khởi động lại vào EDL</string>
     <string name="about">Về ứng dụng</string>
-    <string name="module_uninstall_success">%s đã được gỡ cài đặt</string>
+    <string name="module_uninstall_success">%s được gỡ cài đặt</string>
     <string name="module_uninstall_failed">Lỗi khi gỡ cài đặt: %s</string>
     <string name="module_version">Phiên bản</string>
     <string name="module_author">Tác giả</string>
