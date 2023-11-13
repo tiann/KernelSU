@@ -9,8 +9,9 @@
         "ROOT"
     ],
     "capabilities":[
-        "CAP_SYS_ADMIN",
-        "CAP_DAC_OVERRIDE"
+        "CAP_DAC_READ_SEARCH",
+        "CAP_DAC_OVERRIDE",
+        "CAP_SYS_ADMIN"
     ],
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
