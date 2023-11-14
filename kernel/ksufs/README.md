@@ -49,3 +49,12 @@ ksu_ovl_getattr:
 if (err)
 
 if (true)
+
+## Step5
+
+Makefile:
+
+obj-y += ksufs.o
+
+ksufs-objs := super.o namei.o util.o inode.o file.o dir.o readdir.o \
+		copy_up.o export.o
