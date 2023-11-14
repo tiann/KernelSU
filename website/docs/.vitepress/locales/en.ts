@@ -36,7 +36,6 @@ export default defineConfig({
 function nav() {
   return [
     { text: 'Guide', link: '/guide/what-is-kernelsu' },
-    { text: 'GitHub', link: 'https://github.com/tiann/KernelSU' }
   ]
 }
 
