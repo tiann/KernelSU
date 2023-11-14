@@ -544,5 +544,12 @@
         "kernel_name": "android_kernel_realme_mt6785",
         "kernel_link": "https://github.com/psionicprjkt/android_kernel_realme_mt6785",
         "devices": "Realme 6/6i(Indian)/6s/7/Narzo/Narzo 20 Pro/Narzo 30 4G (RM6785)"
+    },
+    {
+        "maintainer": "liquidprjkt",
+        "maintainer_link": "https://github.com/liquidprjkt",
+        "kernel_name": "liquid_kernel_realme_even",
+        "kernel_link": "https://github.com/liquidprjkt/liquid_kernel_realme_even",
+        "devices": "Realme C25/s and Narzo50A (even)"
     }
 ]
