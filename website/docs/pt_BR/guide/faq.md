@@ -12,11 +12,11 @@ Certamente, sim.
 
 ## KernelSU suporta módulos?
 
-Sim, mas está na versão inicial, pode apresentar bugs. Por favor, aguarde até que fique estável.
+Sim, verifique [Guias de módulo](module.md) por favor.
 
 ## KernelSU suporta Xposed?
 
-Sim, [Dreamland](https://github.com/canyie/Dreamland) e [TaiChi](https://taichi.cool) funcionam agora. Para o LSPosed, você pode fazê-lo funcionar usando [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+Sim, você pode usar LSPosed com [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## KernelSU suporta Zygisk?
 
@@ -55,13 +55,14 @@ Por favor, consulte a guia [Como integrar o KernelSU para kernels não GKI](how-
 
 A versão do Kernel não tem nada a ver com a versão do Android, se você precisar fazer o flash do kernel, use sempre a versão do kernel, a versão do Android não é tão importante.
 
-## Existe algum namespace de montagem --mount-master/global no KernelSU?
-
-Não existe agora (talvez no futuro), mas há muitas maneiras de mudar manualmente para o namespace de montagem global, como:
-
-1. `nsenter -t 1 -m sh` para obter um shell no namespace de montagem global.
-2. Adicione `nsenter --mount=/proc/1/ns/mnt` ao comando que você deseja executar, o comando será executado no namespace de montagem global. O KernelSU também está [usando desta forma](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115).
-
 ## Eu sou GKI1.0, posso usar isso?
 
 GKI1 é completamente diferente do GKI2, você deve compilar o kernel sozinho.
+
+## Como posso fazer `/system` RW?
+
+Não recomendamos que você modifique a partição do sistema diretamente. Você deve usar [Guias de módulo](module.md) para modificá-lo sem sistema. Se você insiste em fazer isso, verifique [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs).
+
+## O KernelSU pode modificar hosts? Como posso usar o AdAday?
+
+Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
