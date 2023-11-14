@@ -42,7 +42,7 @@
     <string name="show_system_apps">แสดงแอประบบ</string>
     <string name="hide_system_apps">ซ่อนแอประบบ</string>
     <string name="refresh">รีเฟรช</string>
-    <string name="send_log">ส่ง Log</string>
+    <string name="send_log">ส่งรายงาน Log</string>
     <string name="safe_mode">โหมดปลอดภัย</string>
     <string name="reboot_to_apply">รีบูตเพื่อให้มีผล</string>
     <string name="module_magisk_conflict">โมดูลถูกปิดใช้งานเนื่องจากขัดแย้งกับ Magisk!</string>
@@ -80,4 +80,26 @@
     <string name="failed_to_update_sepolicy">ไม่สามารถอัปเดตกฎ SElinux สำหรับ: %s ได้</string>
     <string name="require_kernel_version">KernelSU เวอร์ชั่น %d ต่ำเกินไป ทำให้ตัวจัดการไม่สามารถใช้งานได้อย่างถูกต้อง โปรดอัปเกรดเป็นเวอร์ชั่น %d หรือที่สูงกว่า!</string>
     <string name="module_changelog">บันทึกการเปลี่ยนแปลง</string>
+    <string name="app_profile_template_import_success">นำเข้าเสร็จสิ้น</string>
+    <string name="app_profile_export_to_clipboard">ส่งออกไปยังคลิปบอร์ด</string>
+    <string name="app_profile_template_export_empty">ไม่พบเทมเพลตในเครื่องที่จะส่งออก!</string>
+    <string name="app_profile_template_id_exist">มีไอดีเทมเพลตนี้อยู่แล้ว!</string>
+    <string name="app_profile_import_from_clipboard">นำเข้าจากคลิปบอร์ด</string>
+    <string name="app_profile_template_name">ชื่อ</string>
+    <string name="app_profile_template_id_invalid">ไอดีเทมเพลตไม่ถูกต้อง</string>
+    <string name="app_profile_template_sync">ซิงค์เทมเพลตออนไลน์</string>
+    <string name="app_profile_template_create">สร้างเทมเพลต</string>
+    <string name="app_profile_template_readonly">อ่านเท่านั้น</string>
+    <string name="app_profile_import_export">นำเข้า/ส่งออก</string>
+    <string name="app_profile_template_save_failed">ไม่สามารถบันทึกเทมเพลต</string>
+    <string name="app_profile_template_edit">แก้ไขเทมเพลต</string>
+    <string name="app_profile_template_id">ไอดี</string>
+    <string name="settings_profile_template">เทมเพลตโปรไฟล์แอป</string>
+    <string name="app_profile_template_description">คำอธิบาย</string>
+    <string name="app_profile_template_save">บันทึก</string>
+    <string name="settings_profile_template_summary">จัดการเทมเพลตโปรไฟล์แอปในเครื่องและเทมเพลตออนไลน์</string>
+    <string name="app_profile_template_delete">ลบ</string>
+    <string name="app_profile_template_import_empty">คลิปบอร์ดว่างเปล่า!</string>
+    <string name="app_profile_template_view">ดูเทมเพลต</string>
+    <string name="module_changelog_failed">ดึงข้อมูลบันทึกการเปลี่ยนแปลงล้มเหลว: %s</string>
 </resources>

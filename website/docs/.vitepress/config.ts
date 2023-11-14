@@ -6,6 +6,9 @@ import { resolve } from 'path'
 export default defineConfig( {
     title: 'KernelSU',
     locales: locales.locales,
+    sitemap: {
+        hostname: 'https://kernelsu.org'
+    },
     buildEnd: async (config: SiteConfig) => {
         const templateDir = resolve(config.outDir, 'templates');
         const templateList = resolve(templateDir, "index.json");

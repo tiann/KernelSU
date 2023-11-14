@@ -20,7 +20,7 @@ Antes de entender as diferenças, você precisa saber diferenciar se o seu módu
 Aqui estão algumas diferenças:
 
 - Os módulos KernelSU não podem ser instalados no modo Recovery.
-- Os módulos KernelSU não têm suporte integrado para Zygisk (mas você pode usar módulos Zygisk através do [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
+- Os módulos KernelSU não têm suporte integrado para Zygisk (mas você pode usar módulos Zygisk através do [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 - O método para substituir ou excluir arquivos nos módulos KernelSU é completamente diferente do Magisk. O KernelSU não suporta o método `.replace`. Em vez disso, você precisa criar um arquivo com o mesmo nome `mknod filename c 0 0` para excluir o arquivo correspondente.
 - Os diretórios do BusyBox são diferentes. O BusyBox integrado no KernelSU está localizado em `/data/adb/ksu/bin/busybox`, enquanto no Magisk está em `/data/adb/magisk/busybox`. **Observe que este é um comportamento interno do KernelSU e pode mudar no futuro!**
 - O KernelSU não suporta arquivos `.replace`, entretanto, o KernelSU suporta as variáveis ​​`REMOVE` e `REPLACE` para remover ou substituir arquivos e pastas.

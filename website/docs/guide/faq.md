@@ -12,15 +12,15 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, But it is in early version, it may be buggy. Please wait for it to be stable :)
+Yes, check [Module Page](module.md) please.
 
 ## Does KernelSU support Xposed?
 
-Yes, [Dreamland](https://github.com/canyie/Dreamland) and [TaiChi](https://taichi.cool) work now. For LSPosed, you can make it work by [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU)
+Yes, you can use LSPosed on [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext)
 
 ## Does KernelSU support Zygisk?
 
-KernelSU has no builtin Zygisk support, but you can use [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) instead.
+KernelSU has no builtin Zygisk support, but you can use [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) instead.
 
 ## Is KernelSU compatible with Magisk?
 
@@ -49,19 +49,20 @@ It is possible, KernelSU is backported to kernel 4.14 now, for older kernel, you
 
 ## How to integrate KernelSU for old kernel?
 
-Please refer [guide](how-to-integrate-for-non-gki)
+Please refer [Guide](how-to-integrate-for-non-gki)
 
 ## Why my Android version is 13, and the kernel shows "android12-5.10"?
 
 The Kernel version has nothing to do with Android version, if you need to flash kernel, always use the kernel version, Android version is not so important.
 
-## Is there any --mount-master/global mount namespace in KernelSU?
-
-There isn't now(maybe in the future), But there are many ways to switch to global mount namespace manully, such as:
-
-1. `nsenter -t 1 -m sh` to get a shell in global mount namespace.
-2. Add `nsenter --mount=/proc/1/ns/mnt` to the command you want to execute, then the command is executed in global mount namespace. KernelSU is also [using this way](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
-
 ## I am GKI1.0, can i use this?
 
 GKI1 is completely different from GKI2, you must compile kernel by yourself.
+
+## How can i make `/system` RW?
+
+We do not recommend you to modify the system partition directly. You should use the [module](module.md) to modify it systemlessly. If you insist on doing this, check [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs).
+
+## Can KernelSU modify hosts? How can i use AdAday？
+
+Of course. But KernelSU doesn't have builtin hosts support, you can install [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) to do it.

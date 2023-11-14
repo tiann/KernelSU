@@ -20,7 +20,7 @@ Trước khi hiểu sự khác biệt, bạn cần biết cách phân biệt mô
 Dưới đây là một số khác biệt:
 
 - Không thể cài đặt các mô-đun KernelSU ở chế độ Recovery.
-- Các mô-đun KernelSU không có hỗ trợ tích hợp cho Zygisk (nhưng bạn có thể sử dụng các mô-đun Zygisk thông qua [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU).
+- Các mô-đun KernelSU không có hỗ trợ tích hợp cho Zygisk (nhưng bạn có thể sử dụng các mô-đun Zygisk thông qua [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 - Phương pháp thay thế hoặc xóa file trong module KernelSU hoàn toàn khác với Magisk. KernelSU không hỗ trợ phương thức `.replace`. Thay vào đó, bạn cần tạo một file cùng tên với `mknod filename c 0 0` để xóa file tương ứng.
 - Các thư mục của BusyBox khác nhau. BusyBox tích hợp trong KernelSU nằm ở `/data/adb/ksu/bin/busybox`, trong khi ở Magisk nó nằm ở `/data/adb/magisk/busybox`. **Lưu ý rằng đây là hoạt động nội bộ của KernelSU và có thể thay đổi trong tương lai!**
 - KernelSU không hỗ trợ file `.replace`; tuy nhiên, KernelSU hỗ trợ biến `REMOVE` và `REPLACE` để xóa hoặc thay thế các tệp và thư mục.
