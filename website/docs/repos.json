@@ -525,13 +525,6 @@
         "devices": "Samsung Galaxy A70 ( A705MN / A705FN )"
     },
     {
-        "maintainer": "whyakari",
-        "maintainer_link": "https://github.com/whyakari",
-        "kernel_name": "android_kernel_xiaomi_ginkgo",
-        "kernel_link": "https://github.com/whyakari/android_kernel_xiaomi_ginkgo",
-        "devices": "non-GKI ginkgo"
-    },
-    {
         "maintainer": "wulan17",
         "maintainer_link": "https://github.com/wulan17",
         "kernel_name": "android_kernel_xiaomi_mt6765",
