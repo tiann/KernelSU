@@ -44,22 +44,20 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 
 Se você conseguir construir o kernel com sucesso, então construir o KernelSU é muito fácil. Selecione qualquer um executado no diretório raiz de origem do kernel:
 
-- Tag mais recente (estável)
+::: code-group
 
-```sh
+```sh[Tag mais recente (estável)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- branch principal (dev)
-
-```sh
+```sh[Branch principal (dev)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 
-- Selecione a tag (Como v0.5.2)
-
-```sh
+```sh[Selecionar tag (como v0.5.2)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
+
+:::
 
 E então reconstrua o kernel e você obterá uma imagem do kernel com KernelSU!
