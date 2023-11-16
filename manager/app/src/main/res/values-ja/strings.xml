@@ -78,7 +78,7 @@
     <string name="module_downloading">モジュールをダウンロード中: %s</string>
     <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリのモジュールによって変更されたファイルを復元できるようになります。</string>
     <string name="settings_umount_modules_default">既定でモジュールのマウントを解除</string>
-    <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのマウント解除」の共通既定値です。 有効にすると、プロファイル セットを持たないアプリでのシステムに対するすべてのモジュール変更が削除されます。</string>
+    <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのアンマウント」の共通のデフォルト値です。 有効にすると、プロファイルセットを持たないアプリのシステムに対するすべてのモジュールの変更が削除されます。</string>
     <string name="require_kernel_version">現在の KernelSU バージョン %d はマネージャーが適切に機能するには低すぎます。 バージョン %d 以降にアップグレードしてください！</string>
     <string name="module_changelog">変更履歴</string>
     <string name="app_profile_template_import_success">インポート成功</string>
@@ -101,6 +101,6 @@
     <string name="app_profile_template_save">保存</string>
     <string name="settings_profile_template_summary">アプリプロファイルのローカルおよびオンラインテンプレートを管理する</string>
     <string name="app_profile_template_delete">消去</string>
-    <string name="app_profile_template_import_empty">クリップボードは空です！</string>
+    <string name="app_profile_template_import_empty">クリップボードが空です！</string>
     <string name="app_profile_template_view">テンプレートを表示</string>
 </resources>
