@@ -1,0 +1,24 @@
+{
+    "id":"rootexploler.root",
+    "name":"Root Explorer",
+    "author":"Rem01Gaming",
+    "description":"File manager with Root capabilities.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "capabilities":[
+        "CAP_DAC_READ_SEARCH",
+        "CAP_DAC_OVERRIDE",
+        "CAP_SYS_ADMIN"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED",
+    "locales": {
+        "in": {
+            "name": "Root Explorer",
+            "description":"File manager dengan kemampuan Root."
+        }
+    }
+}

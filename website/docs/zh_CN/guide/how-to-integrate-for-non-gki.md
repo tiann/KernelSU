@@ -17,23 +17,21 @@ KernelSU 使用 kprobe 机制来做内核的相关 hook，如果 *kprobe* 可以
 
 首先，把 KernelSU 添加到你的内核源码树，在内核的根目录执行以下命令：
 
-- 最新tag(稳定版本)
+::: code-group
 
-```sh
+```sh[最新tag(稳定版本)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- main分支(开发版本)
-
-```sh
+```sh[main分支(开发版本)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 
-- 指定tag(比如v0.5.2)
-
-```sh
+```sh[指定tag(比如v0.5.2)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
+
+:::
 
 然后，你需要检查你的内核是否开启了 *kprobe* 相关的配置，如果没有开启，需要添加以下配置：
 
@@ -66,7 +64,9 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 然后，手动修改内核源码，你可以参考下面这个 patch:
 
-```diff
+::: code-group
+
+```diff[exec.c]
 diff --git a/fs/exec.c b/fs/exec.c
 index ac59664eaecf..bdd585e1d2cc 100644
 --- a/fs/exec.c
@@ -91,7 +91,8 @@ index ac59664eaecf..bdd585e1d2cc 100644
 +		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
  	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
  }
- 
+```
+```diff[open.c]
 diff --git a/fs/open.c b/fs/open.c
 index 05036d819197..965b84d486b8 100644
 --- a/fs/open.c
@@ -109,10 +110,20 @@ index 05036d819197..965b84d486b8 100644
   */
  long do_faccessat(int dfd, const char __user *filename, int mode)
  {
-+	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
  	const struct cred *old_cred;
  	struct cred *override_cred;
  	struct path path;
+ 	struct inode *inode;
+ 	struct vfsmount *mnt;
+ 	int res;
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+ 
++	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
+ 
+ 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
+ 		return -EINVAL;
+```
+```diff[read_write.c]
 diff --git a/fs/read_write.c b/fs/read_write.c
 index 650fc7e0f3a6..55be193913b6 100644
 --- a/fs/read_write.c
@@ -134,6 +145,8 @@ index 650fc7e0f3a6..55be193913b6 100644
  	if (!(file->f_mode & FMODE_READ))
  		return -EBADF;
  	if (!(file->f_mode & FMODE_CAN_READ))
+```
+```diff[stat.c]
 diff --git a/fs/stat.c b/fs/stat.c
 index 376543199b5a..82adcef03ecc 100644
 --- a/fs/stat.c
@@ -156,6 +169,7 @@ index 376543199b5a..82adcef03ecc 100644
  		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
  		return -EINVAL;
 ```
+:::
 
 主要是要改四个地方：
 
@@ -249,3 +263,7 @@ index 45306f9ef247..815091ebfca4 100755
 ```
 
 改完之后重新编译内核即可。
+
+:::info 莫名其妙进入安全模式？
+如果你采用手动集成的方式，并且没有禁用`CONFIG_KPROBES`，那么用户在开机之后按音量下，也可能触发安全模式！因此如果使用手动集成，你需要关闭 `CONFIG_KPROBES`！
+:::

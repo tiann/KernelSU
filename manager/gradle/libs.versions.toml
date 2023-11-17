@@ -7,7 +7,7 @@ lifecycle = "2.6.1"
 accompanist = "0.30.1"
 navigation = "2.6.0"
 compose-destination = "1.9.42-beta"
-libsu = "5.0.5"
+libsu = "5.2.1"
 sheets-compose-dialogs = "1.2.0"
 markdown = "4.6.2"
 

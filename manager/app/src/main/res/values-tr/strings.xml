@@ -47,7 +47,7 @@
     <string name="safe_mode">Güvenli mod</string>
     <string name="reboot_to_apply">Değişikliklerin uygulanması için cihazı yeniden başlat</string>
     <string name="module_magisk_conflict">Modüller, Magisk ile çakıştığı için devre dışı bırakıldı!</string>
-    <string name="home_learn_kernelsu">KernelSU\'yu Öğrenin</string>
+    <string name="home_learn_kernelsu">KernelSU\'yu öğrenin</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>

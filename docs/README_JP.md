@@ -27,7 +27,7 @@ WSA 、ChromeOS とコンテナ上で動作する Android でも KernelSU を統
 
 ## 翻訳
 
-KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善するには、[Weblate](https://hosted.weblate.org/engage/kernelsu/) を使用してください。
+KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善するには、[Weblate](https://hosted.weblate.org/engage/kernelsu/) を使用してください。Manager翻訳した PR は、Weblate と競合するため受け入れられなくなりました。
 
 ## ディスカッション
 
