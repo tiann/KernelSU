@@ -3,7 +3,13 @@
 
 # KernelSU
 
+<img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="">
+
 A Kernel-based root solution for Android devices.
+
+[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=release)](https://github.com/tiann/KernelSU/releases/latest)
+[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 
 ## Features
 
