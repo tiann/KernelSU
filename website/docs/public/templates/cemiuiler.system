@@ -1,0 +1,23 @@
+{
+    "id":"cemiuiler.system",
+    "name":"Cemiuiler",
+    "author":"refined-fish",
+    "description":"Grant Cemiuiler the minimum permission to restart applications, which also applies to other software that only needs to restart the scope application permissions.",
+    "uid":1000,
+    "gid":1000,
+    "groups":[
+        "SYSTEM"
+    ],
+    "capabilities":[
+        "CAP_SYS_PTRACE"
+    ],
+    "context":"u:r:su:s0",
+    "rules":"",  
+    "namespace":"INHERITED",
+    "locales": {
+        "zh_CN": {
+            "name":"西米露Cemiuiler",
+            "description":"授予Cemiuiler能重启应用最小限度的权限，也适用于其他仅需重启作用域应用权限的软件。"
+        }
+    }
+}
