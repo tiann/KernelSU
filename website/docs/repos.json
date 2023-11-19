@@ -551,5 +551,12 @@
         "kernel_name": "liquid_kernel_realme_even",
         "kernel_link": "https://github.com/liquidprjkt/liquid_kernel_realme_even",
         "devices": "Realme C25/s and Narzo50A (even)"
+    },
+    {
+        "maintainer": "CoolestEnoch",
+        "maintainer_link": "https://github.com/CoolestEnoch",
+        "kernel_name": "kernel-su-huawei-nova2",
+        "kernel_link": "https://github.com/CoolestEnoch/kernel-su-huawei-nova2",
+        "devices": "Huawei nova 2 (pic)"
     }
 ]
