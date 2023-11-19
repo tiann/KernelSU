@@ -45,6 +45,7 @@ function sidebarGuide() {
         text: 'Guide',
         items: [
           { text: 'What is KernelSU?', link: '/guide/what-is-kernelsu' },
+          { text: 'Difference with Magisk', link: '/guide/difference-with-magisk' },
           { text: 'Installation', link: '/guide/installation' },
           { text: 'How to build?', link: '/guide/how-to-build' },
           { text: 'Intergrate for non-GKI devices', link: '/guide/how-to-integrate-for-non-gki'},
