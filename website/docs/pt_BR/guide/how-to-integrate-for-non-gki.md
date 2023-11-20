@@ -46,27 +46,27 @@ Se o kprobe não funcionar no seu kernel (pode ser um bug do upstream ou do kern
 
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
-- Tag mais recente (estável)
+::: code-group
 
-```sh
+```sh[Tag mais recente (estável)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-- branch principal (dev)
-
-```sh
+```sh[Branch principal (dev)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 
-- Selecione a tag (Como v0.5.2)
-
-```sh
+```sh[Selecionar tag (como v0.5.2)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
 ```
 
+:::
+
 Em seguida, adicione chamadas KernelSU à fonte do kernel. Aqui está um patch para referência:
 
-```diff
+::: code-group
+
+```diff[exec.c]
 diff --git a/fs/exec.c b/fs/exec.c
 index ac59664eaecf..bdd585e1d2cc 100644
 --- a/fs/exec.c
@@ -92,7 +92,7 @@ index ac59664eaecf..bdd585e1d2cc 100644
  	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
  }
 ```
-```diff
+```diff[open.c]
 diff --git a/fs/open.c b/fs/open.c
 index 05036d819197..965b84d486b8 100644
 --- a/fs/open.c
@@ -123,7 +123,7 @@ index 05036d819197..965b84d486b8 100644
  	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
  		return -EINVAL;
 ```
-```diff
+```diff[read_write.c]
 diff --git a/fs/read_write.c b/fs/read_write.c
 index 650fc7e0f3a6..55be193913b6 100644
 --- a/fs/read_write.c
@@ -146,7 +146,7 @@ index 650fc7e0f3a6..55be193913b6 100644
  		return -EBADF;
  	if (!(file->f_mode & FMODE_CAN_READ))
 ```
-```diff
+```diff[stat.c]
 diff --git a/fs/stat.c b/fs/stat.c
 index 376543199b5a..82adcef03ecc 100644
 --- a/fs/stat.c
@@ -169,6 +169,8 @@ index 376543199b5a..82adcef03ecc 100644
  		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
  		return -EINVAL;
 ```
+
+:::
 
 Você deve encontrar as quatro funções no código-fonte do kernel:
 
@@ -262,3 +264,7 @@ index 45306f9ef247..815091ebfca4 100755
 ```
 
 Finalmente, construa seu kernel novamente, e então, o KernelSU deve funcionar bem.
+
+:::info ENTRANDO NO MODO DE SEGURANÇA ACIDENTALMENTE?
+Se você estiver usando a integração manual e não desabilitar `CONFIG_KPROBES`, o usuário poderá acionar o Modo de Segurança pressionando o botão de diminuir volume após a inicialização! Portanto, se estiver usando a integração manual, você precisa desabilitar `CONFIG_KPROBES`!
+:::
