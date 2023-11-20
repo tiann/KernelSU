@@ -157,7 +157,7 @@ jobs:
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
         run: |
-          sed -i '/^rfkill_/d' common/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          rm common/android/abi_gki_protected_exports_* || echo "No protected exports!"
           git config --global user.email "bot@kernelsu.org"
           git config --global user.name "KernelSUBot"
           cd common/ && git add -A && git commit -a -m "Add KernelSU"

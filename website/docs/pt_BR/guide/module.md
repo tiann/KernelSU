@@ -12,10 +12,10 @@ Cada script shell executado no contexto do KernelSU será executado no shell `as
 
 Para aqueles que desejam usar o recurso “Modo Autônomo” fora do KernelSU, existem 2 maneiras de ativá-los:
 
-1. Defina a variável de ambiente `ASH_STANDALONE` como `1`<br>Exemplo: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
+1. Defina a variável de ambiente `ASH_STANDALONE` como `1`.<br>Exemplo: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
 2. Alternar com opções de linha de comando:<br>`/data/adb/ksu/bin/busybox sh -o standalone <script>`
 
-Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
+Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador do KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
 ::: tip DIFERENÇA COM MAGISK
 
@@ -33,24 +33,24 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 |
 ├── $MODID                  <--- A pasta é nomeada com o ID do módulo
 │   │
-│   │      *** Identidade do Módulo ***
+│   │      *** Identidade do módulo ***
 │   │
 │   ├── module.prop         <--- Este arquivo armazena os metadados do módulo
 │   │
-│   │      *** Conteúdo Principal ***
+│   │      *** Conteúdo principal ***
 │   │
 │   ├── system              <--- Esta pasta será montada se skip_mount não existir
 │   │   ├── ...
 │   │   ├── ...
 │   │   └── ...
 │   │
-│   │      *** Sinalizadores de Status ***
+│   │      *** Sinalizadores de status ***
 │   │
 │   ├── skip_mount          <--- Se existir, o KernelSU NÃO montará sua pasta de sistema
 │   ├── disable             <--- Se existir, o módulo será desabilitado
 │   ├── remove              <--- Se existir, o módulo será removido na próxima reinicialização
 │   │
-│   │      *** Arquivos Opcionais ***
+│   │      *** Arquivos opcionais ***
 │   │
 │   ├── post-fs-data.sh     <--- Este script será executado em post-fs-data
 │   ├── post-mount.sh       <--- Este script será executado em post-mount
@@ -60,7 +60,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 │   ├── system.prop         <--- As propriedades neste arquivo serão carregadas como propriedades do sistema por resetprop
 │   ├── sepolicy.rule       <--- Regras adicionais de sepolicy personalizadas
 │   │
-│   │      *** Gerado Automaticamente, NÃO CRIE OU MODIFIQUE MANUALMENTE ***
+│   │      *** Gerado automaticamente, NÃO CRIE OU MODIFIQUE MANUALMENTE ***
 │   │
 │   ├── vendor              <--- Um link simbólico para $MODID/system/vendor
 │   ├── product             <--- Um link simbólico para $MODID/system/product
@@ -79,7 +79,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ```
 
 ::: tip DIFERENÇA COM MAGISK
-O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
+O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
 :::
 
 ### module.prop
@@ -98,7 +98,7 @@ description=<string>
 - `id` deve corresponder a esta expressão regular: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
   Exemplo: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
   Este é o **identificador exclusivo** do seu módulo. Você não deve alterá-lo depois de publicado.
-- `versionCode` deve ser um **inteiro**. Isso é usado para comparar versões
+- `versionCode` deve ser um **número inteiro**. Isso é usado para comparar versões
 - Outros que não foram mencionados acima podem ser qualquer string de **linha única**.
 - Certifique-se de usar o tipo de quebra de linha `UNIX (LF)` e não o `Windows (CR+LF)` ou `Macintosh (CR)`.
 

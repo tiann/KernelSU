@@ -77,7 +77,7 @@ BusyBox в KernelSU теперь использует бинарный файл,
 ```
 
 ::: tip различия с Magisk
-KernelSU не имеет встроенной поддержки Zygisk, поэтому в модуле нет содержимого, связанного с Zygisk. Однако для поддержки модулей Zygisk можно использовать [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU). В этом случае содержимое модуля Zygisk идентично содержимому, поддерживаемому Magisk.
+KernelSU не имеет встроенной поддержки Zygisk, поэтому в модуле нет содержимого, связанного с Zygisk. Однако для поддержки модулей Zygisk можно использовать [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext). В этом случае содержимое модуля Zygisk идентично содержимому, поддерживаемому Magisk.
 :::
 
 ### module.prop

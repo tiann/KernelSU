@@ -20,7 +20,7 @@
 以下是一些不同之處：
 
 1. KernelSU 的模組不支援在 Recovery 中安裝。
-2. KernelSU 的模組沒有內建的 Zygisk 支援 (但您可以透過 [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 來使用 Zygisk 模組)。
+2. KernelSU 的模組沒有內建的 Zygisk 支援 (但您可以透過 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 來使用 Zygisk 模組)。
 3. KernelSU 模組取代或刪除檔案與 Magisk 完全不同。KernelSU 不支援 `.replace` 方法，相反，您需要透過 `mknod filename c 0 0` 建立相同名稱的資料夾以刪除對應檔案。
 4. BusyBox 的目錄不同；KernelSU 內建的 BusyBox 在 `/data/adb/ksu/bin/busybox` 而 Magisk 在 `/data/adb/magisk/busybox`；**注意此為 KernelSU 內部行為，未來可能會變更！**
 5. KernelSU 不支援 `.replace` 檔案；但 KernelSU 支援 `REPLACE` 和 `REMOVE` 變數以移除或取代檔案 (資料夾)。

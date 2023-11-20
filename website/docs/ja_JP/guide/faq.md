@@ -16,11 +16,11 @@
 
 ## KernelSU は Xposed に対応していますか?
 
-はい。[Dreamland](https://github.com/canyie/Dreamland) や [TaiChi](https://taichi.cool) が動作します。LSPosed については、[Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) を使うと動作するようにできます。
+はい。[Dreamland](https://github.com/canyie/Dreamland) や [TaiChi](https://taichi.cool) が動作します。LSPosed については、[ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) を使うと動作するようにできます。
 
 ## KernelSU は Zygisk に対応していますか?
 
-KernelSU は Zygisk サポートを内蔵していません。[Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) を使ってください。
+KernelSU は Zygisk サポートを内蔵していません。[ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) を使ってください。
 
 ## KernelSU は Magisk と互換性がありますか?
 

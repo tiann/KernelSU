@@ -7,12 +7,13 @@
   "author": "weishu",
   "license": "MIT",
   "devDependencies": {
-    "vitepress": "^1.0.0-alpha.75",
-    "vue": "^3.2.45"
+    "vitepress": "^1.0.0-rc.25",
+    "vue": "^3.3.8"
   },
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
-  }
+  },
+  "type": "module"
 }
