@@ -16,7 +16,7 @@ Para dispositivos mostrando `Sem suporte`, aqui está os [Dispositivos com supor
 Antes de fazer o flash, você deve primeiro fazer backup de seu boot.img padrão. Se você encontrar algum bootloop, você sempre pode restaurar o sistema voltando para o boot de fábrica usando o fastboot.
 
 ::: warning AVISO
-Fleshar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu telefone, se necessário.
+Flashar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu telefone, se necessário.
 :::
 
 ## Conhecimento necessário
@@ -166,4 +166,4 @@ Entre eles, o Android-Image-Kitchen é adequado para operação no PC e o magisk
 Na verdade, todos esses métodos de instalação têm apenas uma ideia principal, que é **substituir o kernel original pelo fornecido pelo KernelSU**, desde que isso possa ser alcançado, ele pode ser instalado. Por exemplo, a seguir estão outros métodos possíveis.
 
 1. Primeiro instale o Magisk, obtenha privilégios de root através do Magisk e então use o kernel flasher para fazer o flash no zip AnyKernel do KernelSU.
-2. Use algum kit de ferramentas de flash em PCs para fleshar no kernel fornecido pelo KernelSU.
+2. Use algum kit de ferramentas de flash em PCs para flashar no kernel fornecido pelo KernelSU.
