@@ -2,7 +2,16 @@
 
 # KernelSU
 
+<img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
+
 Android cihazlar için kernel tabanlı bir root çözümü.
+
+[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
+
 
 ## Özellikler
 
@@ -14,19 +23,19 @@ Android cihazlar için kernel tabanlı bir root çözümü.
 
 KernelSU resmi olarak Android GKI 2.0 cihazlarını ( 5.10+ kernelli) destekler, eski kernellerle de (4.14+) uyumludur, ancak kerneli kendinizin inşaa etmesi gerekir.
 
-WSA ve konteyner tabanlı Android'in de, KernelSU ile entegre olarak da çalışması gerekmektedir.
+Bununla birlikte; WSA, ChromeOS ve konteyner tabanlı Android'in hepsi desteklenmektedir.
 
-Ve desteklenen mevcut ABI'ler : `arm64-v8a` ve `x86_64`
+Şimdilik sadece `arm64-v8a` ve `x86_64` desteklenmektedir.
 
 ## Kullanım
 
-- [Yükleme](https://kernelsu.org/guide/installation.html)
+- [Yükleme yönergeleri](https://kernelsu.org/guide/installation.html)
 - [Nasıl inşa edilir?](https://kernelsu.org/guide/how-to-build.html)
 - [Resmi WEB sitesi](https://kernelsu.org/)
 
 ## Çeviri
 
-KernelSU'yu kendi dilinize çevirmek veya varolan bir çeviriyi geliştirmek istiyorsanız, lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/)'i kullanın.
+KernelSU'nun çevrilmesine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmiyor.
 
 ## Tartışma
 
