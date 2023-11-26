@@ -2,15 +2,15 @@
 
 Ao atualizar um dispositivo, podemos encontrar situações em que o dispositivo fica "bloqueado". Em teoria, se você usar o fastboot apenas para atualizar a partição boot ou instalar módulos inadequados que causam falha na inicialização do dispositivo, isso poderá ser restaurado por meio de operações apropriadas. Este documento tem como objetivo fornecer alguns métodos de emergência para ajudá-lo a se recuperar de um dispositivo "bloqueado".
 
-## Bloqueio por fleshear partição boot
+## Bloqueio por flashar partição boot
 
-No KernelSU, as seguintes situações podem causar bloqueio de inicialização ao fleshear a partição boot:
+No KernelSU, as seguintes situações podem causar bloqueio de inicialização ao flashar a partição boot:
 
 1. Você atualizou uma imagem boot no formato errado. Por exemplo, se o formato de boot do seu telefone for `gz`, mas você atualizou uma imagem no formato `lz4`, o telefone não será capaz de inicializar.
 2. Seu telefone precisa desativar a verificação AVB para inicializar corretamente (geralmente exigindo a limpeza de todos os dados do telefone).
 3. Seu kernel tem alguns bugs ou não é adequado para o flash do seu telefone.
 
-Não importa qual seja a situação, você pode recuperar **fleshando a imagem de boot padrão**. Portanto, no início do tutorial de instalação, recomendamos fortemente que você faça backup de seu boot padrão antes de fazer o flash. Se você não fez backup, poderá obter o boot original de fábrica de outros usuários com o mesmo dispositivo que você ou do firmware oficial.
+Não importa qual seja a situação, você pode recuperar **flashando a imagem de boot padrão**. Portanto, no início do tutorial de instalação, recomendamos fortemente que você faça backup de seu boot padrão antes de fazer o flash. Se você não fez backup, poderá obter o boot original de fábrica de outros usuários com o mesmo dispositivo que você ou do firmware oficial.
 
 ## Bloqueio por módulos
 
