@@ -23,9 +23,9 @@ if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
 fi
 git pull
 if [ -z "${1-}" ]; then
-    git checkout "$(git describe --abbrev=0 --tags)"
+    git -c advice.detachedHead=false checkout "$(git describe --abbrev=0 --tags)"
 else
-    git checkout "$1"
+    git -c advice.detachedHead=false checkout "$1"
 fi
 cd "$GKI_ROOT"
 
