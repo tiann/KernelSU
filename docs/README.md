@@ -41,6 +41,7 @@ To help translate KernelSU or improve existing translations, please use [Weblate
 ## Discussion
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
+- WeChat Official Account: [@虚拟框架]
 
 ## License
 
