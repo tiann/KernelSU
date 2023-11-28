@@ -41,7 +41,14 @@ To help translate KernelSU or improve existing translations, please use [Weblate
 ## Discussion
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
-- WeChat Official Account: [@虚拟框架]
+
+## Blog
+
+- WeChat Official Account: @虚拟框架
+
+## Contact
+
+- email: twsxtd@gmail.com
 
 ## License
 
