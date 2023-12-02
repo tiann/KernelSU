@@ -572,5 +572,12 @@
         "kernel_name": "android_kernel_samsung_sm7325",
         "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325/tree/sep-14.1/ksu",
         "devices": "Samsung Galaxy M52 5G (m52xq)"
+    },
+    {
+        "maintainer": "A-JiuA",
+        "maintainer_link": "https://github.com/A-JiuA",
+        "kernel_name": "sirius_Kernel",
+        "kernel_link": "https://github.com/A-JiuA/sirius_Kernel",
+        "devices": "Xiaomi MI 8 SE(MIUI12/12.5)"
     }
 ]
