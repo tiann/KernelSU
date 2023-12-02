@@ -2,7 +2,15 @@
 
 # KernelSU
 
+<img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
+
 Uma solução root baseada em kernel para dispositivos Android.
+
+[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![weblate](https://img.shields.io/badge/Localização-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Siga-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/Licença-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## Características
 
@@ -26,7 +34,7 @@ Atualmente, apenas `arm64-v8a` e `x86_64` são suportados.
  - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
-Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitos, pois podem entrar em conflito com o Weblate.
+Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitas, pois podem entrar em conflito com o Weblate.
 
 ## Discussão
 
