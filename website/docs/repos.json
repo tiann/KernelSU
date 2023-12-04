@@ -529,7 +529,7 @@
         "maintainer_link": "https://github.com/whyakari",
         "kernel_name": "android_kernel_xiaomi_ginkgo",
         "kernel_link": "https://github.com/whyakari/android_kernel_xiaomi_ginkgo",
-        "devices": "non-GKI ginkgo"
+        "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
     },
     {
         "maintainer": "wulan17",
