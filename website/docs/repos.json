@@ -574,6 +574,13 @@
         "devices": "Samsung Galaxy M52 5G (m52xq)"
     },
     {
+        "maintainer": "A-JiuA",
+        "maintainer_link": "https://github.com/A-JiuA",
+        "kernel_name": "sirius_Kernel",
+        "kernel_link": "https://github.com/A-JiuA/sirius_Kernel",
+        "devices": "Xiaomi MI 8 SE(MIUI12/12.5)"
+    },
+    {
         "maintainer": "picasso09",
         "maintainer_link": "https://github.com/picasso09",
         "kernel_name": "KernelSU-RM6765R",
