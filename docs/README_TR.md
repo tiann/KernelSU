@@ -4,7 +4,7 @@
 
 <img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
 
-Android cihazlar için kernel tabanlı bir root çözümü.
+Android cihazlar için kernel tabanlı root çözümü.
 
 [![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
@@ -21,21 +21,21 @@ Android cihazlar için kernel tabanlı bir root çözümü.
 
 ## Uyumluluk Durumu
 
-KernelSU resmi olarak Android GKI 2.0 cihazlarını ( 5.10+ kernelli) destekler, eski kernellerle de (4.14+) uyumludur, ancak kerneli kendinizin inşaa etmesi gerekir.
+KernelSU resmi olarak Android GKI 2.0 cihazlarını (5.10+ kernelli) destekler, eski kernellerle de (4.14+) uyumludur, ancak kerneli kendinizin derlemeniz gerekir.
 
-Bununla birlikte; WSA, ChromeOS ve konteyner tabanlı Android'in hepsi desteklenmektedir.
+Bununla birlikte; WSA, ChromeOS ve konteyner tabanlı Android'in tamamı desteklenmektedir.
 
 Şimdilik sadece `arm64-v8a` ve `x86_64` desteklenmektedir.
 
 ## Kullanım
 
 - [Yükleme yönergeleri](https://kernelsu.org/guide/installation.html)
-- [Nasıl inşa edilir?](https://kernelsu.org/guide/how-to-build.html)
+- [Nasıl derlenir?](https://kernelsu.org/guide/how-to-build.html)
 - [Resmi WEB sitesi](https://kernelsu.org/)
 
 ## Çeviri
 
-KernelSU'nun çevrilmesine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmiyor.
+KernelSU'nun çevirisine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmeyecektir.
 
 ## Tartışma
 
@@ -50,5 +50,5 @@ KernelSU'nun çevrilmesine veya mevcut çevirilerin iyileştirilmesine yardımc�
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU fikri.
 - [Magisk](https://github.com/topjohnwu/Magisk): güçlü root aracı.
-- [genuine](https://github.com/brevent/genuine/): apk v2 imza doğrulama.
+- [genuine](https://github.com/brevent/genuine/): apk v2 imza doğrulaması.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): bazı rootkit becerileri.

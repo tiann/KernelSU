@@ -422,8 +422,8 @@
     {
         "maintainer": "Coconutat",
         "maintainer_link": "https://github.com/Coconutat",
-        "kernel_name": "android_kernel_xiaomi_sdm845_exp",
-        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_exp",
+        "kernel_name": "android_kernel_xiaomi_sdm845_byd_exp",
+        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_byd_exp",
         "devices": "Xiaomi Mi 8 Pro(UD)[equuleus]/Explorer Edition[ursa]"
     },
     {
@@ -572,5 +572,19 @@
         "kernel_name": "android_kernel_samsung_sm7325",
         "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325/tree/sep-14.1/ksu",
         "devices": "Samsung Galaxy M52 5G (m52xq)"
+    },
+    {
+        "maintainer": "A-JiuA",
+        "maintainer_link": "https://github.com/A-JiuA",
+        "kernel_name": "sirius_Kernel",
+        "kernel_link": "https://github.com/A-JiuA/sirius_Kernel",
+        "devices": "Xiaomi MI 8 SE(MIUI12/12.5)"
+    },
+    {
+        "maintainer": "picasso09",
+        "maintainer_link": "https://github.com/picasso09",
+        "kernel_name": "KernelSU-RM6765R",
+        "kernel_link": "https://github.com/picasso09/RMX2189R/tree/c05-ksu",
+        "devices": "Realme C11 12 15 (RM6765)"
     }
 ]
