@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Klik untuk memasang</string>
     <string name="home_working">Bekerja</string>
     <string name="home_working_version">Versi: %d</string>
-    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="home_superuser_count">Superuser: %d</string>
     <string name="home_module_count">Modul: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">KernelSU saat ini hanya mendukung kernel GKI</string>
@@ -15,7 +15,7 @@
     <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Dinonaktifkan</string>
     <string name="selinux_status_enforcing">Enforcing</string>
-    <string name="selinux_status_permissive">Permasif</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Tidak dikenal</string>
     <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
@@ -93,7 +93,7 @@
     <string name="app_profile_template_create">Buat Template</string>
     <string name="app_profile_import_export">Impor/Expor</string>
     <string name="app_profile_template_save_failed">Gagal untuk menyimpan template</string>
-    <string name="app_profile_template_edit">Edit Template</string>
+    <string name="app_profile_template_edit">Edit Templat</string>
     <string name="app_profile_template_id">id</string>
     <string name="settings_profile_template">Template Profil Aplikasi</string>
     <string name="app_profile_template_description">Deskripsi</string>
@@ -102,4 +102,5 @@
     <string name="app_profile_template_delete">Hapus</string>
     <string name="app_profile_template_import_empty">Clipboard kosong!</string>
     <string name="app_profile_template_view">Lihat Template</string>
+    <string name="app_profile_template_readonly">Hanya baca</string>
 </resources>
