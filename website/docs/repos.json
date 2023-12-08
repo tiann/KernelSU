@@ -276,7 +276,7 @@
         "maintainer": "bggRGjQaUbCoE",
         "maintainer_link": "https://github.com/bggRGjQaUbCoE",
         "kernel_name": "android_kernel_samsung_sm8250",
-        "kernel_link": "https://github.com/bggRGjQaUbCoE/android_kernel_samsung_sm8250",
+        "kernel_link": "https://github.com/bggRGjQaUbCoE/android_kernel_samsung_sm8250-mohammad92",
         "devices": "Samsung Galaxy S20+ 5G (y2q)"
     },
     {
@@ -434,13 +434,6 @@
         "devices": "Redmi Note 8 Pro (Begonia/Begoniain)"
     },
     {
-        "maintainer": "Abdul Wahid Khan",
-        "maintainer_link": "https://github.com/Wahid7852",
-        "kernel_name": "kernel_xiaomi_marble",
-        "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_marble",
-        "devices": "Xiaomi Poco F5 / Redmi Note 12 Turbo (Marble)"
-    },
-    {
         "maintainer": "zfdx123",
         "maintainer_link": "https://github.com/zfdx123",
         "kernel_name": "kernel_xiaomi_alioth",
@@ -453,20 +446,6 @@
         "kernel_name": "android_kernel_oneplus_sdm845",
         "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
         "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
-    },
-    {
-        "maintainer": "zharzinhoo",
-        "maintainer_link": "https://github.com/zharzinhoo",
-        "kernel_name": "Kernel-Oriente-Guamp",
-        "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Guamp",
-        "devices": "Moto g9 play"
-    },
-    {
-        "maintainer": "hc841",
-        "maintainer_link": "https://github.com/hc841",
-        "kernel_name": "NovaCore_kernel",
-        "kernel_link": "https://github.com/hc841/NovaCore_kernel",
-        "devices": "Moto g9 play"
     },
     {
         "maintainer": "zlm324",
@@ -488,13 +467,6 @@
         "kernel_name": "android_kernel_xiaomi_sm8250",
         "kernel_link": "https://github.com/Vincent4440/android_kernel_xiaomi_sm8250",
         "devices": "Poco F4: munch"
-    },
-    {
-        "maintainer": "zharzinhoo",
-        "maintainer_link": "https://github.com/zharzinhoo",
-        "kernel_name": "android_kernel_motorola_cebu",
-        "kernel_link": "https://github.com/zharzinhoo/android_kernel_motorola_cebu",
-        "devices": "Moto g9 power"
     },
     {
         "maintainer": "tiandoufayale",
@@ -529,7 +501,7 @@
         "maintainer_link": "https://github.com/whyakari",
         "kernel_name": "android_kernel_xiaomi_ginkgo",
         "kernel_link": "https://github.com/whyakari/android_kernel_xiaomi_ginkgo",
-        "devices": "non-GKI ginkgo"
+        "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
     },
     {
         "maintainer": "wulan17",
