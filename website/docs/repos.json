@@ -551,5 +551,12 @@
         "kernel_name": "KernelSU-RM6765R",
         "kernel_link": "https://github.com/picasso09/RMX2189R/tree/c05-ksu",
         "devices": "Realme C11 12 15 (RM6765)"
+    },
+    {
+        "maintainer": "QKIvan",
+        "maintainer_link": "https://github.com/QKIvan",
+        "kernel_name": "android_kernel_google_redbull",
+        "kernel_link": "https://github.com/QKIvan/android_kernel_google_redbull",
+        "devices": "Google Pixel 4a 5G & 5 (bramble & redfin)"
     }
 ]
