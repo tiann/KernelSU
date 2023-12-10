@@ -322,13 +322,6 @@
         "devices": "Redmi Note 10 (Sunny/Mojito)"
     },
     {
-        "maintainer": "dabao1955",
-        "maintainer_link": "https://github.com/dabao1955",
-        "kernel_name": "android_kernel_OPPO_OP4ED5",
-        "kernel_link": "https://github.com/dabao1955/android_kernel_OPPO_OP4ED5",
-        "devices": "OPPO Reno6 on ColorOS11.x/ColorOS12.x\uff0ckernel version4.14.186+"
-    },
-    {
         "maintainer": "rushiranpise",
         "maintainer_link": "https://github.com/rushiranpise",
         "kernel_name": "android_kernel_samsung_exynos9610_mint",
@@ -558,5 +551,12 @@
         "kernel_name": "KernelSU-RM6765R",
         "kernel_link": "https://github.com/picasso09/RMX2189R/tree/c05-ksu",
         "devices": "Realme C11 12 15 (RM6765)"
+    },
+    {
+        "maintainer": "QKIvan",
+        "maintainer_link": "https://github.com/QKIvan",
+        "kernel_name": "android_kernel_google_redbull",
+        "kernel_link": "https://github.com/QKIvan/android_kernel_google_redbull",
+        "devices": "Google Pixel 4a 5G & 5 (bramble & redfin)"
     }
 ]
