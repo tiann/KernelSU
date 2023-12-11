@@ -3,7 +3,7 @@
     <string name="app_name" translatable="false">KernelSU</string>
     <string name="home">Ana Sayfa</string>
     <string name="home_not_installed">Yüklenmedi</string>
-    <string name="home_click_to_install">Yüklemek için tıkla</string>
+    <string name="home_click_to_install">Yüklemek için tıklayın</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
     <string name="home_superuser_count">Süper kullanıcı: %d</string>
