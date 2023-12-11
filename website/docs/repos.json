@@ -126,10 +126,10 @@
         "devices": "OnePlus 8 Serials"
     },
     {
-        "maintainer": "Sreeshankar K",
-        "maintainer_link": "https://github.com/sreeshankark",
-        "kernel_name": "NeverSettle Kernel",
-        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
+        "maintainer": "PSavarMattas",
+        "maintainer_link": "https://github.com/psavarmattas",
+        "kernel_name": "PSM Kernel",
+        "kernel_link": "https://github.com/psavarmattas/android_kernel_oneplus_sm7250-WKSU",
         "devices": "OnePlus Nord (avicii)"
     },
     {
