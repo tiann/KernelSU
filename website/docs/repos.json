@@ -558,5 +558,12 @@
         "kernel_name": "android_kernel_google_redbull",
         "kernel_link": "https://github.com/QKIvan/android_kernel_google_redbull",
         "devices": "Google Pixel 4a 5G & 5 (bramble & redfin)"
+    },
+    {
+        "maintainer": "josedelinux",
+        "maintainer_link": "https://github.com/josedelinux",
+        "kernel_name": "kernel_google_msm-4.9",
+        "kernel_link": "https://github.com/josedelinux/kernel_google_msm-4.9",
+        "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
     }
 ]
