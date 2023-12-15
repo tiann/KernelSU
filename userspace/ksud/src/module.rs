@@ -354,6 +354,7 @@ fn _install_module(zip: &str) -> Result<()> {
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
     };
+    let module_id = module_id.trim();
 
     let modules_img = Path::new(defs::MODULE_IMG);
     let modules_update_img = Path::new(defs::MODULE_UPDATE_IMG);
