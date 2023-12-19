@@ -19,7 +19,6 @@ jobs:
       matrix:
         arch: [x86_64]
         version: ["5.10.178"]
-
         include:
           - arch: x86_64
             git_tag: chromeos-5.10-arcvm
