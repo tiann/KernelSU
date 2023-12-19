@@ -104,7 +104,7 @@ jobs:
           echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP_FILE[${{ matrix.arch }}]}/boot/${FILE_NAME[${{ matrix.arch }}]}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"

@@ -19,6 +19,7 @@ jobs:
       matrix:
         arch: [x86_64]
         version: ["5.10.178"]
+
         include:
           - arch: x86_64
             git_tag: chromeos-5.10-arcvm
@@ -110,7 +111,7 @@ jobs:
           echo "file_path=${PWD}/arch/x86/boot/bzImage" >> $GITHUB_ENV
 
       - name: Upload kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"

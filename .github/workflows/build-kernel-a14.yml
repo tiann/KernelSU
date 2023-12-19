@@ -57,7 +57,7 @@ jobs:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - uses: actions/checkout@v4
         with:
@@ -104,12 +104,12 @@ jobs:
           echo "VERSION: $VERSION"
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
-      
+
       - name: Display structure of boot files
         run: ls -R
 
       - name: Upload images artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: boot-images-android14
           path: Image-android14*/*.img.gz
