@@ -110,7 +110,7 @@ jobs:
           echo "file_path=${PWD}/arch/x86/boot/bzImage" >> $GITHUB_ENV
 
       - name: Upload kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"

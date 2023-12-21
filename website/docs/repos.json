@@ -126,10 +126,10 @@
         "devices": "OnePlus 8 Serials"
     },
     {
-        "maintainer": "Sreeshankar K",
-        "maintainer_link": "https://github.com/sreeshankark",
-        "kernel_name": "NeverSettle Kernel",
-        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
+        "maintainer": "PSavarMattas",
+        "maintainer_link": "https://github.com/psavarmattas",
+        "kernel_name": "PSM Kernel",
+        "kernel_link": "https://github.com/psavarmattas/android_kernel_oneplus_sm7250-WKSU",
         "devices": "OnePlus Nord (avicii)"
     },
     {
@@ -558,5 +558,12 @@
         "kernel_name": "android_kernel_google_redbull",
         "kernel_link": "https://github.com/QKIvan/android_kernel_google_redbull",
         "devices": "Google Pixel 4a 5G & 5 (bramble & redfin)"
+    },
+    {
+        "maintainer": "josedelinux",
+        "maintainer_link": "https://github.com/josedelinux",
+        "kernel_name": "kernel_google_msm-4.9",
+        "kernel_link": "https://github.com/josedelinux/kernel_google_msm-4.9",
+        "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
     }
 ]
