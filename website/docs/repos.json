@@ -565,5 +565,12 @@
         "kernel_name": "kernel_google_msm-4.9",
         "kernel_link": "https://github.com/josedelinux/kernel_google_msm-4.9",
         "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
+    },
+    {
+        "maintainer": "dereference23",
+        "maintainer_link": "https://github.com/dereference23",
+        "kernel_name": "Positron",
+        "kernel_link": "https://github.com/dereference23/kernel_xiaomi_sm6375",
+        "devices": "POCO X4 Pro 5G / Redmi Note 11 Pro(+) 5G / 11E Pro"
     }
 ]
