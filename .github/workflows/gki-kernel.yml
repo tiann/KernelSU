@@ -172,10 +172,10 @@ jobs:
           fi
           if [ -e build/build.sh ]; then
             CCACHE="/usr/bin/ccache" LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
-          else 
+          else
             tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
-      
+
       - name: Prepare artifacts
         id: prepareArtifacts
         run: |
@@ -191,13 +191,13 @@ jobs:
           cp $OUTDIR/Image ./AnyKernel3/
 
       - name: Upload Image and Image.gz
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./output/*
 
       - name: Upload AnyKernel3
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: AnyKernel3-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./AnyKernel3/*

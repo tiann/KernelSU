@@ -35,13 +35,13 @@ jobs:
         with:
           fetch-depth: 0 # Not needed if lastUpdated is not enabled
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: yarn # or pnpm / yarn
           cache-dependency-path: website/yarn.lock
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Build with VitePress
@@ -49,7 +49,7 @@ jobs:
           yarn docs:build
           touch docs/.vitepress/dist/.nojekyll
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: website/docs/.vitepress/dist
 
@@ -64,4 +64,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
