@@ -119,13 +119,6 @@
         "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
     },
     {
-        "maintainer": "lateautumn233",
-        "maintainer_link": "https://github.com/lateautumn233",
-        "kernel_name": "android_kernel_oneplus_sm8250",
-        "kernel_link": "https://github.com/lateautumn233/android_kernel_oneplus_sm8250",
-        "devices": "OnePlus 8 Serials"
-    },
-    {
         "maintainer": "PSavarMattas",
         "maintainer_link": "https://github.com/psavarmattas",
         "kernel_name": "PSM Kernel",
