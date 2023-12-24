@@ -551,5 +551,12 @@
         "kernel_name": "kernel_google_msm-4.9",
         "kernel_link": "https://github.com/josedelinux/kernel_google_msm-4.9",
         "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
+    },
+    {
+        "maintainer": "rsuntk",
+        "maintainer_link": "https://github.com/rsuntk",
+        "kernel_name": "android_kernel_samsung_a12s-4.19-rebased",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s-4.19-rebased",
+        "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
     }
 ]
