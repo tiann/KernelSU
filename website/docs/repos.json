@@ -70,13 +70,6 @@
         "devices": "wayne"
     },
     {
-        "maintainer": "YamazakuraH",
-        "maintainer_link": "https://github.com/YamazakuraH",
-        "kernel_name": "kernel_xiaomi_cepheus",
-        "kernel_link": "https://github.com/169163-Network/kernel_xiaomi_cepheus",
-        "devices": "cepheus for pixel experience"
-    },
-    {
         "maintainer": "SakuraNotStupid",
         "maintainer_link": "https://github.com/SakuraKyuo",
         "kernel_name": "android_kernel_xiaomi_sdm710",
