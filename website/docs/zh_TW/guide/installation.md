@@ -2,7 +2,7 @@
 
 ## 檢查您的裝置是否受支援 {#check-if-supported}
 
-從 [GitHub Releases](https://github.com/tiann/KernelSU/releases) 或 [酷安](https://www.coolapk.com/apk/me.weishu.kernelsu) 下載 KernelSU 管理員應用程式，然後將應用程式安裝至裝置並開啟：
+從 [GitHub Releases](https://github.com/tiann/KernelSU/releases) 下載 KernelSU 管理員應用程式，然後將應用程式安裝至裝置並開啟：
 
 - 如果應用程式顯示「不支援」，則表示您的裝置不支援 KernelSU，您需要自行編譯核心才能繼續使用，，KernelSU 官方也永遠不會為您提供一個可以刷新的 Boot 映像。
 - 如果應用程式顯示「未安裝」，那麼 KernelSU 支援您的裝置；可以進行下一步作業。

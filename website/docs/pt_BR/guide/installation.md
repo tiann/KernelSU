@@ -2,7 +2,7 @@
 
 ## Verifique se o seu dispositivo é compatível
 
-Baixe o app gerenciador do KernelSU em [GitHub Releases](https://github.com/tiann/KernelSU/releases) ou [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu), e instale-o no seu dispositivo:
+Baixe o app gerenciador do KernelSU em [GitHub Releases](https://github.com/tiann/KernelSU/releases), e instale-o no seu dispositivo:
 
 - Se o app mostrar `Sem suporte`, significa que **você deve compilar o kernel sozinho**, o KernelSU não fornecerá e nunca fornecerá uma boot image para você instalar.
 - Se o app mostrar `Não instalado`, então seu dispositivo é oficialmente suportado pelo KernelSU.
