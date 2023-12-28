@@ -55,7 +55,7 @@ w      .x         .y       -zzz           -k            -something
 
 如果您发现您的内核版本是 `android12-5.10.101`，然而你 Android 系统的版本为 Android 13 或者其他；请不要觉得奇怪，因为 Android 系统的版本与 Linux 内核的版本号不一定是一致的；Linux 内核的版本号一般与**设备出厂的时候自带的 Android 系统的版本一致**，如果后续 Android 系统升级，内核版本一般不会发生变化。如果你需要刷机，**请以内核版本为准！！**
 
-## 安装介绍 {#installation-introduction}
+## 安装介绍 {#installationintroduction}
 
 KernelSU 的安装方法有如下几种，各自适用于不同的场景，请按需选择：
 
@@ -142,7 +142,7 @@ Magisk 官方提供的 `magiskboot` 只能运行在 Android/Linux 设备上，�
 2. 下载 KernelSU 提供的与你设备 KMI 版本一致的 AnyKernel3 刷机包；如果您不知道应该下载哪一个文件，请仔细阅读本文档中关于 [KMI](#kmi) 和 [安全补丁级别](#security-patch-level)的描述。
 3. 解压缩 AnyKernel3 刷机包，获取其中的 `Image` 文件，此文件为 KernelSU 的内核文件。
 
-### 在 Android 设备上使用 magiskboot {#using magiskboot on Android}
+### 在 Android 设备上使用 magiskboot {#using-magiskboot-on-Android-devices}
 
 1. 在 Magisk 的 [Release 页面](https://github.com/topjohnwu/Magisk/releases) 下载最新的 Magisk 安装包。
 2. 将 Magisk-*.apk 重命名为 Magisk-vesion.zip 然后解压缩。
@@ -153,7 +153,7 @@ Magisk 官方提供的 `magiskboot` 只能运行在 Android/Linux 设备上，�
 7. 使用 `Image` 替换 `kernel`: `mv -f Image kernel`
 8. 执行 `./magiskboot repack boot.img` 打包 img，此时你会得到一个 `new-boot.img` 的文件，使用这个文件 fastboot 刷入设备即可。
 
-### 在 macOS/Windows/Linux 上使用 magiskboot {#using magiskboot on PC}
+### 在 macOS/Windows/Linux 上使用 magiskboot {#using-magiskboot-on-PC}
 
 1. 在 [magiskboot_build](https://github.com/ookiineko/magiskboot_build/releases/tag/last-ci) 下载适合你操作系统的 `magiskboot` 二进制文件。
 2. 在你的 PC 上准备好设备原厂的 boot.img 和 KernelSU 的 Image。

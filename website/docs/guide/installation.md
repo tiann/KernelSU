@@ -141,7 +141,7 @@ Android-Image-Kitchen is not recommended now, because it doesn't handle the boot
 2. Download the AnyKernel3 zip file provided by KernelSU that matches the KMI version of your device (you can refer to the *Install with custom Recovery*).
 3. Unpack the AnyKernel3 package and get the `Image` file, which is the kernel file of KernelSU.
 
-### Using magiskboot on Android devices {#using magiskboot on Android}
+### Using magiskboot on Android devices {#using-magiskboot-on-Android-devices}
 
 1. Download latest Magisk from [Release Page](https://github.com/topjohnwu/Magisk/releases)
 2. Rename Magisk-*.apk to Magisk-vesion.zip and unzip it.
@@ -152,7 +152,7 @@ Android-Image-Kitchen is not recommended now, because it doesn't handle the boot
 7. Replace `kernel` with `Image`: `mv -f Image kernel`
 8. Execute `./magiskboot repack boot.img` to repack boot img, and you will get a `new-boot.img` file, flash this file to device by fastboot.
 
-### Using magiskboot on Windows/macOS/Linux PC {#using magiskboot on PC}
+### Using magiskboot on Windows/macOS/Linux PC{#using-magiskboot-on-PC}
 
 1. Download proper `magiskboot` for your OS from [magiskboot_build](https://github.com/ookiineko/magiskboot_build/releases/tag/last-ci)
 2. Prepare stock boot.img and Image in your PC.
