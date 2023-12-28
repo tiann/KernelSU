@@ -194,6 +194,11 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("do systemless mount failed: {}", e);
     }
 
+    // mount temp dir
+    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
+        warn!("do temp dir mount failed: {}", e);
+    }
+
     run_stage("post-mount", true);
 
     std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;

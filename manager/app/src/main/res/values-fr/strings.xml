@@ -85,7 +85,7 @@
     <string name="app_profile_template_export_empty">Impossible de trouver un modèle local à exporter !</string>
     <string name="app_profile_template_id_exist">L\'id du modèle existe déjà !</string>
     <string name="module_changelog">Journal des modifications</string>
-    <string name="app_profile_import_from_clipboard">Importer à partir presse-papiers</string>
+    <string name="app_profile_import_from_clipboard">Importer à partir du presse-papiers</string>
     <string name="module_changelog_failed">Échec de récupération du journal des modifications : %s</string>
     <string name="app_profile_template_name">Nom</string>
     <string name="app_profile_template_id_invalid">id de modèle invalide</string>

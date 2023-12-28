@@ -458,7 +458,9 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 			modified = true;
 			pr_info("prune uid: %d, package: %s\n", uid, package);
 			list_del(&np->list);
-			allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
+			if (likely(uid <= BITMAP_UID_MAX)) {
+				allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
+			}
 			remove_uid_from_arr(uid);
 			smp_mb();
 			kfree(np);

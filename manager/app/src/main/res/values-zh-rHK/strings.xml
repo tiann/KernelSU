@@ -80,4 +80,26 @@
     <string name="restart_app">重新啟動</string>
     <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux 規則</string>
     <string name="module_changelog">日志</string>
+    <string name="app_profile_template_import_success">導出成功</string>
+    <string name="app_profile_export_to_clipboard">導出到剪貼板</string>
+    <string name="app_profile_template_export_empty">沒有本地模板可以導出!</string>
+    <string name="app_profile_template_id_exist">模板id已存在!</string>
+    <string name="app_profile_import_from_clipboard">從剪貼板導入</string>
+    <string name="module_changelog_failed">獲取更新日誌失敗：%s</string>
+    <string name="app_profile_template_name">名字</string>
+    <string name="app_profile_template_id_invalid">模板id不合法</string>
+    <string name="app_profile_template_sync">同步在線規則</string>
+    <string name="app_profile_template_create">創建模板</string>
+    <string name="app_profile_template_readonly">只讀</string>
+    <string name="app_profile_import_export">導入/導出</string>
+    <string name="app_profile_template_save_failed">模板保存失敗</string>
+    <string name="app_profile_template_edit">編輯模板</string>
+    <string name="app_profile_template_id">模板id</string>
+    <string name="settings_profile_template">App Profile模板</string>
+    <string name="app_profile_template_description">描述</string>
+    <string name="app_profile_template_save">保存</string>
+    <string name="settings_profile_template_summary">管理本地和在線的App Profile模板</string>
+    <string name="app_profile_template_delete">刪除</string>
+    <string name="app_profile_template_import_empty">剪貼板爲空!</string>
+    <string name="app_profile_template_view">查看模板</string>
 </resources>

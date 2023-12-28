@@ -162,6 +162,16 @@ fn mount_overlayfs(
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn mount_tmpfs(dest: impl AsRef<Path>) -> Result<()> {
+    info!("mount tmpfs on {}", dest.as_ref().display());
+    Mount::builder()
+        .fstype(FilesystemType::from("tmpfs"))
+        .mount(KSU_OVERLAY_SOURCE, dest.as_ref())
+        .with_context(|| format!("mount tmpfs on {} failed", dest.as_ref().display()))?;
+    Ok(())
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     info!(
         "bind mount {} -> {}",
@@ -274,5 +284,10 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn mount_overlay(_dest: &String, _lower_dirs: &Vec<String>) -> Result<()> {
+    unimplemented!()
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+pub fn mount_tmpfs(_dest: impl AsRef<Path>) -> Result<()> {
     unimplemented!()
 }
