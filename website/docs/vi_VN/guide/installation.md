@@ -2,7 +2,7 @@
 
 ## Kiểm tra xem thiết bị của bạn có được hỗ trợ không
 
-Tải xuống APP KernelSU manager từ [GitHub Releases](https://github.com/tiann/KernelSU/releases) hoặc [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu) và cài đặt nó vào thiết bị của bạn:
+Tải xuống APP KernelSU manager từ [GitHub Releases](https://github.com/tiann/KernelSU/releases) và cài đặt nó vào thiết bị của bạn:
 
 - Nếu ứng dụng hiển thị `Unsupported`, nghĩa là **Bạn nên tự biên dịch kernel**, KernelSU sẽ không và không bao giờ cung cấp boot image để bạn flash.
 - Nếu ứng dụng hiển thị `Not installed` thì thiết bị của bạn đã được KernelSU hỗ trợ chính thức.

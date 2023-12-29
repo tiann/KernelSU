@@ -2,7 +2,7 @@
 
 ## Verifique se o seu dispositivo é compatível
 
-Baixe o app gerenciador do KernelSU em [GitHub Releases](https://github.com/tiann/KernelSU/releases) ou [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu), e instale-o no seu dispositivo:
+Baixe o app gerenciador do KernelSU em [GitHub Releases](https://github.com/tiann/KernelSU/releases), e instale-o no seu dispositivo:
 
 - Se o app mostrar `Sem suporte`, significa que **você deve compilar o kernel sozinho**, o KernelSU não fornecerá e nunca fornecerá uma boot image para você instalar.
 - Se o app mostrar `Não instalado`, então seu dispositivo é oficialmente suportado pelo KernelSU.
@@ -42,6 +42,12 @@ w      .x         .y       -zzz           -k            -something
 ::: tip DICA
 Observe que o SubLevel na versão do kernel não faz parte do KMI! Isso significa que `5.10.101-android12-9-g30979850fc20` tem o mesmo KMI que `5.10.137-android12-9-g30979850fc20`!
 :::
+
+### Nível do patch de segurança {#security-patch-level}
+
+Dispositivos Android mais recentes podem ter mecanismos anti-rollback que não permitem a atualização de uma imagem de inicialização com um nível de patch de segurança antigo. Por exemplo, se o kernel do seu dispositivo for `5.10.101-android12-9-g30979850fc20`, o patch de segurança será `2023-11`, mesmo se você atualizar o kernel consistente com o KMI do kernel, se o nível do patch de segurança for anterior a `2023-11` (como `2023-06`), então isso pode causar bootloop.
+
+Portanto, os kernels com os níveis de patch de segurança mais recentes são preferidos, mantendo a consistência do KMI.
 
 ### Versão do kernel vs Versão do Android
 

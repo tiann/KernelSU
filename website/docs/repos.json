@@ -70,13 +70,6 @@
         "devices": "wayne"
     },
     {
-        "maintainer": "YamazakuraH",
-        "maintainer_link": "https://github.com/YamazakuraH",
-        "kernel_name": "kernel_xiaomi_cepheus",
-        "kernel_link": "https://github.com/169163-Network/kernel_xiaomi_cepheus",
-        "devices": "cepheus for pixel experience"
-    },
-    {
         "maintainer": "SakuraNotStupid",
         "maintainer_link": "https://github.com/SakuraKyuo",
         "kernel_name": "android_kernel_xiaomi_sdm710",
@@ -117,13 +110,6 @@
         "kernel_name": "RealKing Kernel",
         "kernel_link": "https://github.com/Rohail33/Realking_kernel_sm8250",
         "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
-    },
-    {
-        "maintainer": "lateautumn233",
-        "maintainer_link": "https://github.com/lateautumn233",
-        "kernel_name": "android_kernel_oneplus_sm8250",
-        "kernel_link": "https://github.com/lateautumn233/android_kernel_oneplus_sm8250",
-        "devices": "OnePlus 8 Serials"
     },
     {
         "maintainer": "PSavarMattas",
@@ -553,17 +539,17 @@
         "devices": "Realme C11 12 15 (RM6765)"
     },
     {
-        "maintainer": "QKIvan",
-        "maintainer_link": "https://github.com/QKIvan",
-        "kernel_name": "android_kernel_google_redbull",
-        "kernel_link": "https://github.com/QKIvan/android_kernel_google_redbull",
-        "devices": "Google Pixel 4a 5G & 5 (bramble & redfin)"
-    },
-    {
         "maintainer": "josedelinux",
         "maintainer_link": "https://github.com/josedelinux",
         "kernel_name": "kernel_google_msm-4.9",
         "kernel_link": "https://github.com/josedelinux/kernel_google_msm-4.9",
         "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
+    },
+    {
+        "maintainer": "rsuntk",
+        "maintainer_link": "https://github.com/rsuntk",
+        "kernel_name": "android_kernel_samsung_a12s-4.19-rebased",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s-4.19-rebased",
+        "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
     }
 ]
