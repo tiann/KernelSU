@@ -178,6 +178,11 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("apply root profile sepolicy failed: {}", e);
     }
 
+    // mount temp dir
+    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
+        warn!("do temp dir mount failed: {}", e);
+    }
+
     // exec modules post-fs-data scripts
     // TODO: Add timeout
     if let Err(e) = crate::module::exec_stage_script("post-fs-data", true) {
@@ -192,11 +197,6 @@ pub fn on_post_data_fs() -> Result<()> {
     // mount module systemlessly by overlay
     if let Err(e) = mount_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
-    }
-
-    // mount temp dir
-    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
-        warn!("do temp dir mount failed: {}", e);
     }
 
     run_stage("post-mount", true);
