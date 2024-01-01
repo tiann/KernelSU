@@ -119,12 +119,7 @@ pub fn root_shell() -> Result<()> {
         "mount-master",
         "force run in the global mount namespace",
     );
-    opts.optopt(
-        "g",
-        "group",
-        "Specify the primary group",
-        "GROUP",
-    );
+    opts.optopt("g", "group", "Specify the primary group", "GROUP");
     opts.optmulti(
         "G",
         "supp-group",
@@ -197,10 +192,8 @@ pub fn root_shell() -> Result<()> {
         }
     }
     // otherwise, use the first gid of groups.
-    if gid.is_none() {
-        if !groups.is_empty() {
-            gid = Some(groups[0]);
-        }
+    if gid.is_none() && !groups.is_empty() {
+        gid = Some(groups[0]);
     }
 
     // we've make sure that -c is the last option and it already contains the whole command, no need to construct it again
