@@ -175,7 +175,6 @@ pub fn root_shell() -> Result<()> {
 
     // use current uid if no user specified, these has been done in kernel!
     let mut uid = unsafe { libc::getuid() };
-    let gid = unsafe { libc::getgid() };
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
@@ -241,7 +240,7 @@ pub fn root_shell() -> Result<()> {
                 let _ = utils::unshare_mnt_ns();
             }
 
-            set_identity(uid, gid);
+            set_identity(uid, uid);
 
             std::result::Result::Ok(())
         })
