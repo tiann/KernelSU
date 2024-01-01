@@ -424,7 +424,7 @@
         "maintainer_link": "https://github.com/wxt1221",
         "kernel_name": "android_kernel_oneplus_sdm845",
         "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
-        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
+        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with Retrofit Dynamic Partitions"
     },
     {
         "maintainer": "zlm324",
