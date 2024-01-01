@@ -971,7 +971,7 @@ impl ModuleApi for KsuModuleApi {
                 }
                 let content = std::fs::read(module_prop)?;
                 let mut module_id: String = String::new();
-                PropertiesIter::new_with_encoding(Cursor::new(content), encoding::all::UTF_8)
+                PropertiesIter::new_with_encoding(Cursor::new(content), encoding_rs::UTF_8)
                     .read_into(|k, v| {
                         if k.eq("id") {
                             module_id = v;
