@@ -673,51 +673,6 @@ where
     result
 }
 
-pub fn uninstall_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
-        let dir = Path::new(update_dir);
-        ensure!(dir.exists(), "No module installed");
-
-        // iterate the modules_update dir, find the module to be removed
-        let dir = std::fs::read_dir(dir)?;
-        for entry in dir.flatten() {
-            let path = entry.path();
-            let module_prop = path.join("module.prop");
-            if !module_prop.exists() {
-                continue;
-            }
-            let content = std::fs::read(module_prop)?;
-            let mut module_id: String = String::new();
-            PropertiesIter::new_with_encoding(Cursor::new(content), encoding_rs::UTF_8).read_into(
-                |k, v| {
-                    if k.eq("id") {
-                        module_id = v;
-                    }
-                },
-            )?;
-            if module_id.eq(mid) {
-                let remove_file = path.join(defs::REMOVE_FILE_NAME);
-                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
-                break;
-            }
-        }
-
-        // santity check
-        let target_module_path = format!("{update_dir}/{mid}");
-        let target_module = Path::new(&target_module_path);
-        if target_module.exists() {
-            let remove_file = target_module.join(defs::REMOVE_FILE_NAME);
-            if !remove_file.exists() {
-                File::create(remove_file).with_context(|| "Failed to create remove file.")?;
-            }
-        }
-
-        let _ = mark_module_state(id, defs::REMOVE_FILE_NAME, true);
-
-        Ok(())
-    })
-}
-
 fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
     let src_module_path = format!("{module_dir}/{mid}");
     let src_module = Path::new(&src_module_path);
@@ -898,6 +853,11 @@ impl ModuleApi for KsuModuleApi {
 
         if let Err(e) = crate::profile::apply_sepolies() {
             warn!("apply root profile sepolicy failed: {}", e);
+        }
+
+        // mount temp dir
+        if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
+            warn!("do temp dir mount failed: {}", e);
         }
 
         // exec modules post-fs-data scripts

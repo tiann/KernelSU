@@ -34,7 +34,6 @@ rust-embed = { version = "6", features = [
 which = "5"
 getopts = "0.2"
 sha256 = "1"
-lazy_static = "1.4.0"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 sys-mount = { git = "https://github.com/tiann/sys-mount", branch = "loopfix" }

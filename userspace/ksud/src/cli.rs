@@ -194,7 +194,7 @@ pub fn run() -> Result<()> {
     }
 
     let cli = Args::parse();
-    let api = module_api::ModuleApiProxy::get();
+    let api = module_api::get_api();
 
     log::info!("command: {:?}", cli.command);
 
