@@ -181,8 +181,7 @@ pub fn root_shell() -> Result<()> {
     }
     let mut gid: Option<u32> = None;
     // if -g provided, use it.
-    if matches.opt_present("g") {
-        let g = matches.opt_str("g").unwrap();
+    if let Some(g) = matches.opt_str("g") {
         if let core::result::Result::Ok(id) = g.parse::<u32>() {
             gid = Some(id);
         } else {
