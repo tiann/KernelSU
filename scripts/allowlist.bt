@@ -5,11 +5,11 @@
 
 // Define the root_profile structure with padding for 64-bit alignment.
 struct root_profile {
-    int uid;
-    int gid;
+    uint32 uid;
+    uint32 gid;
 
-    int groups_count;
-    int groups[KSU_MAX_GROUPS];
+    uint32 groups_count;
+    uint32 groups[KSU_MAX_GROUPS];
     char padding1[4]; // Padding for 64-bit alignment.
 
     struct {
@@ -20,7 +20,7 @@ struct root_profile {
 
     char selinux_domain[KSU_SELINUX_DOMAIN];
     
-    int namespaces;
+    uint32 namespaces;
     char padding2[4]; // Padding for 64-bit alignment.
 };
 
@@ -33,8 +33,9 @@ struct non_root_profile {
 // Define the rp_config structure with padding for 64-bit alignment.
 struct rp_config_t {
     byte use_default;
-    char padding[7]; // Padding to make the total size a multiple of 8.
+    
     char template_name[KSU_MAX_PACKAGE_NAME];
+    char padding[7]; // Padding to make the total size a multiple of 8.
 
     struct root_profile profile;
 };
@@ -42,9 +43,10 @@ struct rp_config_t {
 // Define the nrp_config structure with padding for 64-bit alignment.
 struct nrp_config_t {
     byte use_default;
-    char padding[7]; // Padding to make the total size a multiple of 8.
+    char padding1[7]; // Padding to make the total size a multiple of 8.
 
     struct non_root_profile profile;
+    char padding2[488]; // Padding to align the union
 };
 
 // Define the main app_profile structure
@@ -79,7 +81,9 @@ if (header.magic != 0x7f4b5355) {
 
 FSeek(8); // Skip the header
 
+
 // Continually read app_profile instances until end of file
 while (!FEof()) {
     app_profile profile;
 }
+
