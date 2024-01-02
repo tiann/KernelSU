@@ -2,7 +2,7 @@
 
 ## Periksa apakah perangkat Anda didukung
 
-Unduh aplikasi manajer KernelSU dari [github releases](https://github.com/tiann/KernelSU/releases) atau [github actions](https://github.com/tiann/KernelSU/actions/workflows/build-manager.yml), lalu instal aplikasi ke perangkat dan buka aplikasi:
+Unduh aplikasi manajer KernelSU dari [github releases](https://github.com/tiann/KernelSU/releases), lalu instal aplikasi ke perangkat dan buka aplikasi:
 
 - Jika aplikasi menunjukkan `Unsupported`, itu berarti **Anda harus mengkompilasi kernel sendiri**, KernelSU tidak akan dan tidak pernah menyediakan boot image untuk Anda flash.
 - Jika aplikasi menunjukkan `Not installed`, maka perangkat Anda secara resmi didukung oleh KernelSU.

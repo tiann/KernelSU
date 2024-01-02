@@ -351,7 +351,7 @@ void do_save_allow_list(struct work_struct *work)
 	loff_t off = 0;
 
 	struct file *fp =
-		ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT, 0644);
+		ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (IS_ERR(fp)) {
 		pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
 		return;
@@ -458,7 +458,9 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 			modified = true;
 			pr_info("prune uid: %d, package: %s\n", uid, package);
 			list_del(&np->list);
-			allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
+			if (likely(uid <= BITMAP_UID_MAX)) {
+				allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
+			}
 			remove_uid_from_arr(uid);
 			smp_mb();
 			kfree(np);

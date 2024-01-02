@@ -80,4 +80,10 @@
     <string name="force_stop_app">強制停止</string>
     <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux</string>
     <string name="module_changelog">變更記錄</string>
+    <string name="app_profile_template_id_invalid">模板 id 不合法</string>
+    <string name="app_profile_template_create">創建模板</string>
+    <string name="app_profile_template_edit">編輯模板</string>
+    <string name="app_profile_template_id">模板 id</string>
+    <string name="settings_profile_template">App Profile 模板</string>
+    <string name="settings_profile_template_summary">管理本地和在線的App Profile模板</string>
 </resources>

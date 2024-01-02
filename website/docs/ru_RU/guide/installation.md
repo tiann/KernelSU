@@ -2,7 +2,7 @@
 
 ## Проверьте, поддерживается ли ваше устройство {#check-if-supported}
 
-Скачайте приложение менеджера KernelSU с сайта [GitHub Releases](https://github.com/tiann/KernelSU/releases) или [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu) и установите его на устройство:
+Скачайте приложение менеджера KernelSU с сайта [GitHub Releases](https://github.com/tiann/KernelSU/releases) и установите его на устройство:
 
 - Если приложение показывает `Unsupported`, это означает, что **Вы должны скомпилировать ядро самостоятельно**, KernelSU не будет и никогда не предоставит Вам загрузочный образ для прошивки.
 - Если приложение показывает `Не установлено`, значит, ваши устройства официально поддерживаются KernelSU.

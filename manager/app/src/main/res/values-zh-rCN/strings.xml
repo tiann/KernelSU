@@ -85,7 +85,7 @@
     <string name="app_profile_template_create">创建模版</string>
     <string name="app_profile_template_edit">编辑模版</string>
     <string name="app_profile_template_id">模版 id</string>
-    <string name="app_profile_template_id_invalid">模版 id 不合法！</string>
+    <string name="app_profile_template_id_invalid">模版 id 不合法</string>
     <string name="app_profile_template_name">名字</string>
     <string name="app_profile_template_description">描述</string>
     <string name="app_profile_template_save">保存</string>

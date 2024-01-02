@@ -2,7 +2,7 @@
 
 ## デバイスが対応しているか確認する
 
-[GitHub Releases](https://github.com/tiann/KernelSU/releases) または [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu) から KernelSU Manager アプリをダウンロードし、お使いのデバイスにインストールしてください。
+[GitHub Releases](https://github.com/tiann/KernelSU/releases) から KernelSU Manager アプリをダウンロードし、お使いのデバイスにインストールしてください。
 
 - アプリが「非対応」と表示した場合は、**自分でカーネルをコンパイルする必要がある**という意味です。KernelSU は書き込むためのブートイメージを提供しません。
 - アプリが「未インストール」と表示した場合、お使いのデバイスは KernelSU に対応しています。
