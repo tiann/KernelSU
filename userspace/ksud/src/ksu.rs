@@ -174,7 +174,7 @@ pub fn root_shell() -> Result<()> {
         if let core::result::Result::Ok(id) = g.parse::<u32>() {
             groups.push(id);
         } else {
-            println!("Invalid GID: {}", g);
+            println!("Invalid GID: {g}");
             print_usage(&program, opts);
             return Ok(());
         }
@@ -185,7 +185,7 @@ pub fn root_shell() -> Result<()> {
         if let core::result::Result::Ok(id) = g.parse::<u32>() {
             gid = Some(id);
         } else {
-            println!("Invalid GID: {}", g);
+            println!("Invalid GID: {g}");
             print_usage(&program, opts);
             return Ok(());
         }
