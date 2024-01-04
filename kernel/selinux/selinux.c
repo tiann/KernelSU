@@ -8,8 +8,6 @@
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
 
-static u32 ksu_sid;
-
 static int transive_to_domain(const char *domain)
 {
 	struct cred *cred;
@@ -31,9 +29,6 @@ static int transive_to_domain(const char *domain)
 			domain, sid, error);
 	}
 	if (!error) {
-		if (!ksu_sid)
-			ksu_sid = sid;
-
 		tsec->sid = sid;
 		tsec->create_sid = 0;
 		tsec->keycreate_sid = 0;
@@ -106,7 +101,13 @@ static inline u32 current_sid(void)
 
 bool is_ksu_domain()
 {
-	return ksu_sid && current_sid() == ksu_sid;
+	char *domain;
+	u32 seclen;
+	int err = security_secid_to_secctx(current_sid(), &domain, &seclen);
+	if (err) {
+		return false;
+	}
+	return strncmp(KERNEL_SU_DOMAIN, domain, seclen) == 0;
 }
 
 bool is_zygote(void *sec)
