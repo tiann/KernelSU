@@ -8,8 +8,6 @@
 
 #define KERNEL_SU_DOMAIN "u:r:su:s0"
 
-static u32 ksu_sid;
-
 static int transive_to_domain(const char *domain)
 {
 	struct cred *cred;
@@ -101,8 +99,23 @@ static inline u32 current_sid(void)
 }
 #endif
 
+static u32 ksu_sid = 0;
+
 bool is_ksu_domain()
 {
+	int error;
+	u32 sid;
+	if (!ksu_sid) {
+		error = security_secctx_to_secid(KERNEL_SU_DOMAIN, strlen(KERNEL_SU_DOMAIN), &sid);
+		if (error) {
+			pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n",
+				KERNEL_SU_DOMAIN, sid, error);
+		}
+		if (!error) {
+			if (!ksu_sid)
+				ksu_sid = sid;
+		}
+	}
 	return ksu_sid && current_sid() == ksu_sid;
 }
 
