@@ -31,9 +31,6 @@ static int transive_to_domain(const char *domain)
 			domain, sid, error);
 	}
 	if (!error) {
-		if (!ksu_sid)
-			ksu_sid = sid;
-
 		tsec->sid = sid;
 		tsec->create_sid = 0;
 		tsec->keycreate_sid = 0;
