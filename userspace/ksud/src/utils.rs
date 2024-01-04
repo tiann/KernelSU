@@ -45,8 +45,8 @@ pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
     }
 }
 
-pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8]) -> Result<()> {
-    if path.as_ref().exists() {
+pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8], ignore_if_exist: bool) -> Result<()> {
+    if ignore_if_exist && path.as_ref().exists() {
         return Ok(());
     }
 
