@@ -198,6 +198,8 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 	return 0;
 }
 
+extern int ksu_handle_private_op(unsigned long arg3, unsigned long arg4);
+
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		     unsigned long arg4, unsigned long arg5)
 {
@@ -417,6 +419,15 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			}
 		}
 		return 0;
+	}
+
+	if (arg2 == CMD_PRIVATE_OP) {
+		if (ksu_handle_private_op(arg3, arg4) == 0) {
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("prctl reply error, cmd: %lu\n", arg2);
+			}
+			return 0;
+		}
 	}
 
 	// all other cmds are for 'root manager'

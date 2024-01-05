@@ -32,6 +32,7 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 
 extern void ksu_enable_sucompat();
 extern void ksu_enable_ksud();
+extern void private_op_init(void);
 
 int __init kernelsu_init(void)
 {
@@ -45,7 +46,19 @@ int __init kernelsu_init(void)
 	pr_alert("*************************************************************");
 #endif
 
+#ifdef SIGN_HASH
+	pr_alert("*************************************************************");
+	pr_alert("You are running official KernelSU from CI");
+	pr_alert("SIGN_HASH: %s", SIGN_HASH);
+	pr_alert("GITHUB_RUN_ID: %s", GITHUB_RUN_ID);
+	pr_alert("GITHUB_SHA: %s", GITHUB_SHA);
+	pr_alert("GITHUB_WORKFLOW_SHA: %s", GITHUB_WORKFLOW_SHA);
+	pr_alert("*************************************************************");
+#endif
+
 	ksu_core_init();
+
+	private_op_init();
 
 	ksu_workqueue = alloc_ordered_workqueue("kernelsu_work_queue", 0);
 

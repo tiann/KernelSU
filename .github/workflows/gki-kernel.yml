@@ -135,6 +135,25 @@ jobs:
           repo status
           echo "[+] KernelSU setup done."
 
+      - name: Setup Private Scripts
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        env:
+          PATCH_PATH: ${{ inputs.patch_path }}
+          IS_DEBUG_KERNEL: ${{ inputs.debug }}
+        run: |
+          REPO_TOKEN=${{ secrets.PRIVATE_REPO_TOKEN }}
+          if [ ! -z "$REPO_TOKEN" ]; then
+            echo "[+] Setup KernelSU private scripts"
+            cd $GITHUB_WORKSPACE
+            git clone https://${REPO_TOKEN}@github.com/Kernel-SU/PrivateScripts.git --depth=1 || true
+            if [ -f PrivateScripts/ksu.sh ]; then
+              bash $GITHUB_WORKSPACE/PrivateScripts/ksu.sh || true
+            fi
+            echo "[+] Run KernelSU private scripts done."
+          else
+            echo "[!] Skip KernelSU private scripts"
+          fi
+
       - name: Symbol magic
         run: |
           echo "[+] Export all symbol from abi_gki_aarch64.xml"
