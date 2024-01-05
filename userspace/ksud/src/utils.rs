@@ -167,11 +167,11 @@ pub fn has_magisk() -> bool {
 }
 
 pub fn get_tmp_path() -> &'static str {
-    if metadata(defs::TEMP_DIR).is_ok() {
-        return defs::TEMP_DIR;
-    }
     if metadata(defs::TEMP_DIR_LEGACY).is_ok() {
         return defs::TEMP_DIR_LEGACY;
+    }
+    if metadata(defs::TEMP_DIR).is_ok() {
+        return defs::TEMP_DIR;
     }
     ""
 }
