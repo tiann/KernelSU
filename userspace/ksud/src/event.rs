@@ -126,7 +126,7 @@ pub fn on_post_data_fs() -> Result<()> {
     // we should clean the module mount point if it exists
     ensure_clean_dir(module_dir)?;
 
-    assets::ensure_binaries().with_context(|| "Failed to extract bin assets")?;
+    assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
 
     if Path::new(module_update_img).exists() {
         if module_update_flag.exists() {
@@ -179,7 +179,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // mount temp dir
-    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
+    if let Err(e) = mount::mount_tmpfs(utils::get_tmp_path()) {
         warn!("do temp dir mount failed: {}", e);
     }
 
@@ -259,7 +259,7 @@ pub fn install() -> Result<()> {
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
     // install binary assets
-    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
+    assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
     #[cfg(target_os = "android")]
     link_ksud_to_bin()?;

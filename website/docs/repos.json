@@ -551,5 +551,12 @@
         "kernel_name": "android_kernel_samsung_a12s-4.19-rebased",
         "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s-4.19-rebased",
         "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
+    },
+    {
+        "maintainer": "Lonelystar9x",
+        "maintainer_link": "https://github.com/lonelystar9x",
+        "kernel_name": "Kernel_xiaomi_sdm845",
+        "kernel_link": "https://github.com/lonelystar9x/android_kernel_xiaomi_sdm845",
+        "devices": "Poco F1 | MI8 | MiMix2S | MiMix3"
     }
 ]
