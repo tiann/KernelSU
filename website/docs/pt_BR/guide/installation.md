@@ -145,10 +145,10 @@ Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamen
 
 1. Baixe o Magisk mais recente em [GitHub Releases](https://github.com/topjohnwu/Magisk/releases).
 2. Renomeie o Magisk-*.apk para Magisk-vesion.zip e descompacte-o.
-3. Envie `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`.
+3. Envie `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por ADB: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`.
 4. Envie o boot.img padrão e Image em AnyKernel3 para o seu dispositivo.
-5. Entre no shell adb e no diretório cd `/data/local/tmp/`, em seguida, `chmod +x magiskboot`.
-6. Entre no shell adb e no diretório cd `/data/local/tmp/`, execute `./magiskboot unpack boot.img` para descompactar `boot.img`, você obterá um arquivo `kernel`, este é o seu kernel padrão.
+5. Entre no ADB shell e no diretório cd `/data/local/tmp/`, em seguida, `chmod +x magiskboot`.
+6. Entre no ADB shell e no diretório cd `/data/local/tmp/`, execute `./magiskboot unpack boot.img` para descompactar `boot.img`, você obterá um arquivo `kernel`, este é o seu kernel padrão.
 7. Substitua `kernel` por `Image`: `mv -f Image kernel`.
 8. Execute `./magiskboot repack boot.img` para reembalar o boot.img, e você obterá um arquivo `new-boot.img`, faça o flash deste arquivo para o dispositivo por fastboot.
 
