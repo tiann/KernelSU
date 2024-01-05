@@ -48,6 +48,9 @@ enum Commands {
         command: Profile,
     },
 
+    /// Print KernelSU tmpfs path
+    Path,
+
     /// For developers
     Debug {
         #[command(subcommand)]
@@ -228,6 +231,10 @@ pub fn run() -> Result<()> {
             Profile::DeleteTemplate { id } => crate::profile::delete_template(id),
             Profile::ListTemplates => crate::profile::list_templates(),
         },
+        Commands::Path => {
+            println!("{}", utils::get_tmp_path());
+            Ok(())
+        }
 
         Commands::Debug { command } => match command {
             Debug::SetManager { apk } => debug::set_manager(&apk),
