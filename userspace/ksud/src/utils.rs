@@ -7,8 +7,10 @@ use std::{
 
 #[allow(unused_imports)]
 use std::fs::{set_permissions, Permissions};
+use std::fs::metadata;
 #[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
+use crate::defs;
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
@@ -162,4 +164,14 @@ pub fn umask(_mask: u32) {
 
 pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
+}
+
+pub fn get_tmp_path() -> &'static str {
+    if metadata(defs::TEMP_DIR).is_ok() {
+        return defs::TEMP_DIR;
+    }
+    if metadata(defs::TEMP_DIR_LEGACY).is_ok() {
+        return defs::TEMP_DIR_LEGACY;
+    }
+    ""
 }
