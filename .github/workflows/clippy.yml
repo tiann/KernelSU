@@ -29,7 +29,7 @@ jobs:
           workspaces: userspace/ksud
 
       - name: Install cross
-        run: cargo install cross
+        run: cargo install cross --locked
 
       - name: Run clippy
         run: |

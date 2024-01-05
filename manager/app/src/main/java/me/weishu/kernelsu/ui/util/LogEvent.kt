@@ -74,7 +74,7 @@ fun getBugreportFile(context: Context): File {
         val uname = Os.uname()
         pw.println("KernelRelease: ${uname.release}")
         pw.println("KernelVersion: ${uname.version}")
-        pw.println("Mahcine: ${uname.machine}")
+        pw.println("Machine: ${uname.machine}")
         pw.println("Nodename: ${uname.nodename}")
         pw.println("Sysname: ${uname.sysname}")
 
