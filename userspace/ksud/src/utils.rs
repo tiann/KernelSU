@@ -5,12 +5,12 @@ use std::{
     path::Path,
 };
 
+use crate::defs;
+use std::fs::metadata;
 #[allow(unused_imports)]
 use std::fs::{set_permissions, Permissions};
-use std::fs::metadata;
 #[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
-use crate::defs;
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);

@@ -234,7 +234,7 @@ pub fn run() -> Result<()> {
         Commands::Path => {
             println!("{}", utils::get_tmp_path());
             Ok(())
-        },
+        }
 
         Commands::Debug { command } => match command {
             Debug::SetManager { apk } => debug::set_manager(&apk),
