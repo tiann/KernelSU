@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{create_dir_all, write, File, OpenOptions},
-    io::{ErrorKind::AlreadyExists, Write},
+    fs::{create_dir_all, remove_file, write, File, OpenOptions},
+    io::{ErrorKind::AlreadyExists, ErrorKind::NotFound, Write},
     path::Path,
 };
 
@@ -62,6 +62,13 @@ pub fn ensure_binary<T: AsRef<Path>>(
             path.as_ref().to_string_lossy()
         )
     })?)?;
+
+    if let Err(e) = remove_file(path.as_ref()) {
+        if e.kind() != NotFound {
+            return Err(Error::from(e))
+                .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
+        }
+    }
 
     write(&path, contents)?;
     #[cfg(unix)]
