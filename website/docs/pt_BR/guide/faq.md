@@ -63,6 +63,6 @@ GKI1 é completamente diferente do GKI2, você deve compilar o kernel sozinho.
 
 Não recomendamos que você modifique a partição do sistema diretamente. Você deve usar [Guias de módulo](module.md) para modificá-lo sem sistema. Se você insiste em fazer isso, verifique [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs).
 
-## O KernelSU pode modificar hosts? Como posso usar o AdAday?
+## O KernelSU pode modificar hosts? Como posso usar AdAway?
 
 Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
