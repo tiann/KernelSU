@@ -1,0 +1,26 @@
+From 5f30bf44549130a7e6a63e72ba064d93d7e1a759 Mon Sep 17 00:00:00 2001
+From: Ylarod <me@ylarod.cn>
+Date: Sat, 6 Jan 2024 06:36:36 +0800
+Subject: [PATCH] skip modpost when building ko
+
+Change-Id: Ic1ad6ab6d3ba2cae8a612eda6891b0d4a57398a7
+---
+ scripts/mod/modpost.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 0cb8de405183..c2fbd4534958 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -2624,7 +2624,7 @@ int main(int argc, char **argv)
+ 		buf.pos = 0;
+ 
+ 		check_modname_len(mod);
+-		check_exports(mod);
++		// check_exports(mod);
+ 
+ 		add_header(&buf, mod);
+ 		add_intree_flag(&buf, !external_module);
+-- 
+2.42.0
+
