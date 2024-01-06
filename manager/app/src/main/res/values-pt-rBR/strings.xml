@@ -13,8 +13,8 @@
     <string name="home_manager_version">Versão do gerenciador</string>
     <string name="home_fingerprint">Impressão digital</string>
     <string name="home_selinux_status">Status do SELinux</string>
-    <string name="selinux_status_disabled">Desabilitado</string>
-    <string name="selinux_status_enforcing">Execução</string>
+    <string name="selinux_status_disabled">Desativado</string>
+    <string name="selinux_status_enforcing">Impondo</string>
     <string name="selinux_status_permissive">Permissivo</string>
     <string name="selinux_status_unknown">Desconhecido</string>
     <string name="superuser">SuperUsuário</string>
@@ -73,7 +73,7 @@
     <string name="profile_selinux_rules">Regras</string>
     <string name="module_update">Atualizar</string>
     <string name="module_downloading">Baixando módulo: %s</string>
-    <string name="module_start_downloading">Iniciar o download: %s</string>
+    <string name="module_start_downloading">Iniciar download: %s</string>
     <string name="new_version_available">Nova versão: %s está disponível, clique para atualizar</string>
     <string name="launch_app">Iniciar</string>
     <string name="force_stop_app">Forçar parada</string>
