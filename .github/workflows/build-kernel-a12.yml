@@ -124,7 +124,7 @@ jobs:
           path: Image-android12*/*.img.gz
 
   check-build-kernel:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
