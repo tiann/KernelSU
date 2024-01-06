@@ -17,7 +17,7 @@
     <string name="selinux_status_enforcing">Примусовий</string>
     <string name="selinux_status_permissive">Дозвільний</string>
     <string name="selinux_status_unknown">Невідомо</string>
-    <string name="superuser">Суперкористувачі</string>
+    <string name="superuser">Суперкористувач</string>
     <string name="module_failed_to_enable">Не вдалося ввімкнути модуль: %s</string>
     <string name="module_failed_to_disable">Не вдалося вимкнути модуль: %s</string>
     <string name="module_empty">Немає встановлених модулів</string>

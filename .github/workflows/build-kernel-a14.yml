@@ -115,7 +115,7 @@ jobs:
           path: Image-android14*/*.img.gz
 
   check-build-kernel:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     strategy:
       matrix:
         include:
