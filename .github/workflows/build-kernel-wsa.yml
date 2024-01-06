@@ -15,6 +15,7 @@ on:
 
 jobs:
   build:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     strategy:
       matrix:
         arch: [x86_64, arm64]
@@ -104,7 +105,7 @@ jobs:
           echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP_FILE[${{ matrix.arch }}]}/boot/${FILE_NAME[${{ matrix.arch }}]}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ matrix.arch }}-${{ matrix.version }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-WSA-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"

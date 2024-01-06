@@ -15,6 +15,7 @@ on:
 
 jobs:
   build:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     strategy:
       matrix:
         arch: [x86_64]
@@ -110,7 +111,7 @@ jobs:
           echo "file_path=${PWD}/arch/x86/boot/bzImage" >> $GITHUB_ENV
 
       - name: Upload kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"

@@ -8,7 +8,7 @@
     <string name="home_superuser_count">Суперкористувачі: %d</string>
     <string name="home_module_count">Модулі: %d</string>
     <string name="home_unsupported">Не підтримується</string>
-    <string name="home_unsupported_reason">KernelSU підтримує лише ядра GKI</string>
+    <string name="home_unsupported_reason">KernelSU підтримує лише GKI ядра на данний момент</string>
     <string name="home_kernel">Ядро</string>
     <string name="home_manager_version">Версія менеджера</string>
     <string name="home_fingerprint">Відбиток</string>
@@ -39,10 +39,10 @@
     <string name="module_version">Версія</string>
     <string name="module_author">Автор</string>
     <string name="module_overlay_fs_not_available">overlayfs не доступний, модуль не може працювати!</string>
-    <string name="refresh">освіжати(Оновити)</string>
+    <string name="refresh">Освіжати(Оновити)</string>
     <string name="show_system_apps">Показати системні додатки</string>
     <string name="hide_system_apps">Сховати системні додатки</string>
-    <string name="send_log">Надіслати лог</string>
+    <string name="send_log">Надіслати логи</string>
     <string name="safe_mode">Безпечний режим</string>
     <string name="reboot_to_apply">Перезавантажте, щоб застосувати</string>
     <string name="module_magisk_conflict">Модулі вимкнено, оскільки вони конфліктують із модулями Magisk!</string>
@@ -57,7 +57,7 @@
     <string name="profile_template">Шаблон</string>
     <string name="profile_custom">Власний</string>
     <string name="profile_name">Назва профілю</string>
-    <string name="profile_namespace">Монтування простору імен</string>
+    <string name="profile_namespace">Змонтувати простір імен</string>
     <string name="profile_namespace_inherited">Наслідуваний</string>
     <string name="profile_namespace_global">Глобальний</string>
     <string name="profile_namespace_individual">Індивідуальний</string>
@@ -81,4 +81,26 @@
     <string name="failed_to_update_sepolicy">Не вдалося оновити правила SELinux для: %s</string>
     <string name="module_changelog">Журнал змін</string>
     <string name="require_kernel_version">Поточна версія KernelSU %d занадто низька, щоб менеджер міг працювати належним чином. Будь ласка, оновіть до версії %d або вище!</string>
+    <string name="app_profile_template_import_success">Успішно імпортовано</string>
+    <string name="app_profile_export_to_clipboard">Експортувати в буфер обміну</string>
+    <string name="app_profile_template_export_empty">Неможливо знайти локальні шаблони для експорту!</string>
+    <string name="app_profile_template_id_exist">Шаблон з таким ідентифікатором вже існує!</string>
+    <string name="app_profile_import_from_clipboard">Імпортувати з буферу обміну</string>
+    <string name="module_changelog_failed">Невдача при завантаженні списку змін: %s</string>
+    <string name="app_profile_template_name">Ім\'я</string>
+    <string name="app_profile_template_id_invalid">Невірний ідентифікатор шаблону</string>
+    <string name="app_profile_template_sync">Синхронізувати мережеві шаблони</string>
+    <string name="app_profile_template_create">Створити шаблон</string>
+    <string name="app_profile_template_readonly">Тільки читання</string>
+    <string name="app_profile_import_export">Імпорт/Експорт</string>
+    <string name="app_profile_template_save_failed">Помилка при збереженні шаблону</string>
+    <string name="app_profile_template_edit">Редагувати шаблон</string>
+    <string name="app_profile_template_id">Ідентифікатор</string>
+    <string name="settings_profile_template">Шаблон Профілю Додатку</string>
+    <string name="app_profile_template_description">Опис</string>
+    <string name="app_profile_template_save">Зберегти</string>
+    <string name="settings_profile_template_summary">Керувати локальними та мережевими шаблонами профілів додатків</string>
+    <string name="app_profile_template_delete">Видалити</string>
+    <string name="app_profile_template_import_empty">Буфер обміну пустий!</string>
+    <string name="app_profile_template_view">Переглянути шаблон</string>
 </resources>

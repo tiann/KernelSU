@@ -330,7 +330,7 @@ fn _install_module(zip: &str) -> Result<()> {
     // print banner
     println!(include_str!("banner"));
 
-    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
+    assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
     // first check if workding dir is usable
     ensure_dir_exists(defs::WORKING_DIR).with_context(|| "Failed to create working dir")?;
@@ -354,6 +354,7 @@ fn _install_module(zip: &str) -> Result<()> {
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
     };
+    let module_id = module_id.trim();
 
     let modules_img = Path::new(defs::MODULE_IMG);
     let modules_update_img = Path::new(defs::MODULE_UPDATE_IMG);

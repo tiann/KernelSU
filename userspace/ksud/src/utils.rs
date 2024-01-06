@@ -1,10 +1,12 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{create_dir_all, write, File, OpenOptions},
-    io::{ErrorKind::AlreadyExists, Write},
+    fs::{create_dir_all, remove_file, write, File, OpenOptions},
+    io::{ErrorKind::AlreadyExists, ErrorKind::NotFound, Write},
     path::Path,
 };
 
+use crate::defs;
+use std::fs::metadata;
 #[allow(unused_imports)]
 use std::fs::{set_permissions, Permissions};
 #[cfg(unix)]
@@ -45,8 +47,12 @@ pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
     }
 }
 
-pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8]) -> Result<()> {
-    if path.as_ref().exists() {
+pub fn ensure_binary<T: AsRef<Path>>(
+    path: T,
+    contents: &[u8],
+    ignore_if_exist: bool,
+) -> Result<()> {
+    if ignore_if_exist && path.as_ref().exists() {
         return Ok(());
     }
 
@@ -56,6 +62,13 @@ pub fn ensure_binary<T: AsRef<Path>>(path: T, contents: &[u8]) -> Result<()> {
             path.as_ref().to_string_lossy()
         )
     })?)?;
+
+    if let Err(e) = remove_file(path.as_ref()) {
+        if e.kind() != NotFound {
+            return Err(Error::from(e))
+                .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
+        }
+    }
 
     write(&path, contents)?;
     #[cfg(unix)]
@@ -158,4 +171,14 @@ pub fn umask(_mask: u32) {
 
 pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
+}
+
+pub fn get_tmp_path() -> &'static str {
+    if metadata(defs::TEMP_DIR_LEGACY).is_ok() {
+        return defs::TEMP_DIR_LEGACY;
+    }
+    if metadata(defs::TEMP_DIR).is_ok() {
+        return defs::TEMP_DIR;
+    }
+    ""
 }

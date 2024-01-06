@@ -17,11 +17,12 @@ struct Asset;
 #[folder = "bin/x86_64"]
 struct Asset;
 
-pub fn ensure_binaries() -> Result<()> {
+pub fn ensure_binaries(ignore_if_exist: bool) -> Result<()> {
     for file in Asset::iter() {
         utils::ensure_binary(
             format!("{BINARY_DIR}{file}"),
             &Asset::get(&file).unwrap().data,
+            ignore_if_exist,
         )?
     }
     Ok(())
