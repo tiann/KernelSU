@@ -560,7 +560,7 @@
         "devices": "Poco F1 | MI8 | MiMix2S | MiMix3"
     },
     {
-        "maintainer": "iceBear67".
+        "maintainer": "iceBear67",
         "maintainer_link": "https://github.com/iceBear67",
         "kernel_name": "android_kernel_exynos9810_kernelsu",
         "kernel_link": "https://github.com/iceBear67/android_kernel_exynos9810_kernelsu",
