@@ -82,7 +82,25 @@ jobs:
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
 
           echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+          cd $GKI_ROOT/common/
+          git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No version patch found"
+          git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/common/*.patch || echo "[-] No common patch found"
+          
+          REPO_TOKEN=${{ secrets.PRIVATE_REPO_TOKEN }}
+          if [ ! -z "$REPO_TOKEN" ]; then
+            echo "[+] Apply KernelSU private patches"
+            cd $GITHUB_WORKSPACE
+            git clone https://${REPO_TOKEN}@github.com/Kernel-SU/PrivatePatches.git --depth=1 || true
+            if [ -d PrivatePatches ]; then
+              cd $GKI_ROOT/common/
+              git apply $GITHUB_WORKSPACE/PrivatePatches/common/*.patch || echo "[-] No private common patch found"
+              git apply $GITHUB_WORKSPACE/PrivatePatches/$PATCH_PATH/*.patch || echo "[-] No private version patch found"
+              cd $GITHUB_WORKSPACE/KernelSU/
+              git apply $GITHUB_WORKSPACE/PrivatePatches/ksu/*.patch || echo "[-] No private ksu patch found"
+            fi
+          else
+            echo "[!] Skip KernelSU private patches"
+          fi
 
           echo "[+] Patch script/setlocalversion"
           sed -i 's/-dirty//g' $KERNEL_ROOT/scripts/setlocalversion
