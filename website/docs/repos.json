@@ -565,5 +565,12 @@
         "kernel_name": "android_kernel_exynos9810_kernelsu",
         "kernel_link": "https://github.com/iceBear67/android_kernel_exynos9810_kernelsu",
         "devices": "Galaxy Note 9(N960N/F)"
+    },
+    {
+        "maintainer": "BlackMesa123",
+        "maintainer_link": "https://xdaforums.com/t/kernel-a546b-e-kernelsu-v0-7-5-for-galaxy-a54-5g.4607539/",
+        "kernel_name": "android_kernel_samsung_s5e8835",
+        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_s5e8835",
+        "devices": "Samsung Galaxy A54 5G (a54x)"
     }
 ]
