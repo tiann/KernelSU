@@ -558,5 +558,12 @@
         "kernel_name": "Kernel_xiaomi_sdm845",
         "kernel_link": "https://github.com/lonelystar9x/android_kernel_xiaomi_sdm845",
         "devices": "Poco F1 | MI8 | MiMix2S | MiMix3"
+    },
+    {
+        "maintainer": "iceBear67".
+        "maintainer_link": "https://github.com/iceBear67",
+        "kernel_name": "android_kernel_exynos9810_kernelsu",
+        "kernel_link": "https://github.com/iceBear67/android_kernel_exynos9810_kernelsu",
+        "devices": "Galaxy Note 9(N960N/F)"
     }
 ]
