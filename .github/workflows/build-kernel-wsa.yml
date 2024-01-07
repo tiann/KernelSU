@@ -1,7 +1,7 @@
 name: Build Kernel - WSA
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-wsa.yml"
       - "kernel/**"
@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
         arch: [x86_64, arm64]
@@ -26,7 +26,7 @@ jobs:
       version: ${{ matrix.version }}
 
   check_build:
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
     uses: ./.github/workflows/wsa-kernel.yml
     strategy:
       matrix:
