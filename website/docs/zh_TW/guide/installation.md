@@ -153,7 +153,7 @@ fastboot reboot
 ### 使用 magiskboot {#using magiskboot}
 
 1. 在 Magisk 的 [Release 頁面](https://github.com/topjohnwu/Magisk/releases) 下載最新的 Magisk 安裝套件。
-2. 將 Magisk-*.apk 重新命名為 Magisk-vesion.zip 然後解壓縮。
+2. 將 Magisk-*.apk 重新命名為 Magisk-version.zip 然後解壓縮。
 3. 將解壓縮後的 `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` 檔案，使用 Adb 推入至手機：`adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
 4. 使用 Adb 將原廠 boot.img 和 AnyKernel3 中的 Image 推入至手機。
 5. adb shell 進入 /data/local/tmp/ 目錄，然後賦予先前推入檔案的可執行權限 `chmod +x magiskboot`

@@ -153,7 +153,7 @@ fastboot reboot
 ### Использование magiskboot {#using magiskboot}
 
 1. Загрузите последнюю версию Magisk с [Release Page](https://github.com/topjohnwu/Magisk/releases).
-2. Переименуйте Magisk-*.apk в Magisk-vesion.zip и разархивируйте его.
+2. Переименуйте Magisk-*.apk в Magisk-version.zip и разархивируйте его.
 3. Закачайте `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` на устройство с помощью adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`.
 4. Установите на устройство стоковый boot.img и образ в AnyKernel3.
 5. Войдите в оболочку adb и перейдите в каталог `/data/local/tmp/`, затем `chmod +x magiskboot`.
