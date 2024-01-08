@@ -66,6 +66,13 @@ Then, add KernelSU calls to the kernel source, here is a patch to refer:
 
 ::: code-group
 
+Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs`. If your device is 32-bit, consult the documentation from your factory.
+
+```diff[arch/arm64/configs/vendor/your_defconfig]
++# KernelSU
++CONFIG_KSU=y
+```
+
 ```diff[exec.c]
 diff --git a/fs/exec.c b/fs/exec.c
 index ac59664eaecf..bdd585e1d2cc 100644
