@@ -42,6 +42,9 @@ To help translate KernelSU or improve existing translations, please use [Weblate
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
+## Security
+For information on reporting security vulnerabilities in KernelSU, see [SECURITY.md](/SECURITY.md).
+
 ## License
 
 - Files under the `kernel` directory are [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)

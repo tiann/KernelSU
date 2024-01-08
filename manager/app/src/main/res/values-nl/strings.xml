@@ -17,10 +17,10 @@
     <string name="selinux_status_enforcing">Afgedwongen</string>
     <string name="selinux_status_permissive">Permissief</string>
     <string name="selinux_status_unknown">Niet gekend</string>
-    <string name="superuser">Supergebruiker</string>
+    <string name="superuser">SupergeBruiker</string>
     <string name="module_failed_to_enable">Mislukt om module in te schakelen: %s</string>
     <string name="module_failed_to_disable">Mislukt om module uit te schakelen: %s</string>
-    <string name="module_empty">Geen module geïnstalleerd</string>
+    <string name="module_empty">Geen geïnstalleerde modules</string>
     <string name="module">Module</string>
     <string name="uninstall">Verwijderen</string>
     <string name="module_install">Installeren</string>
@@ -34,7 +34,7 @@
     <string name="reboot_edl">Herstart naar EDL</string>
     <string name="about">Over</string>
     <string name="module_uninstall_confirm">Zeker van het verwijderen van module %s?</string>
-    <string name="module_uninstall_success">%s verwijderd</string>
+    <string name="module_uninstall_success">%s is verwijderd</string>
     <string name="module_uninstall_failed">Mislukt om te verwijderen: %s</string>
     <string name="module_version">Versie</string>
     <string name="module_author">Auteur</string>
@@ -42,7 +42,7 @@
     <string name="refresh">Vernieuwen</string>
     <string name="show_system_apps">Toon systeem apps</string>
     <string name="hide_system_apps">Verberg systeem apps</string>
-    <string name="send_log">Stuur Log</string>
+    <string name="send_log">Rapport Log</string>
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Herstart om effect te hebben</string>
     <string name="module_magisk_conflict">Modules zijn uitgeschakeld omdat ze in conflict zijn met magisk!</string>
@@ -73,11 +73,13 @@
     <string name="profile_selinux_rules">Regels</string>
     <string name="module_update">Update</string>
     <string name="module_downloading">Downloaden van module: %s</string>
-    <string name="new_version_available">Nieuwe versie: %s is beschikbaar, klik om te downloaden</string>
+    <string name="new_version_available">Nieuwe versie: %s is beschikbaar,klik om te upgraden</string>
     <string name="launch_app">Start</string>
     <string name="force_stop_app">Forceer Stop</string>
     <string name="restart_app">Herstart</string>
     <string name="module_start_downloading">Begin met downloaden: %s</string>
     <string name="failed_to_update_sepolicy">Kan SELinux-regels niet bijwerken voor: %s</string>
     <string name="require_kernel_version">De huidige KernelSU-versie %d is te laag om de manager correct te laten functioneren. Upgrade naar versie %d of hoger!</string>
+    <string name="module_changelog">wijzigings logboek</string>
+    <string name="settings_profile_template">App-profiel Sjabloon</string>
 </resources>

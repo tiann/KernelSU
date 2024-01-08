@@ -1,7 +1,7 @@
 name: Build Kernel - Android 14
 on:
   push:
-    branches: ["main", "ci"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-a14.yml"
       - ".github/workflows/gki-kernel.yml"
@@ -17,7 +17,7 @@ on:
   workflow_call:
 jobs:
   build-kernel:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
         include:
@@ -44,6 +44,7 @@ jobs:
       tag: android14-${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
+  
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
@@ -115,7 +116,7 @@ jobs:
           path: Image-android14*/*.img.gz
 
   check-build-kernel:
-    if: github.event_name == 'pull_request'
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
     strategy:
       matrix:
         include:

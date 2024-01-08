@@ -6,12 +6,12 @@
     <string name="home_click_to_install">Yüklemek için tıklayın</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
-    <string name="home_superuser_count">Süper kullanıcı: %d</string>
+    <string name="home_superuser_count">Süper kullanıcılar: %d</string>
     <string name="home_module_count">Modüller: %d</string>
     <string name="home_unsupported">Desteklenmiyor</string>
-    <string name="home_unsupported_reason">KernelSU şu an sadece GKI çekirdeklerini destekliyor</string>
+    <string name="home_unsupported_reason">KernelSU şimdilik sadece GKI çekirdeklerini destekliyor</string>
     <string name="home_kernel">Çekirdek</string>
-    <string name="home_manager_version">Uygulama sürümü</string>
+    <string name="home_manager_version">Yönetici sürümü</string>
     <string name="home_fingerprint">Parmak izi</string>
     <string name="home_selinux_status">SELinux durumu</string>
     <string name="selinux_status_disabled">Devre dışı</string>
@@ -39,7 +39,7 @@
     <string name="module_uninstall_failed">Kaldırma başarısız: %s</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Geliştirici</string>
-    <string name="module_overlay_fs_not_available">Overlayfs mevcut değil, modül çalışamaz!</string>
+    <string name="module_overlay_fs_not_available">overlayfs mevcut değil, modül çalışamaz!</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
@@ -51,8 +51,8 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
-    <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak, bize bağış yaparak destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="about_source_code"><![CDATA[Kaynak kodunu görüntüle: %1$s<br/>%2$s kanalımıza katılın]]></string>
+    <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
+    <string name="about_source_code">Kaynak kodunu görüntüleyin: %1$s<br/>%2$s kanalımıza katılın</string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
     <string name="profile_template">Şablon</string>
@@ -69,7 +69,7 @@
     <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
     <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya daha yüksek bir sürüme güncelleyin!</string>
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kes</string>
-    <string name="settings_umount_modules_default_summary">Uygulamalar için \"Modüllerin bağlantısını kes\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
+    <string name="settings_umount_modules_default_summary">Uygulama profilindeki \"Modüllerin bağlantısını kes\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir.</string>
     <string name="profile_selinux_domain">İsim alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
@@ -80,10 +80,10 @@
     <string name="launch_app">Uygulamayı başlat</string>
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
-    <string name="failed_to_update_sepolicy">SELinux kuralları güncellenemedi: %s</string>
+    <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi.</string>
     <string name="module_changelog">Değişiklik geçmişi</string>
     <string name="settings_profile_template">Uygulama profili şablonu</string>
-    <string name="settings_profile_template_summary">Yerel ve çevrimiçi uygulama profil şablonlarını yönetin</string>
+    <string name="settings_profile_template_summary">Yerel ve çevrimiçi uygulama profili şablonlarını yönetin</string>
     <string name="app_profile_template_create">Şablon oluştur</string>
     <string name="app_profile_template_edit">Şablonu düzenle</string>
     <string name="app_profile_template_id">Kimlik</string>

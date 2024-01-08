@@ -1,7 +1,7 @@
 name: Build Kernel - ChromeOS ARCVM
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-arcvm.yml"
       - "kernel/**"
@@ -15,6 +15,7 @@ on:
 
 jobs:
   build:
+    if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
     strategy:
       matrix:
         arch: [x86_64]
