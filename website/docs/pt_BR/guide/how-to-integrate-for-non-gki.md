@@ -69,9 +69,9 @@ Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm
 +CONFIG_KSU=y
 ```
 
-::: code-group
+Em seguida, adicione chamadas KernelSU à fonte do kernel. Aqui estão alguns patches para referência:
 
-Em seguida, adicione chamadas KernelSU à fonte do kernel. Aqui está um patch para referência:
+::: code-group
 
 ```diff[exec.c]
 diff --git a/fs/exec.c b/fs/exec.c
