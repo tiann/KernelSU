@@ -131,7 +131,7 @@ index 05036d819197..965b84d486b8 100644
  	struct vfsmount *mnt;
  	int res;
  	unsigned int lookup_flags = LOOKUP_FOLLOW;
-+   #ifdef CONFIG_KSU 
++   #ifdef CONFIG_KSU
 +	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
 +   #endif
  
@@ -251,8 +251,9 @@ index 2ff887661237..e758d7db7663 100644
 @@ -370,6 +373,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
  	int res;
  	unsigned int lookup_flags = LOOKUP_FOLLOW;
- 
++   #ifdef CONFIG_KSU
 +	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
++   #endif
 +
  	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
  		return -EINVAL;
