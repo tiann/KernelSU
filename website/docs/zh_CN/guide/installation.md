@@ -145,7 +145,7 @@ Magisk 官方提供的 `magiskboot` 只能运行在 Android/Linux 设备上，�
 ### 在 Android 设备上使用 magiskboot {#using-magiskboot-on-Android-devices}
 
 1. 在 Magisk 的 [Release 页面](https://github.com/topjohnwu/Magisk/releases) 下载最新的 Magisk 安装包。
-2. 将 Magisk-*.apk 重命名为 Magisk-vesion.zip 然后解压缩。
+2. 将 Magisk-*.apk 重命名为 Magisk-version.zip 然后解压缩。
 3. 将解压后的 `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` 文件，使用 adb push 到手机：`adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
 4. 使用 adb 将原厂 boot.img 和 AnyKernel3 中的 Image 推送到手机
 5. adb shell 进入 /data/local/tmp/ 目录，然后赋予刚 push 文件的可执行权限 `chmod +x magiskboot`

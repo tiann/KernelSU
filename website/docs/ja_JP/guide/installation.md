@@ -153,7 +153,7 @@ fastboot reboot
 ### magiskboot を使う
 
 1. 最新の Magisk を[リリースページ](https://github.com/topjohnwu/Magisk/releases)からダウンロードしてください。
-2. Magisk-*.apk を Magisk-vesion.zip に名前を変更して展開してください。
+2. Magisk-*.apk を Magisk-version.zip に名前を変更して展開してください。
 3. `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so`を adb でデバイスに転送します：`adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
 4. 純正 boot.img と AnyKernel3 の中の Image をデバイスに転送します。
 5. adb shell に入り、`cd /data/local/tmp/` し、`chmod +x magiskboot` を実行します。
