@@ -62,16 +62,17 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 :::
 
-Then, add KernelSU calls to the kernel source, here is a patch to refer:
-
-::: code-group
-
-Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs`. If your device is 32-bit, consult the documentation from your factory.
-
-```diff[arch/arm64/configs/vendor/your_defconfig]
+Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs` or in other cases `arch/arm64/configs/vendor/your_defconfig`. If your device is 32-bit, consult the documentation from your factory.
+For example in your defconfig, Enable `CONFIG_KSU` with y to enable, or n to disable. Your path will be something like:
+`arch/arm64/configs/...` 
+```sh
 +# KernelSU
 +CONFIG_KSU=y
 ```
+
+::: code-group
+
+Then, add KernelSU calls to the kernel source, here is a patch to refer:
 
 ```diff[exec.c]
 diff --git a/fs/exec.c b/fs/exec.c
