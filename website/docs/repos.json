@@ -512,16 +512,16 @@
     },
     {
         "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-a528b-n-kernelsu-v0-7-1-for-galaxy-a52s-5g.4603287/",
+        "maintainer_link": "https://xdaforums.com/t/kernel-a528b-n-kernelsu-v0-7-5-for-galaxy-a52s-5g.4603287/",
         "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325/tree/sep-14.1/ksu",
+        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
         "devices": "Samsung Galaxy A52s 5G (a52sxq)"
     },
     {
         "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-m526b-br-kernelsu-v0-7-1-for-galaxy-m52-5g.4603295/",
+        "maintainer_link": "https://xdaforums.com/t/kernel-m526b-br-kernelsu-v0-7-5-for-galaxy-m52-5g.4603295/",
         "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325/tree/sep-14.1/ksu",
+        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
         "devices": "Samsung Galaxy M52 5G (m52xq)"
     },
     {
@@ -558,5 +558,12 @@
         "kernel_name": "Kernel_xiaomi_sdm845",
         "kernel_link": "https://github.com/lonelystar9x/android_kernel_xiaomi_sdm845",
         "devices": "Poco F1 | MI8 | MiMix2S | MiMix3"
+    },
+    {
+        "maintainer": "iceBear67",
+        "maintainer_link": "https://github.com/iceBear67",
+        "kernel_name": "android_kernel_exynos9810_kernelsu",
+        "kernel_link": "https://github.com/iceBear67/android_kernel_exynos9810_kernelsu",
+        "devices": "Galaxy Note 9(N960N/F)"
     }
 ]
