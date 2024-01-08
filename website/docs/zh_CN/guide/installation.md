@@ -115,7 +115,7 @@ fastboot reboot
 2. 如果你的手机没有 root，但手机支持 `fastboot boot boot.img` 这种临时启动的方法，你可以用 KernelSU 提供的 GKI 镜像临时启动你的设备，获取临时的 root 权限，然后使用内核刷写器刷入获取永久 root 权限。
 
 
-If you haven’t used kernel flashing apps before, the following are recommended:
+如果您以前没有使用过内核刷写 App，建议使用以下应用：
 
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
