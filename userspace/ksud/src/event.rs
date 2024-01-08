@@ -152,6 +152,9 @@ pub fn on_post_data_fs() -> Result<()> {
     mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
         .with_context(|| "mount module image failed".to_string())?;
 
+    // tell kernel that we've mount the module, so that it can do some optimization
+    crate::ksu::report_module_mounted();
+
     // if we are in safe mode, we should disable all modules
     if safe_mode {
         warn!("safe mode, skip post-fs-data scripts and disable all modules!");
