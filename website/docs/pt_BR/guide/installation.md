@@ -165,7 +165,7 @@ Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamen
 O `magiskboot` oficial pode executar o dispositivo `Linux` normalmente. Se você for um usuário Linux, você pode usar a versão oficial.
 :::
 
-## Instalar com Recovery personalizado
+## Instalar com Recovery personalizado {#install-with-custom-recovery}
 
 Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP. Se apenas o Recovery oficial estiver disponível, use outro método.
 
