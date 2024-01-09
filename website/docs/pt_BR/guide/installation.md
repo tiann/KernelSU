@@ -144,8 +144,8 @@ Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamen
 ### Usando o magiskboot em dispositivos Android {#using-magiskboot-on-Android-devices}
 
 1. Baixe o Magisk mais recente em [GitHub Releases](https://github.com/topjohnwu/Magisk/releases).
-2. Renomeie o Magisk-*.apk para Magisk-version.zip e descompacte-o.
-3. Envie `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por ADB: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`.
+2. Renomeie o `Magisk-*(version).apk` para `Magisk-*.zip` e descompacte-o.
+3. Envie `Magisk-*/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por ADB: `adb push Magisk-*/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`.
 4. Envie o boot.img padrão e Image em AnyKernel3 para o seu dispositivo.
 5. Entre no ADB shell e no diretório cd `/data/local/tmp/`, em seguida, `chmod +x magiskboot`.
 6. Entre no ADB shell e no diretório cd `/data/local/tmp/`, execute `./magiskboot unpack boot.img` para descompactar `boot.img`, você obterá um arquivo `kernel`, este é o seu kernel padrão.
