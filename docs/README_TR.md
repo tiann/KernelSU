@@ -41,6 +41,9 @@ KernelSU'nun çevirisine veya mevcut çevirilerin iyileştirilmesine yardımcı 
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
+## Güvenlik
+KernelSU'daki güvenlik açıklarını bildirme hakkında bilgi için, bkz. [SECURITY.md](/SECURITY.md).
+
 ## Lisans
 
 - `kernel` klasöründeki dosyalar [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) lisansı altındadır.
