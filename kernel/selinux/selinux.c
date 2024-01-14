@@ -103,11 +103,14 @@ bool is_ksu_domain()
 {
 	char *domain;
 	u32 seclen;
+	bool result;
 	int err = security_secid_to_secctx(current_sid(), &domain, &seclen);
 	if (err) {
 		return false;
 	}
-	return strncmp(KERNEL_SU_DOMAIN, domain, seclen) == 0;
+	result = strncmp(KERNEL_SU_DOMAIN, domain, seclen) == 0;
+	security_release_secctx(domain, seclen);
+	return result;
 }
 
 bool is_zygote(void *sec)
@@ -118,9 +121,12 @@ bool is_zygote(void *sec)
 	}
 	char *domain;
 	u32 seclen;
+	bool result;
 	int err = security_secid_to_secctx(tsec->sid, &domain, &seclen);
 	if (err) {
 		return false;
 	}
-	return strncmp("u:r:zygote:s0", domain, seclen) == 0;
+	result = strncmp("u:r:zygote:s0", domain, seclen) == 0;
+	security_release_secctx(domain, seclen);
+	return result;
 }
