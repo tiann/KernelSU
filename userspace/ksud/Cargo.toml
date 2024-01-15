@@ -44,7 +44,9 @@ procfs = "0.16"
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.13"
 
+tempdir = "0.3"
+chrono = "0.4"
 [profile.release]
 strip = true
 opt-level = "z"
-lto = true
+#lto = true
