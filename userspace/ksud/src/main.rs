@@ -1,5 +1,6 @@
 mod apk_sign;
 mod assets;
+mod boot_patch;
 mod cli;
 mod debug;
 mod defs;
