@@ -82,4 +82,13 @@
     <string name="require_kernel_version">De huidige KernelSU-versie %d is te laag om de manager correct te laten functioneren. Upgrade naar versie %d of hoger!</string>
     <string name="module_changelog">wijzigings logboek</string>
     <string name="settings_profile_template">App-profiel Sjabloon</string>
+    <string name="app_profile_template_create">Maken Sjabloon</string>
+    <string name="app_profile_template_edit">Bewerkin Sjabloon</string>
+    <string name="app_profile_template_id">id</string>
+    <string name="app_profile_template_id_invalid">Ongeldige sjabloon id</string>
+    <string name="app_profile_template_name">Naam</string>
+    <string name="app_profile_template_save">Redde</string>
+    <string name="app_profile_template_view">Bekijken Sjabloon</string>
+    <string name="app_profile_template_description">Beschrijving</string>
+    <string name="settings_profile_template_summary">Beheer lokale en online sjabloon van app-profiel</string>
 </resources>
