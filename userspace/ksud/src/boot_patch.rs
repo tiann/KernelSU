@@ -86,7 +86,7 @@ pub fn patch(
 
     if let Some(image) = image {
         ensure!(image.exists(), "boot image not found");
-        bootimage = image;
+        bootimage = std::fs::canonicalize(image)?;
     } else {
         let mut slot_suffix =
             utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
