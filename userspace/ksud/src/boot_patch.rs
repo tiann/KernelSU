@@ -1,3 +1,4 @@
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
 use anyhow::bail;
@@ -12,6 +13,7 @@ use std::process::Stdio;
 
 use crate::utils;
 
+#[cfg(unix)]
 fn ensure_gki_kernel() -> Result<()> {
     let version =
         procfs::sys::kernel::Version::current().with_context(|| "get kernel version failed")?;
@@ -59,7 +61,10 @@ pub fn patch(
     out: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
 ) -> Result<()> {
-    ensure_gki_kernel()?;
+    if image.is_none() {
+        #[cfg(unix)]
+        ensure_gki_kernel()?;
+    }
 
     if kernel.is_some() {
         ensure!(
@@ -81,7 +86,7 @@ pub fn patch(
 
     if let Some(image) = image {
         ensure!(image.exists(), "boot image not found");
-        bootimage = image;
+        bootimage = std::fs::canonicalize(image)?;
     } else {
         let mut slot_suffix =
             utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
@@ -121,6 +126,7 @@ pub fn patch(
         .unwrap_or_else(|| "magiskboot".into());
 
     if !magiskboot.is_executable() {
+        #[cfg(unix)]
         std::fs::set_permissions(&magiskboot, std::fs::Permissions::from_mode(0o755))
             .with_context(|| "set magiskboot executable failed".to_string())?;
     }
