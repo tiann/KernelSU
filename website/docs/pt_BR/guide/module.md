@@ -1,3 +1,4 @@
+
 # Guias de módulo
 
 O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é conhecido como "sem sistema".
@@ -114,12 +115,12 @@ Você pode usar a variável de ambiente `KSU` para determinar se um script está
 
 ### Diretório `system`
 
-O conteúdo deste diretório será sobreposto à partição /system do sistema usando overlayfs após a inicialização do sistema. Isso significa que:
+O conteúdo deste diretório será sobreposto à partição /system do sistema usando OverlayFS após a inicialização do sistema. Isso significa que:
 
 1. Arquivos com o mesmo nome daqueles no diretório correspondente no sistema serão substituídos pelos arquivos deste diretório.
 2. Pastas com o mesmo nome daquelas no diretório correspondente no sistema serão mescladas com as pastas neste diretório.
 
-Se você deseja excluir um arquivo ou pasta no diretório original do sistema, você precisa criar um arquivo com o mesmo nome do arquivo/pasta no diretório do módulo usando `mknod filename c 0 0`. Dessa forma, o sistema overlayfs irá automaticamente "branquear" este arquivo como se ele tivesse sido excluído (a partição /system não foi realmente alterada).
+Se você deseja excluir um arquivo ou pasta no diretório original do sistema, você precisa criar um arquivo com o mesmo nome do arquivo/pasta no diretório do módulo usando `mknod filename c 0 0`. Dessa forma, o sistema OverlayFS irá automaticamente "branquear" este arquivo como se ele tivesse sido excluído (a partição /system não foi realmente alterada).
 
 Você também pode declarar uma variável chamada `REMOVE` contendo uma lista de diretórios em `customize.sh` para executar operações de remoção, e o KernelSU executará automaticamente `mknod <TARGET> c 0 0` nos diretórios correspondentes do módulo. Por exemplo:
 
@@ -132,7 +133,7 @@ REMOVE="
 
 A lista acima irá executar `mknod $MODPATH/system/app/YouTube c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
 
-Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema overlayfs substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
+Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema OverlayFS substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
 
 Você pode declarar uma variável chamada `REPLACE` em seu arquivo `customize.sh`, que inclui uma lista de diretórios a serem substituídos, e o KernelSU executará automaticamente as operações correspondentes em seu diretório de módulo. Por exemplo:
 
@@ -147,10 +148,10 @@ Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` 
 
 ::: tip DIFERENÇA COM MAGISK
 
-O mecanismo sem sistema do KernelSU é implementado através do overlayfs do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
+O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
 
-Se você estiver interessado em overlayfs, é recomendável ler a [documentação sobre overlayfs](https://docs.kernel.org/filesystems/overlayfs.html) do Kernel Linux.
+Se você estiver interessado em OverlayFS, é recomendável ler a [documentação sobre OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html) do Kernel Linux.
 
 ### system.prop
 
@@ -254,6 +255,6 @@ No KernelSU, os scripts de inicialização são divididos em dois tipos com base
 - Scripts de módulo
   - Colocado na própria pasta do módulo.
   - Executado apenas se o módulo estiver ativado.
-  - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado em overlayfs montado.
+  - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado em OverlayFS montado.
 
 Todos os scripts de inicialização serão executados no shell BusyBox `ash` do KernelSU com o "Modo Autônomo" ativado.
