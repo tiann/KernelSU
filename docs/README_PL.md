@@ -39,7 +39,7 @@ Aktualnie obsługiwane ABI to : `arm64-v8a` i `x86_64`.
 
 ## Licencja
 
-- Pliki w katalogu `kernel` są na licencji [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- Pliki w katalogu `kernel` są na licencji [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
 - Wszystkie inne części poza katalogiem `kernel` są na licencji [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Podziękowania
