@@ -15,9 +15,7 @@ Uma solução root baseada em kernel para dispositivos Android.
 ## Características
 
 1. `su` e gerenciamento de acesso root baseado em kernel.
-
 2. Sistema modular baseado em overlayfs.
-
 3. [Perfil do Aplicativo](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
 
 ## Estado de Compatibilidade
@@ -34,17 +32,20 @@ Atualmente, apenas `arm64-v8a` e `x86_64` são suportados.
  - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
-Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitos, pois podem entrar em conflito com o Weblate.
+Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitas, pois podem entrar em conflito com o Weblate.
 
 ## Discussão
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
+## Segurança
+Para obter informações sobre como relatar vulnerabilidades de segurança no KernelSU, consulte [SECURITY.md](/SECURITY.md).
+
 ## Licença
 
-- Os arquivos no diretório `kernel` são [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- Os arquivos no diretório `kernel` são [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
 
-- Todas as outras partes, exceto o diretório `kernel` são [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- Todas as outras partes, exceto o diretório `kernel` são [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Créditos
 
