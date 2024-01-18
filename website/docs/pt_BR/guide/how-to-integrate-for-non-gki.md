@@ -64,9 +64,9 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Por exemplo, em seu defconfig, habilite `CONFIG_KSU` com y para habilitar ou n para desabilitar. Seu caminho será algo como:
 `arch/arm64/configs/...` 
-```sh
-+# KernelSU
-+CONFIG_KSU=y
+```
+# KernelSU
+CONFIG_KSU=y
 ```
 
 Em seguida, adicione chamadas KernelSU à fonte do kernel. Aqui estão alguns patches para referência:
