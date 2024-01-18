@@ -6,10 +6,17 @@
 #include "linux/init_task.h"
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
+#include "linux/list.h"
 #include "linux/lsm_hooks.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
 #include "linux/nsproxy.h"
 #include "linux/path.h"
 #include "linux/printk.h"
+#include "linux/rculist.h"
+#include "linux/sched.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/uidgid.h"
 #include "linux/version.h"
@@ -25,6 +32,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
+#include "linux/vmalloc.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
@@ -128,7 +136,8 @@ void escape_to_root(void)
 	// setup capabilities
 	// we need CAP_DAC_READ_SEARCH becuase `/data/adb/ksud` is not accessible for non root process
 	// we add it here but don't add it to cap_inhertiable, it would be dropped automaticly after exec!
-	u64 cap_for_ksud = profile->capabilities.effective | CAP_DAC_READ_SEARCH;
+	u64 cap_for_ksud =
+		profile->capabilities.effective | CAP_DAC_READ_SEARCH;
 	memcpy(&cred->cap_effective, &cap_for_ksud,
 	       sizeof(cred->cap_effective));
 	memcpy(&cred->cap_inheritable, &profile->capabilities.effective,
@@ -569,11 +578,13 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	// when we umount for such process, that is a disaster!
 	bool is_zygote_child = is_zygote(old->security);
 	if (!is_zygote_child) {
-		pr_info("handle umount ignore non zygote child: %d\n", current->pid);
+		pr_info("handle umount ignore non zygote child: %d\n",
+			current->pid);
 		return 0;
 	}
 	// umount the target mnt
-	pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val, current->pid);
+	pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val,
+		current->pid);
 
 	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
 	// filter the mountpoint whose target is `/data/adb`
@@ -716,14 +727,104 @@ void __init ksu_lsm_hook_init(void)
 #endif
 }
 
+static int memcpy_ro(void *dst, const void *src, size_t len)
+{
+	unsigned long base = (unsigned long)dst & PAGE_MASK;
+	unsigned long offset = offset_in_page(dst);
+
+	// this is impossible for our case because the page alignment
+	// but be careful for other cases!
+	BUG_ON(offset + len > PAGE_SIZE);
+	struct page *page = phys_to_page(__pa(base));
+	if (!page) {
+		return -EFAULT;
+	}
+
+	void *addr = vmap(&page, 1, VM_MAP, PAGE_KERNEL);
+	if (!addr) {
+		return -ENOMEM;
+	}
+	memcpy(addr + offset, src, len);
+	vunmap(addr);
+	return 0;
+}
+
+static void free_security_hook_list(struct hlist_head *head)
+{
+	struct hlist_node *temp;
+	struct security_hook_list *entry;
+
+	if (!head)
+		return;
+
+	hlist_for_each_entry_safe (entry, temp, head, list) {
+		hlist_del(&entry->list);
+		kfree(entry);
+	}
+
+	kfree(head);
+}
+
+struct hlist_head *copy_security_hlist(struct hlist_head *orig)
+{
+	struct hlist_head *new_head = kmalloc(sizeof(*new_head), GFP_KERNEL);
+	if (!new_head)
+		return NULL;
+
+	INIT_HLIST_HEAD(new_head);
+
+	struct security_hook_list *entry;
+	struct security_hook_list *new_entry;
+
+	hlist_for_each_entry (entry, orig, list) {
+		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+		if (!new_entry) {
+			free_security_hook_list(new_head);
+			return NULL;
+		}
+
+		*new_entry = *entry;
+
+		hlist_add_tail_rcu(&new_entry->list, new_head);
+	}
+
+	return new_head;
+}
+
+#define KSU_LSM_HOOK_HACK_INIT(name, func)                                     \
+	do {                                                                   \
+		static struct security_hook_list hook =                        \
+			LSM_HOOK_INIT(name, func);                             \
+		hook.lsm = "ksu";                                              \
+		struct hlist_head *new_head = copy_security_hlist(hook.head);  \
+		if (!new_head) {                                               \
+			pr_err("Failed to copy security list: %s\n", #name);   \
+			break;                                                 \
+		}                                                              \
+		hlist_add_tail_rcu(&hook.list, new_head);                      \
+		if (memcpy_ro(hook.head, new_head, sizeof(*new_head))) {       \
+			free_security_hook_list(new_head);                     \
+			pr_err("Failed to hack lsm for: %s\n", #name);         \
+		}                                                              \
+	} while (0)
+
+void __init ksu_lsm_hook_init_hack(void)
+{
+	KSU_LSM_HOOK_HACK_INIT(task_prctl, ksu_task_prctl);
+	KSU_LSM_HOOK_HACK_INIT(inode_rename, ksu_inode_rename);
+	KSU_LSM_HOOK_HACK_INIT(task_fix_setuid, ksu_task_fix_setuid);
+	smp_mb();
+}
+
 void __init ksu_core_init(void)
 {
 #ifndef MODULE
 	pr_info("ksu_lsm_hook_init\n");
 	ksu_lsm_hook_init();
 #else
-	pr_info("ksu_kprobe_init\n");
-	ksu_kprobe_init();
+	pr_info("ksu_lsm_hook_init hack!!!!\n");
+	// ksu_kprobe_init();
+	ksu_lsm_hook_init_hack();
 #endif
 }
 
