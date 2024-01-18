@@ -66,7 +66,9 @@ pub fn patch(
         ensure_gki_kernel()?;
     }
 
-    if kernel.is_some() {
+    let is_replace_kernel = kernel.is_some();
+
+    if is_replace_kernel {
         ensure!(
             init.is_none() && kmod.is_none(),
             "init and module must not be specified."
@@ -101,7 +103,7 @@ pub fn patch(
 
         let init_boot_exist =
             Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
-        let boot_partition = if init_boot_exist {
+        let boot_partition = if !is_replace_kernel && init_boot_exist {
             format!("/dev/block/by-name/init_boot{slot_suffix}")
         } else {
             format!("/dev/block/by-name/boot{slot_suffix}")
