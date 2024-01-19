@@ -106,7 +106,7 @@ Se você realmente precisa conceder permissões de root ao ADB (por exemplo, com
 
 ### Desmontar módulos
 
-O KernelSU fornece um mecanismo sem sistema para modificar partições do sistema, obtido através da montagem de overlayfs. No entanto, alguns apps podem ser sensíveis a esse comportamento. Assim, podemos descarregar módulos montados nesses apps configurando a opção “desmontar módulos”.
+O KernelSU fornece um mecanismo sem sistema para modificar partições do sistema, obtido através da montagem de OverlayFS. No entanto, alguns apps podem ser sensíveis a esse comportamento. Assim, podemos descarregar módulos montados nesses apps configurando a opção “desmontar módulos”.
 
 Além disso, a interface de configurações do gerenciador KernelSU fornece uma opção para "desmontar módulos por padrão". Por padrão, essa opção está **ativada**, o que significa que o KernelSU ou alguns módulos descarregarão módulos para este app, a menos que configurações adicionais sejam aplicadas. Se você não preferir esta configuração ou se ela afetar determinados apps, você terá as seguintes opções:
 

@@ -2,7 +2,7 @@
 
 O KernelSU pode ser integrado em kernels não GKI e foi portado para 4.14 e versões anteriores.
 
-Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer imagens boot não GKI. Mas você mesmo pode construir o kernel com o KernelSU integrado.
+Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer boot.img não GKI. Mas você mesmo pode construir o kernel com o KernelSU integrado.
 
 Primeiro, você deve ser capaz de construir um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU no seu dispositivo.
 
@@ -33,7 +33,7 @@ E construa seu kernel novamente, KernelSU deve funcionar bem.
 
 Se você descobrir que o KPROBES ainda não está ativado, você pode tentar ativar `CONFIG_MODULES`. (Se ainda assim não surtir efeito, use `make menuconfig` para procurar outras dependências do KPROBES)
 
-Mas se você entrar em um bootloop quando o KernelSU for integrado, talvez o **kprobe esteja quebrado em seu kernel**, você deve corrigir o bug do kprobe ou usar o segundo caminho.
+Mas se você entrar em um bootloop quando o KernelSU for integrado, talvez o **kprobe esteja quebrado em seu kernel**. Você deve corrigir o bug do kprobe ou usar o segundo caminho.
 
 :::tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
 
@@ -64,9 +64,9 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Por exemplo, em seu defconfig, habilite `CONFIG_KSU` com y para habilitar ou n para desabilitar. Seu caminho será algo como:
 `arch/arm64/configs/...` 
-```sh
-+# KernelSU
-+CONFIG_KSU=y
+```
+# KernelSU
+CONFIG_KSU=y
 ```
 
 Em seguida, adicione chamadas KernelSU à fonte do kernel. Aqui estão alguns patches para referência:
@@ -117,8 +117,8 @@ index 05036d819197..965b84d486b8 100644
 +			 int *flags);
 +#endif
  /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
-  * We do this by temporarily clearing all FS-related capabilities and
+  * access() precisa usar o uid/gid real, não o uid/gid efetivo.
+  * Fazemos isso limpando temporariamente todos os recursos relacionados ao FS e
 @@ -355,6 +357,7 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
   */
  long do_faccessat(int dfd, const char __user *filename, int mode)
@@ -177,8 +177,8 @@ index 376543199b5a..82adcef03ecc 100644
 +#endif
 +
  /**
-  * vfs_statx - Get basic and extra attributes by filename
-  * @dfd: A file descriptor representing the base dir for a relative filename
+  * vfs_statx - Obtenha atributos básicos e extras por filename
+  * @dfd: Um descritor de arquivo que representa o diretório base para um filename relativo
 @@ -170,6 +172,7 @@ int vfs_statx(int dfd, const char __user *filename, int flags,
  	int error = -EINVAL;
  	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_AUTOMOUNT;
@@ -246,8 +246,8 @@ index 2ff887661237..e758d7db7663 100644
 +#endif
 +
  /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
-  * We do this by temporarily clearing all FS-related capabilities and
+  * access() precisa usar o uid/gid real, não o uid/gid efetivo.
+  * Fazemos isso limpando temporariamente todos os recursos relacionados ao FS e
 @@ -370,6 +373,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
  	int res;
  	unsigned int lookup_flags = LOOKUP_FOLLOW;
