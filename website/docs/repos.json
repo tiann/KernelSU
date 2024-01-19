@@ -572,5 +572,12 @@
         "kernel_name": "android_kernel_samsung_s5e8835",
         "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_s5e8835",
         "devices": "Samsung Galaxy A54 5G (a54x)"
-    }
+    },
+    {
+        "maintainer": "Fede2782",
+        "maintainer_link": "https://github.com/Fede2782",
+        "kernel_name": "android_kernel_samsung_a34x",
+        "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_a34x/",
+        "devices": "Samsung Galaxy A34 5G (a34x)"
+    }    
 ]
