@@ -79,7 +79,7 @@ Normalmente, existem três arquivos de inicialização em formatos diferentes no
 ::: info INFORMAÇÕES
 1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; é claro que você também pode perguntar a outras pessoas mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda, portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
 2. Os dispositivos Xiaomi geralmente usam `gz` ou `uncompressed`.
-3. Para dispositivos Pixel, siga as instruções abaixo.
+3. Para dispositivos Pixel, siga as instruções abaixo:
 :::
 
 ### Flash boot.img para o dispositivo
@@ -118,7 +118,7 @@ Dessa forma, é necessário que o app Kernel Flasher tenha permissões root. Voc
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
 3. [Ex Kernel Manager](https://play.google.com/store/apps/details?id=flar2.exkernelmanager)
 
-PS. Este método é mais conveniente ao atualizar o KernelSU e pode ser feito sem um computador (backup primeiro).
+PS. Este método é mais conveniente ao atualizar o KernelSU e pode ser feito sem um computador (faça um backup primeiro).
 
 ## Corrigir boot.img manualmente
 
@@ -129,7 +129,7 @@ Para alguns dispositivos, o formato boot.img não é tão comum como `lz4`, `gz`
 1. [magiskboot](https://github.com/topjohnwu/Magisk/releases)
 2. [magiskboot_build](https://github.com/ookiineko/magiskboot_build/releases/tag/last-ci)
 
-A versão oficial do `magiskboot` só pode rodar em dispositivos Android, se você quiser rodar no PC, você pode tentar a segunda.
+A versão oficial do `magiskboot` só pode rodar em dispositivos Android, se você quiser rodar no PC, você pode tentar a segunda opção.
 
 ::: tip DICA
 Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamente com os metadados de inicialização (como o nível do patch de segurança). Portanto, pode não funcionar em alguns dispositivos.
@@ -137,14 +137,14 @@ Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamen
 
 ### Preparação
 
-1. Obtenha o boot.img padrão do telefone. Você pode obtê-lo com os fabricantes do seu dispositivo, talvez você precise do [payload-dumper-go](https://github.com/ssut/payload-dumper-go).
+1. Obtenha o boot.img padrão do telefone. Você pode obtê-lo com os fabricantes do seu dispositivo Talvez você precise do [payload-dumper-go](https://github.com/ssut/payload-dumper-go).
 2. Baixe o arquivo zip AnyKernel3 fornecido pelo KernelSU que corresponde à versão KMI do seu dispositivo. Você pode consultar [Instalar com Recovery personalizado](#install-with-custom-recovery).
 3. Descompacte o pacote AnyKernel3 e obtenha o arquivo `Image`, que é o arquivo do kernel do KernelSU.
 
 ### Usando o magiskboot em dispositivos Android {#using-magiskboot-on-Android-devices}
 
 1. Baixe o Magisk mais recente em [GitHub Releases](https://github.com/topjohnwu/Magisk/releases).
-2. Renomeie o `Magisk-*(version).apk` para `Magisk-*.zip` e descompacte-o.
+2. Renomeie o `Magisk-*(versão).apk` para `Magisk-*.zip` e descompacte-o.
 3. Envie `Magisk-*/lib/arm64-v8a/libmagiskboot.so` para o seu dispositivo por ADB: `adb push Magisk-*/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`.
 4. Envie o boot.img padrão e Image em AnyKernel3 para o seu dispositivo.
 5. Entre no ADB shell e no diretório cd `/data/local/tmp/`, em seguida, `chmod +x magiskboot`.
