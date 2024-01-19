@@ -1,4 +1,4 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | **日本語** | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_iw.md) | [हिंदी](README_IN.md)
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | **日本語** | [Polski](README_PL.md) | [Português (Brasil)](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_IW.md) | [हिंदी](README_IN.md)
 
 # KernelSU
 
@@ -14,8 +14,8 @@ Android におけるカーネルベースの root ソリューションです。
 
 ## 特徴
 
-1. カーネルベースの `su` と権限管理
-2. OverlayFS に基づくモジュールシステム
+1. カーネルベースの `su` と権限管理。
+2. OverlayFS に基づくモジュールシステム。
 3. [アプリのプロファイル](https://kernelsu.org/guide/app-profile.html): root の権限をケージ内に閉じ込めます。
 
 
@@ -43,13 +43,12 @@ KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善す�
 
 ## ライセンス
 
-- `kernel` ディレクトリの下にあるすべてのファイル： [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- `kernel` ディレクトリ以外のすべてのファイル： [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- `kernel` ディレクトリの下にあるすべてのファイル： [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)。
+- `kernel` ディレクトリ以外のすべてのファイル： [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)。
 
 ## クレジット
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU のアイデア元
-- [Magisk](https://github.com/topjohnwu/Magisk)：強力な root ツール
-- [genuine](https://github.com/brevent/genuine/)：apk v2 の署名検証
-- [Diamorphine](https://github.com/m0nad/Diamorphine): rootkit のスキル
-
+- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU のアイデア元。
+- [Magisk](https://github.com/topjohnwu/Magisk)：強力な root ツール。
+- [genuine](https://github.com/brevent/genuine/)：apk v2 の署名検証。
+- [Diamorphine](https://github.com/m0nad/Diamorphine): rootkit のスキル。
