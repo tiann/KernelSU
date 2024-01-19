@@ -1,8 +1,16 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | **עברית** | [हिंदी](README_IN.md)
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Português (Brasil)](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | **עברית** | [हिंदी](README_IN.md)
 
 # KernelSU
 
+<img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
+
 פתרון לניהול root מבוסס על Kernel עבור מכשירי Android.
+
+[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## תכונות
 
@@ -34,8 +42,8 @@ KernelSU תומך במכשירי Android GKI 2.0 (kernel 5.10+) באופן רש�
 
 ## רשיון
 
-- קבצים תחת הספרייה `kernel` מוגנים על פי [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- כל החלקים האחרים, למעט הספרייה `kernel`, מוגנים על פי [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- קבצים תחת הספרייה `kernel` מוגנים על פי [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- כל החלקים האחרים, למעט הספרייה `kernel`, מוגנים על פי [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## קרדיטים
 

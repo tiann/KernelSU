@@ -1,4 +1,4 @@
-# FAQ
+# Perguntas frequentes
 
 ## KernelSU oferece suporte ao meu dispositivo?
 
