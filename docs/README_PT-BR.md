@@ -42,7 +42,7 @@ Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes
 
 ## Segurança
 
-Para obter informações sobre como relatar vulnerabilidades de segurança do KernelSU, consulte [SECURITY](/SECURITY.md).
+Para obter informações sobre como relatar vulnerabilidades de segurança do KernelSU, consulte [SECURITY.md](/SECURITY.md).
 
 ## Licença
 
