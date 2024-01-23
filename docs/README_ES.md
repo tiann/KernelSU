@@ -50,7 +50,7 @@ Para obtener información sobre cómo informar vulnerabilidades de seguridad en 
 
 ## Créditos
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/):la idea de KernelSU.
+- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): la idea de KernelSU.
 - [Magisk](https://github.com/topjohnwu/Magisk): la poderosa herramienta root.
 - [genuine](https://github.com/brevent/genuine/): validación de firma apk v2.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): algunas habilidades de rootkit.
