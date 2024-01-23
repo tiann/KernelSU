@@ -42,8 +42,8 @@ KernelSU をあなたの言語に翻訳するか、既存の翻訳を改善す�
 
 ## ライセンス
 
-- `kernel` ディレクトリの下にあるすべてのファイル： [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)。
-- `kernel` ディレクトリ以外のすべてのファイル： [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)。
+- `kernel` ディレクトリの下にあるすべてのファイル： [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)。
+- `kernel` ディレクトリ以外のすべてのファイル： [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)。
 
 ## クレジット
 
