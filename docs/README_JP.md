@@ -6,18 +6,17 @@
 
 Android におけるカーネルベースの root ソリューションです。
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localização-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
-[![Channel](https://img.shields.io/badge/Siga-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
-[![License: GPL v2](https://img.shields.io/badge/Licença-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## 特徴
 
 1. カーネルベースの `su` と権限管理。
-2. OverlayFS に基づくモジュールシステム。
+2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) に基づくモジュールシステム。
 3. [アプリのプロファイル](https://kernelsu.org/guide/app-profile.html): root の権限をケージ内に閉じ込めます。
-
 
 ## 対応状況
 
@@ -31,7 +30,7 @@ WSA 、ChromeOS とコンテナ上で動作する Android でも KernelSU を統
 
 - [インストール方法はこちら](https://kernelsu.org/ja_JP/guide/installation.html)
 - [ビルド方法はこちら](https://kernelsu.org/guide/how-to-build.html)
-- [公式サイト](https://kernelsu.org)
+- [公式サイト](https://kernelsu.org/ja_JP/)
 
 ## 翻訳
 
