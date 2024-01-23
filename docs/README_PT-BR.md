@@ -46,8 +46,8 @@ Para obter informações sobre como relatar vulnerabilidades de segurança do Ke
 
 ## Licença
 
-- Os arquivos no diretório `kernel` são [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) apenas.
-- Todas as outras partes, exceto o diretório `kernel` são [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) ou posterior.
+- Os arquivos no diretório `kernel` são [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Todas as outras partes, exceto o diretório `kernel` são [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Créditos
 
