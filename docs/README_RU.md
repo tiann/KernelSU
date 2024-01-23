@@ -38,8 +38,8 @@ WSA и Android на основе контейнеров также должны 
 
 ## Лицензия
 
-- Файлы в директории `kernel` - [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Все остальные части, кроме директории `kernel` - [GPL-3-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
+- Файлы в директории `kernel` [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Все остальные части, кроме директории `kernel` [GPL-3-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Благодарности
 
