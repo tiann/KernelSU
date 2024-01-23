@@ -42,8 +42,8 @@ Untuk menerjemahkan KernelSU ke dalam bahasa Anda atau menyempurnakan terjemahan
 
 ## Lisensi
 
-- File di bawah direktori `kernel` adalah [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Semua bagian lain kecuali direktori `kernel` adalah [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
+- File di bawah direktori `kernel` adalah [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Semua bagian lain kecuali direktori `kernel` adalah [GPL-3GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Kredit
 
