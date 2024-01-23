@@ -42,12 +42,12 @@ Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặ
 
 ## Giấy phép
 
-- Tất cả các file trong thư mục `kernel` dùng giấy phép [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Tất cả các thành phần khác ngoại trừ thư mục `kernel` dùng giấy phép [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
+- Tất cả các file trong thư mục `kernel` dùng giấy phép [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Tất cả các thành phần khác ngoại trừ thư mục `kernel` dùng giấy phép [GPL-3-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Lời cảm ơn
 
 - [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ý tưởng cho KernelSU.
 - [Magisk](https://github.com/topjohnwu/Magisk): công cụ root mạnh mẽ.
 - [genuine](https://github.com/brevent/genuine/): phương pháp xác thực apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): các phương pháp ẩn của rootkit .
+- [Diamorphine](https://github.com/m0nad/Diamorphine): các phương pháp ẩn của rootkit.
