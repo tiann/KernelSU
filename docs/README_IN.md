@@ -7,8 +7,8 @@
 
 Android उपकरणों के लिए कर्नेल-आधारित रूट समाधान।
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
@@ -16,7 +16,7 @@ Android उपकरणों के लिए कर्नेल-आधार�
 ## विशेषताएँ
 
 1. कर्नेल-आधारित `su` और रूट एक्सेस प्रबंधन।
-2. OverlayFS पर आधारित मॉड्यूल प्रणाली।
+2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) पर आधारित मॉड्यूल प्रणाली।
 3. [App Profile](https://kernelsu.org/guide/app-profile.html): Root शक्ति को पिंजरे में बंद कर दो।
 
 ## अनुकूलता अवस्था
