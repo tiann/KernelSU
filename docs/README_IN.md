@@ -43,8 +43,8 @@ KernelSU का अनुवाद करने या मौजूदा अन
 
 ## लाइसेंस
 
-- `Kernel` निर्देशिका के अंतर्गत फ़ाइलें हैं [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- `Kernel` निर्देशिका को छोड़कर अन्य सभी भाग हैं [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- `Kernel` निर्देशिका के अंतर्गत फ़ाइलें हैं [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- `Kernel` निर्देशिका को छोड़कर अन्य सभी भाग हैं [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## आभार सूची
 
