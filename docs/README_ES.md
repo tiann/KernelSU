@@ -41,8 +41,8 @@ Para obtener información sobre cómo informar vulnerabilidades de seguridad en 
 
 ##  Licencia
 
-- Los archivos bajo el directorio `kernel` están apenas licenciados bajo [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Todas las demás partes, a excepción del directorio `kernel`, están licenciados bajo [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) o posterior.
+- Los archivos bajo el directorio `kernel` están licenciados bajo [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Todas las demás partes, a excepción del directorio `kernel`, están licenciados bajo [GPL-3-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Créditos
 
