@@ -38,6 +38,10 @@ Aby pomóc w tłumaczeniu KernelSU lub ulepszyć istniejące tłumaczenia, użyj
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
+## Bezpieczeństwo
+
+Informacje na temat zgłaszania luk w zabezpieczeniach w KernelSU można znaleźć w pliku [SECURITY.md](/SECURITY.md).
+
 ## Licencja
 
 - Pliki w katalogu `kernel` są na licencji [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
