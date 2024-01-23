@@ -6,18 +6,17 @@
 
 一个 Android 上基于内核的 root 方案。
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
-
 
 ## 特性
 
 - 基于内核的 `su` 和权限管理。
 - 基于 [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) 的模块系统。
-- [App Profile](https://kernelsu.org/guide/app-profile.html): 把 Root 权限关进笼子里。
+- [App Profile](https://kernelsu.org/zh_CN/guide/app-profile.html): 把 Root 权限关进笼子里。
 
 ## 兼容状态
 
@@ -25,13 +24,13 @@ KernelSU 官方支持 GKI 2.0 的设备（内核版本5.10以上）；旧内核�
 
 WSA, ChromeOS 和运行在容器上的 Android 也可以与 KernelSU 一起工作。
 
-目前支持架构 : `arm64-v8a` 和 `x86_64`
+目前支持架构 : `arm64-v8a` 和 `x86_64`。
 
 ## 使用方法
 
 - [安装教程](https://kernelsu.org/zh_CN/guide/installation.html)
 - [如何构建？](https://kernelsu.org/zh_CN/guide/how-to-build.html)
-- [官方网站](https://kernelsu.org/)
+- [官方网站](https://kernelsu.org/zh_CN/)
 
 ## 参与翻译
 
@@ -42,12 +41,13 @@ WSA, ChromeOS 和运行在容器上的 Android 也可以与 KernelSU 一起工�
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
 ## 安全性
-有关报告 KernelSU 安全漏洞的信息，请参阅 [SECURITY.md](/SECURITY.md).
+
+有关报告 KernelSU 安全漏洞的信息，请参阅 [SECURITY.md](/SECURITY.md)。
 
 ## 许可证
 
-- 目录 `kernel` 下所有文件为 [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- 除 `kernel` 目录的其他部分均为 [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)
+- 目录 `kernel` 下所有文件为 [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)。
+- 除 `kernel` 目录的其他部分均为 [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)。
 
 ## 鸣谢
 
