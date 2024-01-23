@@ -31,6 +31,10 @@ Actualmente, solo se admiten las arquitecturas `arm64-v8a` y `x86_64`.
 - [¿Cómo compilarlo?](https://kernelsu.org/guide/how-to-build.html)
 - [Site oficial](https://kernelsu.org/)
 
+## Traducción
+
+Para ayudar a traducir KernelSU o mejorar las traducciones existentes, utilice [Weblate](https://hosted.weblate.org/engage/kernelsu/). Ya no se aceptan PR de la traducción de Manager porque entrará en conflicto con Weblate.
+
 ## Discusión
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
