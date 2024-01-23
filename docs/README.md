@@ -46,8 +46,8 @@ For information on reporting security vulnerabilities in KernelSU, see [SECURITY
 
 ## License
 
-- Files under the `kernel` directory are [GPL-2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) only.
-- All other parts except the `kernel` directory are [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html) or later.
+- Files under the `kernel` directory are [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- All other parts except the `kernel` directory are [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Credits
 
