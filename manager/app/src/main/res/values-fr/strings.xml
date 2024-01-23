@@ -8,7 +8,7 @@
     <string name="home_unsupported_reason">Actuellement, KernelSU ne supporte que les noyaux GKI</string>
     <string name="home_kernel">Noyau</string>
     <string name="home_fingerprint">Empreinte digitale</string>
-    <string name="home_selinux_status">Statut de SELinux</string>
+    <string name="home_selinux_status">Mode SELinux</string>
     <string name="selinux_status_disabled">Désactivé</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Inconnu</string>
@@ -34,7 +34,7 @@
     <string name="reboot_recovery">Redémarrer en mode récupération</string>
     <string name="reboot_edl">Redémarrer en mode EDL</string>
     <string name="about">À propos</string>
-    <string name="module_uninstall_success">%s est désinstallé</string>
+    <string name="module_uninstall_success">%s a été désinstallé</string>
     <string name="reboot_download">Redémarrer en mode téléchargement</string>
     <string name="module_author">Auteur</string>
     <string name="module_uninstall_confirm">Êtes-vous sûr(e) de vouloir désinstaller le module %s \?</string>
@@ -78,8 +78,8 @@
     <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
-    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles de SELinux pour : %s</string>
-    <string name="require_kernel_version">La version actuelle (%d) de KernelSU est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
+    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
+    <string name="require_kernel_version">La version actuelle (%d) de KernelSU est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
     <string name="app_profile_template_import_success">Importation réussie</string>
     <string name="app_profile_export_to_clipboard">Exporter vers le presse-papiers</string>
     <string name="app_profile_template_export_empty">Impossible de trouver un modèle local à exporter !</string>
