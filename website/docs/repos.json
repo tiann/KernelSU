@@ -579,5 +579,12 @@
         "kernel_name": "android_kernel_samsung_a34x",
         "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_a34x/",
         "devices": "Samsung Galaxy A34 5G (a34x)"
+    },
+    {
+        "maintainer": "KJ-Network",
+        "maintainer_link": "https://github.com/KJ-Network",
+        "kernel_name": "K-Nel-M1721",
+        "kernel_link": "https://github.com/KJ-Network/K-Nel-M1721/",
+        "devices": "Meizu M6 Note (M1721)"
     }    
 ]

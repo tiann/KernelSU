@@ -6,8 +6,8 @@
 
 פתרון לניהול root מבוסס על Kernel עבור מכשירי Android.
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
@@ -15,7 +15,7 @@
 ## תכונות
 
 1. ניהול root ו־`su` מבוססים על Kernel.
-2. מערכת מודולים מבוססת overlayfs.
+2. מערכת מודולים מבוססת [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
 3. [פרופיל אפליקציה](https://kernelsu.org/guide/app-profile.html): נעילת גישת root בכלוב.
 
 ## מצב תאימות
@@ -42,8 +42,8 @@ KernelSU תומך במכשירי Android GKI 2.0 (kernel 5.10+) באופן רש�
 
 ## רשיון
 
-- קבצים תחת הספרייה `kernel` מוגנים על פי [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- כל החלקים האחרים, למעט הספרייה `kernel`, מוגנים על פי [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
+- קבצים תחת הספרייה `kernel` מוגנים על פי [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- כל החלקים האחרים, למעט הספרייה `kernel`, מוגנים על פי [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## קרדיטים
 

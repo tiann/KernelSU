@@ -63,6 +63,6 @@ GKI1 跟 GKI2 完全是两个东西，所以你需要自行编译内核。
 
 我们不建议你直接修改系统分区，你应该使用[模块功能](module.md) 来做修改；如果你执意要这么做，可以看看 [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs)
 
-## KernelSU 能修改 hosts 吗，我如何使用 AdAday？
+## KernelSU 能修改 hosts 吗，我如何使用 AdAway？
 
 当然可以。但这个功能 KernelSU 没有内置，你可以安装这个 [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module)

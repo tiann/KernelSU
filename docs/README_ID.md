@@ -6,8 +6,8 @@
 
 Solusi root berbasis Kernel untuk perangkat Android.
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
@@ -15,7 +15,7 @@ Solusi root berbasis Kernel untuk perangkat Android.
 ## Fitur
 
 1. Manajemen akses root dan `su` berbasis kernel.
-2. Sistem modul berdasarkan OverlayFS.
+2. Sistem modul berdasarkan [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
 3. [Profil Aplikasi](https://kernelsu.org/guide/app-profile.html): Kunci daya root di dalam sangkar.
 
 ## Status Kompatibilitas
@@ -28,9 +28,9 @@ Dan ABI yang didukung saat ini adalah: `arm64-v8a` dan `x86_64`
 
 ## Penggunaan
 
-- [Petunjuk Instalasi](https://kernelsu.org/guide/installation.html)
-- [Bagaimana cara membuat?](https://kernelsu.org/guide/how-to-build.html)
-- [Situs Web Resmi](https://kernelsu.org/)
+- [Petunjuk Instalasi](https://kernelsu.org/id_ID/guide/installation.html)
+- [Bagaimana cara membuat?](https://kernelsu.org/id_ID/guide/how-to-build.html)
+- [Situs Web Resmi](https://kernelsu.org/id_ID/)
 
 ## Terjemahan
 
@@ -42,8 +42,8 @@ Untuk menerjemahkan KernelSU ke dalam bahasa Anda atau menyempurnakan terjemahan
 
 ## Lisensi
 
-- File di bawah direktori `kernel` adalah [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Semua bagian lain kecuali direktori `kernel` adalah [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
+- File di bawah direktori `kernel` adalah [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Semua bagian lain kecuali direktori `kernel` adalah [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Kredit
 
