@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Clique para instalar</string>
     <string name="home_working">Em execução</string>
     <string name="home_working_version">Versão: %d</string>
-    <string name="home_superuser_count">Superusuários: %d</string>
+    <string name="home_superuser_count">SuperUsuários: %d</string>
     <string name="home_module_count">Módulos: %d</string>
     <string name="home_unsupported">Sem suporte</string>
     <string name="home_unsupported_reason">KernelSU suporta apenas kernels GKI agora</string>
@@ -42,7 +42,7 @@
     <string name="refresh">Atualizar</string>
     <string name="show_system_apps">Mostrar apps do sistema</string>
     <string name="hide_system_apps">Ocultar apps do sistema</string>
-    <string name="send_log">Reportar registrto</string>
+    <string name="send_log">Reportar registro</string>
     <string name="safe_mode">Modo de segurança</string>
     <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
     <string name="module_magisk_conflict">Os módulos estão desativados porque estão em conflito com os do Magisk!</string>
@@ -74,7 +74,7 @@
     <string name="module_update">Atualizar</string>
     <string name="module_downloading">Baixando módulo: %s</string>
     <string name="module_start_downloading">Iniciar download: %s</string>
-    <string name="new_version_available">Nova versão: %s está disponível, clique para atualizar</string>
+    <string name="new_version_available">Nova versão: %s está disponível, clique para atualizar.</string>
     <string name="launch_app">Iniciar</string>
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
@@ -99,7 +99,7 @@
     <string name="settings_profile_template">Modelo do Perfil do Aplicativo</string>
     <string name="app_profile_template_description">Descrição</string>
     <string name="app_profile_template_save">Salvar</string>
-    <string name="settings_profile_template_summary">Gerencie modelo local e online do Perfil do Aplicativo</string>
+    <string name="settings_profile_template_summary">Gerencie o modelo local e online do Perfil do Aplicativo</string>
     <string name="app_profile_template_delete">Excluir</string>
     <string name="app_profile_template_import_empty">A área de transferência está vazia!</string>
     <string name="app_profile_template_view">Ver modelo</string>
