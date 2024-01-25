@@ -1,3 +1,4 @@
+
 [
     {
         "maintainer": "diphons",
@@ -420,11 +421,11 @@
         "devices": "Redmi K40 (alioth)"
     },
     {
-        "maintainer": "wxt1221",
-        "maintainer_link": "https://github.com/wxt1221",
+        "maintainer": "Bot-wxt1221",
+        "maintainer_link": "https://github.com/Bot-wxt1221",
         "kernel_name": "android_kernel_oneplus_sdm845",
-        "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
-        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with Retrofit Dynamic Partitions"
+        "kernel_link": "https://github.com/Bot-wxt1221/android_kernel_oneplus_sdm845",
+        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with Retrofit Dynamic Partitions Only with crdroid"
     },
     {
         "maintainer": "zlm324",
