@@ -21,7 +21,7 @@
     <string name="about_source_code"><![CDATA[Xem mã nguồn tại %1$s<br/>Tham gia kênh %2$s của chúng tôi]]></string>
     <string name="module_magisk_conflict">Các mô-đun bị vô hiệu hóa vì chúng xung đột với Magisk!</string>
     <string name="module_uninstall_confirm">Bạn có muốn gỡ cài đặt mô-đun %s không\?</string>
-    <string name="send_log">Gửi nhật ký</string>
+    <string name="send_log">báo cáo nhật ký</string>
     <string name="home">Trang chủ</string>
     <string name="home_not_installed">Chưa cài đặt</string>
     <string name="home_click_to_install">Nhấn để cài dặt</string>
@@ -101,4 +101,6 @@
     <string name="app_profile_template_delete">Xóa</string>
     <string name="app_profile_template_import_empty">Bảng tạm trống!</string>
     <string name="app_profile_template_view">Xem Bản Mẫu</string>
+    <string name="app_profile_template_readonly">chỉ đọc</string>
+    <string name="app_profile_template_id">id</string>
 </resources>

@@ -155,8 +155,8 @@ Trong số đó, Android-Image-Kitchen phù hợp để hoạt động trên PC 
 ### Sử dụng magiskboot
 
 1. Tải xuống Magisk mới nhất từ [Trang phát hành](https://github.com/topjohnwu/Magisk/releases)
-2. Đổi tên Magisk-*.apk thành Magisk-vesion.zip và giải nén nó.
-3. Đẩy `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` vào thiết bị của bạn bằng adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp /magiskboot`
+2. Đổi tên `Magisk-*(version).apk` thành `Magisk-*.zip` và giải nén nó.
+3. Đẩy `Magisk-*/lib/arm64-v8a/libmagiskboot.so` vào thiết bị của bạn bằng adb: `adb push Magisk-*/lib/arm64-v8a/libmagiskboot.so /data/local/tmp /magiskboot`
 4. Đẩy stock boot.img và Image trong AnyKernel3 vào thiết bị của bạn.
 5. Nhập thư mục adb shell và cd `/data/local/tmp/`, sau đó `chmod +x magiskboot`
 6. Nhập adb shell và cd `/data/local/tmp/`, thực thi `./magiskboot unpack boot.img` để giải nén `boot.img`, bạn sẽ nhận được file `kernel`, đây là kernel gốc của bạn.

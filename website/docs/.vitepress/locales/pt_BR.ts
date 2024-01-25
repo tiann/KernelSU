@@ -53,7 +53,7 @@ function sidebarGuide() {
           { text: 'Guias de módulo', link: '/pt_BR/guide/module.md' },
           { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
-          { text: 'FAQ', link: '/pt_BR/guide/faq' },
+          { text: 'Perguntas frequentes', link: '/pt_BR/guide/faq' },
           { text: 'Recursos ocultos', link: '/pt_BR/guide/hidden-features' },
         ]
     }

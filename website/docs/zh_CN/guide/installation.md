@@ -115,7 +115,7 @@ fastboot reboot
 2. 如果你的手机没有 root，但手机支持 `fastboot boot boot.img` 这种临时启动的方法，你可以用 KernelSU 提供的 GKI 镜像临时启动你的设备，获取临时的 root 权限，然后使用内核刷写器刷入获取永久 root 权限。
 
 
-If you haven’t used kernel flashing apps before, the following are recommended:
+如果您以前没有使用过内核刷写 App，建议使用以下应用：
 
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
@@ -145,8 +145,8 @@ Magisk 官方提供的 `magiskboot` 只能运行在 Android/Linux 设备上，�
 ### 在 Android 设备上使用 magiskboot {#using-magiskboot-on-Android-devices}
 
 1. 在 Magisk 的 [Release 页面](https://github.com/topjohnwu/Magisk/releases) 下载最新的 Magisk 安装包。
-2. 将 Magisk-*.apk 重命名为 Magisk-vesion.zip 然后解压缩。
-3. 将解压后的 `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` 文件，使用 adb push 到手机：`adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
+2. 将 `Magisk-*(version).apk` 重命名为 `Magisk-*.zip` 然后解压缩。
+3. 将解压后的 `Magisk-*/lib/arm64-v8a/libmagiskboot.so` 文件，使用 adb push 到手机：`adb push Magisk-*/lib/arm64-v8a/libmagiskboot.so /data/local/tmp/magiskboot`
 4. 使用 adb 将原厂 boot.img 和 AnyKernel3 中的 Image 推送到手机
 5. adb shell 进入 /data/local/tmp/ 目录，然后赋予刚 push 文件的可执行权限 `chmod +x magiskboot`
 6. adb shell 进入 /data/local/tmp/ 目录，执行 `./magiskboot unpack boot.img` 此时会解包 `boot.img` 得到一个叫做 `kernel` 的文件，这个文件为你原厂的 kernel

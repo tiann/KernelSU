@@ -1,7 +1,7 @@
 name: Build Kernel - Android 12
 on:
   push:
-    branches: ["main", "ci"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-a12.yml"
       - ".github/workflows/gki-kernel.yml"
@@ -17,7 +17,7 @@ on:
   workflow_call:
 jobs:
   build-kernel:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
         include:
@@ -53,6 +53,7 @@ jobs:
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: "5.10"
+  
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
@@ -124,7 +125,7 @@ jobs:
           path: Image-android12*/*.img.gz
 
   check-build-kernel:
-    if: github.event_name == 'pull_request'
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
