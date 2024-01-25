@@ -6,8 +6,8 @@
 
 Android cihazlar için kernel tabanlı root çözümü.
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
@@ -15,7 +15,7 @@ Android cihazlar için kernel tabanlı root çözümü.
 ## Özellikler
 
 1. Kernel-tabanlı `su` ve root erişimi yönetimi.
-2. OverlayFS'ye dayalı modül sistemi.
+2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS)'ye dayalı modül sistemi.
 3. [Uygulama profili](https://kernelsu.org/guide/app-profile.html): Root gücünü bir kafese kapatın.
 
 ## Uyumluluk Durumu
@@ -41,12 +41,13 @@ KernelSU'nun çevirisine veya mevcut çevirilerin iyileştirilmesine yardımcı 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
 ## Güvenlik
-KernelSU'daki güvenlik açıklarını bildirme hakkında bilgi için, bkz. [SECURITY.md](/SECURITY.md).
+
+KernelSU'daki güvenlik açıklarını bildirme hakkında bilgi için, bkz [SECURITY.md](/SECURITY.md).
 
 ## Lisans
 
-- `kernel` klasöründeki dosyalar [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) lisansı altındadır.
-- `kernel` klasörü dışındaki bütün diğer bölümler [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html) lisansı altındadır.
+- `kernel` klasöründeki dosyalar [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) lisansı altındadır.
+- `kernel` klasörü dışındaki bütün diğer bölümler [GPL-3-or-later](https://www.gnu.org/licenses/gpl-3.0.html) lisansı altındadır.
 
 ## Krediler
 

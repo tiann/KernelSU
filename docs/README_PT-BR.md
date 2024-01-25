@@ -6,16 +6,16 @@
 
 Uma solução root baseada em kernel para dispositivos Android.
 
-[![latest release badge](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![weblate](https://img.shields.io/badge/Localização-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
-[![Channel](https://img.shields.io/badge/Siga-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localização-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Seguir-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/Licença-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## Características
 
 1. `su` e gerenciamento de acesso root baseado em kernel.
-2. Sistema modular baseado em OverlayFS.
+2. Sistema modular baseado em [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
 3. [Perfil do Aplicativo](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
 
 ## Estado de compatibilidade
@@ -27,11 +27,13 @@ Com isso, WSA, ChromeOS e Android baseado em contêiner são todos suportados.
 Atualmente, apenas `arm64-v8a` e `x86_64` são suportados.
 
 ## Uso
+
  - [Instalação](https://kernelsu.org/pt_BR/guide/installation.html)
  - [Como construir o KernelSU?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
  - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
+
 Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, utilize o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Gerenciador não são mais aceitas, pois podem entrar em conflito com o Weblate.
 
 ## Discussão
@@ -39,12 +41,13 @@ Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
 ## Segurança
-Para obter informações sobre como relatar vulnerabilidades de segurança no KernelSU, consulte [SECURITY.md](/SECURITY.md).
+
+Para obter informações sobre como relatar vulnerabilidades de segurança do KernelSU, consulte [SECURITY.md](/SECURITY.md).
 
 ## Licença
 
-- Os arquivos no diretório `kernel` são [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Todas as outras partes, exceto o diretório `kernel` são [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html).
+- Os arquivos no diretório `kernel` são [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Todas as outras partes, exceto o diretório `kernel` são [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Créditos
 
