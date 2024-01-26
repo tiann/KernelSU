@@ -10,7 +10,7 @@
     <string name="home_unsupported">非対応</string>
     <string name="home_unsupported_reason">現在､ KernelSU は GKI カーネルにのみ対応しています</string>
     <string name="home_kernel">カーネル</string>
-    <string name="home_manager_version">バージョン</string>
+    <string name="home_manager_version">アプリのバージョン</string>
     <string name="home_fingerprint">Fingerprint</string>
     <string name="home_selinux_status">SELinux の状態</string>
     <string name="selinux_status_disabled">Disabled</string>
@@ -46,7 +46,7 @@
     <string name="safe_mode">セーフモード</string>
     <string name="reboot_to_apply">再起動すると有効化されます</string>
     <string name="module_magisk_conflict">Magisk と競合しているためモジュールは無効になっています！</string>
-    <string name="home_learn_kernelsu">KernelSU の詳細</string>
+    <string name="home_learn_kernelsu">KernelSU について</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/ja_JP/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU のインストール方法やモジュールの使い方はこちら</string>
     <string name="home_support_title">支援する</string>
