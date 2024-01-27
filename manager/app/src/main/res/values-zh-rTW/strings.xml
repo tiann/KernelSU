@@ -3,7 +3,7 @@
     <string name="home">首頁</string>
     <string name="home_not_installed">未安裝</string>
     <string name="home_click_to_install">按一下以安裝</string>
-    <string name="home_working">正在處理</string>
+    <string name="home_working">運作中</string>
     <string name="home_working_version">KernelSU 版本：%d</string>
     <string name="home_superuser_count">已授權 Root：%d 個</string>
     <string name="home_unsupported">不支援</string>
@@ -49,8 +49,8 @@
     <string name="home_learn_kernelsu">深入瞭解 KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_TW/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">瞭解如何安裝 KernelSU 以及如何開發模組</string>
-    <string name="home_support_title">支持開發</string>
-    <string name="home_support_content">KernelSU 將保持免費和開源，您可以考慮向開發人員捐贈以表示支持。</string>
+    <string name="home_support_title">支援開發</string>
+    <string name="home_support_content">KernelSU 將保持免費和開源，您可以考慮向開發人員贊助以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 中檢視原始碼<br/>加入我們的 %2$s 頻道]]></string>
     <string name="profile_umount_modules">解除安裝模組</string>
     <string name="failed_to_update_app_profile">無法更新 %s 應用程式設定檔</string>
@@ -80,12 +80,12 @@
     <string name="force_stop_app">強制停止</string>
     <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux</string>
     <string name="module_changelog">變更記錄</string>
-    <string name="app_profile_template_id_invalid">模板 id 不合法</string>
+    <string name="app_profile_template_id_invalid">模板 ID 無效</string>
     <string name="app_profile_template_create">創建模板</string>
     <string name="app_profile_template_edit">編輯模板</string>
-    <string name="app_profile_template_id">模板 id</string>
+    <string name="app_profile_template_id">模板 ID</string>
     <string name="settings_profile_template">App Profile 模板</string>
-    <string name="settings_profile_template_summary">管理本地和在線的App Profile模板</string>
+    <string name="settings_profile_template_summary">管理本地和在線的 App Profile 模板</string>
     <string name="app_profile_template_import_success">成功匯出</string>
     <string name="app_profile_export_to_clipboard">匯出至剪貼簿</string>
     <string name="app_profile_template_export_empty">本地沒有模板可匯出！</string>
