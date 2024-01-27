@@ -586,5 +586,12 @@
         "kernel_name": "K-Nel-M1721",
         "kernel_link": "https://github.com/KJ-Network/K-Nel-M1721/",
         "devices": "Meizu M6 Note (M1721)"
+    },
+    {
+        "maintainer": "SnowWolf725    ",
+        "maintainer_link": "https://github.com/snowwolf725",
+        "kernel_name": "android_kernel_oneplus_sm8150",
+        "kernel_link": "https://github.com/snowwolf725/android_kernel_oneplus_sm8150",
+        "devices": "Oneplus 7(guacamoleb)/7 Pro(guacamole)/7T(hotdog)/7TPro (hotdogb)"
     }    
 ]
