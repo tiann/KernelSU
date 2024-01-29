@@ -3,7 +3,7 @@ use crate::utils::*;
 use crate::{
     assets, defs, mount,
     restorecon::{restore_syscon, setsyscon},
-    sepolicy,
+    sepolicy, utils,
 };
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
@@ -14,7 +14,7 @@ use log::{info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, remove_file, set_permissions, File, Permissions},
+    fs::{remove_dir_all, remove_file, set_permissions, File, OpenOptions, Permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -118,25 +118,6 @@ fn foreach_active_module(f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
     foreach_module(true, f)
 }
 
-fn get_minimal_image_size(img: &str) -> Result<u64> {
-    check_image(img)?;
-
-    let output = Command::new("resize2fs")
-        .args(["-P", img])
-        .stdout(Stdio::piped())
-        .output()?;
-
-    let output = String::from_utf8_lossy(&output.stdout);
-    println!("- {}", output.trim());
-    let regex = regex::Regex::new(r"filesystem: (\d+)")?;
-    let result = regex
-        .captures(&output)
-        .ok_or(anyhow::anyhow!("regex not match"))?;
-    let result = &result[1];
-    let result = u64::from_str(result)?;
-    Ok(result)
-}
-
 fn check_image(img: &str) -> Result<()> {
     let result = Command::new("e2fsck")
         .args(["-yf", img])
@@ -154,31 +135,6 @@ fn check_image(img: &str) -> Result<()> {
     //     code.unwrap_or(-1)
     // );
     info!("e2fsck exit code: {}", code.unwrap_or(-1));
-    Ok(())
-}
-
-fn grow_image_size(img: &str, extra_size: u64) -> Result<()> {
-    let minimal_size = get_minimal_image_size(img)?; // the minimal size is in KB
-    let target_size = minimal_size * 1024 + extra_size;
-
-    // check image
-    check_image(img)?;
-
-    println!(
-        "- Target image size: {}",
-        humansize::format_size(target_size, humansize::DECIMAL)
-    );
-    let target_size = target_size / 1024 + 1024;
-    info!("resize image to {target_size}K, minimal size is {minimal_size}K");
-    let result = Command::new("resize2fs")
-        .args([img, &format!("{target_size}K")])
-        .stdout(Stdio::piped())
-        .status()
-        .with_context(|| format!("Failed to exec resize2fs {img}"))?;
-    ensure!(result.success(), "Failed to resize2fs: {}", result);
-
-    check_image(img)?;
-
     Ok(())
 }
 
@@ -370,17 +326,11 @@ fn _install_module(zip: &str) -> Result<()> {
         std::fs::remove_file(tmp_module_path)?;
     }
 
-    let default_reserve_size = 256 * 1024 * 1024;
     let zip_uncompressed_size = get_zip_uncompressed_size(zip)?;
-    let grow_size = default_reserve_size + zip_uncompressed_size;
 
     info!(
         "zip uncompressed size: {}",
         humansize::format_size(zip_uncompressed_size, humansize::DECIMAL)
-    );
-    info!(
-        "grow size: {}",
-        humansize::format_size(grow_size, humansize::DECIMAL)
     );
 
     println!("- Preparing image");
@@ -389,14 +339,15 @@ fn _install_module(zip: &str) -> Result<()> {
         humansize::format_size(zip_uncompressed_size, humansize::DECIMAL)
     );
 
+    let sparse_image_size = 256 * (1 << 30); // 256G
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
         info!("Creating brand new module image");
         File::create(tmp_module_img)
             .context("Failed to create ext4 image file")?
-            .set_len(grow_size)
-            .context("Failed to extend ext4 image")?;
+            .set_len(sparse_image_size)
+            .context("Failed to truncate ext4 image")?;
 
         // format the img to ext4 filesystem
         let result = Command::new("mkfs.ext4")
@@ -410,33 +361,45 @@ fn _install_module(zip: &str) -> Result<()> {
             "Failed to format ext4 image: {}",
             String::from_utf8(result.stderr).unwrap()
         );
-
-        check_image(tmp_module_img)?;
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
-        std::fs::copy(modules_update_img, tmp_module_img).with_context(|| {
+        utils::copy_sparse_file(modules_update_img, tmp_module_img).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
                 modules_update_img.display(),
                 tmp_module_img
             )
         })?;
-        // grow size of the tmp image
-        grow_image_size(tmp_module_img, grow_size)?;
     } else {
         // modules.img exists, we should use it as tmp img
         info!("Using existing modules.img as tmp image");
-        std::fs::copy(modules_img, tmp_module_img).with_context(|| {
+        utils::copy_sparse_file(modules_img, tmp_module_img).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
                 modules_img.display(),
                 tmp_module_img
             )
         })?;
-        // grow size of the tmp image
-        grow_image_size(tmp_module_img, grow_size)?;
+
+        // legacy image, truncate it to new size.
+        if std::fs::metadata(modules_img)?.len() < sparse_image_size {
+            println!("- Truncate legacy image to new size");
+            OpenOptions::new()
+                .write(true)
+                .open(tmp_module_img)
+                .context("Failed to open ext4 image")?
+                .set_len(sparse_image_size)
+                .context("Failed to truncate ext4 image")?;
+
+            check_image(tmp_module_img)?;
+            Command::new("resize2fs")
+                .arg(tmp_module_img)
+                .stdout(Stdio::piped())
+                .status()?;
+        }
     }
+    check_image(tmp_module_img)?;
 
     // ensure modules_update exists
     ensure_dir_exists(module_update_tmp_dir)?;
@@ -473,7 +436,7 @@ fn _install_module(zip: &str) -> Result<()> {
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
         warn!("Rename image failed, try copy it.");
-        std::fs::copy(tmp_module_img, defs::MODULE_UPDATE_IMG)
+        utils::copy_sparse_file(tmp_module_img, defs::MODULE_UPDATE_IMG)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(tmp_module_img);
     }
@@ -513,14 +476,14 @@ where
             modules_update_img.display(),
             modules_update_tmp_img.display()
         );
-        std::fs::copy(modules_update_img, modules_update_tmp_img)?;
+        utils::copy_sparse_file(modules_update_img, modules_update_tmp_img)?;
     } else {
         info!(
             "copy {} to {}",
             modules_img.display(),
             modules_update_tmp_img.display()
         );
-        std::fs::copy(modules_img, modules_update_tmp_img)?;
+        utils::copy_sparse_file(modules_img, modules_update_tmp_img)?;
     }
 
     // ensure modules_update dir exist
@@ -534,7 +497,7 @@ where
 
     if let Err(e) = std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG) {
         warn!("Rename image failed: {e}, try copy it.");
-        std::fs::copy(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)
+        utils::copy_sparse_file(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(modules_update_tmp_img);
     }
