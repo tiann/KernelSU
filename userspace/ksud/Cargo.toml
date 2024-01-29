@@ -36,6 +36,7 @@ getopts = "0.2"
 sha256 = "1"
 tempdir = "0.3"
 chrono = "0.4"
+hole-punch = { git = "https://github.com/tiann/hole-punch" }
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 sys-mount = { git = "https://github.com/tiann/sys-mount", branch = "loopfix" }

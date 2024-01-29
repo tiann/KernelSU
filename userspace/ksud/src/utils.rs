@@ -12,6 +12,9 @@ use std::fs::{set_permissions, Permissions};
 #[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
 
+use hole_punch::*;
+use std::io::{Read, Seek, SeekFrom};
+
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
     log::debug!("ensure_clean_dir: {}", path.display());
@@ -181,4 +184,45 @@ pub fn get_tmp_path() -> &'static str {
         return defs::TEMP_DIR;
     }
     ""
+}
+
+// TODO: use libxcp to improve the speed if cross's MSRV is 1.70
+pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<()> {
+    let mut src_file = File::open(src.as_ref())?;
+    let mut dst_file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(dst.as_ref())?;
+
+    dst_file.set_len(src_file.metadata()?.len())?;
+
+    let segments = src_file.scan_chunks()?;
+    for segment in segments {
+        if let SegmentType::Data = segment.segment_type {
+            let start = segment.start;
+            let end = segment.end;
+
+            src_file.seek(SeekFrom::Start(start))?;
+            dst_file.seek(SeekFrom::Start(start))?;
+
+            let mut buffer = [0; 4096];
+            let mut total_bytes_copied = 0;
+
+            while total_bytes_copied < end - start {
+                let bytes_to_read =
+                    std::cmp::min(buffer.len() as u64, end - start - total_bytes_copied);
+                let bytes_read = src_file.read(&mut buffer[..bytes_to_read as usize])?;
+
+                if bytes_read == 0 {
+                    break;
+                }
+
+                dst_file.write_all(&buffer[..bytes_read])?;
+                total_bytes_copied += bytes_read as u64;
+            }
+        }
+    }
+
+    Ok(())
 }

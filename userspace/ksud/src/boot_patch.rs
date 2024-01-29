@@ -36,17 +36,19 @@ fn do_cpio_cmd(magiskboot: &Path, workding_dir: &Path, cmd: &str) -> Result<()> 
     Ok(())
 }
 
-fn dd<P: AsRef<Path> + std::fmt::Debug, Q: AsRef<Path> + std::fmt::Debug>(
-    ifile: P,
-    ofile: Q,
-) -> Result<()> {
+fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     let status = Command::new("dd")
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .arg(format!("if={ifile:?}"))
-        .arg(format!("of={ofile:?}"))
+        .arg(format!("if={}", ifile.as_ref().display()))
+        .arg(format!("of={}", ofile.as_ref().display()))
         .status()?;
-    ensure!(status.success(), "dd if={:?} of={:?} failed", ifile, ofile);
+    ensure!(
+        status.success(),
+        "dd if={:?} of={:?} failed",
+        ifile.as_ref(),
+        ofile.as_ref()
+    );
     Ok(())
 }
 
