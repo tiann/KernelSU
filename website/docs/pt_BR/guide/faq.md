@@ -67,8 +67,8 @@ Não recomendamos que você modifique a partição do sistema diretamente. Você
 
 Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
 
-## Por que existe um enorme arquivo de 1T?
+## Por que existe um enorme arquivo de 256G?
 
-O tamanho 1T `modules.img` é um arquivo de imagem de disco, **não se preocupe com seu tamanho**, é um tipo especial de arquivo conhecido como [arquivo esparso](https://en.wikipedia.org/wiki/Sparse_file), seu tamanho real é apenas o tamanho do módulo que você usa e diminuirá dinamicamente após você excluir o módulo. Na verdade, ele não ocupa 1T de espaço em disco (na verdade, seu celular pode não ter tanto espaço).
+O tamanho 256G `modules.img` é um arquivo de imagem de disco, **não se preocupe com seu tamanho**, é um tipo especial de arquivo conhecido como [arquivo esparso](https://en.wikipedia.org/wiki/Sparse_file), seu tamanho real é apenas o tamanho do módulo que você usa e diminuirá dinamicamente após você excluir o módulo. Na verdade, ele não ocupa 256G de espaço em disco (na verdade, seu celular pode não ter tanto espaço).
 
 Se você estiver realmente insatisfeito com o tamanho deste arquivo, você pode usar o comando `resize2fs -M` para torná-lo seu tamanho real, mas o módulo pode não funcionar corretamente neste momento e não forneceremos nenhum suporte para isso.
