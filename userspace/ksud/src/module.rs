@@ -340,6 +340,7 @@ fn _install_module(zip: &str) -> Result<()> {
     );
 
     let sparse_image_size = 256 * (1 << 30); // 256G
+    let jounnel_size = 8; // 8M
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
@@ -353,6 +354,8 @@ fn _install_module(zip: &str) -> Result<()> {
         let result = Command::new("mkfs.ext4")
             .arg("-b")
             .arg("1024")
+            .arg("-J")
+            .arg(format!("size={jounnel_size}"))
             .arg(tmp_module_img)
             .stdout(Stdio::piped())
             .output()?;
