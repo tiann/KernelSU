@@ -66,3 +66,9 @@ Não recomendamos que você modifique a partição do sistema diretamente. Você
 ## O KernelSU pode modificar hosts? Como posso usar AdAway?
 
 Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
+
+## Por que há um arquivo enorme de 256 GB?
+
+O arquivo de tamanho 256 GB `modules.img` é um arquivo de imagem de disco, **não se preocupe com seu tamanho**, é um tipo especial de arquivo conhecido como [arquivo esparso](https://en.wikipedia.org/wiki/Sparse_file), seu tamanho real é apenas o tamanho do módulo que você está usando, e ele diminuirá dinamicamente após você excluir o módulo; ele não ocupa realmente 256 GB de espaço em disco (na verdade, seu telefone celular pode não ter tanto espaço).
+
+Se você estiver realmente insatisfeito com o tamanho deste arquivo, pode usar o comando `resize2fs -M` para torná-lo do tamanho real; no entanto, o módulo pode não funcionar corretamente neste momento, e não forneceremos suporte para isso.
