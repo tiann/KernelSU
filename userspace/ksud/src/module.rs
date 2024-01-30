@@ -339,7 +339,8 @@ fn _install_module(zip: &str) -> Result<()> {
         humansize::format_size(zip_uncompressed_size, humansize::DECIMAL)
     );
 
-    let sparse_image_size = 256 * (1 << 30); // 256G
+    let sparse_image_size = 1 << 40; // 1T
+    let jounnel_size = 8; // 8M
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
@@ -351,8 +352,8 @@ fn _install_module(zip: &str) -> Result<()> {
 
         // format the img to ext4 filesystem
         let result = Command::new("mkfs.ext4")
-            .arg("-b")
-            .arg("1024")
+            .arg("-J")
+            .arg(format!("size={jounnel_size}"))
             .arg(tmp_module_img)
             .stdout(Stdio::piped())
             .output()?;
@@ -361,6 +362,7 @@ fn _install_module(zip: &str) -> Result<()> {
             "Failed to format ext4 image: {}",
             String::from_utf8(result.stderr).unwrap()
         );
+        check_image(tmp_module_img)?;
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
@@ -385,6 +387,16 @@ fn _install_module(zip: &str) -> Result<()> {
         // legacy image, truncate it to new size.
         if std::fs::metadata(modules_img)?.len() < sparse_image_size {
             println!("- Truncate legacy image to new size");
+            
+            // shrink it to minimum size
+            check_image(tmp_module_img)?;
+            Command::new("resize2fs")
+                .arg("-M")
+                .arg(tmp_module_img)
+                .stdout(Stdio::piped())
+                .status()?;
+
+            // truncate the file to new size
             OpenOptions::new()
                 .write(true)
                 .open(tmp_module_img)
@@ -392,6 +404,7 @@ fn _install_module(zip: &str) -> Result<()> {
                 .set_len(sparse_image_size)
                 .context("Failed to truncate ext4 image")?;
 
+            // resize the image to new size
             check_image(tmp_module_img)?;
             Command::new("resize2fs")
                 .arg(tmp_module_img)
@@ -399,7 +412,6 @@ fn _install_module(zip: &str) -> Result<()> {
                 .status()?;
         }
     }
-    check_image(tmp_module_img)?;
 
     // ensure modules_update exists
     ensure_dir_exists(module_update_tmp_dir)?;
