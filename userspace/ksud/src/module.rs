@@ -352,8 +352,6 @@ fn _install_module(zip: &str) -> Result<()> {
 
         // format the img to ext4 filesystem
         let result = Command::new("mkfs.ext4")
-            .arg("-b")
-            .arg("1024")
             .arg("-J")
             .arg(format!("size={jounnel_size}"))
             .arg(tmp_module_img)
