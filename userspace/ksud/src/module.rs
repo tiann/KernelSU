@@ -361,6 +361,7 @@ fn _install_module(zip: &str) -> Result<()> {
             "Failed to format ext4 image: {}",
             String::from_utf8(result.stderr).unwrap()
         );
+        check_image(tmp_module_img)?;
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
@@ -399,7 +400,6 @@ fn _install_module(zip: &str) -> Result<()> {
                 .status()?;
         }
     }
-    check_image(tmp_module_img)?;
 
     // ensure modules_update exists
     ensure_dir_exists(module_update_tmp_dir)?;
