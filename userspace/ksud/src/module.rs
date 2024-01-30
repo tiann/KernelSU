@@ -387,6 +387,16 @@ fn _install_module(zip: &str) -> Result<()> {
         // legacy image, truncate it to new size.
         if std::fs::metadata(modules_img)?.len() < sparse_image_size {
             println!("- Truncate legacy image to new size");
+            
+            // shrink it to minimum size
+            check_image(tmp_module_img)?;
+            Command::new("resize2fs")
+                .arg("-M")
+                .arg(tmp_module_img)
+                .stdout(Stdio::piped())
+                .status()?;
+
+            // truncate the file to new size
             OpenOptions::new()
                 .write(true)
                 .open(tmp_module_img)
@@ -394,6 +404,7 @@ fn _install_module(zip: &str) -> Result<()> {
                 .set_len(sparse_image_size)
                 .context("Failed to truncate ext4 image")?;
 
+            // resize the image to new size
             check_image(tmp_module_img)?;
             Command::new("resize2fs")
                 .arg(tmp_module_img)
