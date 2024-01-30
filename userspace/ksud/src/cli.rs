@@ -285,7 +285,7 @@ pub fn run() -> Result<()> {
             Debug::Su => crate::ksu::grant_root(),
             Debug::Mount => event::mount_systemlessly(defs::MODULE_DIR),
             Debug::Xcp { src, dst } => {
-                utils::copy_sparse_file(&src, &dst)?;
+                utils::copy_sparse_file(src, dst)?;
                 Ok(())
             }
             Debug::Test => todo!(),
