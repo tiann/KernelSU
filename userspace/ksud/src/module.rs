@@ -387,7 +387,7 @@ fn _install_module(zip: &str) -> Result<()> {
         // legacy image, truncate it to new size.
         if std::fs::metadata(modules_img)?.len() < sparse_image_size {
             println!("- Truncate legacy image to new size");
-            
+
             // shrink it to minimum size
             check_image(tmp_module_img)?;
             Command::new("resize2fs")
