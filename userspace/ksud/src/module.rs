@@ -673,3 +673,12 @@ pub fn list_modules() -> Result<()> {
     println!("{}", serde_json::to_string_pretty(&modules)?);
     Ok(())
 }
+
+pub fn shrink_image() -> Result<()> {
+    Command::new("resize2fs")
+        .arg("-M")
+        .arg(defs::MODULE_IMG)
+        .stdout(Stdio::piped())
+        .status()?;
+    Ok(())
+}
