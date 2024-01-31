@@ -21,7 +21,7 @@ fn set_kernel_param(size: u32, hash: String) -> Result<()> {
     let expeced_size_path = kernel_param_path.join("ksu_expected_size");
     let expeced_hash_path = kernel_param_path.join("ksu_expected_hash");
 
-    println!(
+    print!(
         "before size: {:#x} hash: {}",
         read_u32(&expeced_size_path)?,
         std::fs::read_to_string(&expeced_hash_path)?
@@ -30,7 +30,7 @@ fn set_kernel_param(size: u32, hash: String) -> Result<()> {
     std::fs::write(&expeced_size_path, size.to_string())?;
     std::fs::write(&expeced_hash_path, hash)?;
 
-    println!(
+    print!(
         "after size: {:#x} hash: {}",
         read_u32(&expeced_size_path)?,
         std::fs::read_to_string(&expeced_hash_path)?
@@ -58,5 +58,8 @@ pub fn set_manager(pkg: &str) -> Result<()> {
     let path = get_apk_path(pkg).with_context(|| format!("{pkg} does not exist!"))?;
     let sign = get_apk_signature(&path)?;
     set_kernel_param(sign.0, sign.1)?;
+
+    // force-stop it
+    let _ = Command::new("am").args(["force-stop", pkg]).status();
     Ok(())
 }
