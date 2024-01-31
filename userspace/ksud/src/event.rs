@@ -1,6 +1,5 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
-use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
 use crate::module::prune_modules;
