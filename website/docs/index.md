@@ -26,4 +26,3 @@ features:
     details: KernelSU allows customization of `su`'s uid, gid, groups, capabilities, and SELinux rules, locking up root privileges.
   - title: Modules
     details: Modules may modify /system systemlessly using overlayfs enabling great power.
-
