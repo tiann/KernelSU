@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
+#[cfg(target_os = "android")]
 use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
@@ -9,13 +10,13 @@ use crate::{
     utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
-fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
+fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
     if lowerdir.is_empty() {
-        warn!("partition: {partition} lowerdir is empty");
+        warn!("partition: {partition_name} lowerdir is empty");
         return Ok(());
     }
 
-    let partition = format!("/{partition}");
+    let partition = format!("/{partition_name}");
 
     // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
     if Path::new(&partition).read_link().is_ok() {
@@ -23,7 +24,15 @@ fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
         return Ok(());
     }
 
-    mount::mount_overlay(&partition, lowerdir)
+    let mut workdir = None;
+    let mut upperdir = None;
+    let system_rw_dir = Path::new(defs::SYSTEM_RW_DIR);
+    if system_rw_dir.exists() {
+        workdir = Some(system_rw_dir.join(partition_name).join("workdir"));
+        upperdir = Some(system_rw_dir.join(partition_name).join("upperdir"));
+    }
+
+    mount::mount_overlay(&partition, lowerdir, workdir, upperdir)
 }
 
 pub fn mount_systemlessly(module_dir: &str) -> Result<()> {

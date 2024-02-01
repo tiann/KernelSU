@@ -14,6 +14,12 @@ use crate::{
     utils::{self, umask},
 };
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use rustix::{
+    process::getuid,
+    thread::{set_thread_res_gid, set_thread_res_uid, Gid, Uid},
+};
+
 pub const KERNEL_SU_OPTION: u32 = 0xDEAD_BEEF;
 
 const CMD_GRANT_ROOT: u64 = 0;
@@ -65,8 +71,13 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
         if !groups.is_empty() {
             libc::setgroups(groups.len(), groups.as_ptr());
         }
-        libc::setresgid(gid, gid, gid);
-        libc::setresuid(uid, uid, uid);
+    }
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    {
+        let gid = unsafe { Gid::from_raw(gid) };
+        let uid = unsafe { Uid::from_raw(uid) };
+        set_thread_res_gid(gid, gid, gid).ok();
+        set_thread_res_uid(uid, uid, uid).ok();
     }
 }
 
@@ -203,7 +214,7 @@ pub fn root_shell() -> Result<()> {
     }
 
     // use current uid if no user specified, these has been done in kernel!
-    let mut uid = unsafe { libc::getuid() };
+    let mut uid = getuid().as_raw();
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {

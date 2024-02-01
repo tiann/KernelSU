@@ -15,6 +15,12 @@ use std::os::unix::prelude::PermissionsExt;
 use hole_punch::*;
 use std::io::{Read, Seek, SeekFrom};
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use rustix::{
+    process,
+    thread::{move_into_link_name_space, unshare, LinkNameSpaceType, UnshareFlags},
+};
+
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
     log::debug!("ensure_clean_dir: {}", path.display());
@@ -115,24 +121,23 @@ pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
-    use anyhow::ensure;
-    use std::os::fd::AsRawFd;
+    use rustix::{
+        fd::AsFd,
+        fs::{open, Mode, OFlags},
+    };
     let path = format!("/proc/{pid}/ns/mnt");
-    let fd = std::fs::File::open(path)?;
+    let fd = open(path, OFlags::RDONLY, Mode::from_raw_mode(0))?;
     let current_dir = std::env::current_dir();
-    let ret = unsafe { libc::setns(fd.as_raw_fd(), libc::CLONE_NEWNS) };
+    move_into_link_name_space(fd.as_fd(), Some(LinkNameSpaceType::Mount))?;
     if let std::result::Result::Ok(current_dir) = current_dir {
         let _ = std::env::set_current_dir(current_dir);
     }
-    ensure!(ret == 0, "switch mnt ns failed");
     Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn unshare_mnt_ns() -> Result<()> {
-    use anyhow::ensure;
-    let ret = unsafe { libc::unshare(libc::CLONE_NEWNS) };
-    ensure!(ret == 0, "unshare mnt ns failed");
+    unshare(UnshareFlags::NEWNS)?;
     Ok(())
 }
 
@@ -164,7 +169,7 @@ pub fn switch_cgroups() {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn umask(mask: u32) {
-    unsafe { libc::umask(mask) };
+    process::umask(rustix::fs::Mode::from_raw_mode(mask));
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
