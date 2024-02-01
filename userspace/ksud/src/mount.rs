@@ -11,6 +11,7 @@ use log::{info, warn};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
 use std::path::Path;
+use std::path::PathBuf;
 
 pub struct AutoMountExt4 {
     target: String,
@@ -81,7 +82,13 @@ pub fn umount_dir(src: impl AsRef<Path>) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_overlayfs(lower_dirs: &[String], lowest: &str, dest: impl AsRef<Path>) -> Result<()> {
+pub fn mount_overlayfs(
+    lower_dirs: &[String],
+    lowest: &str,
+    upperdir: Option<PathBuf>,
+    workdir: Option<PathBuf>,
+    dest: impl AsRef<Path>,
+) -> Result<()> {
     let lowerdir_config = lower_dirs
         .iter()
         .map(|s| s.as_ref())
@@ -89,13 +96,21 @@ pub fn mount_overlayfs(lower_dirs: &[String], lowest: &str, dest: impl AsRef<Pat
         .collect::<Vec<_>>()
         .join(":");
     info!(
-        "mount overlayfs on {}, options={}",
-        dest.as_ref().display(),
-        lowerdir_config
+        "mount overlayfs on {:?}, lowerdir={}, upperdir={:?}, workdir={:?}",
+        dest.as_ref(),
+        lowerdir_config,
+        upperdir,
+        workdir
     );
     let fs = fsopen("overlay", FsOpenFlags::FSOPEN_CLOEXEC)?;
     let fs = fs.as_fd();
     fsconfig_set_string(fs, "lowerdir", lowerdir_config)?;
+    if let (Some(upperdir), Some(workdir)) = (upperdir, workdir) {
+        if upperdir.exists() && workdir.exists() {
+            fsconfig_set_string(fs, "upperdir", upperdir.display().to_string())?;
+            fsconfig_set_string(fs, "workdir", workdir.display().to_string())?;
+        }
+    }
     fsconfig_set_string(fs, "source", KSU_OVERLAY_SOURCE)?;
     fsconfig_create(fs)?;
     let mount = fsmount(fs, FsMountFlags::FSMOUNT_CLOEXEC, MountAttrFlags::empty())?;
@@ -180,7 +195,7 @@ fn mount_overlay_child(
         return Ok(());
     }
     // merge modules and stock
-    if let Err(e) = mount_overlayfs(&lower_dirs, stock_root, mount_point) {
+    if let Err(e) = mount_overlayfs(&lower_dirs, stock_root, None, None, mount_point) {
         warn!("failed: {:#}, fallback to bind mount", e);
         bind_mount(stock_root, mount_point)?;
     }
@@ -188,7 +203,12 @@ fn mount_overlay_child(
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
+pub fn mount_overlay(
+    root: &String,
+    module_roots: &Vec<String>,
+    workdir: Option<PathBuf>,
+    upperdir: Option<PathBuf>,
+) -> Result<()> {
     info!("mount overlay for {}", root);
     std::env::set_current_dir(root).with_context(|| format!("failed to chdir to {root}"))?;
     let stock_root = ".";
@@ -208,7 +228,8 @@ pub fn mount_overlay(root: &String, module_roots: &Vec<String>) -> Result<()> {
     mount_seq.sort();
     mount_seq.dedup();
 
-    mount_overlayfs(module_roots, root, root).with_context(|| "mount overlayfs for root failed")?;
+    mount_overlayfs(module_roots, root, upperdir, workdir, root)
+        .with_context(|| "mount overlayfs for root failed")?;
     for mount_point in mount_seq.iter() {
         let Some(mount_point) = mount_point else {
             continue;
@@ -241,7 +262,12 @@ pub fn umount_dir(_src: &str) -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_overlay(_dest: &String, _lower_dirs: &Vec<String>) -> Result<()> {
+pub fn mount_overlay(
+    _root: &String,
+    _module_roots: &Vec<String>,
+    _workdir: Option<PathBuf>,
+    _upperdir: Option<PathBuf>,
+) -> Result<()> {
     unimplemented!()
 }
 
