@@ -859,7 +859,7 @@ dependencies = [
  "regex",
  "retry",
  "rust-embed",
- "rustix 0.38.30",
+ "rustix 0.38.30 (git+https://github.com/Kernel-SU/rustix.git)",
  "serde",
  "serde_json",
  "sha256",
@@ -1155,7 +1155,7 @@ dependencies = [
  "hex",
  "lazy_static",
  "procfs-core",
- "rustix 0.38.30",
+ "rustix 0.38.30 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1374,6 +1374,18 @@ name = "rustix"
 version = "0.38.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "322394588aaf33c24007e8bb3238ee3e4c5c09c084ab32bc73890b99ff326bca"
+dependencies = [
+ "bitflags 2.4.1",
+ "errno 0.3.8",
+ "libc",
+ "linux-raw-sys 0.4.13",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "rustix"
+version = "0.38.30"
+source = "git+https://github.com/Kernel-SU/rustix.git#cea95a423076be6a793679773fb4e80a3e40f38c"
 dependencies = [
  "bitflags 2.4.1",
  "errno 0.3.8",
@@ -1690,7 +1702,7 @@ dependencies = [
  "either",
  "home",
  "once_cell",
- "rustix 0.38.30",
+ "rustix 0.38.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "windows-sys 0.48.0",
 ]
 
