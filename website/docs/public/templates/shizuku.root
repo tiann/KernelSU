@@ -6,7 +6,7 @@
     "uid":0,
     "gid":0,
     "groups":[
-        "ROOT"
+        "SHELL"
     ],
     "capabilities":[
         "CAP_DAC_OVERRIDE"
