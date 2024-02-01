@@ -152,7 +152,9 @@ fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     let tree = open_tree(
         CWD,
         from.as_ref(),
-        OpenTreeFlags::OPEN_TREE_CLOEXEC | OpenTreeFlags::OPEN_TREE_CLONE,
+        OpenTreeFlags::OPEN_TREE_CLOEXEC
+            | OpenTreeFlags::OPEN_TREE_CLONE
+            | OpenTreeFlags::AT_RECURSIVE,
     )?;
     move_mount(
         tree.as_fd(),
