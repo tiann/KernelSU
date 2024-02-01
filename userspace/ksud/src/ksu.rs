@@ -1,5 +1,4 @@
 use anyhow::{Ok, Result};
-use core::slice::SlicePattern;
 use getopts::Options;
 use std::env;
 #[cfg(unix)]
@@ -46,8 +45,8 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
                 .iter()
                 .map(|g| unsafe { Gid::from_raw(*g) })
                 .collect::<Vec<_>>()
-                .as_slice(),
-        );
+                .as_ref(),
+        ).ok();
         let gid = unsafe { Gid::from_raw(gid) };
         let uid = unsafe { Uid::from_raw(uid) };
         set_thread_res_gid(gid, gid, gid).ok();
