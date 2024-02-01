@@ -139,7 +139,13 @@ fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
         from.as_ref(),
         OpenTreeFlags::OPEN_TREE_CLOEXEC | OpenTreeFlags::OPEN_TREE_CLONE,
     )?;
-    move_mount(tree.as_fd(), "", CWD, to.as_ref(), MoveMountFlags::empty())?;
+    move_mount(
+        tree.as_fd(),
+        "",
+        CWD,
+        to.as_ref(),
+        MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
+    )?;
     Ok(())
 }
 
