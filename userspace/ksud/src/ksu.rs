@@ -4,7 +4,7 @@ use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
-use std::{ffi::CStr, process::Command};
+use std::process::Command;
 
 use crate::{
     defs,
@@ -46,7 +46,8 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
                 .map(|g| unsafe { Gid::from_raw(*g) })
                 .collect::<Vec<_>>()
                 .as_ref(),
-        ).ok();
+        )
+        .ok();
         let gid = unsafe { Gid::from_raw(gid) };
         let uid = unsafe { Uid::from_raw(uid) };
         set_thread_res_gid(gid, gid, gid).ok();
@@ -190,16 +191,9 @@ pub fn root_shell() -> Result<()> {
     let mut uid = getuid().as_raw();
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
-        uid = unsafe {
-            #[cfg(target_arch = "aarch64")]
-            let pw = libc::getpwnam(name.as_ptr() as *const u8).as_ref();
-            #[cfg(target_arch = "x86_64")]
-            let pw = libc::getpwnam(name.as_ptr() as *const i8).as_ref();
-
-            match pw {
-                Some(pw) => pw.pw_uid,
-                None => name.parse::<u32>().unwrap_or(0),
-            }
+        uid = match utils::getpwnam(name) {
+            Some(pw) => pw.uid,
+            None => name.parse::<u32>().unwrap_or(0),
         }
     }
 
@@ -214,19 +208,16 @@ pub fn root_shell() -> Result<()> {
         // This is actually incorrect, i don't know why.
         // command = command.env_clear();
 
-        let pw = unsafe { libc::getpwuid(uid).as_ref() };
+        let pw = utils::getpwuid(uid);
 
         if let Some(pw) = pw {
-            let home = unsafe { CStr::from_ptr(pw.pw_dir) };
-            let pw_name = unsafe { CStr::from_ptr(pw.pw_name) };
-
-            let home = home.to_string_lossy();
-            let pw_name = pw_name.to_string_lossy();
+            let home = pw.home_dir;
+            let pw_name = pw.name;
 
             command = command
-                .env("HOME", home.as_ref())
-                .env("USER", pw_name.as_ref())
-                .env("LOGNAME", pw_name.as_ref())
+                .env("HOME", &home)
+                .env("USER", &pw_name)
+                .env("LOGNAME", &pw_name)
                 .env("SHELL", &shell);
         }
     }

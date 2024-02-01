@@ -21,7 +21,6 @@ regex = "1"
 encoding_rs = "0.8"
 retry = "2"
 humansize = "2"
-libc = "0.2"
 extattr = "1"
 jwalk = "0.8"
 is_executable = "1"
@@ -43,6 +42,7 @@ rustix = { git = "https://github.com/Kernel-SU/rustix.git", features = ["all-api
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
 procfs = "0.16"
+parsswd = "0.1"
 loopdev = { git = "https://github.com/tiann/loopdev", branch = "loopfix" }
 
 [target.'cfg(target_os = "android")'.dependencies]

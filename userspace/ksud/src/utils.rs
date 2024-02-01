@@ -1,4 +1,6 @@
 use anyhow::{bail, Context, Error, Ok, Result};
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use parsswd::PwEnt;
 use std::{
     fs::{create_dir_all, remove_file, write, File, OpenOptions},
     io::{ErrorKind::AlreadyExists, ErrorKind::NotFound, Write},
@@ -230,4 +232,63 @@ pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Resul
     }
 
     Ok(())
+}
+
+#[allow(dead_code)]
+pub(crate) struct Passwd {
+    pub name: String,
+    pub passwd: String,
+    pub uid: u32,
+    pub gid: u32,
+    pub gecos: String,
+    pub home_dir: String,
+    pub shell: String,
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+impl From<PwEnt<'_>> for Passwd {
+    fn from(value: PwEnt) -> Self {
+        Self {
+            name: value.name.to_owned(),
+            passwd: value.passwd.to_owned(),
+            uid: value.uid,
+            gid: value.gid,
+            gecos: value.gecos.to_owned(),
+            home_dir: value.home_dir.to_owned(),
+            shell: value.shell.to_owned(),
+        }
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+fn getpw<F: Fn(&PwEnt) -> bool>(fun: F) -> Option<Passwd> {
+    use std::io::{BufRead, BufReader};
+    let passwd = match File::open("/etc/passwd") {
+        std::result::Result::Ok(f) => f,
+        Err(_) => return None,
+    };
+    let passwd = BufReader::new(passwd);
+    for line in passwd.lines() {
+        match line {
+            std::result::Result::Ok(l) => {
+                if let Some(entry) = PwEnt::from_str(&l) {
+                    if fun(&entry) {
+                        return Some(Passwd::from(entry));
+                    }
+                }
+            }
+            Err(_) => continue,
+        };
+    }
+    None
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub(crate) fn getpwuid(uid: u32) -> Option<Passwd> {
+    getpw(|entry| entry.uid == uid)
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub(crate) fn getpwnam(name: &str) -> Option<Passwd> {
+    getpw(|entry| entry.name == name)
 }

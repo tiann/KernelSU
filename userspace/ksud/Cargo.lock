@@ -851,10 +851,10 @@ dependencies = [
  "is_executable",
  "java-properties",
  "jwalk",
- "libc",
  "log",
  "loopdev",
  "nom",
+ "parsswd",
  "procfs",
  "regex",
  "retry",
@@ -1058,6 +1058,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
 
 [[package]]
+name = "parsswd"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a1f3b86ecbb91151e331cf6e1485b3e65908c727f4dbde2e25ac099b2229f41"
+dependencies = [
+ "skeptic",
+]
+
+[[package]]
 name = "password-hash"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1167,6 +1176,15 @@ dependencies = [
  "bitflags 2.4.1",
  "chrono",
  "hex",
+]
+
+[[package]]
+name = "pulldown-cmark"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8361e81576d2e02643b04950e487ec172b687180da65c731c03cf336784e6c07"
+dependencies = [
+ "getopts",
 ]
 
 [[package]]
@@ -1474,6 +1492,16 @@ name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+
+[[package]]
+name = "skeptic"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24ebf8a06f5f8bae61ae5bbc7af7aac4ef6907ae975130faba1199e5fe82256a"
+dependencies = [
+ "pulldown-cmark",
+ "tempdir",
+]
 
 [[package]]
 name = "strsim"
