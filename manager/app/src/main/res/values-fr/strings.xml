@@ -39,7 +39,7 @@
     <string name="module_author">Auteur</string>
     <string name="module_uninstall_confirm">Êtes-vous sûr(e) de vouloir désinstaller le module %s \?</string>
     <string name="home_learn_kernelsu">Découvrir KernelSU</string>
-    <string name="module_overlay_fs_not_available">OverlayFS n\'est pas disponible, impossible de faire fonctionner le module !</string>
+    <string name="module_overlay_fs_not_available">OverlayFS est indisponible, impossible de faire fonctionner les modules !</string>
     <string name="refresh">Rafraîchir</string>
     <string name="show_system_apps">Afficher les applications système</string>
     <string name="hide_system_apps">Masquer les applications système</string>
