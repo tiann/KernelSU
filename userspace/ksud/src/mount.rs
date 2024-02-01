@@ -75,29 +75,31 @@ pub fn mount_ext4(source: impl AsRef<Path>, target: impl AsRef<Path>) -> Result<
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn umount_dir(src: impl AsRef<Path>) -> Result<()> {
-    unmount(src.as_ref(), UnmountFlags::empty()).with_context(|| format!("Failed to umount {}", src.as_ref().display()))?;
+    unmount(src.as_ref(), UnmountFlags::empty())
+        .with_context(|| format!("Failed to umount {}", src.as_ref().display()))?;
     Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn mount_overlayfs(
+pub fn mount_overlayfs(
     lower_dirs: &[String],
-    lowest: impl AsRef<Path>,
+    lowest: &str,
     dest: impl AsRef<Path>,
 ) -> Result<()> {
-    let options = format!(
-        "lowerdir={}:{}",
-        lower_dirs.join(":"),
-        lowest.as_ref().display()
-    );
+    let lowerdir_config = lower_dirs
+        .iter()
+        .map(|s| s.as_ref())
+        .chain(std::iter::once(lowest))
+        .collect::<Vec<_>>()
+        .join(":");
     info!(
         "mount overlayfs on {}, options={}",
         dest.as_ref().display(),
-        options
+        lowerdir_config
     );
     let fs = fsopen("overlay", FsOpenFlags::FSOPEN_CLOEXEC)?;
     let fs = fs.as_fd();
-    fsconfig_set_string(fs, "lowerdir", lower_dirs.join(":"))?;
+    fsconfig_set_string(fs, "lowerdir", lowerdir_config)?;
     fsconfig_set_string(fs, "source", KSU_OVERLAY_SOURCE)?;
     fsconfig_create(fs)?;
     let mount = fsmount(fs, FsMountFlags::FSMOUNT_CLOEXEC, MountAttrFlags::empty())?;
