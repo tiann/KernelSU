@@ -81,11 +81,7 @@ pub fn umount_dir(src: impl AsRef<Path>) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_overlayfs(
-    lower_dirs: &[String],
-    lowest: &str,
-    dest: impl AsRef<Path>,
-) -> Result<()> {
+pub fn mount_overlayfs(lower_dirs: &[String], lowest: &str, dest: impl AsRef<Path>) -> Result<()> {
     let lowerdir_config = lower_dirs
         .iter()
         .map(|s| s.as_ref())
