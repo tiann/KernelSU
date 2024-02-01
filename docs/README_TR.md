@@ -47,7 +47,7 @@ KernelSU'daki güvenlik açıklarını bildirme hakkında bilgi için, bkz [SECU
 ## Lisans
 
 - `kernel` klasöründeki dosyalar [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html) lisansı altındadır.
-- `kernel` klasörü dışındaki bütün diğer bölümler [GPL-3-or-later](https://www.gnu.org/licenses/gpl-3.0.html) lisansı altındadır.
+- `kernel` klasörü dışındaki bütün diğer bölümler [GPL-3-veya-sonraki](https://www.gnu.org/licenses/gpl-3.0.html) lisansı altındadır.
 
 ## Krediler
 
