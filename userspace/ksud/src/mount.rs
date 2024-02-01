@@ -3,7 +3,6 @@ use anyhow::{anyhow, bail, Ok, Result};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use retry::delay::NoDelay;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{fd::AsFd, fs::CWD, mount::*};
 
@@ -21,21 +20,7 @@ pub struct AutoMountExt4 {
 impl AutoMountExt4 {
     #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn try_new(source: &str, target: &str, auto_umount: bool) -> Result<Self> {
-        let new_loopback = loopdev::LoopControl::open()?.next_free()?;
-        new_loopback.with().attach(source)?;
-        let lo = new_loopback.path().ok_or(anyhow!("no loop"))?;
-        let fs = fsopen("ext4", FsOpenFlags::FSOPEN_CLOEXEC)?;
-        let fs = fs.as_fd();
-        fsconfig_set_string(fs, "source", lo)?;
-        fsconfig_create(fs)?;
-        let mount = fsmount(fs, FsMountFlags::FSMOUNT_CLOEXEC, MountAttrFlags::empty())?;
-        move_mount(
-            mount.as_fd(),
-            "",
-            CWD,
-            target,
-            MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
-        )?;
+        mount_ext4(source, target)?;
         Ok(Self {
             target: target.to_string(),
             auto_umount,
@@ -68,27 +53,29 @@ impl Drop for AutoMountExt4 {
     }
 }
 
-#[allow(dead_code)]
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn mount_image(src: &str, target: &str, autodrop: bool) -> Result<()> {
-    AutoMountExt4::try_new(src, target, autodrop)?;
+pub fn mount_ext4(source: impl AsRef<Path>, target: impl AsRef<Path>) -> Result<()> {
+    let new_loopback = loopdev::LoopControl::open()?.next_free()?;
+    new_loopback.with().attach(source)?;
+    let lo = new_loopback.path().ok_or(anyhow!("no loop"))?;
+    let fs = fsopen("ext4", FsOpenFlags::FSOPEN_CLOEXEC)?;
+    let fs = fs.as_fd();
+    fsconfig_set_string(fs, "source", lo)?;
+    fsconfig_create(fs)?;
+    let mount = fsmount(fs, FsMountFlags::FSMOUNT_CLOEXEC, MountAttrFlags::empty())?;
+    move_mount(
+        mount.as_fd(),
+        "",
+        CWD,
+        target.as_ref(),
+        MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
+    )?;
     Ok(())
 }
 
-#[allow(dead_code)]
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_ext4(src: &str, target: &str, autodrop: bool) -> Result<()> {
-    // umount target first.
-    let _ = umount_dir(target);
-    let result = retry::retry(NoDelay.take(3), || mount_image(src, target, autodrop));
-    result
-        .map_err(|e| anyhow::anyhow!("mount partition: {src} -> {target} failed: {e}"))
-        .map(|_| ())
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn umount_dir(src: &str) -> Result<()> {
-    unmount(src, UnmountFlags::empty()).with_context(|| format!("Failed to umount {src}"))?;
+pub fn umount_dir(src: impl AsRef<Path>) -> Result<()> {
+    unmount(src.as_ref(), UnmountFlags::empty()).with_context(|| format!("Failed to umount {}", src.as_ref().display()))?;
     Ok(())
 }
 
