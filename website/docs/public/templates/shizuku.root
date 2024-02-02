@@ -9,7 +9,7 @@
         "SHELL"
     ],
     "capabilities":[
-        "CAP_DAC_OVERRIDE"
+        "CAP_DAC_READ_SEARCH"
     ],
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
