@@ -39,7 +39,7 @@ chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-rustix = { version = "0.38", features = ["all-apis"] }
+rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = ["all-apis"] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
 procfs = "0.16"
@@ -51,4 +51,4 @@ android_logger = "0.13"
 [profile.release]
 strip = true
 opt-level = "z"
-#lto = true
+lto = true

@@ -1,0 +1,22 @@
+{
+    "id":"shizuku.root",
+    "name":"Shizuku Service",
+    "author":"JohnRTitor",
+    "description":"Only essential permissions to start Shizuku service.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "SHELL"
+    ],
+    "capabilities":[
+        "CAP_DAC_READ_SEARCH"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED",
+    "locales": {
+        "bn": {
+            "name": "শিজুকু সার্ভিস",
+            "description":"শিজুকু চালানোর জন্য শুধু যে অনুমতি গুলি লাগে।"
+        }
+    }
+}

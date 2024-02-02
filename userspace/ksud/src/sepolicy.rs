@@ -696,20 +696,7 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
     let policies: Vec<AtomicStatement> = statement.try_into()?;
 
     for policy in policies {
-        let mut result: u32 = 0;
-        let cpolicy = FfiPolicy::from(policy);
-        unsafe {
-            #[allow(clippy::cast_possible_wrap)]
-            libc::prctl(
-                crate::ksu::KERNEL_SU_OPTION as i32, // supposed to overflow
-                crate::ksu::CMD_SET_SEPOLICY,
-                0,
-                std::ptr::addr_of!(cpolicy).cast::<libc::c_void>(),
-                std::ptr::addr_of_mut!(result).cast::<libc::c_void>(),
-            );
-        }
-
-        if result != crate::ksu::KERNEL_SU_OPTION {
+        if !rustix::process::ksu_set_policy(&FfiPolicy::from(policy)) {
             log::warn!("apply rule: {:?} failed.", statement);
             if strict {
                 return Err(anyhow::anyhow!("apply rule {:?} failed.", statement));
