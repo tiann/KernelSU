@@ -859,7 +859,7 @@ dependencies = [
  "regex",
  "retry",
  "rust-embed",
- "rustix 0.38.30 (git+https://github.com/Kernel-SU/rustix.git)",
+ "rustix 0.38.30 (git+https://github.com/Kernel-SU/rustix.git?branch=main)",
  "serde",
  "serde_json",
  "sha256",
@@ -1385,7 +1385,7 @@ dependencies = [
 [[package]]
 name = "rustix"
 version = "0.38.30"
-source = "git+https://github.com/Kernel-SU/rustix.git#cea95a423076be6a793679773fb4e80a3e40f38c"
+source = "git+https://github.com/Kernel-SU/rustix.git?branch=main#0e270bce2d97466be6b987bb5f7ea5b1e8d84969"
 dependencies = [
  "bitflags 2.4.1",
  "errno 0.3.8",
