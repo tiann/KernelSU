@@ -46,7 +46,8 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
                 .map(|g| unsafe { Gid::from_raw(*g) })
                 .collect::<Vec<_>>()
                 .as_ref(),
-        ).ok();
+        )
+        .ok();
         let gid = unsafe { Gid::from_raw(gid) };
         let uid = unsafe { Uid::from_raw(uid) };
         set_thread_res_gid(gid, gid, gid).ok();
