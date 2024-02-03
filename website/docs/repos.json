@@ -1,4 +1,3 @@
-
 [
     {
         "maintainer": "diphons",
@@ -615,5 +614,12 @@
         "kernel_name": "fog_kramel",
         "kernel_link": "https://github.com/backslashxx/fog_kramel",
         "devices": "Redmi 10C (fog/rain/wind)"
-    }     
+    },
+    {
+        "maintainer": "Fede2782",
+        "maintainer_link": "https://github.com/Fede2782",
+        "kernel_name": "android_kernel_samsung_gta4xl",
+        "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
+        "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
+    }
 ]
