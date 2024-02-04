@@ -2,7 +2,7 @@
     "id":"adaway.root",
     "name":"Adaway Root",
     "author":"JohnRTitor",
-    "description":"Only essential permissions to let Adaway modify hosts file.",
+    "description":"Only essential permissions to let Adaway modify hosts file and operate a web server.",
     "uid":0,
     "gid":0,
     "groups":[
@@ -10,6 +10,7 @@
     ],
     "capabilities":[
         "CAP_DAC_OVERRIDE",
+        "CAP_NET_BIND_SERVICE",
         "CAP_SYS_PTRACE"
     ],
     "context":"u:r:su:s0",
