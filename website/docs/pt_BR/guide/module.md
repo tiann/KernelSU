@@ -12,10 +12,10 @@ Cada script shell executado no contexto do KernelSU será executado no shell `as
 
 Para aqueles que desejam usar o recurso “Modo Autônomo” fora do KernelSU, existem 2 maneiras de ativá-los:
 
-1. Defina a variável de ambiente `ASH_STANDALONE` como `1`<br>Exemplo: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
+1. Defina a variável de ambiente `ASH_STANDALONE` como `1`.<br>Exemplo: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
 2. Alternar com opções de linha de comando:<br>`/data/adb/ksu/bin/busybox sh -o standalone <script>`
 
-Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
+Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador do KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
 ::: tip DIFERENÇA COM MAGISK
 
@@ -33,24 +33,24 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 |
 ├── $MODID                  <--- A pasta é nomeada com o ID do módulo
 │   │
-│   │      *** Identidade do Módulo ***
+│   │      *** Identidade do módulo ***
 │   │
 │   ├── module.prop         <--- Este arquivo armazena os metadados do módulo
 │   │
-│   │      *** Conteúdo Principal ***
+│   │      *** Conteúdo principal ***
 │   │
 │   ├── system              <--- Esta pasta será montada se skip_mount não existir
 │   │   ├── ...
 │   │   ├── ...
 │   │   └── ...
 │   │
-│   │      *** Sinalizadores de Status ***
+│   │      *** Sinalizadores de status ***
 │   │
 │   ├── skip_mount          <--- Se existir, o KernelSU NÃO montará sua pasta de sistema
 │   ├── disable             <--- Se existir, o módulo será desabilitado
 │   ├── remove              <--- Se existir, o módulo será removido na próxima reinicialização
 │   │
-│   │      *** Arquivos Opcionais ***
+│   │      *** Arquivos opcionais ***
 │   │
 │   ├── post-fs-data.sh     <--- Este script será executado em post-fs-data
 │   ├── post-mount.sh       <--- Este script será executado em post-mount
@@ -60,7 +60,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 │   ├── system.prop         <--- As propriedades neste arquivo serão carregadas como propriedades do sistema por resetprop
 │   ├── sepolicy.rule       <--- Regras adicionais de sepolicy personalizadas
 │   │
-│   │      *** Gerado Automaticamente, NÃO CRIE OU MODIFIQUE MANUALMENTE ***
+│   │      *** Gerado automaticamente, NÃO CRIE OU MODIFIQUE MANUALMENTE ***
 │   │
 │   ├── vendor              <--- Um link simbólico para $MODID/system/vendor
 │   ├── product             <--- Um link simbólico para $MODID/system/product
@@ -79,7 +79,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ```
 
 ::: tip DIFERENÇA COM MAGISK
-O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskOnKernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
+O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
 :::
 
 ### module.prop
@@ -98,13 +98,13 @@ description=<string>
 - `id` deve corresponder a esta expressão regular: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
   Exemplo: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
   Este é o **identificador exclusivo** do seu módulo. Você não deve alterá-lo depois de publicado.
-- `versionCode` deve ser um **inteiro**. Isso é usado para comparar versões
+- `versionCode` deve ser um **número inteiro**. Isso é usado para comparar versões
 - Outros que não foram mencionados acima podem ser qualquer string de **linha única**.
 - Certifique-se de usar o tipo de quebra de linha `UNIX (LF)` e não o `Windows (CR+LF)` ou `Macintosh (CR)`.
 
 ### Shell scripts
 
-Por favor, leia a seção [Scripts de inicialização](#scripts-de-inicializacao) para entender a diferença entre `post-fs-data.sh` e `service.sh`. Para a maioria dos desenvolvedores de módulos, `service.sh` deve ser bom o suficiente se você precisar apenas executar um script de inicialização. Se precisar executar o script após a inicialização ser concluída, use `boot-completed.sh`. Se você quiser fazer algo após montar overlayfs, use `post-mount.sh`.
+Por favor, leia a seção [Scripts de inicialização](#scripts-de-inicializacao) para entender a diferença entre `post-fs-data.sh` e `service.sh`. Para a maioria dos desenvolvedores de módulos, `service.sh` deve ser bom o suficiente se você precisar apenas executar um script de inicialização. Se precisar executar o script após a inicialização ser concluída, use `boot-completed.sh`. Se você quiser fazer algo após montar OverlayFS, use `post-mount.sh`.
 
 Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo, **NÃO** codifique o caminho do seu módulo em scripts.
 
@@ -114,12 +114,12 @@ Você pode usar a variável de ambiente `KSU` para determinar se um script está
 
 ### Diretório `system`
 
-O conteúdo deste diretório será sobreposto à partição /system do sistema usando overlayfs após a inicialização do sistema. Isso significa que:
+O conteúdo deste diretório será sobreposto à partição /system do sistema usando OverlayFS após a inicialização do sistema. Isso significa que:
 
 1. Arquivos com o mesmo nome daqueles no diretório correspondente no sistema serão substituídos pelos arquivos deste diretório.
 2. Pastas com o mesmo nome daquelas no diretório correspondente no sistema serão mescladas com as pastas neste diretório.
 
-Se você deseja excluir um arquivo ou pasta no diretório original do sistema, você precisa criar um arquivo com o mesmo nome do arquivo/pasta no diretório do módulo usando `mknod filename c 0 0`. Dessa forma, o sistema overlayfs irá automaticamente "branquear" este arquivo como se ele tivesse sido excluído (a partição /system não foi realmente alterada).
+Se você deseja excluir um arquivo ou pasta no diretório original do sistema, você precisa criar um arquivo com o mesmo nome do arquivo/pasta no diretório do módulo usando `mknod filename c 0 0`. Dessa forma, o sistema OverlayFS irá automaticamente "branquear" este arquivo como se ele tivesse sido excluído (a partição /system não foi realmente alterada).
 
 Você também pode declarar uma variável chamada `REMOVE` contendo uma lista de diretórios em `customize.sh` para executar operações de remoção, e o KernelSU executará automaticamente `mknod <TARGET> c 0 0` nos diretórios correspondentes do módulo. Por exemplo:
 
@@ -132,7 +132,7 @@ REMOVE="
 
 A lista acima irá executar `mknod $MODPATH/system/app/YouTube c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
 
-Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema overlayfs substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
+Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema OverlayFS substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
 
 Você pode declarar uma variável chamada `REPLACE` em seu arquivo `customize.sh`, que inclui uma lista de diretórios a serem substituídos, e o KernelSU executará automaticamente as operações correspondentes em seu diretório de módulo. Por exemplo:
 
@@ -147,10 +147,10 @@ Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` 
 
 ::: tip DIFERENÇA COM MAGISK
 
-O mecanismo sem sistema do KernelSU é implementado através do overlayfs do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
+O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
 
-Se você estiver interessado em overlayfs, é recomendável ler a [documentação sobre overlayfs](https://docs.kernel.org/filesystems/overlayfs.html) do Kernel Linux.
+Se você estiver interessado em OverlayFS, é recomendável ler a [documentação sobre OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html) do Kernel Linux.
 
 ### system.prop
 
@@ -254,6 +254,6 @@ No KernelSU, os scripts de inicialização são divididos em dois tipos com base
 - Scripts de módulo
   - Colocado na própria pasta do módulo.
   - Executado apenas se o módulo estiver ativado.
-  - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado em overlayfs montado.
+  - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado em OverlayFS montado.
 
 Todos os scripts de inicialização serão executados no shell BusyBox `ash` do KernelSU com o "Modo Autônomo" ativado.

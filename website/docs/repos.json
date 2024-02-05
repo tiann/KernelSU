@@ -70,13 +70,6 @@
         "devices": "wayne"
     },
     {
-        "maintainer": "YamazakuraH",
-        "maintainer_link": "https://github.com/YamazakuraH",
-        "kernel_name": "kernel_xiaomi_cepheus",
-        "kernel_link": "https://github.com/169163-Network/kernel_xiaomi_cepheus",
-        "devices": "cepheus for pixel experience"
-    },
-    {
         "maintainer": "SakuraNotStupid",
         "maintainer_link": "https://github.com/SakuraKyuo",
         "kernel_name": "android_kernel_xiaomi_sdm710",
@@ -119,17 +112,10 @@
         "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
     },
     {
-        "maintainer": "lateautumn233",
-        "maintainer_link": "https://github.com/lateautumn233",
-        "kernel_name": "android_kernel_oneplus_sm8250",
-        "kernel_link": "https://github.com/lateautumn233/android_kernel_oneplus_sm8250",
-        "devices": "OnePlus 8 Serials"
-    },
-    {
-        "maintainer": "Sreeshankar K",
-        "maintainer_link": "https://github.com/sreeshankark",
-        "kernel_name": "NeverSettle Kernel",
-        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
+        "maintainer": "PSavarMattas",
+        "maintainer_link": "https://github.com/psavarmattas",
+        "kernel_name": "PSM Kernel",
+        "kernel_link": "https://github.com/psavarmattas/android_kernel_oneplus_sm7250-WKSU",
         "devices": "OnePlus Nord (avicii)"
     },
     {
@@ -276,7 +262,7 @@
         "maintainer": "bggRGjQaUbCoE",
         "maintainer_link": "https://github.com/bggRGjQaUbCoE",
         "kernel_name": "android_kernel_samsung_sm8250",
-        "kernel_link": "https://github.com/bggRGjQaUbCoE/android_kernel_samsung_sm8250",
+        "kernel_link": "https://github.com/bggRGjQaUbCoE/android_kernel_samsung_sm8250-mohammad92",
         "devices": "Samsung Galaxy S20+ 5G (y2q)"
     },
     {
@@ -285,13 +271,6 @@
         "kernel_name": "kernel_xiaomi_raphael",
         "kernel_link": "https://github.com/SOVIET-ANDROID/kernel_xiaomi_raphael",
         "devices": "XK20 Pro Raphael  DSP & A only SAR support "
-    },
-    {
-        "maintainer": "Coconutat",
-        "maintainer_link": "https://github.com/Coconutat",
-        "kernel_name": "android_kernel_huawei_vtr_emui9_KernelSU",
-        "kernel_link": "https://github.com/Coconutat/android_kernel_huawei_vtr_emui9_KernelSU",
-        "devices": "Huawei P10,P10 Plus,Mate9,Mate9 Pro(Kirin960 Series),Stable For GSI"
     },
     {
         "maintainer": "dabao1955",
@@ -327,13 +306,6 @@
         "kernel_name": "kernel_xiaomi_mojito",
         "kernel_link": "https://github.com/Sr-Han/kernel_xiaomi_mojito",
         "devices": "Redmi Note 10 (Sunny/Mojito)"
-    },
-    {
-        "maintainer": "dabao1955",
-        "maintainer_link": "https://github.com/dabao1955",
-        "kernel_name": "android_kernel_OPPO_OP4ED5",
-        "kernel_link": "https://github.com/dabao1955/android_kernel_OPPO_OP4ED5",
-        "devices": "OPPO Reno6 on ColorOS11.x/ColorOS12.x\uff0ckernel version4.14.186+"
     },
     {
         "maintainer": "rushiranpise",
@@ -429,8 +401,8 @@
     {
         "maintainer": "Coconutat",
         "maintainer_link": "https://github.com/Coconutat",
-        "kernel_name": "android_kernel_xiaomi_sdm845_exp",
-        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_exp",
+        "kernel_name": "android_kernel_xiaomi_sdm845_byd_exp",
+        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_byd_exp",
         "devices": "Xiaomi Mi 8 Pro(UD)[equuleus]/Explorer Edition[ursa]"
     },
     {
@@ -441,13 +413,6 @@
         "devices": "Redmi Note 8 Pro (Begonia/Begoniain)"
     },
     {
-        "maintainer": "Abdul Wahid Khan",
-        "maintainer_link": "https://github.com/Wahid7852",
-        "kernel_name": "kernel_xiaomi_marble",
-        "kernel_link": "https://github.com/Nova-Kernels/kernel_xiaomi_marble",
-        "devices": "Xiaomi Poco F5 / Redmi Note 12 Turbo (Marble)"
-    },
-    {
         "maintainer": "zfdx123",
         "maintainer_link": "https://github.com/zfdx123",
         "kernel_name": "kernel_xiaomi_alioth",
@@ -455,25 +420,11 @@
         "devices": "Redmi K40 (alioth)"
     },
     {
-        "maintainer": "wxt1221",
-        "maintainer_link": "https://github.com/wxt1221",
+        "maintainer": "Bot-wxt1221",
+        "maintainer_link": "https://github.com/Bot-wxt1221",
         "kernel_name": "android_kernel_oneplus_sdm845",
-        "kernel_link": "https://github.com/wxt1221/android_kernel_oneplus_sdm845",
-        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with no Retrofit Dynamic Partitions"
-    },
-    {
-        "maintainer": "zharzinhoo",
-        "maintainer_link": "https://github.com/zharzinhoo",
-        "kernel_name": "Kernel-Oriente-Guamp",
-        "kernel_link": "https://github.com/zharzinhoo/Kernel-Oriente-Guamp",
-        "devices": "Moto g9 play"
-    },
-    {
-        "maintainer": "hc841",
-        "maintainer_link": "https://github.com/hc841",
-        "kernel_name": "NovaCore_kernel",
-        "kernel_link": "https://github.com/hc841/NovaCore_kernel",
-        "devices": "Moto g9 play"
+        "kernel_link": "https://github.com/Bot-wxt1221/android_kernel_oneplus_sdm845",
+        "devices": "Oneplus 6 (enchilada) | Oneplus 6T (fajita) with Retrofit Dynamic Partitions Only with crdroid"
     },
     {
         "maintainer": "zlm324",
@@ -495,13 +446,6 @@
         "kernel_name": "android_kernel_xiaomi_sm8250",
         "kernel_link": "https://github.com/Vincent4440/android_kernel_xiaomi_sm8250",
         "devices": "Poco F4: munch"
-    },
-    {
-        "maintainer": "zharzinhoo",
-        "maintainer_link": "https://github.com/zharzinhoo",
-        "kernel_name": "android_kernel_motorola_cebu",
-        "kernel_link": "https://github.com/zharzinhoo/android_kernel_motorola_cebu",
-        "devices": "Moto g9 power"
     },
     {
         "maintainer": "tiandoufayale",
@@ -536,6 +480,146 @@
         "maintainer_link": "https://github.com/whyakari",
         "kernel_name": "android_kernel_xiaomi_ginkgo",
         "kernel_link": "https://github.com/whyakari/android_kernel_xiaomi_ginkgo",
-        "devices": "non-GKI ginkgo"
+        "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
+    },
+    {
+        "maintainer": "wulan17",
+        "maintainer_link": "https://github.com/wulan17",
+        "kernel_name": "android_kernel_xiaomi_mt6765",
+        "kernel_link": "https://github.com/Mayuri-Chan/android_kernel_xiaomi_mt6765/tree/10-ksu",
+        "devices": "Redmi 6/6A (cereus/cactus)"
+    },
+    {
+        "maintainer": "officialputuid",
+        "maintainer_link": "https://github.com/officialputuid",
+        "kernel_name": "android_kernel_realme_mt6785",
+        "kernel_link": "https://github.com/psionicprjkt/android_kernel_realme_mt6785",
+        "devices": "Realme 6/6i(Indian)/6s/7/Narzo/Narzo 20 Pro/Narzo 30 4G (RM6785)"
+    },
+    {
+        "maintainer": "liquidprjkt",
+        "maintainer_link": "https://github.com/liquidprjkt",
+        "kernel_name": "liquid_kernel_realme_even",
+        "kernel_link": "https://github.com/liquidprjkt/liquid_kernel_realme_even",
+        "devices": "Realme C25/s and Narzo50A (even)"
+    },
+    {
+        "maintainer": "CoolestEnoch",
+        "maintainer_link": "https://github.com/CoolestEnoch",
+        "kernel_name": "kernel-su-huawei-nova2",
+        "kernel_link": "https://github.com/CoolestEnoch/kernel-su-huawei-nova2",
+        "devices": "Huawei nova 2 (pic)"
+    },
+    {
+        "maintainer": "BlackMesa123",
+        "maintainer_link": "https://xdaforums.com/t/kernel-a528b-n-kernelsu-v0-7-5-for-galaxy-a52s-5g.4603287/",
+        "kernel_name": "android_kernel_samsung_sm7325",
+        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "devices": "Samsung Galaxy A52s 5G (a52sxq)"
+    },
+    {
+        "maintainer": "BlackMesa123",
+        "maintainer_link": "https://xdaforums.com/t/kernel-m526b-br-kernelsu-v0-7-5-for-galaxy-m52-5g.4603295/",
+        "kernel_name": "android_kernel_samsung_sm7325",
+        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "devices": "Samsung Galaxy M52 5G (m52xq)"
+    },
+    {
+        "maintainer": "A-JiuA",
+        "maintainer_link": "https://github.com/A-JiuA",
+        "kernel_name": "sirius_Kernel",
+        "kernel_link": "https://github.com/A-JiuA/sirius_Kernel",
+        "devices": "Xiaomi MI 8 SE(MIUI12/12.5)"
+    },
+    {
+        "maintainer": "picasso09",
+        "maintainer_link": "https://github.com/picasso09",
+        "kernel_name": "KernelSU-RM6765R",
+        "kernel_link": "https://github.com/picasso09/RMX2189R/tree/c05-ksu",
+        "devices": "Realme C11 12 15 (RM6765)"
+    },
+    {
+        "maintainer": "josedelinux",
+        "maintainer_link": "https://github.com/josedelinux",
+        "kernel_name": "kernel_google_msm-4.9",
+        "kernel_link": "https://github.com/josedelinux/kernel_google_msm-4.9",
+        "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
+    },
+    {
+        "maintainer": "rsuntk",
+        "maintainer_link": "https://github.com/rsuntk",
+        "kernel_name": "android_kernel_samsung_a12s-4.19-rebased",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s-4.19-rebased",
+        "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
+    },
+    {
+        "maintainer": "Lonelystar9x",
+        "maintainer_link": "https://github.com/lonelystar9x",
+        "kernel_name": "Kernel_xiaomi_sdm845",
+        "kernel_link": "https://github.com/lonelystar9x/android_kernel_xiaomi_sdm845",
+        "devices": "Poco F1 | MI8 | MiMix2S | MiMix3"
+    },
+    {
+        "maintainer": "iceBear67",
+        "maintainer_link": "https://github.com/iceBear67",
+        "kernel_name": "android_kernel_exynos9810_kernelsu",
+        "kernel_link": "https://github.com/iceBear67/android_kernel_exynos9810_kernelsu",
+        "devices": "Galaxy Note 9(N960N/F)"
+    },
+    {
+        "maintainer": "BlackMesa123",
+        "maintainer_link": "https://xdaforums.com/t/kernel-a546b-e-kernelsu-v0-7-5-for-galaxy-a54-5g.4607539/",
+        "kernel_name": "android_kernel_samsung_s5e8835",
+        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_s5e8835",
+        "devices": "Samsung Galaxy A54 5G (a54x)"
+    },
+    {
+        "maintainer": "Fede2782",
+        "maintainer_link": "https://github.com/Fede2782",
+        "kernel_name": "android_kernel_samsung_a34x",
+        "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_a34x/",
+        "devices": "Samsung Galaxy A34 5G (a34x)"
+    },
+    {
+        "maintainer": "KJ-Network",
+        "maintainer_link": "https://github.com/KJ-Network",
+        "kernel_name": "K-Nel-M1721",
+        "kernel_link": "https://github.com/KJ-Network/K-Nel-M1721/",
+        "devices": "Meizu M6 Note (M1721)"
+    },
+    {
+        "maintainer": "SnowWolf725    ",
+        "maintainer_link": "https://github.com/snowwolf725",
+        "kernel_name": "android_kernel_oneplus_sm8150",
+        "kernel_link": "https://github.com/snowwolf725/android_kernel_oneplus_sm8150",
+        "devices": "Oneplus 7(guacamoleb)/7 Pro(guacamole)/7T(hotdog)/7TPro (hotdogb)"
+    },
+    {
+        "maintainer": "backslashxx",
+        "maintainer_link": "https://github.com/backslashxx/",
+        "kernel_name": "msm8953-los21",
+        "kernel_link": "https://github.com/backslashxx/msm8953-los21",
+        "devices": "Mi A2 Lite (daisy) / Redmi 6 Pro (sakura) + Redmi S2/Y2 (ysl)"
+    },
+    {
+        "maintainer": "backslashxx",
+        "maintainer_link": "https://github.com/backslashxx/",
+        "kernel_name": "mojito_krenol",
+        "kernel_link": "https://github.com/backslashxx/mojito_krenol",
+        "devices": "Redmi Note 10 (sunny/mojito)"
+    },
+    {
+        "maintainer": "backslashxx",
+        "maintainer_link": "https://github.com/backslashxx/",
+        "kernel_name": "fog_kramel",
+        "kernel_link": "https://github.com/backslashxx/fog_kramel",
+        "devices": "Redmi 10C (fog/rain/wind)"
+    },
+    {
+        "maintainer": "Fede2782",
+        "maintainer_link": "https://github.com/Fede2782",
+        "kernel_name": "android_kernel_samsung_gta4xl",
+        "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
+        "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
     }
 ]

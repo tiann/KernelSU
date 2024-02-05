@@ -1,7 +1,7 @@
 name: Build Kernel - ChromeOS ARCVM
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-arcvm.yml"
       - "kernel/**"
@@ -15,6 +15,7 @@ on:
 
 jobs:
   build:
+    if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && !github.event.pull_request.draft)
     strategy:
       matrix:
         arch: [x86_64]
@@ -81,7 +82,7 @@ jobs:
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
 
           echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.10/*.patch || echo "[-] No patch found"
 
           echo "[+] Patch script/setlocalversion"
           sed -i 's/-dirty//g' $KERNEL_ROOT/scripts/setlocalversion
@@ -110,7 +111,7 @@ jobs:
           echo "file_path=${PWD}/arch/x86/boot/bzImage" >> $GITHUB_ENV
 
       - name: Upload kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-ARCVM-${{ matrix.arch }}-${{ matrix.version }}
           path: "${{ env.file_path }}"

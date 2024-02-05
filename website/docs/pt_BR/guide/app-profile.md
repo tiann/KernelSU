@@ -37,7 +37,7 @@ O Perfil Root do KernelSU permite a personalização do UID, GID e grupos para o
 O Perfil do Aplicativo controla apenas as permissões do processo root após usar `su`, e ele não controla as permissões do próprio app. Se um app solicitou permissão de acesso à rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
 :::
 
-O Perfil Root é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos por meio de `su`, a concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
+O Perfil Root é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos por meio de `su` A concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
 
 ### Capacidades
 
@@ -93,8 +93,8 @@ Se a configuração do Perfil Root não estiver definida corretamente, poderá o
 
 Por exemplo, se você conceder permissão root a um usuário ADB shell (que é um caso comum) e, em seguida, conceder permissão root a um app normal, mas configurar seu Perfil Root com UID 2000 (que é o UID do usuário ADB shell), o app pode obter acesso root completo executando o comando `su` duas vezes:
 
-1. A primeira execução `su` está sujeita à aplicação do Perfil do Aplicativo e mudará para UID `2000` (adb shell) em vez de `0` (root).
-2. A segunda execução `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (adb shell) na configuração, o app obterá privilégio de root completo.
+1. A primeira execução `su` está sujeita à aplicação do Perfil do Aplicativo e mudará para UID `2000` (ADB shell) em vez de `0` (root).
+2. A segunda execução `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (ADB shell) na configuração, o app obterá privilégio de root completo.
 
 :::warning OBSERVAÇÃO
 Este comportamento é totalmente esperado e não é um bug. Portanto, recomendamos o seguinte:
@@ -106,7 +106,7 @@ Se você realmente precisa conceder permissões de root ao ADB (por exemplo, com
 
 ### Desmontar módulos
 
-O KernelSU fornece um mecanismo sem sistema para modificar partições do sistema, obtido através da montagem de overlayfs. No entanto, alguns apps podem ser sensíveis a esse comportamento. Assim, podemos descarregar módulos montados nesses apps configurando a opção “desmontar módulos”.
+O KernelSU fornece um mecanismo sem sistema para modificar partições do sistema, obtido através da montagem de OverlayFS. No entanto, alguns apps podem ser sensíveis a esse comportamento. Assim, podemos descarregar módulos montados nesses apps configurando a opção “desmontar módulos”.
 
 Além disso, a interface de configurações do gerenciador KernelSU fornece uma opção para "desmontar módulos por padrão". Por padrão, essa opção está **ativada**, o que significa que o KernelSU ou alguns módulos descarregarão módulos para este app, a menos que configurações adicionais sejam aplicadas. Se você não preferir esta configuração ou se ela afetar determinados apps, você terá as seguintes opções:
 
@@ -114,5 +114,5 @@ Além disso, a interface de configurações do gerenciador KernelSU fornece uma 
 2. Desative a opção "desmontar módulos por padrão" e ative individualmente a opção "desmontar módulos" no Perfil do Aplicativo para apps que exigem descarregamento do módulo (agindo como uma "lista negra").
 
 :::info INFORMAÇÕES
-Em dispositivos que utilizam kernel versão 5.10 e superior, o kernel realiza o descarregamento dos módulos. No entanto, para dispositivos que executam versões de kernel abaixo de 5.10, essa opção é apenas uma opção de configuração e o próprio KernelSU não executa nenhuma ação. Alguns módulos, como Zygisksu, podem usar essa opção para determinar se o descarregamento do módulo é necessário.
+Em dispositivos que utilizam kernel versão 5.10 e superior, o kernel realiza o descarregamento dos módulos. No entanto, para dispositivos que executam versões de kernel abaixo de 5.10, essa opção é apenas uma opção de configuração e o próprio KernelSU não executa nenhuma ação. Alguns módulos, como ZygiskNext, podem usar essa opção para determinar se o descarregamento do módulo é necessário.
 :::

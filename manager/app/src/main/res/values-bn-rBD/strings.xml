@@ -31,7 +31,7 @@
     <string name="selinux_status_permissive">পারমিসিভ</string>
     <string name="module_failed_to_disable">মোডিউল ডিসেবল করা যায়নি: %s</string>
     <string name="module_empty">কোনো মোডিউল ইন্সটল করা নেই</string>
-    <string name="home_working_version">ভারসন: %d</string>
+    <string name="home_working_version">সংস্করণ: %d</string>
     <string name="home_superuser_count">সুপার ইউজার: %d</string>
     <string name="profile_namespace">নেইম স্পেস মাউন্ট</string>
     <string name="profile_namespace_inherited">ইনহেরিটেড</string>

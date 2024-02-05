@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_CN/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">了解如何安装 KernelSU 以及如何开发模块</string>
     <string name="home_support_title">支持开发</string>
-    <string name="home_support_content">KernelSU 将保持免费和开源，向开发者捐赠以表示支持。</string>
+    <string name="home_support_content">KernelSU 将保持免费开源，向开发者捐赠以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 查看源码<br/>加入我们的 %2$s 频道<br/>加入我们的 <b><a href="https://pd.qq.com/s/8lipl1brp">QQ 频道</a></b>]]></string>
     <string name="profile_default">默认</string>
     <string name="profile_template">模版</string>
@@ -85,7 +85,7 @@
     <string name="app_profile_template_create">创建模版</string>
     <string name="app_profile_template_edit">编辑模版</string>
     <string name="app_profile_template_id">模版 id</string>
-    <string name="app_profile_template_id_invalid">模版 id 不合法！</string>
+    <string name="app_profile_template_id_invalid">模版 id 不合法</string>
     <string name="app_profile_template_name">名字</string>
     <string name="app_profile_template_description">描述</string>
     <string name="app_profile_template_save">保存</string>
@@ -102,4 +102,7 @@
     <string name="app_profile_template_save_failed">模版保存失败！</string>
     <string name="app_profile_template_import_empty">剪切板为空！</string>
     <string name="module_changelog_failed">获取更新日志失败：%s</string>
+    <string name="settings_check_update">检查更新</string>
+    <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版</string>
+    <string name="grant_root_failed">获取 root 失败！</string>
 </resources>

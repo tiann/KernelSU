@@ -1,7 +1,7 @@
 name: Build Kernel - Android 13
 on:
   push:
-    branches: ["main", "ci"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-a13.yml"
       - ".github/workflows/gki-kernel.yml"
@@ -17,7 +17,7 @@ on:
   workflow_call:
 jobs:
   build-kernel:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
         include:
@@ -44,7 +44,10 @@ jobs:
             os_patch_level: 2023-09
           - version: "5.10"
             sub_level: 189
-            os_patch_level: 2023-10            
+            os_patch_level: 2023-11
+          - version: "5.10"
+            sub_level: 198
+            os_patch_level: 2023-12
           - version: "5.15"
             sub_level: 41
             os_patch_level: 2022-11
@@ -65,7 +68,10 @@ jobs:
             os_patch_level: 2023-09
           - version: "5.15"
             sub_level: 123
-            os_patch_level: 2023-10
+            os_patch_level: 2023-11
+          - version: "5.15"
+            sub_level: 137
+            os_patch_level: 2023-12
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -74,6 +80,7 @@ jobs:
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
+  
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
@@ -87,7 +94,7 @@ jobs:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - uses: actions/checkout@v4
         with:
@@ -134,18 +141,18 @@ jobs:
           echo "VERSION: $VERSION"
           cd -
           bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
-      
+
       - name: Display structure of boot files
         run: ls -R
 
       - name: Upload images artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: boot-images-android13
           path: Image-android13*/*.img.gz
 
   check-build-kernel:
-    if: github.event_name == 'pull_request'
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
     strategy:
       matrix:
         include:

@@ -9,8 +9,8 @@ API_HASH = "d524b414d21f4d37f08684c1df41ac9c"
 
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHAT_ID = int(os.environ.get("CHAT_ID"))
-MESSAGE_THREAD_ID = int(os.environ.get("MESSAGE_THREAD_ID"))
+CHAT_ID = os.environ.get("CHAT_ID")
+MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
 COMMIT_URL = os.environ.get("COMMIT_URL")
 COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 RUN_URL = os.environ.get("RUN_URL")
@@ -41,12 +41,15 @@ def get_caption():
 
 
 def check_environ():
+    global CHAT_ID, MESSAGE_THREAD_ID
     if BOT_TOKEN is None:
         print("[-] Invalid BOT_TOKEN")
         exit(1)
     if CHAT_ID is None:
         print("[-] Invalid CHAT_ID")
         exit(1)
+    else:
+        CHAT_ID = int(CHAT_ID)
     if COMMIT_URL is None:
         print("[-] Invalid COMMIT_URL")
         exit(1)
@@ -62,6 +65,11 @@ def check_environ():
     if VERSION is None:
         print("[-] Invalid VERSION")
         exit(1)
+    if MESSAGE_THREAD_ID is None:
+        print("[-] Invaild MESSAGE_THREAD_ID")
+        exit(1)
+    else:
+        MESSAGE_THREAD_ID = int(MESSAGE_THREAD_ID)
 
 
 async def main():

@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
+#[cfg(target_os = "android")]
 use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
@@ -9,13 +10,13 @@ use crate::{
     utils::{self, ensure_clean_dir, ensure_dir_exists},
 };
 
-fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
+fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
     if lowerdir.is_empty() {
-        warn!("partition: {partition} lowerdir is empty");
+        warn!("partition: {partition_name} lowerdir is empty");
         return Ok(());
     }
 
-    let partition = format!("/{partition}");
+    let partition = format!("/{partition_name}");
 
     // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
     if Path::new(&partition).read_link().is_ok() {
@@ -23,7 +24,15 @@ fn mount_partition(partition: &str, lowerdir: &Vec<String>) -> Result<()> {
         return Ok(());
     }
 
-    mount::mount_overlay(&partition, lowerdir)
+    let mut workdir = None;
+    let mut upperdir = None;
+    let system_rw_dir = Path::new(defs::SYSTEM_RW_DIR);
+    if system_rw_dir.exists() {
+        workdir = Some(system_rw_dir.join(partition_name).join("workdir"));
+        upperdir = Some(system_rw_dir.join(partition_name).join("upperdir"));
+    }
+
+    mount::mount_overlay(&partition, lowerdir, workdir, upperdir)
 }
 
 pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
@@ -126,7 +135,7 @@ pub fn on_post_data_fs() -> Result<()> {
     // we should clean the module mount point if it exists
     ensure_clean_dir(module_dir)?;
 
-    assets::ensure_binaries().with_context(|| "Failed to extract bin assets")?;
+    assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
 
     if Path::new(module_update_img).exists() {
         if module_update_flag.exists() {
@@ -152,6 +161,9 @@ pub fn on_post_data_fs() -> Result<()> {
     mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
         .with_context(|| "mount module image failed".to_string())?;
 
+    // tell kernel that we've mount the module, so that it can do some optimization
+    crate::ksu::report_module_mounted();
+
     // if we are in safe mode, we should disable all modules
     if safe_mode {
         warn!("safe mode, skip post-fs-data scripts and disable all modules!");
@@ -176,6 +188,11 @@ pub fn on_post_data_fs() -> Result<()> {
 
     if let Err(e) = crate::profile::apply_sepolies() {
         warn!("apply root profile sepolicy failed: {}", e);
+    }
+
+    // mount temp dir
+    if let Err(e) = mount::mount_tmpfs(utils::get_tmp_path()) {
+        warn!("do temp dir mount failed: {}", e);
     }
 
     // exec modules post-fs-data scripts
@@ -238,7 +255,7 @@ pub fn on_boot_completed() -> Result<()> {
         // this is a update and we successfully booted
         if std::fs::rename(module_update_img, module_img).is_err() {
             warn!("Failed to rename images, copy it now.",);
-            std::fs::copy(module_update_img, module_img)
+            utils::copy_sparse_file(module_update_img, module_img)
                 .with_context(|| "Failed to copy images")?;
             std::fs::remove_file(module_update_img).with_context(|| "Failed to remove image!")?;
         }
@@ -254,7 +271,7 @@ pub fn install() -> Result<()> {
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
     // install binary assets
-    assets::ensure_binaries().with_context(|| "Failed to extract assets")?;
+    assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
     #[cfg(target_os = "android")]
     link_ksud_to_bin()?;

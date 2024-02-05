@@ -140,6 +140,11 @@ fun reboot(reason: String = "") {
     ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
 }
 
+fun rootAvailable(): Boolean {
+    val shell = getRootShell()
+    return shell.isRoot
+}
+
 fun overlayFsAvailable(): Boolean {
     val shell = getRootShell()
     // check /proc/filesystems

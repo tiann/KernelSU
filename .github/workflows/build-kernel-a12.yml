@@ -1,7 +1,7 @@
 name: Build Kernel - Android 12
 on:
   push:
-    branches: ["main", "ci"]
+    branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-a12.yml"
       - ".github/workflows/gki-kernel.yml"
@@ -17,7 +17,7 @@ on:
   workflow_call:
 jobs:
   build-kernel:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
         include:
@@ -43,6 +43,8 @@ jobs:
             os_patch_level: 2023-07
           - sub_level: 185
             os_patch_level: 2023-09
+          - sub_level: 198
+            os_patch_level: 2023-11
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -51,6 +53,7 @@ jobs:
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: "5.10"
+  
   upload-artifacts:
     needs: build-kernel
     runs-on: ubuntu-latest
@@ -64,7 +67,7 @@ jobs:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - uses: actions/checkout@v4
         with:
@@ -116,13 +119,13 @@ jobs:
         run: ls -R
 
       - name: Upload images artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: boot-images-android12
           path: Image-android12*/*.img.gz
 
   check-build-kernel:
-    if: github.event_name == 'pull_request'
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10

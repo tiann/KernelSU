@@ -1,0 +1,29 @@
+{
+    "id":"kernelmanager.root",
+    "name":"Kernel Manager",
+    "author":"Rem01Gaming",
+    "description":"Commonly used in Kernel managers such as FKM and SmartPack.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT",
+        "READPROC"
+    ],
+    "capabilities":[
+        "CAP_SYS_MODULE",
+        "CAP_SYS_NICE",
+        "CAP_SYS_RESOURCE",
+        "CAP_KILL",
+        "CAP_SYSLOG",
+        "CAP_PERFMON",
+        "CAP_SYS_BOOT"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED",
+    "locales": {
+        "in": {
+            "name": "Kernel Manager",
+            "description":"Umumnya digunakan pada Kernel manager seperti FKM dan SmartPack."
+        }
+    }
+}

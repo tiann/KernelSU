@@ -12,15 +12,15 @@
 
 ## KernelSU 是否支持模块 ？
 
-支持，但它是早期版本，可能有问题。请等待它稳定 :)
+支持。请查阅 [模块](module.md)。
 
 ## KernelSU 是否支持 Xposed ？
 
-支持。[Dreamland](https://github.com/canyie/Dreamland) 和 [TaiChi](https://taichi.cool) 可以正常运行。LSPosed 可以在 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 的支持下正常运行。
+支持。LSPosed 可以在 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 的支持下正常运行。
 
 ## KernelSU 支持 Zygisk 吗?
 
-KernelSU 本体不支持 Zygisk，但是你可以用 [Zygisk on KernelSU](https://github.com/Dr-TSNG/ZygiskOnKernelSU) 来使用 Zygisk 模块。
+KernelSU 本体不支持 Zygisk，但是你可以用 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 来使用 Zygisk 模块。
 
 ## KernelSU 与 Magisk 兼容吗 ？
 
@@ -55,13 +55,20 @@ KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU �
 
 内核版本与 Android 版本无关，如果你需要刷入 KernelSU，请永远使用**内核版本**而非 Android 版本，如果你为 "android12-5.10" 的设备刷入 Android 13 的内核，等待你的将是 bootloop.
 
-## KernelSU 支持 --mount-master/全局挂载命名空间吗？
-
-目前没有（未来可能会支持），但实际上有很多种办法手动进入全局命名空间，无需 su 内置支持，比如：
-
-1. `nsenter -t 1 -m sh` 可以获得一个全局 mount namespace 的 shell.
-2. 在你要执行的命令之前添加 `nsenter --mount=/proc/1/ns/mnt` 就可以让此命令在全局 mount namespace 下执行。 KernelSU 本身也使用了 [这种方法](https://github.com/tiann/KernelSU/blob/77056a710073d7a5f7ee38f9e77c9fd0b3256576/manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt#L115)
-
 ## 我是 GKI1.0, 能用 KernelSU 吗?
 
 GKI1 跟 GKI2 完全是两个东西，所以你需要自行编译内核。
+
+## 如何把 `/system` 变成挂载为可读写？
+
+我们不建议你直接修改系统分区，你应该使用[模块功能](module.md) 来做修改；如果你执意要这么做，可以看看 [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs)
+
+## KernelSU 能修改 hosts 吗，我如何使用 AdAway？
+
+当然可以。但这个功能 KernelSU 没有内置，你可以安装这个 [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module)
+
+## 为什么有个 1T 的超大文件？
+
+1T 大小的 `modules.img` 是一个磁盘镜像文件，**不要担心它的大小**，它是一种被称之为[稀疏文件](https://en.wikipedia.org/wiki/Sparse_file)的文件格式，它的实际大小只有你使用的模块的大小，并且你在删除模块后它会动态缩小；它并不实际占用 1T 大小的磁盘空间（实际上你手机可能并没有这么多空间）。
+
+如果你真的对这个文件的大小感到不爽，你可以使用 `resize2fs -M` 命令让它变成实际大小；但此时模块可能无法正常工作，我们也不会为此提供任何支持。

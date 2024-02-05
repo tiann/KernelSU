@@ -1,19 +1,21 @@
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Português (Brasil)](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_IW.md) |  **हिंदी**
 
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Portuguese-Brazil](README_PT-BR.md) | [Türkçe](README_TR.md) | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_iw.md) |  **हिंदी**
+# KernelSU
 
-<div style="display: flex; align-items: center;">
-    <img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="">
-    <div style="margin-left: 20px;">
-        <span style="font-size: large; "><b>KernelSU</b></span>
-        <br>
-        <span style="font-size: medium; "><i>Android उपकरणों के लिए कर्नेल-आधारित रूट समाधान।</i></span>   
-    </div>
-</div>
+<img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
+
+Android उपकरणों के लिए कर्नेल-आधारित रूट समाधान।
+
+[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## विशेषताएँ
 
 1. कर्नेल-आधारित `su` और रूट एक्सेस प्रबंधन।
-2. Overlayfs पर आधारित मॉड्यूल प्रणाली।
+2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) पर आधारित मॉड्यूल प्रणाली।
 3. [App Profile](https://kernelsu.org/guide/app-profile.html): Root शक्ति को पिंजरे में बंद कर दो।
 
 ## अनुकूलता अवस्था
@@ -40,8 +42,8 @@ KernelSU का अनुवाद करने या मौजूदा अन
 
 ## लाइसेंस
 
-- `Kernel` निर्देशिका के अंतर्गत फ़ाइलें हैं [GPL-2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- `Kernel` निर्देशिका को छोड़कर अन्य सभी भाग हैं [GPL-3](https://www.gnu.org/licenses/gpl-3.0.html)
+- `Kernel` निर्देशिका के अंतर्गत फ़ाइलें हैं [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+- `Kernel` निर्देशिका को छोड़कर अन्य सभी भाग हैं [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## आभार सूची
 

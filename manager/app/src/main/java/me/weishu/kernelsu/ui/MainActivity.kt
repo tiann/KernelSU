@@ -32,6 +32,7 @@ import me.weishu.kernelsu.ui.screen.NavGraphs
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.rootAvailable
 
 class MainActivity : ComponentActivity() {
 
@@ -66,7 +67,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun BottomBar(navController: NavHostController) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
-    val fullFeatured = isManager && !Natives.requireNewKernel()
+    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     NavigationBar(tonalElevation = 8.dp) {
         BottomBarDestination.values().forEach { destination ->
             if (!fullFeatured && destination.rootRequired) return@forEach

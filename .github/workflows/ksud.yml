@@ -24,13 +24,13 @@ jobs:
         cache-targets: false
 
     - name: Install cross
-      run: cargo install cross
+      run: cargo install cross --locked
 
     - name: Build ksud
       run: cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ksud-${{ inputs.target }}
         path: userspace/ksud/target/**/release/ksud

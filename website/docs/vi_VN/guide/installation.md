@@ -2,7 +2,7 @@
 
 ## Kiểm tra xem thiết bị của bạn có được hỗ trợ không
 
-Tải xuống APP KernelSU manager từ [GitHub Releases](https://github.com/tiann/KernelSU/releases) hoặc [Coolapk market](https://www.coolapk.com/apk/me.weishu.kernelsu) và cài đặt nó vào thiết bị của bạn:
+Tải xuống APP KernelSU manager từ [GitHub Releases](https://github.com/tiann/KernelSU/releases) và cài đặt nó vào thiết bị của bạn:
 
 - Nếu ứng dụng hiển thị `Unsupported`, nghĩa là **Bạn nên tự biên dịch kernel**, KernelSU sẽ không và không bao giờ cung cấp boot image để bạn flash.
 - Nếu ứng dụng hiển thị `Not installed` thì thiết bị của bạn đã được KernelSU hỗ trợ chính thức.
@@ -155,8 +155,8 @@ Trong số đó, Android-Image-Kitchen phù hợp để hoạt động trên PC 
 ### Sử dụng magiskboot
 
 1. Tải xuống Magisk mới nhất từ [Trang phát hành](https://github.com/topjohnwu/Magisk/releases)
-2. Đổi tên Magisk-*.apk thành Magisk-vesion.zip và giải nén nó.
-3. Đẩy `Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so` vào thiết bị của bạn bằng adb: `adb push Magisk-v25.2/lib/arm64-v8a/libmagiskboot.so /data/local/tmp /magiskboot`
+2. Đổi tên `Magisk-*(version).apk` thành `Magisk-*.zip` và giải nén nó.
+3. Đẩy `Magisk-*/lib/arm64-v8a/libmagiskboot.so` vào thiết bị của bạn bằng adb: `adb push Magisk-*/lib/arm64-v8a/libmagiskboot.so /data/local/tmp /magiskboot`
 4. Đẩy stock boot.img và Image trong AnyKernel3 vào thiết bị của bạn.
 5. Nhập thư mục adb shell và cd `/data/local/tmp/`, sau đó `chmod +x magiskboot`
 6. Nhập adb shell và cd `/data/local/tmp/`, thực thi `./magiskboot unpack boot.img` để giải nén `boot.img`, bạn sẽ nhận được file `kernel`, đây là kernel gốc của bạn.
