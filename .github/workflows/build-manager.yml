@@ -104,6 +104,12 @@ jobs:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
 
+      - name: Upload mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: "mappings"
+          path: "manager/app/build/outputs/mapping/release/"
+
       - name: Bot session cache
         if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         id: bot_session_cache
