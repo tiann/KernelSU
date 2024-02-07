@@ -19,6 +19,10 @@
         "in": {
             "name": "Root Explorer",
             "description":"File manager dengan kemampuan Root."
+        },
+        "tr": {
+            "name": "Root Dosya Tarayıcı",
+            "description":"Root özelliklerine sahip dosya yöneticisi."
         }
     }
 }
