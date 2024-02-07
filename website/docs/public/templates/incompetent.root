@@ -12,6 +12,10 @@
         "zh_CN": {
             "name": "无能的 Root",
             "description": "无任何权能的 root 用户"
+        },
+        "tr": {
+            "name": "yetersiz root",
+            "description": "Herhangi bir özelliği olmayan yetersiz bir root kullanıcısı"
         }
     }
 }
