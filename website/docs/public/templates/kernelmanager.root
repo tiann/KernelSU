@@ -24,6 +24,10 @@
         "in": {
             "name": "Kernel Manager",
             "description":"Umumnya digunakan pada Kernel manager seperti FKM dan SmartPack."
+        },
+        "tr": {
+            "name": "Kernel Yöneticisi",
+            "description":"FKM ve SmartPack gibi Kernel Yöneticilerinde yaygın olarak kullanılır."
         }
     }
 }
