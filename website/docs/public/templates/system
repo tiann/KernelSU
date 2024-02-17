@@ -12,6 +12,10 @@
         "zh_CN": {
             "name": "Android 系统",
             "description": "Android 系统运行的权限级别，但没有任何权能"
+        },
+        "tr": {
+            "name": "sistem",
+            "description": "Android sisteminin herhangi bir yetenek olmadan çalıştığı izin düzeyi"
         }
     }
 }
