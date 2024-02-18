@@ -77,10 +77,10 @@
         "devices": "Xiaomi MI 8 SE(sirius/xmsirius)"
     },
     {
-        "maintainer": "Aquarius223(paper)",
-        "maintainer_link": "https://github.com/Aquarius223",
+        "maintainer": "zlm324",
+        "maintainer_link": "https://github.com/zlm324",
         "kernel_name": "android_kernel_xiaomi_msm8998",
-        "kernel_link": "https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu",
+        "kernel_link": "https://github.com/zlm324/android_kernel_xiaomi_msm8998_ksu",
         "devices": "MI 6 (sagit) and MIX 2 (chiron) for LineageOS"
     },
     {
