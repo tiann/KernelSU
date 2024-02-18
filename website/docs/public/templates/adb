@@ -20,6 +20,10 @@
         "pt_BR": {
             "name": "Adb",
             "description": "Regras mínimas exigidas pela maioria dos apps que usam privilégio ADB."
+        },
+        "ja": {
+            "name": "Adb",
+            "description": "ほとんどのアプリが使用するために必要な最小限のルール ADB."
         }
     }
 }
