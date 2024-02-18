@@ -21,6 +21,10 @@
         "tr": {
             "name": "Shizuku",
             "description":"Shizuku servisini başlatmak için yalnızca gerekli izinler."
+        },
+        "pt_BR": {
+            "name": "Shizuku",
+            "description":"Apenas permissões essenciais para iniciar o serviço Shizuku."
         }
     }
 }

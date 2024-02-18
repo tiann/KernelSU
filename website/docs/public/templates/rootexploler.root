@@ -23,6 +23,10 @@
         "tr": {
             "name": "Root Dosya Tarayıcı",
             "description":"Root özelliklerine sahip dosya yöneticisi."
+        },
+        "pt_BR": {
+            "name": "Explorador Root",
+            "description":"Gerenciador de arquivos com recursos root."
         }
     }
 }

@@ -13,7 +13,7 @@
         "CAP_KILL"
     ],
     "context":"u:r:su:s0",
-    "rules":"",  
+    "rules":"",
     "locales": {
         "zh_CN": {
             "name":"西米露Cemiuiler",
@@ -22,6 +22,10 @@
         "tr": {
             "name":"Cemiuiler",
             "description":"Cemiuiler uygulamasına düzgün çalışması için minimum izinleri verin."
+        },
+        "pt_BR": {
+            "name":"Cemiuiler",
+            "description":"Conceda ao Cemiuiler as permissões mínimas para funcionar corretamente para reiniciar o app."
         }
     }
 }
