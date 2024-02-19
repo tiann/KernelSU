@@ -119,6 +119,13 @@ enum Debug {
         /// destination file
         dst: String,
     },
+
+    /// Punch hole file
+    PunchHole {
+        /// file path
+        file: String,
+    },
+
     /// For testing
     Test,
 }
@@ -292,6 +299,7 @@ pub fn run() -> Result<()> {
                 utils::copy_sparse_file(src, dst)?;
                 Ok(())
             }
+            Debug::PunchHole { file } => utils::punch_hole(file),
             Debug::Test => todo!(),
         },
 

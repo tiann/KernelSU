@@ -444,6 +444,10 @@ fn _install_module(zip: &str) -> Result<()> {
 
     exec_install_script(zip)?;
 
+    if let Err(e) = utils::punch_hole(tmp_module_img) {
+        warn!("Failed to punch hole: {}", e);
+    }
+
     info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
@@ -506,6 +510,10 @@ where
 
     // call the operation func
     let result = func(id, update_dir);
+
+    if let Err(e) = utils::punch_hole(modules_update_tmp_img) {
+        warn!("Failed to punch hole: {}", e);
+    }
 
     if let Err(e) = std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG) {
         warn!("Rename image failed: {e}, try copy it.");
