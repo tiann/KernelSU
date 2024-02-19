@@ -254,7 +254,7 @@ pub fn run() -> Result<()> {
                 Module::Enable { id } => module::enable_module(&id),
                 Module::Disable { id } => module::disable_module(&id),
                 Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_image(),
+                Module::Shrink => module::shrink_ksu_images(),
             }
         }
         Commands::Install => event::install(),

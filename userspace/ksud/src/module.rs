@@ -674,11 +674,20 @@ pub fn list_modules() -> Result<()> {
     Ok(())
 }
 
-pub fn shrink_image() -> Result<()> {
+pub fn shrink_image(img: &str) -> Result<()> {
+    check_image(img)?;
     Command::new("resize2fs")
         .arg("-M")
-        .arg(defs::MODULE_IMG)
+        .arg(img)
         .stdout(Stdio::piped())
         .status()?;
+    Ok(())
+}
+
+pub fn shrink_ksu_images() -> Result<()> {
+    shrink_image(defs::MODULE_IMG)?;
+    if Path::new(defs::MODULE_UPDATE_IMG).exists() {
+        shrink_image(defs::MODULE_UPDATE_IMG)?;
+    }
     Ok(())
 }
