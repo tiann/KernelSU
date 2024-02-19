@@ -475,7 +475,7 @@ pub fn install_module(zip: &str) -> Result<()> {
     result
 }
 
-fn update_module<F>(update_dir: &str, id: &str, func: F) -> Result<()>
+fn update_module<F>(update_dir: &str, id: &str, punch_hole: bool, func: F) -> Result<()>
 where
     F: Fn(&str, &str) -> Result<()>,
 {
@@ -511,8 +511,10 @@ where
     // call the operation func
     let result = func(id, update_dir);
 
-    if let Err(e) = utils::punch_hole(modules_update_tmp_img) {
-        warn!("Failed to punch hole: {}", e);
+    if punch_hole {
+        if let Err(e) = utils::punch_hole(modules_update_tmp_img) {
+            warn!("Failed to punch hole: {}", e);
+        }
     }
 
     if let Err(e) = std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG) {
@@ -528,7 +530,7 @@ where
 }
 
 pub fn uninstall_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+    update_module(defs::MODULE_UPDATE_TMP_DIR, id, true, |mid, update_dir| {
         let dir = Path::new(update_dir);
         ensure!(dir.exists(), "No module installed");
 
@@ -594,13 +596,13 @@ fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
 }
 
 pub fn enable_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+    update_module(defs::MODULE_UPDATE_TMP_DIR, id, false, |mid, update_dir| {
         _enable_module(update_dir, mid, true)
     })
 }
 
 pub fn disable_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+    update_module(defs::MODULE_UPDATE_TMP_DIR, id, false, |mid, update_dir| {
         _enable_module(update_dir, mid, false)
     })
 }

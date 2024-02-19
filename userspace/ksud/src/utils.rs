@@ -232,6 +232,7 @@ pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Resul
     Ok(())
 }
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> {
     let mut src_file = OpenOptions::new().write(true).read(true).open(src)?;
 
@@ -315,4 +316,9 @@ pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> {
     );
 
     Ok(())
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> { 
+    unimplemented!()
 }
