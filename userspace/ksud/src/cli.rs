@@ -119,6 +119,13 @@ enum Debug {
         /// destination file
         dst: String,
     },
+
+    /// Punch hole file
+    PunchHole {
+        /// file path
+        file: String,
+    },
+
     /// For testing
     Test,
 }
@@ -254,7 +261,7 @@ pub fn run() -> Result<()> {
                 Module::Enable { id } => module::enable_module(&id),
                 Module::Disable { id } => module::disable_module(&id),
                 Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_image(),
+                Module::Shrink => module::shrink_ksu_images(),
             }
         }
         Commands::Install => event::install(),
@@ -292,6 +299,7 @@ pub fn run() -> Result<()> {
                 utils::copy_sparse_file(src, dst)?;
                 Ok(())
             }
+            Debug::PunchHole { file } => utils::punch_hole(file),
             Debug::Test => todo!(),
         },
 
