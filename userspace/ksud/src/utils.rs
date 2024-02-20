@@ -319,6 +319,6 @@ pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> { 
+pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> {
     unimplemented!()
 }
