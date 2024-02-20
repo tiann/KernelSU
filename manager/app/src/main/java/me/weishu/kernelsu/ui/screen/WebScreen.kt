@@ -1,18 +1,24 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.view.Window
 import android.webkit.JavascriptInterface
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
@@ -26,7 +32,6 @@ import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.serveModule
 import java.net.ServerSocket
 
-
 @SuppressLint("SetJavaScriptEnabled")
 @Destination
 @Composable
@@ -38,18 +43,20 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
 
     DisposableEffect(Unit) {
         onDispose {
+            if (WebViewInterface.isHideSystemUI && context is Activity) {
+                showSystemUI(context.window)
+            }
             lifecycleOwner.lifecycleScope.launch {
                 stopServer(port)
             }
         }
     }
 
-    Scaffold(topBar = {
-        TopBar(moduleName)
-    }) { innerPadding ->
+    Scaffold { innerPadding ->
         WebView(
             state = rememberWebViewState(url = "http://localhost:$port"),
             Modifier
@@ -59,25 +66,38 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
                 android.webkit.WebView(context).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    addJavascriptInterface(WebViewInterface(), "ksu")
+                    addJavascriptInterface(WebViewInterface(context), "ksu")
                 }
             })
     }
 }
 
-class WebViewInterface {
+class WebViewInterface(val context: Context) {
+
+    companion object {
+        var isHideSystemUI: Boolean = false
+    }
+
     @JavascriptInterface
     fun exec(cmd: String): String {
         val shell = createRootShell()
         return ShellUtils.fastCmd(shell, cmd)
     }
 
-}
+    @JavascriptInterface
+    fun fullScreen(enable: Boolean) {
+        if (context is Activity) {
+            Handler(Looper.getMainLooper()).post {
+                if (enable) {
+                    hideSystemUI(context.window)
+                } else {
+                    showSystemUI(context.window)
+                }
+                isHideSystemUI = enable
+            }
+        }
+    }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TopBar(title: String) {
-    TopAppBar(title = { Text(title) })
 }
 
 private suspend fun getFreePort(): Int {
@@ -94,4 +114,21 @@ private suspend fun stopServer(port: Int) {
                 .execute()
         }
     }
+}
+
+private fun hideSystemUI(window: Window) {
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    WindowInsetsControllerCompat(window, window.decorView).let { controller ->
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+}
+
+private fun showSystemUI(window: Window) {
+    WindowCompat.setDecorFitsSystemWindows(window, true)
+    WindowInsetsControllerCompat(
+        window,
+        window.decorView
+    ).show(WindowInsetsCompat.Type.systemBars())
 }
