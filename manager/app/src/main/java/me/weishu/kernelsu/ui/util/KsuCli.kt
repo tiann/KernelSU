@@ -131,6 +131,15 @@ fun installModule(
     }
 }
 
+fun serveModule(id: String, port: Int): Process {
+    // we should use a new root shell to avoid blocking the global shell
+    val process = Runtime.getRuntime().exec("${getKsuDaemonPath()} debug su")
+    val builder = Shell.Builder.create()
+    val shell = builder.build(process)
+    shell.newJob().add("${getKsuDaemonPath()} module serve $id $port").submit()
+    return process
+}
+
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "recovery") {
