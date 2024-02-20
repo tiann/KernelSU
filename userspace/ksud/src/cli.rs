@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, debug, defs, event, module, utils};
+use crate::{apk_sign, debug, defs, event, module, server, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -182,6 +182,16 @@ enum Module {
 
     /// Shrink module image size
     Shrink,
+
+    /// Serve module webroot
+    Serve {
+        /// module id
+        id: String,
+
+        /// port
+        #[arg(default_value = "8080")]
+        port: u16,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -262,6 +272,7 @@ pub fn run() -> Result<()> {
                 Module::Disable { id } => module::disable_module(&id),
                 Module::List => module::list_modules(),
                 Module::Shrink => module::shrink_ksu_images(),
+                Module::Serve { id, port } => server::serve_module(&id, port),
             }
         }
         Commands::Install => event::install(),

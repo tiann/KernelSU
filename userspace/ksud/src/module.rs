@@ -663,10 +663,12 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
         let enabled = !path.join(defs::DISABLE_FILE_NAME).exists();
         let update = path.join(defs::UPDATE_FILE_NAME).exists();
         let remove = path.join(defs::REMOVE_FILE_NAME).exists();
+        let web = path.join(defs::MODULE_WEB_DIR).exists();
 
         module_prop_map.insert("enabled".to_owned(), enabled.to_string());
         module_prop_map.insert("update".to_owned(), update.to_string());
         module_prop_map.insert("remove".to_owned(), remove.to_string());
+        module_prop_map.insert("web".to_owned(), web.to_string());
 
         if result.is_err() {
             warn!("Failed to parse module.prop: {}", module_prop.display());
