@@ -7,7 +7,13 @@ use tower_http::services::ServeDir;
 use crate::defs;
 
 async fn serve(dir: impl AsRef<Path>, port: u16) {
-    let app = Router::new().nest_service("/", ServeDir::new(dir));
+    let app = Router::new().nest_service("/", ServeDir::new(dir)).route(
+        "/stop",
+        axum::routing::get(|| async {
+            log::info!("stopping server");
+            std::process::exit(0);
+        }),
+    );
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
