@@ -22,7 +22,6 @@ import com.topjohnwu.superuser.ShellUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.ui.util.KsuCli
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.serveModule
 import java.net.ServerSocket
@@ -59,6 +58,7 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
             factory = { context ->
                 android.webkit.WebView(context).apply {
                     settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
                     addJavascriptInterface(WebViewInterface(), "ksu")
                 }
             })
@@ -72,13 +72,6 @@ class WebViewInterface {
         return ShellUtils.fastCmd(shell, cmd)
     }
 
-    @JavascriptInterface
-    fun launchApp(pkg: String) {
-        val context = me.weishu.kernelsu.ksuApp
-        context.packageManager.getLaunchIntentForPackage(pkg)?.let {
-            context.startActivity(it)
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
