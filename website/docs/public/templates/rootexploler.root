@@ -27,6 +27,10 @@
         "pt_BR": {
             "name": "Explorador Root",
             "description":"Gerenciador de arquivos com recursos root."
+        },
+        "ja": {
+            "name": "Root ブラウザ",
+            "description": "Root 機能を備えたファイル マネージャー。"
         }
     }
 }

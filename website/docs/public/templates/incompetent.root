@@ -20,6 +20,10 @@
         "pt_BR": {
             "name": "Root incompetente",
             "description": "Um usuário root incompetente sem qualquer capacidade."
+        },
+        "ja": {
+            "name": "無能な root",
+            "description": "権限のない root ユーザー。"
         }
     }
 }
