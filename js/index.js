@@ -1,6 +1,6 @@
 let callbackCounter = 0;
-function getUniqueCallbackName() {
-  return `_callback_${Date.now()}_${callbackCounter++}`;
+function getUniqueCallbackName(prefix) {
+  return `${prefix}_callback_${Date.now()}_${callbackCounter++}`;
 }
 
 export function exec(command, options) {
@@ -10,7 +10,7 @@ export function exec(command, options) {
 
   return new Promise((resolve, reject) => {
     // Generate a unique callback function name
-    const callbackFuncName = getUniqueCallbackName();
+    const callbackFuncName = getUniqueCallbackName("exec");
 
     // Define the success callback function
     window[callbackFuncName] = (errno, stdout, stderr) => {
@@ -23,17 +23,80 @@ export function exec(command, options) {
     }
 
     try {
-      ksu.exec(
-        command,
-        JSON.stringify(options),
-        callbackFuncName,
-      );
+      ksu.exec(command, JSON.stringify(options), callbackFuncName);
     } catch (error) {
       reject(error);
       cleanup(callbackFuncName);
     }
   });
 }
+
+function Stdio() {
+    this.listeners = {};
+  }
+  
+  Stdio.prototype.on = function (event, listener) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event].push(listener);
+  };
+  
+  Stdio.prototype.emit = function (event, ...args) {
+    if (this.listeners[event]) {
+      this.listeners[event].forEach((listener) => listener(...args));
+    }
+  };
+  
+  function ChildProcess() {
+    this.listeners = {};
+    this.stdin = new Stdio();
+    this.stdout = new Stdio();
+    this.stderr = new Stdio();
+  }
+  
+  ChildProcess.prototype.on = function (event, listener) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    this.listeners[event].push(listener);
+  };
+  
+  ChildProcess.prototype.emit = function (event, ...args) {
+    if (this.listeners[event]) {
+      this.listeners[event].forEach((listener) => listener(...args));
+    }
+  };
+  
+  export function spawn(command, args, options) {
+    if (typeof args === "undefined") {
+      args = [];
+    }
+    
+    if (typeof options === "undefined") {
+      options = {};
+    }
+  
+    const child = new ChildProcess();
+    const childCallbackName = getUniqueCallbackName("spawn");
+    window[childCallbackName] = child;
+  
+    function cleanup(name) {
+      delete window[name];
+    }
+    try {
+      ksu.spawn(
+        command,
+        JSON.stringify(args),
+        JSON.stringify(options),
+        childCallbackName
+      );
+    } catch (error) {
+      child.emit("error", error);
+      cleanup(childCallbackName);
+    }
+    return child;
+  }
 
 export function fullScreen(isFullScreen) {
   ksu.fullScreen(isFullScreen);
