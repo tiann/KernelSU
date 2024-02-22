@@ -15,34 +15,26 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.topjohnwu.superuser.ShellUtils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.serveModule
-import java.net.ServerSocket
 
 @SuppressLint("SetJavaScriptEnabled")
 @Destination
 @Composable
 fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: String) {
 
-    val port = 8080
     LaunchedEffect(Unit) {
-        serveModule(moduleId, port)
+        serveModule(moduleId)
     }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
     DisposableEffect(Unit) {
@@ -50,15 +42,12 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
             if (WebViewInterface.isHideSystemUI && context is Activity) {
                 showSystemUI(context.window)
             }
-            lifecycleOwner.lifecycleScope.launch {
-                stopServer(port)
-            }
         }
     }
 
     Scaffold { innerPadding ->
         WebView(
-            state = rememberWebViewState(url = "http://localhost:$port"),
+            state = rememberWebViewState(url = "file:///data/data/me.weishu.kernelsu/webroot/index.html"),
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
@@ -66,6 +55,7 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
                 android.webkit.WebView(context).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
+                    settings.allowFileAccess = true
                     addJavascriptInterface(WebViewInterface(context), "ksu")
                 }
             })
@@ -98,22 +88,6 @@ class WebViewInterface(val context: Context) {
         }
     }
 
-}
-
-private suspend fun getFreePort(): Int {
-    return withContext(Dispatchers.IO) {
-        ServerSocket(0).use { socket -> socket.localPort }
-    }
-}
-
-private suspend fun stopServer(port: Int) {
-    withContext(Dispatchers.IO) {
-        runCatching {
-            okhttp3.OkHttpClient()
-                .newCall(okhttp3.Request.Builder().url("http://localhost:$port/stop").build())
-                .execute()
-        }
-    }
 }
 
 private fun hideSystemUI(window: Window) {

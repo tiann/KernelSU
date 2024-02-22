@@ -131,13 +131,13 @@ fun installModule(
     }
 }
 
-fun serveModule(id: String, port: Int): Process {
+fun serveModule(id: String): Boolean {
     // we should use a new root shell to avoid blocking the global shell
-    val process = Runtime.getRuntime().exec("${getKsuDaemonPath()} debug su")
-    val builder = Shell.Builder.create()
-    val shell = builder.build(process)
-    shell.newJob().add("${getKsuDaemonPath()} module serve $id $port").submit()
-    return process
+    val shell = createRootShell()
+    return ShellUtils.fastCmdResult(
+        shell,
+        "${getKsuDaemonPath()} module link-manager $id ${android.os.Process.myPid()} ${BuildConfig.APPLICATION_ID}"
+    )
 }
 
 fun reboot(reason: String = "") {
