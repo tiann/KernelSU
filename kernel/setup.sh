@@ -44,7 +44,7 @@ echo '[+] Add kernel su driver to Makefile'
 
 DRIVER_MAKEFILE=$DRIVER_DIR/Makefile
 DRIVER_KCONFIG=$DRIVER_DIR/Kconfig
-grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "obj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
+grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
 grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
 
 echo '[+] Done.'
