@@ -9,6 +9,7 @@ import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -129,6 +130,13 @@ class WebViewInterface(val context: Context, val webView: WebView) {
             webView.post {
                 webView.loadUrl(jsCode)
             }
+        }
+    }
+
+    @JavascriptInterface
+    fun toast(msg: String) {
+        webView.post {
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
