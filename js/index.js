@@ -3,7 +3,7 @@ function getUniqueCallbackName() {
   return `_callback_${Date.now()}_${callbackCounter++}`;
 }
 
-function exec(command, options) {
+export function exec(command, options) {
   if (typeof options === "undefined") {
     options = {};
   }
@@ -45,4 +45,12 @@ function exec(command, options) {
       cleanup(callbackFuncName, errorFuncName);
     }
   });
+}
+
+export function fullScreen(isFullScreen) {
+    ksu.fullScreen(isFullScreen);
+}
+
+export function toast(message) {
+    ksu.toast(message);
 }
