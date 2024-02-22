@@ -79,16 +79,15 @@ class WebViewInterface(val context: Context, val webView: WebView) {
     }
 
     @JavascriptInterface
-    fun exec(cmd: String, successCallbackName: String, errorCallbackName: String) {
-        exec(cmd, null, successCallbackName, errorCallbackName)
+    fun exec(cmd: String, callbackFunc: String) {
+        exec(cmd, null, callbackFunc)
     }
 
     @JavascriptInterface
     fun exec(
         cmd: String,
         options: String?,
-        successCallbackName: String,
-        errorCallbackName: String
+        callbackFunc: String
     ) {
         val opts = if (options == null) JSONObject() else {
             JSONObject(options)
@@ -111,25 +110,17 @@ class WebViewInterface(val context: Context, val webView: WebView) {
 
         val shell = createRootShell()
         val result = shell.newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
-        if (!result.isSuccess) {
-            val jsCode =
-                "javascript: (function() { try { ${errorCallbackName}(${result.code}); } catch(e) { console.error(e); } })();"
-            webView.post {
-                webView.loadUrl(jsCode)
-            }
-        } else {
-            val stdout = result.out.joinToString(separator = "\n")
-            val stderr = result.err.joinToString(separator = "\n")
+        val stdout = result.out.joinToString(separator = "\n")
+        val stderr = result.err.joinToString(separator = "\n")
 
-            val jsCode =
-                "javascript: (function() { try { ${successCallbackName}(${JSONObject.quote(stdout)}, ${
-                    JSONObject.quote(
-                        stderr
-                    )
-                }); } catch(e) { console.error(e); } })();"
-            webView.post {
-                webView.loadUrl(jsCode)
-            }
+        val jsCode =
+            "javascript: (function() { try { ${callbackFunc}(${result.code}, ${
+                JSONObject.quote(
+                    stdout
+                )
+            }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
+        webView.post {
+            webView.loadUrl(jsCode)
         }
     }
 

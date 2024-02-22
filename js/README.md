@@ -20,8 +20,11 @@ options:
 ```javascript
 import { exec } from 'kernelsu';
 
-const { stdout, stderr } = await exec('ls -l', { cwd: '/tmp'});
-console.log(stdout);
+const { errno, stdout, stderr } = await exec('ls -l', { cwd: '/tmp' });
+if (errno === 0) {
+    // success
+    console.log(stdout);
+}
 ```
 
 ### fullScreen

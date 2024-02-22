@@ -13,24 +13,13 @@ export function exec(command, options) {
     const callbackFuncName = getUniqueCallbackName();
 
     // Define the success callback function
-    window[callbackFuncName] = (stdout, stderr) => {
-      resolve({ stdout, stderr });
+    window[callbackFuncName] = (errno, stdout, stderr) => {
+      resolve({ errno, stdout, stderr });
       cleanup(callbackFuncName);
     };
 
-    // Define the failure callback function
-    const errorFuncName = callbackFuncName + "_error";
-    window[errorFuncName] = (error) => {
-      reject(error);
-      cleanup(callbackFuncName, errorFuncName);
-    };
-
-    // Cleanup function to remove the callbacks
-    function cleanup(successName, errorName = successName) {
+    function cleanup(successName) {
       delete window[successName];
-      if (errorName) {
-        delete window[errorName];
-      }
     }
 
     try {
@@ -38,19 +27,18 @@ export function exec(command, options) {
         command,
         JSON.stringify(options),
         callbackFuncName,
-        errorFuncName
       );
     } catch (error) {
       reject(error);
-      cleanup(callbackFuncName, errorFuncName);
+      cleanup(callbackFuncName);
     }
   });
 }
 
 export function fullScreen(isFullScreen) {
-    ksu.fullScreen(isFullScreen);
+  ksu.fullScreen(isFullScreen);
 }
 
 export function toast(message) {
-    ksu.toast(message);
+  ksu.toast(message);
 }
