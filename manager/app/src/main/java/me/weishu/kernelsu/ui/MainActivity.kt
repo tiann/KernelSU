@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.navigation.popBackStack
@@ -44,8 +45,11 @@ class MainActivity : ComponentActivity() {
             KernelSUTheme {
                 val navController = rememberAnimatedNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val route = navBackStackEntry?.destination?.route
+                val showBottomBar = route == null || !route.startsWith("web_screen")
                 Scaffold(
-                    bottomBar = { BottomBar(navController) },
+                    bottomBar = { if (showBottomBar) BottomBar(navController) },
                     snackbarHost = { SnackbarHost(snackbarHostState) }
                 ) { innerPadding ->
                     CompositionLocalProvider(

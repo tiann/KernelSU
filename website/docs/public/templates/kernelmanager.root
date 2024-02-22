@@ -32,6 +32,10 @@
         "pt_BR": {
             "name": "Gerenciador de Kernel",
             "description":"Comumente usado em gerenciadores de Kernel como FKM e SmartPack."
+        },
+        "ja": {
+            "name": "Kernel マネージャー",
+            "description": "FKM や SmartPack などの XXX マネージャーでよく使用されます。"
         }
     }
 }

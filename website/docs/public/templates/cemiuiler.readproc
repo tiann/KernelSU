@@ -26,6 +26,10 @@
         "pt_BR": {
             "name":"Cemiuiler",
             "description":"Conceda ao Cemiuiler as permissões mínimas para funcionar corretamente para reiniciar o app."
+        },
+        "ja": {
+            "name":"Cemiuiler",
+            "description":"Cemiuiler に適切に動作するための最小限の権限を付与し、アプリケーションを再起動します。"
         }
     }
 }

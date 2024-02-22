@@ -3,7 +3,6 @@ use anyhow::{anyhow, bail, Ok, Result};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
 #[cfg(any(target_os = "linux", target_os = "android"))]
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{fd::AsFd, fs::CWD, mount::*};
 
 use crate::defs::KSU_OVERLAY_SOURCE;
@@ -174,7 +173,7 @@ pub fn mount_tmpfs(dest: impl AsRef<Path>) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
+pub fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     info!(
         "bind mount {} -> {}",
         from.as_ref().display(),

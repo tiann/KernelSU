@@ -25,6 +25,10 @@
         "pt_BR": {
             "name": "Shizuku",
             "description":"Apenas permissões essenciais para iniciar o serviço Shizuku."
+        },
+        "ja": {
+            "name": "Shizuku",
+            "description": "Shizuku サービスを開始するために必要な権限のみ。"
         }
     }
 }
