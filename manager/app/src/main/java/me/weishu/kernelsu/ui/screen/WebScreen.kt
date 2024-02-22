@@ -5,8 +5,10 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -25,6 +27,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.serveModule
+import org.json.JSONObject
 
 @SuppressLint("SetJavaScriptEnabled")
 @Destination
@@ -52,17 +55,17 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
                 .fillMaxSize()
                 .padding(innerPadding),
             factory = { context ->
-                android.webkit.WebView(context).apply {
+                WebView(context).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.allowFileAccess = true
-                    addJavascriptInterface(WebViewInterface(context), "ksu")
+                    addJavascriptInterface(WebViewInterface(context, this), "ksu")
                 }
             })
     }
 }
 
-class WebViewInterface(val context: Context) {
+class WebViewInterface(val context: Context, val webView: WebView) {
 
     companion object {
         var isHideSystemUI: Boolean = false
@@ -72,6 +75,61 @@ class WebViewInterface(val context: Context) {
     fun exec(cmd: String): String {
         val shell = createRootShell()
         return ShellUtils.fastCmd(shell, cmd)
+    }
+
+    @JavascriptInterface
+    fun exec(cmd: String, successCallbackName: String, errorCallbackName: String) {
+        exec(cmd, null, successCallbackName, errorCallbackName)
+    }
+
+    @JavascriptInterface
+    fun exec(
+        cmd: String,
+        options: String?,
+        successCallbackName: String,
+        errorCallbackName: String
+    ) {
+        val opts = if (options == null) JSONObject() else {
+            JSONObject(options)
+        }
+
+        val finalCommand = StringBuilder()
+
+        val cwd = opts.optString("cwd")
+        if (!TextUtils.isEmpty(cwd)) {
+            finalCommand.append("cd ${cwd};")
+        }
+
+        opts.optJSONObject("env")?.let { env ->
+            env.keys().forEach { key ->
+                finalCommand.append("export ${key}=${env.getString(key)};")
+            }
+        }
+
+        finalCommand.append(cmd)
+
+        val shell = createRootShell()
+        val result = shell.newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+        if (!result.isSuccess) {
+            val jsCode =
+                "javascript: (function() { try { ${errorCallbackName}(${result.code}); } catch(e) { console.error(e); } })();"
+            webView.post {
+                webView.loadUrl(jsCode)
+            }
+        } else {
+            val stdout = result.out.joinToString(separator = "\n")
+            val stderr = result.err.joinToString(separator = "\n")
+
+            val jsCode =
+                "javascript: (function() { try { ${successCallbackName}(${JSONObject.quote(stdout)}, ${
+                    JSONObject.quote(
+                        stderr
+                    )
+                }); } catch(e) { console.error(e); } })();"
+            webView.post {
+                webView.loadUrl(jsCode)
+            }
+        }
     }
 
     @JavascriptInterface
