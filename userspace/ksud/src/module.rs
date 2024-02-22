@@ -703,3 +703,24 @@ pub fn shrink_ksu_images() -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn link_module_for_manager(pid: i32, pkg: &str, mid: &str) -> Result<()> {
+    // switch to manager's mnt ns
+    utils::switch_mnt_ns(pid)?;
+    let target = PathBuf::from("/data/data").join(pkg).join("webroot");
+
+    // umount previous mount
+    let _ = mount::umount_dir(&target);
+
+    let src = PathBuf::from(defs::MODULE_DIR)
+        .join(mid)
+        .join(defs::MODULE_WEB_DIR);
+    mount::bind_mount(src, &target)?;
+    Ok(())
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+pub fn link_module_for_manager(_pid: i32, _pkg: &str, _mid: &str) -> Result<()> {
+    unimplemented!()
+}

@@ -174,7 +174,7 @@ pub fn mount_tmpfs(dest: impl AsRef<Path>) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
+pub fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     info!(
         "bind mount {} -> {}",
         from.as_ref().display(),

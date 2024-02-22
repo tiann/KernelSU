@@ -192,6 +192,15 @@ enum Module {
         #[arg(default_value = "8080")]
         port: u16,
     },
+    /// Link modules for manager
+    LinkManager {
+        /// module id
+        mid: String,
+        /// Manager's pid
+        pid: i32,
+        /// Manager's package name
+        pkg: String,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -273,6 +282,9 @@ pub fn run() -> Result<()> {
                 Module::List => module::list_modules(),
                 Module::Shrink => module::shrink_ksu_images(),
                 Module::Serve { id, port } => server::serve_module(&id, port),
+                Module::LinkManager { mid, pid, pkg } => {
+                    module::link_module_for_manager(pid, &pkg, &mid)
+                }
             }
         }
         Commands::Install => event::install(),
