@@ -11,7 +11,6 @@ mod mount;
 mod profile;
 mod restorecon;
 mod sepolicy;
-mod server;
 mod utils;
 
 fn main() -> anyhow::Result<()> {

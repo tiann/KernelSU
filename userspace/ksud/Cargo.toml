@@ -38,12 +38,6 @@ tempdir = "0.3"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
 
-# module server
-tokio = { version = "1", features = ["full"] }
-axum = "0.7"
-tower = { version = "0.4", features = ["util"] }
-tower-http = { version = "0.5.0", features = ["fs", "trace"] }
-
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = ["all-apis"] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
