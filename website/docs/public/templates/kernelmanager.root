@@ -23,7 +23,19 @@
     "locales": {
         "in": {
             "name": "Kernel Manager",
-            "description":"Umumnya digunakan pada Kernel manager seperti FKM dan SmartPack."
+            "description": "Umumnya digunakan pada Kernel manager seperti FKM dan SmartPack."
+        },
+        "tr": {
+            "name": "Kernel Yöneticisi",
+            "description": "FKM ve SmartPack gibi Kernel Yöneticilerinde yaygın olarak kullanılır."
+        },
+        "pt_BR": {
+            "name": "Gerenciador de Kernel",
+            "description": "Comumente usado em gerenciadores de Kernel como FKM e SmartPack."
+        },
+        "ja": {
+            "name": "Kernel マネージャー",
+            "description": "FKM や SmartPack などの XXX マネージャーでよく使用されます。"
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.navigation.popBackStack
@@ -32,6 +33,7 @@ import me.weishu.kernelsu.ui.screen.NavGraphs
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.rootAvailable
 
 class MainActivity : ComponentActivity() {
 
@@ -43,8 +45,11 @@ class MainActivity : ComponentActivity() {
             KernelSUTheme {
                 val navController = rememberAnimatedNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val route = navBackStackEntry?.destination?.route
+                val showBottomBar = route == null || !route.startsWith("web_screen")
                 Scaffold(
-                    bottomBar = { BottomBar(navController) },
+                    bottomBar = { if (showBottomBar) BottomBar(navController) },
                     snackbarHost = { SnackbarHost(snackbarHostState) }
                 ) { innerPadding ->
                     CompositionLocalProvider(
@@ -66,7 +71,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun BottomBar(navController: NavHostController) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
-    val fullFeatured = isManager && !Natives.requireNewKernel()
+    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     NavigationBar(tonalElevation = 8.dp) {
         BottomBarDestination.values().forEach { destination ->
             if (!fullFeatured && destination.rootRequired) return@forEach

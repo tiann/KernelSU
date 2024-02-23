@@ -119,6 +119,13 @@ enum Debug {
         /// destination file
         dst: String,
     },
+
+    /// Punch hole file
+    PunchHole {
+        /// file path
+        file: String,
+    },
+
     /// For testing
     Test,
 }
@@ -175,6 +182,16 @@ enum Module {
 
     /// Shrink module image size
     Shrink,
+
+    /// Link modules for manager
+    LinkManager {
+        /// module id
+        mid: String,
+        /// Manager's pid
+        pid: i32,
+        /// Manager's package name
+        pkg: String,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -254,7 +271,10 @@ pub fn run() -> Result<()> {
                 Module::Enable { id } => module::enable_module(&id),
                 Module::Disable { id } => module::disable_module(&id),
                 Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_image(),
+                Module::Shrink => module::shrink_ksu_images(),
+                Module::LinkManager { mid, pid, pkg } => {
+                    module::link_module_for_manager(pid, &pkg, &mid)
+                }
             }
         }
         Commands::Install => event::install(),
@@ -292,6 +312,7 @@ pub fn run() -> Result<()> {
                 utils::copy_sparse_file(src, dst)?;
                 Ok(())
             }
+            Debug::PunchHole { file } => utils::punch_hole(file),
             Debug::Test => todo!(),
         },
 

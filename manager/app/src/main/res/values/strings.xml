@@ -106,4 +106,5 @@
     <string name="module_changelog_failed">Fetch changelog failed: %s</string>
     <string name="settings_check_update">Check update</string>
     <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
+    <string name="grant_root_failed">Failed to grant root!</string>
 </resources>

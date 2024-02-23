@@ -1,8 +1,8 @@
 {
     "id":"system",
     "author":"kernelsu.org",
-    "name":"system ",
-    "description":"The permission level at which the Android system runs without any capability",
+    "name":"System",
+    "description":"The permission level at which the Android system runs without any capability.",
     "uid":1000,
     "gid":1000,
     "groups":[
@@ -11,7 +11,19 @@
     "locales": {
         "zh_CN": {
             "name": "Android 系统",
-            "description": "Android 系统运行的权限级别，但没有任何权能"
+            "description": "Android 系统运行的权限级别，但没有任何权能。"
+        },
+        "tr": {
+            "name": "Sistem",
+            "description": "Android sisteminin herhangi bir yetenek olmadan çalıştığı izin düzeyi."
+        },
+        "pt_BR": {
+            "name": "Sistema",
+            "description": "O nível de permissão no qual o sistema Android é executado sem qualquer capacidade."
+        },
+        "ja": {
+            "name": "System",
+            "description": "Android システムが実行される許可レベルですが、機能はありません。"
         }
     }
 }

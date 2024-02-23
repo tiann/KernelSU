@@ -131,6 +131,10 @@ void apply_kernelsu_rules()
 	ksu_allow(db, "system_server", "untrusted_app_all_devpts", "chr_file",
 		  "write");
 
+    // Allow system server kill su process
+    ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
+    ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
+
 	rcu_read_unlock();
 }
 

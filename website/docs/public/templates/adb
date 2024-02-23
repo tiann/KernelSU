@@ -12,6 +12,18 @@
         "zh_CN": {
             "name": "Adb 模版",
             "description": "大多数使用 ADB 权限应用所需要的最小权限"
+        },
+        "tr": {
+            "name": "Adb",
+            "description": "ADB ayrıcalığını kullanan çoğu uygulama için gereken minimum kurallar."
+        },
+        "pt_BR": {
+            "name": "Adb",
+            "description": "Regras mínimas exigidas pela maioria dos apps que usam privilégio ADB."
+        },
+        "ja": {
+            "name": "Adb",
+            "description": "ほとんどのアプリが使用するために必要な最小限のルール ADB."
         }
     }
 }

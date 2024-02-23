@@ -131,6 +131,15 @@ fun installModule(
     }
 }
 
+fun serveModule(id: String): Boolean {
+    // we should use a new root shell to avoid blocking the global shell
+    val shell = createRootShell()
+    return ShellUtils.fastCmdResult(
+        shell,
+        "${getKsuDaemonPath()} module link-manager $id ${android.os.Process.myPid()} ${BuildConfig.APPLICATION_ID}"
+    )
+}
+
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "recovery") {
@@ -138,6 +147,11 @@ fun reboot(reason: String = "") {
         ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
     }
     ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
+}
+
+fun rootAvailable(): Boolean {
+    val shell = getRootShell()
+    return shell.isRoot
 }
 
 fun overlayFsAvailable(): Boolean {

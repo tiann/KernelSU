@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,6 +44,7 @@ import me.weishu.kernelsu.ui.component.ConfirmDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.LoadingDialog
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
+import me.weishu.kernelsu.ui.screen.destinations.WebScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import okhttp3.OkHttpClient
@@ -122,10 +124,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 ModuleList(
                     viewModel = viewModel, modifier = Modifier
                         .padding(innerPadding)
-                        .fillMaxSize()
-                ) {
-                    navigator.navigate(InstallScreenDestination(it))
-                }
+                        .fillMaxSize(),
+                    onInstallModule =
+                    {
+                        navigator.navigate(InstallScreenDestination(it))
+                    }, onClickModule = { id, name, hasWebUi ->
+                        if (hasWebUi) {
+                            navigator.navigate(WebScreenDestination(id, name))
+                        }
+                    })
             }
         }
     }
@@ -134,7 +141,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ModuleList(
-    viewModel: ModuleViewModel, modifier: Modifier = Modifier, onInstallModule: (Uri) -> Unit
+    viewModel: ModuleViewModel,
+    modifier: Modifier = Modifier,
+    onInstallModule: (Uri) -> Unit,
+    onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit
 ) {
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -172,7 +182,7 @@ private fun ModuleList(
             }
         }
 
-        val showToast: suspend (String) -> Unit = {msg->
+        val showToast: suspend (String) -> Unit = { msg ->
             withContext(Dispatchers.Main) {
                 Toast.makeText(
                     context,
@@ -346,6 +356,8 @@ private fun ModuleList(
                                     "${module.name}-${updatedModule.second}.zip"
                                 )
                             }
+                        }, onClick = {
+                            onClickModule(it.id, it.name, it.hasWebUi)
                         })
 
                         // fix last item shadow incomplete in LazyColumn
@@ -379,9 +391,12 @@ private fun ModuleItem(
     onUninstall: (ModuleViewModel.ModuleInfo) -> Unit,
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
+    onClick: (ModuleViewModel.ModuleInfo) -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(module) },
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
 
@@ -505,7 +520,8 @@ fun ModuleItemPreview() {
         enabled = true,
         update = true,
         remove = true,
-        updateJson = ""
+        updateJson = "",
+        hasWebUi = false,
     )
-    ModuleItem(module, true, "", {}, {}, {})
+    ModuleItem(module, true, "", {}, {}, {}, {})
 }
