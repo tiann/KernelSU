@@ -45,6 +45,7 @@ com-google-accompanist-webview = { group = "com.google.accompanist", name = "acc
 
 com-github-topjohnwu-libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
 com-github-topjohnwu-libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
+com-github-topjohnwu-libsu-io= { group = "com.github.topjohnwu.libsu", name = "io", version.ref = "libsu" }
 
 dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:parcelablelist", version = "2.0.1" }
 

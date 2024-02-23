@@ -31,11 +31,15 @@ fun getRootShell(): Shell {
     return KsuCli.SHELL
 }
 
-fun createRootShell(): Shell {
+fun createRootShell(globalMnt: Boolean = false): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
     val builder = Shell.Builder.create()
     return try {
-        builder.build(getKsuDaemonPath(), "debug", "su")
+        if (globalMnt) {
+            builder.build(getKsuDaemonPath(), "debug", "su", "-g")
+        } else {
+            builder.build(getKsuDaemonPath(), "debug", "su")
+        }
     } catch (e: Throwable) {
         Log.e(TAG, "su failed: ", e)
         builder.build("sh")
@@ -129,15 +133,6 @@ fun installModule(
         onFinish(result.isSuccess)
         return result.isSuccess
     }
-}
-
-fun serveModule(id: String): Boolean {
-    // we should use a new root shell to avoid blocking the global shell
-    val shell = createRootShell()
-    return ShellUtils.fastCmdResult(
-        shell,
-        "${getKsuDaemonPath()} module link-manager $id ${android.os.Process.myPid()} ${BuildConfig.APPLICATION_ID}"
-    )
 }
 
 fun reboot(reason: String = "") {
