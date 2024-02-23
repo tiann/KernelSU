@@ -53,7 +53,7 @@ pub fn grant_root(global_mnt: bool) -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn grant_root() -> Result<()> {
+pub fn grant_root(_global_mnt: bool) -> Result<()> {
     unimplemented!("grant_root is only available on android");
 }
 

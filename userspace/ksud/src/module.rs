@@ -11,8 +11,6 @@ use const_format::concatcp;
 use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{info, warn};
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use rustix::{fd::AsFd, fs::CWD, mount::*};
 
 use std::{
     collections::HashMap,
@@ -705,61 +703,4 @@ pub fn shrink_ksu_images() -> Result<()> {
         shrink_image(defs::MODULE_UPDATE_IMG)?;
     }
     Ok(())
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn link_module_for_manager(pid: i32, pkg: &str, mid: &str) -> Result<()> {
-    let from = PathBuf::from(defs::MODULE_DIR)
-        .join(mid)
-        .join(defs::MODULE_WEB_DIR);
-
-    let to = PathBuf::from("/data/data").join(pkg).join("webroot");
-
-    if let Result::Ok(tree) = open_tree(
-        rustix::fs::CWD,
-        &from,
-        OpenTreeFlags::OPEN_TREE_CLOEXEC
-            | OpenTreeFlags::OPEN_TREE_CLONE
-            | OpenTreeFlags::AT_RECURSIVE,
-    ) {
-        switch_mnt_ns(pid)?;
-
-        // umount previous mount
-        let _ = mount::umount_dir(&to);
-
-        if let Err(e) = move_mount(
-            tree.as_fd(),
-            "",
-            CWD,
-            &to,
-            MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
-        ) {
-            log::error!("move_mount failed: {}", e);
-        }
-    } else {
-        log::info!("fallback to bind mount");
-        // switch to manager's mnt ns
-        utils::switch_mnt_ns(pid)?;
-        if !Path::new(&from).exists() {
-            // maybe it is umounted, mount it back
-            log::info!("module web dir not exists, try to mount it back.");
-            mount::AutoMountExt4::try_new(defs::MODULE_IMG, defs::MODULE_DIR, false)
-                .with_context(|| "mount module image failed".to_string())?;
-        }
-
-        // umount previous mount
-        let _ = mount::umount_dir(&to);
-
-        if let Err(e) = rustix::mount::mount(&from, &to, "", MountFlags::BIND | MountFlags::REC, "")
-        {
-            log::error!("mount failed: {}", e);
-        }
-    }
-
-    Ok(())
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn link_module_for_manager(_pid: i32, _pkg: &str, _mid: &str) -> Result<()> {
-    unimplemented!()
 }
