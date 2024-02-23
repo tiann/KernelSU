@@ -112,7 +112,7 @@ fun installModule(
         }
         val cmd = "module install ${file.absolutePath}"
 
-        val shell = getRootShell()
+        val shell = createRootShell()
 
         val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
