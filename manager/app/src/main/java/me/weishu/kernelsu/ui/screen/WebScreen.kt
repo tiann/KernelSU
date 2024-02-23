@@ -8,6 +8,8 @@ import android.os.Looper
 import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +23,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.webkit.WebViewAssetLoader
+import com.google.accompanist.web.AccompanistWebViewClient
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.ramcosta.composedestinations.annotation.Destination
@@ -31,6 +35,7 @@ import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.serveModule
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.util.concurrent.CompletableFuture
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -53,23 +58,37 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
     }
 
     Scaffold { innerPadding ->
+        val webRoot = File(context.dataDir, "webroot")
+        val webViewAssetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler("/", WebViewAssetLoader.InternalStoragePathHandler(context, webRoot))
+            .build()
+
+        val webViewClient = object : AccompanistWebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                return webViewAssetLoader.shouldInterceptRequest(request.url)
+            }
+        }
         WebView(
-            state = rememberWebViewState(url = "file:///data/data/me.weishu.kernelsu/webroot/index.html"),
+            state = rememberWebViewState(url = "https://appassets.androidplatform.net/index.html"),
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
+            client = webViewClient,
             factory = { context ->
                 WebView(context).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    settings.allowFileAccess = true
+                    settings.allowFileAccess = false
                     addJavascriptInterface(WebViewInterface(context, this), "ksu")
                 }
             })
     }
 }
 
-class WebViewInterface(val context: Context, val webView: WebView) {
+class WebViewInterface(val context: Context, private val webView: WebView) {
 
     companion object {
         var isHideSystemUI: Boolean = false
@@ -109,10 +128,6 @@ class WebViewInterface(val context: Context, val webView: WebView) {
         options: String?,
         callbackFunc: String
     ) {
-        val opts = if (options == null) JSONObject() else {
-            JSONObject(options)
-        }
-
         val finalCommand = StringBuilder()
         processOptions(finalCommand, options)
         finalCommand.append(cmd)

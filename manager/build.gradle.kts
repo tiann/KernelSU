@@ -34,8 +34,8 @@ cmaker {
 
 val androidMinSdkVersion = 26
 val androidTargetSdkVersion = 33
-val androidCompileSdkVersion = 33
-val androidBuildToolsVersion = "33.0.2"
+val androidCompileSdkVersion = 34
+val androidBuildToolsVersion = "34.0.0"
 val androidCompileNdkVersion = "25.2.9519653"
 val androidSourceCompatibility = JavaVersion.VERSION_17
 val androidTargetCompatibility = JavaVersion.VERSION_17
