@@ -41,6 +41,7 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
     Scaffold { innerPadding ->
         val webRoot = File("/data/adb/modules/${moduleId}/webroot")
         val webViewAssetLoader = WebViewAssetLoader.Builder()
+            .setDomain("mui.kernelsu.org")
             .addPathHandler("/",
                 SuFilePathHandler(context, webRoot)
             )
@@ -55,7 +56,7 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
             }
         }
         WebView(
-            state = rememberWebViewState(url = "https://appassets.androidplatform.net/index.html"),
+            state = rememberWebViewState(url = "https://mui.kernelsu.org/index.html"),
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
