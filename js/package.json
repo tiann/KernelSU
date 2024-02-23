@@ -1,6 +1,6 @@
 {
   "name": "kernelsu",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Library for KernelSU's module WebUI",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "webui"
   ],
   "author": "weishu",
-  "license": "GPL-3.0-or-later",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/tiann/KernelSU/issues"
   },
