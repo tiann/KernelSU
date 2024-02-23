@@ -25,10 +25,13 @@ private fun getKsuDaemonPath(): String {
 
 object KsuCli {
     val SHELL: Shell = createRootShell()
+    val GLOBAL_MNT_SHELL: Shell = createRootShell(true)
 }
 
-fun getRootShell(): Shell {
-    return KsuCli.SHELL
+fun getRootShell(globalMnt: Boolean = false): Shell {
+    return if (globalMnt) KsuCli.GLOBAL_MNT_SHELL else {
+        KsuCli.SHELL
+    }
 }
 
 fun createRootShell(globalMnt: Boolean = false): Shell {
@@ -156,8 +159,8 @@ fun overlayFsAvailable(): Boolean {
 }
 
 fun hasMagisk(): Boolean {
-    val shell = getRootShell()
-    val result = shell.newJob().add("nsenter --mount=/proc/1/ns/mnt which magisk").exec()
+    val shell = getRootShell(true)
+    val result = shell.newJob().add("which magisk").exec()
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }
