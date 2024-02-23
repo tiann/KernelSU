@@ -1,6 +1,6 @@
 {
   "name": "kernelsu",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Library for KernelSU's module WebUI",
   "main": "index.js",
   "scripts": {

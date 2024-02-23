@@ -71,6 +71,9 @@ function Stdio() {
   export function spawn(command, args, options) {
     if (typeof args === "undefined") {
       args = [];
+    } else if (typeof args === "object") {
+        // allow for (command, options) signature
+        options = args;
     }
     
     if (typeof options === "undefined") {
@@ -84,6 +87,11 @@ function Stdio() {
     function cleanup(name) {
       delete window[name];
     }
+
+    child.on("exit", code => {
+        cleanup(childCallbackName);
+    });
+
     try {
       ksu.spawn(
         command,
