@@ -102,4 +102,6 @@
     <string name="app_profile_template_delete">Șterge</string>
     <string name="app_profile_template_import_empty">Clipboard-ul este gol!</string>
     <string name="app_profile_template_view">Vizualizare șablon</string>
+    <string name="settings_check_update">Verifică actualizarea</string>
+    <string name="settings_check_update_summary">Se verifică automat actualizările când deschizi aplicația</string>
 </resources>

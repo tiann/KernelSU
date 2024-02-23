@@ -18,7 +18,7 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Суперпользователь</string>
+    <string name="superuser">Superuser</string>
     <!--Don't translate this string!-->
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>

@@ -100,6 +100,7 @@ dependencies {
 
     implementation(libs.com.github.topjohnwu.libsu.core)
     implementation(libs.com.github.topjohnwu.libsu.service)
+    implementation(libs.com.github.topjohnwu.libsu.io)
 
     implementation(libs.dev.rikka.rikkax.parcelablelist)
 
@@ -114,4 +115,5 @@ dependencies {
     implementation(libs.sheet.compose.dialogs.input)
 
     implementation(libs.markdown)
+    implementation(libs.androidx.webkit)
 }

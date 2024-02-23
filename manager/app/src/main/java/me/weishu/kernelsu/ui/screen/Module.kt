@@ -502,6 +502,18 @@ private fun ModuleItem(
                         text = stringResource(R.string.uninstall),
                     )
                 }
+
+                if (module.hasWebUi) {
+                    TextButton(
+                        onClick = { onClick(module) },
+                    ) {
+                        Text(
+                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            text = stringResource(R.string.enter),
+                        )
+                    }
+                }
             }
         }
     }
