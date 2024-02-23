@@ -85,7 +85,7 @@
     <string name="app_profile_template_edit">編輯模板</string>
     <string name="app_profile_template_id">模板 ID</string>
     <string name="settings_profile_template">App Profile 模板</string>
-    <string name="settings_profile_template_summary">管理本地和在線的 App Profile 模板</string>
+    <string name="settings_profile_template_summary">管理本地和線上的 App Profile 模板</string>
     <string name="app_profile_template_import_success">成功匯出</string>
     <string name="app_profile_export_to_clipboard">匯出至剪貼簿</string>
     <string name="app_profile_template_export_empty">本地沒有模板可匯出！</string>

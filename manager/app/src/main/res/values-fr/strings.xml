@@ -29,17 +29,17 @@
     <string name="reboot">Redémarrer</string>
     <string name="install">Installer</string>
     <string name="settings">Paramètres</string>
-    <string name="reboot_bootloader">Redémarrer vers le bootloader</string>
-    <string name="reboot_userspace">Redémarrage logiciel</string>
-    <string name="reboot_recovery">Redémarrer en mode récupération</string>
+    <string name="reboot_bootloader">Redémarrer en mode bootloader</string>
+    <string name="reboot_userspace">Redémarrage progressif</string>
+    <string name="reboot_recovery">Redémarrer en mode de récupération</string>
     <string name="reboot_edl">Redémarrer en mode EDL</string>
     <string name="about">À propos</string>
     <string name="module_uninstall_success">%s a été désinstallé</string>
-    <string name="reboot_download">Redémarrer en mode téléchargement</string>
+    <string name="reboot_download">Redémarrer en mode de téléchargement</string>
     <string name="module_author">Auteur</string>
     <string name="module_uninstall_confirm">Êtes-vous sûr(e) de vouloir désinstaller le module %s \?</string>
     <string name="home_learn_kernelsu">Découvrir KernelSU</string>
-    <string name="module_overlay_fs_not_available">OverlayFS n\'est pas disponible, impossible de faire fonctionner le module !</string>
+    <string name="module_overlay_fs_not_available">OverlayFS est indisponible, impossible de faire fonctionner les modules !</string>
     <string name="refresh">Rafraîchir</string>
     <string name="show_system_apps">Afficher les applications système</string>
     <string name="hide_system_apps">Masquer les applications système</string>
@@ -50,9 +50,8 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_support_title">Soutenez-nous</string>
     <string name="home_click_to_learn_kernelsu">Découvrez comment installer KernelSU et utiliser les modules</string>
-    <string name="home_support_content">KernelSU est et restera toujours gratuit et open source. Vous pouvez cependant nous témoigner de votre soutien en nous faisant un don.</string>
-    <string name="about_source_code">Voir le code source sur %1$s<br/>
-\nRejoindre notre canal %2$s</string>
+    <string name="home_support_content">KernelSU est, et restera toujours, gratuit et open source. Vous pouvez cependant nous témoigner de votre soutien en nous faisant un don.</string>
+    <string name="about_source_code">Voir le code source sur %1$s<br/>Rejoindre notre canal %2$s</string>
     <string name="profile_template">Modèle</string>
     <string name="profile_default">Par défaut</string>
     <string name="profile_custom">Personnalisé</string>
@@ -68,7 +67,7 @@
     <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>
     <string name="profile_umount_modules_summary">L\'activation de cette option permettra à KernelSU de restaurer tous les fichiers modifiés par les modules de cette application.</string>
     <string name="settings_umount_modules_default">Démonter les modules par défaut</string>
-    <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour « Démonter les modules » dans les profils d\'application. Si l\'option est activée, les modifications apportées au système par les modules seront supprimées pour les applications qui n\'ont pas de profil défini.</string>
+    <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour l\'option « Démonter les modules » dans les profils d\'application. Lorsqu\'elle est activée, les modifications apportées au système par les modules seront supprimées pour les applications qui n\'ont pas de profil défini.</string>
     <string name="profile_selinux_domain">Domaine</string>
     <string name="profile_selinux_rules">Règles</string>
     <string name="module_update">Mettre à jour</string>
@@ -79,7 +78,7 @@
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
     <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
-    <string name="require_kernel_version">La version actuelle (%d) de KernelSU est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
+    <string name="require_kernel_version">La version actuelle de KernelSU (%d) est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
     <string name="app_profile_template_import_success">Importation réussie</string>
     <string name="app_profile_export_to_clipboard">Exporter vers le presse-papiers</string>
     <string name="app_profile_template_export_empty">Impossible de trouver un modèle local à exporter !</string>
@@ -103,4 +102,6 @@
     <string name="app_profile_template_delete">Supprimer</string>
     <string name="app_profile_template_import_empty">Le presse-papiers est vide !</string>
     <string name="app_profile_template_view">Voir le modèle</string>
+    <string name="settings_check_update_summary">Vérifier automatiquement les mises à jour à l\'ouverture de l\'application</string>
+    <string name="settings_check_update">Vérifier les mises à jour</string>
 </resources>
