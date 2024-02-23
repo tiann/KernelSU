@@ -105,7 +105,11 @@ enum Debug {
     },
 
     /// Root Shell
-    Su,
+    Su {
+        /// switch to gloabl mount namespace
+        #[arg(short, long, default_value = "false")]
+        global_mnt: bool,
+    },
 
     /// Get kernel version
     Version,
@@ -306,7 +310,7 @@ pub fn run() -> Result<()> {
                 println!("Kernel Version: {}", crate::ksu::get_version());
                 Ok(())
             }
-            Debug::Su => crate::ksu::grant_root(),
+            Debug::Su { global_mnt } => crate::ksu::grant_root(global_mnt),
             Debug::Mount => event::mount_systemlessly(defs::MODULE_DIR),
             Debug::Xcp { src, dst } => {
                 utils::copy_sparse_file(src, dst)?;
