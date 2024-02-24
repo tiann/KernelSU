@@ -102,4 +102,8 @@
     <string name="app_profile_template_delete">حذف</string>
     <string name="app_profile_template_import_empty">الحافظة فارغة!</string>
     <string name="app_profile_template_view">عرض القالب</string>
+    <string name="grant_root_failed">فشل في منح صلاحية الجذر!</string>
+    <string name="open">فتح</string>
+    <string name="settings_check_update_summary">التحقق تلقائيًا من وجود تحديثات عند فتح التطبيق</string>
+    <string name="settings_check_update">التحقق من التحديث</string>
 </resources>
