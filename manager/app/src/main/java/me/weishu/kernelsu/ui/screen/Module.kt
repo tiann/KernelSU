@@ -510,7 +510,7 @@ private fun ModuleItem(
                         Text(
                             fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
                             fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            text = stringResource(R.string.enter),
+                            text = stringResource(R.string.open),
                         )
                     }
                 }
