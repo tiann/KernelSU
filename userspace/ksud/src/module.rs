@@ -367,7 +367,7 @@ fn _install_module(zip: &str) -> Result<()> {
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
-        utils::copy_sparse_file(modules_update_img, tmp_module_img).with_context(|| {
+        utils::copy_sparse_file(modules_update_img, tmp_module_img, true).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
                 modules_update_img.display(),
@@ -377,7 +377,7 @@ fn _install_module(zip: &str) -> Result<()> {
     } else {
         // modules.img exists, we should use it as tmp img
         info!("Using existing modules.img as tmp image");
-        utils::copy_sparse_file(modules_img, tmp_module_img).with_context(|| {
+        utils::copy_sparse_file(modules_img, tmp_module_img, true).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
                 modules_img.display(),
@@ -445,15 +445,11 @@ fn _install_module(zip: &str) -> Result<()> {
 
     exec_install_script(zip)?;
 
-    if let Err(e) = utils::punch_hole(tmp_module_img) {
-        warn!("Failed to punch hole: {}", e);
-    }
-
     info!("rename {tmp_module_img} to {}", defs::MODULE_UPDATE_IMG);
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
         warn!("Rename image failed, try copy it.");
-        utils::copy_sparse_file(tmp_module_img, defs::MODULE_UPDATE_IMG)
+        utils::copy_sparse_file(tmp_module_img, defs::MODULE_UPDATE_IMG, true)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(tmp_module_img);
     }
@@ -476,7 +472,7 @@ pub fn install_module(zip: &str) -> Result<()> {
     result
 }
 
-fn update_module<F>(update_dir: &str, id: &str, punch_hole: bool, func: F) -> Result<()>
+fn update_module<F>(update_dir: &str, id: &str, func: F) -> Result<()>
 where
     F: Fn(&str, &str) -> Result<()>,
 {
@@ -493,14 +489,14 @@ where
             modules_update_img.display(),
             modules_update_tmp_img.display()
         );
-        utils::copy_sparse_file(modules_update_img, modules_update_tmp_img)?;
+        utils::copy_sparse_file(modules_update_img, modules_update_tmp_img, true)?;
     } else {
         info!(
             "copy {} to {}",
             modules_img.display(),
             modules_update_tmp_img.display()
         );
-        utils::copy_sparse_file(modules_img, modules_update_tmp_img)?;
+        utils::copy_sparse_file(modules_img, modules_update_tmp_img, true)?;
     }
 
     // ensure modules_update dir exist
@@ -512,15 +508,9 @@ where
     // call the operation func
     let result = func(id, update_dir);
 
-    if punch_hole {
-        if let Err(e) = utils::punch_hole(modules_update_tmp_img) {
-            warn!("Failed to punch hole: {}", e);
-        }
-    }
-
     if let Err(e) = std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG) {
         warn!("Rename image failed: {e}, try copy it.");
-        utils::copy_sparse_file(modules_update_tmp_img, defs::MODULE_UPDATE_IMG)
+        utils::copy_sparse_file(modules_update_tmp_img, defs::MODULE_UPDATE_IMG, true)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(modules_update_tmp_img);
     }
@@ -531,7 +521,7 @@ where
 }
 
 pub fn uninstall_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, true, |mid, update_dir| {
+    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         let dir = Path::new(update_dir);
         ensure!(dir.exists(), "No module installed");
 
@@ -597,13 +587,13 @@ fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
 }
 
 pub fn enable_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, false, |mid, update_dir| {
+    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         _enable_module(update_dir, mid, true)
     })
 }
 
 pub fn disable_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, false, |mid, update_dir| {
+    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         _enable_module(update_dir, mid, false)
     })
 }
