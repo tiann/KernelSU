@@ -102,4 +102,8 @@
     <string name="app_profile_template_import_empty">คลิปบอร์ดว่างเปล่า!</string>
     <string name="app_profile_template_view">ดูเทมเพลต</string>
     <string name="module_changelog_failed">ดึงข้อมูลบันทึกการเปลี่ยนแปลงล้มเหลว: %s</string>
+    <string name="open">เปิด</string>
+    <string name="grant_root_failed">ไม่สามารถให้สิทธิ์รูทได้!</string>
+    <string name="settings_check_update">ตรวจสอบการอัปเดต</string>
+    <string name="settings_check_update_summary">ตรวจสอบการอัปเดตโดยอัตโนมัติเมื่อเปิดแอป</string>
 </resources>
