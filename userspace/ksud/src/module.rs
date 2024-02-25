@@ -15,7 +15,7 @@ use log::{info, warn};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, remove_file, set_permissions, File, OpenOptions, Permissions},
+    fs::{remove_dir_all, remove_file, set_permissions, File, Permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -24,7 +24,7 @@ use std::{
 use zip_extensions::zip_extract_file_to_memory;
 
 #[cfg(unix)]
-use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
+use std::os::unix::{fs::MetadataExt, prelude::PermissionsExt, process::CommandExt};
 
 const INSTALLER_CONTENT: &str = include_str!("./installer.sh");
 const INSTALL_MODULE_SCRIPT: &str = concatcp!(
@@ -281,6 +281,27 @@ pub fn prune_modules() -> Result<()> {
     Ok(())
 }
 
+fn create_module_image(image: &str, image_size: u64, journal_size: u64) -> Result<()> {
+    File::create(image)
+        .context("Failed to create ext4 image file")?
+        .set_len(image_size)
+        .context("Failed to truncate ext4 image")?;
+
+    // format the img to ext4 filesystem
+    let result = Command::new("mkfs.ext4")
+        .arg("-J")
+        .arg(format!("size={journal_size}"))
+        .arg(image)
+        .stdout(Stdio::piped())
+        .output()?;
+    ensure!(
+        result.status.success(),
+        "Failed to format ext4 image: {}",
+        String::from_utf8(result.stderr).unwrap()
+    );
+    check_image(image)?;
+    Ok(())
+}
 fn _install_module(zip: &str) -> Result<()> {
     ensure_boot_completed()?;
 
@@ -341,29 +362,12 @@ fn _install_module(zip: &str) -> Result<()> {
     );
 
     let sparse_image_size = 1 << 40; // 1T
-    let jounnel_size = 8; // 8M
+    let journal_size = 8; // 8M
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
         info!("Creating brand new module image");
-        File::create(tmp_module_img)
-            .context("Failed to create ext4 image file")?
-            .set_len(sparse_image_size)
-            .context("Failed to truncate ext4 image")?;
-
-        // format the img to ext4 filesystem
-        let result = Command::new("mkfs.ext4")
-            .arg("-J")
-            .arg(format!("size={jounnel_size}"))
-            .arg(tmp_module_img)
-            .stdout(Stdio::piped())
-            .output()?;
-        ensure!(
-            result.status.success(),
-            "Failed to format ext4 image: {}",
-            String::from_utf8(result.stderr).unwrap()
-        );
-        check_image(tmp_module_img)?;
+        create_module_image(tmp_module_img, sparse_image_size, journal_size)?;
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
@@ -377,40 +381,30 @@ fn _install_module(zip: &str) -> Result<()> {
     } else {
         // modules.img exists, we should use it as tmp img
         info!("Using existing modules.img as tmp image");
-        utils::copy_sparse_file(modules_img, tmp_module_img, true).with_context(|| {
-            format!(
-                "Failed to copy {} to {}",
-                modules_img.display(),
-                tmp_module_img
-            )
-        })?;
 
-        // legacy image, truncate it to new size.
-        if std::fs::metadata(modules_img)?.len() < sparse_image_size {
-            println!("- Truncate legacy image to new size");
-
-            // shrink it to minimum size
-            check_image(tmp_module_img)?;
-            Command::new("resize2fs")
-                .arg("-M")
-                .arg(tmp_module_img)
-                .stdout(Stdio::piped())
-                .status()?;
-
-            // truncate the file to new size
-            OpenOptions::new()
-                .write(true)
-                .open(tmp_module_img)
-                .context("Failed to open ext4 image")?
-                .set_len(sparse_image_size)
-                .context("Failed to truncate ext4 image")?;
-
-            // resize the image to new size
-            check_image(tmp_module_img)?;
-            Command::new("resize2fs")
-                .arg(tmp_module_img)
-                .stdout(Stdio::piped())
-                .status()?;
+        #[cfg(unix)]
+        let blksize = std::fs::metadata(defs::MODULE_DIR)?.blksize();
+        #[cfg(not(unix))]
+        let blksize = 0;
+        // legacy image, it's block size is 1024 with unlimited journal size
+        if blksize == 1024 {
+            println!("- Legacy image, migrating to new format, please be patient...");
+            create_module_image(tmp_module_img, sparse_image_size, journal_size)?;
+            let _dontdrop =
+                mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
+            fs_extra::dir::copy(
+                defs::MODULE_DIR,
+                module_update_tmp_dir,
+                &fs_extra::dir::CopyOptions::new().overwrite(true),
+            )?;
+        } else {
+            utils::copy_sparse_file(modules_img, tmp_module_img, true).with_context(|| {
+                format!(
+                    "Failed to copy {} to {}",
+                    modules_img.display(),
+                    tmp_module_img
+                )
+            })?;
         }
     }
 
