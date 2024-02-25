@@ -395,7 +395,9 @@ fn _install_module(zip: &str) -> Result<()> {
             fs_extra::dir::copy(
                 defs::MODULE_DIR,
                 module_update_tmp_dir,
-                &fs_extra::dir::CopyOptions::new().overwrite(true),
+                &fs_extra::dir::CopyOptions::new()
+                    .overwrite(true)
+                    .content_only(true),
             )?;
         } else {
             utils::copy_sparse_file(modules_img, tmp_module_img, true).with_context(|| {
