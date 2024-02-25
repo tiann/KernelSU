@@ -34,7 +34,7 @@ fun getBugreportFile(context: Context): File {
     val bootConfig = File(bugreportDir, "boot_config.txt")
     val kernelConfig = File(bugreportDir, "defconfig.gz")
 
-    val shell = getRootShell()
+    val shell = getRootShell(true)
 
     shell.newJob().add("dmesg > ${dmesgFile.absolutePath}").exec()
     shell.newJob().add("logcat -d > ${logcatFile.absolutePath}").exec()
