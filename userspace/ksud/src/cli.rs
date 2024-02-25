@@ -122,12 +122,9 @@ enum Debug {
         src: String,
         /// destination file
         dst: String,
-    },
-
-    /// Punch hole file
-    PunchHole {
-        /// file path
-        file: String,
+        /// punch hole
+        #[arg(short, long, default_value = "false")]
+        punch_hole: bool,
     },
 
     /// For testing
@@ -299,11 +296,14 @@ pub fn run() -> Result<()> {
             }
             Debug::Su { global_mnt } => crate::ksu::grant_root(global_mnt),
             Debug::Mount => event::mount_systemlessly(defs::MODULE_DIR),
-            Debug::Xcp { src, dst } => {
-                utils::copy_sparse_file(src, dst)?;
+            Debug::Xcp {
+                src,
+                dst,
+                punch_hole,
+            } => {
+                utils::copy_sparse_file(src, dst, punch_hole)?;
                 Ok(())
             }
-            Debug::PunchHole { file } => utils::punch_hole(file),
             Debug::Test => todo!(),
         },
 
