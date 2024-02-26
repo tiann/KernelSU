@@ -76,4 +76,4 @@ If you're really unhappy with the size of this file, you can use the `resize2fs 
 
 ## Why does my device show wrong storage size?
 
-Some devices are known for calculating the available storage in non standard methods and this may cause to have wrong storage calculation in some system apps and menus when there is the 1TB sparse file. Most of devices should not be affected by this issue since only Samsung devices seem to have this issue limited to Samsung apps and services. However the free space is correct since this issue only has affect only on total storage size. 
+Certain devices use non-standard methods for calculating device's storage size, potentially leading to inaccurate storage calculations in system apps and menus, especially when dealing with 1TB sparse files. While this problem seems to be specific to Samsung devices, affecting only Samsung apps and services, it's essential to note that the discrepancy is primarily in the total storage size, and the free space calculation remains accurate. 
