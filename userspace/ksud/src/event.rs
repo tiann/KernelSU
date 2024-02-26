@@ -255,7 +255,7 @@ pub fn on_boot_completed() -> Result<()> {
         // this is a update and we successfully booted
         if std::fs::rename(module_update_img, module_img).is_err() {
             warn!("Failed to rename images, copy it now.",);
-            utils::copy_sparse_file(module_update_img, module_img)
+            utils::copy_sparse_file(module_update_img, module_img, false)
                 .with_context(|| "Failed to copy images")?;
             std::fs::remove_file(module_update_img).with_context(|| "Failed to remove image!")?;
         }

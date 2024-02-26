@@ -192,7 +192,11 @@ pub fn get_tmp_path() -> &'static str {
 }
 
 // TODO: use libxcp to improve the speed if cross's MSRV is 1.70
-pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Result<()> {
+pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(
+    src: P,
+    dst: Q,
+    punch_hole: bool,
+) -> Result<()> {
     let mut src_file = File::open(src.as_ref())?;
     let mut dst_file = OpenOptions::new()
         .write(true)
@@ -223,6 +227,12 @@ pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Resul
                     break;
                 }
 
+                if punch_hole && buffer[..bytes_read].iter().all(|&x| x == 0) {
+                    // all zero, don't copy it at all!
+                    dst_file.seek(SeekFrom::Current(bytes_read as i64))?;
+                    total_bytes_copied += bytes_read as u64;
+                    continue;
+                }
                 dst_file.write_all(&buffer[..bytes_read])?;
                 total_bytes_copied += bytes_read as u64;
             }
@@ -230,95 +240,4 @@ pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> Resul
     }
 
     Ok(())
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> {
-    let mut src_file = OpenOptions::new().write(true).read(true).open(src)?;
-
-    let st = rustix::fs::fstat(&src_file)?;
-
-    let bufsz = st.st_blksize;
-    let mut buf = vec![0u8; bufsz as usize];
-
-    let mut ct = 0;
-    let mut hole_sz = 0;
-    let mut hole_start = 0;
-
-    let segments = src_file.scan_chunks()?;
-    for segment in segments {
-        if segment.segment_type != SegmentType::Data {
-            continue;
-        }
-
-        let mut off = segment.start;
-        let end = segment.end + 1;
-
-        while off < end {
-            let mut rsz = rustix::io::pread(&src_file, &mut buf, off)? as u64;
-            if rsz > 0 && rsz > end - off {
-                // exceed the end of the boundary
-                rsz = end - off;
-            }
-
-            if rsz == 0 {
-                break;
-            }
-
-            if buf.iter().all(|&x| x == 0) {
-                // the whole buf is zero, mark it as a hole
-                if hole_sz == 0 {
-                    hole_start = off;
-                }
-                // for continuous zero, we can merge them into a bigger hole
-                hole_sz += rsz;
-            } else if hole_sz > 0 {
-                if let Err(e) = rustix::fs::fallocate(
-                    &src_file,
-                    rustix::fs::FallocateFlags::PUNCH_HOLE | rustix::fs::FallocateFlags::KEEP_SIZE,
-                    hole_start,
-                    hole_sz,
-                ) {
-                    log::warn!("Failed to punch hole: {:?}", e);
-                }
-
-                ct += hole_sz;
-
-                hole_sz = 0;
-                hole_start = 0;
-            }
-
-            off += rsz;
-        }
-
-        // if the last segment is a hole, we need to punch it
-        if hole_sz > 0 {
-            let mut alloc_sz = hole_sz;
-            if off >= end {
-                alloc_sz += st.st_blksize as u64;
-            }
-            if let Err(e) = rustix::fs::fallocate(
-                &src_file,
-                rustix::fs::FallocateFlags::PUNCH_HOLE | rustix::fs::FallocateFlags::KEEP_SIZE,
-                hole_start,
-                alloc_sz,
-            ) {
-                log::warn!("Failed to punch hole: {:?}", e);
-            }
-
-            ct += hole_sz;
-        }
-    }
-
-    log::info!(
-        "Punched {} of hole",
-        humansize::format_size(ct, humansize::DECIMAL)
-    );
-
-    Ok(())
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn punch_hole(src: impl AsRef<Path>) -> Result<()> {
-    unimplemented!()
 }
