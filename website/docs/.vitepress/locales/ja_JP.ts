@@ -46,8 +46,8 @@ function sidebarGuide() {
       items: [
         { text: 'KernelSU とは?', link: '/ja_JP/guide/what-is-kernelsu' },
         { text: 'インストール', link: '/ja_JP/guide/installation' },
-        { text: 'ビルドするには?', link: '/guide/how-to-build' },
-        { text: '非 GKI デバイスでの実装', link: '/guide/how-to-integrate-for-non-gki' },
+        { text: 'ビルドするには?', link: '/ja_JP/guide/how-to-build' },
+        { text: '非 GKI デバイスでの実装', link: '/ja_JP/guide/how-to-integrate-for-non-gki' },
         { text: '非公式の対応デバイス', link: '/ja_JP/guide/unofficially-support-devices.md' },
         { text: 'モジュールのガイド', link: '/ja_JP/guide/module.md' },
         { text: 'ブートループからの復旧', link: '/ja_JP/guide/rescue-from-bootloop.md' },
