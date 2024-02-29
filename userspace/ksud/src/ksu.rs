@@ -49,6 +49,9 @@ pub fn grant_root(global_mnt: bool) -> Result<()> {
             std::result::Result::Ok(())
         })
     };
+    // add /data/adb/ksu/bin to PATH
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    add_path_to_env(defs::BINARY_DIR)?;
     Err(command.exec().into())
 }
 
