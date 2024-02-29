@@ -37,7 +37,6 @@ sha256 = "1"
 tempdir = "0.3"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
-fs_extra = "1.3"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = ["all-apis"] }
