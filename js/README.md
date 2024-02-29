@@ -16,7 +16,6 @@ Spawns a **root** shell and runs a command within that shell, passing the `stdou
 - `options` `<Object>`
   - `cwd` - Current working directory of the child process
   - `env` - Environment key-value pairs
-  - `mm` `boolean` - Mount master mode, true to enter global mount namespace
 
 ```javascript
 import { exec } from 'kernelsu';
@@ -39,7 +38,6 @@ Returns a `ChildProcess`, Instances of the ChildProcess represent spawned child 
 - `options` `<Object>`:
   - `cwd` `<string>` - Current working directory of the child process
   - `env` `<Object>` - Environment key-value pairs
-  - `mm` `boolean` - Mount master mode, true to enter global mount namespace
 
 Example of running `ls -lh /data`, capturing `stdout`, `stderr`, and the exit code:
 
