@@ -220,7 +220,9 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	// pr_info("option: 0x%x, cmd: %ld\n", option, arg2);
+#ifdef CONFIG_KSU_DEBUG
+	pr_info("option: 0x%x, cmd: %ld\n", option, arg2);
+#endif
 
 	if (arg2 == CMD_BECOME_MANAGER) {
 		// quick check
@@ -231,8 +233,10 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 		if (ksu_is_manager_uid_valid()) {
+#ifdef CONFIG_KSU_DEBUG
 			pr_info("manager already exist: %d\n",
 				ksu_get_manager_uid());
+#endif	
 			return 0;
 		}
 
