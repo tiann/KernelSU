@@ -265,7 +265,7 @@ fn copy_xattrs(src_path: impl AsRef<Path>, dest_path: impl AsRef<Path>) -> Resul
     }
     Ok(())
 }
- 
+
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>) -> Result<()> {
     use rustix::fs::FileTypeExt;
@@ -285,9 +285,7 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
 
         if entry.file_type().is_file() {
             std::fs::copy(&source_path, &dest_path).with_context(|| {
-                format!(
-                    "Failed to copy file from {source_path:?} to {dest_path:?}",
-                )
+                format!("Failed to copy file from {source_path:?} to {dest_path:?}",)
             })?;
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_symlink() {
