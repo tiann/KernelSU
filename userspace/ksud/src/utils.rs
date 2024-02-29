@@ -260,8 +260,11 @@ fn copy_xattrs(src_path: impl AsRef<Path>, dest_path: impl AsRef<Path>) -> Resul
             xattr.to_string_lossy(),
             value.to_string_lossy(),
         );
-        extattr::lsetxattr(dest_path.as_ref(), &xattr, &value, extattr::Flags::empty())
-            .with_context(|| format!("Failed to set xattr for {:?}", dest_path.as_ref()))?;
+        if let Err(e) =
+            extattr::lsetxattr(dest_path.as_ref(), &xattr, &value, extattr::Flags::empty())
+        {
+            log::warn!("Failed to set xattr: {}", e);
+        }
     }
     Ok(())
 }
