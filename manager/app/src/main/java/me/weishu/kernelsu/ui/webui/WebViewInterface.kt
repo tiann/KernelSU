@@ -36,7 +36,7 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
         exec(cmd, null, callbackFunc)
     }
 
-    private fun processOptions(sb: StringBuilder, options: String?): JSONObject {
+    private fun processOptions(sb: StringBuilder, options: String?) {
         val opts = if (options == null) JSONObject() else {
             JSONObject(options)
         }
@@ -51,7 +51,6 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
                 sb.append("export ${key}=${env.getString(key)};")
             }
         }
-        return opts
     }
 
     @JavascriptInterface
@@ -61,11 +60,10 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
         callbackFunc: String
     ) {
         val finalCommand = StringBuilder()
-        val opts = processOptions(finalCommand, options)
+        processOptions(finalCommand, options)
         finalCommand.append(cmd)
 
-        val mountMaster = opts.optBoolean("mm", false)
-        val shell = createRootShell(mountMaster)
+        val shell = createRootShell()
         val result = shell.newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
         val stdout = result.out.joinToString(separator = "\n")
         val stderr = result.err.joinToString(separator = "\n")
@@ -85,7 +83,7 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
     fun spawn(command: String, args: String, options: String?, callbackFunc: String) {
         val finalCommand = StringBuilder()
 
-        val opts = processOptions(finalCommand, options)
+        processOptions(finalCommand, options)
 
         if (!TextUtils.isEmpty(args)) {
             finalCommand.append(command).append(" ")
@@ -99,8 +97,7 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
             finalCommand.append(command)
         }
 
-        val mountMaster = opts.optBoolean("mm", false)
-        val shell = createRootShell(mountMaster)
+        val shell = createRootShell()
 
         val emitData = fun(name: String, data: String) {
             val jsCode =
