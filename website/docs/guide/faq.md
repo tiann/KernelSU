@@ -72,3 +72,8 @@ Of course. But KernelSU doesn't have builtin hosts support, you can install [sys
 The 1T size `modules.img` is a disk image file, **don't worry about its size**, it's a special type of file known as a [sparse file](https://en.wikipedia.org/wiki/Sparse_file), its actual size is only the size of the module you use, and it will dynamically shrink after you delete the module; it does not actually occupy 1T of disk space (actually your mobile phone may not have that much space).
 
 If you're really unhappy with the size of this file, you can use the `resize2fs -M` command to make it the actual size; but the module may not work properly at this time, and we won't provide any support for this.
+
+
+## Why does my device show wrong storage size?
+
+Certain devices use non-standard methods for calculating device's storage size, potentially leading to inaccurate storage calculations in system apps and menus, especially when dealing with 1TB sparse files. While this problem seems to be specific to Samsung devices, affecting only Samsung apps and services, it's essential to note that the discrepancy is primarily in the total storage size, and the free space calculation remains accurate. 
