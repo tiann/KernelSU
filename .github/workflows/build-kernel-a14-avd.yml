@@ -1,0 +1,27 @@
+name: Build Kernel - Android 14 AVD
+on:
+  push:
+    branches: ["main", "ci", "checkci"]
+    paths:
+      - ".github/workflows/build-kernel-a14.yml"
+      - ".github/workflows/avd-kernel.yml"
+      - ".github/workflows/manifests/android-14-avd.xml"
+      - "kernel/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/build-kernel-a14-avd.yml"
+      - ".github/workflows/avd-kernel.yml"
+      - ".github/workflows/manifests/android-14-avd.xml"
+      - "kernel/**"
+  workflow_call:
+  workflow_dispatch:
+jobs:
+  build-kernel:
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
+    uses: ./.github/workflows/avd-kernel.yml
+    secrets: inherit
+    with:
+      version_name: android-14
+      manifest_name: android-14-avd.xml
+      debug: true
