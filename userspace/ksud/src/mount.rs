@@ -55,8 +55,13 @@ impl Drop for AutoMountExt4 {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn mount_ext4(source: impl AsRef<Path>, target: impl AsRef<Path>) -> Result<()> {
-    let new_loopback = loopdev::LoopControl::open()?.next_free()?;
-    new_loopback.with().attach(source)?;
+    let new_loopback = loopdev::LoopControl::open()?
+        .next_free()
+        .with_context(|| "Failed to alloc loop")?;
+    new_loopback
+        .with()
+        .attach(source)
+        .with_context(|| "Failed to attach loop")?;
     let lo = new_loopback.path().ok_or(anyhow!("no loop"))?;
     if let Result::Ok(fs) = fsopen("ext4", FsOpenFlags::FSOPEN_CLOEXEC) {
         let fs = fs.as_fd();
