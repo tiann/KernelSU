@@ -301,6 +301,9 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_dir() {
             create_dir_all(&dest_path)?;
+            let metadata = std::fs::metadata(&source_path).context("Failed to read metadata")?;
+            std::fs::set_permissions(&dest_path, metadata.permissions())
+                .with_context(|| format!("Failed to set permissions for {dest_path:?}"))?;
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_char_device() {
             if dest_path.exists() {
