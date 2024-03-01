@@ -391,22 +391,13 @@ fn _install_module(zip: &str) -> Result<()> {
             println!("- Legacy image, migrating to new format, please be patient...");
             create_module_image(tmp_module_img, sparse_image_size, journal_size)?;
             let _dontdrop =
-                mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
-            fs_extra::dir::copy(
-                defs::MODULE_DIR,
-                module_update_tmp_dir,
-                &fs_extra::dir::CopyOptions::new()
-                    .overwrite(true)
-                    .content_only(true),
-            )?;
+                mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)
+                    .with_context(|| format!("Failed to mount {tmp_module_img}"))?;
+            utils::copy_module_files(defs::MODULE_DIR, module_update_tmp_dir)
+                .with_context(|| "Failed to migrate module files".to_string())?;
         } else {
-            utils::copy_sparse_file(modules_img, tmp_module_img, true).with_context(|| {
-                format!(
-                    "Failed to copy {} to {}",
-                    modules_img.display(),
-                    tmp_module_img
-                )
-            })?;
+            utils::copy_sparse_file(modules_img, tmp_module_img, true)
+                .with_context(|| "Failed to copy module image".to_string())?;
         }
     }
 
