@@ -299,14 +299,6 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
             log::info!("Symlink: {:?} -> {:?}", dest_path, target);
             std::os::unix::fs::symlink(target, &dest_path).context("Failed to create symlink")?;
             copy_xattrs(&source_path, &dest_path)?;
-            let metadata =
-                std::fs::symlink_metadata(&dest_path).context("Failed to read metadata")?;
-            rustix::fs::chmodat(
-                rustix::fs::CWD,
-                &dest_path,
-                metadata.permissions().mode().into(),
-                rustix::fs::AtFlags::SYMLINK_NOFOLLOW,
-            )?;
         } else if entry.file_type().is_dir() {
             create_dir_all(&dest_path)?;
             let metadata = std::fs::metadata(&source_path).context("Failed to read metadata")?;
