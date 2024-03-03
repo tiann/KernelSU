@@ -101,6 +101,21 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 checkUpdate = it
             }
 
+            var enableWebDebugging by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_web_debugging", false)
+                )
+            }
+            SwitchItem(
+                icon = Icons.Filled.Update,
+                title = stringResource(id = R.string.enable_web_debugging),
+                summary = stringResource(id = R.string.enable_web_debugging_summary),
+                checked = enableWebDebugging
+            ) {
+                prefs.edit().putBoolean("enable_web_debugging", it).apply()
+                enableWebDebugging = it
+            }
+
 
             ListItem(
                 leadingContent = {

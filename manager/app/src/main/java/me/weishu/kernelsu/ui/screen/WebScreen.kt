@@ -2,6 +2,8 @@ package me.weishu.kernelsu.ui.screen
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
+import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -31,6 +33,8 @@ fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: St
     val context = LocalContext.current
 
     DisposableEffect(Unit) {
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
         onDispose {
             if (WebViewInterface.isHideSystemUI && context is Activity) {
                 showSystemUI(context.window)

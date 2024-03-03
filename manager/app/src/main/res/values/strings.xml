@@ -108,4 +108,6 @@
     <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
     <string name="grant_root_failed">Failed to grant root!</string>
     <string name="open">Open</string>
+    <string name="enable_web_debugging">Enable WebView Debugging</string>
+    <string name="enable_web_debugging_summary">Can be used to debug WebUI, please enable only when needed.</string>
 </resources>
