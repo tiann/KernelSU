@@ -109,14 +109,21 @@ pub fn mount_overlayfs(
         upperdir,
         workdir
     );
-    if let Result::Ok(fs) = fsopen("overlay", FsOpenFlags::FSOPEN_CLOEXEC) {
+
+    let upperdir = upperdir
+        .filter(|up| up.exists())
+        .map(|e| e.display().to_string());
+    let workdir = workdir
+        .filter(|wd| wd.exists())
+        .map(|e| e.display().to_string());
+
+    let result = (|| {
+        let fs = fsopen("overlay", FsOpenFlags::FSOPEN_CLOEXEC)?;
         let fs = fs.as_fd();
-        fsconfig_set_string(fs, "lowerdir", lowerdir_config)?;
-        if let (Some(upperdir), Some(workdir)) = (upperdir, workdir) {
-            if upperdir.exists() && workdir.exists() {
-                fsconfig_set_string(fs, "upperdir", upperdir.display().to_string())?;
-                fsconfig_set_string(fs, "workdir", workdir.display().to_string())?;
-            }
+        fsconfig_set_string(fs, "lowerdir", &lowerdir_config)?;
+        if let (Some(upperdir), Some(workdir)) = (&upperdir, &workdir) {
+            fsconfig_set_string(fs, "upperdir", upperdir)?;
+            fsconfig_set_string(fs, "workdir", workdir)?;
         }
         fsconfig_set_string(fs, "source", KSU_OVERLAY_SOURCE)?;
         fsconfig_create(fs)?;
@@ -127,17 +134,14 @@ pub fn mount_overlayfs(
             CWD,
             dest.as_ref(),
             MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
-        )?;
-    } else {
+        )
+    })();
+
+    if let Err(e) = result {
+        warn!("fsopen mount failed: {:#}, fallback to mount", e);
         let mut data = format!("lowerdir={lowerdir_config}");
         if let (Some(upperdir), Some(workdir)) = (upperdir, workdir) {
-            if upperdir.exists() && workdir.exists() {
-                data = format!(
-                    "{data},upperdir={},workdir={}",
-                    upperdir.display(),
-                    workdir.display()
-                );
-            }
+            data = format!("{data},upperdir={upperdir},workdir={workdir}");
         }
         mount(
             KSU_OVERLAY_SOURCE,
