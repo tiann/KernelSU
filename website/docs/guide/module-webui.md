@@ -30,7 +30,7 @@ KernelSU provides a JavaScript library and [publishes it on npm](https://www.npm
 
 For example, you can execute a shell command to obtain a specific configuration or modify a property:
 
-```javascript
+```JavaScript
 import { exec } from 'kernelsu';
 
 const { errno, stdout } = exec("getprop ro.product.model");
