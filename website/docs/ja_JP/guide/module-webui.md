@@ -6,7 +6,7 @@ KernelSU のモジュールは、ブートスクリプトの実行やシステ�
 
 ## webroot ディレクトリ
 
-Web リソースファイルは、モジュールのルートディレクトリの webroot サブディレクトリに置かれるべきであり、index.html という名前のファイルが必ず存在しなければなりません。これがモジュールページのエントリです。Web インターフェイスを含む最もシンプルなモジュール構造は以下の通りです：
+Web リソースファイルは、モジュールのルートディレクトリの `webroot` サブディレクトリに置かれるべきであり、`index.html` という名前のファイルが必ず存在しなければなりません。これがモジュールページのエントリです。Web インターフェイスを含む最もシンプルなモジュール構造は以下の通りです：
 
 ```txt
 ❯ tree .
@@ -22,15 +22,15 @@ Web リソースファイルは、モジュールのルートディレクトリ�
 
 ページに css や JavaScript が含まれている場合は、このディレクトリに配置する必要があります。
 
-## Javascript API
+## JavaScript API
 
 単なる表示ページであれば、通常の Web ページとの違いはありません。より重要なのは、KernelSU がモジュールの固有機能を実装させるための一連のシステム API を提供することです。
 
-KernelSU は Javascript ライブラリを提供し、[npm で公開しています](https://www.npmjs.com/package/kernelsu)。これを Web ページの JavaScript コードで使用することができます。
+KernelSU は JavaScript ライブラリを提供し、[npm で公開しています](https://www.npmjs.com/package/kernelsu)。これを Web ページの JavaScript コードで使用することができます。
 
 たとえば、特定の設定を取得したり、プロパティを変更するために、シェルコマンドを実行することができます：
 
-```javascript
+```JavaScript
 import { exec } from 'kernelsu';
 
 const { errno, stdout } = exec("getprop ro.product.model");
@@ -44,5 +44,5 @@ const { errno, stdout } = exec("getprop ro.product.model");
 
 ## いくつかのヒント
 
-1. localStorage を通常通りに使用してデータを保存することができますが、Manager アプリをアンインストールした後には失われます。永続的に保存する必要がある場合は、自分でいくつかのディレクトリにデータを書き込むことができます。
+1. `localStorage` を通常通りに使用してデータを保存することができますが、Manager アプリをアンインストールした後には失われます。永続的に保存する必要がある場合は、自分でいくつかのディレクトリにデータを書き込むことができます。
 2. シンプルなページには、[parceljs](https://parceljs.org/)を使用することをお勧めします。設定が不要で非常に便利です。しかし、フロントエンドの達人である場合や、自分の好みがある場合は、気に入ったものを選んでください！
