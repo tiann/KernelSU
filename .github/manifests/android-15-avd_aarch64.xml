@@ -1,0 +1,37 @@
+<manifest>
+<!-- https://ci.android.com/builds/submitted/11275718/kernel_virt_aarch64/latest/manifest_11275718.xml -->
+<remote name="aosp" fetch="https://android.googlesource.com/" review="https://android.googlesource.com/"/>
+<default revision="main" remote="aosp" sync-j="4"/>
+<superproject name="kernel/superproject" remote="aosp" revision="common-android15-6.6"/>
+<project path="build/kernel" name="kernel/build" groups="ddk" revision="43337ece156eabd735426a0b007637bb52fa7339">
+<linkfile dest="tools/bazel" src="kleaf/bazel.sh"/>
+<linkfile dest="WORKSPACE" src="kleaf/bazel.WORKSPACE"/>
+</project>
+<project path="common" name="kernel/common" revision="515a956763d8c874d9a7e23528332bf907b31748"/>
+<project path="kernel/common-patches" name="kernel/common-patches" revision="495419530db8761a40f8db9fb734a9be78fa25fd">
+<linkfile dest="common/patches" src="android-mainline"/>
+</project>
+<project path="kernel/tests" name="kernel/tests" revision="99abfd276063ab3a7748939aa55e107aaca903f6"/>
+<project path="kernel/configs" name="kernel/configs" revision="786dab5f2f49b983b7c448d45a50c62d36e9f7f9"/>
+<project path="common-modules/virtual-device" name="kernel/common-modules/virtual-device" revision="5c7466d6fc47f7ee2245f9ee6471cd78e6ff82f0"/>
+<project path="prebuilts/clang/host/linux-x86" name="platform/prebuilts/clang/host/linux-x86" revision="1400cf7d2f0d28c425737d7b58c1f67c52db087f" clone-depth="1" groups="ddk"/>
+<project path="prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" name="platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8" clone-depth="1" groups="ddk" revision="99e41849eb3895574b1dc7e854ca15cb3fb11a71"/>
+<project path="prebuilts/build-tools" name="platform/prebuilts/build-tools" clone-depth="1" groups="ddk" revision="93e69718fd53f0c3dd7f0087657dfe2e78926830"/>
+<project path="prebuilts/clang-tools" name="platform/prebuilts/clang-tools" clone-depth="1" revision="bf33473342630944198190ff74e6ca09a9bcfdeb"/>
+<project path="prebuilts/kernel-build-tools" name="kernel/prebuilts/build-tools" clone-depth="1" groups="ddk" revision="4b68c02455e6ce5c87ccf8e09e629f0177771a8c"/>
+<project path="prebuilts/rust" name="platform/prebuilts/rust" revision="7e636e2a1b7cf415c3c01981e439d98843dc4973" clone-depth="1"/>
+<project path="prebuilts/tradefed" name="platform/tools/tradefederation/prebuilts" clone-depth="1" revision="79d9ec16c1e4e747b0bfad9a80a1665080c42d7b"/>
+<project path="prebuilts/asuite" name="platform/prebuilts/asuite" clone-depth="1" revision="9e2738f6242785a3b2096010ce63363a160c122f"/>
+<project path="tools/mkbootimg" name="platform/system/tools/mkbootimg" revision="722e6fa37d508b190fafa9a8ce9f6d571fad3a8c"/>
+<project path="prebuilts/jdk/jdk11" name="platform/prebuilts/jdk/jdk11" revision="06351a976e772d8a9cdb133bb982032c64ee9e53" clone-depth="1" groups="ddk"/>
+<project path="prebuilts/ndk-r26" name="toolchain/prebuilts/ndk/r26" clone-depth="1" groups="ddk" revision="e87abe7cbe9143d239ba54f32c64ca697adcba75"/>
+<project path="external/bazel-skylib" name="platform/external/bazel-skylib" groups="ddk" revision="930baaa09975eb3809629a72806acbe9494dd224"/>
+<project path="build/bazel_common_rules" name="platform/build/bazel_common_rules" groups="ddk" revision="5fb8d26dfb2565e0e2d8b6630d241b5f5675e0b1"/>
+<project path="external/libcap-ng" name="platform/external/libcap-ng" revision="2bcc92ae19481dd2b8d3ce3abdfbbee49261abe6"/>
+<project path="external/libcap" name="platform/external/libcap" revision="9577b17009379649c9220edca7d0077311445b95"/>
+<project path="external/stardoc" name="platform/external/stardoc" groups="ddk" revision="85b0f239303220d902ad919ff27d2da475fc12e2"/>
+<project path="external/python/absl-py" name="platform/external/python/absl-py" groups="ddk" revision="8cc5fc4798ef442b0c5b70c1ecc7e45a8f6eb2f8"/>
+<project path="external/bazelbuild-rules_cc" name="platform/external/bazelbuild-rules_cc" groups="ddk" revision="9a4853f0327e0266818c8d6b4967e2e8f36b1a88"/>
+<project path="external/bazelbuild-rules_python" name="platform/external/bazelbuild-rules_python" groups="ddk" revision="3e21f23d9400ba51f10e9b76016ff6d472829b4e"/>
+<project path="external/bazelbuild-rules_rust" name="platform/external/bazelbuild-rules_rust" revision="bdd24099a80555ff8a4441e8bb47f4c7cfe413f8"/>
+</manifest>
