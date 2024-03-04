@@ -12,6 +12,7 @@ use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 
+use std::fs::OpenOptions;
 use std::{
     collections::HashMap,
     env::var as env_var,
@@ -398,6 +399,23 @@ fn _install_module(zip: &str) -> Result<()> {
         } else {
             utils::copy_sparse_file(modules_img, tmp_module_img, true)
                 .with_context(|| "Failed to copy module image".to_string())?;
+
+            if std::fs::metadata(tmp_module_img)?.len() < sparse_image_size {
+                // truncate the file to new size
+                OpenOptions::new()
+                    .write(true)
+                    .open(tmp_module_img)
+                    .context("Failed to open ext4 image")?
+                    .set_len(sparse_image_size)
+                    .context("Failed to truncate ext4 image")?;
+
+                // resize the image to new size
+                check_image(tmp_module_img)?;
+                Command::new("resize2fs")
+                    .arg(tmp_module_img)
+                    .stdout(Stdio::piped())
+                    .status()?;
+            }
         }
     }
 
