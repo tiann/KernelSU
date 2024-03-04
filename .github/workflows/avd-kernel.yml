@@ -9,6 +9,11 @@ on:
         description: >
           With SUBLEVEL of kernel,
           for example: android12-5.10.66
+      arch:
+        required: true
+        type: string
+        description: >
+          Build arch: aarch64/x86_64
       debug:
         required: false
         type: boolean
@@ -106,7 +111,7 @@ jobs:
         if: inputs.use_cache == true
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: gki-kernel-x86_64-avd-${{ inputs.version_name }}
+          key: gki-kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
@@ -126,15 +131,15 @@ jobs:
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
-          tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_x86_64_dist -- --dist_dir=dist
-          NAME=kernel-x86_64-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
+          tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
+          NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           mv dist/bzImage $NAME
           echo "file_path=android-kernel/$NAME" >> $GITHUB_ENV
 
       - name: Upload Kernel
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-x86_64-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
+          name: kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           path: "${{ env.file_path }}"
 
       - name: Bot session cache
@@ -155,7 +160,7 @@ jobs:
           COMMIT_URL: ${{ github.event.head_commit.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          TITLE=kernel-x86_64-avd-${{ inputs.version_name }}
+          TITLE=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}
           echo "[+] title: $TITLE"
           export TITLE
           export VERSION="${{ env.kernelsu_version }}"
@@ -165,4 +170,3 @@ jobs:
             pip3 install telethon==1.31.1
             python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}"
           fi
-
