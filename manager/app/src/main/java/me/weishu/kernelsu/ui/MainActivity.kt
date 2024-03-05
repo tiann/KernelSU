@@ -27,6 +27,7 @@ import com.ramcosta.composedestinations.navigation.popBackStack
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.component.DialogHost
 import me.weishu.kernelsu.ui.component.rememberDialogHostState
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
 import me.weishu.kernelsu.ui.screen.NavGraphs
@@ -56,6 +57,7 @@ class MainActivity : ComponentActivity() {
                         LocalSnackbarHost provides snackbarHostState,
                         LocalDialogHost provides rememberDialogHostState(),
                     ) {
+                        DialogHost()
                         DestinationsNavHost(
                             modifier = Modifier.padding(innerPadding),
                             navGraph = NavGraphs.root,
