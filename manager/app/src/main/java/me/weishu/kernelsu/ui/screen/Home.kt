@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.system.Os
 import androidx.annotation.StringRes
+import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -29,12 +30,10 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.*
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.ConfirmDialog
-import me.weishu.kernelsu.ui.component.ConfirmResult
+import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.*
 
@@ -84,7 +83,6 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             DonateCard()
             LearnMoreCard()
             Spacer(Modifier)
-            ConfirmDialog()
         }
     }
 }
@@ -99,28 +97,28 @@ fun UpdateCard() {
     val newVersionCode = newVersion.first
     val newVersionUrl = newVersion.second
     val changelog = newVersion.third
-    if (newVersionCode <= currentVersionCode) {
-        return
-    }
 
     val uriHandler = LocalUriHandler.current
-    val dialogHost = LocalDialogHost.current
     val title = stringResource(id = R.string.module_changelog)
     val updateText = stringResource(id = R.string.module_update)
-    val scope = rememberCoroutineScope()
-    WarningCard(
-        message = stringResource(id = R.string.new_version_available).format(newVersionCode),
-        MaterialTheme.colorScheme.outlineVariant
+
+    AnimatedVisibility(
+        visible = newVersionCode >= currentVersionCode,
+        enter = fadeIn() + expandVertically(),
+        exit = shrinkVertically() + fadeOut()
     ) {
-        scope.launch {
-            if (changelog.isEmpty() || dialogHost.showConfirm(
+        val updateDialog = rememberConfirmDialog(onConfirm = { uriHandler.openUri(newVersionUrl) })
+        WarningCard(
+            message = stringResource(id = R.string.new_version_available).format(newVersionCode),
+            MaterialTheme.colorScheme.outlineVariant
+        ) {
+            if (changelog.isNotEmpty()) {
+                updateDialog.showConfirm(
                     title = title,
                     content = changelog,
                     markdown = true,
-                    confirm = updateText,
-                ) == ConfirmResult.Confirmed
-            ) {
-                uriHandler.openUri(newVersionUrl)
+                    confirm = updateText
+                )
             }
         }
     }
