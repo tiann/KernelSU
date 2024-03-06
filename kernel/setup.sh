@@ -5,8 +5,8 @@ GKI_ROOT=$(pwd)
 
 echo "[+] GKI_ROOT: $GKI_ROOT"
 
-if test -d "$GKI_ROOT/common/drivers"; then
-     DRIVER_DIR="$GKI_ROOT/common/drivers"
+if test -d "$GKI_ROOT/dt24/drivers"; then
+     DRIVER_DIR="$GKI_ROOT/dt24/drivers"
 elif test -d "$GKI_ROOT/drivers"; then
      DRIVER_DIR="$GKI_ROOT/drivers"
 else
@@ -33,7 +33,7 @@ echo "[+] GKI_ROOT: $GKI_ROOT"
 echo "[+] Copy kernel su driver to $DRIVER_DIR"
 
 cd "$DRIVER_DIR"
-if test -d "$GKI_ROOT/common/drivers"; then
+if test -d "$GKI_ROOT/dt24/drivers"; then
      ln -sf "../../KernelSU/kernel" "kernelsu"
 elif test -d "$GKI_ROOT/drivers"; then
      ln -sf "../KernelSU/kernel" "kernelsu"
