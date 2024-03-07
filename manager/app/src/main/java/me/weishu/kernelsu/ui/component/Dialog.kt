@@ -141,18 +141,34 @@ private class LoadingDialogHandleImpl(
     override val dialogType: String get() = "LoadingDialog"
 }
 
-private typealias ConfirmCallback = Pair<(() -> Unit)?, (() -> Unit)?>
+typealias NullableCallback = (() -> Unit)?
 
-private val ConfirmCallback.onConfirm get() = first
-private val ConfirmCallback.onDismiss get() = second
-private val ConfirmCallback.isEmpty get() = first == null && second == null
+interface ConfirmCallback {
+
+    val onConfirm: NullableCallback
+
+    val onDismiss: NullableCallback
+
+    val isEmpty: Boolean get() = onConfirm == null && onDismiss == null
+
+    companion object {
+        operator fun invoke(onConfirmProvider: () -> NullableCallback, onDismissProvider: () -> NullableCallback): ConfirmCallback {
+            return object : ConfirmCallback {
+                override val onConfirm: NullableCallback
+                    get() = onConfirmProvider()
+                override val onDismiss: NullableCallback
+                    get() = onDismissProvider()
+            }
+        }
+    }
+}
 
 private class ConfirmDialogHandleImpl(
     visible: MutableState<Boolean>,
     coroutineScope: CoroutineScope,
+    callback: ConfirmCallback,
     override var visuals: ConfirmDialogVisuals = ConfirmDialogVisualsImpl.Empty,
-    private val resultFlow: ReceiveChannel<ConfirmResult>,
-    callback: ConfirmCallback = ConfirmCallback(null, null)
+    private val resultFlow: ReceiveChannel<ConfirmResult>
 ) : ConfirmDialogHandle, DialogHandleBase(visible, coroutineScope) {
     private class ResultCollector(
         private val callback: ConfirmCallback
@@ -262,15 +278,15 @@ private class ConfirmDialogHandleImpl(
         fun Saver(
             visible: MutableState<Boolean>,
             coroutineScope: CoroutineScope,
-            resultChannel: ReceiveChannel<ConfirmResult>,
-            callback: ConfirmCallback
+            callback: ConfirmCallback,
+            resultChannel: ReceiveChannel<ConfirmResult>
         ) = Saver<ConfirmDialogHandle, ConfirmDialogVisuals>(
             save = {
                 it.visuals
             },
             restore = {
                 Log.d(TAG, "ConfirmDialog restore, visuals: $it")
-                ConfirmDialogHandleImpl(visible, coroutineScope, it, resultChannel, callback)
+                ConfirmDialogHandleImpl(visible, coroutineScope, callback, it, resultChannel)
             }
         )
     }
@@ -310,9 +326,9 @@ private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: Confi
     }
 
     val handle = rememberSaveable(
-        saver = ConfirmDialogHandleImpl.Saver(visible, coroutineScope, resultChannel, callback),
+        saver = ConfirmDialogHandleImpl.Saver(visible, coroutineScope, callback, resultChannel),
         init = {
-            ConfirmDialogHandleImpl(visible, coroutineScope, visuals, resultChannel, callback)
+            ConfirmDialogHandleImpl(visible, coroutineScope, callback, visuals, resultChannel)
         }
     )
 
@@ -328,16 +344,21 @@ private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: Confi
 }
 
 @Composable
-fun rememberConfirmDialog(onConfirm: (() -> Unit)? = null, onDismiss: (() -> Unit)? = null): ConfirmDialogHandle {
+fun rememberConfirmCallback(onConfirm: NullableCallback, onDismiss: NullableCallback): ConfirmCallback {
     val currentOnConfirm by rememberUpdatedState(newValue = onConfirm)
     val currentOnDismiss by rememberUpdatedState(newValue = onDismiss)
-    val callback = remember {
-        if (onConfirm != null || onDismiss != null) {
-            ConfirmCallback({ currentOnConfirm?.invoke() }, { currentOnDismiss?.invoke() })
-        } else {
-            ConfirmCallback(null, null)
-        }
+    return remember {
+        ConfirmCallback({ currentOnConfirm }, { currentOnDismiss })
     }
+}
+
+@Composable
+fun rememberConfirmDialog(onConfirm: NullableCallback = null, onDismiss: NullableCallback = null): ConfirmDialogHandle {
+    return rememberConfirmDialog(rememberConfirmCallback(onConfirm, onDismiss))
+}
+
+@Composable
+fun rememberConfirmDialog(callback: ConfirmCallback): ConfirmDialogHandle {
     return rememberConfirmDialog(ConfirmDialogVisualsImpl.Empty, callback)
 }
 
