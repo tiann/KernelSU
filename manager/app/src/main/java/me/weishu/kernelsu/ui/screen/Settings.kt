@@ -4,16 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.ContactPage
-import androidx.compose.material.icons.filled.DeveloperMode
-import androidx.compose.material.icons.filled.Fence
-import androidx.compose.material.icons.filled.RemoveModerator
-import androidx.compose.material.icons.filled.Update
-import androidx.compose.material.icons.filled.Upgrade
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,10 +24,10 @@ import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AboutDialog
-import me.weishu.kernelsu.ui.component.LoadingDialog
 import me.weishu.kernelsu.ui.component.SwitchItem
+import me.weishu.kernelsu.ui.component.rememberCustomDialog
+import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
-import me.weishu.kernelsu.ui.util.LocalDialogHost
 import me.weishu.kernelsu.ui.util.getBugreportFile
 
 /**
@@ -43,7 +37,6 @@ import me.weishu.kernelsu.ui.util.getBugreportFile
 @Destination
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
-
     Scaffold(
         topBar = {
             TopBar(onBack = {
@@ -51,16 +44,15 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             })
         }
     ) { paddingValues ->
-        LoadingDialog()
-
-        val showAboutDialog = remember { mutableStateOf(false) }
-        AboutDialog(showAboutDialog)
+        val aboutDialog = rememberCustomDialog {
+            AboutDialog(it)
+        }
+        val loadingDialog = rememberLoadingDialog()
 
         Column(modifier = Modifier.padding(paddingValues)) {
 
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
-            val dialogHost = LocalDialogHost.current
 
             val profileTemplate = stringResource(id = R.string.settings_profile_template)
             ListItem(
@@ -128,7 +120,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 headlineContent = { Text(stringResource(id = R.string.send_log)) },
                 modifier = Modifier.clickable {
                     scope.launch {
-                        val bugreport = dialogHost.withLoading {
+                        val bugreport = loadingDialog.withLoading {
                             withContext(Dispatchers.IO) {
                                 getBugreportFile(context)
                             }
@@ -166,7 +158,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 },
                 headlineContent = { Text(about) },
                 modifier = Modifier.clickable {
-                    showAboutDialog.value = true
+                    aboutDialog.show()
                 }
             )
         }
