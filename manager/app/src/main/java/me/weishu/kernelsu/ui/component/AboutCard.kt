@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -52,11 +53,9 @@ fun AboutCard() {
 }
 
 @Composable
-fun AboutDialog(showAboutDialog: MutableState<Boolean>) {
-    if (showAboutDialog.value) {
-        Dialog(onDismissRequest = { showAboutDialog.value = false }) {
-            AboutCard()
-        }
+fun AboutDialog(dismiss: () -> Unit) {
+    Dialog(onDismissRequest = { dismiss() }) {
+        AboutCard()
     }
 }
 

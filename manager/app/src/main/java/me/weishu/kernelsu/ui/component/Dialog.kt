@@ -1,8 +1,10 @@
 package me.weishu.kernelsu.ui.component
 
 import android.graphics.text.LineBreaker
+import android.os.Parcelable
 import android.text.Layout
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.compose.foundation.layout.Box
@@ -10,14 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -28,48 +26,48 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.noties.markwon.Markwon
 import io.noties.markwon.utils.NoCopySpannableFactory
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import me.weishu.kernelsu.ui.util.LocalDialogHost
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.parcelize.Parcelize
 import kotlin.coroutines.resume
 
-interface DialogVisuals
+private const val TAG = "DialogComponent"
 
-interface LoadingDialogVisuals : DialogVisuals
-
-interface PromptDialogVisuals : DialogVisuals {
+interface ConfirmDialogVisuals : Parcelable {
     val title: String
     val content: String
-}
-
-interface ConfirmDialogVisuals : PromptDialogVisuals {
+    val isMarkdown: Boolean
     val confirm: String?
     val dismiss: String?
-    val isMarkdown: Boolean
 }
 
-
-sealed interface DialogData {
-    val visuals: DialogVisuals
+@Parcelize
+private data class ConfirmDialogVisualsImpl(
+    override val title: String,
+    override val content: String,
+    override val isMarkdown: Boolean,
+    override val confirm: String?,
+    override val dismiss: String?,
+) : ConfirmDialogVisuals {
+    companion object {
+        val Empty: ConfirmDialogVisuals = ConfirmDialogVisualsImpl("", "", false, null, null)
+    }
 }
 
-interface LoadingDialogData : DialogData {
-    override val visuals: LoadingDialogVisuals
-    fun dismiss()
+interface DialogHandle {
+    val isShown: Boolean
+    val dialogType: String
+    fun show()
+    fun hide()
 }
 
-interface PromptDialogData : DialogData {
-    override val visuals: PromptDialogVisuals
-    fun dismiss()
-}
-
-interface ConfirmDialogData : PromptDialogData {
-    override val visuals: ConfirmDialogVisuals
-    fun confirm()
+interface LoadingDialogHandle : DialogHandle {
+    suspend fun <R> withLoading(block: suspend () -> R): R
+    fun showLoading()
 }
 
 sealed interface ConfirmResult {
@@ -77,143 +75,313 @@ sealed interface ConfirmResult {
     object Canceled : ConfirmResult
 }
 
-class DialogHostState {
+interface ConfirmDialogHandle : DialogHandle {
+    val visuals: ConfirmDialogVisuals
 
-    private object LoadingDialogVisualsImpl : LoadingDialogVisuals
-
-    private data class PromptDialogVisualsImpl(
-        override val title: String, override val content: String
-    ) : PromptDialogVisuals
-
-    private data class ConfirmDialogVisualsImpl(
-        override val title: String,
-        override val content: String,
-        override val confirm: String?,
-        override val dismiss: String?,
-        override val isMarkdown: Boolean,
-    ) : ConfirmDialogVisuals
-
-    private data class LoadingDialogDataImpl(
-        override val visuals: LoadingDialogVisuals,
-        private val continuation: CancellableContinuation<Unit>,
-    ) : LoadingDialogData {
-        override fun dismiss() {
-            if (continuation.isActive) continuation.resume(Unit)
-        }
-    }
-
-    private data class PromptDialogDataImpl(
-        override val visuals: PromptDialogVisuals,
-        private val continuation: CancellableContinuation<Unit>,
-    ) : PromptDialogData {
-        override fun dismiss() {
-            if (continuation.isActive) continuation.resume(Unit)
-        }
-    }
-
-    private data class ConfirmDialogDataImpl(
-        override val visuals: ConfirmDialogVisuals,
-        private val continuation: CancellableContinuation<ConfirmResult>
-    ) : ConfirmDialogData {
-
-        override fun confirm() {
-            if (continuation.isActive) continuation.resume(ConfirmResult.Confirmed)
-        }
-
-        override fun dismiss() {
-            if (continuation.isActive) continuation.resume(ConfirmResult.Canceled)
-        }
-    }
-
-    private val mutex = Mutex()
-
-    var currentDialogData by mutableStateOf<DialogData?>(null)
-        private set
-
-    suspend fun showLoading() {
-        try {
-            mutex.withLock {
-                suspendCancellableCoroutine { continuation ->
-                    currentDialogData = LoadingDialogDataImpl(
-                        visuals = LoadingDialogVisualsImpl, continuation = continuation
-                    )
-                }
-            }
-        } finally {
-            currentDialogData = null
-        }
-    }
-
-    suspend fun <R> withLoading(block: suspend () -> R) = coroutineScope {
-        val showLoading = launch {
-            showLoading()
-        }
-
-        val result = block()
-
-        showLoading.cancel()
-
-        result
-    }
-
-    suspend fun showPrompt(title: String, content: String) {
-        try {
-            mutex.withLock {
-                suspendCancellableCoroutine { continuation ->
-                    currentDialogData = PromptDialogDataImpl(
-                        visuals = PromptDialogVisualsImpl(title, content),
-                        continuation = continuation
-                    )
-                }
-            }
-        } finally {
-            currentDialogData = null
-        }
-    }
-
-    suspend fun showConfirm(
+    fun showConfirm(
         title: String,
         content: String,
         markdown: Boolean = false,
         confirm: String? = null,
         dismiss: String? = null
-    ): ConfirmResult = mutex.withLock {
-        try {
-            return@withLock suspendCancellableCoroutine { continuation ->
-                currentDialogData = ConfirmDialogDataImpl(
-                    visuals = ConfirmDialogVisualsImpl(title, content, confirm, dismiss, markdown),
-                    continuation = continuation
-                )
+    )
+
+    suspend fun awaitConfirm(
+        title: String,
+        content: String,
+        markdown: Boolean = false,
+        confirm: String? = null,
+        dismiss: String? = null
+    ): ConfirmResult
+}
+
+private abstract class DialogHandleBase(
+    protected val visible: MutableState<Boolean>,
+    protected val coroutineScope: CoroutineScope
+) : DialogHandle {
+    override val isShown: Boolean
+        get() = visible.value
+
+    override fun show() {
+        coroutineScope.launch {
+            visible.value = true
+        }
+    }
+
+    final override fun hide() {
+        coroutineScope.launch {
+            visible.value = false
+        }
+    }
+
+    override fun toString(): String {
+        return dialogType
+    }
+}
+
+private class LoadingDialogHandleImpl(
+    visible: MutableState<Boolean>,
+    coroutineScope: CoroutineScope
+) : LoadingDialogHandle, DialogHandleBase(visible, coroutineScope) {
+    override suspend fun <R> withLoading(block: suspend () -> R): R {
+        return coroutineScope.async {
+            try {
+                visible.value = true
+                block()
+            } finally {
+                visible.value = false
             }
-        } finally {
-            currentDialogData = null
+        }.await()
+    }
+
+    override fun showLoading() {
+        show()
+    }
+
+    override val dialogType: String get() = "LoadingDialog"
+}
+
+typealias NullableCallback = (() -> Unit)?
+
+interface ConfirmCallback {
+
+    val onConfirm: NullableCallback
+
+    val onDismiss: NullableCallback
+
+    val isEmpty: Boolean get() = onConfirm == null && onDismiss == null
+
+    companion object {
+        operator fun invoke(onConfirmProvider: () -> NullableCallback, onDismissProvider: () -> NullableCallback): ConfirmCallback {
+            return object : ConfirmCallback {
+                override val onConfirm: NullableCallback
+                    get() = onConfirmProvider()
+                override val onDismiss: NullableCallback
+                    get() = onDismissProvider()
+            }
         }
     }
 }
 
+private class ConfirmDialogHandleImpl(
+    visible: MutableState<Boolean>,
+    coroutineScope: CoroutineScope,
+    callback: ConfirmCallback,
+    override var visuals: ConfirmDialogVisuals = ConfirmDialogVisualsImpl.Empty,
+    private val resultFlow: ReceiveChannel<ConfirmResult>
+) : ConfirmDialogHandle, DialogHandleBase(visible, coroutineScope) {
+    private class ResultCollector(
+        private val callback: ConfirmCallback
+    ) : FlowCollector<ConfirmResult> {
+        fun handleResult(result: ConfirmResult) {
+            Log.d(TAG, "handleResult: ${result.javaClass.simpleName}")
+            when (result) {
+                ConfirmResult.Confirmed -> onConfirm()
+                ConfirmResult.Canceled -> onDismiss()
+            }
+        }
+
+        fun onConfirm() {
+            callback.onConfirm?.invoke()
+        }
+
+        fun onDismiss() {
+            callback.onDismiss?.invoke()
+        }
+
+        override suspend fun emit(value: ConfirmResult) {
+            handleResult(value)
+        }
+    }
+
+    private val resultCollector = ResultCollector(callback)
+
+    private var awaitContinuation: CancellableContinuation<ConfirmResult>? = null
+
+    private val isCallbackEmpty = callback.isEmpty
+
+    init {
+        coroutineScope.launch {
+            resultFlow
+                .consumeAsFlow()
+                .onEach { result ->
+                    awaitContinuation?.let {
+                        awaitContinuation = null
+                        if (it.isActive) {
+                            it.resume(result)
+                        }
+                    }
+                }
+                .onEach { hide() }
+                .collect(resultCollector)
+        }
+    }
+
+    private suspend fun awaitResult(): ConfirmResult {
+        return suspendCancellableCoroutine {
+            awaitContinuation = it.apply {
+                if (isCallbackEmpty) {
+                    invokeOnCancellation {
+                        visible.value = false
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateVisuals(visuals: ConfirmDialogVisuals) {
+        this.visuals = visuals
+    }
+
+    override fun show() {
+        if (visuals !== ConfirmDialogVisualsImpl.Empty) {
+            super.show()
+        } else {
+            throw UnsupportedOperationException("can't show confirm dialog with the Empty visuals")
+        }
+    }
+
+    override fun showConfirm(
+        title: String,
+        content: String,
+        markdown: Boolean,
+        confirm: String?,
+        dismiss: String?
+    ) {
+        coroutineScope.launch {
+            updateVisuals(ConfirmDialogVisualsImpl(title, content, markdown, confirm, dismiss))
+            show()
+        }
+    }
+
+    override suspend fun awaitConfirm(
+        title: String,
+        content: String,
+        markdown: Boolean,
+        confirm: String?,
+        dismiss: String?
+    ): ConfirmResult {
+        coroutineScope.launch {
+            updateVisuals(ConfirmDialogVisualsImpl(title, content, markdown, confirm, dismiss))
+            show()
+        }
+        return awaitResult()
+    }
+
+    override val dialogType: String get() = "ConfirmDialog"
+
+    override fun toString(): String {
+        return "${super.toString()}(visuals: $visuals)"
+    }
+
+    companion object {
+        fun Saver(
+            visible: MutableState<Boolean>,
+            coroutineScope: CoroutineScope,
+            callback: ConfirmCallback,
+            resultChannel: ReceiveChannel<ConfirmResult>
+        ) = Saver<ConfirmDialogHandle, ConfirmDialogVisuals>(
+            save = {
+                it.visuals
+            },
+            restore = {
+                Log.d(TAG, "ConfirmDialog restore, visuals: $it")
+                ConfirmDialogHandleImpl(visible, coroutineScope, callback, it, resultChannel)
+            }
+        )
+    }
+}
+
+private class CustomDialogHandleImpl(
+    visible: MutableState<Boolean>,
+    coroutineScope: CoroutineScope
+) : DialogHandleBase(visible, coroutineScope) {
+    override val dialogType: String get() = "CustomDialog"
+}
+
 @Composable
-fun rememberDialogHostState(): DialogHostState {
+fun rememberLoadingDialog(): LoadingDialogHandle {
+    val visible = remember {
+        mutableStateOf(false)
+    }
+    val coroutineScope = rememberCoroutineScope()
+
+    if (visible.value) {
+        LoadingDialog()
+    }
+
     return remember {
-        DialogHostState()
-    }
-}
-
-private inline fun <reified T : DialogData> DialogData?.tryInto(): T? {
-    return when (this) {
-        is T -> this
-        else -> null
+        LoadingDialogHandleImpl(visible, coroutineScope)
     }
 }
 
 @Composable
-fun LoadingDialog(
-    state: DialogHostState = LocalDialogHost.current,
-) {
-    state.currentDialogData.tryInto<LoadingDialogData>() ?: return
-    val dialogProperties = remember {
-        DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = false)
+private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: ConfirmCallback): ConfirmDialogHandle {
+    val visible = rememberSaveable {
+        mutableStateOf(false)
     }
-    Dialog(onDismissRequest = {}, properties = dialogProperties) {
+    val coroutineScope = rememberCoroutineScope()
+    val resultChannel = remember {
+        Channel<ConfirmResult>()
+    }
+
+    val handle = rememberSaveable(
+        saver = ConfirmDialogHandleImpl.Saver(visible, coroutineScope, callback, resultChannel),
+        init = {
+            ConfirmDialogHandleImpl(visible, coroutineScope, callback, visuals, resultChannel)
+        }
+    )
+
+    if (visible.value) {
+        ConfirmDialog(
+            handle.visuals,
+            confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
+            dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } }
+        )
+    }
+
+    return handle
+}
+
+@Composable
+fun rememberConfirmCallback(onConfirm: NullableCallback, onDismiss: NullableCallback): ConfirmCallback {
+    val currentOnConfirm by rememberUpdatedState(newValue = onConfirm)
+    val currentOnDismiss by rememberUpdatedState(newValue = onDismiss)
+    return remember {
+        ConfirmCallback({ currentOnConfirm }, { currentOnDismiss })
+    }
+}
+
+@Composable
+fun rememberConfirmDialog(onConfirm: NullableCallback = null, onDismiss: NullableCallback = null): ConfirmDialogHandle {
+    return rememberConfirmDialog(rememberConfirmCallback(onConfirm, onDismiss))
+}
+
+@Composable
+fun rememberConfirmDialog(callback: ConfirmCallback): ConfirmDialogHandle {
+    return rememberConfirmDialog(ConfirmDialogVisualsImpl.Empty, callback)
+}
+
+@Composable
+fun rememberCustomDialog(composable: @Composable (dismiss: () -> Unit) -> Unit): DialogHandle {
+    val visible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val coroutineScope = rememberCoroutineScope()
+    if (visible.value) {
+        composable { visible.value = false }
+    }
+    return remember {
+        CustomDialogHandleImpl(visible, coroutineScope)
+    }
+}
+
+@Composable
+private fun LoadingDialog() {
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = false)
+    ) {
         Surface(
             modifier = Modifier.size(100.dp), shape = RoundedCornerShape(8.dp)
         ) {
@@ -227,41 +395,10 @@ fun LoadingDialog(
 }
 
 @Composable
-fun PromptDialog(
-    state: DialogHostState = LocalDialogHost.current,
-) {
-    val promptDialogData = state.currentDialogData.tryInto<PromptDialogData>() ?: return
-
-    val visuals = promptDialogData.visuals
+private fun ConfirmDialog(visuals: ConfirmDialogVisuals, confirm: () -> Unit, dismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = {
-            promptDialogData.dismiss()
-        },
-        title = {
-            Text(text = visuals.title)
-        },
-        text = {
-            Text(text = visuals.content)
-        },
-        confirmButton = {
-            TextButton(onClick = { promptDialogData.dismiss() }) {
-                Text(text = stringResource(id = android.R.string.ok))
-            }
-        },
-        dismissButton = null,
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
-    val confirmDialogData = state.currentDialogData.tryInto<ConfirmDialogData>() ?: return
-
-    val visuals = confirmDialogData.visuals
-
-    AlertDialog(
-        onDismissRequest = {
-            confirmDialogData.dismiss()
+            dismiss()
         },
         title = {
             Text(text = visuals.title)
@@ -274,17 +411,18 @@ fun ConfirmDialog(state: DialogHostState = LocalDialogHost.current) {
             }
         },
         confirmButton = {
-            TextButton(onClick = { confirmDialogData.confirm() }) {
+            TextButton(onClick = confirm) {
                 Text(text = visuals.confirm ?: stringResource(id = android.R.string.ok))
             }
         },
         dismissButton = {
-            TextButton(onClick = { confirmDialogData.dismiss() }) {
+            TextButton(onClick = dismiss) {
                 Text(text = visuals.dismiss ?: stringResource(id = android.R.string.cancel))
             }
         },
     )
 }
+
 @Composable
 private fun MarkdownContent(content: String) {
     val contentColor = LocalContentColor.current
@@ -307,5 +445,6 @@ private fun MarkdownContent(content: String) {
         update = {
             Markwon.create(it.context).setMarkdown(it, content)
             it.setTextColor(contentColor.toArgb())
-        })
+        }
+    )
 }
