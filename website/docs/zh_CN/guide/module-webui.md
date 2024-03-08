@@ -2,7 +2,7 @@
 
 KernelSU 的模块除了执行启动脚本和修改系统文件之外，还支持显示 UI 界面和与用户交互。
 
-你可以通过任何 Web 技术编写 HTML + CSS + Javascript 页面，KernelSU 的管理器将通过WebView 显示这些页面。此外，KernelSU 还提供了一些用于与系统交互的 Javascript API，例如执行shell命令。
+你可以通过任何 Web 技术编写 HTML + CSS + JavaScript 页面，KernelSU 的管理器将通过WebView 显示这些页面。此外，KernelSU 还提供了一些用于与系统交互的 JavaScript API，例如执行shell命令。
 
 ## WebUI 根目录
 
@@ -20,17 +20,17 @@ Web 资源文件应放置在模块根目录的 `webroot` 子目录中，并且�
 安装模块时，KernelSU 会自动设置 `webroot` 目录的权限和 SELinux context，如果您不知道自己在做什么，请不要自行设置该目录的权限！
 :::
 
-如果您的页面包含 css 和 javascript，您也需要将其放入此目录中。
+如果您的页面包含 CSS 和 JavaScript，您也需要将其放入此目录中。
 
 ## JavaScript API
 
 如果只是一个显示页面，那它和普通网页没有什么区别。更重要的是，KernelSU 提供了一系列的系统API，可以让您实现模块特有的功能。
 
-KernelSU 提供了一个 Javascript 库并[在 npm 上发布](https://www.npmjs.com/package/kernelsu)，您可以在网页的 javascript 代码中使用它。
+KernelSU 提供了一个 JavaScript 库并[在 npm 上发布](https://www.npmjs.com/package/kernelsu)，您可以在网页的 JavaScript 代码中使用它。
 
 例如，您可以执行 shell 命令来获取特定配置或修改属性：
 
-```javascript
+```JavaScript
 import { exec } from 'kernelsu';
 
 const { errno, stdout } = await exec("getprop ro.product.model");
