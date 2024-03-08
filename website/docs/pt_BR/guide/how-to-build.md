@@ -40,6 +40,14 @@ A partir do Android 13, o kernel é construído pelo `bazel`:
 tools/bazel build --config=fast //common:kernel_aarch64_dist
 ```
 
+:::info INFORMAÇÕES
+Para alguns kernel do Android 14, para fazer o Wi-Fi/Bluetooth funcionar. Pode ser necessário remover todas as exportações protegidas por GKI:
+
+```sh
+rm common/android/abi_gki_protected_exports_*
+```
+:::
+
 ## Construir o kernel com KernelSU
 
 Se você conseguir construir o kernel com sucesso, então construir o KernelSU é muito fácil. Selecione qualquer um executado no diretório raiz de origem do kernel:
