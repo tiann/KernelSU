@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -187,10 +189,7 @@ fun RootProfileConfig(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>) -> Unit) {
-
-    var showDialog by remember { mutableStateOf(false) }
-
-    if (showDialog) {
+    val selectGroupsDialog = rememberCustomDialog { dismiss: () -> Unit ->
         val groups = Groups.values().sortedWith(
             compareBy<Groups> { if (selected.contains(it)) 0 else 1 }
                 .then(compareBy {
@@ -217,7 +216,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
             state = rememberUseCaseState(visible = true, onFinishedRequest = {
                 closeSelection(selection)
             }, onCloseRequest = {
-                showDialog = false
+                dismiss()
             }),
             header = Header.Default(
                 title = stringResource(R.string.profile_groups),
@@ -241,7 +240,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         .fillMaxWidth()
         .padding(16.dp)
         .clickable {
-            showDialog = true
+            selectGroupsDialog.show()
         }) {
 
         Column(modifier = Modifier.padding(16.dp)) {
@@ -265,10 +264,7 @@ fun CapsPanel(
     selected: Collection<Capabilities>,
     closeSelection: (selection: Set<Capabilities>) -> Unit
 ) {
-
-    var showDialog by remember { mutableStateOf(false) }
-
-    if (showDialog) {
+    val selectCapabilitiesDialog = rememberCustomDialog { dismiss ->
         val caps = Capabilities.values().sortedWith(
             compareBy<Capabilities> { if (selected.contains(it)) 0 else 1 }
                 .then(compareBy { it.name })
@@ -286,7 +282,7 @@ fun CapsPanel(
             state = rememberUseCaseState(visible = true, onFinishedRequest = {
                 closeSelection(selection)
             }, onCloseRequest = {
-                showDialog = false
+                dismiss()
             }),
             header = Header.Default(
                 title = stringResource(R.string.profile_capabilities),
@@ -309,7 +305,7 @@ fun CapsPanel(
         .fillMaxWidth()
         .padding(16.dp)
         .clickable {
-            showDialog = true
+            selectCapabilitiesDialog.show()
         }) {
 
         Column(modifier = Modifier.padding(16.dp)) {
@@ -377,8 +373,7 @@ private fun SELinuxPanel(
     profile: Natives.Profile,
     onSELinuxChange: (domain: String, rules: String) -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-    if (showDialog) {
+    val editSELinuxDialog = rememberCustomDialog { dismiss ->
         var domain by remember { mutableStateOf(profile.context) }
         var rules by remember { mutableStateOf(profile.rules) }
 
@@ -430,7 +425,7 @@ private fun SELinuxPanel(
                     onSELinuxChange(domain, rules)
                 },
                 onCloseRequest = {
-                    showDialog = false
+                    dismiss()
                 }),
             header = Header.Default(
                 title = stringResource(R.string.profile_selinux_context),
@@ -449,7 +444,7 @@ private fun SELinuxPanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    showDialog = true
+                    editSELinuxDialog.show()
                 },
             enabled = false,
             colors = TextFieldDefaults.outlinedTextFieldColors(
