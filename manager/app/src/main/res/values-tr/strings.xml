@@ -108,4 +108,6 @@
     <string name="settings_check_update_summary">Uygulamayı açarken güncellemeleri otomatik denetle</string>
     <string name="grant_root_failed">Root izni verilemedi!</string>
     <string name="open">Aç</string>
+    <string name="enable_web_debugging">Web Görünümü Hata Ayıklamasını Etkinleştir</string>
+    <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
 </resources>
