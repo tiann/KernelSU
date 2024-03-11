@@ -1,13 +1,11 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
-#[cfg(target_os = "android")]
-use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
 use crate::module::prune_modules;
 use crate::{
-    assets, defs, mount, restorecon,
-    utils::{self, ensure_clean_dir, ensure_dir_exists},
+    assets, defs, ksucalls, mount, restorecon,
+    utils::{self, ensure_clean_dir},
 };
 
 fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
@@ -35,7 +33,7 @@ fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
     mount::mount_overlay(&partition, lowerdir, workdir, upperdir)
 }
 
-pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
+pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
     // construct overlay mount params
     let dir = std::fs::read_dir(module_dir);
     let Ok(dir) = dir else {
@@ -99,12 +97,14 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
 }
 
 pub fn on_post_data_fs() -> Result<()> {
-    crate::ksu::report_post_fs_data();
+    ksucalls::report_post_fs_data();
 
     utils::umask(0);
 
     #[cfg(unix)]
-    let _ = catch_bootlog();
+    let _ = catch_bootlog("logcat", vec!["logcat"]);
+    #[cfg(unix)]
+    let _ = catch_bootlog("dmesg", vec!["dmesg", "-w"]);
 
     if utils::has_magisk() {
         warn!("Magisk detected, skip post-fs-data!");
@@ -162,7 +162,7 @@ pub fn on_post_data_fs() -> Result<()> {
         .with_context(|| "mount module image failed".to_string())?;
 
     // tell kernel that we've mount the module, so that it can do some optimization
-    crate::ksu::report_module_mounted();
+    ksucalls::report_module_mounted();
 
     // if we are in safe mode, we should disable all modules
     if safe_mode {
@@ -207,7 +207,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // mount module systemlessly by overlay
-    if let Err(e) = mount_systemlessly(module_dir) {
+    if let Err(e) = mount_modules_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
 
@@ -247,7 +247,7 @@ pub fn on_services() -> Result<()> {
 }
 
 pub fn on_boot_completed() -> Result<()> {
-    crate::ksu::report_boot_complete();
+    ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);
@@ -266,38 +266,15 @@ pub fn on_boot_completed() -> Result<()> {
     Ok(())
 }
 
-pub fn install() -> Result<()> {
-    ensure_dir_exists(defs::ADB_DIR)?;
-    std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
-    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
-    // install binary assets
-    assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
-
-    #[cfg(target_os = "android")]
-    link_ksud_to_bin()?;
-
-    Ok(())
-}
-
-#[cfg(target_os = "android")]
-fn link_ksud_to_bin() -> Result<()> {
-    let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
-    let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
-    if ksu_bin.exists() && !ksu_bin_link.exists() {
-        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link)?;
-    }
-    Ok(())
-}
-
 #[cfg(unix)]
-fn catch_bootlog() -> Result<()> {
+fn catch_bootlog(logname: &str, command: Vec<&str>) -> Result<()> {
     use std::os::unix::process::CommandExt;
     use std::process::Stdio;
 
     let logdir = Path::new(defs::LOG_DIR);
     utils::ensure_dir_exists(logdir)?;
-    let bootlog = logdir.join("boot.log");
-    let oldbootlog = logdir.join("boot.old.log");
+    let bootlog = logdir.join(format!("{logname}.log"));
+    let oldbootlog = logdir.join(format!("{logname}.old.log"));
 
     if bootlog.exists() {
         std::fs::rename(&bootlog, oldbootlog)?;
@@ -305,6 +282,8 @@ fn catch_bootlog() -> Result<()> {
 
     let bootlog = std::fs::File::create(bootlog)?;
 
+    let mut args = vec!["-s", "9", "30s"];
+    args.extend_from_slice(&command);
     // timeout -s 9 30s logcat > boot.log
     let result = unsafe {
         std::process::Command::new("timeout")
@@ -313,10 +292,7 @@ fn catch_bootlog() -> Result<()> {
                 utils::switch_cgroups();
                 Ok(())
             })
-            .arg("-s")
-            .arg("9")
-            .arg("30s")
-            .arg("logcat")
+            .args(args)
             .stdout(Stdio::from(bootlog))
             .spawn()
     };

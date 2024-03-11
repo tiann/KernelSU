@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, debug, defs, event, module, utils};
+use crate::{apk_sign, debug, defs, init_event, ksucalls, module, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -239,7 +239,7 @@ pub fn run() -> Result<()> {
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
     if arg0 == "su" || arg0 == "/system/bin/su" {
-        return crate::ksu::root_shell();
+        return crate::su::root_shell();
     }
 
     let cli = Args::parse();
@@ -247,8 +247,8 @@ pub fn run() -> Result<()> {
     log::info!("command: {:?}", cli.command);
 
     let result = match cli.command {
-        Commands::PostFsData => event::on_post_data_fs(),
-        Commands::BootCompleted => event::on_boot_completed(),
+        Commands::PostFsData => init_event::on_post_data_fs(),
+        Commands::BootCompleted => init_event::on_boot_completed(),
 
         Commands::Module { command } => {
             #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -265,13 +265,13 @@ pub fn run() -> Result<()> {
                 Module::Shrink => module::shrink_ksu_images(),
             }
         }
-        Commands::Install => event::install(),
+        Commands::Install => utils::install(),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::Services => event::on_services(),
+        Commands::Services => init_event::on_services(),
         Commands::Profile { command } => match command {
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
@@ -291,11 +291,11 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Version => {
-                println!("Kernel Version: {}", crate::ksu::get_version());
+                println!("Kernel Version: {}", ksucalls::get_version());
                 Ok(())
             }
-            Debug::Su { global_mnt } => crate::ksu::grant_root(global_mnt),
-            Debug::Mount => event::mount_systemlessly(defs::MODULE_DIR),
+            Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
+            Debug::Mount => init_event::mount_modules_systemlessly(defs::MODULE_DIR),
             Debug::Xcp {
                 src,
                 dst,
