@@ -1,13 +1,11 @@
 use anyhow::{bail, Context, Result};
 use log::{info, warn};
-#[cfg(target_os = "android")]
-use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
 use crate::module::prune_modules;
 use crate::{
-    assets, defs, mount, restorecon,
-    utils::{self, ensure_clean_dir, ensure_dir_exists},
+    assets, defs, ksucalls, mount, restorecon,
+    utils::{self, ensure_clean_dir},
 };
 
 fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
@@ -35,7 +33,7 @@ fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
     mount::mount_overlay(&partition, lowerdir, workdir, upperdir)
 }
 
-pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
+pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
     // construct overlay mount params
     let dir = std::fs::read_dir(module_dir);
     let Ok(dir) = dir else {
@@ -99,7 +97,7 @@ pub fn mount_systemlessly(module_dir: &str) -> Result<()> {
 }
 
 pub fn on_post_data_fs() -> Result<()> {
-    crate::ksu::report_post_fs_data();
+    ksucalls::report_post_fs_data();
 
     utils::umask(0);
 
@@ -162,7 +160,7 @@ pub fn on_post_data_fs() -> Result<()> {
         .with_context(|| "mount module image failed".to_string())?;
 
     // tell kernel that we've mount the module, so that it can do some optimization
-    crate::ksu::report_module_mounted();
+    ksucalls::report_module_mounted();
 
     // if we are in safe mode, we should disable all modules
     if safe_mode {
@@ -207,7 +205,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // mount module systemlessly by overlay
-    if let Err(e) = mount_systemlessly(module_dir) {
+    if let Err(e) = mount_modules_systemlessly(module_dir) {
         warn!("do systemless mount failed: {}", e);
     }
 
@@ -247,7 +245,7 @@ pub fn on_services() -> Result<()> {
 }
 
 pub fn on_boot_completed() -> Result<()> {
-    crate::ksu::report_boot_complete();
+    ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);
@@ -263,29 +261,6 @@ pub fn on_boot_completed() -> Result<()> {
 
     run_stage("boot-completed", false);
 
-    Ok(())
-}
-
-pub fn install() -> Result<()> {
-    ensure_dir_exists(defs::ADB_DIR)?;
-    std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
-    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
-    // install binary assets
-    assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
-
-    #[cfg(target_os = "android")]
-    link_ksud_to_bin()?;
-
-    Ok(())
-}
-
-#[cfg(target_os = "android")]
-fn link_ksud_to_bin() -> Result<()> {
-    let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
-    let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
-    if ksu_bin.exists() && !ksu_bin_link.exists() {
-        std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link)?;
-    }
     Ok(())
 }
 

@@ -162,7 +162,8 @@ pub fn patch(
             .status()?;
         ensure!(status.success(), "magiskboot unpack failed");
 
-        let is_kernelsu_patched = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
+        let is_kernelsu_patched =
+            do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
         if !is_kernelsu_patched {
             // kernelsu.ko is not exist, backup init if necessary
             let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
