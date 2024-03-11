@@ -200,7 +200,9 @@ jobs:
           mkdir output
           cp $OUTDIR/Image ./output/
           cp $OUTDIR/Image.lz4 ./output/
-          cp $OUTDIR/*.ko ./output/
+          if [ "${{ inputs.build_lkm}}" = "true" ]; then 
+            cp $OUTDIR/*.ko ./output/
+          fi
           git clone https://github.com/Kernel-SU/AnyKernel3
           rm -rf ./AnyKernel3/.git
           cp $OUTDIR/Image ./AnyKernel3/
@@ -219,6 +221,7 @@ jobs:
 
       - name: Upload kernelsu.ko
         uses: actions/upload-artifact@v4
+        if: ${{ inputs.build_lkm == true }}
         with:
           name: ${{ inputs.version_name }}_kernelsu.ko
           path: ./output/kernelsu.ko
