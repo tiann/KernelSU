@@ -1,14 +1,14 @@
 [versions]
 agp = "8.3.0"
-kotlin = "1.8.10"
-ksp = "1.8.10-1.0.9"
-compose-bom = "2023.06.01"
-lifecycle = "2.6.1"
-accompanist = "0.30.1"
-navigation = "2.6.0"
-compose-destination = "1.9.42-beta"
-libsu = "5.2.1"
-sheets-compose-dialogs = "1.2.0"
+kotlin = "1.9.22"
+ksp = "1.9.22-1.0.18"
+compose-bom = "2024.02.02"
+lifecycle = "2.7.0"
+accompanist = "0.34.0"
+navigation = "2.7.7"
+compose-destination = "1.10.2"
+libsu = "5.2.2"
+sheets-compose-dialogs = "1.3.0"
 markdown = "4.6.2"
 webkit = "1.10.0"
 
@@ -17,11 +17,11 @@ agp-app = { id = "com.android.application", version.ref = "agp" }
 agp-lib = { id = "com.android.library", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-lsplugin-apksign = { id = "org.lsposed.lsplugin.apksign", version = "1.1" }
-lsplugin-cmaker = { id = "org.lsposed.lsplugin.cmaker", version = "1.1" }
+lsplugin-apksign = { id = "org.lsposed.lsplugin.apksign", version = "1.4" }
+lsplugin-cmaker = { id = "org.lsposed.lsplugin.cmaker", version = "1.2" }
 
 [libraries]
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.7.1" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version = "1.8.2" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -49,9 +49,9 @@ com-github-topjohnwu-libsu-io= { group = "com.github.topjohnwu.libsu", name = "i
 
 dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:parcelablelist", version = "2.0.1" }
 
-io-coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.3.0" }
+io-coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.6.0" }
 
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.0" }
 
 me-zhanghai-android-appiconloader-coil = { group = "me.zhanghai.android.appiconloader", name = "appiconloader-coil", version = "1.5.0" }
 

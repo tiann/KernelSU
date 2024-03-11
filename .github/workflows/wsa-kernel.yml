@@ -30,7 +30,7 @@ jobs:
 
       - name: Cache LLVM
         id: cache-llvm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./llvm
           key: llvm-12.0.1
@@ -106,7 +106,7 @@ jobs:
       - name: Bot session cache
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref_type == 'tag'
         id: bot_session_cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session
