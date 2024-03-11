@@ -174,17 +174,18 @@ jobs:
         run: |
           echo "BUILD LMK: $BUILD_LKM"
           if [ "$BUILD_LKM" = "true" ]; then
-            cargo install ast-grep
+            pip install ast-grep-cli
             ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
             ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
             sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
+            echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
           fi
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
           if [ -e build/build.sh ]; then
-            LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC="/usr/bin/ccache clang"
+            LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC="/usr/bin/ccache clang" || cp out/${{ inputs.version }}/common/drivers/kernelsu/kernelsu.ko out/${{ inputs.version }}/dist/kernelsu.ko
           else
             tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
@@ -199,6 +200,7 @@ jobs:
           mkdir output
           cp $OUTDIR/Image ./output/
           cp $OUTDIR/Image.lz4 ./output/
+          cp $OUTDIR/*.ko ./output/
           git clone https://github.com/Kernel-SU/AnyKernel3
           rm -rf ./AnyKernel3/.git
           cp $OUTDIR/Image ./AnyKernel3/
@@ -214,3 +216,9 @@ jobs:
         with:
           name: AnyKernel3-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./AnyKernel3/*
+
+      - name: Upload kernelsu.ko
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.version_name }}_kernelsu.ko
+          path: ./output/kernelsu.ko
