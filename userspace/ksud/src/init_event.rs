@@ -102,7 +102,9 @@ pub fn on_post_data_fs() -> Result<()> {
     utils::umask(0);
 
     #[cfg(unix)]
-    let _ = catch_bootlog();
+    let _ = catch_bootlog("logcat", vec!["logcat"]);
+    #[cfg(unix)]
+    let _ = catch_bootlog("dmesg", vec!["dmesg", "-w"]);
 
     if utils::has_magisk() {
         warn!("Magisk detected, skip post-fs-data!");
@@ -265,14 +267,14 @@ pub fn on_boot_completed() -> Result<()> {
 }
 
 #[cfg(unix)]
-fn catch_bootlog() -> Result<()> {
+fn catch_bootlog(logname: &str, command: Vec<&str>) -> Result<()> {
     use std::os::unix::process::CommandExt;
     use std::process::Stdio;
 
     let logdir = Path::new(defs::LOG_DIR);
     utils::ensure_dir_exists(logdir)?;
-    let bootlog = logdir.join("boot.log");
-    let oldbootlog = logdir.join("boot.old.log");
+    let bootlog = logdir.join(format!("{logname}.log"));
+    let oldbootlog = logdir.join(format!("{logname}.old.log"));
 
     if bootlog.exists() {
         std::fs::rename(&bootlog, oldbootlog)?;
@@ -280,6 +282,8 @@ fn catch_bootlog() -> Result<()> {
 
     let bootlog = std::fs::File::create(bootlog)?;
 
+    let mut args = vec!["-s", "9", "30s"];
+    args.extend_from_slice(&command);
     // timeout -s 9 30s logcat > boot.log
     let result = unsafe {
         std::process::Command::new("timeout")
@@ -288,10 +292,7 @@ fn catch_bootlog() -> Result<()> {
                 utils::switch_cgroups();
                 Ok(())
             })
-            .arg("-s")
-            .arg("9")
-            .arg("30s")
-            .arg("logcat")
+            .args(args)
             .stdout(Stdio::from(bootlog))
             .spawn()
     };
