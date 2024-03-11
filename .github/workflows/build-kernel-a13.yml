@@ -173,3 +173,4 @@ jobs:
       tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
+      build_lkm: ${{ matrix.build_lkm }}
