@@ -30,7 +30,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.ConfirmDialog
 import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.screen.destinations.AppProfileScreenDestination
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
@@ -95,9 +94,6 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
             )
         }
     ) { innerPadding ->
-
-        ConfirmDialog()
-
         val refreshState = rememberPullRefreshState(
             refreshing = viewModel.isRefreshing,
             onRefresh = { scope.launch { viewModel.fetchAppList() } },

@@ -18,7 +18,7 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Суперпользователь</string>
+    <string name="superuser">Superuser</string>
     <!--Don't translate this string!-->
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
@@ -106,4 +106,8 @@
     <string name="app_profile_template_delete">Удалить</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="app_profile_template_view">Просмотр шаблона</string>
+    <string name="settings_check_update">Проверка обновления</string>
+    <string name="settings_check_update_summary">Автоматическая проверка обновлений при открытии приложения</string>
+    <string name="grant_root_failed">Не удалось выдать root!</string>
+    <string name="open">Открыть</string>
 </resources>

@@ -91,4 +91,15 @@
     <string name="app_profile_template_view">Bekijken Sjabloon</string>
     <string name="app_profile_template_description">Beschrijving</string>
     <string name="settings_profile_template_summary">Beheer lokale en online sjabloon van app-profiel</string>
+    <string name="app_profile_template_delete">Verwijderen</string>
+    <string name="app_profile_template_readonly">alleen lezen</string>
+    <string name="app_profile_template_id_exist">sjabloon id bestaat al!</string>
+    <string name="app_profile_template_sync">Synchroniseer online-sjablonen</string>
+    <string name="app_profile_template_save_failed">Mislukt naar opslaan sjabloon</string>
+    <string name="app_profile_template_import_empty">Klembord is leeg!</string>
+    <string name="app_profile_import_export">Importeren/Exporteren</string>
+    <string name="app_profile_import_from_clipboard">Importeren vanaf klembord</string>
+    <string name="module_changelog_failed">Ophalen van wijzigingslogboek mislukt: %s</string>
+    <string name="app_profile_export_to_clipboard">Exporteren naar klembord</string>
+    <string name="settings_check_update">Controleer update</string>
 </resources>

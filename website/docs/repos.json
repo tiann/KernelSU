@@ -1,4 +1,3 @@
-
 [
     {
         "maintainer": "diphons",
@@ -78,10 +77,10 @@
         "devices": "Xiaomi MI 8 SE(sirius/xmsirius)"
     },
     {
-        "maintainer": "Aquarius223(paper)",
-        "maintainer_link": "https://github.com/Aquarius223",
+        "maintainer": "zlm324",
+        "maintainer_link": "https://github.com/zlm324",
         "kernel_name": "android_kernel_xiaomi_msm8998",
-        "kernel_link": "https://github.com/sticpaper/android_kernel_xiaomi_msm8998-ksu",
+        "kernel_link": "https://github.com/zlm324/android_kernel_xiaomi_msm8998_ksu",
         "devices": "MI 6 (sagit) and MIX 2 (chiron) for LineageOS"
     },
     {
@@ -594,5 +593,33 @@
         "kernel_name": "android_kernel_oneplus_sm8150",
         "kernel_link": "https://github.com/snowwolf725/android_kernel_oneplus_sm8150",
         "devices": "Oneplus 7(guacamoleb)/7 Pro(guacamole)/7T(hotdog)/7TPro (hotdogb)"
-    }    
+    },
+    {
+        "maintainer": "backslashxx",
+        "maintainer_link": "https://github.com/backslashxx/",
+        "kernel_name": "msm8953-los21",
+        "kernel_link": "https://github.com/backslashxx/msm8953-los21",
+        "devices": "Mi A2 Lite (daisy) / Redmi 6 Pro (sakura) + Redmi S2/Y2 (ysl)"
+    },
+    {
+        "maintainer": "backslashxx",
+        "maintainer_link": "https://github.com/backslashxx/",
+        "kernel_name": "mojito_krenol",
+        "kernel_link": "https://github.com/backslashxx/mojito_krenol",
+        "devices": "Redmi Note 10 (sunny/mojito)"
+    },
+    {
+        "maintainer": "backslashxx",
+        "maintainer_link": "https://github.com/backslashxx/",
+        "kernel_name": "fog_kramel",
+        "kernel_link": "https://github.com/backslashxx/fog_kramel",
+        "devices": "Redmi 10C (fog/rain/wind)"
+    },
+    {
+        "maintainer": "Fede2782",
+        "maintainer_link": "https://github.com/Fede2782",
+        "kernel_name": "android_kernel_samsung_gta4xl",
+        "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
+        "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
+    }
 ]

@@ -104,4 +104,8 @@
     <string name="app_profile_template_save_failed">Şablon kaydedilemedi</string>
     <string name="app_profile_template_import_empty">Pano boş!</string>
     <string name="module_changelog_failed">Değişiklik geçmişi alınamadı: %s</string>
+    <string name="settings_check_update">Güncellemeleri denetle</string>
+    <string name="settings_check_update_summary">Uygulamayı açarken güncellemeleri otomatik denetle</string>
+    <string name="grant_root_failed">Root izni verilemedi!</string>
+    <string name="open">Aç</string>
 </resources>

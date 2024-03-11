@@ -5,6 +5,7 @@ import coil.Coil
 import coil.ImageLoader
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
+import java.io.File
 
 lateinit var ksuApp: KernelSUApplication
 
@@ -24,6 +25,11 @@ class KernelSUApplication : Application() {
                 }
                 .build()
         )
+
+        val webroot = File(dataDir, "webroot")
+        if (!webroot.exists()) {
+            webroot.mkdir()
+        }
     }
 
 

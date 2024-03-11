@@ -1,0 +1,26 @@
+{
+  "name": "kernelsu",
+  "version": "1.0.6",
+  "description": "Library for KernelSU's module WebUI",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tiann/KernelSU.git"
+  },
+  "keywords": [
+    "su",
+    "kernelsu",
+    "module",
+    "webui"
+  ],
+  "author": "weishu",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/tiann/KernelSU/issues"
+  },
+  "homepage": "https://github.com/tiann/KernelSU#readme"
+}

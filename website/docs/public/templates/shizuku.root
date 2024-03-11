@@ -16,7 +16,19 @@
     "locales": {
         "bn": {
             "name": "শিজুকু সার্ভিস",
-            "description":"শিজুকু চালানোর জন্য শুধু যে অনুমতি গুলি লাগে।"
+            "description": "শিজুকু চালানোর জন্য শুধু যে অনুমতি গুলি লাগে।"
+        },
+        "tr": {
+            "name": "Shizuku",
+            "description": "Shizuku servisini başlatmak için yalnızca gerekli izinler."
+        },
+        "pt_BR": {
+            "name": "Shizuku",
+            "description": "Apenas permissões essenciais para iniciar o serviço Shizuku."
+        },
+        "ja": {
+            "name": "Shizuku",
+            "description": "Shizuku サービスを開始するために必要な権限のみ。"
         }
     }
 }

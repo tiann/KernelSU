@@ -103,4 +103,8 @@
     <string name="app_profile_template_delete">Excluir</string>
     <string name="app_profile_template_import_empty">A área de transferência está vazia!</string>
     <string name="app_profile_template_view">Ver modelo</string>
+    <string name="settings_check_update">Verificar atualização</string>
+    <string name="settings_check_update_summary">Verifique automaticamente se há atualizações ao abrir o app</string>
+    <string name="grant_root_failed">Falha ao conceder acesso root!</string>
+    <string name="open">Abrir</string>
 </resources>

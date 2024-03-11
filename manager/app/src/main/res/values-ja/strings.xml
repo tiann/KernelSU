@@ -103,4 +103,8 @@
     <string name="app_profile_template_delete">消去</string>
     <string name="app_profile_template_import_empty">クリップボードが空です！</string>
     <string name="app_profile_template_view">テンプレートを表示</string>
+    <string name="settings_check_update">アップデートを確認</string>
+    <string name="settings_check_update_summary">アプリを開いたときにアップデートを自動的に確認する</string>
+    <string name="grant_root_failed">root の付与に失敗しました!</string>
+    <string name="open">開ける</string>
 </resources>

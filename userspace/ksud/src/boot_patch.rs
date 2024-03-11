@@ -162,10 +162,14 @@ pub fn patch(
             .status()?;
         ensure!(status.success(), "magiskboot unpack failed");
 
-        let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
-        if status.is_ok() {
-            // init exist, backup it.
-            do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init init.real")?;
+        let is_kernelsu_patched =
+            do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
+        if !is_kernelsu_patched {
+            // kernelsu.ko is not exist, backup init if necessary
+            let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
+            if status.is_ok() {
+                do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init init.real")?;
+            }
         }
 
         do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;

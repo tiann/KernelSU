@@ -25,17 +25,24 @@ private fun getKsuDaemonPath(): String {
 
 object KsuCli {
     val SHELL: Shell = createRootShell()
+    val GLOBAL_MNT_SHELL: Shell = createRootShell(true)
 }
 
-fun getRootShell(): Shell {
-    return KsuCli.SHELL
+fun getRootShell(globalMnt: Boolean = false): Shell {
+    return if (globalMnt) KsuCli.GLOBAL_MNT_SHELL else {
+        KsuCli.SHELL
+    }
 }
 
-fun createRootShell(): Shell {
+fun createRootShell(globalMnt: Boolean = false): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
     val builder = Shell.Builder.create()
     return try {
-        builder.build(getKsuDaemonPath(), "debug", "su")
+        if (globalMnt) {
+            builder.build(getKsuDaemonPath(), "debug", "su", "-g")
+        } else {
+            builder.build(getKsuDaemonPath(), "debug", "su")
+        }
     } catch (e: Throwable) {
         Log.e(TAG, "su failed: ", e)
         builder.build("sh")
@@ -105,7 +112,7 @@ fun installModule(
         }
         val cmd = "module install ${file.absolutePath}"
 
-        val shell = getRootShell()
+        val shell = createRootShell()
 
         val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
@@ -152,8 +159,8 @@ fun overlayFsAvailable(): Boolean {
 }
 
 fun hasMagisk(): Boolean {
-    val shell = getRootShell()
-    val result = shell.newJob().add("nsenter --mount=/proc/1/ns/mnt which magisk").exec()
+    val shell = getRootShell(true)
+    val result = shell.newJob().add("which magisk").exec()
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }
