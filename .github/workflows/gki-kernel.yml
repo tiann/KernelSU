@@ -177,7 +177,7 @@ jobs:
             cargo install ast-grep
             ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
             ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
-            sed -i '1i KSU_MODULE := 1' KernelSU/kernel/Makefile
+            sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
           fi
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
