@@ -29,7 +29,7 @@ on:
           for example: 2021-11
         default: 2022-05
       patch_path:
-        required: true
+        required: false
         type: string
         description: >
           Directory name of .github/patches/<patch_path>
