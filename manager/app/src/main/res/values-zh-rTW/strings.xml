@@ -86,7 +86,7 @@
     <string name="app_profile_template_id">模板 ID</string>
     <string name="settings_profile_template">App Profile 模板</string>
     <string name="settings_profile_template_summary">管理本地和線上的 App Profile 模板</string>
-    <string name="app_profile_template_import_success">成功匯出</string>
+    <string name="app_profile_template_import_success">成功匯入</string>
     <string name="app_profile_export_to_clipboard">匯出至剪貼簿</string>
     <string name="app_profile_template_export_empty">本地沒有模板可匯出！</string>
     <string name="app_profile_template_id_exist">模板 ID 已存在！</string>
@@ -94,7 +94,7 @@
     <string name="module_changelog_failed">獲取更新日誌失敗：%s</string>
     <string name="app_profile_template_name">名稱</string>
     <string name="app_profile_template_sync">與線上規則同步</string>
-    <string name="app_profile_template_readonly">只讀</string>
+    <string name="app_profile_template_readonly">唯讀</string>
     <string name="app_profile_import_export">匯出 / 匯入</string>
     <string name="app_profile_template_save_failed">模板儲存失敗</string>
     <string name="app_profile_template_description">描述</string>
@@ -102,4 +102,10 @@
     <string name="app_profile_template_delete">刪除</string>
     <string name="app_profile_template_import_empty">剪貼簿沒有內容！</string>
     <string name="app_profile_template_view">檢查模板</string>
+    <string name="enable_web_debugging_summary">可用於偵錯 WebUI，請僅在需要時啟用。</string>
+    <string name="enable_web_debugging">啟用WebView偵錯</string>
+    <string name="grant_root_failed">取得root失敗！</string>
+    <string name="open">開啟</string>
+    <string name="settings_check_update">檢查更新</string>
+    <string name="settings_check_update_summary">在打開App時自動檢查更新</string>
 </resources>
