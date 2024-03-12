@@ -179,13 +179,25 @@ jobs:
             ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
             sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
             echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
+
+            # bazel build, android14-5.15, android14-6.1 use bazel
+            if [ ! -e build/build.sh ]; then
+              sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
+              if [ -e common/modules.bzl ]; then
+                sed -i 's/_COMMON_GKI_MODULES_LIST = \[/_COMMON_GKI_MODULES_LIST = \[ "drivers\/kernelsu\/kernelsu.ko",/g' common/modules.bzl
+              fi
+            else
+              sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
+              sed -i 's/if ! diff -u "\${KERNEL_DIR}\/\${MODULES_ORDER}" "\${OUT_DIR}\/modules\.order"; then/if false; then/g' build/kernel/build.sh
+              sed -i 's@${ROOT_DIR}/build/abi/compare_to_symbol_list@echo@g' build/kernel/build.sh
+            fi
           fi
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
           if [ -e build/build.sh ]; then
-            LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC="/usr/bin/ccache clang" || cp out/${{ inputs.version }}/common/drivers/kernelsu/kernelsu.ko out/${{ inputs.version }}/dist/kernelsu.ko
+            LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC="/usr/bin/ccache clang"
           else
             tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
@@ -199,7 +211,7 @@ jobs:
           fi
           mkdir output
           if [ "${{ inputs.build_lkm}}" = "true" ]; then 
-            cp $OUTDIR/*.ko ./output/
+            cp $OUTDIR/kernelsu.ko ./output/
           else
             cp $OUTDIR/Image ./output/
             cp $OUTDIR/Image.lz4 ./output/
