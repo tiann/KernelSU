@@ -13,7 +13,6 @@ on:
   workflow_call:
 jobs:
   build-lkm:
-    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
         include:
