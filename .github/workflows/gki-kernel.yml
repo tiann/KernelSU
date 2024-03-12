@@ -158,6 +158,33 @@ jobs:
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
+      - name: Setup for LKM
+        if: ${{ inputs.build_lkm == true }}
+        working-directory: android-kernel
+        run: |
+          pip install ast-grep-cli
+          ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
+          ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
+          sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
+          echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
+
+          # bazel build, android14-5.15, android14-6.1 use bazel
+          if [ ! -e build/build.sh ]; then
+            sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
+            if [ -e common/modules.bzl ]; then
+              sed -i 's/_COMMON_GKI_MODULES_LIST = \[/_COMMON_GKI_MODULES_LIST = \[ "drivers\/kernelsu\/kernelsu.ko",/g' common/modules.bzl
+            fi
+          else
+            TARGET_FILE="build/kernel/build.sh"
+            if [ ! -e "$TARGET_FILE" ]; then
+              TARGET_FILE="build/build.sh"
+            fi
+            sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' $TARGET_FILE || echo "No unknown symbol in $TARGET_FILE"
+            sed -i 's/if ! diff -u "\${KERNEL_DIR}\/\${MODULES_ORDER}" "\${OUT_DIR}\/modules\.order"; then/if false; then/g' $TARGET_FILE
+            sed -i 's@${ROOT_DIR}/build/abi/compare_to_symbol_list@echo@g' $TARGET_FILE
+            sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
+          fi
+
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
         run: |
@@ -169,29 +196,7 @@ jobs:
 
       - name: Build Kernel/LKM
         working-directory: android-kernel
-        env:
-          BUILD_LKM: ${{ inputs.build_lkm }}
         run: |
-          echo "BUILD LMK: $BUILD_LKM"
-          if [ "$BUILD_LKM" = "true" ]; then
-            pip install ast-grep-cli
-            ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
-            ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
-            sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
-            echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
-
-            # bazel build, android14-5.15, android14-6.1 use bazel
-            if [ ! -e build/build.sh ]; then
-              sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
-              if [ -e common/modules.bzl ]; then
-                sed -i 's/_COMMON_GKI_MODULES_LIST = \[/_COMMON_GKI_MODULES_LIST = \[ "drivers\/kernelsu\/kernelsu.ko",/g' common/modules.bzl
-              fi
-            else
-              sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
-              sed -i 's/if ! diff -u "\${KERNEL_DIR}\/\${MODULES_ORDER}" "\${OUT_DIR}\/modules\.order"; then/if false; then/g' build/kernel/build.sh
-              sed -i 's@${ROOT_DIR}/build/abi/compare_to_symbol_list@echo@g' build/kernel/build.sh
-            fi
-          fi
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
