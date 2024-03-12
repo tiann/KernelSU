@@ -41,7 +41,7 @@ It is possible. But you should download the kernel source and intergrate KernelS
 It is device's kernel that affect KernelSU's compatability and it has nothing to do with Android version.The only restriction is that devices launched with Android 12 must be kernel 5.10+(GKI devices). So:
 
 1. Devices launched with Android 12 must be supported.
-2. Devices with has an old kernel (Some Android 12 devices is also old kernel) is compatable (You should build kernel yourself)
+2. Devices with has an old kernel (Some Android 12 devices is also old kernel) is compatible (You should build kernel yourself)
 
 ## Can KernelSU support old kernel?
 
