@@ -4,11 +4,13 @@ on:
     branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/gki-kernel.yml"
+      - ".github/workflows/build-lkm.yml"
       - "kernel/**"
   pull_request:
     branches: ["main"]
     paths:
       - ".github/workflows/gki-kernel.yml"
+      - ".github/workflows/build-lkm.yml"
       - "kernel/**"
   workflow_call:
 jobs:
@@ -29,8 +31,8 @@ jobs:
             sub_level: 110
             os_patch_level: 2023-09
           - version: "android14-6.1"
-            sub_level: 68
-            os_patch_level: 2024-02
+            sub_level: 43
+            os_patch_level: 2023-11
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: ${{ matrix.version }}

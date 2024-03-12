@@ -34,6 +34,7 @@ import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.*
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.*
 
@@ -60,7 +61,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             }
             val ksuVersion = if (isManager) Natives.version else null
 
-            StatusCard(kernelVersion, ksuVersion)
+            StatusCard(kernelVersion, ksuVersion) {
+                navigator.navigate(InstallScreenDestination)
+            }
             if (isManager && Natives.requireNewKernel()) {
                 WarningCard(
                     stringResource(id = R.string.require_kernel_version).format(
@@ -68,7 +71,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     )
                 )
             }
-            if (!rootAvailable()) {
+            if (ksuVersion != null && !rootAvailable()) {
                 WarningCard(
                     stringResource(id = R.string.grant_root_failed)
                 )
@@ -174,7 +177,7 @@ private fun TopBar(onSettingsClick: () -> Unit) {
 }
 
 @Composable
-private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
+private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?, onClickInstall: () -> Unit = {}) {
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(containerColor = run {
             if (ksuVersion != null) MaterialTheme.colorScheme.secondaryContainer
@@ -185,8 +188,8 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?) {
         Row(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if (kernelVersion.isGKI() && ksuVersion == null) {
-                    uriHandler.openUri("https://kernelsu.org/guide/installation.html")
+                if (kernelVersion.isGKI()) {
+                    onClickInstall()
                 }
             }
             .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {

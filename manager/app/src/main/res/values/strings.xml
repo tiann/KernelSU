@@ -110,4 +110,8 @@
     <string name="open">Open</string>
     <string name="enable_web_debugging">Enable WebView Debugging</string>
     <string name="enable_web_debugging_summary">Can be used to debug WebUI, please enable only when needed.</string>
+    <string name="direct_install">Direct Install (Recommended)</string>
+    <string name="select_file">Select a File</string>
+    <string name="install_inactive_slot">Install to Inactive Slot (After OTA)</string>
+    <string name="install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
 </resources>

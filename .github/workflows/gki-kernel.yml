@@ -163,6 +163,7 @@ jobs:
         working-directory: android-kernel
         run: |
           pip install ast-grep-cli
+          sudo apt-get install llvm-15 -y
           ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
           ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
           sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
@@ -216,6 +217,7 @@ jobs:
           fi
           mkdir output
           if [ "${{ inputs.build_lkm}}" = "true" ]; then 
+            llvm-strip-15 $OUTDIR/kernelsu.ko
             cp $OUTDIR/kernelsu.ko ./output/
           else
             cp $OUTDIR/Image ./output/
