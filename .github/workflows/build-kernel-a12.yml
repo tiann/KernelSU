@@ -133,4 +133,3 @@ jobs:
       tag: android12-5.10-2023-06
       os_patch_level: 2023-06
       patch_path: "5.10"
-      build_lkm: true

@@ -734,6 +734,7 @@ void __init ksu_lsm_hook_init(void)
 #endif
 }
 
+#ifdef MODULE
 static int memcpy_ro(void *dst, const void *src, size_t len)
 {
 	unsigned long base = (unsigned long)dst & PAGE_MASK;
@@ -822,6 +823,7 @@ void __init ksu_lsm_hook_init_hack(void)
 	KSU_LSM_HOOK_HACK_INIT(task_fix_setuid, ksu_task_fix_setuid);
 	smp_mb();
 }
+#endif
 
 void __init ksu_core_init(void)
 {
