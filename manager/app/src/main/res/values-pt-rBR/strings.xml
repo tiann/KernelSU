@@ -45,7 +45,7 @@
     <string name="send_log">Reportar registro</string>
     <string name="safe_mode">Modo de segurança</string>
     <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
-    <string name="module_magisk_conflict">Os módulos estão desativados porque estão em conflito com os do Magisk!</string>
+    <string name="module_magisk_conflict">Os módulos estão indisponíveis devido a um conflito com Magisk!</string>
     <string name="home_learn_kernelsu">Saiba mais sobre o KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/pt_BR/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Saiba como instalar o KernelSU e usar os módulos</string>
