@@ -14,8 +14,10 @@
  * Huawei Hisi Kernel EBITMAP Enable or Disable Flag ,
  * From ss/ebitmap.h
  */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) &&                           \
-	LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0) && \
+    LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || \
+    LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) && \
+    LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 #ifdef HISI_SELINUX_EBITMAP_RO
 #define CONFIG_IS_HW_HISI
 #endif
