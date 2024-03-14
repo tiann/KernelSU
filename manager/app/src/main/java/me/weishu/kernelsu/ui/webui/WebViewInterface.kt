@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.webui
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
@@ -35,7 +36,12 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
     fun exec(cmd: String, callbackFunc: String) {
         exec(cmd, null, callbackFunc)
     }
-
+    @JavascriptInterface
+    fun isDarkUI(): Boolean {
+        val nightModeFlags = context.resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+    }
     private fun processOptions(sb: StringBuilder, options: String?) {
         val opts = if (options == null) JSONObject() else {
             JSONObject(options)
