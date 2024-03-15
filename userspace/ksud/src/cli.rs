@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, debug, defs, init_event, ksucalls, module, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -60,10 +60,10 @@ enum Commands {
         kernel: Option<PathBuf>,
 
         /// LKM module path to replace
-        #[arg(short, long, requires("init"))]
+        #[arg(short, long)]
         module: Option<PathBuf>,
 
-        /// init to be replaced, if use LKM, this must be specified
+        /// init to be replaced
         #[arg(short, long, requires("module"))]
         init: Option<PathBuf>,
 
@@ -304,7 +304,7 @@ pub fn run() -> Result<()> {
                 utils::copy_sparse_file(src, dst, punch_hole)?;
                 Ok(())
             }
-            Debug::Test => todo!(),
+            Debug::Test => assets::ensure_binaries(false),
         },
 
         Commands::BootPatch {

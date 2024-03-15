@@ -79,12 +79,12 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
     }
 }
 
-#[cfg(not(unix))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn root_shell() -> Result<()> {
     unimplemented!()
 }
 
-#[cfg(unix)]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
 

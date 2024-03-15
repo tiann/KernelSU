@@ -4,12 +4,20 @@
 #include "linux/err.h"
 #include "linux/init.h"
 #include "linux/init_task.h"
+#include "linux/kallsyms.h"
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
+#include "linux/list.h"
 #include "linux/lsm_hooks.h"
+#include "linux/mm.h"
+#include "linux/mm_types.h"
 #include "linux/nsproxy.h"
 #include "linux/path.h"
 #include "linux/printk.h"
+#include "linux/sched.h"
+#include "linux/security.h"
+#include "linux/stddef.h"
+#include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/uidgid.h"
 #include "linux/version.h"
@@ -25,6 +33,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
+#include "linux/vmalloc.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "uid_observer.h"
@@ -236,7 +245,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 #ifdef CONFIG_KSU_DEBUG
 			pr_info("manager already exist: %d\n",
 				ksu_get_manager_uid());
-#endif	
+#endif
 			return 0;
 		}
 
@@ -726,14 +735,181 @@ void __init ksu_lsm_hook_init(void)
 #endif
 }
 
+#ifdef MODULE
+static int override_security_head(void *head, const void *new_head, size_t len)
+{
+	unsigned long base = (unsigned long)head & PAGE_MASK;
+	unsigned long offset = offset_in_page(head);
+
+	// this is impossible for our case because the page alignment
+	// but be careful for other cases!
+	BUG_ON(offset + len > PAGE_SIZE);
+	struct page *page = phys_to_page(__pa(base));
+	if (!page) {
+		return -EFAULT;
+	}
+
+	void *addr = vmap(&page, 1, VM_MAP, PAGE_KERNEL);
+	if (!addr) {
+		return -ENOMEM;
+	}
+	memcpy(addr + offset, new_head, len);
+	vunmap(addr);
+	return 0;
+}
+
+static void free_security_hook_list(struct hlist_head *head)
+{
+	struct hlist_node *temp;
+	struct security_hook_list *entry;
+
+	if (!head)
+		return;
+
+	hlist_for_each_entry_safe (entry, temp, head, list) {
+		hlist_del(&entry->list);
+		kfree(entry);
+	}
+
+	kfree(head);
+}
+
+struct hlist_head *copy_security_hlist(struct hlist_head *orig)
+{
+	struct hlist_head *new_head = kmalloc(sizeof(*new_head), GFP_KERNEL);
+	if (!new_head)
+		return NULL;
+
+	INIT_HLIST_HEAD(new_head);
+
+	struct security_hook_list *entry;
+	struct security_hook_list *new_entry;
+
+	hlist_for_each_entry (entry, orig, list) {
+		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+		if (!new_entry) {
+			free_security_hook_list(new_head);
+			return NULL;
+		}
+
+		*new_entry = *entry;
+
+		hlist_add_tail_rcu(&new_entry->list, new_head);
+	}
+
+	return new_head;
+}
+
+#define LSM_SEARCH_MAX 180 // This should be enough to iterate
+static void *find_head_addr(void *security_ptr, int *index)
+{
+	if (!security_ptr) {
+		return NULL;
+	}
+	struct hlist_head *head_start =
+		(struct hlist_head *)&security_hook_heads;
+
+	for (int i = 0; i < LSM_SEARCH_MAX; i++) {
+		struct hlist_head *head = head_start + i;
+		struct security_hook_list *pos;
+		hlist_for_each_entry (pos, head, list) {
+			if (pos->hook.capget == security_ptr) {
+				if (index) {
+					*index = i;
+				}
+				return head;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+#define GET_SYMBOL_ADDR(sym)                                                   \
+	({                                                                     \
+		void *addr = kallsyms_lookup_name(#sym ".cfi_jt");             \
+		if (!addr) {                                                   \
+			addr = kallsyms_lookup_name(#sym);                     \
+		}                                                              \
+		addr;                                                          \
+	})
+
+#define KSU_LSM_HOOK_HACK_INIT(head_ptr, name, func)                           \
+	do {                                                                   \
+		static struct security_hook_list hook = {                      \
+			.hook = { .name = func }                               \
+		};                                                             \
+		hook.head = head_ptr;                                          \
+		hook.lsm = "ksu";                                              \
+		struct hlist_head *new_head = copy_security_hlist(hook.head);  \
+		if (!new_head) {                                               \
+			pr_err("Failed to copy security list: %s\n", #name);   \
+			break;                                                 \
+		}                                                              \
+		hlist_add_tail_rcu(&hook.list, new_head);                      \
+		if (override_security_head(hook.head, new_head,                \
+					   sizeof(*new_head))) {               \
+			free_security_hook_list(new_head);                     \
+			pr_err("Failed to hack lsm for: %s\n", #name);         \
+		}                                                              \
+	} while (0)
+
+void __init ksu_lsm_hook_init_hack(void)
+{
+	void *cap_prctl = GET_SYMBOL_ADDR(cap_task_prctl);
+	void *prctl_head = find_head_addr(cap_prctl, NULL);
+	if (prctl_head) {
+		if (prctl_head != &security_hook_heads.task_prctl) {
+			pr_warn("prctl's address has shifted!\n");
+		}
+		KSU_LSM_HOOK_HACK_INIT(prctl_head, task_prctl, ksu_task_prctl);
+	} else {
+		pr_warn("Failed to find task_prctl!\n");
+	}
+
+	int inode_killpriv_index = -1;
+	void *cap_killpriv = GET_SYMBOL_ADDR(cap_inode_killpriv);
+	find_head_addr(cap_killpriv, &inode_killpriv_index);
+	if (inode_killpriv_index < 0) {
+		pr_warn("Failed to find inode_rename, use kprobe instead!\n");
+		register_kprobe(&renameat_kp);
+	} else {
+		int inode_rename_index = inode_killpriv_index +
+					 &security_hook_heads.inode_rename -
+					 &security_hook_heads.inode_killpriv;
+		struct hlist_head *head_start =
+			(struct hlist_head *)&security_hook_heads;
+		void *inode_rename_head = head_start + inode_rename_index;
+		if (inode_rename_head != &security_hook_heads.inode_rename) {
+			pr_warn("inode_rename's address has shifted!\n");
+		}
+		KSU_LSM_HOOK_HACK_INIT(inode_rename_head, inode_rename,
+				       ksu_inode_rename);
+	}
+	void *cap_setuid = GET_SYMBOL_ADDR(cap_task_fix_setuid);
+	void *setuid_head = find_head_addr(cap_setuid, NULL);
+	if (setuid_head) {
+		if (setuid_head != &security_hook_heads.task_fix_setuid) {
+			pr_warn("setuid's address has shifted!\n");
+		}
+		KSU_LSM_HOOK_HACK_INIT(setuid_head, task_fix_setuid,
+				       ksu_task_fix_setuid);
+	} else {
+		pr_warn("Failed to find task_fix_setuid!\n");
+	}
+	smp_mb();
+}
+#endif
+
 void __init ksu_core_init(void)
 {
 #ifndef MODULE
 	pr_info("ksu_lsm_hook_init\n");
 	ksu_lsm_hook_init();
+
 #else
-	pr_info("ksu_kprobe_init\n");
-	ksu_kprobe_init();
+	pr_info("ksu_lsm_hook_init hack!!!!\n");
+	ksu_lsm_hook_init_hack();
 #endif
 }
 
