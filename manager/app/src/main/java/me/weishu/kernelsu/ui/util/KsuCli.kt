@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.util
 
 import android.net.Uri
+import android.os.Environment
 import android.os.SystemClock
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
@@ -138,6 +139,84 @@ fun installModule(
     }
 }
 
+fun installBoot(
+    bootUri: Uri?,
+    lkmUri: Uri,
+    ota: Boolean,
+    onFinish: (Boolean) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+): Boolean {
+    val resolver = ksuApp.contentResolver
+
+    with(resolver.openInputStream(lkmUri)) {
+        val lkmFile = File(ksuApp.cacheDir, "kernelsu.ko")
+        lkmFile.outputStream().use { output ->
+            this?.copyTo(output)
+        }
+
+        if (!lkmFile.exists()) {
+            onStdout("- kernelsu.ko not found")
+            onFinish(false)
+            return false
+        }
+
+        val bootFile = bootUri?.let { uri ->
+            with(resolver.openInputStream(uri)) {
+                val bootFile = File(ksuApp.cacheDir, "boot.img")
+                bootFile.outputStream().use { output ->
+                    this?.copyTo(output)
+                }
+
+                bootFile
+            }
+        }
+
+        val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+        var cmd = "boot-patch -m ${lkmFile.absolutePath} --magiskboot ${magiskboot.absolutePath}"
+
+        cmd += if (bootFile == null) {
+            // no boot.img, use -f to force install
+            " -f"
+        } else {
+            " -b ${bootFile.absolutePath}"
+        }
+
+        if (ota) {
+            cmd += " -u"
+        }
+
+        // output dir
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        cmd += " -o $downloadsDir"
+
+        val shell = createRootShell()
+
+        val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+            override fun onAddElement(s: String?) {
+                onStdout(s ?: "")
+            }
+        }
+
+        val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+            override fun onAddElement(s: String?) {
+                onStderr(s ?: "")
+            }
+        }
+
+        val result =
+            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback)
+                .exec()
+        Log.i("KernelSU", "install boot $lkmUri result: $result")
+
+        lkmFile.delete()
+        bootFile?.delete()
+
+        onFinish(bootUri != null && result.isSuccess)
+        return result.isSuccess
+    }
+}
+
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "recovery") {
@@ -150,6 +229,11 @@ fun reboot(reason: String = "") {
 fun rootAvailable(): Boolean {
     val shell = getRootShell()
     return shell.isRoot
+}
+
+fun isAbDevice(): Boolean {
+    val shell = getRootShell()
+    return ShellUtils.fastCmd(shell, "getprop ro.build.ab_update").trim().toBoolean()
 }
 
 fun overlayFsAvailable(): Boolean {

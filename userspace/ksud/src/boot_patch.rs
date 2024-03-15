@@ -1,25 +1,50 @@
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
+use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Context;
 use anyhow::Result;
-use is_executable::IsExecutable;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::process::Stdio;
+use which::which;
 
-use crate::utils;
+use crate::{assets, utils};
 
-#[cfg(unix)]
+#[cfg(target_os = "android")]
 fn ensure_gki_kernel() -> Result<()> {
-    let version =
-        procfs::sys::kernel::Version::current().with_context(|| "get kernel version failed")?;
-    let is_gki = version.major == 5 && version.minor >= 10 || version.major > 5;
+    let version = get_kernel_version()?;
+    let is_gki = version.0 == 5 && version.1 >= 10 || version.2 > 5;
     ensure!(is_gki, "only support GKI kernel");
     Ok(())
+}
+
+#[cfg(target_os = "android")]
+pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
+    use regex::Regex;
+    let uname = rustix::system::uname();
+    let version = uname.release().to_string_lossy();
+    let re = Regex::new(r"(\d+)\.(\d+)\.(\d+)")?;
+    if let Some(captures) = re.captures(&version) {
+        let major = captures
+            .get(1)
+            .and_then(|m| m.as_str().parse::<i32>().ok())
+            .ok_or_else(|| anyhow!("Major version parse error"))?;
+        let minor = captures
+            .get(2)
+            .and_then(|m| m.as_str().parse::<i32>().ok())
+            .ok_or_else(|| anyhow!("Minor version parse error"))?;
+        let patch = captures
+            .get(3)
+            .and_then(|m| m.as_str().parse::<i32>().ok())
+            .ok_or_else(|| anyhow!("Patch version parse error"))?;
+        Ok((major, minor, patch))
+    } else {
+        Err(anyhow!("Invalid kernel version string"))
+    }
 }
 
 fn do_cpio_cmd(magiskboot: &Path, workding_dir: &Path, cmd: &str) -> Result<()> {
@@ -63,8 +88,28 @@ pub fn patch(
     out: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
 ) -> Result<()> {
+    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot_path);
+    if let Err(ref e) = result {
+        println!("- Install Error: {e}");
+    }
+    result
+}
+
+#[allow(clippy::too_many_arguments)]
+fn do_patch(
+    image: Option<PathBuf>,
+    kernel: Option<PathBuf>,
+    kmod: Option<PathBuf>,
+    init: Option<PathBuf>,
+    ota: bool,
+    flash: bool,
+    out: Option<PathBuf>,
+    magiskboot_path: Option<PathBuf>,
+) -> Result<()> {
+    println!(include_str!("banner"));
+
     if image.is_none() {
-        #[cfg(unix)]
+        #[cfg(target_os = "android")]
         ensure_gki_kernel()?;
     }
 
@@ -76,19 +121,17 @@ pub fn patch(
             "init and module must not be specified."
         );
     } else {
-        ensure!(
-            init.is_some() && kmod.is_some(),
-            "init and module must be specified"
-        );
+        ensure!(kmod.is_some(), "module must be specified");
     }
 
-    let workding_dir = tempdir::TempDir::new("KernelSU")?;
+    let workding_dir =
+        tempdir::TempDir::new("KernelSU").with_context(|| "create temp dir failed")?;
 
     let bootimage;
 
     let mut bootdevice = None;
 
-    if let Some(image) = image {
+    if let Some(ref image) = image {
         ensure!(image.exists(), "boot image not found");
         bootimage = std::fs::canonicalize(image)?;
     } else {
@@ -111,7 +154,7 @@ pub fn patch(
             format!("/dev/block/by-name/boot{slot_suffix}")
         };
 
-        println!("bootdevice: {boot_partition}");
+        println!("- Bootdevice: {boot_partition}");
         let tmp_boot_path = workding_dir.path().join("boot.img");
 
         dd(&boot_partition, &tmp_boot_path)?;
@@ -122,37 +165,56 @@ pub fn patch(
         bootdevice = Some(boot_partition);
     };
 
-    println!("boot image: {bootimage:?}");
+    // try extract magiskboot/bootctl
+    let _ = assets::ensure_binaries(false);
 
-    let magiskboot = magiskboot_path
-        .map(std::fs::canonicalize)
-        .transpose()?
-        .unwrap_or_else(|| "magiskboot".into());
-
-    if !magiskboot.is_executable() {
-        #[cfg(unix)]
-        std::fs::set_permissions(&magiskboot, std::fs::Permissions::from_mode(0o755))
-            .with_context(|| "set magiskboot executable failed".to_string())?;
-    }
-
-    ensure!(magiskboot.exists(), "magiskboot not found");
+    // extract magiskboot
+    let magiskboot = {
+        if which("magiskboot").is_ok() {
+            let _ = assets::ensure_binaries(true);
+            "magiskboot".into()
+        } else {
+            // magiskboot is not in $PATH, use builtin or specified one
+            let magiskboot = if let Some(magiskboot_path) = magiskboot_path {
+                std::fs::canonicalize(magiskboot_path)?
+            } else {
+                let magiskboot_path = workding_dir.path().join("magiskboot");
+                assets::copy_assets_to_file("magiskboot", &magiskboot_path)
+                    .with_context(|| "copy magiskboot failed")?;
+                magiskboot_path
+            };
+            ensure!(magiskboot.exists(), "{magiskboot:?} is not exist");
+            #[cfg(unix)]
+            let _ = std::fs::set_permissions(&magiskboot, std::fs::Permissions::from_mode(0o755));
+            magiskboot
+        }
+    };
 
     if let Some(kernel) = kernel {
         std::fs::copy(kernel, workding_dir.path().join("kernel"))
             .with_context(|| "copy kernel from failed".to_string())?;
     }
 
-    if let (Some(kmod), Some(init)) = (kmod, init) {
+    if let Some(kmod) = kmod {
+        println!("- Preparing assets");
+
         std::fs::copy(kmod, workding_dir.path().join("kernelsu.ko"))
             .with_context(|| "copy kernel module failed".to_string())?;
-        std::fs::copy(init, workding_dir.path().join("init"))
-            .with_context(|| "copy init failed".to_string())?;
+        let init_file = workding_dir.path().join("init");
+        if let Some(init) = init {
+            std::fs::copy(init, workding_dir.path().join("init"))
+                .with_context(|| "copy init failed".to_string())?;
+        } else {
+            crate::assets::copy_assets_to_file("ksuinit", init_file)
+                .with_context(|| "copy ksuinit failed")?;
+        }
 
         // magiskboot unpack boot.img
         // magiskboot cpio ramdisk.cpio 'cp init init.real'
         // magiskboot cpio ramdisk.cpio 'add 0755 ksuinit init'
         // magiskboot cpio ramdisk.cpio 'add 0755 <kmod> kernelsu.ko'
 
+        println!("- Unpacking boot image");
         let status = Command::new(&magiskboot)
             .current_dir(workding_dir.path())
             .stdout(Stdio::null())
@@ -162,6 +224,10 @@ pub fn patch(
             .status()?;
         ensure!(status.success(), "magiskboot unpack failed");
 
+        let not_magisk = do_cpio_cmd(&magiskboot, workding_dir.path(), "test").is_ok();
+        ensure!(not_magisk, "Cannot work with Magisk patched image");
+
+        println!("- Adding KernelSU LKM");
         let is_kernelsu_patched =
             do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
         if !is_kernelsu_patched {
@@ -180,6 +246,7 @@ pub fn patch(
         )?;
     }
 
+    println!("- Repacking boot image");
     // magiskboot repack boot.img
     let status = Command::new(&magiskboot)
         .current_dir(workding_dir.path())
@@ -189,18 +256,25 @@ pub fn patch(
         .arg(bootimage.display().to_string())
         .status()?;
     ensure!(status.success(), "magiskboot repack failed");
+    let new_boot = workding_dir.path().join("new-boot.img");
 
-    let out = out.unwrap_or(std::env::current_dir()?);
+    if image.is_some() {
+        // if image is specified, write to output file
+        let output_dir = out.unwrap_or(std::env::current_dir()?);
+        let now = chrono::Utc::now();
+        let output_image =
+            output_dir.join(format!("kernelsu_boot_{}.img", now.format("%Y%m%d_%H%M%S")));
 
-    let now = chrono::Utc::now();
-    let output_image = out.join(format!(
-        "kernelsu_patched_boot_{}.img",
-        now.format("%Y%m%d_%H%M%S")
-    ));
-    std::fs::copy(workding_dir.path().join("new-boot.img"), &output_image)
-        .with_context(|| "copy out new boot failed".to_string())?;
+        if std::fs::rename(&new_boot, &output_image).is_err() {
+            std::fs::copy(&new_boot, &output_image)
+                .with_context(|| "copy out new boot failed".to_string())?;
+        }
+        println!("- Output file is written to");
+        println!("- {}", output_image.display().to_string().trim_matches('"'));
+    }
 
     if flash {
+        println!("- Flashing new boot image");
         let Some(bootdevice) = bootdevice else {
             bail!("boot device not found")
         };
@@ -210,7 +284,52 @@ pub fn patch(
             .status()?;
         ensure!(status.success(), "set boot device rw failed");
 
-        dd(&output_image, &bootdevice).with_context(|| "flash boot failed")?;
+        dd(&new_boot, &bootdevice).with_context(|| "flash boot failed")?;
+
+        if ota {
+            post_ota()?;
+        }
     }
+
+    println!("- Done!");
+    Ok(())
+}
+
+fn post_ota() -> Result<()> {
+    use crate::defs::ADB_DIR;
+    use assets::BOOTCTL_PATH;
+    let status = Command::new(BOOTCTL_PATH).arg("hal-info").status()?;
+    if !status.success() {
+        return Ok(());
+    }
+
+    let current_slot = Command::new(BOOTCTL_PATH)
+        .arg("get-current-slot")
+        .output()?
+        .stdout;
+    let current_slot = String::from_utf8(current_slot)?;
+    let current_slot = current_slot.trim();
+    let target_slot = if current_slot == "0" { 1 } else { 0 };
+
+    Command::new(BOOTCTL_PATH)
+        .arg(format!("set-active-boot-slot {target_slot}"))
+        .status()?;
+
+    let post_ota_sh = std::path::Path::new(ADB_DIR)
+        .join("post-fs-data.d")
+        .join("post_ota.sh");
+
+    let sh_content = format!(
+        r###"
+{BOOTCTL_PATH} mark-boot-successful
+rm -f {BOOTCTL_PATH}
+rm -f /data/adb/post-fs-data.d/post_ota.sh
+"###
+    );
+
+    std::fs::write(&post_ota_sh, sh_content)?;
+    #[cfg(unix)]
+    std::fs::set_permissions(post_ota_sh, std::fs::Permissions::from_mode(0o755))?;
+
     Ok(())
 }

@@ -108,4 +108,8 @@
     <string name="open">打开</string>
     <string name="enable_web_debugging">启用 WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI ，请仅在需要时启用。</string>
+    <string name="direct_install">直接安装（推荐）</string>
+    <string name="select_file">选择一个文件</string>
+    <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
+    <string name="install_inactive_slot_warning">将在重启后强制切换到另一个槽位！\n注意只能在 OTA 更新完成后的重启之前使用。\n确认？</string>
 </resources>
