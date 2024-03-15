@@ -64,7 +64,7 @@
     <string name="profile_selinux_rules">規則</string>
     <string name="module_downloading">正在下載模組：%s</string>
     <string name="restart_app">重新啟動</string>
-    <string name="profile_template">範本</string>
+    <string name="profile_template">模板</string>
     <string name="profile_name">設定檔名稱</string>
     <string name="profile_namespace">掛載命名空間</string>
     <string name="profile_namespace_inherited">繼承</string>
@@ -88,7 +88,7 @@
     <string name="settings_profile_template_summary">管理本地和線上的 App Profile 模板</string>
     <string name="app_profile_template_import_success">成功匯入</string>
     <string name="app_profile_export_to_clipboard">匯出至剪貼簿</string>
-    <string name="app_profile_template_export_empty">本地沒有模板可匯出！</string>
+    <string name="app_profile_template_export_empty">沒有本地模板可匯出！</string>
     <string name="app_profile_template_id_exist">模板 ID 已存在！</string>
     <string name="app_profile_import_from_clipboard">從剪貼簿匯入</string>
     <string name="module_changelog_failed">獲取更新日誌失敗：%s</string>
