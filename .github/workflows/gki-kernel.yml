@@ -241,9 +241,9 @@ jobs:
           name: AnyKernel3-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./AnyKernel3/*
 
-      - name: Upload kernelsu.ko
+      - name: Upload LKM
         uses: actions/upload-artifact@v4
         if: ${{ inputs.build_lkm == true }}
         with:
-          name: ${{ inputs.version }}_kernelsu.ko
+          name: ${{ inputs.version }}_lkm
           path: ./output/*_kernelsu.ko
