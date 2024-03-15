@@ -218,7 +218,7 @@ jobs:
           mkdir output
           if [ "${{ inputs.build_lkm}}" = "true" ]; then 
             llvm-strip-15 $OUTDIR/kernelsu.ko
-            cp $OUTDIR/kernelsu.ko ./output/
+            mv $OUTDIR/kernelsu.ko ./output/${{ inputs.version }}_kernelsu.ko
           else
             cp $OUTDIR/Image ./output/
             cp $OUTDIR/Image.lz4 ./output/
@@ -246,4 +246,4 @@ jobs:
         if: ${{ inputs.build_lkm == true }}
         with:
           name: ${{ inputs.version }}_kernelsu.ko
-          path: ./output/kernelsu.ko
+          path: ./output/*_kernelsu.ko
