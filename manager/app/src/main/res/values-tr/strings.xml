@@ -110,4 +110,10 @@
     <string name="open">Aç</string>
     <string name="enable_web_debugging">Web Görünümü Hata Ayıklamasını Etkinleştir</string>
     <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
+    <string name="direct_install">Doğrudan Yükleme (Önerilen)</string>
+    <string name="select_file">Bir Dosya Seçin</string>
+    <string name="install_inactive_slot">Etkin Olmayan Yuvaya Yükleme (OTA\'dan Sonra)</string>
+    <string name="install_inactive_slot_warning">Cihazınız yeniden başlatıldıktan sonra mevcut etkin olmayan yuvaya **ZORLA** önyükleme yapılacaktır!
+\nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
+\nDevam edelsin mi?</string>
 </resources>
