@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name" translatable="false">KernelSU</string>
     <string name="home">Ana Sayfa</string>
-    <string name="home_not_installed">Yüklenmedi</string>
-    <string name="home_click_to_install">Yüklemek için tıklayın</string>
+    <string name="home_not_installed">Kurulmadı</string>
+    <string name="home_click_to_install">Kurmak için tıklayın</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
     <string name="home_superuser_count">Süper kullanıcılar: %d</string>
@@ -21,11 +21,11 @@
     <string name="superuser">Süper kullanıcı</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
-    <string name="module_empty">Yüklü modül yok</string>
+    <string name="module_empty">Kurulu modül yok</string>
     <string name="module">Modül</string>
     <string name="uninstall">Kaldır</string>
-    <string name="module_install">Yükle</string>
-    <string name="install">Yükle</string>
+    <string name="module_install">Kur</string>
+    <string name="install">Kur</string>
     <string name="reboot">Cihazı yeniden başlat</string>
     <string name="settings">Ayarlar</string>
     <string name="reboot_userspace">Hızlı yeniden başlat</string>
