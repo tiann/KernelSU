@@ -133,7 +133,11 @@ jobs:
           fi
           tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
           NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
-          mv dist/bzImage $NAME
+          TARGET_IMAGE=dist/bzImage
+          if [ ! -e $TARGET_IMAGE ]; then
+            TARGET_IMAGE=dist/Image
+          fi
+          mv $TARGET_IMAGE $NAME
           echo "file_path=android-kernel/$NAME" >> $GITHUB_ENV
 
       - name: Upload Kernel

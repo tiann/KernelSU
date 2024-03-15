@@ -14,4 +14,11 @@ config KSU_DEBUG
 	help
 	Enable KernelSU debug mode
 
+config KSU_MODULE
+	bool "Build KernelSU as a module"
+	depends on KSU
+	default n
+	help
+	Build KernelSU as a loadable kernel module
+
 endmenu
