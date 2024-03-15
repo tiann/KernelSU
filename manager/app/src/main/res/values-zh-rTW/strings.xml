@@ -108,4 +108,10 @@
     <string name="open">開啟</string>
     <string name="settings_check_update">檢查更新</string>
     <string name="settings_check_update_summary">在打開App時自動檢查更新</string>
+    <string name="select_file">選擇一個檔案</string>
+    <string name="install_inactive_slot">安裝到非使用中的槽位（在 OTA 更新後）</string>
+    <string name="install_inactive_slot_warning">您的裝置將在下次重新啟動後強制切換到非使用中的槽位！
+\n這個選項僅在 OTA 更新完畢後使用。
+\n請問是否繼續？</string>
+    <string name="direct_install">直接安裝（建議）</string>
 </resources>
