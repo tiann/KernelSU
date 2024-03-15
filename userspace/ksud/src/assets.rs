@@ -20,7 +20,6 @@ struct Asset;
 #[folder = "bin/aarch64"]
 struct Asset;
 
-
 pub fn ensure_binaries(ignore_if_exist: bool) -> Result<()> {
     for file in Asset::iter() {
         if file == "ksuinit" {
