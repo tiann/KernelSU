@@ -217,7 +217,7 @@ jobs:
           fi
           mkdir output
           if [ "${{ inputs.build_lkm}}" = "true" ]; then 
-            llvm-strip-15 $OUTDIR/kernelsu.ko
+            llvm-strip-15 -d $OUTDIR/kernelsu.ko
             mv $OUTDIR/kernelsu.ko ./output/${{ inputs.version }}_kernelsu.ko
           else
             cp $OUTDIR/Image ./output/
