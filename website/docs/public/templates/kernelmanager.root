@@ -21,6 +21,10 @@
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
     "locales": {
+        "zh_TW": {
+            "name": "核心管理器",
+            "description": "常用於 FKM 和 SmartPack 等核心管理器"
+        },
         "in": {
             "name": "Kernel Manager",
             "description": "Umumnya digunakan pada Kernel manager seperti FKM dan SmartPack."

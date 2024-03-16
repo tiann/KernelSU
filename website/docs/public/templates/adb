@@ -13,6 +13,10 @@
             "name": "Adb 模版",
             "description": "大多数使用 ADB 权限应用所需要的最小权限"
         },
+        "zh_TW": {
+            "name": "Adb",
+            "description": "大多數使用 ADB 權限應用程式所需要的最低權限"
+        },
         "tr": {
             "name": "Adb",
             "description": "ADB ayrıcalığını kullanan çoğu uygulama için gereken minimum kurallar."
