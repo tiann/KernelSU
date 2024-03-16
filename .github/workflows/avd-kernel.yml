@@ -38,10 +38,6 @@ jobs:
   build:
     name: Build ${{ inputs.version_name }}
     runs-on: ubuntu-latest
-    env:
-      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
-      CCACHE_NOHASHDIR: "true"
-      CCACHE_HARDLINK: "true"
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
@@ -107,14 +103,6 @@ jobs:
           echo "VERSION: $VERSION"
           echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
 
-      - name: Setup ccache
-        if: inputs.use_cache == true
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: gki-kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}
-          max-size: 2G
-          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
         run: |
@@ -131,7 +119,7 @@ jobs:
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
-          tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
+          tools/bazel run --config=fast --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
           NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           TARGET_IMAGE=dist/bzImage
           if [ ! -e $TARGET_IMAGE ]; then

@@ -40,6 +40,14 @@ LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
 tools/bazel build --config=fast //common:kernel_aarch64_dist
 ```
 
+:::info
+對於某些 Android 14 內核，要使 Wi-Fi/藍牙正常工作，可能需要刪除所有受 GKI 保護的匯出：
+
+```sh
+rm common/android/abi_gki_protected_exports_*
+```
+:::
+
 ## 使用 KernelSU 建置核心
 
 如果您可以成功建置核心，那麼建置 KernelSU 就會非常輕鬆，依自己的需求在核心原始碼根目錄中執行以下任一命令：

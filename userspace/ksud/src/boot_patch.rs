@@ -61,6 +61,18 @@ fn do_cpio_cmd(magiskboot: &Path, workding_dir: &Path, cmd: &str) -> Result<()> 
     Ok(())
 }
 
+fn is_magisk_patched(magiskboot: &Path, workding_dir: &Path) -> Result<bool> {
+    let status = Command::new(magiskboot)
+        .current_dir(workding_dir)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .args(["cpio", "ramdisk.cpio", "test"])
+        .status()?;
+
+    // 0: stock, 1: magisk
+    Ok(status.code() == Some(1))
+}
+
 fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     let status = Command::new("dd")
         .stdout(Stdio::null())
@@ -224,8 +236,12 @@ fn do_patch(
             .status()?;
         ensure!(status.success(), "magiskboot unpack failed");
 
-        let not_magisk = do_cpio_cmd(&magiskboot, workding_dir.path(), "test").is_ok();
-        ensure!(not_magisk, "Cannot work with Magisk patched image");
+        let no_ramdisk = !workding_dir.path().join("ramdisk.cpio").exists();
+        let is_magisk_patched = is_magisk_patched(&magiskboot, workding_dir.path())?;
+        ensure!(
+            no_ramdisk || !is_magisk_patched,
+            "Cannot work with Magisk patched image"
+        );
 
         println!("- Adding KernelSU LKM");
         let is_kernelsu_patched =

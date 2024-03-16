@@ -106,4 +106,6 @@
     <string name="open">فتح</string>
     <string name="settings_check_update_summary">التحقق تلقائيًا من وجود تحديثات عند فتح التطبيق</string>
     <string name="settings_check_update">التحقق من التحديث</string>
+    <string name="enable_web_debugging">تمكين تصحيح أخطاء WebView</string>
+    <string name="enable_web_debugging_summary">يمكن استخدامه لتصحيح أخطاء WebUI، يرجى تمكينه فقط عند الحاجة.</string>
 </resources>

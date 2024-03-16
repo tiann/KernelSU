@@ -105,6 +105,8 @@
     <string name="app_profile_template_view">テンプレートを表示</string>
     <string name="settings_check_update">アップデートを確認</string>
     <string name="settings_check_update_summary">アプリを開いたときにアップデートを自動的に確認する</string>
-    <string name="grant_root_failed">root の付与に失敗しました!</string>
-    <string name="open">開ける</string>
+    <string name="grant_root_failed">root の付与に失敗しました！</string>
+    <string name="open">開く</string>
+    <string name="enable_web_debugging">WebView デバッグを有効にする</string>
+    <string name="enable_web_debugging_summary">WebUI のデバッグに使用できます。必要な場合にのみ有効にしてください。</string>
 </resources>

@@ -4,16 +4,20 @@ KernelSU 提供了一個模組機制，它可以在保持系統分割區完整�
 
 KernelSU 的模組運作機制與 Magisk 幾乎相同，如果您熟悉 Magisk 模組的開發，那麼開發 KernelSU 的模組大同小異，您可以跳過下列有關模組的介紹，只需要瞭解 [KernelSU 模組與 Magisk 模組的異同](difference-with-magisk.md)。
 
+## WebUI
+
+KernelSU 的模組支援顯示互動介面，請參閱 [WebUI 文檔](module-webui.md).
+
 ## Busybox
 
 KernelSU 提供了一個完備的 BusyBox 二進位檔案 (包括完整的 SELinux 支援)。可執行檔位於 `/data/adb/ksu/bin/busybox`。
 KernelSU 的 BusyBox 支援同時執行時可切換的 "ASH Standalone Shell Mode"。
 這種讀了模式意味著在執行 BusyBox 的 ash shell 時，每個命令都會直接使用 BusyBox 中內建的應用程式，而不論 PATH 的設定為何。
 例如，`ls`、`rm`、`chmod` 等命令將不會使用 PATH 中設定的命令 (在 Android 的狀況下，預設狀況下分別為 `/system/bin/ls`、`/system/bin/rm` 和 `/system/bin/chmod`)，而是直接呼叫 BusyBox 內建的應用程式。
-這確保了指令碼始終在可預測的環境中執行，並始終具有完整的命令套件，不論它執行在哪個 Android 版本上。
+這確保了腳本始終在可預測的環境中執行，並始終具有完整的命令套件，不論它執行在哪個 Android 版本上。
 要強制下一個命令不使用 BusyBox，您必須使用完整路徑呼叫可執行檔。
 
-在 KernelSU 上下文中執行的每個 shell 指令碼都將在 BusyBox 的 ash shell 中以獨立模式執行。對於第三方開發人員相關的內容，包括所有開機指令碼和模組安裝指令碼。
+在 KernelSU 上下文中執行的每個 shell 腳本都將在 BusyBox 的 ash shell 中以獨立模式執行。對於第三方開發人員相關的內容，包括所有開機腳本和模組安裝腳本。
 
 對於想要在 KernelSU 之外使用這個「獨立模式」功能的使用者，有兩種啟用方法：
 
@@ -24,7 +28,7 @@ KernelSU 的 BusyBox 支援同時執行時可切換的 "ASH Standalone Shell Mod
 
 ::: tip 與 Magisk 的差異
 KernelSU 的 BusyBox 現在是直接使用 Magisk 專案編譯的二進位檔案，**感謝 Magisk！**
-因此，您完全不必擔心 BusyBox 指令碼與在 Magisk 和 KernelSU 之間的相容性問題，因為它們完全相同！
+因此，您完全不必擔心 BusyBox 腳本與在 Magisk 和 KernelSU 之間的相容性問題，因為它們完全相同！
 :::
 
 ## KernelSU 模組 {#kernelsu-modules}
@@ -57,9 +61,9 @@ KernelSU 模組是一個放置於 `/data/adb/modules` 且滿足下列結構的�
 │   │
 │   │      *** 選用檔案 ***
 │   │
-│   ├── post-fs-data.sh     <--- 這個指令碼將會在 post-fs-data 中執行
-│   ├── service.sh          <--- 這個指令碼將會在 late_start 服務中執行
-|   ├── uninstall.sh        <--- 這個指令碼將會在 KernelSU 移除模組時執行
+│   ├── post-fs-data.sh     <--- 這個腳本將會在 post-fs-data 中執行
+│   ├── service.sh          <--- 這個腳本將會在 late_start 服務中執行
+|   ├── uninstall.sh        <--- 這個腳本將會在 KernelSU 移除模組時執行
 │   ├── system.prop         <--- 這個檔案中指定的屬性將會在系統啟動時透過 resetprop 變更
 │   ├── sepolicy.rule       <--- 這個檔案中的 SELinux 原則將會在系統開機時載入
 │   │
@@ -103,14 +107,14 @@ description=<string>
 - 其他未在上方提到的內容可以是任何單行字串。
 - 請確保使用 `UNIX (LF)` 分行符號類型，而非 `Windows (CR + LF)` 或 `Macintosh (CR)`。
 
-### Shell 指令碼 {#shell-scripts}
+### Shell 腳本 {#shell-scripts}
 
-請閱讀 [開機指令碼](#boot-scripts) 章節，以瞭解 `post-fs-data.sh` 和 `service.sh` 之間的差別。對於大多數模組開發人員來說，如果您只需要執行一個開機指令碼，`service.sh` 應該已經足夠了。
+請閱讀 [開機腳本](#boot-scripts) 章節，以瞭解 `post-fs-data.sh` 和 `service.sh` 之間的差別。對於大多數模組開發人員來說，如果您只需要執行一個開機腳本，`service.sh` 應該已經足夠了。
 
-在您的模組中的所有指令碼中，請使用 `MODDIR=${0%/*}` 以取得您的模組基本目錄路徑；請不要在指令碼中以硬式編碼的方式加入您的模組路徑。
+在您的模組中的所有腳本中，請使用 `MODDIR=${0%/*}` 以取得您的模組基本目錄路徑；請不要在腳本中以硬式編碼的方式加入您的模組路徑。
 
 :::tip 與 Magisk 的差異
-您可以透過環境變數 `KSU` 來判斷指令碼是執行在 KernelSU 還是 Magisk 中，如果執行在 KernelSU，這個值會被設為 `true`。
+您可以透過環境變數 `KSU` 來判斷腳本是執行在 KernelSU 還是 Magisk 中，如果執行在 KernelSU，這個值會被設為 `true`。
 :::
 
 ### `system` 目錄 {#system-directories}
@@ -181,15 +185,15 @@ KernelSU 模組不支援在 Recovery 中安裝！！
 
 ### 自訂安裝程序 {#customizing-installation}
 
-如果您想要控制模組的安裝程序，可以在模組的目錄下建立一個名為 `customize.sh` 的檔案，這個檔案將會在模組被解壓縮後**匯入**至目前的 shell 中，如果您的模組需要依據裝置的 API 版本或裝置架構執行一些額外的作業，這個指令碼將非常有用。
+如果您想要控制模組的安裝程序，可以在模組的目錄下建立一個名為 `customize.sh` 的檔案，這個檔案將會在模組被解壓縮後**匯入**至目前的 shell 中，如果您的模組需要依據裝置的 API 版本或裝置架構執行一些額外的作業，這個腳本將非常有用。
 
-如果您想完全控制指令碼的安裝程序，您可以在 `customize.sh` 中宣告 `SKIPUNZIP=1` 以跳過所有的預設安裝步驟；此時，您需要自行處理所有的安裝程序 (例如解壓縮模組、設定權限等)
+如果您想完全控制腳本的安裝程序，您可以在 `customize.sh` 中宣告 `SKIPUNZIP=1` 以跳過所有的預設安裝步驟；此時，您需要自行處理所有的安裝程序 (例如解壓縮模組、設定權限等)
 
-`customize.sh` 指令碼以「獨立模式」執行在 KernelSU 的 BusyBox `ash` shell 中。您可以使用下列變數和函式：
+`customize.sh` 腳本以「獨立模式」執行在 KernelSU 的 BusyBox `ash` shell 中。您可以使用下列變數和函式：
 
 #### 變數 {#variables}
 
-- `KSU` (bool): 標示此指令碼執行於 KernelSU 環境中，此變數的值將永遠為 `true`，您可以透過它與 Magisk 進行區分。
+- `KSU` (bool): 標示此腳本執行於 KernelSU 環境中，此變數的值將永遠為 `true`，您可以透過它與 Magisk 進行區分。
 - `KSU_VER` (string): KernelSU 目前的版本名稱 (例如 `v0.4.0`)
 - `KSU_VER_CODE` (int): KernelSU 使用者空間目前的版本代碼 (例如 `10672`)
 - `KSU_KERNEL_VER_CODE` (int): KernelSU 核心空間目前的版本代碼 (例如 `10672`)
@@ -231,32 +235,32 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
        set_perm dir owner group dirpermission context
 ```
 
-## 開機指令碼 {#boot-scripts}
+## 開機腳本 {#boot-scripts}
 
-在 KernelSU 中，依據指令碼執行模式的不同分為兩種：post-fs-data 模式和 late_start 服務模式。
+在 KernelSU 中，依據腳本執行模式的不同分為兩種：post-fs-data 模式和 late_start 服務模式。
 
 - post-fs-data 模式
-  - 這個階段是「封鎖」的。在執行完成之前或 10 秒鐘之後，開機程序會被暫停。
-  - 指令碼在任何模組被掛接之前執行。這使模組開發人員可以在模組被掛接之前動態調整他們的模組。
+  - 這個階段是 **阻塞** 的。在執行完成之前或 10 秒鐘之後，開機程序會被暫停。
+  - 腳本在任何模組被掛接之前執行。這使模組開發人員可以在模組被掛接之前動態調整他們的模組。
   - 這個階段發生在 Zygote 啟動之前，這意味著 Android 中的一切。
-  - 使用 setprop 會導致開機程序死鎖！請使用 `resetprop -n <prop_name> <prop_value>` 替代。
-  - **僅在必要時在此模式中執行指令碼**。
+  - 使用 `setprop` 會導致開機程序死鎖！請使用 `resetprop -n <prop_name> <prop_value>` 替代。
+  - **僅在必要時在此模式中執行腳本**。
 
 - late_start 服務模式
-  - 這個階段是「非封鎖」的。您的指令碼會與其餘的啟動程序**平行**執行。
-  - **大多数脚本都建议在这种模式下运行**。
+  - 這個階段是 **非阻塞** 的。您的腳本會與其餘的啟動程序**平行**執行。
+  - **大多數腳本建議在這種模式下執行**。
 
-在 KernelSU 中，開機指令碼依據存放位置的不同還分為兩種：一般指令碼和模組指令碼。
+在 KernelSU 中，開機腳本依據存放位置的不同還分為兩種：一般腳本和模組腳本。
 
-- 一般指令碼
+- 一般腳本
   - 放置於 `/data/adb/post-fs-data.d` 或 `/data/adb/service.d` 中。
-  - 僅有指令碼被設為可執行 (`chmod +x script.sh`) 時才會被執行。
-  - 在 `post-fs-data.d` 中的指令碼以 post-fs-data 模式執行，在 `service.d` 中的指令碼以 late_start 服務模式執行。
-  - 模組**不應**在安裝程序中新增一般指令碼。
+  - 僅有腳本被設為可執行 (`chmod +x script.sh`) 時才會被執行。
+  - 在 `post-fs-data.d` 中的腳本以 post-fs-data 模式執行，在 `service.d` 中的腳本以 late_start 服務模式執行。
+  - 模組**不應**在安裝程序中新增一般腳本。
 
-- 模組指令碼
+- 模組腳本
   - 放置於模組自己的資料夾中。
   - 僅有在模組啟用時才會執行。
-  - `post-fs-data.sh` 以 post-fs-data 模式執行，而 `service.sh` 則以 late_start 服務模式執行。
+  - `post-fs-data.sh` 以 post-fs-data 模式運行，`post-mount.sh` 以 post-mount 模式運行，而`service.sh` 則以 late_start 服務模式運行，`boot-completed`在 Android 系統啟動完畢後以服務模式運作。
 
-所有启动脚本都将在 KernelSU 的 BusyBox ash shell 中运行，并启用“独立模式”。
+所有啟動腳本都將在 KernelSU 的 BusyBox ash shell 中執行，並啟用**獨立模式**。
