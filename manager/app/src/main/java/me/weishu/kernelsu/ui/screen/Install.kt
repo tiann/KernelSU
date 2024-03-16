@@ -159,7 +159,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                             }
                         }
                     }) {
-                    Text("Next", fontSize = MaterialTheme.typography.bodyMedium.fontSize)
+                    Text(stringResource(id = R.string.install_next), fontSize = MaterialTheme.typography.bodyMedium.fontSize)
                 }
             }
         }
