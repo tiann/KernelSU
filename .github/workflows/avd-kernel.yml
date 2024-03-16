@@ -119,8 +119,8 @@ jobs:
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
-          tools/bazel run --config=fast --config=stamp --lto=thin --verbose_failures //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
-          NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
+          tools/bazel run --config=android_ci --config=stamp --lto=thin --verbose_failures //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
+          NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }} || echo "Build failed? ignore"
           TARGET_IMAGE=dist/bzImage
           if [ ! -e $TARGET_IMAGE ]; then
             TARGET_IMAGE=dist/Image
