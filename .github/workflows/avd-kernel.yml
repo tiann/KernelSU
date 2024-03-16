@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: KernelSU
-          ref: 170cd3f912fcc66fba33428842b9d88a0b4092f1
+          ref: e3998c07440f1f033360cb7a55b421aef7409046
           fetch-depth: 0
 
       - name: Setup need_upload
