@@ -76,6 +76,7 @@ jobs:
           df -h
 
       - name: Setup KernelSU
+        if: false
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
           IS_DEBUG_KERNEL: ${{ inputs.debug }}
