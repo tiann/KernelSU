@@ -207,12 +207,13 @@ fun installBoot(
         val result =
             shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback)
                 .exec()
-        Log.i("KernelSU", "install boot $lkmUri result: $result")
+        Log.i("KernelSU", "install boot $lkmUri result: ${result.isSuccess}")
 
         lkmFile.delete()
         bootFile?.delete()
 
-        onFinish(bootUri != null && result.isSuccess)
+        // if boot uri is empty, it is direct install, when success, we should show reboot button
+        onFinish(bootUri == null && result.isSuccess)
         return result.isSuccess
     }
 }
