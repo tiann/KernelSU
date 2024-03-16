@@ -224,8 +224,12 @@ fn do_patch(
             .status()?;
         ensure!(status.success(), "magiskboot unpack failed");
 
+        let no_ramdisk = !workding_dir.path().join("ramdisk.cpio").exists();
         let not_magisk = do_cpio_cmd(&magiskboot, workding_dir.path(), "test").is_ok();
-        ensure!(not_magisk, "Cannot work with Magisk patched image");
+        ensure!(
+            no_ramdisk || not_magisk,
+            "Cannot work with Magisk patched image"
+        );
 
         println!("- Adding KernelSU LKM");
         let is_kernelsu_patched =
