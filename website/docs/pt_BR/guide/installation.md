@@ -70,7 +70,7 @@ Se o `boot.img` do seu dispositivo usa um formato de compactação comumente usa
 
 ### Encontre o boot.img adequado
 
-O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve liberar o boot.img para a partição boot do dispositivo.
+O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve flashar o boot.img para a partição boot do dispositivo.
 
 Você pode baixar o boot.img em [GitHub Release](https://github.com/tiann/KernelSU/releases), por favor, observe que você deve usar a versão correta do boot.img. Se você não sabe qual arquivo baixar, leia atentamente a descrição de [KMI](#kmi) e [Nível do patch de segurança](#security-patch-level) neste documento.
 
