@@ -52,6 +52,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: KernelSU
+          ref: v0.8.1
           fetch-depth: 0
 
       - name: Setup need_upload
@@ -88,7 +89,7 @@ jobs:
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
-          grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-y += kernelsu/\n" >> "$DRIVER_MAKEFILE"
           cat $DRIVER_MAKEFILE
           ls -al $GKI_ROOT/common/drivers
           ls -al $GKI_ROOT/common/drivers/kernelsu/
