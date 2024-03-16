@@ -16,6 +16,10 @@
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
     "locales": {
+        "zh_TW": {
+            "name": "Adaway Root",
+            "description": "僅允許 Adaway 修改 hosts 和執行 Web 伺服器的必要權限"
+        },
         "bn": {
             "name": "অ্যাডঅ্যাওয়ে রুট",
             "description": "অ্যাডঅ্যাওয়ে সিস্টেমের হোস্ট ফাইল পরিবর্তন এবং ওয়েবসার্ভার চালু করতে কমপক্ষে যা অনুমতি লাগে।"
