@@ -23,6 +23,6 @@ features:
   - title: Controle de acesso root
     details: Somente apps permitidos podem acessar ou ver su, todos os outros apps não estão cientes disso.
   - title: Privilégios de root personalizáveis
-    details: KernelSU permite a personalização de uid, gid, grupos, capacidades e regras SELinux do su, bloqueando privilégios de root.
+    details: KernelSU permite a personalização de su, uid, gid, grupos, capacidades e regras SELinux, bloqueando privilégios de root.
   - title: Módulos
     details: Os módulos podem modificar /system sem sistema usando OverlayFS permitindo uma grande potência.
