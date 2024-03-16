@@ -115,4 +115,6 @@
     <string name="install_inactive_slot">Install to Inactive Slot (After OTA)</string>
     <string name="install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
     <string name="install_next">Next</string>
+    <string name="failed_to_fetch_lkm_url">Failed to fetch LKM url: %1$s</string>
+    <string name="downloading">Downloading %1$s</string>
 </resources>

@@ -127,6 +127,9 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                     onFileDownloaded(uri)
                     loadingDialog.hide()
                 }
+
+                val failedMessage = stringResource(id = R.string.failed_to_fetch_lkm_url)
+                val downloadingMessage = stringResource(id = R.string.downloading)
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = installMethod != null,
@@ -138,18 +141,18 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                                 scope.launch(Dispatchers.Main) {
                                     Toast.makeText(
                                         context,
-                                        "Failed to fetch LKM url: ${throwable.message}",
+                                        failedMessage.format(throwable.message),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
                             }.onSuccess { result ->
-                                loadingDialog.hide()
-
                                 download(
                                     context = context,
                                     url = result.second,
                                     fileName = result.first,
-                                    description = "Downloading ${result.first}",
+                                    description = downloadingMessage.format(
+                                        result.first
+                                    ),
                                     onDownloaded = { uri ->
                                         onFileDownloaded(uri)
                                         loadingDialog.hide()
@@ -159,7 +162,10 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                             }
                         }
                     }) {
-                    Text(stringResource(id = R.string.install_next), fontSize = MaterialTheme.typography.bodyMedium.fontSize)
+                    Text(
+                        stringResource(id = R.string.install_next),
+                        fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                    )
                 }
             }
         }
@@ -231,6 +237,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
                 selectedOption = option
                 onSelected(option)
             }
+
             is InstallMethod.DirectInstallToInactiveSlot -> {
                 confirmDialog.showConfirm(dialogTitle, dialogContent)
             }
