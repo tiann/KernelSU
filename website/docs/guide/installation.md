@@ -70,7 +70,7 @@ If your device's `boot.img` uses a commonly used compression format, you can use
 
 ### Find proper boot.img
 
-KernelSU provides a generic boot.img for GKI devices and you should flush the boot.img to the boot partition of the device.
+KernelSU provides a generic boot.img for GKI devices and you should flash the boot.img to the boot partition of the device.
 
 You can download boot.img from [GitHub Release](https://github.com/tiann/KernelSU/releases), please note that you should use the correct version of boot.img. If you don't know which file to download, please carefully read the description of [KMI](#kmi) and [Security Patch Level](#security-patch-level) in this document.
 

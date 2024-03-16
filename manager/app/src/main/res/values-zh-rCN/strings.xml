@@ -112,4 +112,7 @@
     <string name="select_file">选择一个文件</string>
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
     <string name="install_inactive_slot_warning">将在重启后强制切换到另一个槽位！\n注意只能在 OTA 更新完成后的重启之前使用。\n确认？</string>
+    <string name="install_next">下一步</string>
+    <string name="failed_to_fetch_lkm_url">获取 LKM 链接失败：%1$s</string>
+    <string name="downloading">正在下载：%1$s</string>
 </resources>

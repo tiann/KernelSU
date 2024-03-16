@@ -102,4 +102,10 @@
     <string name="module_changelog_failed">Ophalen van wijzigingslogboek mislukt: %s</string>
     <string name="app_profile_export_to_clipboard">Exporteren naar klembord</string>
     <string name="settings_check_update">Controleer update</string>
+    <string name="enable_web_debugging">Schakel WebView-foutopsporing</string>
+    <string name="enable_web_debugging_summary">Kan worden gebruikt om WebUI te debuggen. Schakel dit alleen in als dat nodig is.</string>
+    <string name="app_profile_template_export_empty">Kan geen lokale sjabloon vinden om te exporteren!</string>
+    <string name="app_profile_template_import_success">Succesvol geïmporteerd</string>
+    <string name="open">Open</string>
+    <string name="settings_check_update_summary">Controleer automatisch op updates bij het openen van de app</string>
 </resources>

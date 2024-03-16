@@ -9,6 +9,9 @@ jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
     secrets: inherit
+  build-lkm:
+    uses: ./.github/workflows/build-lkm.yml
+    secrets: inherit
   build-a12-kernel:
     uses: ./.github/workflows/build-kernel-a12.yml
     secrets: inherit
@@ -27,6 +30,7 @@ jobs:
   release:
     needs:
       - build-manager
+      - build-lkm
       - build-a12-kernel
       - build-a13-kernel
       - build-a14-kernel

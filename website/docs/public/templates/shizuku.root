@@ -14,6 +14,10 @@
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
     "locales": {
+        "zh_TW": {
+            "name": "Shizuku",
+            "description": "只有啟動 Shizuku 服務所需的權限"
+        },
         "bn": {
             "name": "শিজুকু সার্ভিস",
             "description": "শিজুকু চালানোর জন্য শুধু যে অনুমতি গুলি লাগে।"

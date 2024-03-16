@@ -102,4 +102,10 @@
     <string name="profile_umount_modules_summary">Selle valiku lubamine lubab KernelSU-l taastada selle rakenduse moodulite poolt mistahes muudetud faile.</string>
     <string name="app_profile_template_export_empty">Eksportimiseks kohalikku malli ei leitud!</string>
     <string name="settings_umount_modules_default_summary">Globaalne vaikeväärtus \"Lahtihaagitud moodulitele\" rakenduseprofiilides. Lubamisel eemaldab see kõik moodulite süsteemimuudatused rakendustele, millel ei ole profiili määratud.</string>
+    <string name="enable_web_debugging_summary">Saab kasutada WebUI silumiseks, palun luba ainult vajadusel.</string>
+    <string name="grant_root_failed">Juurkasutaja andmine ebaõnnestus!</string>
+    <string name="settings_check_update">Kontrolli uuendusi</string>
+    <string name="settings_check_update_summary">Rakenduse avamisel kontrolli automaatselt uuendusi</string>
+    <string name="open">Ava</string>
+    <string name="enable_web_debugging">Luba WebView silumine</string>
 </resources>

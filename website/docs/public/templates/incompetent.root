@@ -13,6 +13,10 @@
             "name": "无能的 Root",
             "description": "无任何权能的 root 用户。"
         },
+        "zh_TW": {
+            "name": "無能的 Root",
+            "description": "無任何權限的 root"
+        },
         "tr": {
             "name": "Yetersiz root",
             "description": "Herhangi bir özelliği olmayan yetersiz bir root kullanıcısı."
