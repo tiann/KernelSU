@@ -38,10 +38,6 @@ jobs:
   build:
     name: Build ${{ inputs.version_name }}
     runs-on: ubuntu-latest
-    env:
-      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
-      CCACHE_NOHASHDIR: "true"
-      CCACHE_HARDLINK: "true"
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
@@ -106,14 +102,6 @@ jobs:
           VERSION=$(($(git rev-list --count HEAD) + 10200))
           echo "VERSION: $VERSION"
           echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
-
-      - name: Setup ccache
-        if: inputs.use_cache == true
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: gki-kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}
-          max-size: 2G
-          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
