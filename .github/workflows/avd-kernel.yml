@@ -89,9 +89,6 @@ jobs:
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
           grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-y += kernelsu/\n" >> "$DRIVER_MAKEFILE"
-          cat $DRIVER_MAKEFILE
-          ls -al $GKI_ROOT/common/drivers
-          ls -al $GKI_ROOT/common/drivers/kernelsu/
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
@@ -122,7 +119,7 @@ jobs:
             export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
-          tools/bazel run --config=android_ci --config=stamp --lto=thin --verbose_failures --sandbox_debug //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
+          tools/bazel run --config=android_ci --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
           NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           TARGET_IMAGE=dist/bzImage
           if [ ! -e $TARGET_IMAGE ]; then
