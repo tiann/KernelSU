@@ -76,7 +76,6 @@ jobs:
           df -h
 
       - name: Setup KernelSU
-        if: false
         env:
           PATCH_PATH: ${{ inputs.patch_path }}
           IS_DEBUG_KERNEL: ${{ inputs.debug }}
@@ -90,6 +89,8 @@ jobs:
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
           grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          cat $DRIVER_MAKEFILE
+          tree $GKI_ROOT/common/drivers
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
