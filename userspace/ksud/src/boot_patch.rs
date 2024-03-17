@@ -331,9 +331,9 @@ fn post_ota() -> Result<()> {
         .arg(format!("set-active-boot-slot {target_slot}"))
         .status()?;
 
-    let post_ota_sh = std::path::Path::new(ADB_DIR)
-        .join("post-fs-data.d")
-        .join("post_ota.sh");
+    let post_fs_data = std::path::Path::new(ADB_DIR).join("post-fs-data.d");
+    utils::ensure_dir_exists(&post_fs_data)?;
+    let post_ota_sh = post_fs_data.join("post_ota.sh");
 
     let sh_content = format!(
         r###"
