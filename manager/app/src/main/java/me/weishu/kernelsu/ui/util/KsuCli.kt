@@ -1,12 +1,14 @@
 package me.weishu.kernelsu.ui.util
 
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.os.SystemClock
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.io.SuFile
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
@@ -235,6 +237,20 @@ fun rootAvailable(): Boolean {
 fun isAbDevice(): Boolean {
     val shell = getRootShell()
     return ShellUtils.fastCmd(shell, "getprop ro.build.ab_update").trim().toBoolean()
+}
+
+fun isInitBoot(): Boolean {
+    val shell = getRootShell()
+    if (shell.isRoot) {
+        // if we have root, use /dev/block/by-name/init_boot to check
+        val abDevice = isAbDevice()
+        val initBootBlock = "/dev/block/by-name/init_boot${if (abDevice) "_a" else ""}"
+        val file = SuFile(initBootBlock)
+        file.shell = shell
+        return file.exists()
+    }
+    // https://source.android.com/docs/core/architecture/partitions/generic-boot
+    return ShellUtils.fastCmd(shell, "getprop ro.product.first_api_level").trim().toInt() >= Build.VERSION_CODES.TIRAMISU
 }
 
 fun overlayFsAvailable(): Boolean {
