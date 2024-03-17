@@ -1,4 +1,4 @@
-name: Build Kernel - Android 14 AVD
+name: Build Kernel - AVD
 on:
   push:
     branches: ["main", "ci", "checkci"]
