@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.util
 
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.os.SystemClock
 import android.util.Log
@@ -235,6 +236,12 @@ fun rootAvailable(): Boolean {
 fun isAbDevice(): Boolean {
     val shell = getRootShell()
     return ShellUtils.fastCmd(shell, "getprop ro.build.ab_update").trim().toBoolean()
+}
+
+fun isInitBoot(): Boolean {
+    val shell = getRootShell()
+    // https://source.android.com/docs/core/architecture/partitions/generic-boot
+    return ShellUtils.fastCmd(shell, "getprop ro.product.first_api_level").trim().toInt() >= Build.VERSION_CODES.TIRAMISU
 }
 
 fun overlayFsAvailable(): Boolean {
