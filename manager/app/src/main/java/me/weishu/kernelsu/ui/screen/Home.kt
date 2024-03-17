@@ -110,7 +110,7 @@ fun UpdateCard() {
     val updateText = stringResource(id = R.string.module_update)
 
     AnimatedVisibility(
-        visible = newVersionCode >= currentVersionCode,
+        visible = newVersionCode > currentVersionCode,
         enter = fadeIn() + expandVertically(),
         exit = shrinkVertically() + fadeOut()
     ) {
