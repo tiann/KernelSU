@@ -6,6 +6,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +47,7 @@ import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getLKMUrl
 import me.weishu.kernelsu.ui.util.isAbDevice
+import me.weishu.kernelsu.ui.util.isInitBoot
 import me.weishu.kernelsu.ui.util.rootAvailable
 
 /**
@@ -173,8 +175,11 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 }
 
 sealed class InstallMethod {
-    data class SelectFile(val uri: Uri? = null, override val label: Int = R.string.select_file) :
-        InstallMethod()
+    data class SelectFile(
+        val uri: Uri? = null,
+        @StringRes override val label: Int = R.string.select_file,
+        override val summary: String?
+    ) : InstallMethod()
 
     object DirectInstall : InstallMethod() {
         override val label: Int
@@ -187,13 +192,19 @@ sealed class InstallMethod {
     }
 
     abstract val label: Int
+    open val summary: String? = null
 }
 
 @Composable
 private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val rootAvailable = rootAvailable()
     val isAbDevice = isAbDevice()
-    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile())
+    val selectFileTip = stringResource(
+        id = R.string.select_file_tip,
+        if (isInitBoot()) "init_boot" else "boot"
+    )
+    val radioOptions =
+        mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
     if (rootAvailable) {
         radioOptions.add(InstallMethod.DirectInstall)
 
@@ -208,7 +219,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     ) {
         if (it.resultCode == Activity.RESULT_OK) {
             it.data?.data?.let { uri ->
-                val option = InstallMethod.SelectFile(uri)
+                val option = InstallMethod.SelectFile(uri, summary = selectFileTip)
                 selectedOption = option
                 onSelected(option)
             }
@@ -255,7 +266,22 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
                 RadioButton(selected = option.javaClass == selectedOption?.javaClass, onClick = {
                     onClick(option)
                 })
-                Text(text = stringResource(id = option.label))
+                Column {
+                    Text(
+                        text = stringResource(id = option.label),
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
+                        fontStyle = MaterialTheme.typography.titleMedium.fontStyle
+                    )
+                    option.summary?.let {
+                        Text(
+                            text = it,
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            fontStyle = MaterialTheme.typography.bodySmall.fontStyle
+                        )
+                    }
+                }
             }
         }
     }

@@ -115,4 +115,5 @@
     <string name="install_next">下一步</string>
     <string name="failed_to_fetch_lkm_url">获取 LKM 链接失败：%1$s</string>
     <string name="downloading">正在下载：%1$s</string>
+    <string name="select_file_tip">建议选择 %1$s 分区镜像</string>
 </resources>
