@@ -70,7 +70,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           sudo apt-get install repo -y
           mkdir android-kernel && cd android-kernel
-          repo init --depth=1 -u "$GITHUB_WORKSPACE/KernelSU" -b main -m ".github/manifests/${{ inputs.manifest_name }}" --repo-rev=v2.16
+          repo init --depth=1 -u https://android.googlesource.com/kernel/manifest -m "$GITHUB_WORKSPACE/KernelSU/.github/manifests/${{ inputs.manifest_name }}" --repo-rev=v2.16
           repo --version
           repo --trace sync -c -j$(nproc --all) --no-tags
           df -h
@@ -88,13 +88,13 @@ jobs:
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
-          grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-y += kernelsu/\n" >> "$DRIVER_MAKEFILE"
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
           if [ "$IS_DEBUG_KERNEL" = "true" ]; then
             echo "[+] Enable debug features for kernel"
-            echo "ccflags-y += -DCONFIG_KSU_DEBUG" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
+            printf "\nccflags-y += -DCONFIG_KSU_DEBUG\n" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
           fi
           repo status
           echo "[+] KernelSU setup done."
@@ -120,7 +120,7 @@ jobs:
             export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
           fi
           tools/bazel run --config=android_ci --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
-          NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }} || echo "Build Failed?"
+          NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           TARGET_IMAGE=dist/bzImage
           if [ ! -e $TARGET_IMAGE ]; then
             TARGET_IMAGE=dist/Image
