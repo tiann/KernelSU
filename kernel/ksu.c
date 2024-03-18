@@ -1,4 +1,6 @@
+#include "linux/export.h"
 #include "linux/fs.h"
+#include "linux/kobject.h"
 #include "linux/module.h"
 #include "linux/workqueue.h"
 
@@ -60,6 +62,9 @@ int __init kernelsu_init(void)
 	pr_alert("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html");
 #endif
 
+#ifdef MODULE
+	kobject_del(&THIS_MODULE->mkobj.kobj);
+#endif
 	return 0;
 }
 
