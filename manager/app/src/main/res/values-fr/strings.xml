@@ -116,6 +116,4 @@
 \nN\'utilisez cette option qu\'une fois la mise à jour OTA terminée.
 \nContinuer ?</string>
     <string name="install_next">Suivant</string>
-    <string name="downloading">Téléchargement de %1$s</string>
-    <string name="failed_to_fetch_lkm_url">Échec de la récupération de l\'URL du LKM : %1$s</string>
 </resources>

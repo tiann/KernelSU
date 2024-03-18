@@ -112,8 +112,6 @@
     <string name="open">Открыть</string>
     <string name="enable_web_debugging">Включить отладку WebView</string>
     <string name="enable_web_debugging_summary">Используется для отладки веб-интерфейса. Пожалуйста, включайте только при необходимости.</string>
-    <string name="downloading">Загрузка %1$s</string>
-    <string name="failed_to_fetch_lkm_url">Не удалось получить LKM по адресу: %1$s</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
     <string name="install_next">Далее</string>
