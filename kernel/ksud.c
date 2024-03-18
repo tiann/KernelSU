@@ -3,7 +3,15 @@
 #include "linux/dcache.h"
 #include "linux/err.h"
 #include "linux/fs.h"
+#include "linux/version.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 #include "linux/input-event-codes.h"
+#else
+#include "uapi/linux/input.h"
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
+#include "linux/aio.h"
+#endif
 #include "linux/kprobes.h"
 #include "linux/printk.h"
 #include "linux/types.h"
