@@ -26,7 +26,7 @@ jobs:
     
     - name: Prepare LKM fies
       run: |
-        ls -R
+        tree . -L 2
         cp android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
         
     # cross build failed after Rust 1.68, see https://github.com/cross-rs/cross/issues/1222
