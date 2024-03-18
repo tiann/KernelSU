@@ -168,8 +168,8 @@ jobs:
           sudo apt-get install llvm-15 -y
           ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
           ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
+          sed -i '/config KSU/,/help/{s/default y/default m/}' common/drivers/kernelsu/Kconfig
           echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
-          echo "CONFIG_KSU=m" >> common/arch/arm64/configs/gki_defconfig
 
           # bazel build, android14-5.15, android14-6.1 use bazel
           if [ ! -e build/build.sh ]; then
