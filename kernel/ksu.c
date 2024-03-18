@@ -63,7 +63,9 @@ int __init kernelsu_init(void)
 #endif
 
 #ifdef MODULE
+#ifndef CONFIG_KSU_DEBUG
 	kobject_del(&THIS_MODULE->mkobj.kobj);
+#endif
 #endif
 	return 0;
 }
