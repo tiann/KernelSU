@@ -22,7 +22,8 @@ struct Asset;
 
 pub fn ensure_binaries(ignore_if_exist: bool) -> Result<()> {
     for file in Asset::iter() {
-        if file == "ksuinit" {
+        if file == "ksuinit" || file.ends_with(".ko") {
+            // don't extract ksuinit and kernel modules
             continue;
         }
         let asset = Asset::get(&file).ok_or(anyhow::anyhow!("asset not found: {}", file))?;
