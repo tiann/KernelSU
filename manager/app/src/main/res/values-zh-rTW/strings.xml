@@ -115,6 +115,4 @@
 \n請問是否繼續？</string>
     <string name="direct_install">直接安裝（建議）</string>
     <string name="install_next">下一步</string>
-    <string name="failed_to_fetch_lkm_url">取得 LKM 下載鏈接失敗：%1$s</string>
-    <string name="downloading">正在下載：%1$s</string>
 </resources>
