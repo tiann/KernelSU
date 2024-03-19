@@ -117,6 +117,4 @@
 \nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
 \nDevam edilsin mi?</string>
     <string name="install_next">Sonraki</string>
-    <string name="failed_to_fetch_lkm_url">LKM URL\'si getirilemedi: %1$s</string>
-    <string name="downloading">%1$s indiriliyor</string>
 </resources>

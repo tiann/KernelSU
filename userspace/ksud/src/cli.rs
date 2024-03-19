@@ -59,7 +59,7 @@ enum Commands {
         #[arg(short, long)]
         kernel: Option<PathBuf>,
 
-        /// LKM module path to replace
+        /// LKM module path to replace, if not specified, will use the builtin one
         #[arg(short, long)]
         module: Option<PathBuf>,
 
@@ -82,6 +82,10 @@ enum Commands {
         /// magiskboot path, if not specified, will use builtin one
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
+
+        /// KMI version, if specified, will use the specified KMI
+        #[arg(long, default_value = None)]
+        kmi: Option<String>,
     },
     /// For developers
     Debug {
@@ -316,7 +320,8 @@ pub fn run() -> Result<()> {
             flash,
             out,
             magiskboot,
-        } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot),
+            kmi,
+        } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi),
     };
 
     if let Err(e) = &result {

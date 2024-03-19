@@ -57,55 +57,17 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 @Destination
 @Composable
 fun InstallScreen(navigator: DestinationsNavigator) {
-    val scope = rememberCoroutineScope()
-    val loadingDialog = rememberLoadingDialog()
-    val context = LocalContext.current
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)
     }
 
-    val onFileDownloaded = { uri: Uri ->
-
-        installMethod?.let {
-            scope.launch(Dispatchers.Main) {
-                when (it) {
-                    InstallMethod.DirectInstall -> {
-                        navigator.navigate(
-                            FlashScreenDestination(
-                                FlashIt.FlashBoot(
-                                    null,
-                                    uri,
-                                    false
-                                )
-                            )
-                        )
-                    }
-
-                    InstallMethod.DirectInstallToInactiveSlot -> {
-                        navigator.navigate(
-                            FlashScreenDestination(
-                                FlashIt.FlashBoot(
-                                    null,
-                                    uri,
-                                    true
-                                )
-                            )
-                        )
-                    }
-
-                    is InstallMethod.SelectFile -> {
-                        navigator.navigate(
-                            FlashScreenDestination(
-                                FlashIt.FlashBoot(
-                                    it.uri,
-                                    uri,
-                                    false
-                                )
-                            )
-                        )
-                    }
-                }
-            }
+    val onClickInstall = {
+        installMethod?.let { method ->
+            val flashIt = FlashIt.FlashBoot(
+                if (method is InstallMethod.SelectFile) method.uri else null,
+                method is InstallMethod.DirectInstallToInactiveSlot
+            )
+            navigator.navigate(FlashScreenDestination(flashIt))
         }
     }
 
@@ -124,45 +86,11 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-
-                DownloadListener(context = context) { uri ->
-                    onFileDownloaded(uri)
-                    loadingDialog.hide()
-                }
-
-                val failedMessage = stringResource(id = R.string.failed_to_fetch_lkm_url)
-                val downloadingMessage = stringResource(id = R.string.downloading)
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = installMethod != null,
                     onClick = {
-                        loadingDialog.showLoading()
-                        scope.launch(Dispatchers.IO) {
-                            getLKMUrl().onFailure { throwable ->
-                                loadingDialog.hide()
-                                scope.launch(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        context,
-                                        failedMessage.format(throwable.message),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }.onSuccess { result ->
-                                download(
-                                    context = context,
-                                    url = result.second,
-                                    fileName = result.first,
-                                    description = downloadingMessage.format(
-                                        result.first
-                                    ),
-                                    onDownloaded = { uri ->
-                                        onFileDownloaded(uri)
-                                        loadingDialog.hide()
-                                    },
-                                    onDownloading = {}
-                                )
-                            }
-                        }
+                        onClickInstall()
                     }) {
                     Text(
                         stringResource(id = R.string.install_next),
