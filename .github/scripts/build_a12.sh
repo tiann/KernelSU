@@ -51,7 +51,7 @@ build_from_image() {
 	echo "[+] Images to upload"
 	find . -type f -name "*.gz"
 
-	find . -type f -name "*.gz" -exec python3 "$GITHUB_WORKSPACE"/KernelSU/scripts/ksubot.py {} +
+	# find . -type f -name "*.gz" -exec python3 "$GITHUB_WORKSPACE"/KernelSU/scripts/ksubot.py {} +
 }
 
 for dir in Image*; do
