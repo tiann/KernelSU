@@ -40,7 +40,9 @@ jobs:
         cache-targets: false
 
     - name: Install cross
-      run: cargo install cross --locked
+      run: |
+        # cargo install cross --locked
+        cargo install cross --git https://github.com/cross-rs/cross
 
     - name: Build ksud
       run: cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
