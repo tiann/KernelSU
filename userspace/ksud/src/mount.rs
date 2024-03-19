@@ -76,7 +76,7 @@ pub fn mount_ext4(source: impl AsRef<Path>, target: impl AsRef<Path>) -> Result<
             MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
         )?;
     } else {
-        mount(lo, target.as_ref(), "ext4", MountFlags::empty(), "")?;
+        bail!("mount failed");
     }
     Ok(())
 }
@@ -138,18 +138,7 @@ pub fn mount_overlayfs(
     })();
 
     if let Err(e) = result {
-        warn!("fsopen mount failed: {:#}, fallback to mount", e);
-        let mut data = format!("lowerdir={lowerdir_config}");
-        if let (Some(upperdir), Some(workdir)) = (upperdir, workdir) {
-            data = format!("{data},upperdir={upperdir},workdir={workdir}");
-        }
-        mount(
-            KSU_OVERLAY_SOURCE,
-            dest.as_ref(),
-            "overlay",
-            MountFlags::empty(),
-            data,
-        )?;
+        bail!("fsopen mount failed: {:#}", e);
     }
     Ok(())
 }
@@ -170,13 +159,7 @@ pub fn mount_tmpfs(dest: impl AsRef<Path>) -> Result<()> {
             MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
         )?;
     } else {
-        mount(
-            KSU_OVERLAY_SOURCE,
-            dest.as_ref(),
-            "tmpfs",
-            MountFlags::empty(),
-            "",
-        )?;
+        bail!("mount failed");
     }
     Ok(())
 }
@@ -203,13 +186,7 @@ pub fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
             MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
         )?;
     } else {
-        mount(
-            from.as_ref(),
-            to.as_ref(),
-            "",
-            MountFlags::BIND | MountFlags::REC,
-            "",
-        )?;
+        bail!("mount failed");
     }
     Ok(())
 }
@@ -246,8 +223,7 @@ fn mount_overlay_child(
     }
     // merge modules and stock
     if let Err(e) = mount_overlayfs(&lower_dirs, stock_root, None, None, mount_point) {
-        warn!("failed: {:#}, fallback to bind mount", e);
-        bind_mount(stock_root, mount_point)?;
+        bail!("failed: {:#}", e);
     }
     Ok(())
 }
