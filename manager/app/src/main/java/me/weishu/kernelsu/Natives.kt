@@ -20,7 +20,7 @@ object Natives {
 
     // 11640: Support query working mode, LKM or GKI
     // when MINIMAL_SUPPORTED_KERNEL > 11640, we can remove this constant.
-    const val MINIMAL_SUPPORTED_KERNEL_LKM = 11640
+    const val MINIMAL_SUPPORTED_KERNEL_LKM = 11648
     const val KERNEL_SU_DOMAIN = "u:r:su:s0"
 
     const val ROOT_UID = 0
