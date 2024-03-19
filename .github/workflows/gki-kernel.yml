@@ -128,7 +128,9 @@ jobs:
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
-          grep -q "kernelsu" $DRIVER_MAKEFILE || printf "\nobj-y += kernelsu/\n" >> $DRIVER_MAKEFILE
+          DRIVER_KCONFIG=$GKI_ROOT/common/drivers/Kconfig
+          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
+          grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
@@ -166,7 +168,7 @@ jobs:
           sudo apt-get install llvm-15 -y
           ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
           ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
-          sed -i '1i KSU_MODULE := 1' $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
+          sed -i '/config KSU/,/help/{s/default y/default m/}' common/drivers/kernelsu/Kconfig
           echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
 
           # bazel build, android14-5.15, android14-6.1 use bazel
