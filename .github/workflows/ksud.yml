@@ -31,6 +31,7 @@ jobs:
     - name: Setup rustup
       run: |
         rustup update --force-non-host stable-x86_64-unknown-linux-gnu
+        rustup update stable
         rustup target add x86_64-apple-darwin
         rustup target add aarch64-apple-darwin
     - uses: Swatinem/rust-cache@v2
