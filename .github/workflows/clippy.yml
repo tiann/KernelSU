@@ -29,8 +29,8 @@ jobs:
 
       - name: Install cross
         run: |
-          # cargo install cross --locked
-          cargo install cross --git https://github.com/cross-rs/cross
+          cargo install cross --locked
+          # cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Run clippy
         run: |
