@@ -47,6 +47,49 @@ pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
     }
 }
 
+#[cfg(target_os = "android")]
+fn parse_kmi(version: &str) -> Result<String> {
+    use regex::Regex;
+    let re = Regex::new(r"(.* )?(\d+\.\d+)(\S+)?(android\d+)(.*)")?;
+    let cap = re
+        .captures(version)
+        .ok_or_else(|| anyhow::anyhow!("No match found"))?;
+    let android_version = cap.get(4).map_or("", |m| m.as_str());
+    let kernel_version = cap.get(2).map_or("", |m| m.as_str());
+    Ok(format!("{android_version}-{kernel_version}"))
+}
+
+#[cfg(target_os = "android")]
+fn parse_kmi_from_uname() -> Result<String> {
+    let uname = rustix::system::uname();
+    let version = uname.release().to_string_lossy();
+    parse_kmi(&version)
+}
+
+#[cfg(target_os = "android")]
+fn parse_kmi_from_modules() -> Result<String> {
+    use std::io::BufRead;
+    let output = Command::new("modinfo")
+        .arg("/vendor/lib/modules/fips140.ko")
+        .output()?;
+    for line in output.stdout.lines().flatten() {
+        if line.starts_with("vermagic") {
+            return parse_kmi(&line);
+        }
+    }
+    anyhow::bail!("Unknown KMI, try use --kmi to specify it.")
+}
+
+#[cfg(target_os = "android")]
+fn get_kmi() -> Result<String> {
+    parse_kmi_from_uname().or_else(|_| parse_kmi_from_modules())
+}
+
+#[cfg(not(target_os = "android"))]
+fn get_kmi() -> Result<String> {
+    bail!("Unknown KMI, try use --kmi to specify it.")
+}
+
 fn do_cpio_cmd(magiskboot: &Path, workding_dir: &Path, cmd: &str) -> Result<()> {
     let status = Command::new(magiskboot)
         .current_dir(workding_dir)
@@ -98,9 +141,10 @@ pub fn patch(
     ota: bool,
     flash: bool,
     out: Option<PathBuf>,
-    magiskboot_path: Option<PathBuf>,
+    magiskboot: Option<PathBuf>,
+    kmi: Option<String>,
 ) -> Result<()> {
-    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot_path);
+    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot, kmi);
     if let Err(ref e) = result {
         println!("- Install Error: {e}");
     }
@@ -117,6 +161,7 @@ fn do_patch(
     flash: bool,
     out: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
+    kmi: Option<String>,
 ) -> Result<()> {
     println!(include_str!("banner"));
 
@@ -132,8 +177,6 @@ fn do_patch(
             init.is_none() && kmod.is_none(),
             "init and module must not be specified."
         );
-    } else {
-        ensure!(kmod.is_some(), "module must be specified");
     }
 
     let workding_dir =
@@ -207,60 +250,66 @@ fn do_patch(
             .with_context(|| "copy kernel from failed".to_string())?;
     }
 
+    println!("- Preparing assets");
+
+    let kmod_file = workding_dir.path().join("kernelsu.ko");
     if let Some(kmod) = kmod {
-        println!("- Preparing assets");
+        std::fs::copy(kmod, kmod_file).with_context(|| "copy kernel module failed".to_string())?;
+    } else {
+        // If kmod is not specified, extract from assets
+        let kmi = if let Some(kmi) = kmi { kmi } else { get_kmi()? };
+        println!("- KMI: {kmi}");
+        let name = format!("{kmi}_kernelsu.ko");
+        assets::copy_assets_to_file(&name, kmod_file)
+            .with_context(|| format!("Failed to copy {name}"))?;
+    };
 
-        std::fs::copy(kmod, workding_dir.path().join("kernelsu.ko"))
-            .with_context(|| "copy kernel module failed".to_string())?;
-        let init_file = workding_dir.path().join("init");
-        if let Some(init) = init {
-            std::fs::copy(init, workding_dir.path().join("init"))
-                .with_context(|| "copy init failed".to_string())?;
-        } else {
-            crate::assets::copy_assets_to_file("ksuinit", init_file)
-                .with_context(|| "copy ksuinit failed")?;
-        }
-
-        // magiskboot unpack boot.img
-        // magiskboot cpio ramdisk.cpio 'cp init init.real'
-        // magiskboot cpio ramdisk.cpio 'add 0755 ksuinit init'
-        // magiskboot cpio ramdisk.cpio 'add 0755 <kmod> kernelsu.ko'
-
-        println!("- Unpacking boot image");
-        let status = Command::new(&magiskboot)
-            .current_dir(workding_dir.path())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .arg("unpack")
-            .arg(bootimage.display().to_string())
-            .status()?;
-        ensure!(status.success(), "magiskboot unpack failed");
-
-        let no_ramdisk = !workding_dir.path().join("ramdisk.cpio").exists();
-        let is_magisk_patched = is_magisk_patched(&magiskboot, workding_dir.path())?;
-        ensure!(
-            no_ramdisk || !is_magisk_patched,
-            "Cannot work with Magisk patched image"
-        );
-
-        println!("- Adding KernelSU LKM");
-        let is_kernelsu_patched =
-            do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
-        if !is_kernelsu_patched {
-            // kernelsu.ko is not exist, backup init if necessary
-            let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
-            if status.is_ok() {
-                do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init init.real")?;
-            }
-        }
-
-        do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;
-        do_cpio_cmd(
-            &magiskboot,
-            workding_dir.path(),
-            "add 0755 kernelsu.ko kernelsu.ko",
-        )?;
+    let init_file = workding_dir.path().join("init");
+    if let Some(init) = init {
+        std::fs::copy(init, init_file).with_context(|| "copy init failed".to_string())?;
+    } else {
+        assets::copy_assets_to_file("ksuinit", init_file).with_context(|| "copy ksuinit failed")?;
     }
+
+    // magiskboot unpack boot.img
+    // magiskboot cpio ramdisk.cpio 'cp init init.real'
+    // magiskboot cpio ramdisk.cpio 'add 0755 ksuinit init'
+    // magiskboot cpio ramdisk.cpio 'add 0755 <kmod> kernelsu.ko'
+
+    println!("- Unpacking boot image");
+    let status = Command::new(&magiskboot)
+        .current_dir(workding_dir.path())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .arg("unpack")
+        .arg(bootimage.display().to_string())
+        .status()?;
+    ensure!(status.success(), "magiskboot unpack failed");
+
+    let no_ramdisk = !workding_dir.path().join("ramdisk.cpio").exists();
+    let is_magisk_patched = is_magisk_patched(&magiskboot, workding_dir.path())?;
+    ensure!(
+        no_ramdisk || !is_magisk_patched,
+        "Cannot work with Magisk patched image"
+    );
+
+    println!("- Adding KernelSU LKM");
+    let is_kernelsu_patched =
+        do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
+    if !is_kernelsu_patched {
+        // kernelsu.ko is not exist, backup init if necessary
+        let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
+        if status.is_ok() {
+            do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init init.real")?;
+        }
+    }
+
+    do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;
+    do_cpio_cmd(
+        &magiskboot,
+        workding_dir.path(),
+        "add 0755 kernelsu.ko kernelsu.ko",
+    )?;
 
     println!("- Repacking boot image");
     // magiskboot repack boot.img

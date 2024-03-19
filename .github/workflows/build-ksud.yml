@@ -13,7 +13,11 @@ on:
       - '.github/workflows/ksud.yml'
       - 'userspace/ksud/**'
 jobs:
+  build-lkm:
+    uses: ./.github/workflows/build-lkm.yml
+    secrets: inherit
   build:
+    needs: build-lkm
     strategy:
       matrix:
         include:

@@ -86,6 +86,8 @@ fun getBugreportFile(context: Context): File {
         pw.println("KernelSU: $ksuKernel")
         val safeMode = Natives.isSafeMode
         pw.println("SafeMode: $safeMode")
+        val lkmMode = Natives.isLkmMode
+        pw.println("LKM: $lkmMode")
     }
 
     // modules

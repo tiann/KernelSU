@@ -83,8 +83,11 @@ class SuperUserViewModel : ViewModel() {
 
     val appList by derivedStateOf {
         sortedList.filter {
-            it.label.contains(search) || it.packageName.contains(search) || HanziToPinyin.getInstance()
-                .toPinyinString(it.label).contains(search)
+            it.label.contains(search, true) || it.packageName.contains(
+                search,
+                true
+            ) || HanziToPinyin.getInstance()
+                .toPinyinString(it.label).contains(search, true)
         }.filter {
             it.uid == 2000 // Always show shell
                     || showSystemApps || it.packageInfo.applicationInfo.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0

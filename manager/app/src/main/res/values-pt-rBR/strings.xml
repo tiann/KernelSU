@@ -115,7 +115,5 @@
     <string name="install_inactive_slot_warning">Seu dispositivo será FORÇADO a inicializar no slot inativo atual após uma reinicialização!
 \nSó use esta opção após a conclusão do OTA.
 \nDeseja continuar?</string>
-    <string name="downloading">Baixando %1$s</string>
     <string name="install_next">Próximo</string>
-    <string name="failed_to_fetch_lkm_url">Falha ao buscar a URL do LKM: %1$s</string>
 </resources>

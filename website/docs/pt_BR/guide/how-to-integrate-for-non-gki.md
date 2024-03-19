@@ -13,7 +13,7 @@ Se você puder construir um kernel inicializável, existem duas maneiras de inte
 
 ## Integrar com kprobe
 
-O KernelSU usa kprobe para fazer ganchos de kernel, se o kprobe funcionar bem em seu kernel, é recomendado usar desta forma.
+O KernelSU usa kprobe para fazer ganchos do kernel, se o kprobe funcionar bem em seu kernel, é recomendado usar desta forma.
 
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
@@ -40,6 +40,11 @@ Mas se você entrar em um bootloop quando o KernelSU for integrado, talvez o **k
 Comente `ksu_enable_sucompat()` e `ksu_enable_ksud()` em `KernelSU/kernel/ksu.c`, se o dispositivo inicializar normalmente, então o kprobe pode estar quebrado.
 :::
 
+:::info COMO FAZER COM QUE O RECURSO DE DESMONTAR MÓDULOS FUNCIONE NO PRÉ-GKI?
+
+Se o seu kernel for inferior a 5.9, você deve portar `path_umount` para `fs/namespace.c`. Isso é necessário para que o recurso de quantidade do módulo funcione. Se você não portar `path_umount`, o recurso "Desmontar módulos" não funcionará. Você pode obter mais informações sobre como conseguir isso no final desta página.
+:::
+
 ## Modifique manualmente a fonte do kernel
 
 Se o kprobe não funcionar no seu kernel (pode ser um bug do upstream ou do kernel abaixo de 4.8), então você pode tentar desta forma:
@@ -62,14 +67,14 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 :::
 
-Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Por exemplo, em seu defconfig, habilite `CONFIG_KSU` com y para habilitar ou n para desabilitar. Seu caminho será algo como:
+Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Por exemplo, em seu defconfig, habilite `CONFIG_KSU` com **y** para habilitar ou **n** para desabilitar. Seu caminho será algo como:
 `arch/arm64/configs/...` 
 ```
 # KernelSU
 CONFIG_KSU=y
 ```
 
-Em seguida, adicione chamadas KernelSU à fonte do kernel. Aqui estão alguns patches para referência:
+Em seguida, adicione chamadas do KernelSU à fonte do kernel. Aqui estão alguns patches para referência:
 
 ::: code-group
 
@@ -290,6 +295,55 @@ index 45306f9ef247..815091ebfca4 100755
  
  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
  		add_input_randomness(type, code, value);
+```
+
+### Como fazer backport de path_umount
+
+Você pode fazer com que o recurso "Desmontar módulos" funcione em kernels pré-GKI fazendo backport manualmente do `path_umount` da versão 5.9. Você pode usar este patch como referência:
+
+```diff
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1739,6 +1739,39 @@ static inline bool may_mandlock(void)
+ }
+ #endif
+
++static int can_umount(const struct path *path, int flags)
++{
++	struct mount *mnt = real_mount(path->mnt);
++
++	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
++		return -EINVAL;
++	if (!may_mount())
++		return -EPERM;
++	if (path->dentry != path->mnt->mnt_root)
++		return -EINVAL;
++	if (!check_mnt(mnt))
++		return -EINVAL;
++	if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */
++		return -EINVAL;
++	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	return 0;
++}
++
++int path_umount(struct path *path, int flags)
++{
++	struct mount *mnt = real_mount(path->mnt);
++	int ret;
++
++	ret = can_umount(path, flags);
++	if (!ret)
++		ret = do_umount(mnt, flags);
++
++	/* não devemos chamar path_put() pois isso limparia mnt_expiry_mark */
++	dput(path->dentry);
++	mntput_no_expire(mnt);
++	return ret;
++}
+ /*
+  * Agora o umount pode lidar com pontos de montagem e também com dispositivos bloqueados.
+  * Isto é importante para filesystems que usam dispositivos bloqueados sem nome.
 ```
 
 Finalmente, construa seu kernel novamente, e então, o KernelSU deve funcionar bem.

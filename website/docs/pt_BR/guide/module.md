@@ -6,7 +6,7 @@ O mecanismo de módulo do KernelSU é quase o mesmo do Magisk. Se você está fa
 
 ## WebUI
 
-Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários, consulte a [documentação WebUI](module-webui.md).
+Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários, consulte a [documentação do WebUI](module-webui.md).
 
 ## BusyBox
 
@@ -134,7 +134,7 @@ REMOVE="
 "
 ```
 
-A lista acima irá executar `mknod $MODPATH/system/app/YouTube c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`; e `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
+A lista acima irá executar `mknod $MODPATH/system/app/YouTube c 0 0` e `mknod $MODPATH/system/app/Bloatware c 0 0`, `/system/app/YouTube` e `/system/app/Bloatware` serão removidos após o módulo entrar em vigor.
 
 Se você deseja substituir um diretório no sistema, você precisa criar um diretório com o mesmo caminho no diretório do módulo e, em seguida, definir o atributo `setfattr -n trusted.overlay.opaque -v y <TARGET>` para este diretório. Desta forma, o sistema OverlayFS substituirá automaticamente o diretório correspondente no sistema (sem alterar a partição /system).
 
@@ -162,11 +162,11 @@ Este arquivo segue o mesmo formato de `build.prop`. Cada linha é composta por `
 
 ### sepolicy.rule
 
-Se o seu módulo exigir alguns patches adicionais de sepolicy, adicione essas regras a este arquivo. Cada linha neste arquivo será tratada como uma declaração de política.
+Se o seu módulo exigir alguns patches adicionais do sepolicy, adicione essas regras a este arquivo. Cada linha neste arquivo será tratada como uma declaração de política.
 
 ## Instalador do módulo
 
-Um instalador do módulo KernelSU é um módulo KernelSU empacotado em um arquivo zip que pode ser atualizado no app gerenciador KernelSU. O instalador do módulo KernelSU mais simples é apenas um módulo KernelSU compactado como um arquivo zip.
+Um instalador do módulo KernelSU é um módulo KernelSU empacotado em um arquivo ZIP que pode ser atualizado no app gerenciador do KernelSU. O instalador do módulo KernelSU mais simples é apenas um módulo KernelSU compactado como um arquivo ZIP.
 
 ```txt
 module.zip
@@ -184,7 +184,7 @@ O módulo KernelSU **NÃO** é compatível para instalação no Recovery persona
 
 ### Personalização
 
-Se você precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será **sourced** (não executado!) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na API do dispositivo ou se você precisar definir permissões/secontext especiais para alguns dos arquivos do seu módulo.
+Se você precisar personalizar o processo de instalação do módulo, opcionalmente você pode criar um script no instalador chamado `customize.sh`. Este script será **sourced** (não executado) pelo script do instalador do módulo depois que todos os arquivos forem extraídos e as permissões padrão e o contexto secundário forem aplicados. Isso é muito útil se o seu módulo exigir configuração adicional com base na API do dispositivo ou se você precisar definir permissões/secontext especiais para alguns dos arquivos do seu módulo.
 
 Se você quiser controlar e personalizar totalmente o processo de instalação, declare `SKIPUNZIP=1` em `customize.sh` para pular todas as etapas de instalação padrão. Ao fazer isso, seu `customize.sh` será responsável por instalar tudo sozinho.
 
@@ -199,7 +199,7 @@ O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o "M
 - `BOOTMODE` (bool): sempre seja `true` no KernelSU.
 - `MODPATH` (path): o caminho onde os arquivos do seu módulo devem ser instalados.
 - `TMPDIR` (path): um lugar onde você pode armazenar arquivos temporariamente.
-- `ZIPFILE` (path): zip de instalação do seu módulo.
+- `ZIPFILE` (path): ZIP de instalação do seu módulo.
 - `ARCH` (string): a arquitetura da CPU do dispositivo. O valor é `arm`, `arm64`, `x86` ou `x64`.
 - `IS64BIT` (bool): `true` se `$ARCH` for `arm64` ou `x64`.
 - `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo: `23` para Android 6.0).
