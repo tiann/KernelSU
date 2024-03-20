@@ -29,6 +29,7 @@ jobs:
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
+      pack_lkm: false
 
   build-manager:
     needs: build-ksud
@@ -60,7 +61,7 @@ jobs:
               echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
               echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
               echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
-              echo KEYSTORE_FILE='../key.jks'
+              echo KEYSTORE_FILE='key.jks'
             } >> gradle.properties
             echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
             ls -alR ..
