@@ -2,7 +2,7 @@ name: Build Manager
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths:
       - '.github/workflows/build-manager.yml'
       - 'manager/**'
@@ -60,7 +60,7 @@ jobs:
               echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
               echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
               echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
-              echo KEYSTORE_FILE='../key.jks'
+              echo KEYSTORE_FILE='key.jks'
             } >> gradle.properties
             echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
           fi
@@ -108,12 +108,14 @@ jobs:
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         with:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
 
       - name: Upload mappings
         uses: actions/upload-artifact@v4
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         with:
           name: "mappings"
           path: "manager/app/build/outputs/mapping/release/"
