@@ -20,7 +20,7 @@ jobs:
     secrets: inherit
 
   build-ksud:
-    #needs: build-lkm
+    needs: build-lkm
     strategy:
       matrix:
         include:
@@ -29,7 +29,6 @@ jobs:
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
-      pack_lkm: false
 
   build-manager:
     needs: build-ksud
@@ -54,7 +53,7 @@ jobs:
           fi
 
       - name: Write key
-        #if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         run: |
           if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
             {
