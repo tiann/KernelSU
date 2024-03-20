@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-manager.yml'
       - 'manager/**'
+      - 'kernel/**'
       - 'userspace/ksud/**'
   pull_request:
     branches: [ "main" ]
@@ -106,6 +107,7 @@ jobs:
           ./gradlew clean assembleRelease
 
       - name: Upload build artifact
+        if: github.event_name != 'pull_request
         uses: actions/upload-artifact@v4
         with:
           name: manager
