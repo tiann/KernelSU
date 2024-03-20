@@ -6,11 +6,7 @@
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include "linux/sched/task_stack.h"
-#else
-#include "linux/sched.h"
-#endif
 
 #include "allowlist.h"
 #include "arch.h"
@@ -146,14 +142,8 @@ static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	int *dfd = (int *)&PT_REGS_PARM1(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 // static int vfs_statx(int dfd, const char __user *filename, int flags, struct kstat *stat, u32 request_mask)
 	int *flags = (int *)&PT_REGS_PARM3(regs);
-#else
-// int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
-	int *flags = (int *)&PT_REGS_CCALL_PARM4(regs);
-#endif
-
 	return ksu_handle_stat(dfd, filename_user, flags);
 }
 
@@ -168,31 +158,17 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 }
 
 static struct kprobe faccessat_kp = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 	.symbol_name = "do_faccessat",
-#else
-	.symbol_name = "sys_faccessat",
-#endif
 	.pre_handler = faccessat_handler_pre,
 };
 
 static struct kprobe newfstatat_kp = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 	.symbol_name = "vfs_statx",
-#else
-	.symbol_name = "vfs_fstatat",
-#endif
 	.pre_handler = newfstatat_handler_pre,
 };
 
 static struct kprobe execve_kp = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
-	.symbol_name = "__do_execve_file",
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
-	.symbol_name = "do_execveat_common",
-#endif
 	.pre_handler = execve_handler_pre,
 };
 
