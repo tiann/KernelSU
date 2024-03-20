@@ -25,7 +25,6 @@ jobs:
       uses: actions/download-artifact@v4
     
     - name: Prepare LKM fies
-      if: false
       run: |
         cp android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
         

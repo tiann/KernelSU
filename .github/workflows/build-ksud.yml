@@ -14,11 +14,10 @@ on:
       - 'userspace/ksud/**'
 jobs:
   build-lkm:
-    if: false
     uses: ./.github/workflows/build-lkm.yml
     secrets: inherit
   build:
-    #needs: build-lkm
+    needs: build-lkm
     strategy:
       matrix:
         include:
