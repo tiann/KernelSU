@@ -72,7 +72,7 @@ fn parse_kmi_from_modules() -> Result<String> {
     let output = Command::new("modinfo")
         .arg("/vendor/lib/modules/fips140.ko")
         .output()?;
-    for line in output.stdout.lines().flatten() {
+    for line in output.stdout.lines().map_while(Result::ok) {
         if line.starts_with("vermagic") {
             return parse_kmi(&line);
         }

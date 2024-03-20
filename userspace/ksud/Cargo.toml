@@ -2,7 +2,7 @@
 name = "ksud"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.76"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -12,9 +12,9 @@ clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
 zip = "0.6"
 zip-extensions = "0.6"
-java-properties = "2.0.0"
+java-properties = "2"
 log = "0.4"
-env_logger = "0.10"
+env_logger = { version = "0.11", default-features = false }
 serde = { version = "1" }
 serde_json = "1"
 regex = "1"
@@ -26,12 +26,12 @@ extattr = "1"
 jwalk = "0.8"
 is_executable = "1"
 nom = "7"
-derive-new = "0.5"
-rust-embed = { version = "6", features = [
+derive-new = "0.6"
+rust-embed = { version = "8", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "5"
+which = "6"
 getopts = "0.2"
 sha256 = "1"
 tempdir = "0.3"
@@ -41,7 +41,7 @@ hole-punch = { git = "https://github.com/tiann/hole-punch" }
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = ["all-apis"] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
-android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
+android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 procfs = "0.16"
 loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 

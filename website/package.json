@@ -7,8 +7,8 @@
   "author": "weishu",
   "license": "MIT",
   "devDependencies": {
-    "vitepress": "^1.0.0-rc.33",
-    "vue": "^3.3.8"
+    "vitepress": "^1.0.0-rc.45",
+    "vue": "^3.4.21"
   },
   "scripts": {
     "docs:dev": "vitepress dev docs",
