@@ -76,7 +76,8 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 
 	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
+// Remove this later!! we use syscall hook, so this will never happen!!!!!
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0) && 0
 	// it becomes a `struct filename *` after 5.18
 	// https://elixir.bootlin.com/linux/v5.18/source/fs/stat.c#L216
 	const char sh[] = SH_PATH;
