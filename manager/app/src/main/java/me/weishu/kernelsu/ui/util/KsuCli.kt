@@ -143,10 +143,11 @@ fun installModule(
 
 fun installBoot(
     bootUri: Uri?,
+    lkmUri: Uri?,
     ota: Boolean,
     onFinish: (Boolean) -> Unit,
     onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
+    onStderr: (String) -> Unit,
 ): Boolean {
     val resolver = ksuApp.contentResolver
 
@@ -158,6 +159,17 @@ fun installBoot(
             }
 
             bootFile
+        }
+    }
+
+    val lkmFile = lkmUri?.let { uri ->
+        with(resolver.openInputStream(uri)) {
+            val lkmFile = File(ksuApp.cacheDir, "kernelsu-tmp-lkm.ko")
+            lkmFile.outputStream().use { output ->
+                this?.copyTo(output)
+            }
+
+            lkmFile
         }
     }
 
@@ -173,6 +185,10 @@ fun installBoot(
 
     if (ota) {
         cmd += " -u"
+    }
+
+    lkmFile?.let {
+        cmd += " -m ${it.absolutePath}"
     }
 
     // output dir
@@ -200,6 +216,7 @@ fun installBoot(
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
     bootFile?.delete()
+    lkmFile?.delete()
 
     // if boot uri is empty, it is direct install, when success, we should show reboot button
     onFinish(bootUri == null && result.isSuccess)

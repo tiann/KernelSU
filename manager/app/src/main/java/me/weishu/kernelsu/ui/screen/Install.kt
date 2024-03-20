@@ -3,6 +3,8 @@ package me.weishu.kernelsu.ui.screen
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
+import android.webkit.DownloadListener
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,8 +38,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toFile
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.ShellUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
@@ -61,20 +67,41 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         mutableStateOf<InstallMethod?>(null)
     }
 
+    var lkmFileUri = null as Uri?
+
     val onClickInstall = {
         installMethod?.let { method ->
             val flashIt = FlashIt.FlashBoot(
-                if (method is InstallMethod.SelectFile) method.uri else null,
-                method is InstallMethod.DirectInstallToInactiveSlot
+                bootUri = if (method is InstallMethod.SelectFile) method.uri else null,
+                lkmUri = lkmFileUri,
+                ota = method is InstallMethod.DirectInstallToInactiveSlot
             )
             navigator.navigate(FlashScreenDestination(flashIt))
         }
     }
 
-    Scaffold(topBar = {
-        TopBar {
-            navigator.popBackStack()
+    val selectLkmLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                it.data?.data?.let { uri ->
+                    lkmFileUri = uri
+                }
+            }
         }
+
+    val onLkmUpload = {
+        selectLkmLauncher.launch(
+            Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "application/octet-stream"
+            }
+        )
+    }
+
+    Scaffold(topBar = {
+        TopBar(
+            onBack = { navigator.popBackStack() },
+            onLkmUpload = onLkmUpload
+        )
     }) {
         Column(modifier = Modifier.padding(it)) {
             SelectInstallMethod { method ->
@@ -217,7 +244,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}) {
+private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
     TopAppBar(
         title = { Text(stringResource(R.string.install)) },
         navigationIcon = {
@@ -225,6 +252,11 @@ private fun TopBar(onBack: () -> Unit = {}) {
                 onClick = onBack
             ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
         },
+        actions = {
+            IconButton(onClick = onLkmUpload) {
+                Icon(Icons.Filled.FileUpload, contentDescription = null)
+            }
+        }
     )
 }
 
