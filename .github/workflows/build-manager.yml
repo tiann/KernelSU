@@ -63,7 +63,6 @@ jobs:
               echo KEYSTORE_FILE='key.jks'
             } >> gradle.properties
             echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
-            ls -alR ..
           fi
 
       - name: Setup Java
