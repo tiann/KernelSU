@@ -20,7 +20,7 @@ jobs:
     secrets: inherit
 
   build-ksud:
-    needs: build-lkm
+    #needs: build-lkm
     strategy:
       matrix:
         include:
@@ -31,7 +31,7 @@ jobs:
       target: ${{ matrix.target }}
 
   build-manager:
-    #needs: build-ksud
+    needs: build-ksud
     runs-on: ubuntu-latest
     defaults:
       run:
