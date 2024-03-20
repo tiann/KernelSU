@@ -18,5 +18,11 @@
         "CAP_SETGID",
     ],
     "context":"u:r:su:s0",
-    "rules":[""]
+    "rules":[""],
+    "locales": {
+        "zh_TW": {
+            "name": "Kali NetHunter",
+            "description": "提供Kali NetHunter使用chroot"
+        }
+    }
 }
