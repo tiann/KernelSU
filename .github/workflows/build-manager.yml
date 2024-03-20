@@ -107,7 +107,7 @@ jobs:
           ./gradlew clean assembleRelease
 
       - name: Upload build artifact
-        if: github.event_name != 'pull_request
+        if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: manager
@@ -115,6 +115,7 @@ jobs:
 
       - name: Upload mappings
         uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         with:
           name: "mappings"
           path: "manager/app/build/outputs/mapping/release/"
