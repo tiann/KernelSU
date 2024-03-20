@@ -137,7 +137,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 
 @Parcelize
 sealed class FlashIt : Parcelable {
-    data class FlashBoot(val bootUri: Uri? = null, val ota: Boolean) : FlashIt()
+    data class FlashBoot(val bootUri: Uri? = null, val lkmUri: Uri? = null, val ota: Boolean) : FlashIt()
 
     data class FlashModule(val uri: Uri) : FlashIt()
 }
@@ -150,6 +150,7 @@ fun flashIt(
     when (flashIt) {
         is FlashIt.FlashBoot -> installBoot(
             flashIt.bootUri,
+            flashIt.lkmUri,
             flashIt.ota,
             onFinish,
             onStdout,
