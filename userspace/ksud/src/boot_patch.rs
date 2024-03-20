@@ -69,9 +69,13 @@ fn parse_kmi_from_uname() -> Result<String> {
 #[cfg(target_os = "android")]
 fn parse_kmi_from_modules() -> Result<String> {
     use std::io::BufRead;
-    let output = Command::new("modinfo")
-        .arg("/vendor/lib/modules/fips140.ko")
-        .output()?;
+    // find a *.ko in /vendor/lib/modules
+    let modfile = std::fs::read_dir("/vendor/lib/modules")?
+        .filter_map(Result::ok)
+        .find(|entry| entry.path().extension().map_or(false, |ext| ext == "ko"))
+        .map(|entry| entry.path())
+        .ok_or_else(|| anyhow!("No kernel module found"))?;
+    let output = Command::new("modinfo").arg(modfile).output()?;
     for line in output.stdout.lines().map_while(Result::ok) {
         if line.starts_with("vermagic") {
             return parse_kmi(&line);

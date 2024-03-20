@@ -1,5 +1,4 @@
 #include "asm/current.h"
-#include "linux/compiler_attributes.h"
 #include "linux/cred.h"
 #include "linux/err.h"
 #include "linux/fs.h"
