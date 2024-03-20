@@ -1,5 +1,4 @@
 #include "asm/current.h"
-#include "linux/compiler_attributes.h"
 #include "linux/cred.h"
 #include "linux/err.h"
 #include "linux/fs.h"
@@ -7,6 +6,9 @@
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+#include "linux/compiler_attributes.h"
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include "linux/sched/task_stack.h"
 #else

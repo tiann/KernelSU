@@ -1,6 +1,5 @@
 #include "asm/current.h"
 #include "linux/compat.h"
-#include "linux/compiler_attributes.h"
 #include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
@@ -20,6 +19,9 @@
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+#include "linux/compiler_attributes.h"
+#endif
 #include "linux/workqueue.h"
 
 #include "allowlist.h"
