@@ -54,6 +54,11 @@ CONFIG_KPROBE_EVENTS=y
 將 `KernelSU/kernel/ksu.c` 中的 `ksu_enable_sucompat()` 和 `ksu_enable_ksud()` 取消註解，如果正常開機，即 kprobe 已損毀；或者您可以手動嘗試使用 kprobe 功能，如果不正常，手機會直接重新啟動。
 :::
 
+:::info 如何為非 GKI 核心啟用卸載模組功能
+
+如果你的內核版本小於 5.10，你應該將 `path_umount` 向後移植至 `fs/namespace.c`。 卸載模組功能依賴於這個函數。 如果你沒有向後移植 `path_umount`，卸載模組功能將無法工作。 你可以在底下查看更多關於 `path_unmount` 的資料。 
+:::
+
 ## 手動修改核心原始碼 {#modify-kernel-source-code}
 
 如果 kprobe 無法正常運作 (可能是上游的錯誤或核心版本過低)，那您可以嘗試這種方法：
@@ -260,5 +265,55 @@ index 45306f9ef247..815091ebfca4 100755
  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
  		add_input_randomness(type, code, value);
 ```
+
+### 如何向後移植 path_umount {#how-to-backport-path_unpount}
+
+你可以透過向後移植 `path_umount` 來讓卸載模組功能在小於 5.10 的非 GKI 核心上運作. 你可以參考這個修改:
+
+```diff
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1739,6 +1739,39 @@ static inline bool may_mandlock(void)
+ }
+ #endif
+
++static int can_umount(const struct path *path, int flags)
++{
++	struct mount *mnt = real_mount(path->mnt);
++
++	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
++		return -EINVAL;
++	if (!may_mount())
++		return -EPERM;
++	if (path->dentry != path->mnt->mnt_root)
++		return -EINVAL;
++	if (!check_mnt(mnt))
++		return -EINVAL;
++	if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */
++		return -EINVAL;
++	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	return 0;
++}
++
++int path_umount(struct path *path, int flags)
++{
++	struct mount *mnt = real_mount(path->mnt);
++	int ret;
++
++	ret = can_umount(path, flags);
++	if (!ret)
++		ret = do_umount(mnt, flags);
++
++	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
++	dput(path->dentry);
++	mntput_no_expire(mnt);
++	return ret;
++}
+ /*
+  * Now umount can handle mount points as well as block devices.
+  * This is important for filesystems which use unnamed block devices.
+```
+
 
 最後，再次建置您的核心，KernelSU 將會如期運作。
