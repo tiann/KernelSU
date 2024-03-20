@@ -1,7 +1,7 @@
 [versions]
 agp = "8.3.1"
 kotlin = "1.9.22"
-ksp = "1.9.22-1.0.18"
+ksp = "1.9.23-1.0.19"
 compose-compiler = "1.5.10"
 compose-bom = "2024.02.02"
 lifecycle = "2.7.0"
@@ -17,7 +17,7 @@ webkit = "1.10.0"
 appiconloader-coil = "1.5.0"
 parcelablelist = "2.0.1"
 libsu = "5.2.2"
-apksign = "1.4"
+apksign = "1.1"
 cmaker = "1.2"
 
 [plugins]
