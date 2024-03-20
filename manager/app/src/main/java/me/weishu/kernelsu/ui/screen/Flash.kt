@@ -63,6 +63,9 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         withContext(Dispatchers.IO) {
             flashIt(flashIt, onFinish = { showReboot ->
                 if (showReboot) {
+                    for (i in 0..2) {
+                        text += "\n"
+                    }
                     showFloatAction = true
                 }
             }, onStdout = {
