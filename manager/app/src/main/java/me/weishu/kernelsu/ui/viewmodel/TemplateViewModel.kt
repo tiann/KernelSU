@@ -209,7 +209,12 @@ private fun getLocaleString(json: JSONObject, key: String): String {
     val locale = Locale.getDefault()
     val localeKey = "${locale.language}_${locale.country}"
     json.optJSONObject("locales")?.let {
+        // check locale first
         it.optJSONObject(localeKey)?.let { json->
+            return json.optString(key, fallback)
+        }
+        // fallback to language
+        it.optJSONObject(locale.language)?.let { json->
             return json.optString(key, fallback)
         }
     }
