@@ -57,7 +57,7 @@ static inline bool is_unsupported_uid(uid_t uid)
 {
 #define LAST_APPLICATION_UID 19999
 	uid_t appid = uid % 100000;
-	return appid < LAST_APPLICATION_UID;
+	return appid > LAST_APPLICATION_UID;
 }
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
