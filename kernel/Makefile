@@ -1,7 +1,6 @@
 kernelsu-objs := ksu.o
 kernelsu-objs += allowlist.o
 kernelsu-objs += apk_sign.o
-kernelsu-objs += module_api.o
 kernelsu-objs += sucompat.o
 kernelsu-objs += uid_observer.o
 kernelsu-objs += manager.o
