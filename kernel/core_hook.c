@@ -726,6 +726,7 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 	return ksu_handle_setuid(new, old);
 }
 
+#ifndef MODULE
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
@@ -735,7 +736,6 @@ static struct security_hook_list ksu_hooks[] = {
 #endif
 };
 
-#ifndef MODULE
 void __init ksu_lsm_hook_init(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
