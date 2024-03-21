@@ -4,6 +4,7 @@
 #include "linux/err.h"
 #include "linux/init.h"
 #include "linux/init_task.h"
+#include "linux/irqflags.h"
 #include "linux/kallsyms.h"
 #include "linux/kernel.h"
 #include "linux/kprobes.h"
@@ -329,7 +330,8 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 #else
 			u32 is_lkm = 0x0;
 #endif
-			if (arg4 && copy_to_user(arg4, &is_lkm, sizeof(is_lkm))) {
+			if (arg4 &&
+			    copy_to_user(arg4, &is_lkm, sizeof(is_lkm))) {
 				pr_err("prctl reply error, cmd: %lu\n", arg2);
 			}
 		}
@@ -733,6 +735,7 @@ static struct security_hook_list ksu_hooks[] = {
 #endif
 };
 
+#ifndef MODULE
 void __init ksu_lsm_hook_init(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
@@ -743,7 +746,7 @@ void __init ksu_lsm_hook_init(void)
 #endif
 }
 
-#ifdef MODULE
+#else
 static int override_security_head(void *head, const void *new_head, size_t len)
 {
 	unsigned long base = (unsigned long)head & PAGE_MASK;
@@ -761,7 +764,9 @@ static int override_security_head(void *head, const void *new_head, size_t len)
 	if (!addr) {
 		return -ENOMEM;
 	}
+	local_irq_disable();
 	memcpy(addr + offset, new_head, len);
+	local_irq_enable();
 	vunmap(addr);
 	return 0;
 }
@@ -862,7 +867,7 @@ static void *find_head_addr(void *security_ptr, int *index)
 		}                                                              \
 	} while (0)
 
-void __init ksu_lsm_hook_init_hack(void)
+void __init ksu_lsm_hook_init(void)
 {
 	void *cap_prctl = GET_SYMBOL_ADDR(cap_task_prctl);
 	void *prctl_head = find_head_addr(cap_prctl, NULL);
@@ -911,20 +916,10 @@ void __init ksu_lsm_hook_init_hack(void)
 
 void __init ksu_core_init(void)
 {
-#ifndef MODULE
-	pr_info("ksu_lsm_hook_init\n");
 	ksu_lsm_hook_init();
-
-#else
-	pr_info("ksu_lsm_hook_init hack!!!!\n");
-	ksu_lsm_hook_init_hack();
-#endif
 }
 
 void ksu_core_exit(void)
 {
-#ifndef MODULE
 	pr_info("ksu_kprobe_exit\n");
-	ksu_kprobe_exit();
-#endif
 }
