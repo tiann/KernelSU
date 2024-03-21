@@ -17,7 +17,7 @@ Os arquivos de recursos da web devem ser colocados no subdiretório `webroot` do
 ```
 
 :::warning AVISO
-Ao instalar o módulo, KernelSU definirá automaticamente as permissões e o contexto SELinux deste diretório. Se você não sabe o que está fazendo, não defina você mesmo as permissões deste diretório!
+Ao instalar o módulo, KernelSU definirá automaticamente as permissões e o contexto do SELinux deste diretório. Se você não sabe o que está fazendo, não defina você mesmo as permissões deste diretório!
 :::
 
 Se sua página contém CSS e JavaScript, você também precisa colocá-la neste diretório.
@@ -26,7 +26,7 @@ Se sua página contém CSS e JavaScript, você também precisa colocá-la neste 
 
 Se for apenas uma página de exibição, não será diferente de uma página da web normal. Mais importante ainda, KernelSU fornece uma série de APIs de sistema que permitem implementar as funções exclusivas do módulo.
 
-KernelSU fornece uma biblioteca JavaScript e [publica-a no npm](https://www.npmjs.com/package/kernelsu), que você pode usar no código JavaScript de suas páginas da web.
+KernelSU fornece uma biblioteca JavaScript e publica-a no [npm](https://www.npmjs.com/package/kernelsu), que você pode usar no código JavaScript de suas páginas da web.
 
 Por exemplo, você pode executar um comando shell para obter uma configuração específica ou modificar uma propriedade:
 

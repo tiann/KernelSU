@@ -42,7 +42,7 @@ comment out `ksu_enable_sucompat()` and `ksu_enable_ksud()` in `KernelSU/kernel/
 
 :::info How to get module umount feature working on pre-GKI?
 
-If your kernel is older than 5.9, you should backport ```path_umount``` to ```fs/namespace.c```. This is required to get module umount feature working. If you don't backport ```path_umount```, module umount feature won't work. You can get more info on how to achieve this at the end of this page. 
+If your kernel is older than 5.9, you should backport `path_umount` to `fs/namespace.c`. This is required to get module umount feature working. If you don't backport `path_umount`, module umount feature won't work. You can get more info on how to achieve this at the end of this page.
 :::
 
 ## Manually modify the kernel source
@@ -297,7 +297,7 @@ index 45306f9ef247..815091ebfca4 100755
  		add_input_randomness(type, code, value);
 ```
 
-## path_umount
+### How to backport path_umount
 
 You can get module umount feature working on pre-GKI kernels by manually backporting ```path_umount``` from 5.9. You can use this patch as reference:
 

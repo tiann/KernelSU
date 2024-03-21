@@ -106,13 +106,13 @@ Se você realmente precisa conceder permissões de root ao ADB (por exemplo, com
 
 ### Desmontar módulos
 
-O KernelSU fornece um mecanismo sem sistema para modificar partições do sistema, obtido através da montagem de OverlayFS. No entanto, alguns apps podem ser sensíveis a esse comportamento. Assim, podemos descarregar módulos montados nesses apps configurando a opção “desmontar módulos”.
+O KernelSU fornece um mecanismo sem sistema para modificar partições do sistema, obtido através da montagem de OverlayFS. No entanto, alguns apps podem ser sensíveis a esse comportamento. Assim, podemos descarregar módulos montados nesses apps configurando a opção "Desmontar módulos".
 
-Além disso, a interface de configurações do gerenciador KernelSU fornece uma opção para "desmontar módulos por padrão". Por padrão, essa opção está **ativada**, o que significa que o KernelSU ou alguns módulos descarregarão módulos para este app, a menos que configurações adicionais sejam aplicadas. Se você não preferir esta configuração ou se ela afetar determinados apps, você terá as seguintes opções:
+Além disso, a interface de configurações do gerenciador KernelSU fornece uma opção para "Desmontar módulos por padrão". Por padrão, essa opção está **ativada**, o que significa que o KernelSU ou alguns módulos descarregarão módulos para este app, a menos que configurações adicionais sejam aplicadas. Se você não preferir esta configuração ou se ela afetar determinados apps, você terá as seguintes opções:
 
-1. Mantenha a opção "desmontar módulos por padrão" e desative individualmente a opção "desmontar módulos" no Perfil do Aplicativo para apps que exigem carregamento do módulo (agindo como uma "lista de permissões").
-2. Desative a opção "desmontar módulos por padrão" e ative individualmente a opção "desmontar módulos" no Perfil do Aplicativo para apps que exigem descarregamento do módulo (agindo como uma "lista negra").
+1. Mantenha a opção "Desmontar módulos por padrão" e desative individualmente a opção "Desmontar módulos" no Perfil do Aplicativo para apps que exigem carregamento do módulo (agindo como uma "lista de permissões").
+2. Desative a opção "Desmontar módulos por padrão" e ative individualmente a opção "Desmontar módulos" no Perfil do Aplicativo para apps que exigem descarregamento do módulo (agindo como uma "lista negra").
 
 :::info INFORMAÇÕES
-Em dispositivos que utilizam kernel versão 5.10 e superior, o kernel realiza o descarregamento dos módulos. No entanto, para dispositivos que executam versões de kernel abaixo de 5.10, essa opção é apenas uma opção de configuração e o próprio KernelSU não executa nenhuma ação. Alguns módulos, como ZygiskNext, podem usar essa opção para determinar se o descarregamento do módulo é necessário.
+Em dispositivos que utilizam a versão do kernel 5.10 e superior, o kernel realiza qualquer ação adicional do descarregamento de módulos. No entanto, para dispositivos que executam versões do kernel abaixo de 5.10, essa opção é apenas uma opção de configuração e o próprio KernelSU não executa nenhuma ação. Se você quiser usar a opção "Desmontar módulos" em versões do kernel anteriores a 5.10 você precisa portar a função `path_umount` em `fs/namespace.c`, você pode obter mais informações no final da página [Como integrar o KernelSU para kernels não GKI](https://kernelsu.org/pt_BR/guide/how-to-integrate-for-non-gki.html). Alguns módulos, como ZygiskNext, também podem usar essa opção para determinar se o descarregamento do módulo é necessário.
 :::

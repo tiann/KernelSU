@@ -64,8 +64,11 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 if (isManager) install()
             }
             val ksuVersion = if (isManager) Natives.version else null
+            val lkmMode = ksuVersion?.let {
+                if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
+            }
 
-            StatusCard(kernelVersion, ksuVersion) {
+            StatusCard(kernelVersion, ksuVersion, lkmMode) {
                 navigator.navigate(InstallScreenDestination)
             }
             if (isManager && Natives.requireNewKernel()) {
@@ -142,7 +145,11 @@ fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(kernelVersion: KernelVersion, onInstallClick: () -> Unit, onSettingsClick: () -> Unit) {
+private fun TopBar(
+    kernelVersion: KernelVersion,
+    onInstallClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
     TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
         if (kernelVersion.isGKI()) {
             IconButton(onClick = onInstallClick) {
@@ -190,14 +197,18 @@ private fun TopBar(kernelVersion: KernelVersion, onInstallClick: () -> Unit, onS
 }
 
 @Composable
-private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?, onClickInstall: () -> Unit = {}) {
+private fun StatusCard(
+    kernelVersion: KernelVersion,
+    ksuVersion: Int?,
+    lkmMode: Boolean?,
+    onClickInstall: () -> Unit = {}
+) {
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(containerColor = run {
             if (ksuVersion != null) MaterialTheme.colorScheme.secondaryContainer
             else MaterialTheme.colorScheme.errorContainer
         })
     ) {
-        val uriHandler = LocalUriHandler.current
         Row(modifier = Modifier
             .fillMaxWidth()
             .clickable {
@@ -208,15 +219,24 @@ private fun StatusCard(kernelVersion: KernelVersion, ksuVersion: Int?, onClickIn
             .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
             when {
                 ksuVersion != null -> {
-                    val appendText = if (Natives.isSafeMode) {
-                        " [${stringResource(id = R.string.safe_mode)}]"
-                    } else {
-                        ""
+                    val safeMode = when {
+                        Natives.isSafeMode -> " [${stringResource(id = R.string.safe_mode)}]"
+                        else -> ""
                     }
+
+                    val workingMode = when (lkmMode) {
+                        null -> ""
+                        true -> " <LKM>"
+                        else -> " <GKI>"
+                    }
+
+                    val workingText =
+                        "${stringResource(id = R.string.home_working)}$workingMode$safeMode"
+
                     Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(
-                            text = stringResource(R.string.home_working) + appendText,
+                            text = workingText,
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(4.dp))
@@ -396,9 +416,10 @@ fun getManagerVersion(context: Context): Pair<String, Int> {
 @Composable
 private fun StatusCardPreview() {
     Column {
-        StatusCard(KernelVersion(5, 10, 101), 1)
-        StatusCard(KernelVersion(5, 10, 101), null)
-        StatusCard(KernelVersion(4, 10, 101), null)
+        StatusCard(KernelVersion(5, 10, 101), 1, null)
+        StatusCard(KernelVersion(5, 10, 101), 20000, true)
+        StatusCard(KernelVersion(5, 10, 101), null, true)
+        StatusCard(KernelVersion(4, 10, 101), null, false)
     }
 }
 

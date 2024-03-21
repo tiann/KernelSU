@@ -48,21 +48,49 @@ pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
 }
 
 #[cfg(target_os = "android")]
-fn parse_kmi() -> Result<String> {
+fn parse_kmi(version: &str) -> Result<String> {
     use regex::Regex;
-    let uname = rustix::system::uname();
-    let version = uname.release().to_string_lossy();
     let re = Regex::new(r"(.* )?(\d+\.\d+)(\S+)?(android\d+)(.*)")?;
     let cap = re
-        .captures(&version)
+        .captures(version)
         .ok_or_else(|| anyhow::anyhow!("No match found"))?;
     let android_version = cap.get(4).map_or("", |m| m.as_str());
     let kernel_version = cap.get(2).map_or("", |m| m.as_str());
     Ok(format!("{android_version}-{kernel_version}"))
 }
 
+#[cfg(target_os = "android")]
+fn parse_kmi_from_uname() -> Result<String> {
+    let uname = rustix::system::uname();
+    let version = uname.release().to_string_lossy();
+    parse_kmi(&version)
+}
+
+#[cfg(target_os = "android")]
+fn parse_kmi_from_modules() -> Result<String> {
+    use std::io::BufRead;
+    // find a *.ko in /vendor/lib/modules
+    let modfile = std::fs::read_dir("/vendor/lib/modules")?
+        .filter_map(Result::ok)
+        .find(|entry| entry.path().extension().map_or(false, |ext| ext == "ko"))
+        .map(|entry| entry.path())
+        .ok_or_else(|| anyhow!("No kernel module found"))?;
+    let output = Command::new("modinfo").arg(modfile).output()?;
+    for line in output.stdout.lines().map_while(Result::ok) {
+        if line.starts_with("vermagic") {
+            return parse_kmi(&line);
+        }
+    }
+    anyhow::bail!("Unknown KMI, try use --kmi to specify it.")
+}
+
+#[cfg(target_os = "android")]
+fn get_kmi() -> Result<String> {
+    parse_kmi_from_uname().or_else(|_| parse_kmi_from_modules())
+}
+
 #[cfg(not(target_os = "android"))]
-fn parse_kmi() -> Result<String> {
+fn get_kmi() -> Result<String> {
     bail!("Unknown KMI, try use --kmi to specify it.")
 }
 
@@ -233,11 +261,7 @@ fn do_patch(
         std::fs::copy(kmod, kmod_file).with_context(|| "copy kernel module failed".to_string())?;
     } else {
         // If kmod is not specified, extract from assets
-        let kmi = if let Some(kmi) = kmi {
-            kmi
-        } else {
-            parse_kmi()?
-        };
+        let kmi = if let Some(kmi) = kmi { kmi } else { get_kmi()? };
         println!("- KMI: {kmi}");
         let name = format!("{kmi}_kernelsu.ko");
         assets::copy_assets_to_file(&name, kmod_file)

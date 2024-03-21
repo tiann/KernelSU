@@ -22,7 +22,9 @@ fun getBugreportFile(context: Context): File {
     val tombstonesFile = File(bugreportDir, "tombstones.tar.gz")
     val dropboxFile = File(bugreportDir, "dropbox.tar.gz")
     val pstoreFile = File(bugreportDir, "pstore.tar.gz")
+    // Xiaomi/Readmi devices have diag in /data/vendor/diag
     val diagFile = File(bugreportDir, "diag.tar.gz")
+    val opulsFile = File(bugreportDir, "opuls.tar.gz")
     val bootlogFile = File(bugreportDir, "bootlog.tar.gz")
     val mountsFile = File(bugreportDir, "mounts.txt")
     val fileSystemsFile = File(bugreportDir, "filesystems.txt")
@@ -44,6 +46,7 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("tar -czf ${dropboxFile.absolutePath} -C /data/system/dropbox .").exec()
     shell.newJob().add("tar -czf ${pstoreFile.absolutePath} -C /sys/fs/pstore .").exec()
     shell.newJob().add("tar -czf ${diagFile.absolutePath} -C /data/vendor/diag .").exec()
+    shell.newJob().add("tar -czf ${opulsFile.absolutePath} -C /mnt/oplus/op2/media/log/boot_log/ .").exec()
     shell.newJob().add("tar -czf ${bootlogFile.absolutePath} -C /data/adb/ksu/log .").exec()
 
     shell.newJob().add("cat /proc/1/mountinfo > ${mountsFile.absolutePath}").exec()
@@ -86,6 +89,8 @@ fun getBugreportFile(context: Context): File {
         pw.println("KernelSU: $ksuKernel")
         val safeMode = Natives.isSafeMode
         pw.println("SafeMode: $safeMode")
+        val lkmMode = Natives.isLkmMode
+        pw.println("LKM: $lkmMode")
     }
 
     // modules

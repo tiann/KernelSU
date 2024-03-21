@@ -97,7 +97,8 @@ jobs:
 
       - name: Bot session cache
         id: bot_session_cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
+        if: false
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session
