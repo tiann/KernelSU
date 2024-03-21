@@ -53,16 +53,11 @@ static inline bool is_allow_su()
 	return ksu_is_allow_uid(current_uid().val);
 }
 
-static inline bool is_isolated_uid(uid_t uid)
+static inline bool is_unsupported_uid(uid_t uid)
 {
-#define FIRST_ISOLATED_UID 99000
-#define LAST_ISOLATED_UID 99999
-#define FIRST_APP_ZYGOTE_ISOLATED_UID 90000
-#define LAST_APP_ZYGOTE_ISOLATED_UID 98999
+#define LAST_APPLICATION_UID 19999
 	uid_t appid = uid % 100000;
-	return (appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID) ||
-	       (appid >= FIRST_APP_ZYGOTE_ISOLATED_UID &&
-		appid <= LAST_APP_ZYGOTE_ISOLATED_UID);
+	return appid < LAST_APPLICATION_UID;
 }
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
@@ -220,8 +215,8 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	// always ignore isolated app uid
-	if (is_isolated_uid(current_uid().val)) {
+	// always ignore unsupported app uid, such as isolated uid, sdk sandbox uid
+	if (is_unsupported_uid(current_uid().val)) {
 		return 0;
 	}
 
@@ -573,7 +568,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	if (!is_appuid(new_uid) || is_isolated_uid(new_uid.val)) {
+	if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
 		// pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
 		return 0;
 	}
