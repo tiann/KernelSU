@@ -1,0 +1,22 @@
+{
+    "id":"nethunter.root",
+    "name":"Kali NetHunter",
+    "author":"cachiusa",
+    "description":"Required permissions for Kali NetHunter app to chroot",
+    "namespace":"INHERITED",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "capabilities":[
+        "CAP_DAC_OVERRIDE",
+        "CAP_DAC_READ_SEARCH",
+        "CAP_SYS_CHROOT",
+        "CAP_SYS_PTRACE",
+        "CAP_SYS_ADMIN"
+        "CAP_SETGID",
+    ],
+    "context":"u:r:su:s0",
+    "rules":[""]
+}

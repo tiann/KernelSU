@@ -40,6 +40,11 @@ But if you encounter a boot loop when integrated KernelSU, it is maybe *kprobe i
 comment out `ksu_enable_sucompat()` and `ksu_enable_ksud()` in `KernelSU/kernel/ksu.c`, if the device boots normally, then kprobe may be broken.
 :::
 
+:::info How to get module umount feature working on pre-GKI?
+
+If your kernel is older than 5.9, you should backport `path_umount` to `fs/namespace.c`. This is required to get module umount feature working. If you don't backport `path_umount`, module umount feature won't work. You can get more info on how to achieve this at the end of this page.
+:::
+
 ## Manually modify the kernel source
 
 If kprobe does not work in your kernel (may be an upstream or kernel bug below 4.8), then you can try this way:
@@ -290,6 +295,55 @@ index 45306f9ef247..815091ebfca4 100755
  
  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
  		add_input_randomness(type, code, value);
+```
+
+### How to backport path_umount
+
+You can get module umount feature working on pre-GKI kernels by manually backporting ```path_umount``` from 5.9. You can use this patch as reference:
+
+```diff
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1739,6 +1739,39 @@ static inline bool may_mandlock(void)
+ }
+ #endif
+
++static int can_umount(const struct path *path, int flags)
++{
++	struct mount *mnt = real_mount(path->mnt);
++
++	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
++		return -EINVAL;
++	if (!may_mount())
++		return -EPERM;
++	if (path->dentry != path->mnt->mnt_root)
++		return -EINVAL;
++	if (!check_mnt(mnt))
++		return -EINVAL;
++	if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */
++		return -EINVAL;
++	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	return 0;
++}
++
++int path_umount(struct path *path, int flags)
++{
++	struct mount *mnt = real_mount(path->mnt);
++	int ret;
++
++	ret = can_umount(path, flags);
++	if (!ret)
++		ret = do_umount(mnt, flags);
++
++	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
++	dput(path->dentry);
++	mntput_no_expire(mnt);
++	return ret;
++}
+ /*
+  * Now umount can handle mount points as well as block devices.
+  * This is important for filesystems which use unnamed block devices.
 ```
 
 Finally, build your kernel again, KernelSU should work well.

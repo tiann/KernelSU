@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name" translatable="false">KernelSU</string>
     <string name="home">Ana Sayfa</string>
-    <string name="home_not_installed">Yüklenmedi</string>
-    <string name="home_click_to_install">Yüklemek için tıklayın</string>
+    <string name="home_not_installed">Kurulmadı</string>
+    <string name="home_click_to_install">Kurmak için tıklayın</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
     <string name="home_superuser_count">Süper kullanıcılar: %d</string>
@@ -21,11 +21,11 @@
     <string name="superuser">Süper kullanıcı</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
-    <string name="module_empty">Yüklü modül yok</string>
+    <string name="module_empty">Kurulu modül yok</string>
     <string name="module">Modül</string>
     <string name="uninstall">Kaldır</string>
-    <string name="module_install">Yükle</string>
-    <string name="install">Yükle</string>
+    <string name="module_install">Kur</string>
+    <string name="install">Kur</string>
     <string name="reboot">Cihazı yeniden başlat</string>
     <string name="settings">Ayarlar</string>
     <string name="reboot_userspace">Hızlı yeniden başlat</string>
@@ -52,7 +52,7 @@
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="about_source_code">Kaynak kodunu %1$s\'tan görüntüleyin<br/>%2$s kanalımıza katılın</string>
+    <string name="about_source_code">%1$s adresinde kaynak kodunu görüntüleyin<br/>%2$s kanalımıza katılın</string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
     <string name="profile_template">Şablon</string>
@@ -108,4 +108,13 @@
     <string name="settings_check_update_summary">Uygulamayı açarken güncellemeleri otomatik denetle</string>
     <string name="grant_root_failed">Root izni verilemedi!</string>
     <string name="open">Aç</string>
+    <string name="enable_web_debugging">Web Görünümü Hata Ayıklamasını Etkinleştir</string>
+    <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
+    <string name="direct_install">Doğrudan Kur (Tavsiye Edilen)</string>
+    <string name="select_file">Bir Dosya Seçin</string>
+    <string name="install_inactive_slot">Etkin Olmayan Yuvaya Kur (OTA\'dan Sonra)</string>
+    <string name="install_inactive_slot_warning">Aygıtınız yeniden başlatıldıktan sonra geçerli etkin olmayan yuvaya **ZORLA** önyükleme yapılacaktır!
+\nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
+\nDevam edilsin mi?</string>
+    <string name="install_next">Sonraki</string>
 </resources>

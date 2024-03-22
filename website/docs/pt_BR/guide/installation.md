@@ -34,7 +34,7 @@ Especificamente, para dispositivos GKI, o formato da versão do kernel deve ser 
 ```txt
 KernelRelease :=
 Version.PatchLevel.SubLevel-AndroidRelease-KmiGeneration-suffix
-w      .x         .y       -zzz           -k            -something
+w      .x         .y       -zzz           -k            -alguma coisa
 ```
 
 `w.x-zzz-k` é a versão KMI. Por exemplo, se a versão do kernel de um dispositivo for `5.10.101-android12-9-g30979850fc20`, então seu KMI será `5.10-android12-9`. Teoricamente, ele pode inicializar normalmente com outros kernels KMI.
@@ -70,11 +70,11 @@ Se o `boot.img` do seu dispositivo usa um formato de compactação comumente usa
 
 ### Encontre o boot.img adequado
 
-O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve liberar o boot.img para a partição boot do dispositivo.
+O KernelSU fornece um boot.img genérico para dispositivos GKI e você deve flashar o boot.img para a partição boot do dispositivo.
 
-Você pode baixar o boot.img em [GitHub Release](https://github.com/tiann/KernelSU/releases), por favor, observe que você deve usar a versão correta do boot.img. Se você não sabe qual arquivo baixar, leia atentamente a descrição de [KMI](#kmi) e [Nível do patch de segurança](#security-patch-level) neste documento.
+Você pode baixar o boot.img em [GitHub Release](https://github.com/tiann/KernelSU/releases), por favor, observe que você deve usar a versão correta do boot.img. Se você não sabe qual arquivo baixar, leia atentamente a descrição do [KMI](#kmi) e [Nível do patch de segurança](#security-patch-level) neste documento.
 
-Normalmente, existem três arquivos de inicialização em formatos diferentes no mesmo KMI e nível do patch de segurança. Eles são todos iguais, exceto pelo formato de compactação do kernel. Por favor, verifique o formato de compactação do kernel de seu boot.img original. Você deve usar o formato correto, como `lz4`, `gz`. Se você usar um formato de compactação incorreto, poderá encontrar bootloop após flashar o boot.img.
+Normalmente, existem três arquivos de inicialização em formatos diferentes no mesmo KMI e nível do patch de segurança. Eles são todos iguais, exceto pelo formato de compactação do kernel. Por favor, verifique o formato de compactação do kernel de seu boot.img original. Você deve usar o formato correto, como `lz4` ou `gz`. Se você usar um formato de compactação incorreto, poderá encontrar bootloop após flashar o boot.img.
 
 ::: info INFORMAÇÕES
 1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; é claro que você também pode perguntar a outras pessoas mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda, portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
@@ -106,13 +106,13 @@ fastboot reboot
 
 Etapa:
 
-1. Baixe o zip AnyKernel3. Se você não sabe qual arquivo baixar, leia atentamente a descrição de [KMI](#kmi) e [Nível do patch de segurança](#security-patch-level) neste documento.
-2. Abra o app Kernel Flash (conceda as permissões de root necessárias) e use o zip AnyKernel3 fornecido para fazer o flash.
+1. Baixe o zip AnyKernel3. Se você não sabe qual arquivo baixar, leia atentamente a descrição do [KMI](#kmi) e [Nível do patch de segurança](#security-patch-level) neste documento.
+2. Abra o app Kernel Flasher (conceda as permissões de root necessárias) e use o ZIP AnyKernel3 fornecido para fazer o flash.
 
 Dessa forma, é necessário que o app Kernel Flasher tenha permissões root. Você pode usar os seguintes métodos para conseguir isso:
 
 1. Seu dispositivo está rooteado. Por exemplo, você instalou o KernelSU e deseja atualizar para a versão mais recente ou fez o root por meio de outros métodos (como Magisk).
-2. Se o seu telefone não estiver rooteado, mas o telefone suportar o método de inicialização temporária de `fastboot boot boot.img`, você pode usar a imagem GKI fornecida pelo KernelSU para inicializar temporariamente o seu dispositivo, obter permissões de root temporária e, em seguida, usar o Kernel Flasher para obter privilégios de root permanente.
+2. Se o seu telefone não estiver rooteado, mas o telefone suportar o método de inicialização temporária como `fastboot boot boot.img`, você pode usar a imagem GKI fornecida pelo KernelSU para inicializar temporariamente o seu dispositivo, obter permissões de root temporária e, em seguida, usar o Kernel Flasher para obter privilégios de root permanente.
 
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
@@ -138,7 +138,7 @@ Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamen
 ### Preparação
 
 1. Obtenha o boot.img padrão do telefone. Você pode obtê-lo com os fabricantes do seu dispositivo Talvez você precise do [payload-dumper-go](https://github.com/ssut/payload-dumper-go).
-2. Baixe o arquivo zip AnyKernel3 fornecido pelo KernelSU que corresponde à versão KMI do seu dispositivo. Você pode consultar [Instalar com Recovery personalizado](#install-with-custom-recovery).
+2. Baixe o arquivo ZIP AnyKernel3 fornecido pelo KernelSU que corresponde à versão KMI do seu dispositivo. Você pode consultar [Instalar com Recovery personalizado](#install-with-custom-recovery).
 3. Descompacte o pacote AnyKernel3 e obtenha o arquivo `Image`, que é o arquivo do kernel do KernelSU.
 
 ### Usando o magiskboot em dispositivos Android {#using-magiskboot-on-Android-devices}
@@ -171,11 +171,11 @@ Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP. S
 
 Etapa:
 
-1. Na [página de lançamento](https://github.com/tiann/KernelSU/releases) do KernelSU, baixe o pacote zip começando com AnyKernel3 que corresponde à versão do seu telefone; por exemplo, a versão do kernel do telefone é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
+1. Em [GitHub Releases](https://github.com/tiann/KernelSU/releases), baixe o pacote ZIP começando com AnyKernel3 que corresponde à versão do seu telefone. Por exemplo, a versão do kernel do telefone é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
 2. Reinicie o telefone no TWRP.
-3. Use o adb para colocar AnyKernel3-*.zip no telefone /sdcard e escolha instalá-lo na interface do TWRP; ou você pode diretamente `adb sideload AnyKernel-*.zip` para instalar.
+3. Use o ADB para colocar AnyKernel3-*.zip no telefone em /sdcard e escolha instalá-lo na interface do TWRP, ou você pode diretamente `adb sideload AnyKernel-*.zip` para instalar.
 
-PS. Este método é adequado para qualquer instalação (não limitado à instalação inicial ou atualizações subsequentes), desde que você use TWRP.
+PS. Este método é adequado para qualquer instalação (não limitado à instalação inicial ou atualizações subsequentes), desde que você use o TWRP.
 
 ## Outros métodos
 

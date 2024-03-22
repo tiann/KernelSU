@@ -21,22 +21,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - sub_level: 66
-            os_patch_level: 2022-01
-          - sub_level: 81
-            os_patch_level: 2022-03
-          - sub_level: 101
-            os_patch_level: 2022-05
-          - sub_level: 110
-            os_patch_level: 2022-07
-          - sub_level: 117
-            os_patch_level: 2022-09
-          - sub_level: 136
-            os_patch_level: 2022-11
-          - sub_level: 149
-            os_patch_level: 2023-01
-          - sub_level: 160
-            os_patch_level: 2023-03
           - sub_level: 168
             os_patch_level: 2023-05
           - sub_level: 177
@@ -45,6 +29,8 @@ jobs:
             os_patch_level: 2023-09
           - sub_level: 198
             os_patch_level: 2024-01
+          - sub_level: 205
+            os_patch_level: 2024-03
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -97,7 +83,8 @@ jobs:
 
       - name: Bot session cache
         id: bot_session_cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
+        if: false
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session

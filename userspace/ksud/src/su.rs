@@ -17,10 +17,6 @@ use rustix::{
     thread::{set_thread_res_gid, set_thread_res_uid, Gid, Uid},
 };
 
-const EVENT_POST_FS_DATA: u64 = 1;
-const EVENT_BOOT_COMPLETED: u64 = 2;
-const EVENT_MODULE_MOUNTED: u64 = 3;
-
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn grant_root(global_mnt: bool) -> Result<()> {
     const KERNEL_SU_OPTION: u32 = 0xDEAD_BEEF;
@@ -83,12 +79,12 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
     }
 }
 
-#[cfg(not(unix))]
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn root_shell() -> Result<()> {
     unimplemented!()
 }
 
-#[cfg(unix)]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
 
@@ -221,7 +217,7 @@ pub fn root_shell() -> Result<()> {
         let name = &matches.free[free_idx];
         uid = unsafe {
             #[cfg(target_arch = "aarch64")]
-            let pw = libc::getpwnam(name.as_ptr() as *const u8).as_ref();
+            let pw = libc::getpwnam(name.as_ptr()).as_ref();
             #[cfg(target_arch = "x86_64")]
             let pw = libc::getpwnam(name.as_ptr() as *const i8).as_ref();
 
@@ -302,44 +298,4 @@ fn add_path_to_env(path: &str) -> Result<()> {
     let new_path_env = env::join_paths(paths)?;
     env::set_var("PATH", new_path_env);
     Ok(())
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn get_version() -> i32 {
-    rustix::process::ksu_get_version()
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn get_version() -> i32 {
-    0
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-fn report_event(event: u64) {
-    rustix::process::ksu_report_event(event)
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn report_event(_event: u64) {}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn check_kernel_safemode() -> bool {
-    rustix::process::ksu_check_kernel_safemode()
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn check_kernel_safemode() -> bool {
-    false
-}
-
-pub fn report_post_fs_data() {
-    report_event(EVENT_POST_FS_DATA);
-}
-
-pub fn report_boot_complete() {
-    report_event(EVENT_BOOT_COMPLETED);
-}
-
-pub fn report_module_mounted() {
-    report_event(EVENT_MODULE_MOUNTED);
 }

@@ -22,14 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # cross build failed after Rust 1.68, see https://github.com/cross-rs/cross/issues/1222
-      - run: rustup default 1.67.0
+      - run: rustup update --force-non-host stable-x86_64-unknown-linux-gnu
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: userspace/ksud
 
       - name: Install cross
-        run: cargo install cross --locked
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
 
       - name: Run clippy
         run: |

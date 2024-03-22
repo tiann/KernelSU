@@ -2,10 +2,11 @@ name: Build Manager
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths:
       - '.github/workflows/build-manager.yml'
       - 'manager/**'
+      - 'kernel/**'
       - 'userspace/ksud/**'
   pull_request:
     branches: [ "main" ]
@@ -14,7 +15,12 @@ on:
   workflow_call:
 
 jobs:
+  build-lkm:
+    uses: ./.github/workflows/build-lkm.yml
+    secrets: inherit
+
   build-ksud:
+    needs: build-lkm
     strategy:
       matrix:
         include:
@@ -66,7 +72,7 @@ jobs:
           java-version: "17"
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-home-cache-cleanup: true
 
@@ -102,12 +108,14 @@ jobs:
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         with:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
 
       - name: Upload mappings
         uses: actions/upload-artifact@v4
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         with:
           name: "mappings"
           path: "manager/app/build/outputs/mapping/release/"

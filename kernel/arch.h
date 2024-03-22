@@ -20,8 +20,14 @@
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #define PRCTL_SYMBOL "__arm64_sys_prctl"
+#define SYS_READ_SYMBOL "__arm64_sys_read"
+#define SYS_NEWFSTATAT_SYMBOL "__arm64_sys_newfstatat"
+#define SYS_FACCESSAT_SYMBOL "__arm64_sys_faccessat"
 #else
 #define PRCTL_SYMBOL "sys_prctl"
+#define SYS_READ_SYMBOL "sys_read"
+#define SYS_NEWFSTATAT_SYMBOL "sys_newfstatat"
+#define SYS_FACCESSAT_SYMBOL "sys_faccessat"
 #endif
 
 #elif defined(__x86_64__)
@@ -41,8 +47,14 @@
 #define __PT_IP_REG ip
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #define PRCTL_SYMBOL "__x64_sys_prctl"
+#define SYS_READ_SYMBOL "__x64_sys_read"
+#define SYS_NEWFSTATAT_SYMBOL "__x64_sys_newfstatat"
+#define SYS_FACCESSAT_SYMBOL "__x64_sys_faccessat"
 #else
 #define PRCTL_SYMBOL "sys_prctl"
+#define SYS_READ_SYMBOL "sys_read"
+#define SYS_NEWFSTATAT_SYMBOL "sys_newfstatat"
+#define SYS_FACCESSAT_SYMBOL "sys_faccessat"
 #endif
 
 #else

@@ -43,7 +43,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
-import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
+import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.screen.destinations.WebScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -81,7 +81,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 val data = it.data ?: return@rememberLauncherForActivityResult
                 val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                navigator.navigate(InstallScreenDestination(uri))
+                navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(uri)))
 
                 viewModel.markNeedRefresh()
 
@@ -123,7 +123,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         .fillMaxSize(),
                     onInstallModule =
                     {
-                        navigator.navigate(InstallScreenDestination(it))
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
                     }, onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             navigator.navigate(WebScreenDestination(id, name))

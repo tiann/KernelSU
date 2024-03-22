@@ -29,7 +29,7 @@ on:
           for example: 2021-11
         default: 2022-05
       patch_path:
-        required: true
+        required: false
         type: string
         description: >
           Directory name of .github/patches/<patch_path>
@@ -46,6 +46,10 @@ on:
           Artifact name of prebuilt ksud to be embedded
           for example: ksud-aarch64-linux-android
       debug:
+        required: false
+        type: boolean
+        default: false
+      build_lkm:
         required: false
         type: boolean
         default: false
@@ -124,13 +128,15 @@ jobs:
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
-          grep -q "kernelsu" $DRIVER_MAKEFILE || echo "obj-y += kernelsu/" >> $DRIVER_MAKEFILE
+          DRIVER_KCONFIG=$GKI_ROOT/common/drivers/Kconfig
+          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
+          grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
           if [ "$IS_DEBUG_KERNEL" = "true" ]; then
             echo "[+] Enable debug features for kernel"
-            echo "ccflags-y += -DCONFIG_KSU_DEBUG" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
+            printf "\nccflags-y += -DCONFIG_KSU_DEBUG\n" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
           fi
           repo status
           echo "[+] KernelSU setup done."
@@ -154,6 +160,34 @@ jobs:
           max-size: 2G
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
+      - name: Setup for LKM
+        if: ${{ inputs.build_lkm == true }}
+        working-directory: android-kernel
+        run: |
+          pip install ast-grep-cli
+          sudo apt-get install llvm-15 -y
+          ast-grep -U -p '$$$ check_exports($$$) {$$$}' -r '' common/scripts/mod/modpost.c
+          ast-grep -U -p 'check_exports($$$);' -r '' common/scripts/mod/modpost.c
+          sed -i '/config KSU/,/help/{s/default y/default m/}' common/drivers/kernelsu/Kconfig
+          echo "drivers/kernelsu/kernelsu.ko" >> common/android/gki_aarch64_modules
+
+          # bazel build, android14-5.15, android14-6.1 use bazel
+          if [ ! -e build/build.sh ]; then
+            sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
+            if [ -e common/modules.bzl ]; then
+              sed -i 's/_COMMON_GKI_MODULES_LIST = \[/_COMMON_GKI_MODULES_LIST = \[ "drivers\/kernelsu\/kernelsu.ko",/g' common/modules.bzl
+            fi
+          else
+            TARGET_FILE="build/kernel/build.sh"
+            if [ ! -e "$TARGET_FILE" ]; then
+              TARGET_FILE="build/build.sh"
+            fi
+            sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' $TARGET_FILE || echo "No unknown symbol in $TARGET_FILE"
+            sed -i 's/if ! diff -u "\${KERNEL_DIR}\/\${MODULES_ORDER}" "\${OUT_DIR}\/modules\.order"; then/if false; then/g' $TARGET_FILE
+            sed -i 's@${ROOT_DIR}/build/abi/compare_to_symbol_list@echo@g' $TARGET_FILE
+            sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
+          fi
+
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
         run: |
@@ -163,7 +197,7 @@ jobs:
           cd common/ && git add -A && git commit -a -m "Add KernelSU"
           repo status
 
-      - name: Build boot.img
+      - name: Build Kernel/LKM
         working-directory: android-kernel
         run: |
           if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
@@ -184,20 +218,34 @@ jobs:
             OUTDIR=android-kernel/dist
           fi
           mkdir output
-          cp $OUTDIR/Image ./output/
-          cp $OUTDIR/Image.lz4 ./output/
-          git clone https://github.com/Kernel-SU/AnyKernel3
-          rm -rf ./AnyKernel3/.git
-          cp $OUTDIR/Image ./AnyKernel3/
+          if [ "${{ inputs.build_lkm}}" = "true" ]; then 
+            llvm-strip-15 -d $OUTDIR/kernelsu.ko
+            mv $OUTDIR/kernelsu.ko ./output/${{ inputs.version }}_kernelsu.ko
+          else
+            cp $OUTDIR/Image ./output/
+            cp $OUTDIR/Image.lz4 ./output/
+            git clone https://github.com/Kernel-SU/AnyKernel3
+            rm -rf ./AnyKernel3/.git
+            cp $OUTDIR/Image ./AnyKernel3/
+          fi
 
       - name: Upload Image and Image.gz
         uses: actions/upload-artifact@v4
+        if: ${{ inputs.build_lkm == false }}
         with:
           name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./output/*
 
       - name: Upload AnyKernel3
+        if: ${{ inputs.build_lkm == false }}
         uses: actions/upload-artifact@v4
         with:
           name: AnyKernel3-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./AnyKernel3/*
+
+      - name: Upload LKM
+        uses: actions/upload-artifact@v4
+        if: ${{ inputs.build_lkm == true }}
+        with:
+          name: ${{ inputs.version }}-lkm
+          path: ./output/*_kernelsu.ko
