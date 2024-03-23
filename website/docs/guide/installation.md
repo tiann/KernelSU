@@ -57,7 +57,98 @@ If you find that your kernel version is `android12-5.10.101`, but your Android s
 
 ## Introduction
 
-There are several installation methods for KernelSU, each suitable for a different scenario, so please choose as needed.
+Since version `0.9.0`, KernelSU supports two running modes on GKI devices:
+
+1. `GKI`: Replace the original kernel of the device with the **Generic Kernel Image** (GKI) provided by KernelSU.
+2. `LKM`: Load the **Loadable Kernel Module** (LKM) into the device kernel without replacing the original kernel.
+
+These two modes are suitable for different scenarios, and you can choose according to your needs.
+
+### GKI Mode {#gki-mode}
+
+In GKI mode, the original kernel of the device will be replaced with the generic kernel image provided by KernelSU. The advantages of GKI mode are:
+
+1. Strong universality, suitable for most devices; for example, Samsung has enabled KNOX devices, and LKM mode cannot operate. There are also some niche modified devices that can only use GKI mode;
+2. Can be used without relying on official firmware; no need to wait for official firmware updates, as long as the KMI is consistent, it can be used;
+
+### LKM Mode {#lkm-mode}
+
+In LKM mode, the original kernel of the device will not be replaced, but the loadable kernel module will be loaded into the device kernel. The advantages of LKM mode are:
+
+1. Will not replace the original kernel of the device; if you have special requirements for the original kernel of the device, or you want to use KernelSU while using a third-party kernel, you can use LKM mode;
+2. It is more convenient to upgrade and OTA; when upgrading KernelSU, you can directly install it in the manager without manually flashing; after the system OTA, you can directly install it to the second slot without manually flashing;
+3. Suitable for some special scenarios; for example, LKM can also be loaded with temporary ROOT permissions. Since it does not need to replace the boot partition, it will not trigger avb and will not cause the device to be bricked;
+4. LKM can be temporarily uninstalled; if you want to temporarily cancel root, you can uninstall LKM, this process does not require flashing partitions, or even rebooting the device; if you want to root again, just reboot the device;
+
+:::tip Coexistence of two modes
+After opening the manager, you can see the current mode of the device on the homepage; note that the priority of GKI mode is higher than that of LKM. For example, if you use GKI kernel to replace the original kernel, and use LKM to patch the GKI kernel, then LKM will be ignored, and the device will always run in GKI mode.
+:::
+
+### Which one to choose? {#which-one}
+
+If your device is a mobile phone, we recommend that you prioritize LKM mode; if your device is an emulator, WSA, or Waydroid, we recommend that you prioritize GKI mode.
+
+## LKM Installation
+
+### Get the official firmware
+
+To use LKM mode, you need to get the official firmware and then patch it on the basis of the official firmware; if you use a third-party kernel, you can use the `boot.img` of the third-party kernel as the official firmware.
+
+There are many ways to get the official firmware. If your device supports `fastboot boot`, then we recommend **the most recommended and simplest** method is to use `fastboot boot` to temporarily boot the GKI kernel provided by KernelSU, then install the manager, and finally install it directly in the manager; this method does not require you to manually download the official firmware, nor do you need to manually extract the boot.
+
+If your device does not support `fastboot boot`, then you may need to manually download the official firmware package and then extract the boot from it.
+
+Unlike GKI mode, LKM mode will modify the `ramdisk`, so on devices with Android 13, it needs to patch the `init_boot` partition instead of the `boot` partition; while GKI mode always operates the `boot` partition.
+
+### Use the manager
+
+Open the manager, click the installation icon in the upper right corner, and several options will appear:
+
+1. Select and patch a file; if your phone does not have root permissions, you can choose this option, and then select your official firmware, and the manager will automatically patch it; you only need to flash this patched file to permanently obtain root permissions;
+2. Install directly; if your phone is already rooted, you can choose this option, the manager will automatically get your device information, and then automatically patch the official firmware, and then flash it; you can consider using `fastboot boot` KernelSU's GKI kernel to get temporary root and install the manager, and then use this option; this is also the main way to upgrade KernelSU;
+3. Install to another partition; if your device supports A/B partition, you can choose this option, the manager will automatically patch the official firmware, and then install it to another partition; this method is suitable for devices after OTA, you can directly install it to another partition after OTA, and then restart the device;
+
+### Use the command line
+
+If you don’t want to use the manager, you can also use the command line to install LKM; the `ksud` tool provided by KernelSU can help you quickly patch the official firmware and then flash it.
+
+This tool supports macOS, Linux, and Windows. You can download the corresponding version from [GitHub Release](https://github.com/tiann/KernelSU/releases).
+
+Usage: `ksud boot-patch` You can check the command line help for specific usage.
+
+```sh
+oriole:/ # ksud boot-patch -h
+Patch boot or init_boot images to apply KernelSU
+
+Usage: ksud boot-patch [OPTIONS]
+
+Options:
+  -b, --boot <BOOT>              boot image path, if not specified, will try to find the boot image automatically
+  -k, --kernel <KERNEL>          kernel image path to replace
+  -m, --module <MODULE>          LKM module path to replace, if not specified, will use the builtin one
+  -i, --init <INIT>              init to be replaced
+  -u, --ota                      will use another slot when boot image is not specified
+  -f, --flash                    Flash it to boot partition after patch
+  -o, --out <OUT>                output path, if not specified, will use current directory
+      --magiskboot <MAGISKBOOT>  magiskboot path, if not specified, will use builtin one
+      --kmi <KMI>                KMI version, if specified, will use the specified KMI
+  -h, --help                     Print help
+```
+
+A few options that need to be explained:
+
+1. The `--magiskboot` option can specify the path of magiskboot. If it is not specified, ksud will look for it in the environment variables; if you don’t know how to get magiskboot, you can check [here](#patch-boot-image);
+2. The `--kmi` option can specify the `KMI` version. If the kernel name of your device does not follow the KMI specification, you can specify it through this option;
+
+The most common usage is:
+
+```sh
+ksud boot-patch -b <boot.img> --kmi android13-5.10
+```
+
+## GKI mode Installation
+
+There are several installation methods for GKI mode, each suitable for a different scenario, so please choose as needed.
 
 1. Install with fastboot using the boot.img provided by KernelSU
 2. Install with a kernel flash app, such as KernelFlasher
@@ -76,7 +167,7 @@ You can download boot.img from [GitHub Release](https://github.com/tiann/KernelS
 
 Normally, there are three boot files in different formats under the same KMI and security patch level. They are all the same except for the kernel compression format. Please check the kernel compression format of your original boot.img. You should use the correct format, such as `lz4`, `gz`; if you use an incorrect compression format, you may encounter bootloop after flashing boot.
 
-::: info
+:::info Compression format of boot.img
 1. You can use magiskboot to get the compression format of your original boot; of course you can also ask other, more experienced kids with the same model as your device. Also, the compression format of the kernel usually does not change, so if you boot successfully with a certain compression format, you can try that format later.
 2. Xiaomi devices usually use `gz` or **uncompressed**.
 3. For Pixel devices, follow below instructions.
@@ -120,7 +211,7 @@ This way requires the kernel flash App to have root permissions. You can use the
 
 PS. This method is more convenient when upgrading KernelSU and can be done without a computer (backup first!). .
 
-## Patch boot.img manually
+## Patch boot.img manually{#patch-boot-image}
 
 For some devices, the boot.img format is not so common, such as not `lz4`, `gz` and uncompressed; the most typical is Pixel, its boot.img format is `lz4_legacy` compressed, ramdisk may be `gz` may also be `lz4_legacy` compression; at this time, if you directly flash the boot.img provided by KernelSU, the phone may not be able to boot; at this time, you can manually patch the boot.img to achieve.
 
