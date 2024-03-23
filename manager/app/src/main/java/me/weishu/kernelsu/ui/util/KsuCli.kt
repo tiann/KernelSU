@@ -257,6 +257,20 @@ fun isInitBoot(): Boolean {
         .toInt() >= Build.VERSION_CODES.TIRAMISU
 }
 
+fun getCurrentKmi(): String {
+    val shell = getRootShell()
+    val cmd = "boot-info supported-kmi"
+    return ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd")
+}
+
+fun getSupportedKmis(): List<String> {
+    val shell = getRootShell()
+    val cmd = "boot-info supported-kmi"
+    val out =
+        shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
+    return out.filter { it.isNotBlank() }.map { it.trim() }
+}
+
 fun overlayFsAvailable(): Boolean {
     val shell = getRootShell()
     // check /proc/filesystems
