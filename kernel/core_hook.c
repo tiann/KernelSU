@@ -215,13 +215,11 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
-	// always ignore unsupported app uid, such as isolated uid, sdk sandbox uid
-	if (is_unsupported_uid(current_uid().val)) {
-		return 0;
-	}
+	bool from_root = 0 == current_uid().val;
+	bool from_manager = is_manager();
 
-	static uid_t last_failed_uid = -1;
-	if (last_failed_uid == current_uid().val) {
+	if (!from_root && !from_manager) {
+		// only root or manager can access this interface
 		return 0;
 	}
 
@@ -230,7 +228,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 #endif
 
 	if (arg2 == CMD_BECOME_MANAGER) {
-		if (is_manager()) {
+		if (from_manager) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("become_manager: prctl reply error\n");
 			}
@@ -252,26 +250,23 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 	// Both root manager and root processes should be allowed to get version
 	if (arg2 == CMD_GET_VERSION) {
-		if (is_manager() || 0 == current_uid().val) {
-			u32 version = KERNEL_SU_VERSION;
-			if (copy_to_user(arg3, &version, sizeof(version))) {
-				pr_err("prctl reply error, cmd: %lu\n", arg2);
-			}
+		u32 version = KERNEL_SU_VERSION;
+		if (copy_to_user(arg3, &version, sizeof(version))) {
+			pr_err("prctl reply error, cmd: %lu\n", arg2);
+		}
 #ifdef MODULE
-			u32 is_lkm = 0x1;
+		u32 is_lkm = 0x1;
 #else
-			u32 is_lkm = 0x0;
+		u32 is_lkm = 0x0;
 #endif
-			if (arg4 &&
-			    copy_to_user(arg4, &is_lkm, sizeof(is_lkm))) {
-				pr_err("prctl reply error, cmd: %lu\n", arg2);
-			}
+		if (arg4 && copy_to_user(arg4, &is_lkm, sizeof(is_lkm))) {
+			pr_err("prctl reply error, cmd: %lu\n", arg2);
 		}
 		return 0;
 	}
 
 	if (arg2 == CMD_REPORT_EVENT) {
-		if (0 != current_uid().val) {
+		if (!from_root) {
 			return 0;
 		}
 		switch (arg3) {
@@ -304,7 +299,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (arg2 == CMD_SET_SEPOLICY) {
-		if (0 != current_uid().val) {
+		if (!from_root) {
 			return 0;
 		}
 		if (!handle_sepolicy(arg3, arg4)) {
@@ -317,9 +312,6 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (arg2 == CMD_CHECK_SAFEMODE) {
-		if (!is_manager() && 0 != current_uid().val) {
-			return 0;
-		}
 		if (ksu_is_safe_mode()) {
 			pr_warn("safemode enabled!\n");
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
@@ -330,57 +322,49 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	if (arg2 == CMD_GET_ALLOW_LIST || arg2 == CMD_GET_DENY_LIST) {
-		if (is_manager() || 0 == current_uid().val) {
-			u32 array[128];
-			u32 array_length;
-			bool success =
-				ksu_get_allow_list(array, &array_length,
-						   arg2 == CMD_GET_ALLOW_LIST);
-			if (success) {
-				if (!copy_to_user(arg4, &array_length,
-						  sizeof(array_length)) &&
-				    !copy_to_user(arg3, array,
-						  sizeof(u32) * array_length)) {
-					if (copy_to_user(result, &reply_ok,
-							 sizeof(reply_ok))) {
-						pr_err("prctl reply error, cmd: %lu\n",
-						       arg2);
-					}
-				} else {
-					pr_err("prctl copy allowlist error\n");
-				}
-			}
-		}
-		return 0;
-	}
-
-	if (arg2 == CMD_UID_GRANTED_ROOT || arg2 == CMD_UID_SHOULD_UMOUNT) {
-		if (is_manager() || 0 == current_uid().val) {
-			uid_t target_uid = (uid_t)arg3;
-			bool allow = false;
-			if (arg2 == CMD_UID_GRANTED_ROOT) {
-				allow = ksu_is_allow_uid(target_uid);
-			} else if (arg2 == CMD_UID_SHOULD_UMOUNT) {
-				allow = ksu_uid_should_umount(target_uid);
-			} else {
-				pr_err("unknown cmd: %lu\n", arg2);
-			}
-			if (!copy_to_user(arg4, &allow, sizeof(allow))) {
+		u32 array[128];
+		u32 array_length;
+		bool success = ksu_get_allow_list(array, &array_length,
+						  arg2 == CMD_GET_ALLOW_LIST);
+		if (success) {
+			if (!copy_to_user(arg4, &array_length,
+					  sizeof(array_length)) &&
+			    !copy_to_user(arg3, array,
+					  sizeof(u32) * array_length)) {
 				if (copy_to_user(result, &reply_ok,
 						 sizeof(reply_ok))) {
 					pr_err("prctl reply error, cmd: %lu\n",
 					       arg2);
 				}
 			} else {
-				pr_err("prctl copy err, cmd: %lu\n", arg2);
+				pr_err("prctl copy allowlist error\n");
 			}
 		}
 		return 0;
 	}
 
+	if (arg2 == CMD_UID_GRANTED_ROOT || arg2 == CMD_UID_SHOULD_UMOUNT) {
+		uid_t target_uid = (uid_t)arg3;
+		bool allow = false;
+		if (arg2 == CMD_UID_GRANTED_ROOT) {
+			allow = ksu_is_allow_uid(target_uid);
+		} else if (arg2 == CMD_UID_SHOULD_UMOUNT) {
+			allow = ksu_uid_should_umount(target_uid);
+		} else {
+			pr_err("unknown cmd: %lu\n", arg2);
+		}
+		if (!copy_to_user(arg4, &allow, sizeof(allow))) {
+			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
+				pr_err("prctl reply error, cmd: %lu\n", arg2);
+			}
+		} else {
+			pr_err("prctl copy err, cmd: %lu\n", arg2);
+		}
+		return 0;
+	}
+
 	// all other cmds are for 'root manager'
-	if (!is_manager()) {
-		last_failed_uid = current_uid().val;
+	if (!from_manager) {
 		return 0;
 	}
 
