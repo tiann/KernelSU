@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -79,7 +80,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    val currentKmi = remember { getCurrentKmi() }
+    val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
 
     val selectKmiDialog = rememberSelectKmiDialog { kmi ->
         kmi?.let {
@@ -107,17 +108,14 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         }
 
     val onLkmUpload = {
-        selectLkmLauncher.launch(
-            Intent(Intent.ACTION_GET_CONTENT).apply {
-                type = "application/octet-stream"
-            }
-        )
+        selectLkmLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "application/octet-stream"
+        })
     }
 
     Scaffold(topBar = {
         TopBar(
-            onBack = { navigator.popBackStack() },
-            onLkmUpload = onLkmUpload
+            onBack = { navigator.popBackStack() }, onLkmUpload = onLkmUpload
         )
     }) {
         Column(modifier = Modifier.padding(it)) {
@@ -130,8 +128,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
+                Button(modifier = Modifier.fillMaxWidth(),
                     enabled = installMethod != null,
                     onClick = {
                         onClickNext()
@@ -172,8 +169,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val rootAvailable = rootAvailable()
     val isAbDevice = isAbDevice()
     val selectFileTip = stringResource(
-        id = R.string.select_file_tip,
-        if (isInitBoot()) "init_boot" else "boot"
+        id = R.string.select_file_tip, if (isInitBoot()) "init_boot" else "boot"
     )
     val radioOptions =
         mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
@@ -209,11 +205,9 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 
         when (option) {
             is InstallMethod.SelectFile -> {
-                selectImageLauncher.launch(
-                    Intent(Intent.ACTION_GET_CONTENT).apply {
-                        type = "application/octet-stream"
-                    }
-                )
+                selectImageLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
+                    type = "application/octet-stream"
+                })
             }
 
             is InstallMethod.DirectInstall -> {
@@ -263,51 +257,43 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 @Composable
 fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
     return rememberCustomDialog { dismiss ->
-        val kmis = remember {
-            getSupportedKmis()
+        val supportedKmi by produceState(initialValue = emptyList<String>()) {
+            value = getSupportedKmis()
         }
-        val options = kmis.map { value ->
+        val options = supportedKmi.map { value ->
             ListOption(
                 titleText = value
             )
         }
 
         var selection: String? = null
-        ListDialog(
-            state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                onSelected(selection)
-            }, onCloseRequest = {
-                dismiss()
-            }),
-            header = Header.Default(
-                title = stringResource(R.string.select_kmi),
-            ),
-            selection = ListSelection.Single(
-                showRadioButtons = true,
-                options = options,
-            ) { _, option ->
-                selection = option.titleText
-            }
-        )
+        ListDialog(state = rememberUseCaseState(visible = true, onFinishedRequest = {
+            onSelected(selection)
+        }, onCloseRequest = {
+            dismiss()
+        }), header = Header.Default(
+            title = stringResource(R.string.select_kmi),
+        ), selection = ListSelection.Single(
+            showRadioButtons = true,
+            options = options,
+        ) { _, option ->
+            selection = option.titleText
+        })
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
-    TopAppBar(
-        title = { Text(stringResource(R.string.install)) },
-        navigationIcon = {
-            IconButton(
-                onClick = onBack
-            ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
-        },
-        actions = {
-            IconButton(onClick = onLkmUpload) {
-                Icon(Icons.Filled.FileUpload, contentDescription = null)
-            }
+    TopAppBar(title = { Text(stringResource(R.string.install)) }, navigationIcon = {
+        IconButton(
+            onClick = onBack
+        ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
+    }, actions = {
+        IconButton(onClick = onLkmUpload) {
+            Icon(Icons.Filled.FileUpload, contentDescription = null)
         }
-    )
+    })
 }
 
 @Composable

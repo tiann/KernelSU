@@ -10,6 +10,8 @@ import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.io.SuFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
@@ -270,17 +272,17 @@ fun isInitBoot(): Boolean {
         .toInt() >= Build.VERSION_CODES.TIRAMISU
 }
 
-fun getCurrentKmi(): String {
+suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val cmd = "boot-info current-kmi"
-    return ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd")
+    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd")
 }
 
-fun getSupportedKmis(): List<String> {
+suspend fun getSupportedKmis(): List<String> = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val cmd = "boot-info supported-kmi"
     val out = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
-    return out.filter { it.isNotBlank() }.map { it.trim() }
+    out.filter { it.isNotBlank() }.map { it.trim() }
 }
 
 fun overlayFsAvailable(): Boolean {
