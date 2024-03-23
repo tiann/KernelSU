@@ -41,7 +41,8 @@ pub fn copy_assets_to_file(name: &str, dst: impl AsRef<Path>) -> Result<()> {
 pub fn list_supported_kmi() -> Result<Vec<String>> {
     let mut list = Vec::new();
     for file in Asset::iter() {
-        if let Some(kmi) = file.strip_suffix(".ko") {
+    // kmi_name = "xxx_kernelsu.ko"
+        if let Some(kmi) = file.strip_suffix("_kernelsu.ko") {
             list.push(kmi.to_string());
         }
     }
