@@ -1,10 +1,10 @@
-# 模組 WebUI
+# 模組 WebUI {#module-webui}
 
 KernelSU 的模組除了執行啟動腳本和修改系統檔案之外，還支援顯示 UI 介面和與使用者互動。
 
 該模組可以透過任何 Web 技術編寫HTML + CSS + JavaScript頁面。 KernelSU的管理器將透過 WebView 顯示這些頁面。它還提供了一些用於與系統互動的JavaScript API，例如執行shell命令。
 
-## WebUI 根目錄
+## WebUI 根目錄 {#webroot-directory}
 
 Web資源應放置在模組根目錄的`webroot`子目錄中，並且其中**必須**有一個名為`index.html`的文件，該檔案是模組頁面入口。
 
