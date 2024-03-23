@@ -25,12 +25,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.installModule
@@ -140,7 +142,8 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 
 @Parcelize
 sealed class FlashIt : Parcelable {
-    data class FlashBoot(val bootUri: Uri? = null, val lkmUri: Uri? = null, val ota: Boolean) : FlashIt()
+    data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean) :
+        FlashIt()
 
     data class FlashModule(val uri: Uri) : FlashIt()
 }
@@ -152,8 +155,8 @@ fun flashIt(
 ) {
     when (flashIt) {
         is FlashIt.FlashBoot -> installBoot(
-            flashIt.bootUri,
-            flashIt.lkmUri,
+            flashIt.boot,
+            flashIt.lkm,
             flashIt.ota,
             onFinish,
             onStdout,
@@ -188,5 +191,5 @@ private fun TopBar(onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
 @Preview
 @Composable
 fun InstallPreview() {
-//    InstallScreen(DestinationsNavigator(), uri = Uri.EMPTY)
+    InstallScreen(EmptyDestinationsNavigator)
 }

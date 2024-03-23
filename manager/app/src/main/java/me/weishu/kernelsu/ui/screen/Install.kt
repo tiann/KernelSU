@@ -33,11 +33,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.maxkeppeker.sheets.core.models.base.Header
+import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
+import com.maxkeppeler.sheets.list.ListDialog
+import com.maxkeppeler.sheets.list.models.ListOption
+import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.DialogHandle
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
+import me.weishu.kernelsu.ui.util.LkmSelection
+import me.weishu.kernelsu.ui.util.getCurrentKmi
+import me.weishu.kernelsu.ui.util.getSupportedKmis
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.isInitBoot
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -53,16 +64,36 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         mutableStateOf<InstallMethod?>(null)
     }
 
-    var lkmFileUri = null as Uri?
+    var lkmSelection by remember {
+        mutableStateOf<LkmSelection>(LkmSelection.KmiNone)
+    }
 
-    val onClickInstall = {
+    val onInstall = {
         installMethod?.let { method ->
             val flashIt = FlashIt.FlashBoot(
-                bootUri = if (method is InstallMethod.SelectFile) method.uri else null,
-                lkmUri = lkmFileUri,
+                boot = if (method is InstallMethod.SelectFile) method.uri else null,
+                lkm = lkmSelection,
                 ota = method is InstallMethod.DirectInstallToInactiveSlot
             )
             navigator.navigate(FlashScreenDestination(flashIt))
+        }
+    }
+
+    val currentKmi = remember { getCurrentKmi() }
+
+    val selectKmiDialog = rememberSelectKmiDialog { kmi ->
+        kmi?.let {
+            lkmSelection = LkmSelection.KmiString(it)
+            onInstall()
+        }
+    }
+
+    val onClickNext = {
+        if (lkmSelection == LkmSelection.KmiNone && currentKmi.isBlank()) {
+            // no lkm file selected and cannot get current kmi
+            selectKmiDialog.show()
+        } else {
+            onInstall()
         }
     }
 
@@ -70,7 +101,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
                 it.data?.data?.let { uri ->
-                    lkmFileUri = uri
+                    lkmSelection = LkmSelection.LkmUri(uri)
                 }
             }
         }
@@ -103,7 +134,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                     modifier = Modifier.fillMaxWidth(),
                     enabled = installMethod != null,
                     onClick = {
-                        onClickInstall()
+                        onClickNext()
                     }) {
                     Text(
                         stringResource(id = R.string.install_next),
@@ -122,12 +153,12 @@ sealed class InstallMethod {
         override val summary: String?
     ) : InstallMethod()
 
-    object DirectInstall : InstallMethod() {
+    data object DirectInstall : InstallMethod() {
         override val label: Int
             get() = R.string.direct_install
     }
 
-    object DirectInstallToInactiveSlot : InstallMethod() {
+    data object DirectInstallToInactiveSlot : InstallMethod() {
         override val label: Int
             get() = R.string.install_inactive_slot
     }
@@ -230,6 +261,39 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
+    return rememberCustomDialog { dismiss ->
+        val kmis = remember {
+            getSupportedKmis()
+        }
+        val options = kmis.map { value ->
+            ListOption(
+                titleText = value
+            )
+        }
+
+        var selection: String? = null
+        ListDialog(
+            state = rememberUseCaseState(visible = true, onFinishedRequest = {
+                onSelected(selection)
+            }, onCloseRequest = {
+                dismiss()
+            }),
+            header = Header.Default(
+                title = stringResource(R.string.select_kmi),
+            ),
+            selection = ListSelection.Single(
+                showRadioButtons = true,
+                options = options,
+            ) { _, option ->
+                selection = option.titleText
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
     TopAppBar(
         title = { Text(stringResource(R.string.install)) },
@@ -249,5 +313,5 @@ private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
 @Composable
 @Preview
 fun SelectInstall_Preview() {
-//    InstallScreen(DestinationsNavigator())
+    InstallScreen(EmptyDestinationsNavigator)
 }
