@@ -23,6 +23,155 @@ struct uid_data {
 	char package[KSU_MAX_PACKAGE_NAME];
 };
 
+static int get_pkg_from_apk_path(char *pkg, const char *path)
+{
+	int len = strlen(path);
+	if (len >= KSU_MAX_PACKAGE_NAME || len < 1)
+		return -1;
+
+	const char *last_slash = NULL;
+	const char *second_last_slash = NULL;
+
+	for (int i = len - 1; i >= 0; i--) {
+		if (path[i] == '/') {
+			if (!last_slash) {
+				last_slash = &path[i];
+			} else {
+				second_last_slash = &path[i];
+				break;
+			}
+		}
+	}
+
+	if (!last_slash || !second_last_slash)
+		return -1;
+
+	const char *last_hyphen = strchr(second_last_slash, '-');
+	if (!last_hyphen || last_hyphen > last_slash)
+		return -1;
+
+	int pkg_len = last_hyphen - second_last_slash - 1;
+	if (pkg_len >= KSU_MAX_PACKAGE_NAME || pkg_len <= 0)
+		return -1;
+
+	// Copying the package name
+	strncpy(pkg, second_last_slash + 1, pkg_len);
+	pkg[pkg_len] = '\0';
+
+	return 0;
+}
+
+static void crown_manager(const char *apk, struct list_head *uid_data)
+{
+	char pkg[KSU_MAX_PACKAGE_NAME];
+	if (get_pkg_from_apk_path(pkg, apk) < 0) {
+		pr_err("Failed to get package name from apk path: %s\n", apk);
+		return;
+	}
+
+	pr_info("manager pkg: %s\n", pkg);
+
+	struct list_head *list = (struct list_head *)uid_data;
+	struct uid_data *np;
+
+	list_for_each_entry (np, list, list) {
+		if (strncmp(np->package, pkg, KSU_MAX_PACKAGE_NAME) == 0) {
+			pr_info("Crowning manager: %s(uid=%d)\n", pkg, np->uid);
+			ksu_set_manager_uid(np->uid);
+			break;
+		}
+	}
+}
+
+struct my_dir_context {
+	struct dir_context ctx;
+	char *parent_dir;
+	void *private_data;
+	int depth;
+	int *stop;
+};
+
+int my_actor(struct dir_context *ctx, const char *name, int namelen, loff_t off,
+	     u64 ino, unsigned int d_type)
+{
+	struct my_dir_context *my_ctx =
+		container_of(ctx, struct my_dir_context, ctx);
+	struct file *file;
+	char *dirpath;
+
+	if (!my_ctx) {
+		pr_err("Invalid context\n");
+		return -EINVAL;
+	}
+	if (my_ctx->stop && *my_ctx->stop) {
+		return 1;
+	}
+
+	if (!strncmp(name, "..", namelen) || !strncmp(name, ".", namelen))
+		return 0; // Skip "." and ".."
+
+	dirpath = kmalloc(PATH_MAX, GFP_KERNEL);
+	if (!dirpath) {
+		return -ENOMEM; // Failed to obtain directory path
+	}
+	snprintf(dirpath, PATH_MAX, "%s/%.*s", my_ctx->parent_dir, namelen,
+		 name);
+
+	if (d_type == DT_DIR && my_ctx->depth > 0 &&
+	    (my_ctx->stop && !*my_ctx->stop)) {
+		struct my_dir_context sub_ctx = { .ctx.actor = my_actor,
+						  .parent_dir = dirpath,
+						  .private_data =
+							  my_ctx->private_data,
+						  .depth = my_ctx->depth - 1,
+						  .stop = my_ctx->stop };
+		file = ksu_filp_open_compat(dirpath, O_RDONLY, 0);
+		if (IS_ERR(file)) {
+			pr_err("Failed to open directory: %s, err: %d\n",
+			       dirpath, PTR_ERR(file));
+			kfree(dirpath);
+			return PTR_ERR(file);
+		}
+
+		iterate_dir(file, &sub_ctx.ctx);
+		filp_close(file, NULL);
+	} else {
+		if ((strlen(name) == strlen("base.apk")) &&
+		    (strncmp(name, "base.apk", strlen("base.apk")) == 0)) {
+			bool is_manager = is_manager_apk(dirpath);
+			pr_info("Found base.apk at path: %s, is_manager: %d\n",
+				dirpath, is_manager);
+			if (is_manager) {
+				crown_manager(dirpath, my_ctx->private_data);
+				*my_ctx->stop = 1;
+			}
+		}
+		kfree(dirpath);
+	}
+
+	return 0;
+}
+
+void search_manager(const char *path, int depth, struct list_head *uid_data)
+{
+	struct file *file;
+	int stop = 0;
+	struct my_dir_context ctx = { .ctx.actor = my_actor,
+				      .parent_dir = (char *)path,
+				      .private_data = uid_data,
+				      .depth = depth,
+				      .stop = &stop };
+
+	file = ksu_filp_open_compat(path, O_RDONLY, 0);
+	if (IS_ERR(file)) {
+		pr_err("Failed to open directory: %s\n", path);
+		return;
+	}
+
+	iterate_dir(file, &ctx.ctx);
+	filp_close(file, NULL);
+}
+
 static bool is_uid_exist(uid_t uid, char *package, void *data)
 {
 	struct list_head *list = (struct list_head *)data;
@@ -111,9 +260,13 @@ static void do_update_uid(struct work_struct *work)
 		}
 	}
 
-	if (!manager_exist && ksu_is_manager_uid_valid()) {
-		pr_info("manager is uninstalled, invalidate it!\n");
-		ksu_invalidate_manager_uid();
+	if (!manager_exist) {
+		if (ksu_is_manager_uid_valid()) {
+			pr_info("manager is uninstalled, invalidate it!\n");
+			ksu_invalidate_manager_uid();
+		}
+		pr_info("Searching manager...\n");
+		search_manager("/data/app", 2, &uid_list);
 	}
 
 	// then prune the allowlist

@@ -230,75 +230,12 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 #endif
 
 	if (arg2 == CMD_BECOME_MANAGER) {
-		// quick check
 		if (is_manager()) {
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("become_manager: prctl reply error\n");
 			}
 			return 0;
 		}
-		if (ksu_is_manager_uid_valid()) {
-#ifdef CONFIG_KSU_DEBUG
-			pr_info("manager already exist: %d\n",
-				ksu_get_manager_uid());
-#endif
-			return 0;
-		}
-
-		// someone wants to be root manager, just check it!
-		// arg3 should be `/data/user/<userId>/<manager_package_name>`
-		char param[128];
-		if (ksu_strncpy_from_user_nofault(param, arg3, sizeof(param)) ==
-		    -EFAULT) {
-#ifdef CONFIG_KSU_DEBUG
-			pr_err("become_manager: copy param err\n");
-#endif
-			goto block;
-		}
-
-		// for user 0, it is /data/data
-		// for user 999, it is /data/user/999
-		const char *prefix;
-		char prefixTmp[64];
-		int userId = current_uid().val / 100000;
-		if (userId == 0) {
-			prefix = "/data/data";
-		} else {
-			snprintf(prefixTmp, sizeof(prefixTmp), "/data/user/%d",
-				 userId);
-			prefix = prefixTmp;
-		}
-
-		if (startswith(param, (char *)prefix) != 0) {
-			pr_info("become_manager: invalid param: %s\n", param);
-			goto block;
-		}
-
-		// stat the param, app must have permission to do this
-		// otherwise it may fake the path!
-		struct path path;
-		if (kern_path(param, LOOKUP_DIRECTORY, &path)) {
-			pr_err("become_manager: kern_path err\n");
-			goto block;
-		}
-		uid_t inode_uid = path.dentry->d_inode->i_uid.val;
-		path_put(&path);
-		if (inode_uid != current_uid().val) {
-			pr_err("become_manager: path uid != current uid\n");
-			goto block;
-		}
-		char *pkg = param + strlen(prefix);
-		pr_info("become_manager: param pkg: %s\n", pkg);
-
-		bool success = become_manager(pkg);
-		if (success) {
-			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
-				pr_err("become_manager: prctl reply error\n");
-			}
-			return 0;
-		}
-	block:
-		last_failed_uid = current_uid().val;
 		return 0;
 	}
 
