@@ -188,7 +188,7 @@ static __always_inline bool check_v2_signature(char *path,
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.\n", path);
-		return PTR_ERR(fp);
+		return false;
 	}
 
 	// disable inotify for this file
@@ -239,7 +239,6 @@ static __always_inline bool check_v2_signature(char *path,
 		}
 		ksu_kernel_read_compat(fp, &id, 0x4, &pos); // id
 		offset = 4;
-		pr_info("id: 0x%08x\n", id);
 		if (id == 0x7109871au) {
 			v2_signing_blocks++;
 			v2_signing_valid =
@@ -251,6 +250,8 @@ static __always_inline bool check_v2_signature(char *path,
 		} else if (id == 0x1b93ad61u) {
 			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
 			v3_1_signing_exist = true;
+		} else {
+			pr_info("Unknown id: 0x%08x\n", id);
 		}
 		pos += (size8 - offset);
 	}

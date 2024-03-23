@@ -53,7 +53,7 @@ fn parse_kmi(version: &str) -> Result<String> {
     let re = Regex::new(r"(.* )?(\d+\.\d+)(\S+)?(android\d+)(.*)")?;
     let cap = re
         .captures(version)
-        .ok_or_else(|| anyhow::anyhow!("No match found"))?;
+        .ok_or_else(|| anyhow::anyhow!("Failed to get KMI from boot/modules"))?;
     let android_version = cap.get(4).map_or("", |m| m.as_str());
     let kernel_version = cap.get(2).map_or("", |m| m.as_str());
     Ok(format!("{android_version}-{kernel_version}"))
@@ -81,17 +81,17 @@ fn parse_kmi_from_modules() -> Result<String> {
             return parse_kmi(&line);
         }
     }
-    anyhow::bail!("Unknown KMI, try use --kmi to specify it.")
+    anyhow::bail!("Parse KMI from modules failed")
 }
 
 #[cfg(target_os = "android")]
-fn get_kmi() -> Result<String> {
+pub fn get_current_kmi() -> Result<String> {
     parse_kmi_from_uname().or_else(|_| parse_kmi_from_modules())
 }
 
 #[cfg(not(target_os = "android"))]
-fn get_kmi() -> Result<String> {
-    bail!("Unknown KMI, try use --kmi to specify it.")
+pub fn get_current_kmi() -> Result<String> {
+    bail!("Unsupported platform")
 }
 
 fn do_cpio_cmd(magiskboot: &Path, workding_dir: &Path, cmd: &str) -> Result<()> {
@@ -261,7 +261,11 @@ fn do_patch(
         std::fs::copy(kmod, kmod_file).with_context(|| "copy kernel module failed".to_string())?;
     } else {
         // If kmod is not specified, extract from assets
-        let kmi = if let Some(kmi) = kmi { kmi } else { get_kmi()? };
+        let kmi = if let Some(kmi) = kmi {
+            kmi
+        } else {
+            get_current_kmi().with_context(|| "Unknown KMI, please choose LKM manually")?
+        };
         println!("- KMI: {kmi}");
         let name = format!("{kmi}_kernelsu.ko");
         assets::copy_assets_to_file(&name, kmod_file)
@@ -331,8 +335,10 @@ fn do_patch(
         // if image is specified, write to output file
         let output_dir = out.unwrap_or(std::env::current_dir()?);
         let now = chrono::Utc::now();
-        let output_image =
-            output_dir.join(format!("kernelsu_boot_{}.img", now.format("%Y%m%d_%H%M%S")));
+        let output_image = output_dir.join(format!(
+            "kernelsu_patched_{}.img",
+            now.format("%Y%m%d_%H%M%S")
+        ));
 
         if std::fs::rename(&new_boot, &output_image).is_err() {
             std::fs::copy(&new_boot, &output_image)

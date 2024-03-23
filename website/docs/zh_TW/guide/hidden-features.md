@@ -1,4 +1,4 @@
-# 隱藏功能
+# 隱藏功能 {#hidden-features}
 
 ## .ksurc
 

@@ -87,12 +87,28 @@ enum Commands {
         #[arg(long, default_value = None)]
         kmi: Option<String>,
     },
+
+    /// Show boot information
+    BootInfo {
+        #[command(subcommand)]
+        command: BootInfo,
+    },
     /// For developers
     Debug {
         #[command(subcommand)]
         command: Debug,
     },
 }
+
+#[derive(clap::Subcommand, Debug)]
+enum BootInfo {
+    /// show current kmi version
+    CurrentKmi,
+
+    /// show supported kmi versions
+    SupportedKmi,
+}
+
 #[derive(clap::Subcommand, Debug)]
 enum Debug {
     /// Set the manager app, kernel CONFIG_KSU_DEBUG should be enabled.
@@ -322,6 +338,20 @@ pub fn run() -> Result<()> {
             magiskboot,
             kmi,
         } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi),
+
+        Commands::BootInfo { command } => match command {
+            BootInfo::CurrentKmi => {
+                let kmi = crate::boot_patch::get_current_kmi()?;
+                println!("{}", kmi);
+                // return here to avoid printing the error message
+                return Ok(());
+            }
+            BootInfo::SupportedKmi => {
+                let kmi = crate::assets::list_supported_kmi()?;
+                kmi.iter().for_each(|kmi| println!("{}", kmi));
+                return Ok(());
+            }
+        },
     };
 
     if let Err(e) = &result {
