@@ -33,12 +33,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./llvm
-          key: llvm-18.1.2
+          key: llvm-12.0.1
 
       - name: Setup LLVM
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "18.1.2"
+          version: "12.0.1"
           force-version: true
           ubuntu-version: "22.04"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
