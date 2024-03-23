@@ -102,8 +102,9 @@ struct my_dir_context {
 #define FILLDIR_ACTOR_STOP -EINVAL
 #endif
 
-FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int namelen, loff_t off,
-	     u64 ino, unsigned int d_type)
+FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
+			     int namelen, loff_t off, u64 ino,
+			     unsigned int d_type)
 {
 	struct my_dir_context *my_ctx =
 		container_of(ctx, struct my_dir_context, ctx);
@@ -138,7 +139,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int name
 						  .stop = my_ctx->stop };
 		file = ksu_filp_open_compat(dirpath, O_RDONLY, 0);
 		if (IS_ERR(file)) {
-			pr_err("Failed to open directory: %s, err: %d\n",
+			pr_err("Failed to open directory: %s, err: %ld\n",
 			       dirpath, PTR_ERR(file));
 			kfree(dirpath);
 			return FILLDIR_ACTOR_STOP;
