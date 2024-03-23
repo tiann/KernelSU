@@ -19,14 +19,14 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64]
-        version: ["5.10.178"]
+        version: ["5.10.213"]
         include:
           - arch: x86_64
             git_tag: chromeos-5.10-arcvm
             file_name: "bzImage"
 
     name: Build ChromeOS ARCVM kernel
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       LTO: thin
       ROOT_DIR: /
@@ -44,7 +44,7 @@ jobs:
 
           sudo ln -s --force python3 /usr/bin/python
 
-          export LLVM_VERSION=12
+          export LLVM_VERSION=18
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh $LLVM_VERSION
