@@ -53,7 +53,7 @@ fn parse_kmi(version: &str) -> Result<String> {
     let re = Regex::new(r"(.* )?(\d+\.\d+)(\S+)?(android\d+)(.*)")?;
     let cap = re
         .captures(version)
-        .ok_or_else(|| anyhow::anyhow!("No match found"))?;
+        .ok_or_else(|| anyhow::anyhow!("Unknown KMI, please choose manually."))?;
     let android_version = cap.get(4).map_or("", |m| m.as_str());
     let kernel_version = cap.get(2).map_or("", |m| m.as_str());
     Ok(format!("{android_version}-{kernel_version}"))
@@ -81,7 +81,7 @@ fn parse_kmi_from_modules() -> Result<String> {
             return parse_kmi(&line);
         }
     }
-    anyhow::bail!("Unknown KMI, try use --kmi to specify it.")
+    anyhow::bail!("Parse KMI from modules failed")
 }
 
 #[cfg(target_os = "android")]
@@ -332,7 +332,7 @@ fn do_patch(
         let output_dir = out.unwrap_or(std::env::current_dir()?);
         let now = chrono::Utc::now();
         let output_image =
-            output_dir.join(format!("kernelsu_boot_{}.img", now.format("%Y%m%d_%H%M%S")));
+            output_dir.join(format!("kernelsu_patched_{}.img", now.format("%Y%m%d_%H%M%S")));
 
         if std::fs::rename(&new_boot, &output_image).is_err() {
             std::fs::copy(&new_boot, &output_image)
