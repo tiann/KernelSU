@@ -1,4 +1,4 @@
-# App Profile
+# App Profile {#app-profile}
 
 App Profile 是 KernelSU 提供的一種針對各種應用程式自訂其使用配置的機制。
 
@@ -6,9 +6,9 @@ App Profile 是 KernelSU 提供的一種針對各種應用程式自訂其使用�
 
 對於沒有被授予 root 權限的普通應用，App Profile 可以控制核心以及模組系統對此應用的行為；例如是否需要針對此應用程式卸載模組造成的修改等。核心和模組系統可以透過此配置決定是否要做一些類似「隱藏痕跡」類別的操作。
 
-## Root Profile
+## Root Profile {#root-profile}
 
-### UID、GID 和 groups
+### UID、GID 和 groups {#uid-gid-and-groups}
 
 Linux 系統中有使用者和群組兩個概念。每個使用者都有一個使用者 ID(UID)，一個使用者可以屬於多個群組，每個群組也有群組 ID(GID)。此 ID 用於識別系統的使用者並確定使用者可以存取哪些系統資源。
 
@@ -39,7 +39,7 @@ App Profile 只是控制 root 應用程式使用 `su` 後的權限，它並非�
 
 與應用程式透過 `su` 主動切換使用者或群組不同，Root Profile 是在核心中強制實施的，不依賴 root 應用程式的自覺行為，`su` 權限的授予完全取決於使用者而非開發者。
 
-### Capabilities
+### Capabilities {#capabilities}
 
 Capabilities 是 Linux 的一種分權機制。
 
@@ -55,7 +55,7 @@ KernelSU 的 Root Profile 可以自訂執行 `su` 後 root 程式的 Capabilitie
 Linux 系統關於 Capability 的[官方文件](https://man7.org/linux/man-pages/man7/capabilities.7.html)，解釋了每一項Capability 所代表的能力，寫的非常詳細，如果你想要自訂Capabilities，請務必先閱讀此文件。
 :::
 
-### SELinux
+### SELinux {#selinux}
 
 SELinux 是一種強大的強制權限存取控制（MAC）機制。它按照**預設拒絕**的原則運作：任何未經明確允許的行為都會被拒絕。
 
@@ -87,7 +87,7 @@ allow app1 * * *
 
 注意：此處的 `allow app1 * * *` 僅僅作為演示方便而使用，實際過程中不應使用這個規則，因為它跟 permissive 區別不大。
 
-### 逃逸
+### 逃逸 {#escalation}
 
 如果 Root Profile 的配置不合理，那麼可能會發生逃逸的情況：Root Profile 的限制會意外失效。
 
@@ -102,9 +102,9 @@ allow app1 * * *
 如果你的確需要給 adb 授予 root 權限（例如你是開發者），那麼不建議你在配置 Root Profile 的時候將 UID 改成 `2000`，用 `1000(system)` 會更好。
 :::
 
-## Non Root Profile
+## Non Root Profile {#non-root-profile}
 
-### 卸載模組
+### 卸載模組 {#umount-modules}
 
 KernelSU 提供了一種 systemless 的方式來修改系統分區，這是透過掛載 overlayfs 來實現的。但有些情況下，App 可能會對這種行為比較敏感；因此，我們可以透過設定「卸載模組」來卸載掛載在這些應用程式上的模組。
 

@@ -49,7 +49,7 @@ w      .x         .y       -zzz           -k            -something
 
 如果您發現您的核心版本是 `android12-5.10.101`，然而您 Android 系統的版本為 Android 13 或者其他；請不要覺得奇怪，因為 Android 系統的版本與 Linux 核心的版本號碼並非一致；Linux 核心的版本號碼一般與**裝置出廠時隨附的 Android 系統的版本一致**，如果後續 Android 系統更新，核心版本一般不會發生變化。如果您需要刷新，**請以核心版本為準！！**
 
-## 安裝簡介 {#installation-introduction}
+## 安裝簡介 {#introduction}
 
 KernelSU 的安裝方法有以下幾種，各自適用於不同的場景，請視需要選擇：
 
