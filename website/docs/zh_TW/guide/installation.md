@@ -2,7 +2,7 @@
 
 ## 檢查您的裝置是否受支援 {#check-if-supported}
 
-從 [GitHub Releases](https://github.com/tiann/KernelSU/releases) 下載 KernelSU 管理員應用程式，然後將應用程式安裝至裝置並開啟：
+從 [GitHub Releases](https://github.com/tiann/KernelSU/releases) 下載 KernelSU 管理器應用程式，然後將應用程式安裝至裝置並開啟：
 
 - 如果應用程式顯示「不支援」，則表示您的裝置不支援 KernelSU，您需要自行編譯核心才能繼續使用，，KernelSU 官方也永遠不會為您提供一個可以刷新的 Boot 映像。
 - 如果應用程式顯示「未安裝」，那麼 KernelSU 支援您的裝置；可以進行下一步作業。
@@ -49,9 +49,94 @@ w      .x         .y       -zzz           -k            -something
 
 如果您發現您的核心版本是 `android12-5.10.101`，然而您 Android 系統的版本為 Android 13 或者其他；請不要覺得奇怪，因為 Android 系統的版本與 Linux 核心的版本號碼並非一致；Linux 核心的版本號碼一般與**裝置出廠時隨附的 Android 系統的版本一致**，如果後續 Android 系統更新，核心版本一般不會發生變化。如果您需要刷新，**請以核心版本為準！！**
 
-## 安裝簡介 {#installation-introduction}
+## 安裝簡介 {#introduction}
 
-KernelSU 的安裝方法有以下幾種，各自適用於不同的場景，請視需要選擇：
+自 `0.9.0` 版本以後，在 GKI 裝置中，KernelSU 支援兩種運行模式：
+
+1. `GKI`：使用**通用核心鏡像**（GKI）取代掉裝置原有的核心。
+2. `LKM`：使用**可載入核心模組**（LKM）的方式載入到裝置核心中，不會替換掉裝置原有的核心。
+
+這兩種方式適用於不同的場景，你可以根據自己的需求選擇。
+
+### GKI 模式 {#gki-mode}
+
+GKI 模式會替換掉裝置原有的內核，使用 KernelSU 提供的通用內核鏡像。 GKI 模式的優點是：
+
+1. 通用型強，適用於大多數裝置；例如三星開啟了 KNOX 的裝置，LKM 模式無法運作。還有一些冷門的魔改裝置，也只能使用 GKI 模式；
+2. 不依賴官方韌體即可使用；不需要等待官方韌體更新，只要 KMI 一致，就可以使用；
+
+### LKM 模式 {#lkm-mode}
+
+LKM 模式不會替換掉裝置原有的內核，而是使用可載入內核模組的方式載入到裝置內核中。 LKM 模式的優點是：
+
+1. 不會取代裝置原有的核心；如果你對裝置原有的核心有特殊需求，或是你希望在使用第三方核心的同時使用 KernelSU，可以使用 LKM 模式；
+2. 升級和 OTA 較為方便；升級 KernelSU 時，可以直接在管理器內部安裝，無需再手動刷寫；系統 OTA 後，可以直接安裝到第二個槽位，也無需再手動刷寫；
+3. 適用於一些特殊場景；例如使用臨時 ROOT 權限也可以載入 LKM，由於不需要替換 boot 分區，因此不會觸發 avb，不會使裝置意外變磚；
+4. LKM 可以被暫時卸載；如果你暫時想取消 root，可以卸載 LKM，這個過程不需要刷寫分區，甚至也不用重啟裝置；如果你想再次 root，只需要重啟裝置即可；
+
+:::tip 兩種模式共存
+打開管理器後，你可以在首頁看到裝置目前運行的模式；注意 GKI 模式的優先級高於 LKM ，如你你既使用 GKI 內核替換掉了原有的內核，又使用 LKM 的方式修補了 GKI 內核，那麼 LKM 會被忽略，裝置將永遠以 GKI 的模式運作。
+:::
+
+### 選哪個？ {#which-one}
+
+如果你的裝置是手機，我們建議您優先考慮 LKM 模式；如果你的裝置是模擬器、WSA 或 Waydroid 等，我們建議您優先考慮 GKI 模式。
+
+## LKM 安裝 {#lkm-installation}
+
+### 取得官方韌體 {#get-the-official-firmware}
+
+使用 LKM 的模式，需要取得官方韌體，然後在官方韌體的基礎上修補；如果你使用的是第三方內核，可以把第三方內核的 boot.img 作為官方韌體。
+
+取得官方韌體的方法有很多，如果你的裝置支援 `fastboot boot`，那麼我們最推薦以及最簡單的方法是使用 `fastboot boot` 臨時啟動 KernelSU 提供的 GKI 內核，然後安裝管理器，最後在管理器中直接安裝；這種方法不需要你手動下載官方韌體，也不需要你手動提取 boot。
+
+如果你的裝置不支援 `fastboot boot`，那麼你可能需要手動去下載官方韌體包，然後從中提取 boot。
+
+與 GKI 模式不同，LKM 模式會修改 `ramdisk`，因此在出廠 Android 13 的裝置上，它需要修補的是 `init_boot` 分區而非 `boot` 分區；而 GKI 模式則永遠是操作 `boot` 分區。
+
+### 使用管理器 {#use-the-manager}
+
+開啟管理器，點選右上角的安裝圖標，會出現若干個選項：
+
+1. 選擇並修補一個文件：如果你手機目前沒有 root 權限，你可以選擇這個選項，然後選擇你的官方韌體，管理器會自動修補它；你只需要刷入這個修補後的文件，即可永久取得 root 權限；
+2. 直接安裝：如果你手機已經 root，你可以選擇這個選項，管理器會自動獲取你的裝置資訊，然後自動修補官方韌體，然後刷入；你可以考慮使用`fastboot boot` KernelSU 的 GKI 內核來取得臨時 root 安裝管理器，然後再使用這個選項；這種方式也是 KernelSU 升級最主要的方式；
+3. 安裝到另一個分割區：如果你的裝置支援 A/B 分割區，你可以選擇這個選項，管理器會自動修補官方韌體，然後安裝到另一個分割區；這種方式適用於 OTA 後的裝置，你可以在 OTA 後直接安裝到另一個分割區，然後重新啟動裝置即可；
+
+### 使用命令列
+
+如果你不想使用管理器，你也可以使用命令列來安裝 LKM；KernelSU 提供的 `ksud` 工具可以幫助你快速修補官方韌體，然後刷入。
+
+這個工具支援 macOS、Linux 和 Windows，你可以在 [GitHub Release](https://github.com/tiann/KernelSU/releases) 下載對應的版本。
+
+使用方法：`ksud boot-patch` 具體的使用方法你可以查看命令列幫助。
+
+```sh
+husky:/ # ksud boot-patch -h
+Patch boot or init_boot images to apply KernelSU
+
+Usage: ksud boot-patch [OPTIONS]
+
+Options:
+  -b, --boot <BOOT>              boot image path, if not specified, will try to find the boot image automatically
+  -k, --kernel <KERNEL>          kernel image path to replace
+  -m, --module <MODULE>          LKM module path to replace, if not specified, will use the builtin one
+  -i, --init <INIT>              init to be replaced
+  -u, --ota                      will use another slot when boot image is not specified
+  -f, --flash                    Flash it to boot partition after patch
+  -o, --out <OUT>                output path, if not specified, will use current directory
+      --magiskboot <MAGISKBOOT>  magiskboot path, if not specified, will use builtin one
+      --kmi <KMI>                KMI version, if specified, will use the specified KMI
+  -h, --help                     Print help
+```
+需要說明的幾個選項：
+1. `--magiskboot` 選項可以指定 magiskboot 的路徑，如果不指定，ksud 會在環境變數中尋找；如果你不知道如何取得 magiskboot，可以參考[這裡](#patch-boot-image)；
+2. `--kmi` 選項可以指定 `KMI` 版本，如果你的裝置核心名字沒有遵循 KMI 規範，你可以透過這個選項來指定；
+最常見的使用方法為：
+```sh
+ksud boot-patch -b <boot.img> --kmi android13-5.10
+```
+## GKI 安裝
+GKI 的安裝方式有以下幾種，各自適用於不同的場景，請依需求選擇：
 
 1. 使用自訂 Recovery (如 TWRP) 安裝
 2. 使用核心刷新應用程式 (例如 Franco Kernel Manager) 安裝
@@ -87,11 +172,11 @@ PS. 這種方法適用於任何狀況下的安裝 (不限於初次安裝或後�
 
 PS. 這種方法在更新 KernelSU 時比較方便，無需電腦即可完成 (注意備份！)。
 
-## 使用 KernelSU 提供的 boot.img 安裝 {#install-by-kernelsu-boot-image}
+## 使用 KernelSU 提供的 boot.img 安裝 {#install-with-boot-img-provided-by-kernelsu}
 
 這種方法無需您有 TWRP，也無需您的手機有 Root 權限；適用於您初次安裝 KernelSU。
 
-### 找到合適的 boot.img {#found-propery-image}
+### 找到合適的 boot.img {#find-proper-boot-img}
 
 KernelSU 為 GKI 裝置提供了標準 boot.img，您需要將 boot.img 刷新至裝置的 Boot 分割區。
 
@@ -105,7 +190,7 @@ KernelSU 為 GKI 裝置提供了標準 boot.img，您需要將 boot.img 刷新�
 3. Pixel 裝置有些特殊，請遵循下方的指示。
 :::
 
-### 將 boot.img 刷新至裝置 {#flash-boot-image}
+### 將 boot.img 刷新至裝置 {#flash-boot-img-to-device}
 
 使用 `adb` 連接您的裝置，然後執行 `adb reboot bootloader` 進入 fastboot 模式，然後使用此命令刷新 KernelSU：
 
@@ -161,7 +246,7 @@ fastboot reboot
 7. 使用 `Image` 取代 `kernel`: `mv -f Image kernel`
 8. 執行 `./magiskboot repack boot.img` 重新封裝 img，此時您會得到一個 `new-boot.img` 檔案，透過 Fastboot 將這個檔案刷新至裝置即可。
 
-## 其他替代方法 {#other-methods}
+## GKI的其他替代方法 {#other-methods}
 
 其實所有這些安裝方法的主旨只有一個，那就是**將原廠核心取代為 KernelSU 提供的核心**；只要能實現這個目的，就可以安裝；比如以下是其他可行的方法：
 
