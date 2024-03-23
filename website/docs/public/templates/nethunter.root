@@ -2,7 +2,7 @@
     "id":"nethunter.root",
     "name":"Kali NetHunter",
     "author":"cachiusa",
-    "description":"Required permissions for Kali NetHunter app to chroot",
+    "description":"Required permissions for Kali NetHunter app to chroot.",
     "namespace":"INHERITED",
     "uid":0,
     "gid":0,
@@ -18,5 +18,14 @@
         "CAP_SETGID",
     ],
     "context":"u:r:su:s0",
-    "rules":[""]
+    "rules":[""],
+    "locales": {
+        "zh_TW": {
+            "name": "Kali NetHunter",
+            "description": "提供Kali NetHunter使用chroot"
+        "pt_BR": {
+            "name": "Kali NetHunter",
+            "description": "Permissões necessárias para o app Kali NetHunter fazer chroot."
+        }
+    }
 }
