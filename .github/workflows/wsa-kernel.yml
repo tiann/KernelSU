@@ -15,7 +15,7 @@ on:
 jobs:
   build:
     name: Build WSA-Kernel-${{ inputs.version }}-${{ inputs.arch }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
@@ -40,7 +40,7 @@ jobs:
         with:
           version: "12.0.1"
           force-version: true
-          ubuntu-version: "16.04"
+          ubuntu-version: "22.04"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Checkout KernelSU
@@ -57,7 +57,7 @@ jobs:
           path: WSA-Linux-Kernel
 
       - name: Setup Ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@v1
         with:
           key: WSA-Kernel-${{ inputs.version }}-${{ inputs.arch }}
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
