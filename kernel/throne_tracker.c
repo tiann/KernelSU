@@ -34,7 +34,8 @@ static int get_pkg_from_apk_path(char *pkg, const char *path)
 	const char *last_slash = NULL;
 	const char *second_last_slash = NULL;
 
-	for (int i = len - 1; i >= 0; i--) {
+	int i;
+	for (i = len - 1; i >= 0; i--) {
 		if (path[i] == '/') {
 			if (!last_slash) {
 				last_slash = &path[i];
