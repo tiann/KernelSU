@@ -37,7 +37,8 @@
 #include "linux/vmalloc.h"
 #include "manager.h"
 #include "selinux/selinux.h"
-#include "uid_observer.h"
+#include "throne_tracker.h"
+#include "throne_tracker.h"
 #include "kernel_compat.h"
 
 static bool ksu_module_mounted = false;
@@ -199,7 +200,7 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
 		new_dentry->d_iname, buf);
 
-	update_uid();
+	track_throne();
 
 	return 0;
 }

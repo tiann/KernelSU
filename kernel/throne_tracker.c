@@ -11,8 +11,10 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "manager.h"
-#include "uid_observer.h"
+#include "throne_tracker.h"
 #include "kernel_compat.h"
+
+uid_t ksu_manager_uid = KSU_INVALID_UID;
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 static struct work_struct ksu_update_uid_work;
@@ -71,6 +73,14 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 
 	pr_info("manager pkg: %s\n", pkg);
 
+#ifdef KSU_MANAGER_PACKAGE
+	// pkg is `/<real package>`
+	if (strncmp(pkg, KSU_MANAGER_PACKAGE, sizeof(KSU_MANAGER_PACKAGE))) {
+		pr_info("manager package is inconsistent with kernel build: %s\n",
+			KSU_MANAGER_PACKAGE);
+		return;
+	}
+#endif
 	struct list_head *list = (struct list_head *)uid_data;
 	struct uid_data *np;
 
@@ -292,18 +302,18 @@ out:
 	filp_close(fp, 0);
 }
 
-void update_uid()
+void track_throne()
 {
 	ksu_queue_work(&ksu_update_uid_work);
 }
 
-int ksu_uid_observer_init()
+int ksu_throne_tracker_init()
 {
 	INIT_WORK(&ksu_update_uid_work, do_update_uid);
 	return 0;
 }
 
-int ksu_uid_observer_exit()
+int ksu_throne_tracker_exit()
 {
 	return 0;
 }

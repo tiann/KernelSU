@@ -9,7 +9,7 @@
 #include "core_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "uid_observer.h"
+#include "throne_tracker.h"
 
 static struct workqueue_struct *ksu_workqueue;
 
@@ -53,7 +53,7 @@ int __init kernelsu_init(void)
 
 	ksu_allowlist_init();
 
-	ksu_uid_observer_init();
+	ksu_throne_tracker_init();
 
 #ifdef CONFIG_KPROBES
 	ksu_enable_sucompat();
@@ -74,7 +74,7 @@ void kernelsu_exit(void)
 {
 	ksu_allowlist_exit();
 
-	ksu_uid_observer_exit();
+	ksu_throne_tracker_exit();
 
 	destroy_workqueue(ksu_workqueue);
 
