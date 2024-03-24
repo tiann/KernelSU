@@ -308,13 +308,12 @@ void track_throne()
 	ksu_queue_work(&ksu_update_uid_work);
 }
 
-int ksu_throne_tracker_init()
+void ksu_throne_tracker_init()
 {
 	INIT_WORK(&ksu_update_uid_work, do_update_uid);
-	return 0;
 }
 
-int ksu_throne_tracker_exit()
+void ksu_throne_tracker_exit()
 {
-	return 0;
+	// nothing to do
 }

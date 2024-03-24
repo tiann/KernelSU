@@ -838,5 +838,9 @@ void __init ksu_core_init(void)
 
 void ksu_core_exit(void)
 {
-	pr_info("ksu_kprobe_exit\n");
+#ifdef CONFIG_KPROBES
+	pr_info("ksu_core_kprobe_exit\n");
+	// we dont use this now
+	// ksu_kprobe_exit();
+#endif
 }
