@@ -26,7 +26,7 @@ jobs:
             file_name: "bzImage"
 
     name: Build ChromeOS ARCVM kernel
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       LTO: thin
       ROOT_DIR: /
