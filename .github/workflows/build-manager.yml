@@ -2,10 +2,11 @@ name: Build Manager
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ci" ]
     paths:
       - '.github/workflows/build-manager.yml'
       - 'manager/**'
+      - 'kernel/**'
       - 'userspace/ksud/**'
   pull_request:
     branches: [ "main" ]
@@ -14,7 +15,12 @@ on:
   workflow_call:
 
 jobs:
+  build-lkm:
+    uses: ./.github/workflows/build-lkm.yml
+    secrets: inherit
+
   build-ksud:
+    needs: build-lkm
     strategy:
       matrix:
         include:
@@ -50,11 +56,13 @@ jobs:
         if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         run: |
           if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
-            echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}' >> gradle.properties
-            echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}' >> gradle.properties
-            echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}' >> gradle.properties
-            echo KEYSTORE_FILE='../key.jks' >> gradle.properties
-            echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
+            {
+              echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
+              echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
+              echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
+              echo KEYSTORE_FILE='key.jks'
+            } >> gradle.properties
+            echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
           fi
 
       - name: Setup Java
@@ -64,7 +72,7 @@ jobs:
           java-version: "17"
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-home-cache-cleanup: true
 
@@ -100,12 +108,14 @@ jobs:
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         with:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
 
       - name: Upload mappings
         uses: actions/upload-artifact@v4
+        if: ${{ ( github.event_name != 'pull_request' && github.ref == 'refs/heads/main' ) || github.ref_type == 'tag' }}
         with:
           name: "mappings"
           path: "manager/app/build/outputs/mapping/release/"
@@ -113,7 +123,7 @@ jobs:
       - name: Bot session cache
         if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         id: bot_session_cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session
@@ -132,6 +142,6 @@ jobs:
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             export VERSION=$(git rev-list --count HEAD)
             APK=$(find ./app/build/outputs/apk/release -name "*.apk")
-            pip3 install telethon==1.31.1
+            pip3 install telethon==1.34.0
             python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
           fi

@@ -1,9 +1,19 @@
 #include "asm/current.h"
 #include "linux/compat.h"
+#include "linux/cred.h"
 #include "linux/dcache.h"
 #include "linux/err.h"
+#include "linux/file.h"
 #include "linux/fs.h"
+#include "linux/version.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 #include "linux/input-event-codes.h"
+#else
+#include "uapi/linux/input.h"
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
+#include "linux/aio.h"
+#endif
 #include "linux/kprobes.h"
 #include "linux/printk.h"
 #include "linux/types.h"
@@ -376,6 +386,17 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
+int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)
+{
+	struct file *file = fget(fd);
+	if (!file) {
+		return 0;
+	}
+	int result = ksu_handle_vfs_read(&file, buf_ptr, count_ptr, NULL);
+	fput(file);
+	return result;
+}
+
 static unsigned int volumedown_pressed_count = 0;
 
 static bool is_volumedown_enough(unsigned int count)
@@ -451,7 +472,8 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
 }
 
-static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+// remove this later!
+__maybe_unused static int vfs_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
 	char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
@@ -459,6 +481,20 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	loff_t **pos_ptr = (loff_t **)&PT_REGS_CCALL_PARM4(regs);
 
 	return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
+}
+
+static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
+	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
+#else
+	struct pt_regs *real_regs = regs;
+#endif
+	unsigned int fd = PT_REGS_PARM1(real_regs);
+	char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(real_regs);
+	size_t count_ptr = (size_t *) &PT_REGS_PARM3(real_regs);
+
+	return ksu_handle_sys_read(fd, buf_ptr, count_ptr);
 }
 
 static int input_handle_event_handler_pre(struct kprobe *p,
@@ -481,10 +517,17 @@ static struct kprobe execve_kp = {
 	.pre_handler = execve_handler_pre,
 };
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+static struct kprobe vfs_read_kp = {
+	.symbol_name = SYS_READ_SYMBOL,
+	.pre_handler = sys_read_handler_pre,
+};
+#else
 static struct kprobe vfs_read_kp = {
 	.symbol_name = "vfs_read",
-	.pre_handler = read_handler_pre,
+	.pre_handler = vfs_read_handler_pre,
 };
+#endif
 
 static struct kprobe input_handle_event_kp = {
 	.symbol_name = "input_handle_event",
@@ -546,7 +589,7 @@ static void stop_input_hook()
 }
 
 // ksud: module support
-void ksu_enable_ksud()
+void ksu_ksud_init()
 {
 #ifdef CONFIG_KPROBES
 	int ret;
@@ -563,5 +606,14 @@ void ksu_enable_ksud()
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
 	INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
+#endif
+}
+
+void ksu_ksud_exit() {
+#ifdef CONFIG_KPROBES
+	unregister_kprobe(&execve_kp);
+	// this should be done before unregister vfs_read_kp
+	// unregister_kprobe(&vfs_read_kp);
+	unregister_kprobe(&input_handle_event_kp);
 #endif
 }

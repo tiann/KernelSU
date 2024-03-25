@@ -69,6 +69,11 @@ void apply_kernelsu_rules()
 	// we need to save allowlist in /data/adb/ksu
 	ksu_allow(db, "kernel", "adb_data_file", "dir", ALL);
 	ksu_allow(db, "kernel", "adb_data_file", "file", ALL);
+	// we need to search /data/app
+	ksu_allow(db, "kernel", "apk_data_file", "file", "open");
+	ksu_allow(db, "kernel", "apk_data_file", "dir", "open");
+	ksu_allow(db, "kernel", "apk_data_file", "dir", "read");
+	ksu_allow(db, "kernel", "apk_data_file", "dir", "search");
 	// we may need to do mount on shell
 	ksu_allow(db, "kernel", "shell_data_file", "file", ALL);
 	// we need to read /data/system/packages.list
@@ -130,6 +135,10 @@ void apply_kernelsu_rules()
 		  "read");
 	ksu_allow(db, "system_server", "untrusted_app_all_devpts", "chr_file",
 		  "write");
+
+    // Allow system server kill su process
+    ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
+    ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
 	rcu_read_unlock();
 }

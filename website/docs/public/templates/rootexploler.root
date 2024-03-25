@@ -16,9 +16,25 @@
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
     "locales": {
+        "zh_TW": {
+            "name": "Root Explorer",
+            "description": "具有根目錄讀寫權限的檔案管理器"
+        },
         "in": {
             "name": "Root Explorer",
-            "description":"File manager dengan kemampuan Root."
+            "description": "File manager dengan kemampuan Root."
+        },
+        "tr": {
+            "name": "Root Dosya Tarayıcı",
+            "description": "Root özelliklerine sahip dosya yöneticisi."
+        },
+        "pt_BR": {
+            "name": "Explorador Root",
+            "description": "Gerenciador de arquivos com recursos root."
+        },
+        "ja": {
+            "name": "Root ブラウザ",
+            "description": "Root 機能を備えたファイル マネージャー。"
         }
     }
 }

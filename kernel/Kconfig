@@ -5,13 +5,15 @@ config KSU
 	depends on OVERLAY_FS
 	default y
 	help
-	Enable kernel-level root privileges on Android System.
+	  Enable kernel-level root privileges on Android System.
+	  To compile as a module, choose M here: the
+	  module will be called kernelsu.
 
 config KSU_DEBUG
 	bool "KernelSU debug mode"
 	depends on KSU
 	default n
 	help
-	Enable KernelSU debug mode
+	  Enable KernelSU debug mode.
 
 endmenu

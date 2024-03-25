@@ -114,5 +114,5 @@ Additionally, the settings interface of the KernelSU manager provides a switch f
 2. Disable the switch for "umount modules by default" and individually enable the "umount modules" option in the App Profile for apps requiring module unloading (acting as a "blacklist").
 
 :::info
-In devices using kernel version 5.10 and above, the kernel performs the unloading of modules. However, for devices running kernel versions below 5.10, this switch is merely a configuration option, and KernelSU itself does not take any action. Some modules, such as Zygisksu, may use this switch to determine whether module unloading is necessary.
+In devices using kernel version 5.10 and above, the kernel performs without any further action the unloading of modules. However, for devices running kernel versions below 5.10, this switch is merely a configuration option, and KernelSU itself does not take any action. If you want to be able to use the "umount modules" option in kernel versions before 5.10 you need to backport the `path_umount` function in `fs/namespace.c`, you can get more information at the end of the [How to integrate for non GKI](https://kernelsu.org/guide/how-to-integrate-for-non-gki.html#how-to-backport-path_umount) page. Some modules, such as Zygisksu, may also use this switch to determine whether module unloading is necessary.
 :::

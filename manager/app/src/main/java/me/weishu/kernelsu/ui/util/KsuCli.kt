@@ -1,11 +1,18 @@
 package me.weishu.kernelsu.ui.util
 
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.os.Parcelable
 import android.os.SystemClock
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.io.SuFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
@@ -25,17 +32,24 @@ private fun getKsuDaemonPath(): String {
 
 object KsuCli {
     val SHELL: Shell = createRootShell()
+    val GLOBAL_MNT_SHELL: Shell = createRootShell(true)
 }
 
-fun getRootShell(): Shell {
-    return KsuCli.SHELL
+fun getRootShell(globalMnt: Boolean = false): Shell {
+    return if (globalMnt) KsuCli.GLOBAL_MNT_SHELL else {
+        KsuCli.SHELL
+    }
 }
 
-fun createRootShell(): Shell {
+fun createRootShell(globalMnt: Boolean = false): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
     val builder = Shell.Builder.create()
     return try {
-        builder.build(getKsuDaemonPath(), "debug", "su")
+        if (globalMnt) {
+            builder.build(getKsuDaemonPath(), "debug", "su", "-g")
+        } else {
+            builder.build(getKsuDaemonPath(), "debug", "su")
+        }
     } catch (e: Throwable) {
         Log.e(TAG, "su failed: ", e)
         builder.build("sh")
@@ -92,10 +106,7 @@ fun uninstallModule(id: String): Boolean {
 }
 
 fun installModule(
-    uri: Uri,
-    onFinish: (Boolean) -> Unit,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
+    uri: Uri, onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
@@ -105,7 +116,7 @@ fun installModule(
         }
         val cmd = "module install ${file.absolutePath}"
 
-        val shell = getRootShell()
+        val shell = createRootShell()
 
         val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
@@ -131,6 +142,102 @@ fun installModule(
     }
 }
 
+@Parcelize
+sealed class LkmSelection: Parcelable {
+    data class LkmUri(val uri: Uri) : LkmSelection()
+    data class KmiString(val value: String) : LkmSelection()
+    data object KmiNone : LkmSelection()
+}
+
+fun installBoot(
+    bootUri: Uri?,
+    lkm: LkmSelection,
+    ota: Boolean,
+    onFinish: (Boolean) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit,
+): Boolean {
+    val resolver = ksuApp.contentResolver
+
+    val bootFile = bootUri?.let { uri ->
+        with(resolver.openInputStream(uri)) {
+            val bootFile = File(ksuApp.cacheDir, "boot.img")
+            bootFile.outputStream().use { output ->
+                this?.copyTo(output)
+            }
+
+            bootFile
+        }
+    }
+
+    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+    var cmd = "boot-patch --magiskboot ${magiskboot.absolutePath}"
+
+    cmd += if (bootFile == null) {
+        // no boot.img, use -f to force install
+        " -f"
+    } else {
+        " -b ${bootFile.absolutePath}"
+    }
+
+    if (ota) {
+        cmd += " -u"
+    }
+
+    var lkmFile: File? = null
+    when (lkm) {
+        is LkmSelection.LkmUri -> {
+            lkmFile = with(resolver.openInputStream(lkm.uri)) {
+                val file = File(ksuApp.cacheDir, "kernelsu-tmp-lkm.ko")
+                file.outputStream().use { output ->
+                    this?.copyTo(output)
+                }
+
+                file
+            }
+            cmd += " -m ${lkmFile.absolutePath}"
+        }
+
+        is LkmSelection.KmiString -> {
+            cmd += " --kmi ${lkm.value}"
+        }
+
+        LkmSelection.KmiNone -> {
+            // do nothing
+        }
+    }
+
+    // output dir
+    val downloadsDir =
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    cmd += " -o $downloadsDir"
+
+    val shell = createRootShell()
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result =
+        shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+    Log.i("KernelSU", "install boot result: ${result.isSuccess}")
+
+    bootFile?.delete()
+    lkmFile?.delete()
+
+    // if boot uri is empty, it is direct install, when success, we should show reboot button
+    onFinish(bootUri == null && result.isSuccess)
+    return result.isSuccess
+}
+
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "recovery") {
@@ -145,6 +252,39 @@ fun rootAvailable(): Boolean {
     return shell.isRoot
 }
 
+fun isAbDevice(): Boolean {
+    val shell = getRootShell()
+    return ShellUtils.fastCmd(shell, "getprop ro.build.ab_update").trim().toBoolean()
+}
+
+fun isInitBoot(): Boolean {
+    val shell = getRootShell()
+    if (shell.isRoot) {
+        // if we have root, use /dev/block/by-name/init_boot to check
+        val abDevice = isAbDevice()
+        val initBootBlock = "/dev/block/by-name/init_boot${if (abDevice) "_a" else ""}"
+        val file = SuFile(initBootBlock)
+        file.shell = shell
+        return file.exists()
+    }
+    // https://source.android.com/docs/core/architecture/partitions/generic-boot
+    return ShellUtils.fastCmd(shell, "getprop ro.product.first_api_level").trim()
+        .toInt() >= Build.VERSION_CODES.TIRAMISU
+}
+
+suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = "boot-info current-kmi"
+    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd")
+}
+
+suspend fun getSupportedKmis(): List<String> = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = "boot-info supported-kmi"
+    val out = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
+    out.filter { it.isNotBlank() }.map { it.trim() }
+}
+
 fun overlayFsAvailable(): Boolean {
     val shell = getRootShell()
     // check /proc/filesystems
@@ -152,8 +292,8 @@ fun overlayFsAvailable(): Boolean {
 }
 
 fun hasMagisk(): Boolean {
-    val shell = getRootShell()
-    val result = shell.newJob().add("nsenter --mount=/proc/1/ns/mnt which magisk").exec()
+    val shell = getRootShell(true)
+    val result = shell.newJob().add("which magisk").exec()
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }
@@ -180,9 +320,8 @@ fun getSepolicy(pkg: String): String {
 
 fun setSepolicy(pkg: String, rules: String): Boolean {
     val shell = getRootShell()
-    val result =
-        shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'")
-            .to(ArrayList(), null).exec()
+    val result = shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'")
+        .to(ArrayList(), null).exec()
     Log.i(TAG, "set sepolicy result: ${result.code}")
     return result.isSuccess
 }
@@ -196,22 +335,19 @@ fun listAppProfileTemplates(): List<String> {
 fun getAppProfileTemplate(id: String): String {
     val shell = getRootShell()
     return shell.newJob().add("${getKsuDaemonPath()} profile get-template '${id}'")
-        .to(ArrayList(), null)
-        .exec().out.joinToString("\n")
+        .to(ArrayList(), null).exec().out.joinToString("\n")
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {
     val shell = getRootShell()
     return shell.newJob().add("${getKsuDaemonPath()} profile set-template '${id}' '${template}'")
-        .to(ArrayList(), null)
-        .exec().isSuccess
+        .to(ArrayList(), null).exec().isSuccess
 }
 
 fun deleteAppProfileTemplate(id: String): Boolean {
     val shell = getRootShell()
     return shell.newJob().add("${getKsuDaemonPath()} profile delete-template '${id}'")
-        .to(ArrayList(), null)
-        .exec().isSuccess
+        .to(ArrayList(), null).exec().isSuccess
 }
 
 fun forceStopApp(packageName: String) {

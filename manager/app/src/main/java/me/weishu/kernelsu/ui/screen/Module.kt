@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,10 +40,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.ConfirmDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
-import me.weishu.kernelsu.ui.component.LoadingDialog
-import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
+import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.rememberLoadingDialog
+import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
+import me.weishu.kernelsu.ui.screen.destinations.WebScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import okhttp3.OkHttpClient
@@ -79,7 +81,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 val data = it.data ?: return@rememberLauncherForActivityResult
                 val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                navigator.navigate(InstallScreenDestination(uri))
+                navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(uri)))
 
                 viewModel.markNeedRefresh()
 
@@ -98,10 +100,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             )
         }
     }) { innerPadding ->
-
-        ConfirmDialog()
-
-        LoadingDialog()
 
         when {
             hasMagisk -> {
@@ -122,10 +120,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 ModuleList(
                     viewModel = viewModel, modifier = Modifier
                         .padding(innerPadding)
-                        .fillMaxSize()
-                ) {
-                    navigator.navigate(InstallScreenDestination(it))
-                }
+                        .fillMaxSize(),
+                    onInstallModule =
+                    {
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
+                    }, onClickModule = { id, name, hasWebUi ->
+                        if (hasWebUi) {
+                            navigator.navigate(WebScreenDestination(id, name))
+                        }
+                    })
             }
         }
     }
@@ -134,7 +137,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ModuleList(
-    viewModel: ModuleViewModel, modifier: Modifier = Modifier, onInstallModule: (Uri) -> Unit
+    viewModel: ModuleViewModel,
+    modifier: Modifier = Modifier,
+    onInstallModule: (Uri) -> Unit,
+    onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit
 ) {
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -152,9 +158,11 @@ private fun ModuleList(
     val startDownloadingText = stringResource(R.string.module_start_downloading)
     val fetchChangeLogFailed = stringResource(R.string.module_changelog_failed)
 
-    val dialogHost = LocalDialogHost.current
     val snackBarHost = LocalSnackbarHost.current
     val context = LocalContext.current
+
+    val loadingDialog = rememberLoadingDialog()
+    val confirmDialog = rememberConfirmDialog()
 
     suspend fun onModuleUpdate(
         module: ModuleViewModel.ModuleInfo,
@@ -162,7 +170,7 @@ private fun ModuleList(
         downloadUrl: String,
         fileName: String
     ) {
-        val changelogResult = dialogHost.withLoading {
+        val changelogResult = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
                 runCatching {
                     OkHttpClient().newCall(
@@ -172,7 +180,7 @@ private fun ModuleList(
             }
         }
 
-        val showToast: suspend (String) -> Unit = {msg->
+        val showToast: suspend (String) -> Unit = { msg ->
             withContext(Dispatchers.Main) {
                 Toast.makeText(
                     context,
@@ -191,7 +199,7 @@ private fun ModuleList(
         }
 
         // changelog is not empty, show it and wait for confirm
-        val confirmResult = dialogHost.showConfirm(
+        val confirmResult = confirmDialog.awaitConfirm(
             changelogText,
             content = changelog,
             markdown = true,
@@ -222,7 +230,7 @@ private fun ModuleList(
     }
 
     suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
-        val confirmResult = dialogHost.showConfirm(
+        val confirmResult = confirmDialog.awaitConfirm(
             moduleStr,
             content = moduleUninstallConfirm.format(module.name),
             confirm = uninstall,
@@ -232,7 +240,7 @@ private fun ModuleList(
             return
         }
 
-        val success = dialogHost.withLoading {
+        val success = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
                 uninstallModule(module.id)
             }
@@ -317,7 +325,7 @@ private fun ModuleList(
                             scope.launch { onModuleUninstall(module) }
                         }, onCheckChanged = {
                             scope.launch {
-                                val success = dialogHost.withLoading {
+                                val success = loadingDialog.withLoading {
                                     withContext(Dispatchers.IO) {
                                         toggleModule(module.id, !isChecked)
                                     }
@@ -346,6 +354,8 @@ private fun ModuleList(
                                     "${module.name}-${updatedModule.second}.zip"
                                 )
                             }
+                        }, onClick = {
+                            onClickModule(it.id, it.name, it.hasWebUi)
                         })
 
                         // fix last item shadow incomplete in LazyColumn
@@ -379,9 +389,12 @@ private fun ModuleItem(
     onUninstall: (ModuleViewModel.ModuleInfo) -> Unit,
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
+    onClick: (ModuleViewModel.ModuleInfo) -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(module) },
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
 
@@ -487,6 +500,18 @@ private fun ModuleItem(
                         text = stringResource(R.string.uninstall),
                     )
                 }
+
+                if (module.hasWebUi) {
+                    TextButton(
+                        onClick = { onClick(module) },
+                    ) {
+                        Text(
+                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            text = stringResource(R.string.open),
+                        )
+                    }
+                }
             }
         }
     }
@@ -505,7 +530,8 @@ fun ModuleItemPreview() {
         enabled = true,
         update = true,
         remove = true,
-        updateJson = ""
+        updateJson = "",
+        hasWebUi = false,
     )
-    ModuleItem(module, true, "", {}, {}, {})
+    ModuleItem(module, true, "", {}, {}, {}, {})
 }

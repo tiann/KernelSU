@@ -20,7 +20,7 @@ repo init -m manifest.xml
 repo sync
 ```
 
-O `<kernel_manifest.xml>` é um arquivo de manifesto que pode determinar uma construção exclusivamente, você pode usar o manifesto para fazer uma construção re-preduzível. Você deve baixar o arquivo de manifesto em [compilações de lançamento do Google GKI](https://source.android.com/docs/core/architecture/kernel/gki-release-builds).
+O `<kernel_manifest.xml>` é um arquivo de manifesto que pode determinar uma construção exclusivamente, você pode usar o manifesto para fazer uma construção re-preduzível. Você deve baixar o arquivo de manifesto em [Builds de versão de imagem genérica do kernel (GKI)](https://source.android.com/docs/core/architecture/kernel/gki-release-builds).
 
 ### Construir
 
@@ -39,6 +39,14 @@ A partir do Android 13, o kernel é construído pelo `bazel`:
 ```sh
 tools/bazel build --config=fast //common:kernel_aarch64_dist
 ```
+
+:::info INFORMAÇÕES
+Para alguns kernel do Android 14, para fazer o Wi-Fi/Bluetooth funcionar. Pode ser necessário remover todas as exportações protegidas por GKI:
+
+```sh
+rm common/android/abi_gki_protected_exports_*
+```
+:::
 
 ## Construir o kernel com KernelSU
 

@@ -4,6 +4,10 @@ KernelSU provides a module mechanism that achieves the effect of modifying the s
 
 The module mechanism of KernelSU is almost the same as that of Magisk. If you are familiar with Magisk module development, developing KernelSU modules is very similar. You can skip the introduction of modules below and only need to read [difference-with-magisk](difference-with-magisk.md).
 
+## WebUI
+
+KernelSU's modules support displaying interfaces and interacting with users, please refer to the [WebUI documentation](module-webui.md).
+
 ## Busybox
 
 KernelSU ships with a feature complete BusyBox binary (including full SELinux support). The executable is located at `/data/adb/ksu/bin/busybox`. KernelSU's BusyBox supports runtime toggle-able "ASH Standalone Shell Mode". What this standalone mode means is that when running in the `ash` shell of BusyBox, every single command will directly use the applet within BusyBox, regardless of what is set as `PATH`. For example, commands like `ls`, `rm`, `chmod` will **NOT** use what is in `PATH` (in the case of Android by default it will be `/system/bin/ls`, `/system/bin/rm`, and `/system/bin/chmod` respectively), but will instead directly call internal BusyBox applets. This makes sure that scripts always run in a predictable environment and always have the full suite of commands no matter which Android version it is running on. To force a command _not_ to use BusyBox, you have to call the executable with full paths.

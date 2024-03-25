@@ -102,4 +102,17 @@
     <string name="app_profile_template_delete">حذف</string>
     <string name="app_profile_template_import_empty">الحافظة فارغة!</string>
     <string name="app_profile_template_view">عرض القالب</string>
+    <string name="grant_root_failed">فشل في منح صلاحية الجذر!</string>
+    <string name="open">فتح</string>
+    <string name="settings_check_update_summary">التحقق تلقائيًا من وجود تحديثات عند فتح التطبيق</string>
+    <string name="settings_check_update">التحقق من التحديث</string>
+    <string name="enable_web_debugging">تمكين تصحيح أخطاء WebView</string>
+    <string name="enable_web_debugging_summary">يمكن استخدامه لتصحيح أخطاء WebUI، يرجى تمكينه فقط عند الحاجة.</string>
+    <string name="install_next">التالي</string>
+    <string name="select_file">اختيار ملف</string>
+    <string name="direct_install">تثبيت مباشر (موصى به)</string>
+    <string name="install_inactive_slot">التثبيت على فتحة غير نشطة (بعد OTA)</string>
+    <string name="install_inactive_slot_warning">سيتم **إجبار** جهازك على التمهيد إلى الفتحة غير النشطة الحالية بعد إعادة التشغيل!
+\nاستخدم هذا الخيار فقط بعد انتهاء التحديث.
+\nأستمرار؟</string>
 </resources>
