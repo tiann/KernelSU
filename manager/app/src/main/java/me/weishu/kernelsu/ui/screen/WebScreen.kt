@@ -26,9 +26,8 @@ import me.weishu.kernelsu.ui.webui.showSystemUI
 import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
-@Destination
 @Composable
-fun WebScreen(navigator: DestinationsNavigator, moduleId: String, moduleName: String) {
+fun WebScreen(moduleId: String, moduleName: String) {
 
     val context = LocalContext.current
 
