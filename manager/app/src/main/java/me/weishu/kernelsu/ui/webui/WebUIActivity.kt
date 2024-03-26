@@ -1,49 +1,58 @@
 package me.weishu.kernelsu.ui.webui
 
+import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.content.Context
 import android.os.Bundle
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.ramcosta.composedestinations.DestinationsNavHost
-import me.weishu.kernelsu.ui.screen.NavGraphs
-import me.weishu.kernelsu.ui.screen.WebScreen
-import me.weishu.kernelsu.ui.theme.KernelSUTheme
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import androidx.webkit.WebViewAssetLoader
+import java.io.File
 
+@SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : ComponentActivity()  {
-    @OptIn(ExperimentalAnimationApi::class)
+    private lateinit var webviewInterface: WebViewInterface
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val id = intent.getStringExtra("id")!!
+        val moduleId = intent.getStringExtra("id")!!
         val name = intent.getStringExtra("name")!!
-        setTitle("KernelSU - $name")
+        setTaskDescription(ActivityManager.TaskDescription("KernelSU - $name"))
 
-        setContent {
-            KernelSUTheme {
-                val navController = rememberAnimatedNavController()
-                val snackbarHostState = remember { SnackbarHostState() }
-                Scaffold(
-                    snackbarHost = { SnackbarHost(snackbarHostState) }
-                ) { innerPadding ->
-                    Box(modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()) {
-                        WebScreen(moduleId = id, moduleName = name)
-                    }
-                }
+        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
+
+        val webRoot = File("/data/adb/modules/${moduleId}/webroot")
+        val webViewAssetLoader = WebViewAssetLoader.Builder()
+            .setDomain("mui.kernelsu.org")
+            .addPathHandler(
+                "/",
+                SuFilePathHandler(this, webRoot)
+            )
+            .build()
+
+        val webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                return webViewAssetLoader.shouldInterceptRequest(request.url)
             }
         }
+
+        val webView = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.allowFileAccess = false
+            webviewInterface = WebViewInterface(this@WebUIActivity, this)
+            addJavascriptInterface(webviewInterface, "ksu")
+            setWebViewClient(webViewClient)
+            loadUrl("https://mui.kernelsu.org/index.html")
+        }
+
+        setContentView(webView)
     }
 }

@@ -167,7 +167,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 .setData(Uri.parse("kernelsu://webui/$id"))
                                 .putExtra("id", id)
                                 .putExtra("name", name)
-                                .setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
                             )
                         }
                     })
