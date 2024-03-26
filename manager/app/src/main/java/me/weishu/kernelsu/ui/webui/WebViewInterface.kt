@@ -21,9 +21,7 @@ import java.util.concurrent.CompletableFuture
 
 class WebViewInterface(val context: Context, private val webView: WebView) {
 
-    companion object {
-        var isHideSystemUI: Boolean = false
-    }
+    var isHideSystemUI: Boolean = false
 
     @JavascriptInterface
     fun exec(cmd: String): String {
