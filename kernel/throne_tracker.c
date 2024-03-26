@@ -153,7 +153,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 			pr_err("Failed to open directory: %s, err: %ld\n",
 			       dirpath, PTR_ERR(file));
 			kfree(dirpath);
-			return FILLDIR_ACTOR_STOP;
+			return FILLDIR_ACTOR_CONTINUE;
 		}
 
 		iterate_dir(file, &sub_ctx.ctx);
@@ -290,6 +290,7 @@ static void do_update_uid(struct work_struct *work)
 		}
 		pr_info("Searching manager...\n");
 		search_manager("/data/app", 2, &uid_list);
+		pr_info("Search manager finished\n");
 	}
 
 	// then prune the allowlist
