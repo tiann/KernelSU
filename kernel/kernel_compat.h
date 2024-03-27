@@ -4,12 +4,13 @@
 #include "linux/fs.h"
 #include "linux/key.h"
 #include "linux/version.h"
+#include "huawei_hisi_check.h" // Add check Huawei Device
 
 extern long ksu_strncpy_from_user_nofault(char *dst,
 					  const void __user *unsafe_addr,
 					  long count);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI)
 extern struct key *init_session_keyring;
 #endif
 
