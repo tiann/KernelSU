@@ -438,15 +438,13 @@ static bool should_umount(struct path *path)
 	return false;
 }
 
-static void ksu_umount_mnt(struct path *path, int flags)
+static int ksu_umount_mnt(struct path *path, int flags)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || defined(KSU_UMOUNT)
-	int err = path_umount(path, flags);
-	if (err) {
-		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
-	}
+	return path_umount(path, flags);
 #else
 	// TODO: umount for non GKI kernel
+	return -ENOSYS
 #endif
 }
 
@@ -468,7 +466,10 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 		return;
 	}
 
-	ksu_umount_mnt(&path, flags);
+	err = ksu_umount_mnt(&path, flags);
+	if (err) {
+		pr_warn("umount %s failed: %d\n", mnt, err);
+	}
 }
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
