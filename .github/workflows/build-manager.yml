@@ -25,10 +25,23 @@ jobs:
       matrix:
         include:
           - target: aarch64-linux-android
+            os: ubuntu-latest
           - target: x86_64-linux-android
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-gnu # windows pc
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin # Intel mac
+            os: macos-latest
+          - target: aarch64-apple-darwin # M chip mac
+            os: macos-latest
+          - target: aarch64-unknown-linux-musl # arm64 Linux
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl # x86 Linux
+            os: ubuntu-latest
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
+      os: ${{ matrix.os }}
 
   build-manager:
     needs: build-ksud
@@ -142,6 +155,6 @@ jobs:
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             export VERSION=$(git rev-list --count HEAD)
             APK=$(find ./app/build/outputs/apk/release -name "*.apk")
-            pip3 install telethon==1.31.1
+            pip3 install telethon==1.34.0
             python3 $GITHUB_WORKSPACE/scripts/ksubot.py $APK
           fi

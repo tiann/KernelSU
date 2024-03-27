@@ -10,7 +10,7 @@
 #include "core_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "uid_observer.h"
+#include "throne_tracker.h"
 
 unsigned int enable_kernelsu = 1;
 
@@ -72,8 +72,10 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 					    flags);
 }
 
-extern void ksu_enable_sucompat();
-extern void ksu_enable_ksud();
+extern void ksu_sucompat_init();
+extern void ksu_sucompat_exit();
+extern void ksu_ksud_init();
+extern void ksu_ksud_exit();
 
 int __init kernelsu_init(void)
 {
@@ -99,11 +101,11 @@ int __init kernelsu_init(void)
 
 	ksu_allowlist_init();
 
-	ksu_uid_observer_init();
+	ksu_throne_tracker_init();
 
 #ifdef CONFIG_KPROBES
-	ksu_enable_sucompat();
-	ksu_enable_ksud();
+	ksu_sucompat_init();
+	ksu_ksud_init();
 #else
 	pr_alert("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html");
 #endif
@@ -123,9 +125,14 @@ void kernelsu_exit(void)
 
 	ksu_allowlist_exit();
 
-	ksu_uid_observer_exit();
+	ksu_throne_tracker_exit();
 
 	destroy_workqueue(ksu_workqueue);
+
+#ifdef CONFIG_KPROBES
+	ksu_ksud_exit();
+	ksu_sucompat_exit();
+#endif
 
 	ksu_core_exit();
 }

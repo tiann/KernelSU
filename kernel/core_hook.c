@@ -37,7 +37,8 @@
 #include "linux/vmalloc.h"
 #include "manager.h"
 #include "selinux/selinux.h"
-#include "uid_observer.h"
+#include "throne_tracker.h"
+#include "throne_tracker.h"
 #include "kernel_compat.h"
 
 static bool ksu_module_mounted = false;
@@ -199,7 +200,7 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
 		new_dentry->d_iname, buf);
 
-	update_uid();
+	track_throne();
 
 	return 0;
 }
@@ -437,15 +438,13 @@ static bool should_umount(struct path *path)
 	return false;
 }
 
-static void ksu_umount_mnt(struct path *path, int flags)
+static int ksu_umount_mnt(struct path *path, int flags)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || defined(KSU_UMOUNT)
-	int err = path_umount(path, flags);
-	if (err) {
-		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
-	}
+	return path_umount(path, flags);
 #else
 	// TODO: umount for non GKI kernel
+	return -ENOSYS
 #endif
 }
 
@@ -467,7 +466,10 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 		return;
 	}
 
-	ksu_umount_mnt(&path, flags);
+	err = ksu_umount_mnt(&path, flags);
+	if (err) {
+		pr_warn("umount %s failed: %d\n", mnt, err);
+	}
 }
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
@@ -516,9 +518,11 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 			current->pid);
 		return 0;
 	}
+#ifdef CONFIG_KSU_DEBUG
 	// umount the target mnt
 	pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val,
 		current->pid);
+#endif
 
 	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
 	// filter the mountpoint whose target is `/data/adb`
@@ -837,5 +841,9 @@ void __init ksu_core_init(void)
 
 void ksu_core_exit(void)
 {
-	pr_info("ksu_kprobe_exit\n");
+#ifdef CONFIG_KPROBES
+	pr_info("ksu_core_kprobe_exit\n");
+	// we dont use this now
+	// ksu_kprobe_exit();
+#endif
 }
