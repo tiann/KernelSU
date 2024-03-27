@@ -41,6 +41,7 @@ jobs:
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
+      os: ${{ matrix.os }}
 
   build-manager:
     needs: build-ksud
