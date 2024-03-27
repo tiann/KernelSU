@@ -4,8 +4,6 @@ use std::{
     process::Command,
 };
 
-use crate::apk_sign::get_apk_signature;
-
 const KERNEL_PARAM_PATH: &str = "/sys/module/kernelsu";
 
 fn read_u32(path: &PathBuf) -> Result<u32> {
@@ -15,38 +13,26 @@ fn read_u32(path: &PathBuf) -> Result<u32> {
     Ok(content)
 }
 
-fn set_kernel_param(size: u32, hash: String) -> Result<()> {
+fn set_kernel_param(uid: u32) -> Result<()> {
     let kernel_param_path = Path::new(KERNEL_PARAM_PATH).join("parameters");
 
-    let expeced_size_path = kernel_param_path.join("ksu_expected_size");
-    let expeced_hash_path = kernel_param_path.join("ksu_expected_hash");
+    let ksu_debug_manager_uid = kernel_param_path.join("ksu_debug_manager_uid");
+    let before_uid = read_u32(&ksu_debug_manager_uid)?;
+    std::fs::write(&ksu_debug_manager_uid, uid.to_string())?;
+    let after_uid = read_u32(&ksu_debug_manager_uid)?;
 
-    print!(
-        "before size: {:#x} hash: {}",
-        read_u32(&expeced_size_path)?,
-        std::fs::read_to_string(&expeced_hash_path)?
-    );
-
-    std::fs::write(&expeced_size_path, size.to_string())?;
-    std::fs::write(&expeced_hash_path, hash)?;
-
-    print!(
-        "after size: {:#x} hash: {}",
-        read_u32(&expeced_size_path)?,
-        std::fs::read_to_string(&expeced_hash_path)?
-    );
+    println!("set manager uid: {before_uid} -> {after_uid}");
 
     Ok(())
 }
 
-fn get_apk_path(package_name: &str) -> Result<String> {
-    // `cmd package path` is not available below Android 9
-    let output = Command::new("pm").args(["path", package_name]).output()?;
-
-    // package:/data/app/<xxxx>/base.apk
-    let output = String::from_utf8_lossy(&output.stdout);
-    let path = output.trim().replace("package:", "");
-    Ok(path)
+#[cfg(target_os = "android")]
+fn get_pkg_uid(pkg: &str) -> Result<u32> {
+    // stat /data/data/<pkg>
+    let uid = rustix::fs::stat(format!("/data/data/{pkg}"))
+        .with_context(|| format!("stat /data/data/{}", pkg))?
+        .st_uid;
+    Ok(uid)
 }
 
 pub fn set_manager(pkg: &str) -> Result<()> {
@@ -55,10 +41,11 @@ pub fn set_manager(pkg: &str) -> Result<()> {
         "CONFIG_KSU_DEBUG is not enabled"
     );
 
-    let path = get_apk_path(pkg).with_context(|| format!("{pkg} does not exist!"))?;
-    let sign = get_apk_signature(&path)?;
-    set_kernel_param(sign.0, sign.1)?;
-
+    #[cfg(target_os = "android")]
+    let uid = get_pkg_uid(pkg)?;
+    #[cfg(not(target_os = "android"))]
+    let uid = 0;
+    set_kernel_param(uid)?;
     // force-stop it
     let _ = Command::new("am").args(["force-stop", pkg]).status();
     Ok(())
