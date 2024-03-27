@@ -444,7 +444,7 @@ static int ksu_umount_mnt(struct path *path, int flags)
 	return path_umount(path, flags);
 #else
 	// TODO: umount for non GKI kernel
-	return -ENOSYS
+	return -ENOSYS;
 #endif
 }
 
