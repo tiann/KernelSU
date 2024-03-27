@@ -52,7 +52,7 @@
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="about_source_code">%1$s adresinde kaynak kodunu görüntüleyin<br/>%2$s kanalımıza katılın</string>
+    <string name="about_source_code">%1$s adresinde kaynak kodunu görüntüleyin. <br/>%2$s kanalımıza katılın.</string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
     <string name="profile_template">Şablon</string>
@@ -117,4 +117,6 @@
 \nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
 \nDevam edilsin mi?</string>
     <string name="install_next">Sonraki</string>
+    <string name="select_kmi">KMI seçin</string>
+    <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
 </resources>

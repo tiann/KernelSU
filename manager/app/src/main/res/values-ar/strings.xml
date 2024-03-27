@@ -115,4 +115,6 @@
     <string name="install_inactive_slot_warning">سيتم **إجبار** جهازك على التمهيد إلى الفتحة غير النشطة الحالية بعد إعادة التشغيل!
 \nاستخدم هذا الخيار فقط بعد انتهاء التحديث.
 \nأستمرار؟</string>
+    <string name="select_kmi">اختر KMI</string>
+    <string name="select_file_tip">يوصى باستخدام صورة القسم %1$s</string>
 </resources>

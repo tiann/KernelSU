@@ -108,4 +108,13 @@
     <string name="enable_web_debugging_summary">Poate fi folosit pentru a depana WebUI, activează numai când este necesar.</string>
     <string name="grant_root_failed">Nu s-a acordat acces root!</string>
     <string name="open">Deschide</string>
+    <string name="select_file_tip">Se recomandă imaginea partiției %1$s</string>
+    <string name="install_next">Înainte</string>
+    <string name="install_inactive_slot_warning">Dispozitivul va fi **FORȚAT** să pornească în slot-ul inactiv curent după o repornire!
+\nFolosește această opțiune numai după finisarea OTA.
+\nContinui?</string>
+    <string name="select_kmi">Selectează KMI</string>
+    <string name="direct_install">Instalare directă (recomandat)</string>
+    <string name="select_file">Selectează un fișier</string>
+    <string name="install_inactive_slot">Instalează într-un slot inactiv (după OTA)</string>
 </resources>

@@ -111,7 +111,7 @@
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="open">Открыть</string>
     <string name="enable_web_debugging">Включить отладку WebView</string>
-    <string name="enable_web_debugging_summary">Используется для отладки веб-интерфейса. Пожалуйста, включайте только при необходимости.</string>
+    <string name="enable_web_debugging_summary">Используется для отладки WebUI. Пожалуйста, включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
     <string name="install_next">Далее</string>
@@ -119,4 +119,6 @@
     <string name="install_inactive_slot_warning">Ваше устройство будет **ПРИНУДИТЕЛЬНО** загружено в текущий неактивный слот после перезагрузки!
 \n Используйте эту опцию только после завершения OTA.
 \n Продолжать?</string>
+    <string name="select_kmi">Выбрать KMI</string>
+    <string name="select_file_tip">%1$s образ раздела рекомендуется</string>
 </resources>

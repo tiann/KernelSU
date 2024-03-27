@@ -115,4 +115,6 @@
 \n請問是否繼續？</string>
     <string name="direct_install">直接安裝（建議）</string>
     <string name="install_next">下一步</string>
+    <string name="select_kmi">選擇 KMI</string>
+    <string name="select_file_tip">建議使用 %1$s 分區</string>
 </resources>
