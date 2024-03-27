@@ -143,7 +143,7 @@ fun installModule(
 }
 
 @Parcelize
-sealed class LkmSelection: Parcelable {
+sealed class LkmSelection : Parcelable {
     data class LkmUri(val uri: Uri) : LkmSelection()
     data class KmiString(val value: String) : LkmSelection()
     data object KmiNone : LkmSelection()
@@ -340,7 +340,9 @@ fun getAppProfileTemplate(id: String): String {
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {
     val shell = getRootShell()
-    return shell.newJob().add("${getKsuDaemonPath()} profile set-template '${id}' '${template}'")
+    val escapedTemplate = template.replace("\"", "\\\"")
+    val cmd = """${getKsuDaemonPath()} profile set-template "$id" "$escapedTemplate'""""
+    return shell.newJob().add(cmd)
         .to(ArrayList(), null).exec().isSuccess
 }
 
