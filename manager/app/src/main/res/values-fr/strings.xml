@@ -108,7 +108,7 @@
     <string name="enable_web_debugging">Activer le débogage de WebView</string>
     <string name="enable_web_debugging_summary">Peut être utilisé pour déboguer WebUI, n\'activez cette option que si nécessaire.</string>
     <string name="grant_root_failed">Échec de l\'octroi des privilèges root !</string>
-    <string name="open">Ouvert</string>
+    <string name="open">Ouvrir</string>
     <string name="direct_install">Installation directe (recommandé)</string>
     <string name="select_file">Sélectionner un fichier</string>
     <string name="install_inactive_slot">Installer dans l\'emplacement inactif (après OTA)</string>
@@ -116,4 +116,6 @@
 \nN\'utilisez cette option qu\'une fois la mise à jour OTA terminée.
 \nContinuer ?</string>
     <string name="install_next">Suivant</string>
+    <string name="select_file_tip">L\'image de la partition %1$s est recommandée</string>
+    <string name="select_kmi">Sélectionner une KMI</string>
 </resources>
