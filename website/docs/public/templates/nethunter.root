@@ -27,7 +27,7 @@
             "name": "Kali NetHunter",
             "description": "Permissões necessárias para o app Kali NetHunter fazer chroot."
         },
-        "it": {
+        "it_IT": {
             "name": "Kali NetHunter",
             "description": "Autorizzazioni richieste per il chroot dell'applicazione Kali NetHunter."
         } 
