@@ -18,7 +18,7 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Dozwolony</string>
     <string name="selinux_status_unknown">Nieznany</string>
-    <string name="superuser">Superużytkownik</string>
+    <string name="superuser">SuperUżytkownik</string>
     <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
     <string name="module_failed_to_disable">Nie udało się wyłączyć modułu: %s</string>
     <string name="module_empty">Brak zainstalowanych modułów</string>
