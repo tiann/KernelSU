@@ -40,7 +40,6 @@
 #include "throne_tracker.h"
 #include "throne_tracker.h"
 #include "kernel_compat.h"
-#include "huawei_hisi_check.h" // Add check Huawei Device
 
 static bool ksu_module_mounted = false;
 

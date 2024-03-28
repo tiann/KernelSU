@@ -6,7 +6,7 @@
 
 #include "../klog.h" // IWYU pragma: keep
 #include "ss/symtab.h"
-#include "../huawei_hisi_check.h" // Add check Huawei Device
+#include "../kernel_compat.h" // Add check Huawei Device
 
 #define KSU_SUPPORT_ADD_TYPE
 
