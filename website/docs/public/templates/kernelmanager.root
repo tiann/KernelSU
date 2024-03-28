@@ -40,6 +40,10 @@
         "ja": {
             "name": "Kernel マネージャー",
             "description": "FKM や SmartPack などの XXX マネージャーでよく使用されます。"
-        }
+        },
+        "it": {
+            "name": "Gestore Kernel",
+            "description": "Autorizzazioni comunemente richieste in applicazioni per gestire il Kernel come FKM e SmartPack."
+        } 
     }
 }

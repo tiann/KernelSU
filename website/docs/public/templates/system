@@ -28,6 +28,10 @@
         "ja": {
             "name": "System",
             "description": "Android システムが実行される許可レベルですが、機能はありません。"
-        }
+        },
+        "it": {
+            "name": "Sistema",
+            "description": "Il livello di permessi con il quale viene eseguito il sistema operativo Android senza alcuna capacità."
+        } 
     }
 }
