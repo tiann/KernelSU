@@ -295,12 +295,11 @@ bool __ksu_is_allow_uid(uid_t uid)
 bool ksu_uid_should_umount(uid_t uid)
 {
 	struct app_profile profile = { .current_uid = uid };
-	bool found;
 	if (likely(ksu_is_manager_uid_valid()) && unlikely(ksu_get_manager_uid() == uid)) {
 		// we should not umount on manager!
 		return false;
 	}
-	found = ksu_get_app_profile(&profile);
+	bool found = ksu_get_app_profile(&profile);
 	if (!found) {
 		// no app profile found, it must be non root app
 		return default_non_root_profile.umount_modules;
