@@ -35,6 +35,10 @@
         "ja": {
             "name": "Root ブラウザ",
             "description": "Root 機能を備えたファイル マネージャー。"
-        }
+        },
+        "it": {
+            "name": "Gestore file root",
+            "description": "Gestore file con permessi root."
+        } 
     }
 }

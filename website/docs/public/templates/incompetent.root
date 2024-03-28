@@ -28,6 +28,10 @@
         "ja": {
             "name": "無能な root",
             "description": "権限のない root ユーザー。"
-        }
+        },
+        "it": {
+            "name": "Root incompetente",
+            "description": "Un utente root senza nessuna capacità."
+        } 
     }
 }
