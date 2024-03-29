@@ -16,6 +16,7 @@
 #include "selinux/selinux.h"
 #include "kernel_compat.h"
 #include "allowlist.h"
+#include "manager.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 3 // u32
@@ -274,6 +275,11 @@ bool __ksu_is_allow_uid(uid_t uid)
 		return false;
 	}
 
+	if (likely(ksu_is_manager_uid_valid()) && unlikely(ksu_get_manager_uid() == uid)) {
+		// manager is always allowed!
+		return true;
+	}
+
 	if (likely(uid <= BITMAP_UID_MAX)) {
 		return !!(allow_list_bitmap[uid / BITS_PER_BYTE] & (1 << (uid % BITS_PER_BYTE)));
 	} else {
@@ -289,6 +295,10 @@ bool __ksu_is_allow_uid(uid_t uid)
 bool ksu_uid_should_umount(uid_t uid)
 {
 	struct app_profile profile = { .current_uid = uid };
+	if (likely(ksu_is_manager_uid_valid()) && unlikely(ksu_get_manager_uid() == uid)) {
+		// we should not umount on manager!
+		return false;
+	}
 	bool found = ksu_get_app_profile(&profile);
 	if (!found) {
 		// no app profile found, it must be non root app
