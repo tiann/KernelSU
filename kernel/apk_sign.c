@@ -264,7 +264,12 @@ static __always_inline bool check_v2_signature(char *path,
 			pr_info("Unknown singature block id: 0x%08x\n", id);
 			goto clean;
 		}
-		pos += (size8 - offset);
+		u64 next = size8 - offset;
+		if (next == 0) {
+			pr_warn("Unexpeced offset value!\n");
+			goto clean;
+		}
+		pos += next;
 	}
 
 	if (v2_signing_blocks != 1) {
