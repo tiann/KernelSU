@@ -241,19 +241,28 @@ static __always_inline bool check_v2_signature(char *path,
 		offset = 4;
 		if (id == 0x7109871au) {
 			v2_signing_blocks++;
+			if (v2_signing_blocks > 1) {
+				pr_info("Unexpected v2 signature count: %d\n",
+					v2_signing_blocks);
+				v2_signing_valid = false;
+				goto clean;
+			}
 			v2_signing_valid =
 				check_block(fp, &size4, &pos, &offset,
 					    expected_size, expected_sha256);
 		} else if (id == 0xf05368c0u) {
 			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
 			v3_signing_exist = true;
+			pr_warn("Unexpected V3 sigauture exist!\n");
+			goto clean;
 		} else if (id == 0x1b93ad61u) {
 			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
 			v3_1_signing_exist = true;
+			pr_warn("Unexpected V3_1 sigauture exist!\n");
+			goto clean;
 		} else {
-#ifdef CONFIG_KSU_DEBUG
-			pr_info("Unknown id: 0x%08x\n", id);
-#endif
+			pr_info("Unknown singature block id: 0x%08x\n", id);
+			goto clean;
 		}
 		pos += (size8 - offset);
 	}
@@ -306,8 +315,8 @@ static struct kernel_param_ops expected_size_ops = {
 	.get = param_get_uint,
 };
 
-module_param_cb(ksu_debug_manager_uid, &expected_size_ops, &ksu_debug_manager_uid,
-		S_IRUSR | S_IWUSR);
+module_param_cb(ksu_debug_manager_uid, &expected_size_ops,
+		&ksu_debug_manager_uid, S_IRUSR | S_IWUSR);
 
 #endif
 
