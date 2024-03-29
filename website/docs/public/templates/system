@@ -9,6 +9,10 @@
         "SYSTEM"
     ],
     "locales": {
+        "bn": {
+            "name": "সিস্টেম",
+            "description": "অ্যান্ড্রয়েড সিস্টেম যে অনুমতিগুলি নিয়ে কাজ করে।"
+        },
         "zh_CN": {
             "name": "Android 系统",
             "description": "Android 系统运行的权限级别，但没有任何权能。"

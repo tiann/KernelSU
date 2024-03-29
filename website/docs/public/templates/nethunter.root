@@ -19,6 +19,10 @@
     ],
     "context": "u:r:su:s0",
     "locales": {
+        "bn": {
+            "name": "কালি নেটহানটার",
+            "description": "কালি নেটহানটার অ্যাপের কার্যকলাপের জন্য যে অনুমতিগুলি লাগে।"
+        },
         "zh_TW": {
             "name": "Kali NetHunter",
             "description": "提供Kali NetHunter使用chroot"
