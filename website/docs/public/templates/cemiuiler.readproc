@@ -39,7 +39,7 @@
             "name": "Cemiuiler",
             "description": "Cemiuiler に適切に動作するための最小限の権限を付与し、アプリケーションを再起動します。"
         },
-        "it": {
+        "it_IT": {
             "name": "Cemiuiler",
             "description": "Concedi a Cemiuiler le autorizzazioni minime per riavviare correttamente l'applicazione."
         } 

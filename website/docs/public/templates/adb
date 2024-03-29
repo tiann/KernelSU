@@ -33,7 +33,7 @@
             "name": "Adb",
             "description": "ほとんどのアプリが使用するために必要な最小限のルール ADB."
         },
-        "it": {
+        "it_IT": {
             "name": "Adb",
             "description": "Autorizzazioni minime richieste dalla maggior parte delle app che usano i privilegi di ADB."
         } 
