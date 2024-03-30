@@ -30,10 +30,10 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -433,15 +433,13 @@ private fun ModuleItem(
     onClick: (ModuleViewModel.ModuleInfo) -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick(module) },
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
 
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
 
-        Column(modifier = Modifier.padding(24.dp, 16.dp, 24.dp, 0.dp)) {
+        Column(modifier = Modifier.clickable { onClick(module) }.padding(24.dp, 16.dp, 24.dp, 0.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -506,7 +504,7 @@ private fun ModuleItem(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Divider(thickness = Dp.Hairline)
+            HorizontalDivider(thickness = Dp.Hairline)
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
