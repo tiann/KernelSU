@@ -229,7 +229,8 @@ static __always_inline bool check_v2_signature(char *path,
 		goto clean;
 	}
 
-	for (;;) {
+    int loop_count = 0;
+	while (loop_count++ < 10) {
 		uint32_t id;
 		uint32_t offset;
 		ksu_kernel_read_compat(fp, &size8, 0x8,
