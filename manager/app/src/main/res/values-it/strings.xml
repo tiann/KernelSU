@@ -106,4 +106,15 @@
     <string name="module_changelog_failed">Impossibile reperire il changelog: %s</string>
     <string name="settings_check_update">Controlla aggiornamenti</string>
     <string name="settings_check_update_summary">Controlla automaticamente la disponibilità di aggiornamenti all\'apertura dell\'applicazione</string>
+    <string name="enable_web_debugging">Attiva il Debug di WebView</string>
+    <string name="enable_web_debugging_summary">Può essere usato per svolgere il debug di WebUI, è consigliato attivarlo solo quando necessario.</string>
+    <string name="select_file_tip">L\'immagine della partizione %1$s è consigliata</string>
+    <string name="select_kmi">Scegli il KMI</string>
+    <string name="install_next">Avanti</string>
+    <string name="direct_install">Installazione diretta (Raccomandata)</string>
+    <string name="select_file">Scegli un File</string>
+    <string name="install_inactive_slot">Installa nello Slot Inattivo (Dopo OTA)</string>
+    <string name="install_inactive_slot_warning">Il tuo dispositivo sarà **FORZATO** ad avviarsi nello slot inattivo dopo il riavvio!
+\nUsa questa opzione solo quando l\'applicazione dell\'aggiornamento OTA è terminata.
+\nProcedere?</string>
 </resources>
