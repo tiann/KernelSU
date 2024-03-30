@@ -621,5 +621,12 @@
         "kernel_name": "android_kernel_samsung_gta4xl",
         "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
         "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
+    },
+    {
+        "maintainer": "rsuntk",
+        "maintainer_link": "https://github.com/rsuntk",
+        "kernel_name": "android_kernel_samsung_a03",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a03",
+        "devices": "Samsung Galaxy A03 | Unisoc T606 | Scorpio Kernel"
     }
 ]
