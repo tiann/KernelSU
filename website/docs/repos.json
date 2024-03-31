@@ -548,8 +548,8 @@
     {
         "maintainer": "rsuntk",
         "maintainer_link": "https://github.com/rsuntk",
-        "kernel_name": "android_kernel_samsung_a12s-4.19-rebased",
-        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s-4.19-rebased",
+        "kernel_name": "android_kernel_samsung_a12s",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s",
         "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
     },
     {
