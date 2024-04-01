@@ -56,8 +56,8 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
     }
 }
 
-fun execKsud(args: String): Boolean {
-    val shell = getRootShell()
+fun execKsud(args: String, newShell: Boolean = false): Boolean {
+    val shell = if (newShell) createRootShell() else getRootShell()
     return ShellUtils.fastCmdResult(shell, "${getKsuDaemonPath()} $args")
 }
 
@@ -140,6 +140,10 @@ fun installModule(
         onFinish(result.isSuccess)
         return result.isSuccess
     }
+}
+
+suspend fun shrinkModules(): Boolean = withContext(Dispatchers.IO) {
+    execKsud("module shrink", true)
 }
 
 @Parcelize

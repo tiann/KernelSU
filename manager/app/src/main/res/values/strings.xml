@@ -117,4 +117,6 @@
     <string name="install_next">Next</string>
     <string name="select_file_tip">%1$s partition image is recommended</string>
     <string name="select_kmi">Select KMI</string>
+    <string name="shrink_sparse_image">Minimize sparse image</string>
+    <string name="shrink_sparse_image_message">Adjust the sparse file mirror where the module is located to its actual size. Note that this may cause the module to function abnormally, please only use when necessary (such as for backup)</string>
 </resources>
