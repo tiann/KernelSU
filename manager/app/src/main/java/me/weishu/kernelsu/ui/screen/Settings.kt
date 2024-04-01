@@ -9,10 +9,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Compress
+import androidx.compose.material.icons.filled.ContactPage
+import androidx.compose.material.icons.filled.DeveloperMode
+import androidx.compose.material.icons.filled.Fence
+import androidx.compose.material.icons.filled.RemoveModerator
+import androidx.compose.material.icons.filled.Update
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -28,11 +45,14 @@ import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AboutDialog
+import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.SwitchItem
+import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
 import me.weishu.kernelsu.ui.util.getBugreportFile
+import me.weishu.kernelsu.ui.util.shrinkModules
 
 /**
  * @author weishu
@@ -52,6 +72,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             AboutDialog(it)
         }
         val loadingDialog = rememberLoadingDialog()
+        val shrinkDialog = rememberConfirmDialog()
 
         Column(
             modifier = Modifier
@@ -152,6 +173,29 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 context.getString(R.string.send_log)
                             )
                         )
+                    }
+                }
+            )
+
+            val shrink = stringResource(id = R.string.shrink_sparse_image)
+            val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
+            ListItem(
+                leadingContent = {
+                    Icon(
+                        Icons.Filled.Compress,
+                        shrink
+                    )
+                },
+                headlineContent = { Text(shrink) },
+                modifier = Modifier.clickable {
+                    scope.launch {
+                        val result =
+                            shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
+                        if (result == ConfirmResult.Confirmed) {
+                            loadingDialog.withLoading {
+                                shrinkModules()
+                            }
+                        }
                     }
                 }
             )
