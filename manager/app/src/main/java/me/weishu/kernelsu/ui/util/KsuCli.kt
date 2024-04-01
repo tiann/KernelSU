@@ -63,7 +63,7 @@ fun execKsud(args: String, newShell: Boolean = false): Boolean {
 
 fun install() {
     val start = SystemClock.elapsedRealtime()
-    val result = execKsud("install")
+    val result = execKsud("install", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 
@@ -93,14 +93,14 @@ fun toggleModule(id: String, enable: Boolean): Boolean {
     } else {
         "module disable $id"
     }
-    val result = execKsud(cmd)
+    val result = execKsud(cmd, true)
     Log.i(TAG, "$cmd result: $result")
     return result
 }
 
 fun uninstallModule(id: String): Boolean {
     val cmd = "module uninstall $id"
-    val result = execKsud(cmd)
+    val result = execKsud(cmd, true)
     Log.i(TAG, "uninstall module $id result: $result")
     return result
 }
