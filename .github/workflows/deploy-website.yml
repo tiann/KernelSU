@@ -41,7 +41,7 @@ jobs:
           cache: yarn # or pnpm / yarn
           cache-dependency-path: website/yarn.lock
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Build with VitePress
