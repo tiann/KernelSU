@@ -34,7 +34,7 @@ Bununla birlikte; WSA, ChromeOS ve konteyner tabanlı Android'in tamamı destekl
 
 ## Çeviri
 
-KernelSU'nun çevirisine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmeyecektir.
+KernelSU'nun başka dillere çevrilmesine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmeyecektir.
 
 ## Tartışma
 
