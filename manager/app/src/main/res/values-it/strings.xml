@@ -117,4 +117,6 @@
     <string name="install_inactive_slot_warning">Il tuo dispositivo sarà **FORZATO** ad avviarsi nello slot inattivo dopo il riavvio!
 \nUsa questa opzione solo quando l\'applicazione dell\'aggiornamento OTA è terminata.
 \nProcedere?</string>
+    <string name="shrink_sparse_image">Riduci la dimensione dell\'immagine moduli sparse al minimo</string>
+    <string name="shrink_sparse_image_message">Riduci la dimensione dell\'immagine sparse dei moduli alla sua reale dimenzione. Nota che questo potrebbe causare malfunzionamenti dei moduli quindi utilizzala solo quando necessario (ad esempio in caso di backup)</string>
 </resources>

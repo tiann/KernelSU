@@ -108,4 +108,9 @@
     <string name="app_profile_template_import_success">Succesvol geïmporteerd</string>
     <string name="open">Open</string>
     <string name="settings_check_update_summary">Controleer automatisch op updates bij het openen van de app</string>
+    <string name="direct_install">Directe installatie (aanbevolen)</string>
+    <string name="select_file">Selecteer een bestand</string>
+    <string name="grant_root_failed">Kan geen root verlenen!</string>
+    <string name="shrink_sparse_image">Minimaliseer schaarse afbeeldingen</string>
+    <string name="shrink_sparse_image_message">Wijzig het formaat van de beperkte afbeelding waar de module zich bevindt naar de werkelijke grootte. Houd er rekening mee dat dit ervoor kan zorgen dat de module abnormaal werkt, dus gebruik deze alleen wanneer dit nodig is (zoals voor back-up)</string>
 </resources>
