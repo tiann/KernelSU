@@ -118,4 +118,6 @@
 \n続く？</string>
     <string name="direct_install">直接インストール (推奨)</string>
     <string name="select_file">ファイルを選択してください</string>
+    <string name="shrink_sparse_image">まばらな画像を最小限に抑える</string>
+    <string name="shrink_sparse_image_message">モジュールが配置されているスパース イメージのサイズを実際のサイズに変更します。 モジュールが正常に動作しなくなる可能性がありますので、必要な場合（バックアップ等）にのみご使用ください</string>
 </resources>
