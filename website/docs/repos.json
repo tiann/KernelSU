@@ -635,5 +635,12 @@
         "kernel_name": "android_kernel_samsung_gts9fewifi",
         "kernel_link": "https://github.com/ArchVisions/android_kernel_samsung_gts9fewifi",
         "devices": "Samsung Tab S9 FE (gts9fewifi) | Exynos 1380"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyondx_lpos",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyondx_lpos",
+        "devices": "Galaxy S10 5G (KOR)"
     }
 ]
