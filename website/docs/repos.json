@@ -630,6 +630,13 @@
         "devices": "Samsung Galaxy A03 | Unisoc T606 | Scorpio Kernel"
     },
     {
+        "maintainer": "ArchVisions",
+        "maintainer_link": "https://github.com/ArchVisions",
+        "kernel_name": "android_kernel_samsung_gts9fewifi",
+        "kernel_link": "https://github.com/ArchVisions/android_kernel_samsung_gts9fewifi",
+        "devices": "Samsung Tab S9 FE (gts9fewifi) | Exynos 1380"
+    },
+    {
         "maintainer": "ravindu644",
         "maintainer_link": "https://github.com/ravindu644",
         "kernel_name": "android_kernel_beyondx_lpos",
