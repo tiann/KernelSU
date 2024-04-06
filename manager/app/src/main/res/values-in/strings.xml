@@ -82,10 +82,10 @@
     <string name="require_kernel_version">Versi KernelSU %d terlalu rendah agar manajer berfungsi normal. Harap membarui ke versi %d atau di atasnya!</string>
     <string name="module_changelog">Catatan Perubahan</string>
     <string name="app_profile_template_import_success">Berhasil diimpor</string>
-    <string name="app_profile_export_to_clipboard">Ekspor ke clipboard</string>
+    <string name="app_profile_export_to_clipboard">Ekspor ke papan klip</string>
     <string name="app_profile_template_export_empty">Tidak ditemukan templat lokal untuk diekspor!</string>
     <string name="app_profile_template_id_exist">Id templat sudah ada!</string>
-    <string name="app_profile_import_from_clipboard">Impor dari clipboard</string>
+    <string name="app_profile_import_from_clipboard">Impor dari papan klip</string>
     <string name="module_changelog_failed">Gagal mengambil Changelog: %s</string>
     <string name="app_profile_template_name">Nama</string>
     <string name="app_profile_template_id_invalid">Id templat tidak valid</string>
@@ -100,7 +100,7 @@
     <string name="app_profile_template_save">Simpan</string>
     <string name="settings_profile_template_summary">Atur templat Profil yang lokal dan daring</string>
     <string name="app_profile_template_delete">Hapus</string>
-    <string name="app_profile_template_import_empty">Clipboard kosong!</string>
+    <string name="app_profile_template_import_empty">Papan klip kosong!</string>
     <string name="app_profile_template_view">Lihat Templat</string>
     <string name="app_profile_template_readonly">ReadOnly</string>
     <string name="enable_web_debugging">Pengawakutuan WebView</string>
@@ -108,7 +108,7 @@
     <string name="select_file_tip">%1$s image partisi terekomendasi</string>
     <string name="select_kmi">Pilih KMI</string>
     <string name="install_next">Selanjutnya</string>
-    <string name="install_inactive_slot_warning">Gawai akan **DIPAKSA** but ke slot nonaktif!
+    <string name="install_inactive_slot_warning">Gawai akan **DIPAKSA** untuk but ke slot nonaktif!
 \nHANYA gunakan setelah proses OTA selesai.
 \nLanjutkan?</string>
     <string name="direct_install">Instal Langsung (rekomendasi)</string>
