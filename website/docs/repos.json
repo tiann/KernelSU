@@ -646,6 +646,20 @@
     {
         "maintainer": "ravindu644",
         "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyond1_lpos",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyond1_lpos",
+        "devices": "Galaxy S10"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyond2",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyond2",
+        "devices": "Galaxy S10+"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
         "kernel_name": "android_kernel_beyond0",
         "kernel_link": "https://github.com/ravindu644/android_kernel_beyond0",
         "devices": "Galaxy S10e"
