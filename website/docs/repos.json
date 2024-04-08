@@ -504,6 +504,13 @@
         "devices": "Realme C25/s and Narzo50A (even)"
     },
     {
+        "maintainer": "Tonklaistonton",
+        "maintainer_link": "https://github.com/Tonklaistonton",
+        "kernel_name": "NEXGatokernel",
+        "kernel_link": "https://github.com/Tonklaistonton/android_kernel_oneplus_sm6375",
+        "devices": "Realme 9 pro 5g  | Oneplus nord ce 2 lite "
+    },
+    {
         "maintainer": "CoolestEnoch",
         "maintainer_link": "https://github.com/CoolestEnoch",
         "kernel_name": "kernel-su-huawei-nova2",
