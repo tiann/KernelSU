@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\kernel",
+    "\\manager",
+    "\\manager\\app",
+    "\\scripts",
+    "\\userspace",
+    "\\userspace\\ksud",
+    "\\userspace\\ksud\\bin",
+    "\\userspace\\ksud\\bin\\aarch64"
+  ],
+  "SelectedNode": "\\testEnvironments.json",
+  "PreviewInSolutionExplorer": false
+}

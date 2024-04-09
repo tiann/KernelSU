@@ -1,0 +1,20 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "task-busybox",
+      "appliesTo": "userspace/ksud/bin/aarch64/busybox",
+      "type": "launch"
+    },
+    {
+      "taskLabel": "task-resetprop",
+      "appliesTo": "userspace/ksud/bin/aarch64/resetprop",
+      "type": "launch"
+    },
+    {
+      "taskLabel": "task-bootctl",
+      "appliesTo": "userspace/ksud/bin/aarch64/bootctl",
+      "type": "launch"
+    }
+  ]
+}
