@@ -366,7 +366,7 @@ fun launchApp(packageName: String) {
 
     val shell = getRootShell()
     val result =
-        shell.newJob().add("cmd activity start -n $(cmd package resolve-activity --brief $packageName | tail -n 1)").exec()
+        shell.newJob().add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n").exec()
     Log.i(TAG, "launch $packageName result: $result")
 }
 
