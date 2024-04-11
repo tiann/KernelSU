@@ -366,7 +366,7 @@ fun launchApp(packageName: String) {
 
     val shell = getRootShell()
     val result =
-        shell.newJob().add("monkey -p $packageName -c android.intent.category.LAUNCHER 1").exec()
+        shell.newJob().add("cmd activity start -n $(cmd package resolve-activity --brief $packageName | tail -n 1)").exec()
     Log.i(TAG, "launch $packageName result: $result")
 }
 
