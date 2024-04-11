@@ -120,6 +120,17 @@ fn is_magisk_patched(magiskboot: &Path, workding_dir: &Path) -> Result<bool> {
     Ok(status.code() == Some(1))
 }
 
+fn is_kernelsu_patched(magiskboot: &Path, workding_dir: &Path) -> Result<bool> {
+    let status = Command::new(magiskboot)
+        .current_dir(workding_dir)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .args(["cpio", "ramdisk.cpio", "exists kernelsu.ko"])
+        .status()?;
+
+    Ok(status.success())
+}
+
 fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     let status = Command::new("dd")
         .stdout(Stdio::null())
@@ -133,6 +144,79 @@ fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
         ifile.as_ref(),
         ofile.as_ref()
     );
+    Ok(())
+}
+
+pub fn restore(
+    image: impl AsRef<Path>,
+    magiskboot_path: Option<PathBuf>,
+    flash: bool,
+) -> Result<()> {
+    let image = image.as_ref();
+    ensure!(image.exists(), "boot image not found");
+    let workding_dir =
+        tempdir::TempDir::new("KernelSU").with_context(|| "create temp dir failed")?;
+    let magiskboot = find_magiskboot(magiskboot_path, workding_dir.path())?;
+
+    let (bootimage, bootdevice) = find_boot_image(&image, false, false, workding_dir.path())?;
+
+    println!("- Unpacking boot image");
+    let status = Command::new(&magiskboot)
+        .current_dir(workding_dir.path())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .arg("unpack")
+        .arg(bootimage.display().to_string())
+        .status()?;
+    ensure!(status.success(), "magiskboot unpack failed");
+
+    let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workding_dir.path())?;
+    ensure!(is_kernelsu_patched, "boot image is not patched by KernelSU");
+
+    // remove kernelsu.ko
+    do_cpio_cmd(&magiskboot, workding_dir.path(), "rm kernelsu.ko")?;
+
+    // if init.real is exist, restore it
+    let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init.real").is_ok();
+    if status {
+        do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init.real init")?;
+    } else {
+        let ramdisk = workding_dir.path().join("ramdisk.cpio");
+        std::fs::remove_file(ramdisk)?;
+    }
+
+    println!("- Repacking boot image");
+    let status = Command::new(&magiskboot)
+        .current_dir(workding_dir.path())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .arg("repack")
+        .arg(bootimage.display().to_string())
+        .status()?;
+    ensure!(status.success(), "magiskboot repack failed");
+
+    let new_boot = workding_dir.path().join("new-boot.img");
+    if image.exists() {
+        // if image is specified, write to output file
+        let output_dir = std::env::current_dir()?;
+        let now = chrono::Utc::now();
+        let output_image = output_dir.join(format!(
+            "kernelsu_restore_{}.img",
+            now.format("%Y%m%d_%H%M%S")
+        ));
+
+        if std::fs::rename(&new_boot, &output_image).is_err() {
+            std::fs::copy(&new_boot, &output_image)
+                .with_context(|| "copy out new boot failed".to_string())?;
+        }
+        println!("- Output file is written to");
+        println!("- {}", output_image.display().to_string().trim_matches('"'));
+    }
+    if flash {
+        println!("- Flashing new boot image");
+        flash_boot(bootdevice, new_boot)?;
+    }
+    println!("- Done!");
     Ok(())
 }
 
@@ -186,68 +270,14 @@ fn do_patch(
     let workding_dir =
         tempdir::TempDir::new("KernelSU").with_context(|| "create temp dir failed")?;
 
-    let bootimage;
-
-    let mut bootdevice = None;
-
-    if let Some(ref image) = image {
-        ensure!(image.exists(), "boot image not found");
-        bootimage = std::fs::canonicalize(image)?;
-    } else {
-        let mut slot_suffix =
-            utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
-
-        if !slot_suffix.is_empty() && ota {
-            if slot_suffix == "_a" {
-                slot_suffix = "_b".to_string()
-            } else {
-                slot_suffix = "_a".to_string()
-            }
-        };
-
-        let init_boot_exist =
-            Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
-        let boot_partition = if !is_replace_kernel && init_boot_exist {
-            format!("/dev/block/by-name/init_boot{slot_suffix}")
-        } else {
-            format!("/dev/block/by-name/boot{slot_suffix}")
-        };
-
-        println!("- Bootdevice: {boot_partition}");
-        let tmp_boot_path = workding_dir.path().join("boot.img");
-
-        dd(&boot_partition, &tmp_boot_path)?;
-
-        ensure!(tmp_boot_path.exists(), "boot image not found");
-
-        bootimage = tmp_boot_path;
-        bootdevice = Some(boot_partition);
-    };
+    let (bootimage, bootdevice) =
+        find_boot_image(&image, ota, is_replace_kernel, workding_dir.path())?;
 
     // try extract magiskboot/bootctl
     let _ = assets::ensure_binaries(false);
 
     // extract magiskboot
-    let magiskboot = {
-        if which("magiskboot").is_ok() {
-            let _ = assets::ensure_binaries(true);
-            "magiskboot".into()
-        } else {
-            // magiskboot is not in $PATH, use builtin or specified one
-            let magiskboot = if let Some(magiskboot_path) = magiskboot_path {
-                std::fs::canonicalize(magiskboot_path)?
-            } else {
-                let magiskboot_path = workding_dir.path().join("magiskboot");
-                assets::copy_assets_to_file("magiskboot", &magiskboot_path)
-                    .with_context(|| "copy magiskboot failed")?;
-                magiskboot_path
-            };
-            ensure!(magiskboot.exists(), "{magiskboot:?} is not exist");
-            #[cfg(unix)]
-            let _ = std::fs::set_permissions(&magiskboot, std::fs::Permissions::from_mode(0o755));
-            magiskboot
-        }
-    };
+    let magiskboot = find_magiskboot(magiskboot_path, workding_dir.path())?;
 
     if let Some(kernel) = kernel {
         std::fs::copy(kernel, workding_dir.path().join("kernel"))
@@ -302,8 +332,7 @@ fn do_patch(
     );
 
     println!("- Adding KernelSU LKM");
-    let is_kernelsu_patched =
-        do_cpio_cmd(&magiskboot, workding_dir.path(), "exists kernelsu.ko").is_ok();
+    let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workding_dir.path())?;
     if !is_kernelsu_patched {
         // kernelsu.ko is not exist, backup init if necessary
         let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
@@ -350,16 +379,7 @@ fn do_patch(
 
     if flash {
         println!("- Flashing new boot image");
-        let Some(bootdevice) = bootdevice else {
-            bail!("boot device not found")
-        };
-        let status = Command::new("blockdev")
-            .arg("--setrw")
-            .arg(&bootdevice)
-            .status()?;
-        ensure!(status.success(), "set boot device rw failed");
-
-        dd(&new_boot, &bootdevice).with_context(|| "flash boot failed")?;
+        flash_boot(bootdevice, new_boot)?;
 
         if ota {
             post_ota()?;
@@ -368,6 +388,87 @@ fn do_patch(
 
     println!("- Done!");
     Ok(())
+}
+
+fn flash_boot(bootdevice: Option<String>, new_boot: PathBuf) -> Result<()> {
+    let Some(bootdevice) = bootdevice else {
+        bail!("boot device not found")
+    };
+    let status = Command::new("blockdev")
+        .arg("--setrw")
+        .arg(&bootdevice)
+        .status()?;
+    ensure!(status.success(), "set boot device rw failed");
+    dd(&new_boot, &bootdevice).with_context(|| "flash boot failed")?;
+    Ok(())
+}
+
+fn find_magiskboot(magiskboot_path: Option<PathBuf>, workding_dir: &Path) -> Result<PathBuf> {
+    let magiskboot = {
+        if which("magiskboot").is_ok() {
+            let _ = assets::ensure_binaries(true);
+            "magiskboot".into()
+        } else {
+            // magiskboot is not in $PATH, use builtin or specified one
+            let magiskboot = if let Some(magiskboot_path) = magiskboot_path {
+                std::fs::canonicalize(magiskboot_path)?
+            } else {
+                let magiskboot_path = workding_dir.join("magiskboot");
+                assets::copy_assets_to_file("magiskboot", &magiskboot_path)
+                    .with_context(|| "copy magiskboot failed")?;
+                magiskboot_path
+            };
+            ensure!(magiskboot.exists(), "{magiskboot:?} is not exist");
+            #[cfg(unix)]
+            let _ = std::fs::set_permissions(&magiskboot, std::fs::Permissions::from_mode(0o755));
+            magiskboot
+        }
+    };
+    Ok(magiskboot)
+}
+
+fn find_boot_image(
+    image: &Option<PathBuf>,
+    ota: bool,
+    is_replace_kernel: bool,
+    workding_dir: &Path,
+) -> Result<(PathBuf, Option<String>)> {
+    let bootimage;
+    let mut bootdevice = None;
+    if let Some(ref image) = *image {
+        ensure!(image.exists(), "boot image not found");
+        bootimage = std::fs::canonicalize(image)?;
+    } else {
+        let mut slot_suffix =
+            utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
+
+        if !slot_suffix.is_empty() && ota {
+            if slot_suffix == "_a" {
+                slot_suffix = "_b".to_string()
+            } else {
+                slot_suffix = "_a".to_string()
+            }
+        };
+
+        let init_boot_exist =
+            Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
+        let boot_partition = if !is_replace_kernel && init_boot_exist {
+            format!("/dev/block/by-name/init_boot{slot_suffix}")
+        } else {
+            format!("/dev/block/by-name/boot{slot_suffix}")
+        };
+
+        println!("- Bootdevice: {boot_partition}");
+        let tmp_boot_path = workding_dir.join("boot.img");
+
+        dd(&boot_partition, &tmp_boot_path)?;
+
+        ensure!(tmp_boot_path.exists(), "boot image not found");
+
+        bootimage = tmp_boot_path;
+        bootdevice = Some(boot_partition);
+    };
+    Ok((bootimage, bootdevice))
 }
 
 fn post_ota() -> Result<()> {
