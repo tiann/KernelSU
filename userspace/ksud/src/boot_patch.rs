@@ -148,12 +148,10 @@ fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
 }
 
 pub fn restore(
-    image: impl AsRef<Path>,
+    image: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
     flash: bool,
 ) -> Result<()> {
-    let image = image.as_ref();
-    ensure!(image.exists(), "boot image not found");
     let workding_dir =
         tempdir::TempDir::new("KernelSU").with_context(|| "create temp dir failed")?;
     let magiskboot = find_magiskboot(magiskboot_path, workding_dir.path())?;
@@ -196,7 +194,7 @@ pub fn restore(
     ensure!(status.success(), "magiskboot repack failed");
 
     let new_boot = workding_dir.path().join("new-boot.img");
-    if image.exists() {
+    if image.is_some() {
         // if image is specified, write to output file
         let output_dir = std::env::current_dir()?;
         let now = chrono::Utc::now();
@@ -399,7 +397,7 @@ fn flash_boot(bootdevice: Option<String>, new_boot: PathBuf) -> Result<()> {
         .arg(&bootdevice)
         .status()?;
     ensure!(status.success(), "set boot device rw failed");
-    dd(&new_boot, &bootdevice).with_context(|| "flash boot failed")?;
+    dd(new_boot, &bootdevice).with_context(|| "flash boot failed")?;
     Ok(())
 }
 
