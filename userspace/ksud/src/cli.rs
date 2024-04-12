@@ -371,7 +371,7 @@ pub fn run() -> Result<()> {
             boot,
             magiskboot,
             flash,
-        } => crate::boot_patch::restore(boot.unwrap(), magiskboot, flash),
+        } => crate::boot_patch::restore(boot, magiskboot, flash),
     };
 
     if let Err(e) = &result {
