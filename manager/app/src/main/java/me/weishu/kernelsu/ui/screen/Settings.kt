@@ -63,6 +63,7 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
+import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.ui.util.shrinkModules
 
@@ -214,7 +215,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
             if (lkmMode) {
-                UninstallItem {
+                UninstallItem(navigator) {
                     loadingDialog.withLoading(it)
                 }
             }
@@ -237,7 +238,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 }
 
 @Composable
-fun UninstallItem(withLoading: suspend (suspend () -> Unit) -> Unit) {
+fun UninstallItem(
+    navigator: DestinationsNavigator,
+    withLoading: suspend (suspend () -> Unit) -> Unit
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val uninstallConfirmDialog = rememberConfirmDialog()
@@ -255,7 +259,9 @@ fun UninstallItem(withLoading: suspend (suspend () -> Unit) -> Unit) {
                     when (uninstallType) {
                         UninstallType.TEMPORARY -> showTodo()
                         UninstallType.PERMANENT -> showTodo()
-                        UninstallType.RESTORE_STOCK_IMAGE -> showTodo()
+                        UninstallType.RESTORE_STOCK_IMAGE -> navigator.navigate(
+                            FlashScreenDestination(FlashIt.FlashRestore)
+                        )
                         UninstallType.NONE -> Unit
                     }
                 }
