@@ -119,4 +119,9 @@
 \nProcedere?</string>
     <string name="shrink_sparse_image">Riduci la dimensione dell\'immagine moduli sparse al minimo</string>
     <string name="shrink_sparse_image_message">Riduci la dimensione dell\'immagine sparse dei moduli alla sua reale dimenzione. Nota che questo potrebbe causare malfunzionamenti dei moduli quindi utilizzala solo quando necessario (ad esempio in caso di backup)</string>
+    <string name="settings_uninstall">Disinstalla</string>
+    <string name="settings_uninstall_temporary">Disinstalla Temporaneamente</string>
+    <string name="settings_uninstall_permanent">Disinstalla Permanentemente</string>
+    <string name="settings_restore_stock_image">Ripristina immagine originale del produttore</string>
+    <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU, ripristina lo stato originale dopo il prossimo riavvio.</string>
 </resources>
