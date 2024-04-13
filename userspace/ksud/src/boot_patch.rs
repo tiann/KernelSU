@@ -381,7 +381,8 @@ fn do_patch(
         );
         let output = String::from_utf8(output.stdout)?;
         let output = output.trim();
-        let target = format!("{KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{output}");
+        let output = format!("{KSU_BACKUP_FILE_PREFIX}{output}");
+        let target = format!("{KSU_BACKUP_DIR}/{output}");
         std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
         std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes())
             .context("write sha1")?;
@@ -392,7 +393,7 @@ fn do_patch(
         )?;
         println!("- Stock image has been backup to");
         println!("{target}");
-        backup = Some(target);
+        backup = Some(output);
     }
 
     do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;
@@ -440,14 +441,16 @@ fn do_patch(
     }
 
     if let Some(backup) = backup {
-        println!("Clean up backup");
+        println!("- Clean up backup");
         for entry in std::fs::read_dir("/data")? {
             let entry = entry?;
             let path = entry.path();
             if path.is_file() {
                 let name = path.file_name().unwrap().to_string_lossy().to_string();
                 if name != backup && name.starts_with(KSU_BACKUP_FILE_PREFIX) {
-                    let _ = std::fs::remove_file(path);
+                    if let Ok(_) = std::fs::remove_file(path) {
+                        println!("removed {name}");
+                    }
                 }
             }
         }
