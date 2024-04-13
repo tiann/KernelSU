@@ -119,4 +119,15 @@
     <string name="select_file_tip">يوصى باستخدام صورة القسم %1$s</string>
     <string name="shrink_sparse_image">تصغير الصورة المتفرقة</string>
     <string name="shrink_sparse_image_message">قم بتغيير حجم الصورة المتفرقة حيث توجد الإضافة إلى حجمها الفعلي. لاحظ أن هذا قد يتسبب في عمل الإضافة بشكل غير طبيعي، لذا يرجى استخدامها فقط عند الضرورة (مثل النسخ الاحتياطي)</string>
+    <string name="settings_uninstall">إلغاء التثبيت</string>
+    <string name="settings_uninstall_temporary">إلغاء التثبيت مؤقتًا</string>
+    <string name="settings_uninstall_permanent">إلغاء التثبيت بشكل دائم</string>
+    <string name="settings_restore_stock_image">استعادة الصورة الاصلية</string>
+    <string name="settings_uninstall_permanent_message">‬إلغاء تثبيت KernelSU (الجذر وجميع الوحدات) بشكل كامل ودائم.</string>
+    <string name="flashing">تركيب</string>
+    <string name="flash_success">نجح التركيب</string>
+    <string name="flash_failed">فشل التركيب</string>
+    <string name="selected_lkm">صورة lkm المحددة: %s</string>
+    <string name="settings_restore_stock_image_message">استعادة صورة المصنع المخزنة (في حالة وجود نسخة احتياطية)، والتي تُستخدم عادة قبل OTA؛ إذا كنت بحاجة إلى إلغاء تثبيت KernelSU، فيرجى استخدام \"إلغاء التثبيت الدائم\".</string>
+    <string name="settings_uninstall_temporary_message">قم بإلغاء تثبيت KernelSU مؤقتًا، واستعد إلى حالته الأصلية بعد إعادة التشغيل التالية.</string>
 </resources>
