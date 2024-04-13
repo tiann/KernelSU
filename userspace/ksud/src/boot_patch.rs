@@ -395,7 +395,7 @@ fn do_patch(
             "add 0755 orig.ksu orig.ksu",
         )?;
         println!("- Stock image has been backup to");
-        println!("{target}");
+        println!("- {target}");
         backup = Some(output);
     }
 
@@ -443,22 +443,27 @@ fn do_patch(
         }
     }
 
-    if let Some(backup) = backup {
-        println!("- Clean up backup");
-        for entry in std::fs::read_dir("/data")? {
-            let entry = entry?;
-            let path = entry.path();
-            if path.is_file() {
-                let name = path.file_name().unwrap().to_string_lossy().to_string();
-                if name != backup
-                    && name.starts_with(KSU_BACKUP_FILE_PREFIX)
-                    && std::fs::remove_file(path).is_ok()
-                {
-                    println!("removed {name}");
+    let cleanup = || -> Result<()> {
+        if let Some(backup) = backup {
+            println!("- Clean up backup");
+            for entry in std::fs::read_dir("/data")? {
+                let entry = entry?;
+                let path = entry.path();
+                if path.is_file() {
+                    let name = path.file_name().unwrap().to_string_lossy().to_string();
+                    if name != backup
+                        && name.starts_with(KSU_BACKUP_FILE_PREFIX)
+                        && std::fs::remove_file(path).is_ok()
+                    {
+                        println!("removed {name}");
+                    }
                 }
             }
         }
-    }
+        Ok(())
+    };
+
+    let _ = cleanup();
 
     println!("- Done!");
     Ok(())

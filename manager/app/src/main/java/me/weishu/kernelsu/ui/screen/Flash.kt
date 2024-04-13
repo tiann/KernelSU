@@ -89,8 +89,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             flashIt(flashIt, onFinish = { showReboot, code ->
                 if (code != 0) {
                     text += "Error: exit code = $code.\nPlease save and check the log.\n"
-                } else {
-                    text += "Success."
                 }
                 if (showReboot) {
                     text += "\n\n\n"
