@@ -124,4 +124,5 @@
     <string name="settings_uninstall_permanent">Disinstalla Permanentemente</string>
     <string name="settings_restore_stock_image">Ripristina immagine originale del produttore</string>
     <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU, ripristina lo stato originale dopo il prossimo riavvio.</string>
+    <string name="settings_uninstall_permanent_message">Disinstalla KernelSU (Root e tutti i modili) completamente e permanentemente.</string>
 </resources>
