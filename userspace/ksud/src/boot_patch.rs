@@ -174,7 +174,11 @@ pub fn restore(
 
     let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists orig.ksu");
     let new_boot = if status.is_ok() {
-        do_cpio_cmd(&magiskboot, workding_dir.path(), "extract orig.ksu orig.ksu")?;
+        do_cpio_cmd(
+            &magiskboot,
+            workding_dir.path(),
+            "extract orig.ksu orig.ksu",
+        )?;
         let sha = std::fs::read(workding_dir.path().join("orig.ksu"))?;
         let sha = String::from_utf8(sha)?;
         let sha = sha.trim();
@@ -291,7 +295,8 @@ fn do_patch(
 
     let workding_dir = tempdir::TempDir::new("KernelSU").context("create temp dir failed")?;
 
-    let (bootimage, bootdevice) = find_boot_image(&image, ota, is_replace_kernel, workding_dir.path())?;
+    let (bootimage, bootdevice) =
+        find_boot_image(&image, ota, is_replace_kernel, workding_dir.path())?;
 
     let bootimage = bootimage.display().to_string();
 
@@ -302,7 +307,8 @@ fn do_patch(
     let magiskboot = find_magiskboot(magiskboot_path, workding_dir.path())?;
 
     if let Some(kernel) = kernel {
-        std::fs::copy(kernel, workding_dir.path().join("kernel")).context("copy kernel from failed")?;
+        std::fs::copy(kernel, workding_dir.path().join("kernel"))
+            .context("copy kernel from failed")?;
     }
 
     println!("- Preparing assets");
@@ -375,8 +381,13 @@ fn do_patch(
         let output = output.trim();
         let target = format!("/data/ksu_backup_{output}");
         std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
-        std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes()).context("write sha1")?;
-        do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 orig.ksu orig.ksu")?;
+        std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes())
+            .context("write sha1")?;
+        do_cpio_cmd(
+            &magiskboot,
+            workding_dir.path(),
+            "add 0755 orig.ksu orig.ksu",
+        )?;
         println!("- Stock image has been backup to");
         println!("{target}");
     }
