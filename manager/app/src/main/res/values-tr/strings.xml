@@ -121,4 +121,11 @@
     <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
     <string name="shrink_sparse_image">Seyrek görüntüyü minimize edin</string>
     <string name="shrink_sparse_image_message">Modülün bulunduğu seyrek görüntüyü gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi)</string>
+    <string name="settings_uninstall_temporary">Geçici Olarak Kaldır</string>
+    <string name="settings_uninstall_permanent">Kalıcı Olarak Kaldır</string>
+    <string name="settings_restore_stock_image">Asıl Kalıbı Geri Yükle</string>
+    <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldır, bir sonraki yeniden başlatmadan sonra orijinal durumuna geri yükle.</string>
+    <string name="settings_uninstall">Kaldır</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (Root ve tüm modüller) tamamen ve kalıcı olarak kaldırılıyor.</string>
+    <string name="settings_restore_stock_image_message">Asıl fabrika kalıbını geri yükler (yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı Olarak Kaldır\" seçeneğini kullanın.</string>
 </resources>
