@@ -12,9 +12,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -37,9 +49,17 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.installModule
 import me.weishu.kernelsu.ui.util.reboot
+import me.weishu.kernelsu.ui.util.restoreBoot
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+
+enum class FlashingStatus {
+    FLASHING,
+    SUCCESS,
+    FAILED
+}
 
 /**
  * @author weishu
@@ -57,19 +77,24 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    var flashing by rememberSaveable {
+        mutableStateOf(FlashingStatus.FLASHING)
+    }
 
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
             return@LaunchedEffect
         }
         withContext(Dispatchers.IO) {
-            flashIt(flashIt, onFinish = { showReboot ->
+            flashIt(flashIt, onFinish = { showReboot, code ->
+                if (code != 0) {
+                    text += "Error: exit code = $code.\nPlease save and check the log.\n"
+                }
                 if (showReboot) {
-                    for (i in 0..2) {
-                        text += "\n"
-                    }
+                    text += "\n\n\n"
                     showFloatAction = true
                 }
+                flashing = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
             }, onStdout = {
                 text += "$it\n"
                 logContent.append(it).append("\n")
@@ -82,6 +107,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     Scaffold(
         topBar = {
             TopBar(
+                flashing,
                 onBack = {
                     navigator.popBackStack()
                 },
@@ -146,10 +172,12 @@ sealed class FlashIt : Parcelable {
         FlashIt()
 
     data class FlashModule(val uri: Uri) : FlashIt()
+
+    data object FlashRestore : FlashIt()
 }
 
 fun flashIt(
-    flashIt: FlashIt, onFinish: (Boolean) -> Unit,
+    flashIt: FlashIt, onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ) {
@@ -164,14 +192,26 @@ fun flashIt(
         )
 
         is FlashIt.FlashModule -> installModule(flashIt.uri, onFinish, onStdout, onStderr)
+
+        FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
+private fun TopBar(status: FlashingStatus, onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
     TopAppBar(
-        title = { Text(stringResource(R.string.install)) },
+        title = {
+            Text(
+                stringResource(
+                    when (status) {
+                        FlashingStatus.FLASHING -> R.string.flashing
+                        FlashingStatus.SUCCESS -> R.string.flash_success
+                        FlashingStatus.FAILED -> R.string.flash_failed
+                    }
+                )
+            )
+        },
         navigationIcon = {
             IconButton(
                 onClick = onBack

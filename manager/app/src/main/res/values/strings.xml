@@ -126,4 +126,8 @@
     <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU, restore to original state after next reboot.</string>
     <string name="settings_uninstall_permanent_message">Uninstalling KernelSU(Root and all modules) completely and permanently.</string>
     <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU, please use \"Permanent Uninstall\".</string>
+    <string name="flashing">Flashing</string>
+    <string name="flash_success">Flash success</string>
+    <string name="flash_failed">Flash failed</string>
+    <string name="selected_lkm">Selected lkm: %s</string>
 </resources>
