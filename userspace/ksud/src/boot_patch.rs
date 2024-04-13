@@ -449,12 +449,14 @@ fn do_patch(
             for entry in dir.flatten() {
                 let path = entry.path();
                 if path.is_file() {
-                    let name = path.file_name().unwrap().to_string_lossy().to_string();
-                    if name != backup
-                        && name.starts_with(KSU_BACKUP_FILE_PREFIX)
-                        && std::fs::remove_file(path).is_ok()
-                    {
-                        println!("removed {name}");
+                    if let Some(name) = path.file_name() {
+                        let name = name.to_string_lossy().to_string();
+                        if name != backup
+                            && name.starts_with(KSU_BACKUP_FILE_PREFIX)
+                            && std::fs::remove_file(path).is_ok()
+                        {
+                            println!("- removed {name}");
+                        }
                     }
                 }
             }
