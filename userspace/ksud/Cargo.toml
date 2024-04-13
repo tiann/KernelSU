@@ -2,7 +2,7 @@
 name = "ksud"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.76"
+rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
