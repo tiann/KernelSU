@@ -184,7 +184,7 @@ pub fn restore(
         let sha = std::fs::read(workding_dir.path().join("orig.ksu"))?;
         let sha = String::from_utf8(sha)?;
         let sha = sha.trim();
-        let backup_path = format!("{KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha}");
+        let backup_path = format!("{KSU_BACKUP_DIR}/{sha}");
         if Path::new(&backup_path).is_file() {
             new_boot = Some(PathBuf::from(backup_path));
             from_backup = true;
