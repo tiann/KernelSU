@@ -119,4 +119,11 @@
     <string name="select_kmi">Select KMI</string>
     <string name="shrink_sparse_image">Minimize sparse image</string>
     <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup)</string>
+    <string name="settings_uninstall">Uninstall</string>
+    <string name="settings_uninstall_temporary">Uninstall Temporarily</string>
+    <string name="settings_uninstall_permanent">Uninstall Permanently</string>
+    <string name="settings_restore_stock_image">Restore Stock Image</string>
+    <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU, restore to original state after next reboot.</string>
+    <string name="settings_uninstall_permanent_message">Uninstalling KernelSU(Root and all modules) completely and permanently.</string>
+    <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU, please use \"Permanent Uninstall\".</string>
 </resources>
