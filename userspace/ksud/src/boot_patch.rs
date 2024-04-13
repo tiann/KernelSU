@@ -1,5 +1,9 @@
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
+use std::process::Stdio;
 
 use anyhow::anyhow;
 use anyhow::bail;
@@ -8,12 +12,9 @@ use anyhow::Context;
 use anyhow::Result;
 use rustix::fs;
 use rustix::fs::Access;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::process::Stdio;
 use which::which;
 
+use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
 use crate::{assets, utils};
 
 #[cfg(target_os = "android")]
@@ -173,7 +174,9 @@ pub fn restore(
     ensure!(is_kernelsu_patched, "boot image is not patched by KernelSU");
 
     let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists orig.ksu");
-    let new_boot = if status.is_ok() {
+    let mut new_boot = None;
+    let mut from_backup = false;
+    if status.is_ok() {
         do_cpio_cmd(
             &magiskboot,
             workding_dir.path(),
@@ -182,46 +185,44 @@ pub fn restore(
         let sha = std::fs::read(workding_dir.path().join("orig.ksu"))?;
         let sha = String::from_utf8(sha)?;
         let sha = sha.trim();
-        let backup_path = format!("/data/ksu_backup_{sha}");
+        let backup_path = format!("{KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha}");
         if fs::access(&backup_path, Access::EXISTS).is_ok() {
             println!("- Flashing new boot image using backup {backup_path}");
-            Some(PathBuf::from(backup_path))
+            new_boot = Some(PathBuf::from(backup_path));
+            from_backup = true;
         } else {
-            println!("Warning: no backup /data/ksu_backup_{sha} found!");
-            None
+            println!("Warning: no backup {KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha} found!");
         }
     } else {
         println!("Warning: no backup found!");
-        None
-    };
+    }
 
-    let new_boot = match new_boot {
-        Some(v) => v,
-        None => {
-            // remove kernelsu.ko
-            do_cpio_cmd(&magiskboot, workding_dir.path(), "rm kernelsu.ko")?;
+    if new_boot.is_none() {
+        // remove kernelsu.ko
+        do_cpio_cmd(&magiskboot, workding_dir.path(), "rm kernelsu.ko")?;
 
-            // if init.real exists, restore it
-            let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init.real").is_ok();
-            if status {
-                do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init.real init")?;
-            } else {
-                let ramdisk = workding_dir.path().join("ramdisk.cpio");
-                std::fs::remove_file(ramdisk)?;
-            }
-
-            println!("- Repacking boot image");
-            let status = Command::new(&magiskboot)
-                .current_dir(workding_dir.path())
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .arg("repack")
-                .arg(bootimage.display().to_string())
-                .status()?;
-            ensure!(status.success(), "magiskboot repack failed");
-            workding_dir.path().join("new-boot.img")
+        // if init.real exists, restore it
+        let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init.real").is_ok();
+        if status {
+            do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init.real init")?;
+        } else {
+            let ramdisk = workding_dir.path().join("ramdisk.cpio");
+            std::fs::remove_file(ramdisk)?;
         }
-    };
+
+        println!("- Repacking boot image");
+        let status = Command::new(&magiskboot)
+            .current_dir(workding_dir.path())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .arg("repack")
+            .arg(bootimage.display().to_string())
+            .status()?;
+        ensure!(status.success(), "magiskboot repack failed");
+        new_boot = Some(workding_dir.path().join("new-boot.img"));
+    }
+
+    let new_boot = new_boot.unwrap();
 
     if image.is_some() {
         // if image is specified, write to output file
@@ -232,7 +233,7 @@ pub fn restore(
             now.format("%Y%m%d_%H%M%S")
         ));
 
-        if std::fs::rename(&new_boot, &output_image).is_err() {
+        if from_backup || std::fs::rename(&new_boot, &output_image).is_err() {
             std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
         }
         println!("- Output file is written to");
@@ -360,6 +361,7 @@ fn do_patch(
 
     println!("- Adding KernelSU LKM");
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workding_dir.path())?;
+    let mut backup = None;
     if !is_kernelsu_patched {
         // kernelsu.ko is not exist, backup init if necessary
         let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
@@ -379,7 +381,7 @@ fn do_patch(
         );
         let output = String::from_utf8(output.stdout)?;
         let output = output.trim();
-        let target = format!("/data/ksu_backup_{output}");
+        let target = format!("{KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{output}");
         std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
         std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes())
             .context("write sha1")?;
@@ -390,6 +392,7 @@ fn do_patch(
         )?;
         println!("- Stock image has been backup to");
         println!("{target}");
+        backup = Some(target);
     }
 
     do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;
@@ -433,6 +436,20 @@ fn do_patch(
 
         if ota {
             post_ota()?;
+        }
+    }
+
+    if let Some(backup) = backup {
+        println!("Clean up backup");
+        for entry in std::fs::read_dir("/data")? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_file() {
+                let name = path.file_name().unwrap().to_string_lossy().to_string();
+                if name != backup && name.starts_with(KSU_BACKUP_FILE_PREFIX) {
+                    let _ = std::fs::remove_file(path);
+                }
+            }
         }
     }
 
