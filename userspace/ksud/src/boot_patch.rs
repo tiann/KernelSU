@@ -443,11 +443,10 @@ fn do_patch(
         }
     }
 
-    let cleanup = || -> Result<()> {
-        if let Some(backup) = backup {
-            println!("- Clean up backup");
-            for entry in std::fs::read_dir("/data")? {
-                let entry = entry?;
+    if let Some(backup) = backup {
+        println!("- Clean up backup");
+        if let Ok(dir) = std::fs::read_dir("/data") {
+            for entry in dir.flatten() {
                 let path = entry.path();
                 if path.is_file() {
                     let name = path.file_name().unwrap().to_string_lossy().to_string();
@@ -460,10 +459,7 @@ fn do_patch(
                 }
             }
         }
-        Ok(())
-    };
-
-    let _ = cleanup();
+    }
 
     println!("- Done!");
     Ok(())
