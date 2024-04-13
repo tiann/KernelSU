@@ -64,10 +64,10 @@
     <string name="profile_groups">Kelompok</string>
     <string name="profile_capabilities">Kemampuan</string>
     <string name="profile_selinux_context">Konteks SELinux</string>
-    <string name="profile_umount_modules">Umount Module</string>
+    <string name="profile_umount_modules">Umount Modul</string>
     <string name="failed_to_update_app_profile">Gagal membarui Profil pada %s</string>
-    <string name="settings_umount_modules_default">Umount Module secara bawaan</string>
-    <string name="settings_umount_modules_default_summary">Menggunakan \"Umount Module\" secara universal pada Profil aplikasi. Jika diaktifkan, akan menghapus semua modifikasi sistem untuk aplikasi yang tidak memiliki set Profil.</string>
+    <string name="settings_umount_modules_default">Melepas Modul secara bawaan</string>
+    <string name="settings_umount_modules_default_summary">Menggunakan \"Umount Modul\" secara universal pada Profil aplikasi. Jika diaktifkan, akan menghapus semua modifikasi sistem untuk aplikasi yang tidak memiliki set Profil.</string>
     <string name="profile_umount_modules_summary">Aktifkan opsi ini agar KernelSU dapat memulihkan kembali berkas termodifikasi oleh modul pada aplikasi ini.</string>
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Aturan</string>
@@ -120,4 +120,11 @@
     <string name="settings_check_update_summary">Cek terbaru setiap membuka aplikasi</string>
     <string name="shrink_sparse_image">Meminimalkan sparse image</string>
     <string name="shrink_sparse_image_message">Mengembalikan sparse image lokasi modul berada ke ukuran sebenarnya. Dapat menyebabkan modul bekerja abnormal, maka gunakan saat dibutuhkan saja (mis. untuk pencadangan)</string>
+    <string name="settings_uninstall_permanent_message">Hapus permanen KernelSU (root dan semua modul).</string>
+    <string name="settings_uninstall_temporary">Hapus Temporer</string>
+    <string name="settings_restore_stock_image">Pulihkan Image Asal</string>
+    <string name="settings_uninstall">Hapus</string>
+    <string name="settings_uninstall_temporary_message">Hapus Temporer KernelSU, pulihkan ke kondisi asali setelah but selanjutnya.</string>
+    <string name="settings_uninstall_permanent">Hapus Permanen</string>
+    <string name="settings_restore_stock_image_message">Pulihkan image bawaan ROM (jika cadangan tersedia), umumnya dilakukan sebelum OTA; jika ingin menghapus KernelSU, gunakan fungsi \"Hapus Permanen\".</string>
 </resources>
