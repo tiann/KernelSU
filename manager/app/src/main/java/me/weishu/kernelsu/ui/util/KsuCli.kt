@@ -106,7 +106,10 @@ fun uninstallModule(id: String): Boolean {
 }
 
 fun installModule(
-    uri: Uri, onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+    uri: Uri,
+    onFinish: (Boolean, Int) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
 ): Boolean {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
@@ -137,13 +140,13 @@ fun installModule(
 
         file.delete()
 
-        onFinish(result.isSuccess)
+        onFinish(result.isSuccess, result.code)
         return result.isSuccess
     }
 }
 
 fun restoreBoot(
-    onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
     val shell = createRootShell()
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
@@ -165,7 +168,7 @@ fun restoreBoot(
             .to(stdoutCallback, stderrCallback)
             .exec()
 
-    onFinish(result.isSuccess)
+    onFinish(result.isSuccess, result.code)
     return result.isSuccess
 }
 
@@ -184,7 +187,7 @@ fun installBoot(
     bootUri: Uri?,
     lkm: LkmSelection,
     ota: Boolean,
-    onFinish: (Boolean) -> Unit,
+    onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): Boolean {
@@ -265,7 +268,7 @@ fun installBoot(
     lkmFile?.delete()
 
     // if boot uri is empty, it is direct install, when success, we should show reboot button
-    onFinish(bootUri == null && result.isSuccess)
+    onFinish(bootUri == null && result.isSuccess, result.code)
     return result.isSuccess
 }
 

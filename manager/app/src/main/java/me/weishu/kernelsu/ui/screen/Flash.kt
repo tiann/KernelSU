@@ -55,6 +55,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+enum class FlashingStatus {
+    FLASHING,
+    SUCCESS,
+    FAILED
+}
+
 /**
  * @author weishu
  * @date 2023/1/1.
@@ -71,19 +77,26 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    var flashing by rememberSaveable {
+        mutableStateOf(FlashingStatus.FLASHING)
+    }
 
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
             return@LaunchedEffect
         }
         withContext(Dispatchers.IO) {
-            flashIt(flashIt, onFinish = { showReboot ->
+            flashIt(flashIt, onFinish = { showReboot, code ->
+                if (code != 0) {
+                    text += "Error: exit code = $code.\nPlease save and check the log.\n"
+                } else {
+                    text += "Success."
+                }
                 if (showReboot) {
-                    for (i in 0..2) {
-                        text += "\n"
-                    }
+                    text += "\n\n\n"
                     showFloatAction = true
                 }
+                flashing = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
             }, onStdout = {
                 text += "$it\n"
                 logContent.append(it).append("\n")
@@ -96,6 +109,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     Scaffold(
         topBar = {
             TopBar(
+                flashing,
                 onBack = {
                     navigator.popBackStack()
                 },
@@ -165,7 +179,7 @@ sealed class FlashIt : Parcelable {
 }
 
 fun flashIt(
-    flashIt: FlashIt, onFinish: (Boolean) -> Unit,
+    flashIt: FlashIt, onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ) {
@@ -187,9 +201,19 @@ fun flashIt(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
+private fun TopBar(status: FlashingStatus, onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
     TopAppBar(
-        title = { Text(stringResource(R.string.install)) },
+        title = {
+            Text(
+                stringResource(
+                    when (status) {
+                        FlashingStatus.FLASHING -> R.string.flashing
+                        FlashingStatus.SUCCESS -> R.string.flash_success
+                        FlashingStatus.FAILED -> R.string.flash_failed
+                    }
+                )
+            )
+        },
         navigationIcon = {
             IconButton(
                 onClick = onBack
