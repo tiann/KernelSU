@@ -142,6 +142,33 @@ fun installModule(
     }
 }
 
+fun restoreBoot(
+    onFinish: (Boolean) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Boolean {
+    val shell = createRootShell()
+    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result =
+        shell.newJob().add("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot")
+            .to(stdoutCallback, stderrCallback)
+            .exec()
+
+    onFinish(result.isSuccess)
+    return result.isSuccess
+}
+
 suspend fun shrinkModules(): Boolean = withContext(Dispatchers.IO) {
     execKsud("module shrink", true)
 }

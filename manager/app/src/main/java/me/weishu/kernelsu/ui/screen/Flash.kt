@@ -12,9 +12,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -37,9 +49,11 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.installModule
 import me.weishu.kernelsu.ui.util.reboot
+import me.weishu.kernelsu.ui.util.restoreBoot
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 /**
  * @author weishu
@@ -146,6 +160,8 @@ sealed class FlashIt : Parcelable {
         FlashIt()
 
     data class FlashModule(val uri: Uri) : FlashIt()
+
+    data object FlashRestore : FlashIt()
 }
 
 fun flashIt(
@@ -164,6 +180,8 @@ fun flashIt(
         )
 
         is FlashIt.FlashModule -> installModule(flashIt.uri, onFinish, onStdout, onStderr)
+
+        FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
     }
 }
 
