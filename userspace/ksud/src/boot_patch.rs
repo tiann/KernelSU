@@ -187,7 +187,6 @@ pub fn restore(
         let sha = sha.trim();
         let backup_path = format!("{KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha}");
         if fs::access(&backup_path, Access::EXISTS).is_ok() {
-            println!("- Flashing new boot image using backup {backup_path}");
             new_boot = Some(PathBuf::from(backup_path));
             from_backup = true;
         } else {
@@ -240,7 +239,11 @@ pub fn restore(
         println!("- {}", output_image.display().to_string().trim_matches('"'));
     }
     if flash {
-        println!("- Flashing new boot image");
+        if from_backup {
+            println!("- Flashing new boot image from {}", new_boot.display());
+        } else {
+            println!("- Flashing new boot image");
+        }
         flash_boot(&bootdevice, new_boot)?;
     }
     println!("- Done!");
@@ -447,10 +450,11 @@ fn do_patch(
             let path = entry.path();
             if path.is_file() {
                 let name = path.file_name().unwrap().to_string_lossy().to_string();
-                if name != backup && name.starts_with(KSU_BACKUP_FILE_PREFIX) {
-                    if let Ok(_) = std::fs::remove_file(path) {
-                        println!("removed {name}");
-                    }
+                if name != backup
+                    && name.starts_with(KSU_BACKUP_FILE_PREFIX)
+                    && std::fs::remove_file(path).is_ok()
+                {
+                    println!("removed {name}");
                 }
             }
         }
