@@ -10,8 +10,6 @@ use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Context;
 use anyhow::Result;
-use rustix::fs;
-use rustix::fs::Access;
 use which::which;
 
 use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
@@ -173,10 +171,11 @@ pub fn restore(
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workding_dir.path())?;
     ensure!(is_kernelsu_patched, "boot image is not patched by KernelSU");
 
-    let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists orig.ksu");
     let mut new_boot = None;
     let mut from_backup = false;
-    if status.is_ok() {
+
+    #[cfg(target_os = "android")]
+    if do_cpio_cmd(&magiskboot, workding_dir.path(), "exists orig.ksu").is_ok() {
         do_cpio_cmd(
             &magiskboot,
             workding_dir.path(),
@@ -186,7 +185,7 @@ pub fn restore(
         let sha = String::from_utf8(sha)?;
         let sha = sha.trim();
         let backup_path = format!("{KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha}");
-        if fs::access(&backup_path, Access::EXISTS).is_ok() {
+        if Path::new(&backup_path).is_file() {
             new_boot = Some(PathBuf::from(backup_path));
             from_backup = true;
         } else {
@@ -364,6 +363,8 @@ fn do_patch(
 
     println!("- Adding KernelSU LKM");
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workding_dir.path())?;
+
+    #[cfg(target_os = "android")]
     let mut backup = None;
     if !is_kernelsu_patched {
         // kernelsu.ko is not exist, backup init if necessary
@@ -382,21 +383,25 @@ fn do_patch(
             output.status.success(),
             "Cannot calculate sha1 of original boot!"
         );
-        let output = String::from_utf8(output.stdout)?;
-        let output = output.trim();
-        let output = format!("{KSU_BACKUP_FILE_PREFIX}{output}");
-        let target = format!("{KSU_BACKUP_DIR}/{output}");
-        std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
-        std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes())
-            .context("write sha1")?;
-        do_cpio_cmd(
-            &magiskboot,
-            workding_dir.path(),
-            "add 0755 orig.ksu orig.ksu",
-        )?;
-        println!("- Stock image has been backup to");
-        println!("- {target}");
-        backup = Some(output);
+
+        #[cfg(target_os = "android")]
+        {
+            let output = String::from_utf8(output.stdout)?;
+            let output = output.trim();
+            let output = format!("{KSU_BACKUP_FILE_PREFIX}{output}");
+            let target = format!("{KSU_BACKUP_DIR}/{output}");
+            std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
+            std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes())
+                .context("write sha1")?;
+            do_cpio_cmd(
+                &magiskboot,
+                workding_dir.path(),
+                "add 0755 orig.ksu orig.ksu",
+            )?;
+            println!("- Stock image has been backup to");
+            println!("- {target}");
+            backup = Some(output);
+        }
     }
 
     do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;
@@ -443,6 +448,7 @@ fn do_patch(
         }
     }
 
+    #[cfg(target_os = "android")]
     if let Some(backup) = backup {
         println!("- Clean up backup");
         if let Ok(dir) = std::fs::read_dir("/data") {
