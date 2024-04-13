@@ -128,7 +128,7 @@ fun DownloadListener(context: Context, onDownloaded: (Uri) -> Unit) {
             context.registerReceiver(
                 receiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                RECEIVER_EXPORTED
+                Context.RECEIVER_EXPORTED
             )
         } else {
             context.registerReceiver(
