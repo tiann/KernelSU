@@ -123,4 +123,11 @@
     <string name="select_file_tip">%1$s образ раздела рекомендуется</string>
     <string name="shrink_sparse_image">Минимизировать разреженный образ</string>
     <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования)</string>
+    <string name="settings_uninstall_temporary">Удалить Временно</string>
+    <string name="settings_uninstall_permanent_message">Удалить KernelSU (Root и все модули) полностью и навсегда.</string>
+    <string name="settings_uninstall_permanent">Удалить Навсегда</string>
+    <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки.</string>
+    <string name="settings_uninstall">Удалить</string>
+    <string name="settings_restore_stock_image">Восстановить Сток образ</string>
+    <string name="settings_restore_stock_image_message">"Восстановить стоковый заводской образ (если существует резервная копия), обычно используется перед OTA;  если вам нужно удалить KernelSU, используйте «Удалить Навсегда»."</string>
 </resources>
