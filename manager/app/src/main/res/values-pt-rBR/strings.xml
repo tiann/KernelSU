@@ -130,5 +130,5 @@
     <string name="selected_lkm">LKM selecionado: %s</string>
     <string name="flash_failed">Flash falhou</string>
     <string name="flashing">Flashando</string>
-    <string name="flash_success">Flash com sucesso</string>
+    <string name="flash_success">Flash bem-sucedido</string>
 </resources>
