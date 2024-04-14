@@ -366,8 +366,7 @@ fn do_patch(
     println!("- Adding KernelSU LKM");
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workding_dir.path())?;
 
-    #[cfg(target_os = "android")]
-    let mut backup = None;
+    let mut need_backup = false;
     if !is_kernelsu_patched {
         // kernelsu.ko is not exist, backup init if necessary
         let status = do_cpio_cmd(&magiskboot, workding_dir.path(), "exists init");
@@ -375,35 +374,7 @@ fn do_patch(
             do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init init.real")?;
         }
 
-        #[cfg(target_os = "android")]
-        if flash {
-            println!("- Backup stock boot image");
-            // magiskboot cpio ramdisk.cpio 'add 0755 orig.ksu'
-            let output = Command::new(&magiskboot)
-                .current_dir(workding_dir.path())
-                .arg("sha1")
-                .arg(&bootimage)
-                .output()?;
-            ensure!(
-                output.status.success(),
-                "Cannot calculate sha1 of original boot!"
-            );
-            let output = String::from_utf8(output.stdout)?;
-            let output = output.trim();
-            let output = format!("{KSU_BACKUP_FILE_PREFIX}{output}");
-            let target = format!("{KSU_BACKUP_DIR}/{output}");
-            std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
-            std::fs::write(workding_dir.path().join("orig.ksu"), output.as_bytes())
-                .context("write sha1")?;
-            do_cpio_cmd(
-                &magiskboot,
-                workding_dir.path(),
-                "add 0755 orig.ksu orig.ksu",
-            )?;
-            println!("- Stock image has been backup to");
-            println!("- {target}");
-            backup = Some(output);
-        }
+        need_backup = flash;
     }
 
     do_cpio_cmd(&magiskboot, workding_dir.path(), "add 0755 init init")?;
@@ -451,23 +422,55 @@ fn do_patch(
     }
 
     #[cfg(target_os = "android")]
-    if let Some(backup) = backup {
-        println!("- Clean up backup");
-        if let Ok(dir) = std::fs::read_dir("/data") {
-            for entry in dir.flatten() {
-                let path = entry.path();
-                if path.is_file() {
-                    if let Some(name) = path.file_name() {
-                        let name = name.to_string_lossy().to_string();
-                        if name != backup
-                            && name.starts_with(KSU_BACKUP_FILE_PREFIX)
-                            && std::fs::remove_file(path).is_ok()
-                        {
-                            println!("- removed {name}");
+    if need_backup {
+        let do_backup = move || -> Result<()> {
+            println!("- Backup stock boot image");
+            // magiskboot cpio ramdisk.cpio 'add 0755 orig.ksu'
+            let output = Command::new(&magiskboot)
+                .current_dir(workding_dir.path())
+                .arg("sha1")
+                .arg(&bootimage)
+                .output()?;
+            ensure!(
+                output.status.success(),
+                "Cannot calculate sha1 of original boot!"
+            );
+            let output = String::from_utf8(output.stdout)?;
+            let output = output.trim();
+            let backup_name = format!("{KSU_BACKUP_FILE_PREFIX}{output}");
+            let target = format!("{KSU_BACKUP_DIR}/{backup_name}");
+            std::fs::copy(&bootimage, &target).with_context(|| format!("backup to {target}"))?;
+            std::fs::write(workding_dir.path().join("orig.ksu"), backup_name.as_bytes())
+                .context("write sha1")?;
+            do_cpio_cmd(
+                &magiskboot,
+                workding_dir.path(),
+                "add 0755 orig.ksu orig.ksu",
+            )?;
+            println!("- Stock image has been backup to");
+            println!("- {target}");
+            println!("- Clean up backup");
+            if let Ok(dir) = std::fs::read_dir("/data") {
+                for entry in dir.flatten() {
+                    let path = entry.path();
+                    if path.is_file() {
+                        if let Some(name) = path.file_name() {
+                            let name = name.to_string_lossy().to_string();
+                            if name != backup_name
+                                && name.starts_with(KSU_BACKUP_FILE_PREFIX)
+                                && std::fs::remove_file(path).is_ok()
+                            {
+                                println!("- removed {name}");
+                            }
                         }
                     }
                 }
             }
+            Ok(())
+        };
+        if let Err(e) = do_backup() {
+            println!("- Warning: backup failed");
+            println!("- {:?}", e);
         }
     }
 
