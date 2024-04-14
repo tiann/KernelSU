@@ -282,8 +282,10 @@ fn do_patch(
 ) -> Result<()> {
     println!(include_str!("banner"));
 
-    if image.is_none() {
-        #[cfg(target_os = "android")]
+    let patch_file = image.is_some();
+
+    #[cfg(target_os = "android")]
+    if !patch_file {
         ensure_gki_kernel()?;
     }
 
@@ -372,20 +374,20 @@ fn do_patch(
         if status.is_ok() {
             do_cpio_cmd(&magiskboot, workding_dir.path(), "mv init init.real")?;
         }
-        println!("- Backup stock boot image");
-        // magiskboot cpio ramdisk.cpio 'add 0755 orig.ksu'
-        let output = Command::new(&magiskboot)
-            .current_dir(workding_dir.path())
-            .arg("sha1")
-            .arg(&bootimage)
-            .output()?;
-        ensure!(
-            output.status.success(),
-            "Cannot calculate sha1 of original boot!"
-        );
 
         #[cfg(target_os = "android")]
-        {
+        if flash {
+            println!("- Backup stock boot image");
+            // magiskboot cpio ramdisk.cpio 'add 0755 orig.ksu'
+            let output = Command::new(&magiskboot)
+                .current_dir(workding_dir.path())
+                .arg("sha1")
+                .arg(&bootimage)
+                .output()?;
+            ensure!(
+                output.status.success(),
+                "Cannot calculate sha1 of original boot!"
+            );
             let output = String::from_utf8(output.stdout)?;
             let output = output.trim();
             let output = format!("{KSU_BACKUP_FILE_PREFIX}{output}");
@@ -423,7 +425,7 @@ fn do_patch(
     ensure!(status.success(), "magiskboot repack failed");
     let new_boot = workding_dir.path().join("new-boot.img");
 
-    if image.is_some() {
+    if patch_file {
         // if image is specified, write to output file
         let output_dir = out.unwrap_or(std::env::current_dir()?);
         let now = chrono::Utc::now();
