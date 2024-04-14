@@ -376,7 +376,7 @@ fn do_patch(
         }
 
         #[cfg(target_os = "android")]
-        if !patch_file {
+        if flash {
             println!("- Backup stock boot image");
             // magiskboot cpio ramdisk.cpio 'add 0755 orig.ksu'
             let output = Command::new(&magiskboot)
