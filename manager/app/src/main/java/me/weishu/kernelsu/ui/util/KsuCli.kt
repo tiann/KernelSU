@@ -51,8 +51,17 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
             builder.build(getKsuDaemonPath(), "debug", "su")
         }
     } catch (e: Throwable) {
-        Log.e(TAG, "su failed: ", e)
-        builder.build("sh")
+        Log.w(TAG, "ksu failed: ", e)
+        try {
+            if (globalMnt) {
+                builder.build("su")
+            } else {
+                builder.build("su", "-mm")
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "su failed: ", e)
+            builder.build("sh")
+        }
     }
 }
 
