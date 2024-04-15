@@ -121,4 +121,11 @@
     <string name="settings_check_update_summary">Wyszukuj aktualizacje automatycznie przy otwieraniu aplikacji</string>
     <string name="shrink_sparse_image">Minimalizuj rozrzedzony (sparse) obraz</string>
     <string name="shrink_sparse_image_message">Zmienia rozmiar obrazu rozrzedzonego(sparse), w którym znajduje się moduł, do jego rzeczywistego rozmiaru. Należy pamiętać, że może to spowodować nieprawidłowe działanie modułu, więc należy go używać tylko wtedy, gdy jest to konieczne (np. do tworzenia kopii zapasowych)</string>
+    <string name="settings_uninstall_permanent">Odinstaluj zupełnie</string>
+    <string name="settings_restore_stock_image">Przywróć obraz fabryczny</string>
+    <string name="settings_uninstall_temporary">Odinstaluj tymczasowo</string>
+    <string name="settings_uninstall">Odinstaluj</string>
+    <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj KernelSU, przywróć do oryginalnego stanu po następnym ponownym uruchomieniu.</string>
+    <string name="settings_uninstall_permanent_message">Całkowite i trwałe odinstalowanie KernelSU(Root i wszystkich modułów).</string>
+    <string name="settings_restore_stock_image_message">Przywróć obraz fabryczny (jeśli istnieje kopia zapasowa), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU, użyj opcji \"Odinstaluj zupełnie\".</string>
 </resources>
