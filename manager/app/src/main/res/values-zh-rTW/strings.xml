@@ -127,7 +127,7 @@
     <string name="settings_uninstall_permanent_message">完全的（永久的）解除安裝 KernelSU（Root 和所有模組）。</string>
     <string name="flashing">寫入中</string>
     <string name="flash_success">寫入完成</string>
-    <string name="settings_restore_stock_image_message">恢復原廠鏡像（如果有備份），通常在OTA之前使用；如果需要解除安裝KernelSU，請使用「永久解除安裝」。</string>
+    <string name="settings_restore_stock_image_message">恢復原廠映像（如果有備份），通常在OTA之前使用；如果需要解除安裝KernelSU，請使用「永久解除安裝」。</string>
     <string name="flash_failed">寫入失敗</string>
     <string name="selected_lkm">選擇的 LKM ：%s</string>
 </resources>
