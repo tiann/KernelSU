@@ -120,7 +120,7 @@
     <string name="select_kmi">KMI seçin</string>
     <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
     <string name="shrink_sparse_image">Sparse imajını küçültün</string>
-    <string name="shrink_sparse_image_message">Modülün bulunduğu seyrek görüntüyü gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi)</string>
+    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi)</string>
     <string name="settings_uninstall_temporary">Geçici Olarak Kaldır</string>
     <string name="settings_uninstall_permanent">Kalıcı Olarak Kaldır</string>
     <string name="settings_restore_stock_image">Stok İmajı Geri Yükle</string>
