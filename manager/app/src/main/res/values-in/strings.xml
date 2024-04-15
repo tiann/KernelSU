@@ -57,7 +57,7 @@
     <string name="profile_template">Templat</string>
     <string name="profile_custom">Khusus</string>
     <string name="profile_name">Nama profil</string>
-    <string name="profile_namespace">Mount namespace</string>
+    <string name="profile_namespace">Mount Namespace</string>
     <string name="profile_namespace_inherited">Diwariskan</string>
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Individual</string>
@@ -119,7 +119,7 @@
     <string name="settings_check_update">Cek terbaru</string>
     <string name="settings_check_update_summary">Cek terbaru setiap membuka aplikasi</string>
     <string name="shrink_sparse_image">Meminimalkan sparse image</string>
-    <string name="shrink_sparse_image_message">Mengembalikan sparse image lokasi modul berada ke ukuran sebenarnya. Dapat menyebabkan modul bekerja abnormal, maka gunakan saat dibutuhkan saja (mis. untuk pencadangan)</string>
+    <string name="shrink_sparse_image_message">Mengembalikan sparse image, lokasi modul berada, ke ukuran sebenarnya. Dapat menyebabkan modul bekerja abnormal, maka gunakan saat dibutuhkan saja (mis. untuk pencadangan)</string>
     <string name="settings_uninstall_permanent_message">Hapus permanen KernelSU (root dan semua modul).</string>
     <string name="settings_uninstall_temporary">Hapus Temporer</string>
     <string name="settings_restore_stock_image">Pulihkan Image Asal</string>
