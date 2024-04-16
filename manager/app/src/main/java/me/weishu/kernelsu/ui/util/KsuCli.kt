@@ -41,6 +41,13 @@ fun getRootShell(globalMnt: Boolean = false): Shell {
     }
 }
 
+inline fun <T> withNewRootShell(
+    globalMnt: Boolean = false,
+    block: Shell.() -> T
+): T {
+    return createRootShell(globalMnt).use(block)
+}
+
 fun createRootShell(globalMnt: Boolean = false): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
     val builder = Shell.Builder.create()
@@ -66,9 +73,13 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
 }
 
 fun execKsud(args: String, newShell: Boolean = false): Boolean {
-    val shell = if (newShell) createRootShell() else getRootShell()
-    return ShellUtils.fastCmdResult(shell, "${getKsuDaemonPath()} $args")
-        .also { if (newShell) runCatching { shell.close() } }
+    return if (newShell) {
+        withNewRootShell {
+            ShellUtils.fastCmdResult(this, "${getKsuDaemonPath()} $args")
+        }
+    } else {
+        ShellUtils.fastCmdResult(getRootShell(), "${getKsuDaemonPath()} $args")
+    }
 }
 
 fun install() {
@@ -141,8 +152,8 @@ fun installModule(
             }
         }
 
-        val result = createRootShell().use {
-            it.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+        val result = withNewRootShell {
+            newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
         }
         Log.i("KernelSU", "install module $uri result: $result")
 
@@ -170,8 +181,8 @@ fun restoreBoot(
         }
     }
 
-    val result = createRootShell().use {
-        it.newJob().add("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot")
+    val result = withNewRootShell {
+        newJob().add("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot")
             .to(stdoutCallback, stderrCallback)
             .exec()
     }
@@ -266,8 +277,8 @@ fun installBoot(
         }
     }
 
-    val result = createRootShell().use {
-        it.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+    val result = withNewRootShell {
+        newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
     }
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
