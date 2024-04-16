@@ -84,14 +84,14 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
      *                  which files can be loaded.
      * @throws IllegalArgumentException if the directory is not allowed.
      */
-    public SuFilePathHandler(@NonNull Context context, @NonNull File directory) {
+    public SuFilePathHandler(@NonNull Context context, @NonNull File directory, Shell rootShell) {
         try {
             mDirectory = new File(getCanonicalDirPath(directory));
             if (!isAllowedInternalStorageDir(context)) {
                 throw new IllegalArgumentException("The given directory \"" + directory
                         + "\" doesn't exist under an allowed app internal storage directory");
             }
-            mShell = KsuCliKt.createRootShell(true);
+            mShell = rootShell;
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Failed to resolve the canonical path for the given directory: "
