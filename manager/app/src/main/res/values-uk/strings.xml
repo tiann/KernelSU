@@ -120,4 +120,15 @@
     <string name="open">Відкрити</string>
     <string name="shrink_sparse_image">Мінімізувати розріджений образ</string>
     <string name="shrink_sparse_image_message">Змінити розмір розрідженого образу, в якому знаходяться модулі, до його фактичного розміру. Зверніть увагу, що це може спричинити ненормальну роботу модулів, тому використовуйте це лише за потреби (наприклад, для резервного копіювання)</string>
+    <string name="settings_uninstall_temporary">Тимчасово видалити</string>
+    <string name="settings_uninstall_permanent">Назавжди видалити</string>
+    <string name="settings_restore_stock_image">Відновити Стоковий образ</string>
+    <string name="settings_uninstall_temporary_message">Тимчасово видалити KernelSU, відновити початковий стан після наступного перезавантаження.</string>
+    <string name="settings_uninstall">Видалити</string>
+    <string name="flashing">Прошивка</string>
+    <string name="flash_success">Прошивку виконано</string>
+    <string name="flash_failed">Прошивка не виконана</string>
+    <string name="selected_lkm">Обрано lkm: %s</string>
+    <string name="settings_uninstall_permanent_message">Видалити KernelSU (Root і всі модулі) повністю і назавжди.</string>
+    <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо є резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU, використовуйте \"Назавжди видалити\".</string>
 </resources>
