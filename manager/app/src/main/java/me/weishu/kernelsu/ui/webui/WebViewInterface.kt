@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.ui.util.createRootShell
+import me.weishu.kernelsu.ui.util.withNewRootShell
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CompletableFuture
@@ -23,8 +24,7 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
 
     @JavascriptInterface
     fun exec(cmd: String): String {
-        val shell = createRootShell(true)
-        return ShellUtils.fastCmd(shell, cmd)
+        return withNewRootShell(true) { ShellUtils.fastCmd(this, cmd) }
     }
 
     @JavascriptInterface
@@ -59,8 +59,9 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
         processOptions(finalCommand, options)
         finalCommand.append(cmd)
 
-        val shell = createRootShell(true)
-        val result = shell.newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+        val result = withNewRootShell(true) {
+            newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+        }
         val stdout = result.out.joinToString(separator = "\n")
         val stderr = result.err.joinToString(separator = "\n")
 
@@ -144,6 +145,8 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
                     webView.loadUrl(emitErrCode)
                 }
             }
+        }.whenComplete { _, _ ->
+            runCatching { shell.close() }
         }
     }
 
