@@ -68,6 +68,7 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
 fun execKsud(args: String, newShell: Boolean = false): Boolean {
     val shell = if (newShell) createRootShell() else getRootShell()
     return ShellUtils.fastCmdResult(shell, "${getKsuDaemonPath()} $args")
+        .also { if (newShell) runCatching { shell.close() } }
 }
 
 fun install() {
@@ -128,8 +129,6 @@ fun installModule(
         }
         val cmd = "module install ${file.absolutePath}"
 
-        val shell = createRootShell()
-
         val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
             override fun onAddElement(s: String?) {
                 onStdout(s ?: "")
@@ -142,9 +141,9 @@ fun installModule(
             }
         }
 
-        val result =
-            shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback)
-                .exec()
+        val result = createRootShell().use {
+            it.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+        }
         Log.i("KernelSU", "install module $uri result: $result")
 
         file.delete()
@@ -157,7 +156,6 @@ fun installModule(
 fun restoreBoot(
     onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
-    val shell = createRootShell()
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
 
     val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
@@ -172,10 +170,11 @@ fun restoreBoot(
         }
     }
 
-    val result =
-        shell.newJob().add("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot")
+    val result = createRootShell().use {
+        it.newJob().add("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot")
             .to(stdoutCallback, stderrCallback)
             .exec()
+    }
 
     onFinish(result.isSuccess, result.code)
     return result.isSuccess
@@ -255,8 +254,6 @@ fun installBoot(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     cmd += " -o $downloadsDir"
 
-    val shell = createRootShell()
-
     val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
         override fun onAddElement(s: String?) {
             onStdout(s ?: "")
@@ -269,8 +266,9 @@ fun installBoot(
         }
     }
 
-    val result =
-        shell.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+    val result = createRootShell().use {
+        it.newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
+    }
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
     bootFile?.delete()

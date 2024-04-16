@@ -10,11 +10,15 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.webkit.WebViewAssetLoader
+import com.topjohnwu.superuser.Shell
+import me.weishu.kernelsu.ui.util.createRootShell
 import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
-class WebUIActivity : ComponentActivity()  {
+class WebUIActivity : ComponentActivity() {
     private lateinit var webviewInterface: WebViewInterface
+
+    private var rootShell: Shell? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,11 +30,12 @@ class WebUIActivity : ComponentActivity()  {
         WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
 
         val webRoot = File("/data/adb/modules/${moduleId}/webroot")
+        val rootShell = createRootShell(true).also { this.rootShell = it }
         val webViewAssetLoader = WebViewAssetLoader.Builder()
             .setDomain("mui.kernelsu.org")
             .addPathHandler(
                 "/",
-                SuFilePathHandler(this, webRoot)
+                SuFilePathHandler(this, webRoot, rootShell)
             )
             .build()
 
@@ -54,5 +59,10 @@ class WebUIActivity : ComponentActivity()  {
         }
 
         setContentView(webView)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        runCatching { rootShell?.close() }
     }
 }
