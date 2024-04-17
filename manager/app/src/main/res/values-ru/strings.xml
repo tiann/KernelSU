@@ -129,7 +129,7 @@
     <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки.</string>
     <string name="settings_uninstall">Удалить</string>
     <string name="settings_restore_stock_image">Восстановить Сток образ</string>
-    <string name="settings_restore_stock_image_message">"Восстановить стоковый заводской образ (если существует резервная копия), обычно используется перед OTA;  если вам нужно удалить KernelSU, используйте «Удалить Навсегда»."</string>
+    <string name="settings_restore_stock_image_message">Восстановить стоковый заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить Навсегда».</string>
     <string name="flash_success">Прошивка выполнена</string>
     <string name="flashing">Прошивка</string>
     <string name="flash_failed">Прошивка не выполнена</string>
