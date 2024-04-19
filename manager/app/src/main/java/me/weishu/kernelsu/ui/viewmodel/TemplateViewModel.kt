@@ -22,6 +22,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
 import java.util.Locale
+import java.util.concurrent.TimeUnit
+
 
 /**
  * @author weishu
@@ -136,7 +138,13 @@ class TemplateViewModel : ViewModel() {
 
 private fun fetchRemoteTemplates() {
     runCatching {
-        OkHttpClient().newCall(
+        val client: OkHttpClient = OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build()
+
+        client.newCall(
             Request.Builder().url(TEMPLATE_INDEX_URL).build()
         ).execute().use { response ->
             if (!response.isSuccessful) {
@@ -146,7 +154,8 @@ private fun fetchRemoteTemplates() {
             Log.i(TAG, "fetchRemoteTemplates: $remoteTemplateIds")
             0.until(remoteTemplateIds.length()).forEach { i ->
                 val id = remoteTemplateIds.getString(i)
-                val templateJson = OkHttpClient().newCall(
+                Log.i(TAG, "fetch template: $id")
+                val templateJson = client.newCall(
                     Request.Builder().url(TEMPLATE_URL.format(id)).build()
                 ).runCatching {
                     execute().use { response ->

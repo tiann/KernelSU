@@ -589,7 +589,7 @@ static void stop_input_hook()
 }
 
 // ksud: module support
-void ksu_enable_ksud()
+void ksu_ksud_init()
 {
 #ifdef CONFIG_KPROBES
 	int ret;
@@ -606,5 +606,14 @@ void ksu_enable_ksud()
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
 	INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
+#endif
+}
+
+void ksu_ksud_exit() {
+#ifdef CONFIG_KPROBES
+	unregister_kprobe(&execve_kp);
+	// this should be done before unregister vfs_read_kp
+	// unregister_kprobe(&vfs_read_kp);
+	unregister_kprobe(&input_handle_event_kp);
 #endif
 }

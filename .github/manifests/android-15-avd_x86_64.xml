@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- https://ci.android.com/builds/submitted/11577653/kernel_virt_aarch64/latest/manifest_11577653.xml -->
+<!-- https://ci.android.com/builds/submitted/11577653/kernel_virt_x86_64/latest/manifest_11577653.xml -->
 <manifest>
   <remote name="aosp" fetch="https://android.googlesource.com/" review="https://android.googlesource.com/" />
 

@@ -73,7 +73,7 @@
     <string name="profile_selinux_rules">Regras</string>
     <string name="module_update">Atualizar</string>
     <string name="module_downloading">Baixando módulo %s</string>
-    <string name="module_start_downloading">Iniciando download: %s</string>
+    <string name="module_start_downloading">Começando a baixar %s</string>
     <string name="new_version_available">Nova versão %s está disponível, clique para atualizar.</string>
     <string name="launch_app">Iniciar</string>
     <string name="force_stop_app">Forçar parada</string>
@@ -112,8 +112,23 @@
     <string name="select_file">Selecione um arquivo</string>
     <string name="direct_install">Instalação direta (recomendada)</string>
     <string name="install_inactive_slot">Instalar no slot inativo (após o OTA)</string>
-    <string name="install_inactive_slot_warning">Seu dispositivo será FORÇADO a inicializar no slot inativo atual após uma reinicialização!
+    <string name="install_inactive_slot_warning">Seu dispositivo será **FORÇADO** a inicializar no slot inativo atual após uma reinicialização!
 \nSó use esta opção após a conclusão do OTA.
 \nDeseja continuar?</string>
     <string name="install_next">Próximo</string>
+    <string name="select_file_tip">A imagem da partição %1$s é recomendada</string>
+    <string name="select_kmi">Selecionar KMI</string>
+    <string name="shrink_sparse_image">Minimizar imagem esparsa</string>
+    <string name="shrink_sparse_image_message">Redimensione a imagem esparsa onde o módulo está localizado para seu tamanho real. Observe que isso pode fazer com que o módulo funcione de forma anormal, portanto, use-o somente quando necessário (como um backup).</string>
+    <string name="settings_uninstall">Desinstalar</string>
+    <string name="settings_uninstall_temporary">Desinstalar temporariamente</string>
+    <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
+    <string name="settings_restore_stock_image">Restaurar imagem de fábrica</string>
+    <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica (se existir um backup), geralmente usada antes do OTA. Se você precisar desinstalar o KernelSU, use \"Desinstalar permanentemente\".</string>
+    <string name="settings_uninstall_temporary_message">Desinstale temporariamente o KernelSU e restaure ao estado original após a próxima reinicialização</string>
+    <string name="settings_uninstall_permanent_message">Desinstale o KernelSU (Root e todos os módulos) completamente e permanentemente</string>
+    <string name="selected_lkm">LKM selecionado: %s</string>
+    <string name="flash_failed">Flash falhou</string>
+    <string name="flashing">Flashando</string>
+    <string name="flash_success">Flash bem-sucedido</string>
 </resources>

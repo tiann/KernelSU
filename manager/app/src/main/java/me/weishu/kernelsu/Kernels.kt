@@ -37,23 +37,6 @@ fun parseKernelVersion(version: String): KernelVersion {
     }
 }
 
-fun parseKMI(input: String): String? {
-    val regex = Regex("(.* )?(\\d+\\.\\d+)(\\S+)?(android\\d+)(.*)")
-    val result = regex.find(input)
-
-    return result?.let {
-        val androidVersion = it.groups[4]?.value ?: ""
-        val kernelVersion = it.groups[2]?.value ?: ""
-        "$androidVersion-$kernelVersion"
-    }
-}
-
-fun getKMI(): String? {
-    Os.uname().release.let {
-        return parseKMI(it)
-    }
-}
-
 fun getKernelVersion(): KernelVersion {
     Os.uname().release.let {
         return parseKernelVersion(it)

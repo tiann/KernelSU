@@ -106,4 +106,17 @@
     <string name="grant_root_failed">ไม่สามารถให้สิทธิ์รูทได้!</string>
     <string name="settings_check_update">ตรวจสอบการอัปเดต</string>
     <string name="settings_check_update_summary">ตรวจสอบการอัปเดตโดยอัตโนมัติเมื่อเปิดแอป</string>
+    <string name="enable_web_debugging">เปิดใช้งานการแก้ไขข้อบกพร่อง WebView</string>
+    <string name="select_kmi">เลือก KMI</string>
+    <string name="install_next">ต่อไป</string>
+    <string name="select_file">เลือกไฟล์</string>
+    <string name="install_inactive_slot">ติดตั้งลงในสล็อตที่ไม่ใช้งาน (หลังจาก OTA)</string>
+    <string name="direct_install">ติดตั้งโดยตรง (แนะนำ)</string>
+    <string name="select_file_tip">แนะนำให้ใช้อิมเมจพาร์ติชั่น %1$s</string>
+    <string name="enable_web_debugging_summary">สามารถใช้เพื่อดีบัก WebUI โปรดเปิดใช้งานเมื่อจำเป็นเท่านั้น</string>
+    <string name="install_inactive_slot_warning">อุปกรณ์ของคุณจะถูก **บังคับ** ให้บูตไปยังสล็อตที่ไม่ได้ใช้งานหลังจากรีบูต!
+\nโปรดใช้ตัวเลือกนี้หลังจาก OTA เสร็จแล้วเท่านั้น
+\nดำเนินการต่อหรือไม่?</string>
+    <string name="shrink_sparse_image">ลดความกระจายของอิมเมจ</string>
+    <string name="shrink_sparse_image_message">ปรับขนาดความกระจายของอิมเมจในโมดูลให้เป็นขนาดจริง โปรดทราบว่านี่อาจทำให้โมดูลทำงานผิดปกติ โปรดใช้เมื่อจำเป็นเท่านั้น (เช่น การสำรองข้อมูล)</string>
 </resources>

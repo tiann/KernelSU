@@ -134,7 +134,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 
 __maybe_unused static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	int *dfd = (int *)PT_REGS_PARM1(regs);
+	int *dfd = (int *)&PT_REGS_PARM1(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
 	int *mode = (int *)&PT_REGS_PARM3(regs);
 	// Both sys_ and do_ is C function
@@ -150,7 +150,7 @@ static int sys_faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 #else
 	struct pt_regs *real_regs = regs;
 #endif
-	int *dfd = (int *)PT_REGS_PARM1(real_regs);
+	int *dfd = (int *)&PT_REGS_PARM1(real_regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(real_regs);
 	int *mode = (int *)&PT_REGS_PARM3(real_regs);
 
@@ -242,7 +242,7 @@ static struct kprobe execve_kp = {
 #endif
 
 // sucompat: permited process can execute 'su' to gain root access.
-void ksu_enable_sucompat()
+void ksu_sucompat_init()
 {
 #ifdef CONFIG_KPROBES
 	int ret;
@@ -252,5 +252,13 @@ void ksu_enable_sucompat()
 	pr_info("sucompat: newfstatat_kp: %d\n", ret);
 	ret = register_kprobe(&faccessat_kp);
 	pr_info("sucompat: faccessat_kp: %d\n", ret);
+#endif
+}
+
+void ksu_sucompat_exit() {
+#ifdef CONFIG_KPROBES
+	unregister_kprobe(&execve_kp);
+	unregister_kprobe(&newfstatat_kp);
+	unregister_kprobe(&faccessat_kp);
 #endif
 }
