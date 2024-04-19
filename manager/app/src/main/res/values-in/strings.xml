@@ -119,8 +119,8 @@
     <string name="settings_check_update">Cek terbaru</string>
     <string name="settings_check_update_summary">Cek terbaru setiap membuka aplikasi</string>
     <string name="shrink_sparse_image">Meminimalkan sparse image</string>
-    <string name="shrink_sparse_image_message">Mengembalikan sparse image, lokasi modul berada, ke ukuran sebenarnya. Dapat menyebabkan modul bekerja abnormal, maka gunakan saat dibutuhkan saja (mis. untuk pencadangan)</string>
-    <string name="settings_uninstall_permanent_message">Hapus permanen KernelSU (root dan semua modul).</string>
+    <string name="shrink_sparse_image_message">Mengembalikan sparse image, lokasi modul disimpan, ke ukuran sebenarnya. Dapat menyebabkan modul bekerja abnormal, maka gunakan saat dibutuhkan saja (mis. untuk pencadangan)</string>
+    <string name="settings_uninstall_permanent_message">Hapus permanen KernelSU (root dan modul).</string>
     <string name="settings_uninstall_temporary">Hapus Temporer</string>
     <string name="settings_restore_stock_image">Pulihkan Image Asal</string>
     <string name="settings_uninstall">Hapus</string>
@@ -128,7 +128,7 @@
     <string name="settings_uninstall_permanent">Hapus Permanen</string>
     <string name="settings_restore_stock_image_message">Pulihkan image bawaan ROM (jika cadangan tersedia), umumnya dilakukan sebelum OTA; jika ingin menghapus KernelSU, gunakan fungsi \"Hapus Permanen\".</string>
     <string name="flash_success">Pemasangan Berhasil</string>
-    <string name="selected_lkm">LKM terpilih: %s</string>
+    <string name="selected_lkm">LKM dipilih: %s</string>
     <string name="flashing">Pasang</string>
     <string name="flash_failed">Pemasangan Gagal</string>
 </resources>
