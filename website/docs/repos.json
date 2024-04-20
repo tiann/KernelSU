@@ -677,5 +677,12 @@
         "kernel_name": "kernel_lgv600tm_4.19",
         "kernel_link": "https://github.com/Rofikkernel/kernel_lgv600tm_4.19",
         "devices": "LG V60 timelm"
+    },
+    {
+        "maintainer": "Dawid2849",
+        "maintainer_link": "https://github.com/Dawid2849",
+        "kernel_name": "android_kernel_lge_sm8150",
+        "kernel_link": "https://github.com/Dawid2849/android_kernel_lge_sm8150",
+        "devices": "LG G8 (alphaplus) / LG G8s (betalm) / LG G8X (mh2mml)"
     }
 ]
