@@ -58,7 +58,7 @@
     <string name="profile_name">ชื่อโปรไฟล์</string>
     <string name="profile_namespace">Mount เนมสเปซ</string>
     <string name="profile_namespace_global">ทั่วไป</string>
-    <string name="profile_namespace_inherited">การสืบทอด</string>
+    <string name="profile_namespace_inherited">สืบทอด</string>
     <string name="profile_namespace_individual">ส่วนบุคคล</string>
     <string name="profile_groups">หมวดหมู่</string>
     <string name="profile_capabilities">ความสามารถของแอป</string>
@@ -119,4 +119,15 @@
 \nดำเนินการต่อหรือไม่?</string>
     <string name="shrink_sparse_image">ลดความกระจายของอิมเมจ</string>
     <string name="shrink_sparse_image_message">ปรับขนาดความกระจายของอิมเมจในโมดูลให้เป็นขนาดจริง โปรดทราบว่านี่อาจทำให้โมดูลทำงานผิดปกติ โปรดใช้เมื่อจำเป็นเท่านั้น (เช่น การสำรองข้อมูล)</string>
+    <string name="settings_uninstall_permanent">ถอนการติดตั้งถาวร</string>
+    <string name="settings_restore_stock_image">เรียกคืนอิมเมจดั้งเดิม</string>
+    <string name="settings_uninstall_temporary_message">ถอนการติดตั้ง KernelSU ชั่วคราว จะคืนค่าเป็นสถานะดั้งเดิมหลังจากรีบูตในครั้งถัดไป</string>
+    <string name="flashing">กำลังแฟลช</string>
+    <string name="flash_success">แฟลชสำเร็จ</string>
+    <string name="flash_failed">แฟลชล้มเหลว</string>
+    <string name="selected_lkm">เลือก lkm: %s</string>
+    <string name="settings_uninstall">ถอนการติดตั้ง</string>
+    <string name="settings_uninstall_temporary">ถอนการติดตั้งชั่วคราว</string>
+    <string name="settings_uninstall_permanent_message">การถอนการติดตั้ง KernelSU (การรูทและโมดูลทั้งหมด) อย่างสมบูรณ์โดยถาวร</string>
+    <string name="settings_restore_stock_image_message">คืนค่าโรงงานอิมเมจดั้งเดิม (หากมีข้อมูลสำรอง) ส่วนใหญ่มักใช้ก่อนทำการ OTA ซึ่งหากคุณต้องการถอนการติดตั้ง KernelSU โปรดใช้ \"ถอนการติดตั้งถาวร\"</string>
 </resources>

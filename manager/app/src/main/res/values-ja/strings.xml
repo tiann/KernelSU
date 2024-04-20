@@ -127,4 +127,8 @@
     <string name="settings_uninstall_temporary_message">KernelSU を一時的にアンインストールし、次回の再起動後に元の状態に戻します。</string>
     <string name="settings_uninstall_permanent_message">KernelSU (ルートおよびすべてのモジュール) を完全かつ永久にアンインストールします。</string>
     <string name="settings_restore_stock_image_message">通常、OTA の前に使用される工場出荷時のイメージを復元します (バックアップが存在する場合)。 KernelSUをアンインストールする必要がある場合は、「永久アンインストール」を使用してください。</string>
+    <string name="flashing">フラッシュ</string>
+    <string name="flash_success">フラッシュ成功</string>
+    <string name="flash_failed">フラッシュ失敗</string>
+    <string name="selected_lkm">選択された lkm: %s</string>
 </resources>
