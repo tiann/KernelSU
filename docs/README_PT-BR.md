@@ -29,7 +29,7 @@ Atualmente, apenas `arm64-v8a` e `x86_64` são suportados.
 ## Uso
 
  - [Instalação](https://kernelsu.org/pt_BR/guide/installation.html)
- - [Como construir o KernelSU?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
+ - [Como compilar o KernelSU?](https://kernelsu.org/pt_BR/guide/how-to-build.html)
  - [Site oficial](https://kernelsu.org/pt_BR/)
 
 ## Tradução
