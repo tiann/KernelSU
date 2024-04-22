@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-use crate::{assets, defs, ksucalls, restorecon};
+use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
 use std::fs::metadata;
 #[allow(unused_imports)]
 use std::fs::{set_permissions, Permissions};
@@ -215,6 +215,16 @@ pub fn install() -> Result<()> {
     link_ksud_to_bin()?;
 
     Ok(())
+}
+
+pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
+    println!("- Uninstall modules..");
+    module::uninstall_all_modules()?;
+    module::prune_modules()?;
+    println!("- Removing directories..");
+    std::fs::remove_dir_all(defs::WORKING_DIR)?;
+    println!("- Uninstall KernelSU itself..");
+    boot_patch::restore(None, magiskboot_path, true)
 }
 
 // TODO: use libxcp to improve the speed if cross's MSRV is 1.70
