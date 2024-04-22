@@ -22,7 +22,7 @@ features:
     details: Como o nome sugere, KernelSU funciona no kernel Linux, dando-lhe mais controle sobre os apps do espaço do usuário.
   - title: Controle de acesso root
     details: Somente apps permitidos podem acessar ou ver su, todos os outros apps não estão cientes disso.
-  - title: Privilégios de root personalizáveis
-    details: KernelSU permite a personalização de su, uid, gid, grupos, capacidades e regras SELinux, bloqueando privilégios de root.
+  - title: Privilégios root personalizáveis
+    details: KernelSU permite a personalização de su, uid, gid, grupos, capacidades e regras do SELinux, bloqueando privilégios root.
   - title: Módulos
     details: Os módulos podem modificar /system sem sistema usando OverlayFS permitindo uma grande potência.

@@ -2,11 +2,11 @@
 
 O KernelSU pode ser integrado em kernels não GKI e foi portado para 4.14 e versões anteriores.
 
-Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer boot.img não GKI. Mas você mesmo pode construir o kernel com o KernelSU integrado.
+Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer o boot.img não GKI. Mas você mesmo pode compilar o kernel com o KernelSU integrado.
 
-Primeiro, você deve ser capaz de construir um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU no seu dispositivo.
+Primeiro, você deve ser capaz de compilar um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU no seu dispositivo.
 
-Se você puder construir um kernel inicializável, existem duas maneiras de integrar o KernelSU ao código-fonte do kernel:
+Se você puder compilar um kernel inicializável, existem duas maneiras de integrar o KernelSU ao código-fonte do kernel:
 
 1. Automaticamente com `kprobe`
 2. Manualmente
@@ -297,9 +297,9 @@ index 45306f9ef247..815091ebfca4 100755
  		add_input_randomness(type, code, value);
 ```
 
-### Como fazer backport de path_umount
+### Como portar path_umount
 
-Você pode fazer com que o recurso "Desmontar módulos" funcione em kernels pré-GKI fazendo backport manualmente do `path_umount` da versão 5.9. Você pode usar este patch como referência:
+Você pode fazer com que o recurso "Desmontar módulos" funcione em kernels pré-GKI portando manualmente `path_umount` da versão 5.9. Você pode usar este patch como referência:
 
 ```diff
 --- a/fs/namespace.c

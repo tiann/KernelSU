@@ -1,6 +1,6 @@
 # O que é KernelSU?
 
-O KernelSU é uma solução root para dispositivos Android GKI, funciona no modo kernel e concede permissão root ao app do espaço do usuário diretamente no espaço do kernel.
+O KernelSU é uma solução root para dispositivos Android GKI, funciona no modo kernel e concede privilégios root ao app do espaço do usuário diretamente no espaço do kernel.
 
 ## Características
 
@@ -12,9 +12,9 @@ E também, o KernelSU fornece um sistema de módulos via OverlayFS, que permite 
 
 Por favor, consulte: [Instalação](installation)
 
-## Como construir o KernelSU?
+## Como compilar o KernelSU?
 
-Por favor, consulte: [Como construir?](how-to-build)
+Por favor, consulte: [Como compilar?](how-to-build)
 
 ## Discussão
 
