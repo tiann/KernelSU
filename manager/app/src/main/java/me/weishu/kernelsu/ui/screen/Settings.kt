@@ -312,7 +312,7 @@ enum class UninstallType(val title: Int, val message: Int, val icon: ImageVector
 fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
     return rememberCustomDialog { dismiss ->
         val options = listOf(
-            UninstallType.TEMPORARY,
+            // UninstallType.TEMPORARY,
             UninstallType.PERMANENT,
             UninstallType.RESTORE_STOCK_IMAGE
         )
