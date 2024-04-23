@@ -6,6 +6,7 @@
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
+#include "linux/namei.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include "linux/sched/task_stack.h"
 #else
@@ -196,6 +197,39 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_execveat_sucompat(fd, filename_ptr, NULL, NULL, NULL);
 }
 
+static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
+	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
+#else
+	struct pt_regs *real_regs = regs;
+#endif
+	const char __user *filename_user =
+		(const char *)PT_REGS_PARM1(real_regs);
+	struct filename *filename_mid = getname(filename_user);
+	struct filename **filename_ptr = (struct filename **)&filename_mid;
+
+	return ksu_handle_execveat_sucompat(AT_FDCWD, filename_ptr, NULL, NULL, NULL);
+}
+
+static int sys_execveat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
+	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
+#else
+	struct pt_regs *real_regs = regs;
+#endif
+	int *fd = (int *)&PT_REGS_PARM1(real_regs);
+	const char __user *filename_user =
+		(const char *)PT_REGS_PARM2(real_regs);
+	int flags = PT_REGS_PARM5(real_regs);
+	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
+	struct filename *filename_mid = getname_flags(filename_user, lookup_flags, NULL);
+	struct filename **filename_ptr = (struct filename **)&filename_mid;
+
+	return ksu_handle_execveat_sucompat(fd, filename_ptr, NULL, NULL, NULL);
+}
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 static struct kprobe faccessat_kp = {
 	.symbol_name = SYS_FACCESSAT_SYMBOL,
@@ -228,6 +262,33 @@ static struct kprobe newfstatat_kp = {
 };
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+static struct kprobe execve_syscall_kp = {
+	.symbol_name = SYS_EXECVE_SYMBOL,
+	.pre_handler = sys_execve_handler_pre,
+};
+
+static struct kprobe execveat_syscall_kp = {
+	.symbol_name = SYS_EXECVEAT_SYMBOL,
+	.pre_handler = sys_execveat_handler_pre,
+};
+
+static struct kprobe compat_execve_syscall_kp = {
+	.symbol_name = COMPAT_SYS_EXECVE_SYMBOL,
+	.pre_handler = sys_execveat_handler_pre,
+};
+
+static struct kprobe compat_execveat_syscall_kp = {
+	.symbol_name = COMPAT_SYS_EXECVEAT_SYMBOL,
+	.pre_handler = sys_execveat_handler_pre,
+};
+
+static struct kprobe *execve_kps[] = {
+	&execve_syscall_kp, &compat_execve_syscall_kp,
+	&execveat_syscall_kp, &compat_execveat_syscall_kp
+};
+
+#else
 static struct kprobe execve_kp = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
@@ -238,6 +299,7 @@ static struct kprobe execve_kp = {
 #endif
 	.pre_handler = execve_handler_pre,
 };
+#endif
 
 #endif
 
@@ -246,7 +308,11 @@ void ksu_sucompat_init()
 {
 #ifdef CONFIG_KPROBES
 	int ret;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+	ret = register_kprobes(execve_kps, 4);
+#else
 	ret = register_kprobe(&execve_kp);
+#endif
 	pr_info("sucompat: execve_kp: %d\n", ret);
 	ret = register_kprobe(&newfstatat_kp);
 	pr_info("sucompat: newfstatat_kp: %d\n", ret);
@@ -257,7 +323,11 @@ void ksu_sucompat_init()
 
 void ksu_sucompat_exit() {
 #ifdef CONFIG_KPROBES
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+	unregister_kprobes(execve_kps, 4);
+#else
 	unregister_kprobe(&execve_kp);
+#endif
 	unregister_kprobe(&newfstatat_kp);
 	unregister_kprobe(&faccessat_kp);
 #endif

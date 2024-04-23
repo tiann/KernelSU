@@ -23,11 +23,19 @@
 #define SYS_READ_SYMBOL "__arm64_sys_read"
 #define SYS_NEWFSTATAT_SYMBOL "__arm64_sys_newfstatat"
 #define SYS_FACCESSAT_SYMBOL "__arm64_sys_faccessat"
+#define SYS_EXECVE_SYMBOL "__arm64_sys_execve"
+#define SYS_EXECVEAT_SYMBOL "__arm64_sys_execveat"
+#define COMPAT_SYS_EXECVE_SYMBOL "__arm64_compat_sys_execve"
+#define COMPAT_SYS_EXECVEAT_SYMBOL "__arm64_compat_sys_execveat"
 #else
 #define PRCTL_SYMBOL "sys_prctl"
 #define SYS_READ_SYMBOL "sys_read"
 #define SYS_NEWFSTATAT_SYMBOL "sys_newfstatat"
 #define SYS_FACCESSAT_SYMBOL "sys_faccessat"
+#define SYS_EXECVE_SYMBOL "sys_execve"
+#define SYS_EXECVEAT_SYMBOL "sys_execveat"
+#define COMPAT_SYS_EXECVE_SYMBOL "compat_sys_execve"
+#define COMPAT_SYS_EXECVEAT_SYMBOL "compat_sys_execveat"
 #endif
 
 #elif defined(__x86_64__)
