@@ -191,6 +191,33 @@ fun restoreBoot(
     return result.isSuccess
 }
 
+fun uninstallPermanently(
+    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Boolean {
+    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result = withNewRootShell {
+        newJob().add("${getKsuDaemonPath()} uninstall --magiskboot $magiskboot")
+            .to(stdoutCallback, stderrCallback)
+            .exec()
+    }
+
+    onFinish(result.isSuccess, result.code)
+    return result.isSuccess
+}
+
 suspend fun shrinkModules(): Boolean = withContext(Dispatchers.IO) {
     execKsud("module shrink", true)
 }
@@ -414,7 +441,9 @@ fun launchApp(packageName: String) {
 
     val shell = getRootShell()
     val result =
-        shell.newJob().add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n").exec()
+        shell.newJob()
+            .add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n")
+            .exec()
     Log.i(TAG, "launch $packageName result: $result")
 }
 
