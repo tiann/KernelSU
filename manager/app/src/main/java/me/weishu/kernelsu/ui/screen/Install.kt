@@ -274,7 +274,7 @@ fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
             )
         }
 
-        var selection: String? = null
+        var selection by remember { mutableStateOf<String?>(null) }
         ListDialog(state = rememberUseCaseState(visible = true, onFinishedRequest = {
             onSelected(selection)
         }, onCloseRequest = {
