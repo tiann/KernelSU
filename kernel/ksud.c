@@ -743,7 +743,7 @@ void ksu_ksud_exit() {
 	unregister_kprobes(execve_kps, 4);
 #else
 	unregister_kprobe(&execve_kp);
-#endif	
+#endif
 	// this should be done before unregister vfs_read_kp
 	// unregister_kprobe(&vfs_read_kp);
 	unregister_kprobe(&input_event_kp);
