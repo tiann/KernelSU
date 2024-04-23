@@ -39,5 +39,5 @@ pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
 
-pub const KSU_BACKUP_DIR: &str = "/data";
+pub const KSU_BACKUP_DIR: &str = WORKING_DIR;
 pub const KSU_BACKUP_FILE_PREFIX: &str = "ksu_backup_";
