@@ -41,7 +41,7 @@ enum Commands {
     Uninstall {
         /// magiskboot path, if not specified, will search from $PATH
         #[arg(long, default_value = None)]
-        magiskboot_path: Option<PathBuf>,
+        magiskboot: Option<PathBuf>,
     },
 
     /// SELinux policy Patch tool
@@ -308,7 +308,7 @@ pub fn run() -> Result<()> {
             }
         }
         Commands::Install => utils::install(),
-        Commands::Uninstall { magiskboot_path } => utils::uninstall(magiskboot_path),
+        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),

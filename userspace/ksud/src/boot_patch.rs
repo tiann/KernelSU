@@ -189,10 +189,10 @@ pub fn restore(
             new_boot = Some(PathBuf::from(backup_path));
             from_backup = true;
         } else {
-            println!("Warning: no backup {KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha} found!");
+            println!("- Warning: no backup {KSU_BACKUP_DIR}/{KSU_BACKUP_FILE_PREFIX}{sha} found!");
         }
     } else {
-        println!("Warning: no backup found!");
+        println!("- Cannot found backup image!");
     }
 
     if new_boot.is_none() {
