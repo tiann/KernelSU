@@ -247,5 +247,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ inputs.build_lkm == true }}
         with:
-          name: ${{ inputs.version }}_${{ inputs.os_patch_level }}-lkm
+          name: ${{ inputs.version }}_${{ inputs.sub_level }}-lkm
           path: ./output/*_kernelsu.ko
