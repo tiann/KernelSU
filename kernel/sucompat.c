@@ -6,7 +6,6 @@
 #include "linux/types.h"
 #include "linux/uaccess.h"
 #include "linux/version.h"
-#include "linux/namei.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include "linux/sched/task_stack.h"
 #else
@@ -38,6 +37,13 @@ static char __user *sh_user_path(void)
 	static const char sh_path[] = "/system/bin/sh";
 
 	return userspace_stack_buffer(sh_path, sizeof(sh_path));
+}
+
+static char __user *ksud_user_path(void)
+{
+	static const char ksud_path[] = KSUD_PATH;
+
+	return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
@@ -131,6 +137,32 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	return 0;
 }
 
+int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
+				 void *__never_use_argv, void *__never_use_envp, int *__never_use_flags)
+{
+	const char su[] = SU_PATH;
+	char path[sizeof(su) + 1];
+
+	if (unlikely(!filename_user))
+		return 0;
+
+	memset(path, 0, sizeof(path));
+	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
+
+	if (likely(memcmp(path, su, sizeof(su))))
+		return 0;
+
+	if (!ksu_is_allow_uid(current_uid().val))
+		return 0;
+
+	pr_info("sys_execve su found\n");
+	*filename_user = ksud_user_path();
+
+	escape_to_root();
+
+	return 0;
+}
+
 #ifdef CONFIG_KPROBES
 
 __maybe_unused static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -204,12 +236,9 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 #else
 	struct pt_regs *real_regs = regs;
 #endif
-	const char __user *filename_user =
-		(const char *)PT_REGS_PARM1(real_regs);
-	struct filename *filename_mid = getname(filename_user);
-	struct filename **filename_ptr = (struct filename **)&filename_mid;
+	const char __user **filename_user = (const char **)&PT_REGS_PARM1(real_regs);
 
-	return ksu_handle_execveat_sucompat(AT_FDCWD, filename_ptr, NULL, NULL, NULL);
+	return ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, NULL, NULL);
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
