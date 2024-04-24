@@ -492,70 +492,6 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 					NULL);
 }
 
-static int sys_execveat_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
-	int *fd = (int *)&PT_REGS_PARM1(real_regs);
-	const char __user *filename_user =
-		(const char *)PT_REGS_PARM2(real_regs);
-	int flags = PT_REGS_PARM5(real_regs);
-	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
-	struct filename *filename_mid =
-		getname_flags(filename_user, lookup_flags, NULL);
-	struct filename **filename_ptr = (struct filename **)&filename_mid;
-	const char __user *const __user *__argv =
-		(const char __user *const __user *)PT_REGS_PARM3(real_regs);
-	struct user_arg_ptr argv = { .ptr.native = __argv };
-
-	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
-}
-
-static int compat_sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
-	const char __user *filename_user =
-		(const char *)PT_REGS_PARM1(real_regs);
-	struct filename *filename_mid = getname(filename_user);
-	struct filename **filename_ptr = (struct filename **)&filename_mid;
-	const compat_uptr_t __user *__argv =
-		(const compat_uptr_t *)PT_REGS_PARM2(real_regs);
-	struct user_arg_ptr argv = { .ptr.compat = __argv, .is_compat = true };
-
-	return ksu_handle_execveat_ksud(AT_FDCWD, filename_ptr, &argv, NULL,
-					NULL);
-}
-
-static int compat_sys_execveat_handler_pre(struct kprobe *p,
-					   struct pt_regs *regs)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
-	int *fd = (int *)&PT_REGS_PARM1(real_regs);
-	const char __user *filename_user =
-		(const char *)PT_REGS_PARM2(real_regs);
-	int flags = PT_REGS_PARM5(real_regs);
-	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
-	struct filename *filename_mid =
-		getname_flags(filename_user, lookup_flags, NULL);
-	struct filename **filename_ptr = (struct filename **)&filename_mid;
-	const compat_uptr_t __user *__argv =
-		(const compat_uptr_t *)PT_REGS_PARM3(real_regs);
-	struct user_arg_ptr argv = { .ptr.compat = __argv, .is_compat = true };
-
-	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
-}
-
 // remove this later!
 __maybe_unused static int vfs_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -591,29 +527,9 @@ static int input_handle_event_handler_pre(struct kprobe *p,
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-static struct kprobe execve_syscall_kp = {
+static struct kprobe execve_kp = {
 	.symbol_name = SYS_EXECVE_SYMBOL,
 	.pre_handler = sys_execve_handler_pre,
-};
-
-static struct kprobe execveat_syscall_kp = {
-	.symbol_name = SYS_EXECVEAT_SYMBOL,
-	.pre_handler = sys_execveat_handler_pre,
-};
-
-static struct kprobe compat_execve_syscall_kp = {
-	.symbol_name = COMPAT_SYS_EXECVE_SYMBOL,
-	.pre_handler = compat_sys_execve_handler_pre,
-};
-
-static struct kprobe compat_execveat_syscall_kp = {
-	.symbol_name = COMPAT_SYS_EXECVEAT_SYMBOL,
-	.pre_handler = compat_sys_execveat_handler_pre,
-};
-
-static struct kprobe *execve_kps[] = {
-	&execve_syscall_kp, &compat_execve_syscall_kp,
-	&execveat_syscall_kp, &compat_execveat_syscall_kp
 };
 #else
 static struct kprobe execve_kp = {
@@ -661,11 +577,7 @@ static void do_stop_vfs_read_hook(struct work_struct *work)
 
 static void do_stop_execve_hook(struct work_struct *work)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-	unregister_kprobes(execve_kps, 4);
-#else
 	unregister_kprobe(&execve_kp);
-#endif
 }
 
 static void do_stop_input_hook(struct work_struct *work)
@@ -718,11 +630,7 @@ void ksu_ksud_init()
 #ifdef CONFIG_KPROBES
 	int ret;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-	ret = register_kprobes(execve_kps, 4);
-#else
 	ret = register_kprobe(&execve_kp);
-#endif
 	pr_info("ksud: execve_kp: %d\n", ret);
 
 	ret = register_kprobe(&vfs_read_kp);
@@ -739,11 +647,7 @@ void ksu_ksud_init()
 
 void ksu_ksud_exit() {
 #ifdef CONFIG_KPROBES
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-	unregister_kprobes(execve_kps, 4);
-#else
 	unregister_kprobe(&execve_kp);
-#endif
 	// this should be done before unregister vfs_read_kp
 	// unregister_kprobe(&vfs_read_kp);
 	unregister_kprobe(&input_event_kp);
