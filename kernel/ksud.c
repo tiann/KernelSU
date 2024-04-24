@@ -650,6 +650,6 @@ void ksu_ksud_exit() {
 	unregister_kprobe(&execve_kp);
 	// this should be done before unregister vfs_read_kp
 	// unregister_kprobe(&vfs_read_kp);
-	unregister_kprobe(&input_event_kp);
+	unregister_kprobes(input_event_kps, 2);
 #endif
 }
