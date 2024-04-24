@@ -34,6 +34,7 @@ rust-embed = { version = "8", features = [
 which = "6"
 getopts = "0.2"
 sha256 = "1"
+sha1 = "0.10"
 tempdir = "0.3"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }

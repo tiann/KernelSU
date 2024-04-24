@@ -436,19 +436,26 @@ fn do_patch(
 }
 
 #[cfg(target_os = "android")]
+fn calculate_sha1(file_path: impl AsRef<Path>) -> io::Result<String> {
+    let mut file = File::open(file_path.as_ref())?;
+    let mut hasher = Sha1::new();
+    let mut buffer = [0; 1024];
+
+    loop {
+        let n = file.read(&mut buffer)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buffer[..n]);
+    }
+
+    let result = hasher.finalize();
+    Ok(format!("{:x}", result))
+}
+
+#[cfg(target_os = "android")]
 fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
-    // calc boot sha1
-    let output = Command::new(magiskboot)
-        .current_dir(workdir)
-        .arg("sha1")
-        .arg(image)
-        .output()?;
-    ensure!(
-        output.status.success(),
-        "Cannot calculate sha1 of original boot!"
-    );
-    let output = String::from_utf8(output.stdout)?;
-    let sha1 = output.trim();
+    let sha1 = calculate_sha1(image)?;
     let filename = format!("{KSU_BACKUP_FILE_PREFIX}{sha1}");
 
     println!("- Backup stock boot image");

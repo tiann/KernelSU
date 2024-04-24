@@ -814,6 +814,7 @@ dependencies = [
  "rustix 0.38.30",
  "serde",
  "serde_json",
+ "sha1",
  "sha256",
  "tempdir",
  "which",
