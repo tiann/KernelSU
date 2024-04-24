@@ -436,9 +436,11 @@ fn do_patch(
 }
 
 #[cfg(target_os = "android")]
-fn calculate_sha1(file_path: impl AsRef<Path>) -> io::Result<String> {
-    let mut file = File::open(file_path.as_ref())?;
-    let mut hasher = Sha1::new();
+fn calculate_sha1(file_path: impl AsRef<Path>) -> Result<String> {
+    use sha1::Digest;
+    use std::io::Read;
+    let mut file = std::fs::File::open(file_path.as_ref())?;
+    let mut hasher = sha1::Sha1::new();
     let mut buffer = [0; 1024];
 
     loop {
