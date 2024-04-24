@@ -52,6 +52,9 @@ jobs:
             sub_level: 209
             os_patch_level: 2024-04
           - version: "5.15"
+            sub_level: 74
+            os_patch_level: 2023-01
+          - version: "5.15"
             sub_level: 94
             os_patch_level: 2023-05
           - version: "5.15"
