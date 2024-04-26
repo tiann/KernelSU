@@ -176,7 +176,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	if (unlikely(!memcmp(filename->name, system_bin_init, 
+	if (unlikely(!memcmp(filename->name, system_bin_init,
 				sizeof(system_bin_init) - 1) && argv)) {
 		// /system/bin/init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
@@ -472,6 +472,32 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
 }
 
+static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
+	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
+#else
+	struct pt_regs *real_regs = regs;
+#endif
+	const char __user **filename_user = (const char **)&PT_REGS_PARM1(real_regs);
+	const char __user *const __user *__argv =
+		(const char __user *const __user *)PT_REGS_PARM2(real_regs);
+	struct user_arg_ptr argv = { .ptr.native = __argv };
+	struct filename filename_in, *filename_p;
+	char path[32];
+
+	if (!filename_user)
+		return 0;
+
+	memset(path, 0, sizeof(path));
+	ksu_strncpy_from_user_nofault(path, *filename_user, 32);
+	filename_in.name = path;
+
+	filename_p = &filename_in;
+	return ksu_handle_execveat_ksud(AT_FDCWD, &filename_p, &argv, NULL,
+					NULL);
+}
+
 // remove this later!
 __maybe_unused static int vfs_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -506,6 +532,12 @@ static int input_handle_event_handler_pre(struct kprobe *p,
 	return ksu_handle_input_handle_event(type, code, value);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+static struct kprobe execve_kp = {
+	.symbol_name = SYS_EXECVE_SYMBOL,
+	.pre_handler = sys_execve_handler_pre,
+};
+#else
 static struct kprobe execve_kp = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.symbol_name = "do_execveat_common",
@@ -516,6 +548,7 @@ static struct kprobe execve_kp = {
 #endif
 	.pre_handler = execve_handler_pre,
 };
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 static struct kprobe vfs_read_kp = {
@@ -529,9 +562,18 @@ static struct kprobe vfs_read_kp = {
 };
 #endif
 
-static struct kprobe input_handle_event_kp = {
-	.symbol_name = "input_handle_event",
+static struct kprobe input_event_kp = {
+	.symbol_name = "input_event",
 	.pre_handler = input_handle_event_handler_pre,
+};
+
+static struct kprobe input_inject_event_kp = {
+	.symbol_name = "input_inject_event",
+	.pre_handler = input_handle_event_handler_pre,
+};
+
+static struct kprobe *input_event_kps[] = {
+	&input_event_kp, &input_inject_event_kp
 };
 
 static void do_stop_vfs_read_hook(struct work_struct *work)
@@ -546,7 +588,7 @@ static void do_stop_execve_hook(struct work_struct *work)
 
 static void do_stop_input_hook(struct work_struct *work)
 {
-	unregister_kprobe(&input_handle_event_kp);
+	unregister_kprobes(input_event_kps, 2);
 }
 #endif
 
@@ -600,7 +642,7 @@ void ksu_ksud_init()
 	ret = register_kprobe(&vfs_read_kp);
 	pr_info("ksud: vfs_read_kp: %d\n", ret);
 
-	ret = register_kprobe(&input_handle_event_kp);
+	ret = register_kprobes(input_event_kps, 2);
 	pr_info("ksud: input_handle_event_kp: %d\n", ret);
 
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
@@ -614,6 +656,6 @@ void ksu_ksud_exit() {
 	unregister_kprobe(&execve_kp);
 	// this should be done before unregister vfs_read_kp
 	// unregister_kprobe(&vfs_read_kp);
-	unregister_kprobe(&input_handle_event_kp);
+	unregister_kprobes(input_event_kps, 2);
 #endif
 }
