@@ -178,11 +178,7 @@ __maybe_unused static int faccessat_handler_pre(struct kprobe *p, struct pt_regs
 
 static int sys_faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int *dfd = (int *)&PT_REGS_PARM1(real_regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(real_regs);
 	int *mode = (int *)&PT_REGS_PARM3(real_regs);
@@ -207,11 +203,7 @@ __maybe_unused static int newfstatat_handler_pre(struct kprobe *p, struct pt_reg
 
 static int sys_newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int *dfd = (int *)&PT_REGS_PARM1(real_regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(real_regs);
 	int *flags = (int *)&PT_REGS_SYSCALL_PARM4(real_regs);
@@ -231,11 +223,7 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM1(real_regs);
 
 	return ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, NULL, NULL);

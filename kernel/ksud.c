@@ -474,11 +474,7 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM1(real_regs);
 	const char __user *const __user *__argv =
 		(const char __user *const __user *)PT_REGS_PARM2(real_regs);
@@ -511,11 +507,7 @@ __maybe_unused static int vfs_read_handler_pre(struct kprobe *p, struct pt_regs 
 
 static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	unsigned int fd = PT_REGS_PARM1(real_regs);
 	char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(real_regs);
 	size_t count_ptr = (size_t *) &PT_REGS_PARM3(real_regs);
