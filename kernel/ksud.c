@@ -567,14 +567,6 @@ static struct kprobe input_event_kp = {
 	.pre_handler = input_handle_event_handler_pre,
 };
 
-static struct kprobe input_inject_event_kp = {
-	.symbol_name = "input_inject_event",
-	.pre_handler = input_handle_event_handler_pre,
-};
-
-static struct kprobe *input_event_kps[] = {
-	&input_event_kp, &input_inject_event_kp
-};
 
 static void do_stop_vfs_read_hook(struct work_struct *work)
 {
@@ -588,7 +580,7 @@ static void do_stop_execve_hook(struct work_struct *work)
 
 static void do_stop_input_hook(struct work_struct *work)
 {
-	unregister_kprobes(input_event_kps, 2);
+	unregister_kprobe(&input_event_kp);
 }
 #endif
 
@@ -642,8 +634,8 @@ void ksu_ksud_init()
 	ret = register_kprobe(&vfs_read_kp);
 	pr_info("ksud: vfs_read_kp: %d\n", ret);
 
-	ret = register_kprobes(input_event_kps, 2);
-	pr_info("ksud: input_handle_event_kp: %d\n", ret);
+	ret = register_kprobe(&input_event_kp);
+	pr_info("ksud: input_event_kp: %d\n", ret);
 
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
@@ -656,6 +648,6 @@ void ksu_ksud_exit() {
 	unregister_kprobe(&execve_kp);
 	// this should be done before unregister vfs_read_kp
 	// unregister_kprobe(&vfs_read_kp);
-	unregister_kprobes(input_event_kps, 2);
+	unregister_kprobe(&input_event_kp);
 #endif
 }
