@@ -241,7 +241,7 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, NULL, NULL);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+#if 1
 static struct kprobe faccessat_kp = {
 	.symbol_name = SYS_FACCESSAT_SYMBOL,
 	.pre_handler = sys_faccessat_handler_pre,
@@ -257,7 +257,7 @@ static struct kprobe faccessat_kp = {
 };
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+#if 1
 static struct kprobe newfstatat_kp = {
 	.symbol_name = SYS_NEWFSTATAT_SYMBOL,
 	.pre_handler = sys_newfstatat_handler_pre,
@@ -273,7 +273,7 @@ static struct kprobe newfstatat_kp = {
 };
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+#if 1
 static struct kprobe execve_kp = {
 	.symbol_name = SYS_EXECVE_SYMBOL,
 	.pre_handler = sys_execve_handler_pre,
