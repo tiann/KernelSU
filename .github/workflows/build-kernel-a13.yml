@@ -21,54 +21,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - version: "5.10"
-            sub_level: 168
-            os_patch_level: 2023-05
-          - version: "5.10"
-            sub_level: 177
-            os_patch_level: 2023-07
-          - version: "5.10"
-            sub_level: 177
-            os_patch_level: 2024-02
-          - version: "5.10"
-            sub_level: 186
-            os_patch_level: 2023-08
-          - version: "5.10"
-            sub_level: 186
-            os_patch_level: 2023-09
-          - version: "5.10"
-            sub_level: 189
-            os_patch_level: 2023-11
-          - version: "5.10"
-            sub_level: 198
-            os_patch_level: 2023-12
-          - version: "5.10"
-            sub_level: 205
-            os_patch_level: 2024-02
-          - version: "5.10"
-            sub_level: 205
-            os_patch_level: 2024-03
-          - version: "5.10"
-            sub_level: 209
-            os_patch_level: 2024-04
-          - version: "5.15"
-            sub_level: 94
-            os_patch_level: 2023-05
-          - version: "5.15"
-            sub_level: 104
-            os_patch_level: 2023-07
-          - version: "5.15"
-            sub_level: 119
-            os_patch_level: 2023-09
-          - version: "5.15"
-            sub_level: 123
-            os_patch_level: 2023-11
-          - version: "5.15"
-            sub_level: 137
-            os_patch_level: 2023-12
-          - version: "5.15"
-            sub_level: 144
-            os_patch_level: 2024-03
           - version: "5.15"
             sub_level: 148
             os_patch_level: 2024-04
@@ -129,7 +81,35 @@ jobs:
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session
+          
+      - name: Setup LXC
+        run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+          rm -rf utils
+          git clone https://github.com/tomxi1997/lxc-docker-support-for-android.git utils
+          echo 'source "utils/Kconfig"' >> "Kconfig"
 
+          echo "CONFIG_DOCKER=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+
+          sed -i '/CONFIG_ANDROID_PARANOID_NETWORK/d' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          echo "# CONFIG_ANDROID_PARANOID_NETWORK is not set" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          
+          #sed -i '/CONFIG_LOCALVERSION/d' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          #echo 'CONFIG_LOCALVERSION="-LXC-KernelSU-support_Pdx"' >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          
+          chmod +x $GITHUB_WORKSPACE/kernel_workspace/android-kernel/utils/runcpatch.sh
+          if [ -f $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel/cgroup/cgroup.c ]; then
+             sh $GITHUB_WORKSPACE/kernel_workspace/android-kernel/utils/runcpatch.sh $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel/cgroup/cgroup.c
+          fi
+        
+          if [ -f $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel/cgroup.c ]; then
+             sh $GITHUB_WORKSPACE/kernel_workspace/android-kernel/utils/runcpatch.sh $GITHUB_WORKSPACE/kernel_workspace/android-kernel/kernel/cgroup.c
+          fi
+          
+          if [ -f $GITHUB_WORKSPACE/kernel_workspace/android-kernel/net/netfilter/xt_qtaguid.c ]; then
+             patch -p0 < $GITHUB_WORKSPACE/kernel_workspace/android-kernel/utils/xt_qtaguid.patch
+          fi
+       
       - name: Build boot images
         run: |
           export AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
@@ -157,9 +137,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - version: "5.10"
-            sub_level: 189
-            os_patch_level: 2023-10
           - version: "5.15"
             sub_level: 123
             os_patch_level: 2023-10
