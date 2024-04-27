@@ -1,6 +1,6 @@
-#include "linux/uaccess.h"
-#include "linux/types.h"
-#include "linux/version.h"
+#include <linux/uaccess.h>
+#include <linux/types.h>
+#include <linux/version.h>
 
 #include "../klog.h" // IWYU pragma: keep
 #include "selinux.h"

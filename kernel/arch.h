@@ -1,7 +1,7 @@
 #ifndef __KSU_H_ARCH
 #define __KSU_H_ARCH
 
-#include "linux/version.h"
+#include <linux/version.h>
 
 #if defined(__aarch64__)
 

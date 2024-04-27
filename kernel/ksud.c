@@ -1,25 +1,24 @@
-#include "asm/current.h"
-#include "linux/compat.h"
-#include "linux/cred.h"
-#include "linux/dcache.h"
-#include "linux/err.h"
-#include "linux/file.h"
-#include "linux/fs.h"
-#include "linux/version.h"
+#include <asm/current.h>
+#include <linux/compat.h>
+#include <linux/cred.h>
+#include <linux/dcache.h>
+#include <linux/err.h>
+#include <linux/file.h>
+#include <linux/fs.h>
+#include <linux/version.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
-#include "linux/input-event-codes.h"
+#include <linux/input-event-codes.h>
 #else
-#include "uapi/linux/input.h"
+#include <uapi/linux/input.h>
 #endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
-#include "linux/aio.h"
+#include <linux/aio.h>
 #endif
-#include "linux/kprobes.h"
-#include "linux/printk.h"
-#include "linux/types.h"
-#include "linux/uaccess.h"
-#include "linux/version.h"
-#include "linux/workqueue.h"
+#include <linux/kprobes.h>
+#include <linux/printk.h>
+#include <linux/types.h>
+#include <linux/uaccess.h>
+#include <linux/workqueue.h>
 
 #include "allowlist.h"
 #include "arch.h"
@@ -117,7 +116,7 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
  * count() counts the number of strings in array ARGV.
  */
 
- /*
+/*
  * Make sure old GCC compiler can use __maybe_unused,
  * Test passed in 4.4.x ~ 4.9.x when use GCC.
  */
@@ -150,7 +149,8 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 
 // IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-				struct user_arg_ptr *argv, struct user_arg_ptr *envp, int *flags)
+			     struct user_arg_ptr *argv,
+			     struct user_arg_ptr *envp, int *flags)
 {
 #ifndef CONFIG_KPROBES
 	if (!ksu_execveat_hook) {
@@ -177,7 +177,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	}
 
 	if (unlikely(!memcmp(filename->name, system_bin_init,
-				sizeof(system_bin_init) - 1) && argv)) {
+			     sizeof(system_bin_init) - 1) &&
+		     argv)) {
 		// /system/bin/init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/system/bin/init argc: %d\n", argc);
@@ -185,8 +186,10 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-				pr_info("/system/bin/init first arg: %s\n", first_arg);
+				ksu_strncpy_from_user_nofault(
+					first_arg, p, sizeof(first_arg));
+				pr_info("/system/bin/init first arg: %s\n",
+					first_arg);
 				if (!strcmp(first_arg, "second_stage")) {
 					pr_info("/system/bin/init second_stage executed\n");
 					apply_kernelsu_rules();
@@ -198,7 +201,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			}
 		}
 	} else if (unlikely(!memcmp(filename->name, old_system_init,
-				sizeof(old_system_init) - 1) && argv)) {
+				    sizeof(old_system_init) - 1) &&
+			    argv)) {
 		// /init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/init argc: %d\n", argc);
@@ -207,7 +211,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
+				ksu_strncpy_from_user_nofault(
+					first_arg, p, sizeof(first_arg));
 				pr_info("/init first arg: %s\n", first_arg);
 				if (!strcmp(first_arg, "--second-stage")) {
 					pr_info("/init second_stage executed\n");
@@ -224,13 +229,15 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			if (envc > 0) {
 				int n;
 				for (n = 1; n <= envc; n++) {
-					const char __user *p = get_user_arg_ptr(*envp, n);
+					const char __user *p =
+						get_user_arg_ptr(*envp, n);
 					if (!p || IS_ERR(p)) {
 						continue;
 					}
 					char env[256];
 					// Reading environment variable strings from user space
-					if (ksu_strncpy_from_user_nofault(env, p, sizeof(env)) < 0)
+					if (ksu_strncpy_from_user_nofault(
+						    env, p, sizeof(env)) < 0)
 						continue;
 					// Parsing environment variable names and values
 					char *env_name = env;
@@ -241,10 +248,14 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					*env_value = '\0';
 					env_value++;
 					// Check if the environment variable name and value are matching
-					if (!strcmp(env_name, "INIT_SECOND_STAGE") && (!strcmp(env_value, "1") || !strcmp(env_value, "true"))) {
+					if (!strcmp(env_name,
+						    "INIT_SECOND_STAGE") &&
+					    (!strcmp(env_value, "1") ||
+					     !strcmp(env_value, "true"))) {
 						pr_info("/init second_stage executed\n");
 						apply_kernelsu_rules();
-						init_second_stage_executed = true;
+						init_second_stage_executed =
+							true;
 						ksu_android_ns_fs_check();
 					}
 				}
@@ -252,10 +263,11 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		}
 	}
 
-	if (unlikely(first_app_process &&
-		!memcmp(filename->name, app_process, sizeof(app_process) - 1))) {
+	if (unlikely(first_app_process && !memcmp(filename->name, app_process,
+						  sizeof(app_process) - 1))) {
 		first_app_process = false;
-		pr_info("exec app_process, /data prepared, second_stage: %d\n", init_second_stage_executed);
+		pr_info("exec app_process, /data prepared, second_stage: %d\n",
+			init_second_stage_executed);
 		on_post_fs_data(); // we keep this for old ksud
 		stop_execve_hook();
 	}
@@ -274,7 +286,8 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
 	bool first_read = file->f_pos == 0;
 	ssize_t ret = orig_read(file, buf, count, pos);
 	if (first_read) {
-		pr_info("read_proxy append %ld + %ld\n", ret, read_count_append);
+		pr_info("read_proxy append %ld + %ld\n", ret,
+			read_count_append);
 		ret += read_count_append;
 	}
 	return ret;
@@ -386,7 +399,8 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
-int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)
+int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
+			size_t *count_ptr)
 {
 	struct file *file = fget(fd);
 	if (!file) {
@@ -475,7 +489,8 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
-	const char __user **filename_user = (const char **)&PT_REGS_PARM1(real_regs);
+	const char __user **filename_user =
+		(const char **)&PT_REGS_PARM1(real_regs);
 	const char __user *const __user *__argv =
 		(const char __user *const __user *)PT_REGS_PARM2(real_regs);
 	struct user_arg_ptr argv = { .ptr.native = __argv };
@@ -495,7 +510,8 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 }
 
 // remove this later!
-__maybe_unused static int vfs_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+__maybe_unused static int vfs_read_handler_pre(struct kprobe *p,
+					       struct pt_regs *regs)
 {
 	struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
 	char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
@@ -510,7 +526,7 @@ static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	unsigned int fd = PT_REGS_PARM1(real_regs);
 	char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(real_regs);
-	size_t count_ptr = (size_t *) &PT_REGS_PARM3(real_regs);
+	size_t count_ptr = (size_t *)&PT_REGS_PARM3(real_regs);
 
 	return ksu_handle_sys_read(fd, buf_ptr, count_ptr);
 }
@@ -558,7 +574,6 @@ static struct kprobe input_event_kp = {
 	.symbol_name = "input_event",
 	.pre_handler = input_handle_event_handler_pre,
 };
-
 
 static void do_stop_vfs_read_hook(struct work_struct *work)
 {
@@ -635,7 +650,8 @@ void ksu_ksud_init()
 #endif
 }
 
-void ksu_ksud_exit() {
+void ksu_ksud_exit()
+{
 #ifdef CONFIG_KPROBES
 	unregister_kprobe(&execve_kp);
 	// this should be done before unregister vfs_read_kp

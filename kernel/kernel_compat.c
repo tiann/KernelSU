@@ -1,19 +1,19 @@
-#include "linux/version.h"
-#include "linux/fs.h"
-#include "linux/nsproxy.h"
+#include <linux/version.h>
+#include <linux/fs.h>
+#include <linux/nsproxy.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-#include "linux/sched/task.h"
+#include <linux/sched/task.h>
 #else
-#include "linux/sched.h"
+#include <linux/sched.h>
 #endif
-#include "linux/uaccess.h"
+#include <linux/uaccess.h>
 #include "klog.h" // IWYU pragma: keep
 #include "kernel_compat.h" // Add check Huawei Device
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI)
-#include "linux/key.h"
-#include "linux/errno.h"
-#include "linux/cred.h"
+#include <linux/key.h>
+#include <linux/errno.h>
+#include <linux/cred.h>
 struct key *init_session_keyring = NULL;
 
 static inline int install_session_keyring(struct key *keyring)
