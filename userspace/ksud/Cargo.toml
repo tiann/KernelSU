@@ -10,7 +10,7 @@ rust-version = "1.77.2"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = "0.6"
+zip = "1.1"
 zip-extensions = "0.6"
 java-properties = "2"
 log = "0.4"
