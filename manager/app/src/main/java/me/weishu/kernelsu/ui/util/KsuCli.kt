@@ -82,9 +82,9 @@ fun execKsud(args: String, newShell: Boolean = false): Boolean {
     }
 }
 
-fun install() {
+fun install(magiskboot_path: String) {
     val start = SystemClock.elapsedRealtime()
-    val result = execKsud("install", true)
+    val result = execKsud("install --magiskboot $magiskboot_path", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 

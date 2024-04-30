@@ -307,7 +307,7 @@ pub fn run() -> Result<()> {
                 Module::Shrink => module::shrink_ksu_images(),
             }
         }
-        Commands::Install => utils::install(),
+        Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),

@@ -199,24 +199,31 @@ pub fn get_tmp_path() -> &'static str {
 }
 
 #[cfg(target_os = "android")]
-fn link_ksud_to_bin() -> Result<()> {
+fn link_to_bin() -> Result<()> {
     let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
     let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
     if ksu_bin.exists() && !ksu_bin_link.exists() {
         std::os::unix::fs::symlink(&ksu_bin, &ksu_bin_link)?;
     }
+    let magiskboot_bin = PathBuf::from(defs:: MAGISKBOOT_PATH);
+    let magiskboot_bin_link = PathBuf::from(defs:: MAGISKBOOT_LINK_PATH);
+    if magiskboot_bin.exists() && ! magiskboot_bin_link.exists() {
+        std::os::unix::fs::symlink(&magiskboot_bin, &magiskboot_bin_link)?;
+    }
     Ok(())
 }
 
-pub fn install() -> Result<()> {
+pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
+    std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH)?;
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
+    restorecon::lsetfilecon(defs::MAGISKBOOT_PATH, restorecon::ADB_CON)?;
     // install binary assets
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
     #[cfg(target_os = "android")]
-    link_ksud_to_bin()?;
+    link_to_bin()?;
 
     Ok(())
 }
