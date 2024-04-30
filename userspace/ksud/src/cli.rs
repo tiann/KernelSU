@@ -35,7 +35,10 @@ enum Commands {
     BootCompleted,
 
     /// Install KernelSU userspace component to system
-    Install,
+    Install {
+    	#[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
 
     /// Uninstall KernelSU modules and itself(LKM Only)
     Uninstall {
