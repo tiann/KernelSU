@@ -61,7 +61,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
         ) {
             val isManager = Natives.becomeManager(ksuApp.packageName)
             SideEffect {
-                if (isManager) install(File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so"))
+                if (isManager) install()
             }
             val ksuVersion = if (isManager) Natives.version else null
             val lkmMode = ksuVersion?.let {
