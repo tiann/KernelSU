@@ -208,10 +208,12 @@ fn link_ksud_to_bin() -> Result<()> {
     Ok(())
 }
 
-pub fn install() -> Result<()> {
+pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
+    std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH)?;
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
+    restorecon::lsetfilecon(defs::MAGISKBOOT_PATH, restorecon::ADB_CON)?;
     // install binary assets
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
