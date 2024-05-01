@@ -36,7 +36,7 @@ enum Commands {
 
     /// Install KernelSU userspace component to system
     Install {
-    	#[arg(long, default_value = None)]
+        #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
     },
 

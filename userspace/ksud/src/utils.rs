@@ -217,16 +217,10 @@ pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
 
     #[cfg(target_os = "android")]
     link_ksud_to_bin()?;
-    let copy_magiskboot_result = std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH);
-    match copy_magiskboot_result {
-    	Ok() => {
-            let setcontext_magiskboot_result = restorecon::lsetfilecon(defs::MAGISKBOOT_PATH, restorecon::ADB_CON);
-            match setcontext_magiskboot_result {
-            	Ok() => println!("- Copy magiskboot binary file success"),
-                Err() => println!("- set magiskboot binary file selinux context fail , but it will not affect your later use of kernelsu"),
-            }
-        },
-        Err() => println!("- Copy magiskboot binary file fail , but it will not affect your later use of kernelsu"),
+
+    if let Some(magiskboot) = magiskboot {
+        ensure_dir_exists(defs::BINARY_DIR)?;
+        let _ = std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH);
     }
 
     Ok(())
