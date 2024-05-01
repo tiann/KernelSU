@@ -684,5 +684,12 @@
         "kernel_name": "android_kernel_lge_sm8150",
         "kernel_link": "https://github.com/Dawid2849/android_kernel_lge_sm8150",
         "devices": "LG G8 (alphaplus) / LG G8s (betalm) / LG G8X (mh2mml)"
+    },
+    {
+        "maintainer": "lyc8503",
+        "maintainer_link": "https://github.com/lyc8503",
+        "kernel_name": "kernel_xiaomi_chopin",
+        "kernel_link": "https://github.com/ChopinKernels/kernel_xiaomi_chopin_android_S",
+        "devices": "Redmi Note 10 Pro 5G (chopin) / Poco X3 GT (choping)"
     }
 ]
