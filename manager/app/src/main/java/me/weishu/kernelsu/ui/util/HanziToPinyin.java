@@ -391,9 +391,9 @@ public class HanziToPinyin {
                 return sInstance;
             }
             // Check if zh_CN collation data is available
-            final Locale locale[] = Collator.getAvailableLocales();
-            for (int i = 0; i < locale.length; i++) {
-                if (locale[i].equals(Locale.CHINA) || locale[i].getLanguage().contains("zh")) {
+            final Locale[] locale = Collator.getAvailableLocales();
+            for (Locale value : locale) {
+                if (value.equals(Locale.CHINA) || value.getLanguage().contains("zh")) {
                     // Do self validation just once.
                     if (DEBUG) {
                         Log.d(TAG, "Self validation. Result: " + doSelfValidation());
@@ -508,7 +508,7 @@ public class HanziToPinyin {
      * Token. If these is no China collator, the empty token array is returned.
      */
     public ArrayList<Token> get(final String input) {
-        ArrayList<Token> tokens = new ArrayList<Token>();
+        ArrayList<Token> tokens = new ArrayList<>();
         if (!mHasChinaCollator || TextUtils.isEmpty(input)) {
             // return empty tokens.
             return tokens;
