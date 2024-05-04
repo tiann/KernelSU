@@ -10,7 +10,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,16 +40,12 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.profile.Capabilities
-import me.weishu.kernelsu.profile.Groups
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import me.weishu.kernelsu.ui.viewmodel.toJSON
-import org.json.JSONArray
-import org.json.JSONObject
 
 /**
  * @author weishu
@@ -259,7 +255,7 @@ private fun TopBar(
     }, navigationIcon = {
         IconButton(
             onClick = onBack
-        ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
+        ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
     }, actions = {
         if (readOnly) {
             return@TopAppBar
@@ -279,7 +275,6 @@ private fun TopBar(
     })
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TextEdit(
     label: String,

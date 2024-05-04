@@ -235,7 +235,7 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
         val groupsJsonArray = templateJson.optJSONArray("groups")
         val capabilitiesJsonArray = templateJson.optJSONArray("capabilities")
         val context = templateJson.optString("context").takeIf { it.isNotEmpty() }
-            ?: Natives.KERNEL_SU_DOMAIN;
+            ?: Natives.KERNEL_SU_DOMAIN
         val namespace = templateJson.optString("namespace").takeIf { it.isNotEmpty() }
             ?: Natives.Profile.Namespace.INHERITED.name
 
@@ -276,13 +276,13 @@ fun TemplateViewModel.TemplateInfo.toJSON(): JSONObject {
         if (template.author.isNotEmpty()) {
             put("author", template.author)
         }
-        put("namespace", Natives.Profile.Namespace.values()[template.namespace].name)
+        put("namespace", Natives.Profile.Namespace.entries[template.namespace].name)
         put("uid", template.uid)
         put("gid", template.gid)
 
         if (template.groups.isNotEmpty()) {
             put("groups", JSONArray(
-                Groups.values().filter {
+                Groups.entries.filter {
                     template.groups.contains(it.gid)
                 }.map {
                     it.name
@@ -292,7 +292,7 @@ fun TemplateViewModel.TemplateInfo.toJSON(): JSONObject {
 
         if (template.capabilities.isNotEmpty()) {
             put("capabilities", JSONArray(
-                Capabilities.values().filter {
+                Capabilities.entries.filter {
                     template.capabilities.contains(it.cap)
                 }.map {
                     it.name
