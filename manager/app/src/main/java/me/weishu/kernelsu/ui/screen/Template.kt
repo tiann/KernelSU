@@ -12,8 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -214,7 +214,7 @@ private fun TopBar(
         navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         },
         actions = {
             IconButton(onClick = onSync) {
