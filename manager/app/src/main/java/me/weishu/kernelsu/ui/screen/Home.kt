@@ -327,7 +327,7 @@ fun LearnMoreCard() {
                 uriHandler.openUri(url)
             }
             .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column() {
+            Column {
                 Text(
                     text = stringResource(R.string.home_learn_kernelsu),
                     style = MaterialTheme.typography.titleSmall
@@ -354,7 +354,7 @@ fun DonateCard() {
                 uriHandler.openUri("https://patreon.com/weishu")
             }
             .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column() {
+            Column {
                 Text(
                     text = stringResource(R.string.home_support_title),
                     style = MaterialTheme.typography.titleSmall

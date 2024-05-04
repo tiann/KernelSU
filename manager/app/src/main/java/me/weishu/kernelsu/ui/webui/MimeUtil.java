@@ -51,89 +51,38 @@ class MimeUtil {
 
         final String extension = fileName.substring(finalFullStop + 1).toLowerCase();
 
-        switch (extension) {
-            case "webm":
-                return "video/webm";
-            case "mpeg":
-            case "mpg":
-                return "video/mpeg";
-            case "mp3":
-                return "audio/mpeg";
-            case "wasm":
-                return "application/wasm";
-            case "xhtml":
-            case "xht":
-            case "xhtm":
-                return "application/xhtml+xml";
-            case "flac":
-                return "audio/flac";
-            case "ogg":
-            case "oga":
-            case "opus":
-                return "audio/ogg";
-            case "wav":
-                return "audio/wav";
-            case "m4a":
-                return "audio/x-m4a";
-            case "gif":
-                return "image/gif";
-            case "jpeg":
-            case "jpg":
-            case "jfif":
-            case "pjpeg":
-            case "pjp":
-                return "image/jpeg";
-            case "png":
-                return "image/png";
-            case "apng":
-                return "image/apng";
-            case "svg":
-            case "svgz":
-                return "image/svg+xml";
-            case "webp":
-                return "image/webp";
-            case "mht":
-            case "mhtml":
-                return "multipart/related";
-            case "css":
-                return "text/css";
-            case "html":
-            case "htm":
-            case "shtml":
-            case "shtm":
-            case "ehtml":
-                return "text/html";
-            case "js":
-            case "mjs":
-                return "application/javascript";
-            case "xml":
-                return "text/xml";
-            case "mp4":
-            case "m4v":
-                return "video/mp4";
-            case "ogv":
-            case "ogm":
-                return "video/ogg";
-            case "ico":
-                return "image/x-icon";
-            case "woff":
-                return "application/font-woff";
-            case "gz":
-            case "tgz":
-                return "application/gzip";
-            case "json":
-                return "application/json";
-            case "pdf":
-                return "application/pdf";
-            case "zip":
-                return "application/zip";
-            case "bmp":
-                return "image/bmp";
-            case "tiff":
-            case "tif":
-                return "image/tiff";
-            default:
-                return null;
-        }
+        return switch (extension) {
+            case "webm" -> "video/webm";
+            case "mpeg", "mpg" -> "video/mpeg";
+            case "mp3" -> "audio/mpeg";
+            case "wasm" -> "application/wasm";
+            case "xhtml", "xht", "xhtm" -> "application/xhtml+xml";
+            case "flac" -> "audio/flac";
+            case "ogg", "oga", "opus" -> "audio/ogg";
+            case "wav" -> "audio/wav";
+            case "m4a" -> "audio/x-m4a";
+            case "gif" -> "image/gif";
+            case "jpeg", "jpg", "jfif", "pjpeg", "pjp" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "apng" -> "image/apng";
+            case "svg", "svgz" -> "image/svg+xml";
+            case "webp" -> "image/webp";
+            case "mht", "mhtml" -> "multipart/related";
+            case "css" -> "text/css";
+            case "html", "htm", "shtml", "shtm", "ehtml" -> "text/html";
+            case "js", "mjs" -> "application/javascript";
+            case "xml" -> "text/xml";
+            case "mp4", "m4v" -> "video/mp4";
+            case "ogv", "ogm" -> "video/ogg";
+            case "ico" -> "image/x-icon";
+            case "woff" -> "application/font-woff";
+            case "gz", "tgz" -> "application/gzip";
+            case "json" -> "application/json";
+            case "pdf" -> "application/pdf";
+            case "zip" -> "application/zip";
+            case "bmp" -> "image/bmp";
+            case "tiff", "tif" -> "image/tiff";
+            default -> null;
+        };
     }
 }
