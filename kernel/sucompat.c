@@ -161,17 +161,6 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 
 #ifdef CONFIG_KPROBES
 
-__maybe_unused static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-	int *dfd = (int *)&PT_REGS_PARM1(regs);
-	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
-	int *mode = (int *)&PT_REGS_PARM3(regs);
-	// Both sys_ and do_ is C function
-	int *flags = (int *)&PT_REGS_CCALL_PARM4(regs);
-
-	return ksu_handle_faccessat(dfd, filename_user, mode, flags);
-}
-
 static int sys_faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
@@ -182,15 +171,6 @@ static int sys_faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_faccessat(dfd, filename_user, mode, NULL);
 }
 
-__maybe_unused static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-	int *dfd = (int *)&PT_REGS_PARM1(regs);
-	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
-// static int vfs_statx(int dfd, const char __user *filename, int flags, struct kstat *stat, u32 request_mask)
-	int *flags = (int *)&PT_REGS_PARM3(regs);
-	return ksu_handle_stat(dfd, filename_user, flags);
-}
-
 static int sys_newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
@@ -209,16 +189,6 @@ static int sys_newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int *flags = (int *)&PT_REGS_SYSCALL_PARM4(real_regs);
 
 	return ksu_handle_stat(dfd, filename_user, flags);
-}
-
-// https://elixir.bootlin.com/linux/v5.10.158/source/fs/exec.c#L1864
-static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-	int *fd = (int *)&PT_REGS_PARM1(regs);
-	struct filename **filename_ptr =
-		(struct filename **)&PT_REGS_PARM2(regs);
-
-	return ksu_handle_execveat_sucompat(fd, filename_ptr, NULL, NULL, NULL);
 }
 
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -229,41 +199,20 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, NULL, NULL);
 }
 
-#if 1
 static struct kprobe faccessat_kp = {
 	.symbol_name = SYS_FACCESSAT_SYMBOL,
 	.pre_handler = sys_faccessat_handler_pre,
 };
-#else
-static struct kprobe faccessat_kp = {
-	.symbol_name = "do_faccessat",
-	.pre_handler = faccessat_handler_pre,
-};
-#endif
 
-#if 1
 static struct kprobe newfstatat_kp = {
 	.symbol_name = SYS_NEWFSTATAT_SYMBOL,
 	.pre_handler = sys_newfstatat_handler_pre,
 };
-#else
-static struct kprobe newfstatat_kp = {
-	.symbol_name = "vfs_statx",
-	.pre_handler = newfstatat_handler_pre,
-};
-#endif
 
-#if 1
 static struct kprobe execve_kp = {
 	.symbol_name = SYS_EXECVE_SYMBOL,
 	.pre_handler = sys_execve_handler_pre,
 };
-#else
-static struct kprobe execve_kp = {
-	.symbol_name = "do_execveat_common",
-	.pre_handler = execve_handler_pre,
-};
-#endif
 
 #endif
 

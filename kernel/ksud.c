@@ -458,27 +458,6 @@ bool ksu_is_safe_mode()
 
 #ifdef CONFIG_KPROBES
 
-// https://elixir.bootlin.com/linux/v5.10.158/source/fs/exec.c#L1864
-static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-	int *fd = (int *)&PT_REGS_PARM1(regs);
-	struct filename **filename_ptr =
-		(struct filename **)&PT_REGS_PARM2(regs);
-	struct user_arg_ptr argv;
-#ifdef CONFIG_COMPAT
-	argv.is_compat = PT_REGS_PARM3(regs);
-	if (unlikely(argv.is_compat)) {
-		argv.ptr.compat = PT_REGS_CCALL_PARM4(regs);
-	} else {
-		argv.ptr.native = PT_REGS_CCALL_PARM4(regs);
-	}
-#else
-	argv.ptr.native = PT_REGS_PARM3(regs);
-#endif
-
-	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
-}
-
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
@@ -502,18 +481,6 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 					NULL);
 }
 
-// remove this later!
-__maybe_unused static int vfs_read_handler_pre(struct kprobe *p,
-					       struct pt_regs *regs)
-{
-	struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
-	char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
-	size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
-	loff_t **pos_ptr = (loff_t **)&PT_REGS_CCALL_PARM4(regs);
-
-	return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
-}
-
 static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
@@ -533,29 +500,16 @@ static int input_handle_event_handler_pre(struct kprobe *p,
 	return ksu_handle_input_handle_event(type, code, value);
 }
 
-#if 1
 static struct kprobe execve_kp = {
 	.symbol_name = SYS_EXECVE_SYMBOL,
 	.pre_handler = sys_execve_handler_pre,
 };
-#else
-static struct kprobe execve_kp = {
-	.symbol_name = "do_execveat_common",
-	.pre_handler = execve_handler_pre,
-};
-#endif
 
-#if 1
 static struct kprobe vfs_read_kp = {
 	.symbol_name = SYS_READ_SYMBOL,
 	.pre_handler = sys_read_handler_pre,
 };
-#else
-static struct kprobe vfs_read_kp = {
-	.symbol_name = "vfs_read",
-	.pre_handler = vfs_read_handler_pre,
-};
-#endif
+
 
 static struct kprobe input_event_kp = {
 	.symbol_name = "input_event",
