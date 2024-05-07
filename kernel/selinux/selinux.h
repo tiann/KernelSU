@@ -4,6 +4,8 @@
 #include "linux/types.h"
 #include "linux/version.h"
 
+#define KSU_COMPAT_USE_SELINUX_STATE
+
 void setup_selinux(const char *);
 
 void setenforce(bool);
