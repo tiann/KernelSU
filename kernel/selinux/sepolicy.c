@@ -617,7 +617,6 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 		return false;
 	}
 
-	size_t new_size = sizeof(struct ebitmap) * db->p_types.nprim;
 	struct ebitmap *new_type_attr_map_array =
 		ksu_realloc(db->type_attr_map_array,
 			    value * sizeof(struct ebitmap),
