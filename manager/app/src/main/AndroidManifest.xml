@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.KernelSU"
-        tools:targetApi="33">
+        tools:targetApi="34">
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
@@ -30,6 +30,12 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
+        <activity android:name=".ui.webui.WebUIActivity"
+            android:autoRemoveFromRecents="true"
+            android:documentLaunchMode="intoExisting"
+            android:exported="false"
+            android:theme="@style/Theme.KernelSU.WebUI" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

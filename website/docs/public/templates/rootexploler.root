@@ -16,6 +16,10 @@
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
     "locales": {
+        "bn": {
+            "name": "রুট এক্সপ্লোরার",
+            "description": "রুট অনুমতি যুক্ত ফাইল ম্যানেজার।"
+        },
         "zh_TW": {
             "name": "Root Explorer",
             "description": "具有根目錄讀寫權限的檔案管理器"
@@ -35,6 +39,10 @@
         "ja": {
             "name": "Root ブラウザ",
             "description": "Root 機能を備えたファイル マネージャー。"
-        }
+        },
+        "it_IT": {
+            "name": "Gestore file root",
+            "description": "Gestore file con permessi root."
+        } 
     }
 }

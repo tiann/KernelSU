@@ -114,4 +114,18 @@
     <string name="install_inactive_slot_warning">将在重启后强制切换到另一个槽位！\n注意只能在 OTA 更新完成后的重启之前使用。\n确认？</string>
     <string name="install_next">下一步</string>
     <string name="select_file_tip">建议选择 %1$s 分区镜像</string>
+    <string name="select_kmi">选择 KMI</string>
+    <string name="shrink_sparse_image">最小化稀疏文件</string>
+    <string name="shrink_sparse_image_message">将模块所在的稀疏文件镜像调整为其实际大小，注意这可能导致模块工作异常，请仅在必要时（如备份）使用</string>
+    <string name="settings_uninstall">卸载</string>
+    <string name="settings_uninstall_temporary">临时卸载</string>
+    <string name="settings_uninstall_permanent">永久卸载</string>
+    <string name="settings_restore_stock_image">恢复原厂镜像</string>
+    <string name="settings_uninstall_temporary_message">临时卸载 KernelSU，下次重启后恢复</string>
+    <string name="settings_uninstall_permanent_message">完全并永久移除 KernelSU 和所有模块</string>
+    <string name="settings_restore_stock_image_message">恢复原厂镜像，一般在 OTA 前使用；如需卸载请使用“永久卸载”</string>
+    <string name="flashing">刷写中</string>
+    <string name="flash_success">刷写完成</string>
+    <string name="flash_failed">刷写失败</string>
+    <string name="selected_lkm">选择的 LKM ：%s</string>
 </resources>

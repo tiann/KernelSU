@@ -1,4 +1,4 @@
-[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [Polski](README_PL.md) | [Português (Brasil)](README_PT-BR.md) | **Türkçe** | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_IW.md) | [हिंदी](README_IN.md)
+[English](README.md) | [Español](README_ES.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JP.md) | [한국어](README_KR.md) | [Polski](README_PL.md) | [Português (Brasil)](README_PT-BR.md) | **Türkçe** | [Русский](README_RU.md) | [Tiếng Việt](README_VI.md) | [Indonesia](README_ID.md) | [עברית](README_IW.md) | [हिंदी](README_IN.md)
 
 # KernelSU
 
@@ -34,7 +34,7 @@ Bununla birlikte; WSA, ChromeOS ve konteyner tabanlı Android'in tamamı destekl
 
 ## Çeviri
 
-KernelSU'nun çevirisine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmeyecektir.
+KernelSU'nun başka dillere çevrilmesine veya mevcut çevirilerin iyileştirilmesine yardımcı olmak için lütfen [Weblate](https://hosted.weblate.org/engage/kernelsu/) kullanın. Yönetici uygulamasının PR ile çevirisi, Weblate ile çakışacağından artık kabul edilmeyecektir.
 
 ## Tartışma
 

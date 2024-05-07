@@ -299,7 +299,7 @@ index 45306f9ef247..815091ebfca4 100755
 
 ### How to backport path_umount
 
-You can get module umount feature working on pre-GKI kernels by manually backporting ```path_umount``` from 5.9. You can use this patch as reference:
+You can get module umount feature working on pre-GKI kernels by manually backporting `path_umount` from 5.9. You can use this patch as reference:
 
 ```diff
 --- a/fs/namespace.c

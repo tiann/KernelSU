@@ -371,13 +371,6 @@
         "devices": "Google Pixel 2/2XL"
     },
     {
-        "maintainer": "Flame",
-        "maintainer_link": "https://github.com/flame-0",
-        "kernel_name": "android_kernel_xiaomi_sm8250",
-        "kernel_link": "https://github.com/vyrine/android_kernel_xiaomi_sm8250/tree/lineage-20-kernelsu",
-        "devices": "POCO F3/Redmi K40/Mi 11X (alioth)"
-    },
-    {
         "maintainer": "DawfukFR",
         "maintainer_link": "https://github.com/DawfukFR",
         "kernel_name": "kernel_oneplus_sm8250 (Stellaris-Kernel)",
@@ -504,6 +497,13 @@
         "devices": "Realme C25/s and Narzo50A (even)"
     },
     {
+        "maintainer": "Tonklaistonton",
+        "maintainer_link": "https://github.com/Tonklaistonton",
+        "kernel_name": "NEXGatokernel",
+        "kernel_link": "https://github.com/Tonklaistonton/android_kernel_oneplus_sm6375",
+        "devices": "Realme 9 pro 5g  | Oneplus nord ce 2 lite "
+    },
+    {
         "maintainer": "CoolestEnoch",
         "maintainer_link": "https://github.com/CoolestEnoch",
         "kernel_name": "kernel-su-huawei-nova2",
@@ -511,17 +511,31 @@
         "devices": "Huawei nova 2 (pic)"
     },
     {
-        "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-a528b-n-kernelsu-v0-7-5-for-galaxy-a52s-5g.4603287/",
-        "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7325",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7325",
         "devices": "Samsung Galaxy A52s 5G (a52sxq)"
     },
     {
-        "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-m526b-br-kernelsu-v0-7-5-for-galaxy-m52-5g.4603295/",
-        "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7125",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7125",
+        "devices": "Samsung Galaxy A52 4G (a52q)"
+    },
+    {
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7125",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7125",
+        "devices": "Samsung Galaxy A72 (a72q)"
+    },
+    {
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7325",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7325",
         "devices": "Samsung Galaxy M52 5G (m52xq)"
     },
     {
@@ -548,8 +562,8 @@
     {
         "maintainer": "rsuntk",
         "maintainer_link": "https://github.com/rsuntk",
-        "kernel_name": "android_kernel_samsung_a12s-4.19-rebased",
-        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s-4.19-rebased",
+        "kernel_name": "android_kernel_samsung_a12s",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s",
         "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
     },
     {
@@ -621,5 +635,68 @@
         "kernel_name": "android_kernel_samsung_gta4xl",
         "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
         "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
+    },
+    {
+        "maintainer": "rsuntk",
+        "maintainer_link": "https://github.com/rsuntk",
+        "kernel_name": "android_kernel_samsung_a03",
+        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a03",
+        "devices": "Samsung Galaxy A03 | Unisoc T606 | Scorpio Kernel"
+    },
+    {
+        "maintainer": "ArchVisions",
+        "maintainer_link": "https://github.com/ArchVisions",
+        "kernel_name": "android_kernel_samsung_gts9fewifi",
+        "kernel_link": "https://github.com/ArchVisions/android_kernel_samsung_gts9fewifi",
+        "devices": "Samsung Tab S9 FE (gts9fewifi) | Exynos 1380"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyondx_lpos",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyondx_lpos",
+        "devices": "Galaxy S10 5G (KOR)"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyond1_lpos",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyond1_lpos",
+        "devices": "Galaxy S10"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyond2",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyond2",
+        "devices": "Galaxy S10+"
+    },
+    {
+        "maintainer": "ravindu644",
+        "maintainer_link": "https://github.com/ravindu644",
+        "kernel_name": "android_kernel_beyond0",
+        "kernel_link": "https://github.com/ravindu644/android_kernel_beyond0",
+        "devices": "Galaxy S10e"
+    },
+    {
+        "maintainer": "Rofikkernel",
+        "maintainer_link": "https://github.com/Rofikkernel",
+        "kernel_name": "kernel_lgv600tm_4.19",
+        "kernel_link": "https://github.com/Rofikkernel/kernel_lgv600tm_4.19",
+        "devices": "LG V60 timelm"
+    },
+    {
+        "maintainer": "Dawid2849",
+        "maintainer_link": "https://github.com/Dawid2849",
+        "kernel_name": "android_kernel_lge_sm8150",
+        "kernel_link": "https://github.com/Dawid2849/android_kernel_lge_sm8150",
+        "devices": "LG G8 (alphaplus) / LG G8s (betalm) / LG G8X (mh2mml)"
+    },
+    {
+        "maintainer": "lyc8503",
+        "maintainer_link": "https://github.com/lyc8503",
+        "kernel_name": "kernel_xiaomi_chopin",
+        "kernel_link": "https://github.com/ChopinKernels/kernel_xiaomi_chopin_android_S",
+        "devices": "Redmi Note 10 Pro 5G (chopin) / Poco X3 GT (choping)"
     }
 ]

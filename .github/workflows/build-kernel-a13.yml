@@ -48,6 +48,9 @@ jobs:
           - version: "5.10"
             sub_level: 205
             os_patch_level: 2024-03
+          - version: "5.10"
+            sub_level: 209
+            os_patch_level: 2024-04
           - version: "5.15"
             sub_level: 94
             os_patch_level: 2023-05
@@ -65,7 +68,10 @@ jobs:
             os_patch_level: 2023-12
           - version: "5.15"
             sub_level: 144
-            os_patch_level: 2024-02
+            os_patch_level: 2024-03
+          - version: "5.15"
+            sub_level: 148
+            os_patch_level: 2024-04
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -106,7 +112,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
-          pip3 install telethon==1.31.1
+          pip3 install telethon==1.34.0
 
       - name: Set boot sign key
         env:
@@ -118,7 +124,7 @@ jobs:
 
       - name: Bot session cache
         id: bot_session_cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: false
         with:
           path: scripts/ksubot.session

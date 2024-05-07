@@ -9,13 +9,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -25,25 +36,35 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
-import me.weishu.kernelsu.ui.util.installModule
 import me.weishu.kernelsu.ui.util.reboot
+import me.weishu.kernelsu.ui.util.restoreBoot
+import me.weishu.kernelsu.ui.util.uninstallPermanently
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+
+enum class FlashingStatus {
+    FLASHING,
+    SUCCESS,
+    FAILED
+}
 
 /**
  * @author weishu
  * @date 2023/1/1.
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Destination
 fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
@@ -55,28 +76,37 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    var flashing by rememberSaveable {
+        mutableStateOf(FlashingStatus.FLASHING)
+    }
 
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
             return@LaunchedEffect
         }
         withContext(Dispatchers.IO) {
-            flashIt(flashIt, onFinish = { showReboot ->
+            flashIt(flashIt, onFinish = { showReboot, code ->
+                if (code != 0) {
+                    text += "Error: exit code = $code.\nPlease save and check the log.\n"
+                }
                 if (showReboot) {
+                    text += "\n\n\n"
                     showFloatAction = true
                 }
+                flashing = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
             }, onStdout = {
                 text += "$it\n"
                 logContent.append(it).append("\n")
             }, onStderr = {
                 logContent.append(it).append("\n")
-            });
+            })
         }
     }
 
     Scaffold(
         topBar = {
             TopBar(
+                flashing,
                 onBack = {
                     navigator.popBackStack()
                 },
@@ -137,38 +167,58 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 
 @Parcelize
 sealed class FlashIt : Parcelable {
-    data class FlashBoot(val bootUri: Uri? = null, val ota: Boolean) : FlashIt()
+    data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean) :
+        FlashIt()
 
     data class FlashModule(val uri: Uri) : FlashIt()
+
+    data object FlashRestore : FlashIt()
+
+    data object FlashUninstall : FlashIt()
 }
 
 fun flashIt(
-    flashIt: FlashIt, onFinish: (Boolean) -> Unit,
+    flashIt: FlashIt, onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ) {
     when (flashIt) {
         is FlashIt.FlashBoot -> installBoot(
-            flashIt.bootUri,
+            flashIt.boot,
+            flashIt.lkm,
             flashIt.ota,
             onFinish,
             onStdout,
             onStderr
         )
 
-        is FlashIt.FlashModule -> installModule(flashIt.uri, onFinish, onStdout, onStderr)
+        is FlashIt.FlashModule -> flashModule(flashIt.uri, onFinish, onStdout, onStderr)
+
+        FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
+
+        FlashIt.FlashUninstall -> uninstallPermanently(onFinish, onStdout, onStderr)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
+private fun TopBar(status: FlashingStatus, onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
     TopAppBar(
-        title = { Text(stringResource(R.string.install)) },
+        title = {
+            Text(
+                stringResource(
+                    when (status) {
+                        FlashingStatus.FLASHING -> R.string.flashing
+                        FlashingStatus.SUCCESS -> R.string.flash_success
+                        FlashingStatus.FAILED -> R.string.flash_failed
+                    }
+                )
+            )
+        },
         navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         },
         actions = {
             IconButton(onClick = onSave) {
@@ -184,5 +234,5 @@ private fun TopBar(onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
 @Preview
 @Composable
 fun InstallPreview() {
-//    InstallScreen(DestinationsNavigator(), uri = Uri.EMPTY)
+    InstallScreen(EmptyDestinationsNavigator)
 }

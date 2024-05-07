@@ -115,4 +115,19 @@
 \n請問是否繼續？</string>
     <string name="direct_install">直接安裝（建議）</string>
     <string name="install_next">下一步</string>
+    <string name="select_kmi">選擇 KMI</string>
+    <string name="select_file_tip">建議使用 %1$s 分區</string>
+    <string name="shrink_sparse_image">最小化模組稀疏映像</string>
+    <string name="shrink_sparse_image_message">將模組的稀疏映像調整為其實際大小，請注意這可能導致模組工作異常，請僅在需要時（如備份）使用</string>
+    <string name="settings_uninstall">解除安裝</string>
+    <string name="settings_uninstall_temporary">暫時解除安裝</string>
+    <string name="settings_restore_stock_image">還原原廠映像</string>
+    <string name="settings_uninstall_temporary_message">暫時卸載KernelSU，下次重啟後恢復原狀。</string>
+    <string name="settings_uninstall_permanent">永久解除安裝</string>
+    <string name="settings_uninstall_permanent_message">完全的（永久的）解除安裝 KernelSU（Root 和所有模組）。</string>
+    <string name="flashing">寫入中</string>
+    <string name="flash_success">寫入完成</string>
+    <string name="settings_restore_stock_image_message">恢復原廠映像（如果有備份），通常在OTA之前使用；如果需要解除安裝KernelSU，請使用「永久解除安裝」。</string>
+    <string name="flash_failed">寫入失敗</string>
+    <string name="selected_lkm">選擇的 LKM ：%s</string>
 </resources>

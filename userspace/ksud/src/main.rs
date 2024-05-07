@@ -9,6 +9,8 @@ mod ksucalls;
 mod module;
 mod mount;
 mod profile;
+#[cfg(any(target_os = "linux", target_os = "android"))]
+mod pty;
 mod restorecon;
 mod sepolicy;
 mod su;

@@ -1,16 +1,17 @@
-#include "asm/current.h"
-#include "linux/compat.h"
-#include "linux/dcache.h"
-#include "linux/err.h"
-#include "linux/fs.h"
-#include "linux/version.h"
-#include "linux/input-event-codes.h"
-#include "linux/kprobes.h"
-#include "linux/printk.h"
-#include "linux/types.h"
-#include "linux/uaccess.h"
-#include "linux/version.h"
-#include "linux/workqueue.h"
+#include <asm/current.h>
+#include <linux/compat.h>
+#include <linux/cred.h>
+#include <linux/dcache.h>
+#include <linux/err.h>
+#include <linux/file.h>
+#include <linux/fs.h>
+#include <linux/version.h>
+#include <linux/input-event-codes.h>
+#include <linux/kprobes.h>
+#include <linux/printk.h>
+#include <linux/types.h>
+#include <linux/uaccess.h>
+#include <linux/workqueue.h>
 
 #include "allowlist.h"
 #include "arch.h"
@@ -108,7 +109,7 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
  * count() counts the number of strings in array ARGV.
  */
 
- /*
+/*
  * Make sure old GCC compiler can use __maybe_unused,
  * Test passed in 4.4.x ~ 4.9.x when use GCC.
  */
@@ -141,7 +142,8 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 
 // IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-				struct user_arg_ptr *argv, struct user_arg_ptr *envp, int *flags)
+			     struct user_arg_ptr *argv,
+			     struct user_arg_ptr *envp, int *flags)
 {
 #ifndef CONFIG_KPROBES
 	if (!ksu_execveat_hook) {
@@ -167,8 +169,9 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-	if (unlikely(!memcmp(filename->name, system_bin_init, 
-				sizeof(system_bin_init) - 1) && argv)) {
+	if (unlikely(!memcmp(filename->name, system_bin_init,
+			     sizeof(system_bin_init) - 1) &&
+		     argv)) {
 		// /system/bin/init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/system/bin/init argc: %d\n", argc);
@@ -176,8 +179,10 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-				pr_info("/system/bin/init first arg: %s\n", first_arg);
+				ksu_strncpy_from_user_nofault(
+					first_arg, p, sizeof(first_arg));
+				pr_info("/system/bin/init first arg: %s\n",
+					first_arg);
 				if (!strcmp(first_arg, "second_stage")) {
 					pr_info("/system/bin/init second_stage executed\n");
 					apply_kernelsu_rules();
@@ -189,7 +194,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			}
 		}
 	} else if (unlikely(!memcmp(filename->name, old_system_init,
-				sizeof(old_system_init) - 1) && argv)) {
+				    sizeof(old_system_init) - 1) &&
+			    argv)) {
 		// /init executed
 		int argc = count(*argv, MAX_ARG_STRINGS);
 		pr_info("/init argc: %d\n", argc);
@@ -198,7 +204,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				ksu_strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
+				ksu_strncpy_from_user_nofault(
+					first_arg, p, sizeof(first_arg));
 				pr_info("/init first arg: %s\n", first_arg);
 				if (!strcmp(first_arg, "--second-stage")) {
 					pr_info("/init second_stage executed\n");
@@ -215,13 +222,15 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			if (envc > 0) {
 				int n;
 				for (n = 1; n <= envc; n++) {
-					const char __user *p = get_user_arg_ptr(*envp, n);
+					const char __user *p =
+						get_user_arg_ptr(*envp, n);
 					if (!p || IS_ERR(p)) {
 						continue;
 					}
 					char env[256];
 					// Reading environment variable strings from user space
-					if (ksu_strncpy_from_user_nofault(env, p, sizeof(env)) < 0)
+					if (ksu_strncpy_from_user_nofault(
+						    env, p, sizeof(env)) < 0)
 						continue;
 					// Parsing environment variable names and values
 					char *env_name = env;
@@ -232,10 +241,14 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					*env_value = '\0';
 					env_value++;
 					// Check if the environment variable name and value are matching
-					if (!strcmp(env_name, "INIT_SECOND_STAGE") && (!strcmp(env_value, "1") || !strcmp(env_value, "true"))) {
+					if (!strcmp(env_name,
+						    "INIT_SECOND_STAGE") &&
+					    (!strcmp(env_value, "1") ||
+					     !strcmp(env_value, "true"))) {
 						pr_info("/init second_stage executed\n");
 						apply_kernelsu_rules();
-						init_second_stage_executed = true;
+						init_second_stage_executed =
+							true;
 						ksu_android_ns_fs_check();
 					}
 				}
@@ -243,10 +256,11 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		}
 	}
 
-	if (unlikely(first_app_process &&
-		!memcmp(filename->name, app_process, sizeof(app_process) - 1))) {
+	if (unlikely(first_app_process && !memcmp(filename->name, app_process,
+						  sizeof(app_process) - 1))) {
 		first_app_process = false;
-		pr_info("exec app_process, /data prepared, second_stage: %d\n", init_second_stage_executed);
+		pr_info("exec app_process, /data prepared, second_stage: %d\n",
+			init_second_stage_executed);
 		on_post_fs_data(); // we keep this for old ksud
 		stop_execve_hook();
 	}
@@ -265,7 +279,8 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
 	bool first_read = file->f_pos == 0;
 	ssize_t ret = orig_read(file, buf, count, pos);
 	if (first_read) {
-		pr_info("read_proxy append %ld + %ld\n", ret, read_count_append);
+		pr_info("read_proxy append %ld + %ld\n", ret,
+			read_count_append);
 		ret += read_count_append;
 	}
 	return ret;
@@ -377,6 +392,18 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
+int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
+			size_t *count_ptr)
+{
+	struct file *file = fget(fd);
+	if (!file) {
+		return 0;
+	}
+	int result = ksu_handle_vfs_read(&file, buf_ptr, count_ptr, NULL);
+	fput(file);
+	return result;
+}
+
 static unsigned int volumedown_pressed_count = 0;
 
 static bool is_volumedown_enough(unsigned int count)
@@ -452,7 +479,32 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_execveat_ksud(fd, filename_ptr, &argv, NULL, NULL);
 }
 
-static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
+	const char __user **filename_user =
+		(const char **)&PT_REGS_PARM1(real_regs);
+	const char __user *const __user *__argv =
+		(const char __user *const __user *)PT_REGS_PARM2(real_regs);
+	struct user_arg_ptr argv = { .ptr.native = __argv };
+	struct filename filename_in, *filename_p;
+	char path[32];
+
+	if (!filename_user)
+		return 0;
+
+	memset(path, 0, sizeof(path));
+	ksu_strncpy_from_user_nofault(path, *filename_user, 32);
+	filename_in.name = path;
+
+	filename_p = &filename_in;
+	return ksu_handle_execveat_ksud(AT_FDCWD, &filename_p, &argv, NULL,
+					NULL);
+}
+
+// remove this later!
+__maybe_unused static int vfs_read_handler_pre(struct kprobe *p,
+					       struct pt_regs *regs)
 {
 	struct file **file_ptr = (struct file **)&PT_REGS_PARM1(regs);
 	char __user **buf_ptr = (char **)&PT_REGS_PARM2(regs);
@@ -460,6 +512,16 @@ static int read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	loff_t **pos_ptr = (loff_t **)&PT_REGS_CCALL_PARM4(regs);
 
 	return ksu_handle_vfs_read(file_ptr, buf_ptr, count_ptr, pos_ptr);
+}
+
+static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
+	unsigned int fd = PT_REGS_PARM1(real_regs);
+	char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(real_regs);
+	size_t count_ptr = (size_t *)&PT_REGS_PARM3(real_regs);
+
+	return ksu_handle_sys_read(fd, buf_ptr, count_ptr);
 }
 
 static int input_handle_event_handler_pre(struct kprobe *p,
@@ -471,18 +533,32 @@ static int input_handle_event_handler_pre(struct kprobe *p,
 	return ksu_handle_input_handle_event(type, code, value);
 }
 
+#if 1
+static struct kprobe execve_kp = {
+	.symbol_name = SYS_EXECVE_SYMBOL,
+	.pre_handler = sys_execve_handler_pre,
+};
+#else
 static struct kprobe execve_kp = {
 	.symbol_name = "do_execveat_common",
 	.pre_handler = execve_handler_pre,
 };
+#endif
 
+#if 1
+static struct kprobe vfs_read_kp = {
+	.symbol_name = SYS_READ_SYMBOL,
+	.pre_handler = sys_read_handler_pre,
+};
+#else
 static struct kprobe vfs_read_kp = {
 	.symbol_name = "vfs_read",
-	.pre_handler = read_handler_pre,
+	.pre_handler = vfs_read_handler_pre,
 };
+#endif
 
-static struct kprobe input_handle_event_kp = {
-	.symbol_name = "input_handle_event",
+static struct kprobe input_event_kp = {
+	.symbol_name = "input_event",
 	.pre_handler = input_handle_event_handler_pre,
 };
 
@@ -498,7 +574,7 @@ static void do_stop_execve_hook(struct work_struct *work)
 
 static void do_stop_input_hook(struct work_struct *work)
 {
-	unregister_kprobe(&input_handle_event_kp);
+	unregister_kprobe(&input_event_kp);
 }
 #endif
 
@@ -541,7 +617,7 @@ static void stop_input_hook()
 }
 
 // ksud: module support
-void ksu_enable_ksud()
+void ksu_ksud_init()
 {
 #ifdef CONFIG_KPROBES
 	int ret;
@@ -552,11 +628,21 @@ void ksu_enable_ksud()
 	ret = register_kprobe(&vfs_read_kp);
 	pr_info("ksud: vfs_read_kp: %d\n", ret);
 
-	ret = register_kprobe(&input_handle_event_kp);
-	pr_info("ksud: input_handle_event_kp: %d\n", ret);
+	ret = register_kprobe(&input_event_kp);
+	pr_info("ksud: input_event_kp: %d\n", ret);
 
 	INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
 	INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
+#endif
+}
+
+void ksu_ksud_exit()
+{
+#ifdef CONFIG_KPROBES
+	unregister_kprobe(&execve_kp);
+	// this should be done before unregister vfs_read_kp
+	// unregister_kprobe(&vfs_read_kp);
+	unregister_kprobe(&input_event_kp);
 #endif
 }

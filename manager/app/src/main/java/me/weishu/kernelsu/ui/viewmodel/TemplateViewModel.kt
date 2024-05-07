@@ -22,6 +22,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
 import java.util.Locale
+import java.util.concurrent.TimeUnit
+
 
 /**
  * @author weishu
@@ -136,7 +138,13 @@ class TemplateViewModel : ViewModel() {
 
 private fun fetchRemoteTemplates() {
     runCatching {
-        OkHttpClient().newCall(
+        val client: OkHttpClient = OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build()
+
+        client.newCall(
             Request.Builder().url(TEMPLATE_INDEX_URL).build()
         ).execute().use { response ->
             if (!response.isSuccessful) {
@@ -146,7 +154,8 @@ private fun fetchRemoteTemplates() {
             Log.i(TAG, "fetchRemoteTemplates: $remoteTemplateIds")
             0.until(remoteTemplateIds.length()).forEach { i ->
                 val id = remoteTemplateIds.getString(i)
-                val templateJson = OkHttpClient().newCall(
+                Log.i(TAG, "fetch template: $id")
+                val templateJson = client.newCall(
                     Request.Builder().url(TEMPLATE_URL.format(id)).build()
                 ).runCatching {
                     execute().use { response ->
@@ -209,7 +218,12 @@ private fun getLocaleString(json: JSONObject, key: String): String {
     val locale = Locale.getDefault()
     val localeKey = "${locale.language}_${locale.country}"
     json.optJSONObject("locales")?.let {
+        // check locale first
         it.optJSONObject(localeKey)?.let { json->
+            return json.optString(key, fallback)
+        }
+        // fallback to language
+        it.optJSONObject(locale.language)?.let { json->
             return json.optString(key, fallback)
         }
     }
@@ -221,7 +235,7 @@ private fun fromJSON(templateJson: JSONObject): TemplateViewModel.TemplateInfo? 
         val groupsJsonArray = templateJson.optJSONArray("groups")
         val capabilitiesJsonArray = templateJson.optJSONArray("capabilities")
         val context = templateJson.optString("context").takeIf { it.isNotEmpty() }
-            ?: Natives.KERNEL_SU_DOMAIN;
+            ?: Natives.KERNEL_SU_DOMAIN
         val namespace = templateJson.optString("namespace").takeIf { it.isNotEmpty() }
             ?: Natives.Profile.Namespace.INHERITED.name
 
@@ -262,13 +276,13 @@ fun TemplateViewModel.TemplateInfo.toJSON(): JSONObject {
         if (template.author.isNotEmpty()) {
             put("author", template.author)
         }
-        put("namespace", Natives.Profile.Namespace.values()[template.namespace].name)
+        put("namespace", Natives.Profile.Namespace.entries[template.namespace].name)
         put("uid", template.uid)
         put("gid", template.gid)
 
         if (template.groups.isNotEmpty()) {
             put("groups", JSONArray(
-                Groups.values().filter {
+                Groups.entries.filter {
                     template.groups.contains(it.gid)
                 }.map {
                     it.name
@@ -278,7 +292,7 @@ fun TemplateViewModel.TemplateInfo.toJSON(): JSONObject {
 
         if (template.capabilities.isNotEmpty()) {
             put("capabilities", JSONArray(
-                Capabilities.values().filter {
+                Capabilities.entries.filter {
                     template.capabilities.contains(it.cap)
                 }.map {
                     it.name

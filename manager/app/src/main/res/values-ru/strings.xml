@@ -111,12 +111,27 @@
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="open">Открыть</string>
     <string name="enable_web_debugging">Включить отладку WebView</string>
-    <string name="enable_web_debugging_summary">Используется для отладки веб-интерфейса. Пожалуйста, включайте только при необходимости.</string>
+    <string name="enable_web_debugging_summary">Используется для отладки WebUI. Пожалуйста, включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
     <string name="install_next">Далее</string>
     <string name="select_file">Выбрать файл</string>
     <string name="install_inactive_slot_warning">Ваше устройство будет **ПРИНУДИТЕЛЬНО** загружено в текущий неактивный слот после перезагрузки!
 \n Используйте эту опцию только после завершения OTA.
-\n Продолжать?</string>
+\n Продолжить?</string>
+    <string name="select_kmi">Выбрать KMI</string>
+    <string name="select_file_tip">%1$s образ раздела рекомендуется</string>
+    <string name="shrink_sparse_image">Минимизировать разреженный образ</string>
+    <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования)</string>
+    <string name="settings_uninstall_temporary">Удалить Временно</string>
+    <string name="settings_uninstall_permanent_message">Удалить KernelSU (Root и все модули) полностью и навсегда.</string>
+    <string name="settings_uninstall_permanent">Удалить Навсегда</string>
+    <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки.</string>
+    <string name="settings_uninstall">Удалить</string>
+    <string name="settings_restore_stock_image">Восстановить Сток образ</string>
+    <string name="settings_restore_stock_image_message">Восстановить стоковый заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить Навсегда».</string>
+    <string name="flash_success">Прошивка выполнена</string>
+    <string name="flashing">Прошивка</string>
+    <string name="flash_failed">Прошивка не выполнена</string>
+    <string name="selected_lkm">Выбран lkm: %s</string>
 </resources>

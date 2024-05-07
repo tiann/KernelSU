@@ -67,7 +67,7 @@ jobs:
         run: ls -R
 
       - name: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             manager/*.apk
@@ -76,3 +76,4 @@ jobs:
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip
             kernel-ARCVM*.zip
+            ksud-*

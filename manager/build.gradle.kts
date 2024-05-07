@@ -33,18 +33,14 @@ cmaker {
 }
 
 val androidMinSdkVersion = 26
-val androidTargetSdkVersion = 33
+val androidTargetSdkVersion = 34
 val androidCompileSdkVersion = 34
 val androidBuildToolsVersion = "34.0.0"
-val androidCompileNdkVersion = "25.2.9519653"
-val androidSourceCompatibility = JavaVersion.VERSION_17
-val androidTargetCompatibility = JavaVersion.VERSION_17
+val androidCompileNdkVersion = "26.3.11579264"
+val androidSourceCompatibility = JavaVersion.VERSION_21
+val androidTargetCompatibility = JavaVersion.VERSION_21
 val managerVersionCode by extra(getVersionCode())
 val managerVersionName by extra(getVersionName())
-
-tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
-}
 
 fun getGitCommitCount(): Int {
     val out = ByteArrayOutputStream()

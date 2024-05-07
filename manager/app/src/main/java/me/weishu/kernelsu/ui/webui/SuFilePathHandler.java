@@ -13,12 +13,9 @@ import com.topjohnwu.superuser.io.SuFile;
 import com.topjohnwu.superuser.io.SuFileInputStream;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
-
-import me.weishu.kernelsu.ui.util.KsuCliKt;
 
 /**
  * Handler class to open files from file system by root access
@@ -84,14 +81,14 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
      *                  which files can be loaded.
      * @throws IllegalArgumentException if the directory is not allowed.
      */
-    public SuFilePathHandler(@NonNull Context context, @NonNull File directory) {
+    public SuFilePathHandler(@NonNull Context context, @NonNull File directory, Shell rootShell) {
         try {
             mDirectory = new File(getCanonicalDirPath(directory));
             if (!isAllowedInternalStorageDir(context)) {
                 throw new IllegalArgumentException("The given directory \"" + directory
                         + "\" doesn't exist under an allowed app internal storage directory");
             }
-            mShell = KsuCliKt.createRootShell(true);
+            mShell = rootShell;
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Failed to resolve the canonical path for the given directory: "
@@ -172,8 +169,7 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
         return path.endsWith(".svgz") ? new GZIPInputStream(stream) : stream;
     }
 
-    public static InputStream openFile(@NonNull File file, @NonNull Shell shell) throws FileNotFoundException,
-            IOException {
+    public static InputStream openFile(@NonNull File file, @NonNull Shell shell) throws IOException {
         SuFile suFile = new SuFile(file.getAbsolutePath());
         suFile.setShell(shell);
         InputStream fis = SuFileInputStream.open(suFile);

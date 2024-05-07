@@ -4,7 +4,7 @@
 
 Primeiro, seu dispositivo deve ser capaz de desbloquear o bootloader. Se não, então não há suporte.
 
-Em seguida, instale o app gerenciador do KernelSU em seu dispositivo e abra-o, se mostrar `Sem suporte` então seu dispositivo não pode ser suportado imediatamente, mas você pode construir a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [Dispositivos com suporte não oficial](unofficially-support-devices).
+Em seguida, instale o gerenciador do KernelSU em seu dispositivo e abra-o, se mostrar `Sem suporte` então seu dispositivo não pode ser suportado imediatamente, mas você pode compilar a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [Dispositivos com suporte não oficial](unofficially-support-devices).
 
 ## Para usar o KernelSU precisa desbloquear o bootloader?
 
@@ -12,7 +12,7 @@ Certamente, sim.
 
 ## KernelSU suporta módulos?
 
-Sim, verifique [Guias de módulo](module.md) por favor.
+Sim, verifique [Guias de módulo](module.md).
 
 ## KernelSU suporta Xposed?
 
@@ -24,7 +24,7 @@ KernelSU não tem suporte integrado ao Zygisk, mas você pode usar [ZygiskNext](
 
 ## KernelSU é compatível com o Magisk?
 
-O sistema de módulos do KernelSU está em conflito com a montagem mágica do Magisk, se houver algum módulo habilitado no KernelSU, então todo o Magisk não funcionaria.
+O sistema de módulos do KernelSU está em conflito com a montagem mágica do Magisk, se houver algum módulo ativado no KernelSU, então todo o Magisk não funcionaria.
 
 Mas se você usar apenas o `su` do KernelSU, então funcionará bem com o Magisk. KernelSU modifica o `kernel` e o Magisk modifica o `ramdisk`, eles podem trabalhar juntos.
 
@@ -41,11 +41,11 @@ Achamos que não e esse não é o nosso objetivo. O Magisk é bom o suficiente p
 É o kernel do dispositivo que afeta a compatibilidade do KernelSU e não tem nada a ver com a versão do Android. A única restrição é que os dispositivos lançados com Android 12 devem ser kernel 5.10+ (dispositivos GKI). Então:
 
 1. Os dispositivos lançados com Android 12 devem ser compatíveis.
-2. Dispositivos com kernel antigo (alguns dispositivos Android 12 também têm o kernel antigo) são compatíveis (você mesmo deve construir o kernel).
+2. Dispositivos com kernel antigo (alguns dispositivos com Android 12 também têm o kernel antigo) são compatíveis (você mesmo deve compilar o kernel).
 
 ## KernelSU suporta kernel antigo?
 
-É possível, o KernelSU é portado para o kernel 4.14 agora, para o kernel mais antigo, você precisa fazer o backport manualmente e PRs são sempre bem-vindas!
+É possível, o KernelSU é portado para o kernel 4.14 agora, para o kernel mais antigo, você precisa portar manualmente e PRs são sempre bem-vindas!
 
 ## Como integrar o KernelSU para o kernel antigo?
 
@@ -55,13 +55,13 @@ Por favor, consulte a guia [Como integrar o KernelSU para kernels não GKI](how-
 
 A versão do Kernel não tem nada a ver com a versão do Android, se você precisar fazer o flash do kernel, use sempre a versão do kernel, a versão do Android não é tão importante.
 
-## Eu sou GKI1.0, posso usar isso?
+## Eu sou GKI 1.0, posso usar isso?
 
-GKI1 é completamente diferente do GKI2, você deve compilar o kernel sozinho.
+GKI 1.0 é completamente diferente do GKI 2.0, você deve compilar o kernel sozinho.
 
 ## Como posso fazer `/system` RW?
 
-Não recomendamos que você modifique a partição do sistema diretamente. Você deve usar [Guias de módulo](module.md) para modificá-lo sem sistema. Se você insiste em fazer isso, verifique [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs).
+Não recomendamos que você modifique a partição do sistema diretamente. Por favor, verifique [Guias de módulo](module.md) para modificá-lo sem sistema. Se você insiste em fazer isso, verifique [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs).
 
 ## KernelSU pode modificar hosts? Como posso usar AdAway?
 
@@ -73,6 +73,6 @@ O arquivo `modules.img` de 1 TB é um arquivo de imagem de disco, **não se preo
 
 Se você estiver realmente insatisfeito com o tamanho deste arquivo, você pode usar o comando `resize2fs -M` para torná-lo seu tamanho real, mas o módulo pode não funcionar corretamente neste momento e não forneceremos nenhum suporte para isso.
 
-## Por que meu dispositivo mostra o tamanho do armazenamento errado?
+## Por que meu dispositivo mostra o tamanho de armazenamento errado?
 
-Certos dispositivos usam métodos não padrão para calcular o tamanho do armazenamento do dispositivo, potencialmente levando a cálculos de armazenamento imprecisos em apps e menus do sistema, especialmente ao lidar com arquivos esparsos de 1 TB. Embora esse problema pareça ser específico para os dispositivos Samsung, afetando apenas apps e serviços da Samsung, é essencial observar que a discrepância está principalmente no tamanho total do armazenamento, e o cálculo do espaço livre permanece preciso.
+Certos dispositivos usam métodos não padrão para calcular o tamanho de armazenamento do dispositivo, potencialmente levando a cálculos de armazenamento imprecisos em apps e menus do sistema, especialmente ao lidar com arquivos esparsos de 1 TB. Embora esse problema pareça ser específico para os dispositivos Samsung, afetando apenas apps e serviços da Samsung, é essencial observar que a discrepância está principalmente no tamanho total do armazenamento, e o cálculo do espaço livre permanece preciso.

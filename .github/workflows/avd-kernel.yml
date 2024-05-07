@@ -88,7 +88,9 @@ jobs:
           ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
           echo "[+] Add KernelSU driver to Makefile"
           DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
-          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-y += kernelsu/\n" >> "$DRIVER_MAKEFILE"
+          DRIVER_KCONFIG=$GKI_ROOT/common/drivers/Kconfig
+          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
+          grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
           echo "[+] Apply KernelSU patches"
           cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
 
@@ -133,32 +135,3 @@ jobs:
         with:
           name: kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           path: "${{ env.file_path }}"
-
-      - name: Bot session cache
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref_type == 'tag'
-        id: bot_session_cache
-        uses: actions/cache@v3
-        with:
-          path: scripts/ksubot.session
-          key: ${{ runner.os }}-bot-session
-
-      - name: Post to Telegram
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.ref_type == 'tag'
-        env:
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          TITLE=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}
-          echo "[+] title: $TITLE"
-          export TITLE
-          export VERSION="${{ env.kernelsu_version }}"
-          echo "[+] Image to upload"
-          ls -l "${{ env.file_path }}"
-          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
-            pip3 install telethon==1.31.1
-            python3 "$GITHUB_WORKSPACE/KernelSU/scripts/ksubot.py" "${{ env.file_path }}"
-          fi

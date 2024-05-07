@@ -103,4 +103,32 @@
     <string name="app_profile_template_delete">Видалити</string>
     <string name="app_profile_template_import_empty">Буфер обміну пустий!</string>
     <string name="app_profile_template_view">Переглянути шаблон</string>
+    <string name="enable_web_debugging">Увімкнути налагодження WebView</string>
+    <string name="select_kmi">Виберіть KMI</string>
+    <string name="install_next">Далі</string>
+    <string name="settings_check_update">Перевірка оновлень</string>
+    <string name="settings_check_update_summary">Автоматична перевірка оновлень під час відкриття програми</string>
+    <string name="enable_web_debugging_summary">Використовується для налагодження WebUI. Будь ласка, вмикайте тільки за потреби.</string>
+    <string name="direct_install">Пряме встановлення (рекомендовано)</string>
+    <string name="select_file">Виберіть файл</string>
+    <string name="install_inactive_slot">Встановлення в неактивний слот (Після OTA)</string>
+    <string name="install_inactive_slot_warning">Ваш пристрій буде **ПРИМУСОВО** завантажено в поточний неактивний слот після перезавантаження!
+\n Використовуйте цю опцію тільки після завершення OTA.
+\n Продовжити?</string>
+    <string name="select_file_tip">%1$s образ розділу рекомендується</string>
+    <string name="grant_root_failed">Не вдалося отримати root!</string>
+    <string name="open">Відкрити</string>
+    <string name="shrink_sparse_image">Мінімізувати розріджений образ</string>
+    <string name="shrink_sparse_image_message">Змінити розмір розрідженого образу, в якому знаходяться модулі, до його фактичного розміру. Зверніть увагу, що це може спричинити ненормальну роботу модулів, тому використовуйте це лише за потреби (наприклад, для резервного копіювання)</string>
+    <string name="settings_uninstall_temporary">Тимчасово видалити</string>
+    <string name="settings_uninstall_permanent">Назавжди видалити</string>
+    <string name="settings_restore_stock_image">Відновити Стоковий образ</string>
+    <string name="settings_uninstall_temporary_message">Тимчасово видалити KernelSU, відновити початковий стан після наступного перезавантаження.</string>
+    <string name="settings_uninstall">Видалити</string>
+    <string name="flashing">Прошивка</string>
+    <string name="flash_success">Прошивку виконано</string>
+    <string name="flash_failed">Прошивка не виконана</string>
+    <string name="selected_lkm">Обрано lkm: %s</string>
+    <string name="settings_uninstall_permanent_message">Видалити KernelSU (Root і всі модулі) повністю і назавжди.</string>
+    <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо є резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU, використовуйте \"Назавжди видалити\".</string>
 </resources>

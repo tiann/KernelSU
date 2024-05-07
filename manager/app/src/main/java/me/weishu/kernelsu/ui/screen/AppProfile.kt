@@ -15,15 +15,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -246,12 +246,11 @@ private fun TopBar(onBack: () -> Unit) {
         navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         },
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileBox(
     mode: Mode,
@@ -263,7 +262,7 @@ private fun ProfileBox(
         supportingContent = { Text(mode.text) },
         leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
     )
-    Divider(thickness = Dp.Hairline)
+    HorizontalDivider(thickness = Dp.Hairline)
     ListItem(headlineContent = {
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly

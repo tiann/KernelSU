@@ -1,6 +1,6 @@
 use anyhow::{Ok, Result};
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[cfg(target_os = "android")]
 use android_logger::Config;
@@ -35,7 +35,17 @@ enum Commands {
     BootCompleted,
 
     /// Install KernelSU userspace component to system
-    Install,
+    Install {
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
+
+    /// Uninstall KernelSU modules and itself(LKM Only)
+    Uninstall {
+        /// magiskboot path, if not specified, will search from $PATH
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
 
     /// SELinux policy Patch tool
     Sepolicy {
@@ -79,7 +89,7 @@ enum Commands {
         #[arg(short, long, default_value = None)]
         out: Option<PathBuf>,
 
-        /// magiskboot path, if not specified, will use builtin one
+        /// magiskboot path, if not specified, will search from $PATH
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
 
@@ -87,12 +97,43 @@ enum Commands {
         #[arg(long, default_value = None)]
         kmi: Option<String>,
     },
+
+    /// Restore boot or init_boot images patched by KernelSU
+    BootRestore {
+        /// boot image path, if not specified, will try to find the boot image automatically
+        #[arg(short, long)]
+        boot: Option<PathBuf>,
+
+        /// Flash it to boot partition after patch
+        #[arg(short, long, default_value = "false")]
+        flash: bool,
+
+        /// magiskboot path, if not specified, will search from $PATH
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
+
+    /// Show boot information
+    BootInfo {
+        #[command(subcommand)]
+        command: BootInfo,
+    },
     /// For developers
     Debug {
         #[command(subcommand)]
         command: Debug,
     },
 }
+
+#[derive(clap::Subcommand, Debug)]
+enum BootInfo {
+    /// show current kmi version
+    CurrentKmi,
+
+    /// show supported kmi versions
+    SupportedKmi,
+}
+
 #[derive(clap::Subcommand, Debug)]
 enum Debug {
     /// Set the manager app, kernel CONFIG_KSU_DEBUG should be enabled.
@@ -242,7 +283,7 @@ pub fn run() -> Result<()> {
 
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
-    if arg0 == "su" || arg0 == "/system/bin/su" {
+    if Path::new(&arg0).file_name().and_then(|f| f.to_str()) == Some("su") {
         return crate::su::root_shell();
     }
 
@@ -269,7 +310,8 @@ pub fn run() -> Result<()> {
                 Module::Shrink => module::shrink_ksu_images(),
             }
         }
-        Commands::Install => utils::install(),
+        Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
@@ -322,6 +364,25 @@ pub fn run() -> Result<()> {
             magiskboot,
             kmi,
         } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi),
+
+        Commands::BootInfo { command } => match command {
+            BootInfo::CurrentKmi => {
+                let kmi = crate::boot_patch::get_current_kmi()?;
+                println!("{}", kmi);
+                // return here to avoid printing the error message
+                return Ok(());
+            }
+            BootInfo::SupportedKmi => {
+                let kmi = crate::assets::list_supported_kmi()?;
+                kmi.iter().for_each(|kmi| println!("{}", kmi));
+                return Ok(());
+            }
+        },
+        Commands::BootRestore {
+            boot,
+            magiskboot,
+            flash,
+        } => crate::boot_patch::restore(boot, magiskboot, flash),
     };
 
     if let Err(e) = &result {

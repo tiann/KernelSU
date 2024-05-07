@@ -109,4 +109,26 @@
     <string name="settings_check_update">Kiểm tra cập nhật</string>
     <string name="settings_check_update_summary">Tự động kiểm tra cập nhật khi mở ứng dụng</string>
     <string name="open">Mở</string>
+    <string name="install_inactive_slot">Cài đặt vào khe không hoạt động (Sau OTA)</string>
+    <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ **BẮT BUỘC** khởi động vào khe không hoạt động hiện tại sau khi khởi động lại!
+\nChỉ sử dụng tùy chọn này sau khi OTA hoàn tất.
+\nTiếp tục?</string>
+    <string name="settings_uninstall_temporary_message">Tạm thời gỡ cài đặt KernelSU, khôi phục về trạng thái ban đầu sau lần khởi động lại tiếp theo.</string>
+    <string name="select_kmi">Chọn KMI</string>
+    <string name="install_next">Kế tiếp</string>
+    <string name="direct_install">Cài đặt trực tiếp (Được khuyến nghị)</string>
+    <string name="select_file">Chọn một tệp</string>
+    <string name="settings_uninstall">Gỡ cài đặt</string>
+    <string name="settings_uninstall_temporary">Gỡ cài đặt tạm thời</string>
+    <string name="settings_uninstall_permanent">Gỡ cài đặt vĩnh viễn</string>
+    <string name="settings_restore_stock_image">Khôi phục hình ảnh gốc</string>
+    <string name="settings_uninstall_permanent_message">Gỡ cài đặt KernelSU (Root và tất cả các mô-đun) hoàn toàn và vĩnh viễn.</string>
+    <string name="settings_restore_stock_image_message">Khôi phục hình ảnh gốc của nhà máy (nếu có bản sao lưu), thường được sử dụng trước OTA; nếu bạn cần gỡ cài đặt KernelSU, vui lòng sử dụng \"Gỡ cài đặt vĩnh viễn\".</string>
+    <string name="flashing">Đang cài</string>
+    <string name="flash_success">Cài thành công</string>
+    <string name="flash_failed">Cài thất bại</string>
+    <string name="selected_lkm">Đã chọn lkm: %s</string>
+    <string name="select_file_tip">Nên sử dụng hình ảnh phân vùng %1$s</string>
+    <string name="shrink_sparse_image">Giảm thiểu hình ảnh thưa thớt</string>
+    <string name="shrink_sparse_image_message">Thay đổi kích thước hình ảnh thưa nơi đặt mô-đun theo kích thước thực tế của nó. Lưu ý điều này có thể khiến module hoạt động không bình thường nên vui lòng chỉ sử dụng khi cần thiết (chẳng hạn như để sao lưu)</string>
 </resources>

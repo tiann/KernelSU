@@ -109,4 +109,26 @@
     <string name="open">開く</string>
     <string name="enable_web_debugging">WebView デバッグを有効にする</string>
     <string name="enable_web_debugging_summary">WebUI のデバッグに使用できます。必要な場合にのみ有効にしてください。</string>
+    <string name="select_file_tip">%1$s パーティション イメージが推奨されます</string>
+    <string name="select_kmi">KMI を選択してください</string>
+    <string name="install_next">次に</string>
+    <string name="install_inactive_slot">非アクティブなスロットにインストール (OTA 後)</string>
+    <string name="install_inactive_slot_warning">再起動後、デバイスは**強制的に**、現在非アクティブなスロットから起動します。
+\nこのオプションは、OTA が完了した後にのみ使用してください。
+\n続く？</string>
+    <string name="direct_install">直接インストール (推奨)</string>
+    <string name="select_file">ファイルを選択してください</string>
+    <string name="shrink_sparse_image">まばらな画像を最小限に抑える</string>
+    <string name="shrink_sparse_image_message">モジュールが配置されているスパース イメージのサイズを実際のサイズに変更します。 モジュールが正常に動作しなくなる可能性がありますので、必要な場合（バックアップ等）にのみご使用ください</string>
+    <string name="settings_uninstall_permanent">完全にアンインストールする</string>
+    <string name="settings_restore_stock_image">ストック图像を復元</string>
+    <string name="settings_uninstall_temporary">一時的にアンインストールする</string>
+    <string name="settings_uninstall">アンインストール</string>
+    <string name="settings_uninstall_temporary_message">KernelSU を一時的にアンインストールし、次回の再起動後に元の状態に戻します。</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (ルートおよびすべてのモジュール) を完全かつ永久にアンインストールします。</string>
+    <string name="settings_restore_stock_image_message">通常、OTA の前に使用される工場出荷時のイメージを復元します (バックアップが存在する場合)。 KernelSUをアンインストールする必要がある場合は、「永久アンインストール」を使用してください。</string>
+    <string name="flashing">フラッシュ</string>
+    <string name="flash_success">フラッシュ成功</string>
+    <string name="flash_failed">フラッシュ失敗</string>
+    <string name="selected_lkm">選択された lkm: %s</string>
 </resources>

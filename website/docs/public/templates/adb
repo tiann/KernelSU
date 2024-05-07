@@ -9,6 +9,10 @@
         "ADB"
     ],
     "locales": {
+        "bn": {
+            "name": "এডিবি",
+            "description": "নূন্যতম অনুমতি যার দ্বারা এডিবি স্বচ্ছন্দে কাজ করতে পারে।"
+        },
         "zh_CN": {
             "name": "Adb 模版",
             "description": "大多数使用 ADB 权限应用所需要的最小权限"
@@ -28,6 +32,10 @@
         "ja": {
             "name": "Adb",
             "description": "ほとんどのアプリが使用するために必要な最小限のルール ADB."
-        }
+        },
+        "it_IT": {
+            "name": "Adb",
+            "description": "Autorizzazioni minime richieste dalla maggior parte delle app che usano i privilegi di ADB."
+        } 
     }
 }

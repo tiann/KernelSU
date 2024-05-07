@@ -46,13 +46,13 @@
     <string name="send_log">Günlük raporu gönder</string>
     <string name="safe_mode">Güvenli mod</string>
     <string name="reboot_to_apply">Değişikliklerin uygulanması için cihazı yeniden başlat</string>
-    <string name="module_magisk_conflict">Modüller, Magisk ile çakıştığı için devre dışı bırakıldı!</string>
+    <string name="module_magisk_conflict">Modüller, Magisk\'tekiler ile çakıştığı için devre dışı bırakıldı!</string>
     <string name="home_learn_kernelsu">KernelSU\'yu öğrenin</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="about_source_code">%1$s adresinde kaynak kodunu görüntüleyin<br/>%2$s kanalımıza katılın</string>
+    <string name="about_source_code">%1$s adresinde kaynak kodunu görüntüleyin. <br/>%2$s kanalımıza katılın.</string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
     <string name="profile_template">Şablon</string>
@@ -67,7 +67,7 @@
     <string name="profile_selinux_context">SELinux içeriği</string>
     <string name="profile_umount_modules">Modüllerin bağlantısını kes</string>
     <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
-    <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d veya daha yüksek bir sürüme güncelleyin!</string>
+    <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d sürümüne veya daha yüksek bir sürüme güncelleyin!</string>
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kes</string>
     <string name="settings_umount_modules_default_summary">Uygulama profilindeki \"Modüllerin bağlantısını kes\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
     <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir.</string>
@@ -93,7 +93,7 @@
     <string name="app_profile_template_save">Kaydet</string>
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_view">Şablonu görüntüle</string>
-    <string name="app_profile_template_readonly">Salt okunur</string>
+    <string name="app_profile_template_readonly">salt okunur</string>
     <string name="app_profile_template_id_exist">Şablon kimliği zaten mevcut!</string>
     <string name="app_profile_import_export">İçe aktar/Dışa aktar</string>
     <string name="app_profile_import_from_clipboard">Panodan içe aktar</string>
@@ -113,8 +113,23 @@
     <string name="direct_install">Doğrudan Kur (Tavsiye Edilen)</string>
     <string name="select_file">Bir Dosya Seçin</string>
     <string name="install_inactive_slot">Etkin Olmayan Yuvaya Kur (OTA\'dan Sonra)</string>
-    <string name="install_inactive_slot_warning">Aygıtınız yeniden başlatıldıktan sonra geçerli etkin olmayan yuvaya **ZORLA** önyükleme yapılacaktır!
+    <string name="install_inactive_slot_warning">Cihazınız geçerli etkin olmayan yuvaya **ZORLA** yeniden başlatılacaktır!
 \nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
 \nDevam edilsin mi?</string>
     <string name="install_next">Sonraki</string>
+    <string name="select_kmi">KMI seçin</string>
+    <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
+    <string name="shrink_sparse_image">Sparse imajını küçültün</string>
+    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi)</string>
+    <string name="settings_uninstall_temporary">Geçici Olarak Kaldır</string>
+    <string name="settings_uninstall_permanent">Kalıcı Olarak Kaldır</string>
+    <string name="settings_restore_stock_image">Stok İmajı Geri Yükle</string>
+    <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldır, bir sonraki yeniden başlatmadan sonra orijinal durumuna geri yükle.</string>
+    <string name="settings_uninstall">Kaldır</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (Root ve tüm modüller) tamamen ve kalıcı olarak kaldırılıyor.</string>
+    <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı Olarak Kaldır\" seçeneğini kullanın.</string>
+    <string name="flash_success">Flaşlama başarılı</string>
+    <string name="selected_lkm">Seçili lkm: %s</string>
+    <string name="flashing">Flaşlanıyor</string>
+    <string name="flash_failed">Flaşlama başarısız</string>
 </resources>

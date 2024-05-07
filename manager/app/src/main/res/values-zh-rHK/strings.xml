@@ -102,4 +102,22 @@
     <string name="app_profile_template_delete">刪除</string>
     <string name="app_profile_template_import_empty">剪貼簿沒有內容！</string>
     <string name="app_profile_template_view">查看模板</string>
+    <string name="enable_web_debugging">啟用 WebView 偵錯</string>
+    <string name="enable_web_debugging_summary">可用於偵錯WebUI，請僅在需要時啟用。</string>
+    <string name="direct_install">直接安裝（建議）</string>
+    <string name="select_file">選擇一個文件</string>
+    <string name="install_inactive_slot">安裝到非活動插槽（OTA 後）</string>
+    <string name="install_inactive_slot_warning">重新啟動後，您的裝置將強制啟動到目前非活動插槽！
+\n僅在 OTA 完成後使用此選項。
+\n繼續？</string>
+    <string name="install_next">下一個</string>
+    <string name="select_kmi">選擇KMI</string>
+    <string name="select_file_tip">建議使用 %1$s 分割區映像</string>
+    <string name="grant_root_failed">授予root權限失敗！</string>
+    <string name="open">打開</string>
+    <string name="settings_check_update">檢查更新</string>
+    <string name="settings_check_update_summary">開啟應用程式時自動檢查更新</string>
+    <string name="shrink_sparse_image">最小化稀疏影像</string>
+    <string name="shrink_sparse_image_message">將模組所在的稀疏影像調整為實際大小。 請注意，這可能會導致模組工作異常，因此請僅在必要時使用（例如備份）</string>
+    <string name="settings_uninstall">解除安裝</string>
 </resources>

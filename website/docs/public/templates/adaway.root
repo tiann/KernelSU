@@ -27,6 +27,14 @@
         "pt_BR": {
             "name": "Adaway Root",
             "description": "Apenas permissões essenciais para permitir que Adaway modifique o arquivo hosts e opere um servidor web."
-        }
+        },
+        "tr": {
+            "name": "Adaway Root",
+            "description": "Adaway'in hosts dosyasını değiştirmesine ve bir web sunucusunu çalıştırmasına izin vermek için gerekli izinler."
+        },
+        "it_IT": {
+            "name": "Adaway Root",
+            "description": "Concede le autorizzazioni essenziali affinché Adaway possa modificare il file host e gestire un server web. "
+        }        
     }
 }

@@ -58,7 +58,7 @@
     <string name="profile_name">ชื่อโปรไฟล์</string>
     <string name="profile_namespace">Mount เนมสเปซ</string>
     <string name="profile_namespace_global">ทั่วไป</string>
-    <string name="profile_namespace_inherited">การสืบทอด</string>
+    <string name="profile_namespace_inherited">สืบทอด</string>
     <string name="profile_namespace_individual">ส่วนบุคคล</string>
     <string name="profile_groups">หมวดหมู่</string>
     <string name="profile_capabilities">ความสามารถของแอป</string>
@@ -106,4 +106,28 @@
     <string name="grant_root_failed">ไม่สามารถให้สิทธิ์รูทได้!</string>
     <string name="settings_check_update">ตรวจสอบการอัปเดต</string>
     <string name="settings_check_update_summary">ตรวจสอบการอัปเดตโดยอัตโนมัติเมื่อเปิดแอป</string>
+    <string name="enable_web_debugging">เปิดใช้งานการแก้ไขข้อบกพร่อง WebView</string>
+    <string name="select_kmi">เลือก KMI</string>
+    <string name="install_next">ต่อไป</string>
+    <string name="select_file">เลือกไฟล์</string>
+    <string name="install_inactive_slot">ติดตั้งลงในสล็อตที่ไม่ใช้งาน (หลังจาก OTA)</string>
+    <string name="direct_install">ติดตั้งโดยตรง (แนะนำ)</string>
+    <string name="select_file_tip">แนะนำให้ใช้อิมเมจพาร์ติชั่น %1$s</string>
+    <string name="enable_web_debugging_summary">สามารถใช้เพื่อดีบัก WebUI โปรดเปิดใช้งานเมื่อจำเป็นเท่านั้น</string>
+    <string name="install_inactive_slot_warning">อุปกรณ์ของคุณจะถูก **บังคับ** ให้บูตไปยังสล็อตที่ไม่ได้ใช้งานหลังจากรีบูต!
+\nโปรดใช้ตัวเลือกนี้หลังจาก OTA เสร็จแล้วเท่านั้น
+\nดำเนินการต่อหรือไม่?</string>
+    <string name="shrink_sparse_image">ลดความกระจายของอิมเมจ</string>
+    <string name="shrink_sparse_image_message">ปรับขนาดความกระจายของอิมเมจในโมดูลให้เป็นขนาดจริง โปรดทราบว่านี่อาจทำให้โมดูลทำงานผิดปกติ โปรดใช้เมื่อจำเป็นเท่านั้น (เช่น การสำรองข้อมูล)</string>
+    <string name="settings_uninstall_permanent">ถอนการติดตั้งถาวร</string>
+    <string name="settings_restore_stock_image">เรียกคืนอิมเมจดั้งเดิม</string>
+    <string name="settings_uninstall_temporary_message">ถอนการติดตั้ง KernelSU ชั่วคราว จะคืนค่าเป็นสถานะดั้งเดิมหลังจากรีบูตในครั้งถัดไป</string>
+    <string name="flashing">กำลังแฟลช</string>
+    <string name="flash_success">แฟลชสำเร็จ</string>
+    <string name="flash_failed">แฟลชล้มเหลว</string>
+    <string name="selected_lkm">เลือก lkm: %s</string>
+    <string name="settings_uninstall">ถอนการติดตั้ง</string>
+    <string name="settings_uninstall_temporary">ถอนการติดตั้งชั่วคราว</string>
+    <string name="settings_uninstall_permanent_message">การถอนการติดตั้ง KernelSU (การรูทและโมดูลทั้งหมด) อย่างสมบูรณ์โดยถาวร</string>
+    <string name="settings_restore_stock_image_message">คืนค่าโรงงานอิมเมจดั้งเดิม (หากมีข้อมูลสำรอง) ส่วนใหญ่มักใช้ก่อนทำการ OTA ซึ่งหากคุณต้องการถอนการติดตั้ง KernelSU โปรดใช้ \"ถอนการติดตั้งถาวร\"</string>
 </resources>

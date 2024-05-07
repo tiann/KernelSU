@@ -28,7 +28,7 @@ jobs:
         fi
     - uses: nttld/setup-ndk@v1
       with:
-        ndk-version: r25c
+        ndk-version: r26d
     - name: Build su
       working-directory: ./userspace/su
       run: ndk-build
@@ -37,28 +37,3 @@ jobs:
       with:
         name: su
         path: ./userspace/su/libs
-    - name: Bot session cache
-      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
-      id: bot_session_cache
-      uses: actions/cache@v3
-      with:
-        path: scripts/ksubot.session
-        key: ${{ runner.os }}-bot-session
-    - name: Upload to telegram
-      if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
-      env:
-        CHAT_ID: ${{ secrets.CHAT_ID }}
-        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
-        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        COMMIT_URL: ${{ github.event.head_commit.url }}
-        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        TITLE: SU
-      run: |
-        if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
-          export VERSION=$(git rev-list --count HEAD)
-          pip3 install telethon==1.31.1
-          mv ./userspace/su/libs/arm64-v8a/su su-arm64
-          mv ./userspace/su/libs/x86_64/su su-x86_64
-          python3 scripts/ksubot.py su-arm64 su-x86_64
-        fi

@@ -1,8 +1,8 @@
 #ifndef __KSU_H_KSU
 #define __KSU_H_KSU
 
-#include "linux/types.h"
-#include "linux/workqueue.h"
+#include <linux/types.h>
+#include <linux/workqueue.h>
 
 #define KERNEL_SU_VERSION KSU_VERSION
 #define KERNEL_SU_OPTION 0xDEADBEEF
