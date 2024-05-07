@@ -1,4 +1,5 @@
 use anyhow::{anyhow, bail, Ok, Result};
+use std::fs::create_dir;
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -182,6 +183,19 @@ pub fn mount_tmpfs(dest: impl AsRef<Path>) -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn mount_devpts(dest: impl AsRef<Path>) -> Result<()> {
+    create_dir(dest.as_ref())?;
+    mount(
+        KSU_OVERLAY_SOURCE,
+        dest.as_ref(),
+        "devpts",
+        MountFlags::empty(),
+        "newinstance",
+    )?;
+    Ok(())
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn bind_mount(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
     info!(
         "bind mount {} -> {}",
@@ -323,5 +337,10 @@ pub fn mount_overlay(
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn mount_tmpfs(_dest: impl AsRef<Path>) -> Result<()> {
+    unimplemented!()
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+pub fn mount_devpts(_dest: impl AsRef<Path>) -> Result<()> {
     unimplemented!()
 }
