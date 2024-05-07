@@ -37,6 +37,10 @@ extern void ksu_sucompat_exit();
 extern void ksu_ksud_init();
 extern void ksu_ksud_exit();
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+extern void ksu_enable_selinux_compat();
+#endif
+
 int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
@@ -60,6 +64,9 @@ int __init kernelsu_init(void)
 #ifdef CONFIG_KPROBES
 	ksu_sucompat_init();
 	ksu_ksud_init();
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+	ksu_enable_selinux_compat();
+#endif
 #else
 	pr_alert("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html");
 #endif

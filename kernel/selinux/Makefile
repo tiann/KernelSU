@@ -1,6 +1,7 @@
 obj-y += selinux.o
 obj-y += sepolicy.o
 obj-y += rules.o
+obj-y += kernel_compat.o
 
 ifeq ($(shell grep -q " current_sid(void)" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
 ccflags-y += -DKSU_COMPAT_HAS_CURRENT_SID
