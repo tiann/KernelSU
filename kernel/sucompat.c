@@ -1,3 +1,5 @@
+#include <linux/dcache.h>
+#include <linux/security.h>
 #include <asm/current.h>
 #include <linux/cred.h>
 #include <linux/err.h>
@@ -12,6 +14,7 @@
 #include <linux/sched.h>
 #endif
 
+#include "objsec.h"
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -47,7 +50,7 @@ static char __user *ksud_user_path(void)
 }
 
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
-			 int * __unused_flags)
+			 int *__unused_flags)
 {
 	const char su[] = SU_PATH;
 
@@ -87,7 +90,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	// it becomes a `struct filename *` after 5.18
 	// https://elixir.bootlin.com/linux/v5.18/source/fs/stat.c#L216
 	const char sh[] = SH_PATH;
-	struct filename *filename = * ((struct filename **) filename_user);
+	struct filename *filename = *((struct filename **)filename_user);
 	if (IS_ERR(filename)) {
 		return 0;
 	}
@@ -109,7 +112,8 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 
 // the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
 int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
-				 void *__never_use_argv, void *__never_use_envp, int *__never_use_flags)
+				 void *__never_use_argv, void *__never_use_envp,
+				 int *__never_use_flags)
 {
 	struct filename *filename;
 	const char sh[] = KSUD_PATH;
@@ -138,7 +142,8 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 }
 
 int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
-				 void *__never_use_argv, void *__never_use_envp, int *__never_use_flags)
+			       void *__never_use_argv, void *__never_use_envp,
+			       int *__never_use_flags)
 {
 	const char su[] = SU_PATH;
 	char path[sizeof(su) + 1];
@@ -165,7 +170,8 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 
 #ifdef CONFIG_KPROBES
 
-__maybe_unused static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+__maybe_unused static int faccessat_handler_pre(struct kprobe *p,
+						struct pt_regs *regs)
 {
 	int *dfd = (int *)&PT_REGS_PARM1(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
@@ -180,21 +186,23 @@ static int sys_faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int *dfd = (int *)&PT_REGS_PARM1(real_regs);
-	const char __user **filename_user = (const char **)&PT_REGS_PARM2(real_regs);
+	const char __user **filename_user =
+		(const char **)&PT_REGS_PARM2(real_regs);
 	int *mode = (int *)&PT_REGS_PARM3(real_regs);
 
 	return ksu_handle_faccessat(dfd, filename_user, mode, NULL);
 }
 
-__maybe_unused static int newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
+__maybe_unused static int newfstatat_handler_pre(struct kprobe *p,
+						 struct pt_regs *regs)
 {
 	int *dfd = (int *)&PT_REGS_PARM1(regs);
 	const char __user **filename_user = (const char **)&PT_REGS_PARM2(regs);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
-// static int vfs_statx(int dfd, const char __user *filename, int flags, struct kstat *stat, u32 request_mask)
+	// static int vfs_statx(int dfd, const char __user *filename, int flags, struct kstat *stat, u32 request_mask)
 	int *flags = (int *)&PT_REGS_PARM3(regs);
 #else
-// int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
+	// int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,int flag)
 	int *flags = (int *)&PT_REGS_CCALL_PARM4(regs);
 #endif
 
@@ -205,7 +213,8 @@ static int sys_newfstatat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int *dfd = (int *)&PT_REGS_PARM1(real_regs);
-	const char __user **filename_user = (const char **)&PT_REGS_PARM2(real_regs);
+	const char __user **filename_user =
+		(const char **)&PT_REGS_PARM2(real_regs);
 	int *flags = (int *)&PT_REGS_SYSCALL_PARM4(real_regs);
 
 	return ksu_handle_stat(dfd, filename_user, flags);
@@ -224,9 +233,11 @@ static int execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
-	const char __user **filename_user = (const char **)&PT_REGS_PARM1(real_regs);
+	const char __user **filename_user =
+		(const char **)&PT_REGS_PARM1(real_regs);
 
-	return ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, NULL, NULL);
+	return ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, NULL,
+					  NULL);
 }
 
 #if 1
@@ -279,6 +290,45 @@ static struct kprobe execve_kp = {
 };
 #endif
 
+static int devpts_get_priv_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	if (!current->mm) {
+		return 0;
+	}
+
+	uid_t uid = current_uid().val;
+	if (uid % 100000 < 10000) {
+		// not untrusted_app, ignore it
+		return 0;
+	}
+
+	if (!ksu_is_allow_uid(uid))
+		return 0;
+
+	struct inode *inode;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
+	struct dentry *dentry = (struct dentry *)PT_REGS_PARM1(regs);
+	inode = dentry->d_inode;
+#else
+	inode = (struct inode *)PT_REGS_PARM1(real_regs);
+#endif
+
+	if (ksu_devpts_sid) {
+		struct inode_security_struct *sec = selinux_inode(inode);
+		if (sec) {
+			sec->sid = ksu_devpts_sid;
+			inode->i_uid.val = 0;
+			inode->i_gid.val = 0;
+		}
+	}
+
+	return 0;
+}
+
+static struct kprobe devpts_get_priv_kp = { .symbol_name = "devpts_get_priv",
+					    .pre_handler =
+						    devpts_get_priv_pre };
+
 #endif
 
 // sucompat: permited process can execute 'su' to gain root access.
@@ -292,13 +342,17 @@ void ksu_sucompat_init()
 	pr_info("sucompat: newfstatat_kp: %d\n", ret);
 	ret = register_kprobe(&faccessat_kp);
 	pr_info("sucompat: faccessat_kp: %d\n", ret);
+	ret = register_kprobe(&devpts_get_priv_kp);
+	pr_info("sucompat: devpts_kp: %d\n", ret);
 #endif
 }
 
-void ksu_sucompat_exit() {
+void ksu_sucompat_exit()
+{
 #ifdef CONFIG_KPROBES
 	unregister_kprobe(&execve_kp);
 	unregister_kprobe(&newfstatat_kp);
 	unregister_kprobe(&faccessat_kp);
+	unregister_kprobe(&devpts_get_priv_kp);
 #endif
 }

@@ -130,3 +130,16 @@ bool is_zygote(void *sec)
 	security_release_secctx(domain, seclen);
 	return result;
 }
+
+#define DEVPTS_DOMAIN "u:object_r:devpts:s0"
+
+u32 ksu_get_devpts_sid()
+{
+	u32 devpts_sid = 0;
+	int err = security_secctx_to_secid(DEVPTS_DOMAIN, strlen(DEVPTS_DOMAIN),
+					   &devpts_sid);
+	if (err) {
+		pr_info("get devpts sid err %d\n", err);
+	}
+	return devpts_sid;
+}
