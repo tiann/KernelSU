@@ -1,6 +1,6 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{create_dir_all, remove_file, write, File, OpenOptions},
+    fs::{self, create_dir_all, remove_file, write, File, OpenOptions},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
@@ -188,14 +188,71 @@ pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
 }
 
-pub fn get_tmp_path() -> &'static str {
-    if metadata(defs::TEMP_DIR_LEGACY).is_ok() {
-        return defs::TEMP_DIR_LEGACY;
+fn is_ok_empty(dir: &str) -> bool {
+    use std::result::Result::{Ok, Err};
+
+    return match fs::read_dir(dir) {
+        Ok(mut entries) => entries.next().is_none(),
+        Err(_) => false,
     }
-    if metadata(defs::TEMP_DIR).is_ok() {
-        return defs::TEMP_DIR;
+}
+
+fn find_temp_path() -> String {
+    use std::result::Result::{Ok, Err};
+    use tempfile::Builder;
+
+    if is_ok_empty(defs::TEMP_DIR) {
+        return defs::TEMP_DIR.to_string();
     }
-    ""
+
+    // Try to create a random directory in /dev/
+    let r = Builder::new().tempdir_in("/dev/");
+    match r {
+        Ok(tmp_dir) => {return tmp_dir.path().to_owned().to_str().unwrap().to_string()},
+        Err(_e) => {}
+    }
+
+    let dirs = [
+        defs::TEMP_DIR,
+        "/patch_hw",
+        "/oem",
+        "/root",
+        defs::TEMP_DIR_LEGACY,
+    ];
+
+    // find empty directory
+    for dir in dirs {
+        if is_ok_empty(defs::TEMP_DIR) {
+            return dir.to_string();
+        }
+    }
+
+    // Fallback to non-empty directory
+    for dir in dirs {
+        if metadata(defs::TEMP_DIR).is_ok() {
+            return dir.to_string();
+        }
+    }
+
+    "".to_string()
+}
+
+
+pub fn get_tmp_path() -> String {
+    static mut CHOSEN_TMP_PATH: Option<String> = None;
+
+    unsafe {
+        use std::ptr;
+        match &*ptr::addr_of!(CHOSEN_TMP_PATH) {
+            Some(r) => return r.clone(),
+            None => {
+                let r = find_temp_path();
+                log::info!("Chosen temp_path: {}", r);
+                CHOSEN_TMP_PATH = Some(r.clone());
+                return r;
+            }
+        }
+    }
 }
 
 #[cfg(target_os = "android")]
