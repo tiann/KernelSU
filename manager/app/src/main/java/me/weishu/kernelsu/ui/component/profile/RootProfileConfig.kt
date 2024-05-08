@@ -22,15 +22,13 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -148,7 +146,7 @@ fun RootProfileConfig(
 
         val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
             e.mapNotNull { g ->
-                Groups.values().find { it.gid == g }
+                Groups.entries.find { it.gid == g }
             }
         }
         GroupsPanel(selectedGroups) {
@@ -161,7 +159,7 @@ fun RootProfileConfig(
         }
 
         val selectedCaps = profile.capabilities.mapNotNull { e ->
-            Capabilities.values().find { it.cap == e }
+            Capabilities.entries.find { it.cap == e }
         }
 
         CapsPanel(selectedCaps) {
@@ -190,7 +188,7 @@ fun RootProfileConfig(
 @Composable
 fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>) -> Unit) {
     val selectGroupsDialog = rememberCustomDialog { dismiss: () -> Unit ->
-        val groups = Groups.values().sortedWith(
+        val groups = Groups.entries.toTypedArray().sortedWith(
             compareBy<Groups> { if (selected.contains(it)) 0 else 1 }
                 .then(compareBy {
                     when (it) {
@@ -265,7 +263,7 @@ fun CapsPanel(
     closeSelection: (selection: Set<Capabilities>) -> Unit
 ) {
     val selectCapabilitiesDialog = rememberCustomDialog { dismiss ->
-        val caps = Capabilities.values().sortedWith(
+        val caps = Capabilities.entries.toTypedArray().sortedWith(
             compareBy<Capabilities> { if (selected.contains(it)) 0 else 1 }
                 .then(compareBy { it.name })
         )
@@ -323,7 +321,6 @@ fun CapsPanel(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
 
@@ -447,7 +444,7 @@ private fun SELinuxPanel(
                     editSELinuxDialog.show()
                 },
             enabled = false,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledBorderColor = MaterialTheme.colorScheme.outline,
                 disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,

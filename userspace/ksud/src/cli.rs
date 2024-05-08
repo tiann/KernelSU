@@ -1,6 +1,6 @@
 use anyhow::{Ok, Result};
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[cfg(target_os = "android")]
 use android_logger::Config;
@@ -35,7 +35,10 @@ enum Commands {
     BootCompleted,
 
     /// Install KernelSU userspace component to system
-    Install,
+    Install {
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
 
     /// Uninstall KernelSU modules and itself(LKM Only)
     Uninstall {
@@ -280,7 +283,7 @@ pub fn run() -> Result<()> {
 
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
-    if arg0 == "su" || arg0 == "/system/bin/su" {
+    if Path::new(&arg0).file_name().and_then(|f| f.to_str()) == Some("su") {
         return crate::su::root_shell();
     }
 
@@ -307,7 +310,7 @@ pub fn run() -> Result<()> {
                 Module::Shrink => module::shrink_ksu_images(),
             }
         }
-        Commands::Install => utils::install(),
+        Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),

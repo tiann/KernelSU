@@ -3,9 +3,14 @@ package me.weishu.kernelsu.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -14,8 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.navigation.popBackStack
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
@@ -29,13 +33,12 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             KernelSUTheme {
-                val navController = rememberAnimatedNavController()
+                val navController = rememberNavController()
                 val snackbarHostState = remember { SnackbarHostState() }
                 Scaffold(
                     bottomBar = { BottomBar(navController) },
@@ -61,7 +64,7 @@ private fun BottomBar(navController: NavHostController) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     NavigationBar(tonalElevation = 8.dp) {
-        BottomBarDestination.values().forEach { destination ->
+        BottomBarDestination.entries.forEach { destination ->
             if (!fullFeatured && destination.rootRequired) return@forEach
             val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
             NavigationBarItem(

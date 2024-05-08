@@ -1,9 +1,9 @@
-#include "sepolicy.h"
-#include "linux/gfp.h"
-#include "linux/printk.h"
-#include "linux/slab.h"
-#include "linux/version.h"
+#include <linux/gfp.h>
+#include <linux/printk.h>
+#include <linux/slab.h>
+#include <linux/version.h>
 
+#include "sepolicy.h"
 #include "../klog.h" // IWYU pragma: keep
 #include "ss/symtab.h"
 #include "../kernel_compat.h" // Add check Huawei Device

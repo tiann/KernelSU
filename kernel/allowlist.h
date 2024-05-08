@@ -1,7 +1,7 @@
 #ifndef __KSU_H_ALLOWLIST
 #define __KSU_H_ALLOWLIST
 
-#include "linux/types.h"
+#include <linux/types.h>
 #include "ksu.h"
 
 void ksu_allowlist_init(void);

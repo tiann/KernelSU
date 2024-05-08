@@ -208,7 +208,7 @@ fn link_ksud_to_bin() -> Result<()> {
     Ok(())
 }
 
-pub fn install() -> Result<()> {
+pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy("/proc/self/exe", defs::DAEMON_PATH)?;
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
@@ -217,6 +217,11 @@ pub fn install() -> Result<()> {
 
     #[cfg(target_os = "android")]
     link_ksud_to_bin()?;
+
+    if let Some(magiskboot) = magiskboot {
+        ensure_dir_exists(defs::BINARY_DIR)?;
+        let _ = std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH);
+    }
 
     Ok(())
 }

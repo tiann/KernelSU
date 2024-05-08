@@ -1,32 +1,36 @@
-#include "linux/capability.h"
-#include "linux/cred.h"
-#include "linux/dcache.h"
-#include "linux/err.h"
-#include "linux/init.h"
-#include "linux/init_task.h"
-#include "linux/irqflags.h"
-#include "linux/kallsyms.h"
-#include "linux/kernel.h"
-#include "linux/kprobes.h"
-#include "linux/list.h"
-#include "linux/lsm_hooks.h"
-#include "linux/mm.h"
-#include "linux/mm_types.h"
-#include "linux/nsproxy.h"
-#include "linux/path.h"
-#include "linux/printk.h"
-#include "linux/sched.h"
-#include "linux/security.h"
-#include "linux/stddef.h"
-#include "linux/types.h"
-#include "linux/uaccess.h"
-#include "linux/uidgid.h"
-#include "linux/version.h"
-#include "linux/mount.h"
+#include <linux/capability.h>
+#include <linux/cred.h>
+#include <linux/dcache.h>
+#include <linux/err.h>
+#include <linux/init.h>
+#include <linux/init_task.h>
+#include <linux/kallsyms.h>
+#include <linux/kernel.h>
+#include <linux/kprobes.h>
+#include <linux/lsm_hooks.h>
+#include <linux/mm.h>
+#include <linux/nsproxy.h>
+#include <linux/path.h>
+#include <linux/printk.h>
+#include <linux/sched.h>
+#include <linux/security.h>
+#include <linux/stddef.h>
+#include <linux/types.h>
+#include <linux/uaccess.h>
+#include <linux/uidgid.h>
+#include <linux/version.h>
+#include <linux/mount.h>
 
-#include "linux/fs.h"
-#include "linux/namei.h"
-#include "linux/rcupdate.h"
+#include <linux/fs.h>
+#include <linux/namei.h>
+
+#ifdef MODULE
+#include <linux/list.h>
+#include <linux/irqflags.h>
+#include <linux/mm_types.h>
+#include <linux/rcupdate.h>
+#include <linux/vmalloc.h>
+#endif
 
 #include "allowlist.h"
 #include "arch.h"
@@ -34,7 +38,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
-#include "linux/vmalloc.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
@@ -542,11 +545,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
-	struct pt_regs *real_regs = (struct pt_regs *)PT_REGS_PARM1(regs);
-#else
-	struct pt_regs *real_regs = regs;
-#endif
+	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int option = (int)PT_REGS_PARM1(real_regs);
 	unsigned long arg2 = (unsigned long)PT_REGS_PARM2(real_regs);
 	unsigned long arg3 = (unsigned long)PT_REGS_PARM3(real_regs);

@@ -371,13 +371,6 @@
         "devices": "Google Pixel 2/2XL"
     },
     {
-        "maintainer": "Flame",
-        "maintainer_link": "https://github.com/flame-0",
-        "kernel_name": "android_kernel_xiaomi_sm8250",
-        "kernel_link": "https://github.com/vyrine/android_kernel_xiaomi_sm8250/tree/lineage-20-kernelsu",
-        "devices": "POCO F3/Redmi K40/Mi 11X (alioth)"
-    },
-    {
         "maintainer": "DawfukFR",
         "maintainer_link": "https://github.com/DawfukFR",
         "kernel_name": "kernel_oneplus_sm8250 (Stellaris-Kernel)",
@@ -518,17 +511,31 @@
         "devices": "Huawei nova 2 (pic)"
     },
     {
-        "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-a528b-n-kernelsu-v0-7-5-for-galaxy-a52s-5g.4603287/",
-        "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7325",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7325",
         "devices": "Samsung Galaxy A52s 5G (a52sxq)"
     },
     {
-        "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-m526b-br-kernelsu-v0-7-5-for-galaxy-m52-5g.4603295/",
-        "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7125",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7125",
+        "devices": "Samsung Galaxy A52 4G (a52q)"
+    },
+    {
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7125",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7125",
+        "devices": "Samsung Galaxy A72 (a72q)"
+    },
+    {
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7325",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7325",
         "devices": "Samsung Galaxy M52 5G (m52xq)"
     },
     {
@@ -684,5 +691,12 @@
         "kernel_name": "android_kernel_lge_sm8150",
         "kernel_link": "https://github.com/Dawid2849/android_kernel_lge_sm8150",
         "devices": "LG G8 (alphaplus) / LG G8s (betalm) / LG G8X (mh2mml)"
+    },
+    {
+        "maintainer": "lyc8503",
+        "maintainer_link": "https://github.com/lyc8503",
+        "kernel_name": "kernel_xiaomi_chopin",
+        "kernel_link": "https://github.com/ChopinKernels/kernel_xiaomi_chopin_android_S",
+        "devices": "Redmi Note 10 Pro 5G (chopin) / Poco X3 GT (choping)"
     }
 ]
