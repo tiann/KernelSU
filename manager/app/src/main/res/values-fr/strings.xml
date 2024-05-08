@@ -120,4 +120,15 @@
     <string name="select_kmi">Sélectionner une KMI</string>
     <string name="shrink_sparse_image">Minimiser l\'image clairsemée</string>
     <string name="shrink_sparse_image_message">Redimensionne l\'image clairsemée où se trouve le module à sa taille réelle. Notez que cela peut entraîner un dysfonctionnement du module, alors utilisez cette fonctionnalité uniquement lorsque nécessaire (pour la sauvegarde, par exemple)</string>
+    <string name="settings_uninstall">Désinstaller</string>
+    <string name="settings_uninstall_temporary">Désinstaller temporairement</string>
+    <string name="settings_uninstall_permanent">Désinstaller définitivement</string>
+    <string name="settings_restore_stock_image">Restaurer l\'image stock</string>
+    <string name="settings_restore_stock_image_message">Restaurer l\'image stock d\'usine (s\'il en existe une sauvegarde), option généralement utilisée avant une mise à jour OTA ; si vous avez besoin de désinstaller KernelSU, utilisez plutôt l\'option « Désinstaller définitivement ».</string>
+    <string name="flashing">Flash en cours</string>
+    <string name="flash_success">Flash réussi</string>
+    <string name="flash_failed">Échec du flash</string>
+    <string name="selected_lkm">lkm sélectionné : %s</string>
+    <string name="settings_uninstall_permanent_message">Désinstallation complète et permanente de KernelSU (root et tous les modules).</string>
+    <string name="settings_uninstall_temporary_message">Désinstaller KernelSU temporairement et rétablir l\'état original au redémarrage suivant.</string>
 </resources>
