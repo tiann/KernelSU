@@ -1,6 +1,6 @@
 use std::ffi::c_int;
 use std::fs::File;
-use std::io::{stderr, stdin, stdout, Read, Write};
+use std::io::{stderr, stdin, stdout, Error, ErrorKind, Read, Write};
 use std::mem::MaybeUninit;
 use std::os::fd::{AsFd, AsRawFd, OwnedFd, RawFd};
 use std::process::exit;
@@ -9,8 +9,8 @@ use std::thread;
 
 use anyhow::{bail, Ok, Result};
 use libc::{
-    __errno, fork, pthread_sigmask, sigaddset, sigemptyset, sigset_t, sigwait, waitpid, winsize,
-    EINTR, SIGWINCH, SIG_BLOCK, SIG_UNBLOCK, TIOCGWINSZ, TIOCSWINSZ,
+    fork, pthread_sigmask, sigaddset, sigemptyset, sigset_t, sigwait, waitpid, winsize, SIGWINCH,
+    SIG_BLOCK, SIG_UNBLOCK, TIOCGWINSZ, TIOCSWINSZ,
 };
 use rustix::fs::{open, Mode, OFlags};
 use rustix::io::dup;
@@ -149,8 +149,11 @@ fn create_transfer(ptmx: OwnedFd) -> Result<()> {
 
     unsafe {
         loop {
-            if waitpid(pid, &mut status, 0) == -1 && *__errno() != EINTR {
-                continue;
+            if waitpid(pid, &mut status, 0) == -1 {
+                let last_os_error = Error::last_os_error();
+                if last_os_error.kind() != ErrorKind::Interrupted {
+                    continue;
+                }
             }
             break;
         }
