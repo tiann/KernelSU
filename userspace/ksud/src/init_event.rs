@@ -2,7 +2,6 @@ use anyhow::{bail, Context, Result};
 use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
-use crate::defs::PTS_NAME;
 use crate::module::prune_modules;
 use crate::{
     assets, defs, ksucalls, mount, restorecon,
@@ -194,11 +193,6 @@ pub fn on_post_data_fs() -> Result<()> {
     // mount temp dir
     if let Err(e) = mount::mount_tmpfs(utils::get_tmp_path()) {
         warn!("do temp dir mount failed: {}", e);
-    } else {
-        let pts_dir = format!("{}/{PTS_NAME}", utils::get_tmp_path());
-        if let Err(e) = mount::mount_devpts(pts_dir) {
-            warn!("do devpts mount failed: {}", e);
-        }
     }
 
     // exec modules post-fs-data scripts
