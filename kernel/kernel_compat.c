@@ -4,6 +4,7 @@
 #include <linux/sched/task.h>
 #include <linux/uaccess.h>
 #include "klog.h" // IWYU pragma: keep
+#include "kernel_compat.h"
 
 extern struct task_struct init_task;
 
