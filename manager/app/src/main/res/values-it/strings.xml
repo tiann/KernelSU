@@ -11,7 +11,7 @@
     <string name="home_unsupported_reason">KernelSU ora supporta solo i kernel GKI</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Versione del manager</string>
-    <string name="home_fingerprint">Impronta</string>
+    <string name="home_fingerprint">Impronta della build di Android</string>
     <string name="home_selinux_status">Stato di SELinux</string>
     <string name="selinux_status_disabled">Disabilitato</string>
     <string name="selinux_status_enforcing">Enforcing</string>
