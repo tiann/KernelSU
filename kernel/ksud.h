@@ -9,4 +9,6 @@ void on_post_fs_data(void);
 
 bool ksu_is_safe_mode(void);
 
+extern u32 ksu_devpts_sid;
+
 #endif
