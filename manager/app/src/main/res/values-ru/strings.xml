@@ -130,8 +130,8 @@
     <string name="settings_uninstall">Удалить</string>
     <string name="settings_restore_stock_image">Восстановить Сток образ</string>
     <string name="settings_restore_stock_image_message">Восстановить стоковый заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить Навсегда».</string>
-    <string name="flash_success">Прошивка выполнена</string>
-    <string name="flashing">Прошивка</string>
-    <string name="flash_failed">Прошивка не выполнена</string>
+    <string name="flash_success">Установка выполнена</string>
+    <string name="flashing">Установка</string>
+    <string name="flash_failed">Установка не выполнена</string>
     <string name="selected_lkm">Выбран lkm: %s</string>
 </resources>

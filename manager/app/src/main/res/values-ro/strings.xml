@@ -125,4 +125,7 @@
     <string name="settings_uninstall_permanent">Dezinstalează definitiv</string>
     <string name="settings_uninstall_permanent_message">Dezinstalare KernelSU (Root și toate modulele) complet și permanent.</string>
     <string name="settings_restore_stock_image_message">Restaurează imaginea stoc din fabrică (dacă există o copie de rezervă), utilizată de obicei înainte de OTA; dacă trebuie să dezinstalezi KernelSU, utilizează „Dezinstalare permanentă”.</string>
+    <string name="flashing">Instalare</string>
+    <string name="flash_success">Instalare reușită</string>
+    <string name="flash_failed">Instalarea a eșuat</string>
 </resources>
