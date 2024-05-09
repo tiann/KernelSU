@@ -168,6 +168,37 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	return 0;
 }
 
+int ksu_handle_devpts(struct inode *inode)
+{
+	if (!current->mm) {
+		return 0;
+	}
+
+	uid_t uid = current_uid().val;
+	if (uid % 100000 < 10000) {
+		// not untrusted_app, ignore it
+		return 0;
+	}
+
+	if (!ksu_is_allow_uid(uid))
+		return 0;
+
+	if (ksu_devpts_sid) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+		struct inode_security_struct *sec = selinux_inode(inode);
+#else
+		struct inode_security_struct *sec = (struct inode_security_struct *) inode->i_security;
+#endif
+		if (sec) {
+			sec->sid = ksu_devpts_sid;
+			inode->i_uid.val = 0;
+			inode->i_gid.val = 0;
+		}
+	}
+
+	return 0;
+}
+
 #ifdef CONFIG_KPROBES
 
 __maybe_unused static int faccessat_handler_pre(struct kprobe *p,
@@ -292,19 +323,6 @@ static struct kprobe execve_kp = {
 
 static int devpts_get_priv_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	if (!current->mm) {
-		return 0;
-	}
-
-	uid_t uid = current_uid().val;
-	if (uid % 100000 < 10000) {
-		// not untrusted_app, ignore it
-		return 0;
-	}
-
-	if (!ksu_is_allow_uid(uid))
-		return 0;
-
 	struct inode *inode;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
 	struct dentry *dentry = (struct dentry *)PT_REGS_PARM1(regs);
@@ -313,16 +331,7 @@ static int devpts_get_priv_pre(struct kprobe *p, struct pt_regs *regs)
 	inode = (struct inode *)PT_REGS_PARM1(real_regs);
 #endif
 
-	if (ksu_devpts_sid) {
-		struct inode_security_struct *sec = selinux_inode(inode);
-		if (sec) {
-			sec->sid = ksu_devpts_sid;
-			inode->i_uid.val = 0;
-			inode->i_gid.val = 0;
-		}
-	}
-
-	return 0;
+	return ksu_handle_devpts(inode);
 }
 
 static struct kprobe devpts_get_priv_kp = { .symbol_name = "devpts_get_priv",
