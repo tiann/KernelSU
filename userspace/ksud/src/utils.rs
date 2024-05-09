@@ -1,12 +1,9 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{self, create_dir_all, remove_file, write, File, OpenOptions},
-    io::{
+    fs::{self, create_dir_all, remove_file, write, File, OpenOptions}, io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
-    },
-    path::Path,
-    process::Command,
+    }, path::Path, process::Command, sync::OnceLock
 };
 
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
@@ -199,16 +196,21 @@ fn is_ok_empty(dir: &str) -> bool {
 
 fn find_temp_path() -> String {
     use std::result::Result::{Ok, Err};
-    use tempfile::Builder;
 
     if is_ok_empty(defs::TEMP_DIR) {
         return defs::TEMP_DIR.to_string();
     }
 
     // Try to create a random directory in /dev/
-    let r = Builder::new().tempdir_in("/dev/");
+    let r = tempdir::TempDir::new_in("/dev/", "");
     match r {
-        Ok(tmp_dir) => {return tmp_dir.path().to_owned().to_str().unwrap().to_string()},
+        Ok(tmp_dir) => {
+            let buf = tmp_dir.path().to_owned();
+            let s = buf.to_str();
+            if s.is_some() {
+                return s.unwrap().to_string()
+            }
+        },
         Err(_e) => {}
     }
 
@@ -222,14 +224,14 @@ fn find_temp_path() -> String {
 
     // find empty directory
     for dir in dirs {
-        if is_ok_empty(defs::TEMP_DIR) {
+        if is_ok_empty(dir) {
             return dir.to_string();
         }
     }
 
     // Fallback to non-empty directory
     for dir in dirs {
-        if metadata(defs::TEMP_DIR).is_ok() {
+        if metadata(dir).is_ok() {
             return dir.to_string();
         }
     }
@@ -238,21 +240,12 @@ fn find_temp_path() -> String {
 }
 
 
-pub fn get_tmp_path() -> String {
-    static mut CHOSEN_TMP_PATH: Option<String> = None;
+pub fn get_tmp_path() -> &'static str {
+    static CHOSEN_TMP_PATH: OnceLock<String> = OnceLock::new();
 
-    unsafe {
-        use std::ptr;
-        match &*ptr::addr_of!(CHOSEN_TMP_PATH) {
-            Some(r) => return r.clone(),
-            None => {
-                let r = find_temp_path();
-                log::info!("Chosen temp_path: {}", r);
-                CHOSEN_TMP_PATH = Some(r.clone());
-                return r;
-            }
-        }
-    }
+    CHOSEN_TMP_PATH.get_or_init(|| {
+        find_temp_path()
+    })
 }
 
 #[cfg(target_os = "android")]
