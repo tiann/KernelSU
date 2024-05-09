@@ -192,10 +192,10 @@ pub fn has_magisk() -> bool {
 fn is_ok_empty(dir: &str) -> bool {
     use std::result::Result::{Err, Ok};
 
-    return match fs::read_dir(dir) {
+    match fs::read_dir(dir) {
         Ok(mut entries) => entries.next().is_none(),
         Err(_) => false,
-    };
+    }
 }
 
 fn find_temp_path() -> String {
@@ -209,10 +209,8 @@ fn find_temp_path() -> String {
     let r = tempdir::TempDir::new_in("/dev/", "");
     match r {
         Ok(tmp_dir) => {
-            let buf = tmp_dir.path().to_owned();
-            let s = buf.to_str();
-            if s.is_some() {
-                return s.unwrap().to_string();
+            if let Some(path) = tmp_dir.into_path().to_str() {
+                return path.to_string();
             }
         }
         Err(_e) => {}
@@ -246,7 +244,7 @@ fn find_temp_path() -> String {
 pub fn get_tmp_path() -> &'static str {
     static CHOSEN_TMP_PATH: OnceLock<String> = OnceLock::new();
 
-    CHOSEN_TMP_PATH.get_or_init(|| find_temp_path())
+    CHOSEN_TMP_PATH.get_or_init(find_temp_path)
 }
 
 #[cfg(target_os = "android")]
