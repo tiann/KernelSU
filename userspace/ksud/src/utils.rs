@@ -1,9 +1,13 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{self, create_dir_all, remove_file, write, File, OpenOptions}, io::{
+    fs::{self, create_dir_all, remove_file, write, File, OpenOptions},
+    io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
-    }, path::Path, process::Command, sync::OnceLock
+    },
+    path::Path,
+    process::Command,
+    sync::OnceLock,
 };
 
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
@@ -186,16 +190,16 @@ pub fn has_magisk() -> bool {
 }
 
 fn is_ok_empty(dir: &str) -> bool {
-    use std::result::Result::{Ok, Err};
+    use std::result::Result::{Err, Ok};
 
     return match fs::read_dir(dir) {
         Ok(mut entries) => entries.next().is_none(),
         Err(_) => false,
-    }
+    };
 }
 
 fn find_temp_path() -> String {
-    use std::result::Result::{Ok, Err};
+    use std::result::Result::{Err, Ok};
 
     if is_ok_empty(defs::TEMP_DIR) {
         return defs::TEMP_DIR.to_string();
@@ -208,9 +212,9 @@ fn find_temp_path() -> String {
             let buf = tmp_dir.path().to_owned();
             let s = buf.to_str();
             if s.is_some() {
-                return s.unwrap().to_string()
+                return s.unwrap().to_string();
             }
-        },
+        }
         Err(_e) => {}
     }
 
@@ -239,13 +243,10 @@ fn find_temp_path() -> String {
     "".to_string()
 }
 
-
 pub fn get_tmp_path() -> &'static str {
     static CHOSEN_TMP_PATH: OnceLock<String> = OnceLock::new();
 
-    CHOSEN_TMP_PATH.get_or_init(|| {
-        find_temp_path()
-    })
+    CHOSEN_TMP_PATH.get_or_init(|| find_temp_path())
 }
 
 #[cfg(target_os = "android")]
