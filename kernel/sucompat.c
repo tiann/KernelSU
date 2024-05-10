@@ -328,7 +328,7 @@ static int devpts_get_priv_pre(struct kprobe *p, struct pt_regs *regs)
 	struct dentry *dentry = (struct dentry *)PT_REGS_PARM1(regs);
 	inode = dentry->d_inode;
 #else
-	inode = (struct inode *)PT_REGS_PARM1(real_regs);
+	inode = (struct inode *)PT_REGS_PARM1(regs);
 #endif
 
 	return ksu_handle_devpts(inode);
