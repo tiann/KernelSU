@@ -269,7 +269,6 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 所有启动脚本都将在 KernelSU 的 BusyBox ash shell 中运行，并启用“独立模式”。
 
 ### 启动脚本的流程解疑 {#Boot-scripts-process-explanation}
-下面
 以下是 Android 的相关启动流程（部分省略），其中包括了 KernelSU 的操作（带前导星号），应该能帮助你更好地理解这些启动脚本的用途：
 
 ```txt
