@@ -267,11 +267,12 @@ The following is the relevant boot process for Android (some parts are omitted),
 0. BootLoader (nothing on sceen)
   load patched boot.img
   ...
+
 1. kernel init (oem logo on screen)
 mount /dev, /dev/pts, /proc, /sys, etc.
 property-init -> read default props
 read init.rc
-doc: add boot process explanation (EN)
+...
 early-init -> init -> late_init
 early-fs
    start vold
