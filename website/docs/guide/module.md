@@ -265,8 +265,8 @@ The following is the relevant boot process for Android (some parts are omitted),
 
 ```txt
 0. BootLoader (nothing on sceen)
-  load patched boot.img
-  ...
+load patched boot.img
+...
 
 1. kernel init (oem logo on screen)
 mount /dev, /dev/pts, /proc, /sys, etc.
