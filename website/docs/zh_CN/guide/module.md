@@ -273,13 +273,14 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 
 ```txt
 0. BootLoader (nothing on sceen)
-  load patched boot.img
-  ...
+load patched boot.img
+...
+
 1. kernel init (oem logo on screen)
 mount /dev, /dev/pts, /proc, /sys, etc.
 property-init -> read default props
 read init.rc
-
+...
 early-init -> init -> late_init
 early-fs
    start vold
@@ -304,6 +305,7 @@ load_all_props_action
     start-service logd, console, vold, etc.
   class_start main
     start-service adb, netd (iptables), zygote, etc.
+
 2. kernel2user init (rom animation on screen, start by service bootanim)
 *execute scripts in service.d
 *execute service.sh (set props for resetprop without -p option)
@@ -314,6 +316,7 @@ start system apps (autostart)
 boot complete (broadcast ACTION_BOOT_COMPLETED event)
 *execute scripts in boot-completed.d
 *execute boot-completed.sh
+
 3. User operable (lock screen)
 input password to decrypt /data
 remount decrypted /data
