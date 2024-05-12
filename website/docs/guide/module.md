@@ -280,15 +280,15 @@ fs
   mount /vendor, /system, /persist, etc.
 post-fs-data
   *safe mode check
-  *execute scripts in post-fs-data.d/
+  *execute general scripts in post-fs-data.d/
   *load sepolicy.rule
   *mount tmpfs
-  *execute post-fs-data.sh
+  *execute module scripts post-fs-data.sh
     **(Zygisk)./bin/zygisk-ptrace64 monitor
   *(pre)load system.prop (same as `resetprop -n`)
   *remount modules /system
-  *execute scripts in post-mount.d/
-  *execute post-mount.sh
+  *execute general scripts in post-mount.d/
+  *execute module scripts post-mount.sh
 zygote-start
 load_all_props_action
   *execute resetprop (actual set props for resetprop with -n option)
@@ -299,15 +299,16 @@ load_all_props_action
     start-service adb, netd (iptables), zygote, etc.
 
 2. kernel2user init (rom animation on screen, start by service bootanim)
-*execute scripts in service.d
-*execute service.sh (set props for resetprop without -p option)
+*execute general scripts in service.d/
+*execute module scripts service.sh
+*set props for resetprop without -p option
   **(Zygisk) hook zygote (start zygiskd)
   **(Zygisk) mount zygisksu/module.prop
 start system apps (autostart)
 ...
 boot complete (broadcast ACTION_BOOT_COMPLETED event)
-*execute scripts in boot-completed.d
-*execute boot-completed.sh
+*execute general scripts in boot-completed.d/
+*execute module scripts boot-completed.sh
 
 3. User operable (lock screen)
 input password to decrypt /data
