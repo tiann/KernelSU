@@ -279,7 +279,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 mount /dev, /dev/pts, /proc, /sys, etc.
 property-init -> read default props
 read init.rc
-doc: add boot process explanation (EN)
+
 early-init -> init -> late_init
 early-fs
    start vold
