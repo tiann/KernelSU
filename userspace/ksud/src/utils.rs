@@ -244,7 +244,11 @@ fn find_temp_path() -> String {
 pub fn get_tmp_path() -> &'static str {
     static CHOSEN_TMP_PATH: OnceLock<String> = OnceLock::new();
 
-    CHOSEN_TMP_PATH.get_or_init(find_temp_path)
+    CHOSEN_TMP_PATH.get_or_init(|| {
+        let r = find_temp_path();
+        log::info!("Chosen temp_path: {}", r);
+        r
+    })
 }
 
 #[cfg(target_os = "android")]
