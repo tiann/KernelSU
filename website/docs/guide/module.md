@@ -311,8 +311,7 @@ boot complete (broadcast ACTION_BOOT_COMPLETED event)
 *execute module scripts boot-completed.sh
 
 3. User operable (lock screen)
-input password to decrypt /data
-remount decrypted /data
+input password to decrypt /data/data
 *actual set props for resetprop with -p option
 start user apps (autostart)
 ```
