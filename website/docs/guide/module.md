@@ -258,6 +258,8 @@ In KernelSU, startup scripts are divided into two types based on their storage l
   - Only executed if the module is enabled
   - `post-fs-data.sh` runs in post-fs-data mode, `service.sh` runs in late_start service mode, `boot-completed.sh` runs on boot completed, `post-mount.sh` runs on overlayfs mounted.
 
+All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
+
 ### Boot scripts process explanation
 The following is the relevant boot process for Android (some parts are omitted), which includes the operation of KernelSU (with leading asterisks), and can help you better understand the purpose of these module scripts:
 
@@ -313,7 +315,4 @@ remount decrypted /data
 start user apps (autostart)
 ```
 
-If you are interested in Android init Language, it is recommended to read its [documentation][](https://android.googlesource.com/platform/system/core/+/master/init/README.md)
-
-
-All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
+If you are interested in Android init Language, it is recommended to read its [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md)
