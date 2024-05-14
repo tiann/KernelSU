@@ -118,8 +118,8 @@
     <string name="install_next">Suivant</string>
     <string name="select_file_tip">L\'image de la partition %1$s est recommandée</string>
     <string name="select_kmi">Sélectionner une KMI</string>
-    <string name="shrink_sparse_image">Minimiser l\'image clairsemée</string>
-    <string name="shrink_sparse_image_message">Redimensionne l\'image clairsemée où se trouve le module à sa taille réelle. Notez que cela peut entraîner un dysfonctionnement du module, alors utilisez cette fonctionnalité uniquement lorsque nécessaire (pour la sauvegarde, par exemple)</string>
+    <string name="shrink_sparse_image">Minimiser la taille de l\'image partiellement allouée</string>
+    <string name="shrink_sparse_image_message">Redimensionner à sa taille réelle l\'image partiellement allouée où se trouve le module. Notez que cela peut entraîner un dysfonctionnement du module, utilisez donc cette fonctionnalité uniquement lorsque c\'est nécessaire (par exemple pour la sauvegarde de l\'appareil).</string>
     <string name="settings_uninstall">Désinstaller</string>
     <string name="settings_uninstall_temporary">Désinstaller temporairement</string>
     <string name="settings_uninstall_permanent">Désinstaller définitivement</string>
