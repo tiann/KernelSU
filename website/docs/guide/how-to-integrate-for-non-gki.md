@@ -264,6 +264,8 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
+### Safe Mode
+
 To enable KernelSU's builtin SafeMode, You should also modify `input_handle_event` in `drivers/input/input.c`:
 
 :::tip
@@ -295,6 +297,38 @@ index 45306f9ef247..815091ebfca4 100755
  
  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
  		add_input_randomness(type, code, value);
+```
+
+:::info Entering safe mode accidiently?
+If you use manual integration and do not disable `CONFIG_KPROBES`, then the user may trigger safe mode by pressing the volume down button after booting! Therefore if using manual integration you need to disable `CONFIG_KPROBES`!
+:::
+
+### Failed to execute `pm` in terminal?
+
+You should modify `fs/devpts/inode.c`, reference:
+
+```diff
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 32f6f1c68..d69d8eca2 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -602,6 +602,8 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+        return dentry;
+ }
+
++extern int ksu_handle_devpts(struct inode*);
++
+ /**
+  * devpts_get_priv -- get private data for a slave
+  * @pts_inode: inode of the slave
+@@ -610,6 +612,7 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+  */
+ void *devpts_get_priv(struct dentry *dentry)
+ {
++       ksu_handle_devpts(dentry->d_inode);
+        if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
+                return NULL;
+        return dentry->d_fsdata;
 ```
 
 ### How to backport path_umount
@@ -347,7 +381,3 @@ You can get module umount feature working on pre-GKI kernels by manually backpor
 ```
 
 Finally, build your kernel again, KernelSU should work well.
-
-:::info Entering safe mode accidiently?
-If you use manual integration and do not disable `CONFIG_KPROBES`, then the user may trigger safe mode by pressing the volume down button after booting! Therefore if using manual integration you need to disable `CONFIG_KPROBES`!
-:::

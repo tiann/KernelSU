@@ -1,17 +1,17 @@
-#include "ksu.h"
-#include "linux/compiler.h"
-#include "linux/fs.h"
-#include "linux/gfp.h"
-#include "linux/kernel.h"
-#include "linux/list.h"
-#include "linux/printk.h"
-#include "linux/slab.h"
-#include "linux/types.h"
-#include "linux/version.h"
+#include <linux/compiler.h>
+#include <linux/fs.h>
+#include <linux/gfp.h>
+#include <linux/kernel.h>
+#include <linux/list.h>
+#include <linux/printk.h>
+#include <linux/slab.h>
+#include <linux/types.h>
+#include <linux/version.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-#include "linux/compiler_types.h"
+#include <linux/compiler_types.h>
 #endif
 
+#include "ksu.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 #include "kernel_compat.h"

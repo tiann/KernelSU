@@ -6,7 +6,7 @@ Ao atualizar um dispositivo, podemos encontrar situações em que o dispositivo 
 
 No KernelSU, as seguintes situações podem causar bloqueio de inicialização ao flashar a partição boot:
 
-1. Você atualizou uma imagem boot no formato errado. Por exemplo, se o formato de boot do seu telefone for `gz`, mas você atualizou uma imagem no formato `lz4`, o telefone não será capaz de inicializar.
+1. Você flashou uma imagem boot no formato errado. Por exemplo, se o formato de boot do seu telefone for `gz`, mas você flashou uma imagem no formato `lz4`, o telefone não será capaz de inicializar.
 2. Seu telefone precisa desativar a verificação AVB para inicializar corretamente (geralmente exigindo a limpeza de todos os dados do telefone).
 3. Seu kernel tem alguns bugs ou não é adequado para o flash do seu telefone.
 
@@ -14,7 +14,7 @@ Não importa qual seja a situação, você pode recuperar **flashando a imagem d
 
 ## Bloqueio por módulos
 
-A instalação de módulos pode ser uma causa mais comum de bloqueio do seu dispositivo, mas devemos avisá-lo seriamente: **NÃO INSTALE MÓDULOS DE FONTES DESCONHECIDAS**! Como os módulos têm privilégios root, eles podem causar danos irreversíveis ao seu dispositivo!
+A instalação de módulos pode ser uma causa mais comum de bloqueio do seu dispositivo, mas devemos avisá-lo seriamente: **NÃO INSTALE MÓDULOS DE FONTES DESCONHECIDAS!** Como os módulos têm privilégios root, eles podem causar danos irreversíveis ao seu dispositivo!
 
 ### Módulos normais
 
@@ -31,14 +31,14 @@ Portanto, o método mais simples e comumente usado para recuperar seu dispositiv
 
 #### Recupere pressionando o botão de diminuir volume
 
-Se as atualizações AB ainda não resolverem o problema, você pode tentar usar o **Modo de Segurança**. No Modo de Segurança, todos os módulos estão desabilitados.
+Se a Atualização AB ainda não resolveu o problema, você pode tentar usar o **Modo de Segurança**. No Modo de Segurança, todos os módulos estão desativados.
 
 Existem duas maneiras de entrar no Modo de Segurança:
 
 1. O Modo de Segurança integrado de alguns sistemas. Alguns sistemas possuem um Modo de Segurança integrado que pode ser acessado pressionando longamente o botão de diminuir volume, enquanto outros (como a MIUI) podem ativar o Modo de Segurança no Recovery. Ao entrar no Modo de Segurança do sistema, o KernelSU também entrará no Modo de Segurança e desativará automaticamente os módulos.
 2. O Modo de Segurança integrado do KernelSU. O método de operação é **pressionar a tecla de diminuir volume continuamente por mais de três vezes** após a primeira tela de inicialização.
 
-Após entrar no Modo de Segurança, todos os módulos na página de módulos do gerenciador do KernelSU são desabilitados, mas você pode executar as operações de "desinstalação" para desinstalar quaisquer módulos que possam estar causando problemas.
+Após entrar no Modo de Segurança, todos os módulos na página de módulos do gerenciador do KernelSU são desativados, mas você pode executar as operações de "desinstalação" para desinstalar quaisquer módulos que possam estar causando problemas.
 
 O Modo de Segurança integrado é implementado no kernel, portanto não há possibilidade de perder eventos importantes devido à interceptação. No entanto, para kernels não GKI, a integração manual do código pode ser necessária e você pode consultar a documentação oficial para obter orientação.
 
@@ -46,5 +46,5 @@ O Modo de Segurança integrado é implementado no kernel, portanto não há poss
 
 Se os métodos acima não conseguirem recuperar seu dispositivo, é altamente provável que o módulo que você instalou tenha operações maliciosas ou tenha danificado seu dispositivo por outros meios. Neste caso, existem apenas duas sugestões:
 
-1. Limpe os dados e instale o sistema oficial.
-2. Consulte o serviço pós-venda.
+1. Limpar os dados e instalar o sistema oficial.
+2. Consultar o serviço pós-venda.

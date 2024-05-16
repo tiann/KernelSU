@@ -35,7 +35,17 @@ enum Commands {
     BootCompleted,
 
     /// Install KernelSU userspace component to system
-    Install,
+    Install {
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
+
+    /// Uninstall KernelSU modules and itself(LKM Only)
+    Uninstall {
+        /// magiskboot path, if not specified, will search from $PATH
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
 
     /// SELinux policy Patch tool
     Sepolicy {
@@ -300,7 +310,8 @@ pub fn run() -> Result<()> {
                 Module::Shrink => module::shrink_ksu_images(),
             }
         }
-        Commands::Install => utils::install(),
+        Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),

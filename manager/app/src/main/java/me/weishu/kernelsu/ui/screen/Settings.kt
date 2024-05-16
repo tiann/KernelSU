@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.ContactPage
@@ -213,7 +213,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             )
 
-            val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
+            val lkmMode =
+                Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
             if (lkmMode) {
                 UninstallItem(navigator) {
                     loadingDialog.withLoading(it)
@@ -258,10 +259,14 @@ fun UninstallItem(
                 withLoading {
                     when (uninstallType) {
                         UninstallType.TEMPORARY -> showTodo()
-                        UninstallType.PERMANENT -> showTodo()
+                        UninstallType.PERMANENT -> navigator.navigate(
+                            FlashScreenDestination(FlashIt.FlashUninstall)
+                        )
+
                         UninstallType.RESTORE_STOCK_IMAGE -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashRestore)
                         )
+
                         UninstallType.NONE -> Unit
                     }
                 }
@@ -307,7 +312,7 @@ enum class UninstallType(val title: Int, val message: Int, val icon: ImageVector
 fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
     return rememberCustomDialog { dismiss ->
         val options = listOf(
-            UninstallType.TEMPORARY,
+            // UninstallType.TEMPORARY,
             UninstallType.PERMANENT,
             UninstallType.RESTORE_STOCK_IMAGE
         )
@@ -345,7 +350,7 @@ private fun TopBar(onBack: () -> Unit = {}) {
         navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.Filled.ArrowBack, contentDescription = null) }
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         },
     )
 }
