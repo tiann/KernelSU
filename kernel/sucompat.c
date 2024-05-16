@@ -191,8 +191,6 @@ int ksu_handle_devpts(struct inode *inode)
 #endif
 		if (sec) {
 			sec->sid = ksu_devpts_sid;
-			inode->i_uid.val = 0;
-			inode->i_gid.val = 0;
 		}
 	}
 
