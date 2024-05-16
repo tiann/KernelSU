@@ -101,11 +101,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 @Composable
 fun UpdateCard() {
     val context = LocalContext.current
-    val latestVersionInfo = LatestVersionInfo(
-        0,
-        "",
-        ""
-    )
+    val latestVersionInfo = LatestVersionInfo()
     val newVersion by produceState(initialValue = latestVersionInfo) {
         value = withContext(Dispatchers.IO){
             checkNewVersion()
@@ -115,7 +111,7 @@ fun UpdateCard() {
 
     val currentVersionCode = getManagerVersion(context).second
     val newVersionCode = newVersion.versionCode
-    val newVersionUrl = newVersion.downloadurl
+    val newVersionUrl = newVersion.downloadUrl
     val changelog = newVersion.changelog
 
     val uriHandler = LocalUriHandler.current
