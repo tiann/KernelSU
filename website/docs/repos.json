@@ -49,6 +49,13 @@
         "devices": "Poco F4: munch"
     },
     {
+        "maintainer": "Hadad",
+        "maintainer_link": "https://xdaforums.com/m/hadad.8351572/",
+        "kernel_name": "android_kernel_xiaomi_onc",
+        "kernel_link": "https://github.com/hadadarjt/android_kernel_xiaomi_onc/tree/los21-KSU/local-non-gerrit-review",
+        "devices": "Redmi 7: onclite | Redmi Y3: onc"
+    },   
+    {
         "maintainer": "HMTheBoy154",
         "maintainer_link": "https://github.com/hmtheboy154",
         "kernel_name": "Darkmatter-kernel",
