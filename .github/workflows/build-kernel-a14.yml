@@ -35,7 +35,7 @@ jobs:
             os_patch_level: 2024-03
           - version: "5.15"
             sub_level: 148
-            os_patch_level: 2024-04
+            os_patch_level: 2024-05
           - version: "6.1"
             sub_level: 25
             os_patch_level: 2023-10
@@ -50,7 +50,7 @@ jobs:
             os_patch_level: 2024-03
           - version: "6.1"
             sub_level: 75
-            os_patch_level: 2024-04
+            os_patch_level: 2024-05
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -141,7 +141,7 @@ jobs:
             os_patch_level: 2023-09
           - version: "6.1"
             sub_level: 75
-            os_patch_level: 2024-04
+            os_patch_level: 2024-05
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android14-${{ matrix.version }}
