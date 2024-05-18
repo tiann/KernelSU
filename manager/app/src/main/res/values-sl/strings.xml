@@ -102,4 +102,5 @@
     <string name="app_profile_template_sync">Sinhroniziraj predloge iz spleta</string>
     <string name="app_profile_import_export">Uvoz/Izvoz</string>
     <string name="module_changelog_failed">Napaka pri pridobivanju dnevnika sprememb: %s</string>
+    <string name="save_log">Shrani Dnevnike</string>
 </resources>

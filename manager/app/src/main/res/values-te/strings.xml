@@ -17,4 +17,5 @@
     <string name="home_working_version">వెర్షన్: %d</string>
     <string name="home_superuser_count">సూపర్‌యూజర్‌లు: %d</string>
     <string name="home_module_count">మాడ్యూల్స్: %d</string>
+    <string name="save_log">లాగ్‌లు సేవ్ చేయండి</string>
 </resources>

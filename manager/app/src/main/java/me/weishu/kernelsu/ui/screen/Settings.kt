@@ -1,8 +1,11 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Fence
 import androidx.compose.material.icons.filled.RemoveModerator
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -65,7 +69,10 @@ import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
 import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.getBugreportFile
+import me.weishu.kernelsu.ui.util.getFileNameFromUri
 import me.weishu.kernelsu.ui.util.shrinkModules
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * @author weishu
@@ -150,6 +157,49 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 prefs.edit().putBoolean("enable_web_debugging", it).apply()
                 enableWebDebugging = it
             }
+
+            ListItem(
+                leadingContent = {
+                    Icon(
+                        Icons.Filled.Save,
+                        stringResource(id = R.string.save_log)
+                    )
+                },
+                headlineContent = {
+                    Text(
+                       stringResource(id = R.string.save_log))
+                       },
+                modifier = Modifier.clickable {
+                    scope.launch {
+                        val bugreport = loadingDialog.withLoading {
+                            withContext(Dispatchers.IO) {
+                                getBugreportFile(context)
+                            }
+                        }
+
+                        val uri: Uri =
+                            FileProvider.getUriForFile(
+                                context,
+                                "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                bugreport
+                            )
+                        val filename = getFileNameFromUri(context , uri)
+                        val savefile = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                             type = "application/zip"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            putExtra(Intent.EXTRA_TITLE, filename)
+                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        }
+                        context.startActivity(
+                            Intent.createChooser(
+                                savefile,
+                              context.getString(R.string.save_log)
+                            )
+                        )
+                    }
+                }
+            )
 
 
             ListItem(
@@ -237,7 +287,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     }
 }
-
 @Composable
 fun UninstallItem(
     navigator: DestinationsNavigator,
