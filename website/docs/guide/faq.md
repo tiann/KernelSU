@@ -49,7 +49,7 @@ It is possible, KernelSU is backported to kernel 4.14 now; for older kernel, you
 
 ## How to integrate KernelSU for an older kernel?
 
-Please refer to following [Guide](how-to-integrate-for-non-gki).
+Please refer to the following [Guide](how-to-integrate-for-non-gki).
 
 ## Why my Android version is 13, and the kernel shows "android12-5.10"?
 
