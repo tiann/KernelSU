@@ -119,6 +119,13 @@
         "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
     },
     {
+        "maintainer": "Sreeshankar K",
+        "maintainer_link": "https://github.com/sreeshankark",
+        "kernel_name": "NeverSettle Kernel",
+        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
+        "devices": "OnePlus Nord (avicii)"
+    },
+    {
         "maintainer": "PSavarMattas",
         "maintainer_link": "https://github.com/psavarmattas",
         "kernel_name": "PSM Kernel",
