@@ -24,7 +24,7 @@ If your page contains CSS and JavaScript, you need to place it in this directory
 
 ## JavaScript API
 
-If it is just a display page, it is no different from a normal web page. More importantly, KernelSU provides a series of system API that allow you to implement the unique functions of the module.
+If it is just a display page, it is no different from a normal web page. More importantly, KernelSU provides a series of system API that allows you to implement the unique functions of the module.
 
 KernelSU provides a JavaScript library and [publishes it on npm](https://www.npmjs.com/package/kernelsu), which you can use in the JavaScript code of your web pages.
 
@@ -38,11 +38,11 @@ const { errno, stdout } = exec("getprop ro.product.model");
 
 For another example, you can make the web page display full screen, or display a toast.
 
-[API documentation](https://www.npmjs.com/package/kernelsu)
+[API documentation](https://www.npmjs.com/package/kernelsu).
 
 If you find that the existing API does not meet your needs or is inconvenient to use, you are welcome to give us suggestions [here](https://github.com/tiann/KernelSU/issues)!
 
 ## Some tips
 
-1. You can use `localStorage` normally to store some data, but it will be lost after the Manager App is uninstalled. If you need to save persistently, you can write data to some directory yourself.
-2. For simple pages, I recommend you use [parceljs](https://parceljs.org/) for packaging. It requires zero configuration and is very convenient to use. However, if you are a front-end master or have your own preferences, then just choose one you like!
+1. You can use `localStorage` normally to store some data, but it will be lost after the Manager App is uninstalled. If you need to save persistently, you can write data to a custom directory yourself.
+2. For simple pages, I recommend you use [parceljs](https://parceljs.org/) for packaging. It requires zero configuration and is very convenient to use. However, if you are a front-end master or have your own preferences, then just choose the one you like!
