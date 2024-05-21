@@ -159,7 +159,11 @@ pub fn restore(
     let workdir = tmpdir.path();
     let magiskboot = find_magiskboot(magiskboot_path, workdir)?;
 
-    let (bootimage, bootdevice) = find_boot_image(&image, false, false, false, workdir)?;
+    let kmi = get_current_kmi().unwrap_or_else(|_| String::from(""));
+
+    let skip_init = kmi.starts_with("android12-");
+
+    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir)?;
 
     println!("- Unpacking boot image");
     let status = Command::new(&magiskboot)
