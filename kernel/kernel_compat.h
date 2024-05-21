@@ -1,10 +1,10 @@
 #ifndef __KSU_H_KERNEL_COMPAT
 #define __KSU_H_KERNEL_COMPAT
 
-#include "linux/fs.h"
-#include "linux/key.h"
-#include "linux/version.h"
+#include <linux/fs.h>
+#include <linux/version.h>
 #include "ss/policydb.h"
+#include "linux/key.h"
 
 /*
  * Adapt to Huawei HISI kernel without affecting other kernels ,

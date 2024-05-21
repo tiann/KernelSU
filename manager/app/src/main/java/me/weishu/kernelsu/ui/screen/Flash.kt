@@ -27,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -46,10 +45,11 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
-import me.weishu.kernelsu.ui.util.installModule
 import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.restoreBoot
+import me.weishu.kernelsu.ui.util.uninstallPermanently
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,7 +65,6 @@ enum class FlashingStatus {
  * @author weishu
  * @date 2023/1/1.
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Destination
 fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
@@ -100,7 +99,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 logContent.append(it).append("\n")
             }, onStderr = {
                 logContent.append(it).append("\n")
-            });
+            })
         }
     }
 
@@ -174,6 +173,8 @@ sealed class FlashIt : Parcelable {
     data class FlashModule(val uri: Uri) : FlashIt()
 
     data object FlashRestore : FlashIt()
+
+    data object FlashUninstall : FlashIt()
 }
 
 fun flashIt(
@@ -191,9 +192,11 @@ fun flashIt(
             onStderr
         )
 
-        is FlashIt.FlashModule -> installModule(flashIt.uri, onFinish, onStdout, onStderr)
+        is FlashIt.FlashModule -> flashModule(flashIt.uri, onFinish, onStdout, onStderr)
 
         FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
+
+        FlashIt.FlashUninstall -> uninstallPermanently(onFinish, onStdout, onStderr)
     }
 }
 

@@ -42,10 +42,6 @@ val androidTargetCompatibility = JavaVersion.VERSION_21
 val managerVersionCode by extra(getVersionCode())
 val managerVersionName by extra(getVersionName())
 
-tasks.register<Delete>("clean") {
-    delete(rootProject.buildDir)
-}
-
 fun getGitCommitCount(): Int {
     val out = ByteArrayOutputStream()
     exec {

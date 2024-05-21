@@ -49,6 +49,13 @@
         "devices": "Poco F4: munch"
     },
     {
+        "maintainer": "Hadad",
+        "maintainer_link": "https://xdaforums.com/m/hadad.8351572/",
+        "kernel_name": "android_kernel_xiaomi_onc",
+        "kernel_link": "https://github.com/hadadarjt/android_kernel_xiaomi_onc/tree/los21-KSU/local-non-gerrit-review",
+        "devices": "Redmi 7: onclite | Redmi Y3: onc"
+    },   
+    {
         "maintainer": "HMTheBoy154",
         "maintainer_link": "https://github.com/hmtheboy154",
         "kernel_name": "Darkmatter-kernel",
@@ -110,6 +117,13 @@
         "kernel_name": "RealKing Kernel",
         "kernel_link": "https://github.com/Rohail33/Realking_kernel_sm8250",
         "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
+    },
+    {
+        "maintainer": "Sreeshankar K",
+        "maintainer_link": "https://github.com/sreeshankark",
+        "kernel_name": "NeverSettle Kernel",
+        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
+        "devices": "OnePlus Nord (avicii)"
     },
     {
         "maintainer": "PSavarMattas",
@@ -371,13 +385,6 @@
         "devices": "Google Pixel 2/2XL"
     },
     {
-        "maintainer": "Flame",
-        "maintainer_link": "https://github.com/flame-0",
-        "kernel_name": "android_kernel_xiaomi_sm8250",
-        "kernel_link": "https://github.com/vyrine/android_kernel_xiaomi_sm8250/tree/lineage-20-kernelsu",
-        "devices": "POCO F3/Redmi K40/Mi 11X (alioth)"
-    },
-    {
         "maintainer": "DawfukFR",
         "maintainer_link": "https://github.com/DawfukFR",
         "kernel_name": "kernel_oneplus_sm8250 (Stellaris-Kernel)",
@@ -518,17 +525,31 @@
         "devices": "Huawei nova 2 (pic)"
     },
     {
-        "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-a528b-n-kernelsu-v0-7-5-for-galaxy-a52s-5g.4603287/",
-        "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7325",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7325",
         "devices": "Samsung Galaxy A52s 5G (a52sxq)"
     },
     {
-        "maintainer": "BlackMesa123",
-        "maintainer_link": "https://xdaforums.com/t/kernel-m526b-br-kernelsu-v0-7-5-for-galaxy-m52-5g.4603295/",
-        "kernel_name": "android_kernel_samsung_sm7325",
-        "kernel_link": "https://github.com/BlackMesa123/android_kernel_samsung_sm7325",
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7125",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7125",
+        "devices": "Samsung Galaxy A52 4G (a52q)"
+    },
+    {
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7125",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7125",
+        "devices": "Samsung Galaxy A72 (a72q)"
+    },
+    {
+        "maintainer": "RisenID",
+        "maintainer_link": "https://github.com/RisenID",
+        "kernel_name": "kernel_samsung_ascendia_sm7325",
+        "kernel_link": "https://github.com/RisenID/kernel_samsung_ascendia_sm7325",
         "devices": "Samsung Galaxy M52 5G (m52xq)"
     },
     {
@@ -684,5 +705,12 @@
         "kernel_name": "android_kernel_lge_sm8150",
         "kernel_link": "https://github.com/Dawid2849/android_kernel_lge_sm8150",
         "devices": "LG G8 (alphaplus) / LG G8s (betalm) / LG G8X (mh2mml)"
+    },
+    {
+        "maintainer": "lyc8503",
+        "maintainer_link": "https://github.com/lyc8503",
+        "kernel_name": "kernel_xiaomi_chopin",
+        "kernel_link": "https://github.com/ChopinKernels/kernel_xiaomi_chopin_android_S",
+        "devices": "Redmi Note 10 Pro 5G (chopin) / Poco X3 GT (choping)"
     }
 ]

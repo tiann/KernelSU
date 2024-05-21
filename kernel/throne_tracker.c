@@ -1,11 +1,11 @@
-#include "linux/err.h"
-#include "linux/fs.h"
-#include "linux/list.h"
-#include "linux/slab.h"
-#include "linux/string.h"
-#include "linux/types.h"
-#include "linux/version.h"
-#include "linux/workqueue.h"
+#include <linux/err.h>
+#include <linux/fs.h>
+#include <linux/list.h>
+#include <linux/slab.h>
+#include <linux/string.h>
+#include <linux/types.h>
+#include <linux/version.h>
+#include <linux/workqueue.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -241,6 +241,7 @@ static void do_update_uid(struct work_struct *work)
 		struct uid_data *data =
 			kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
 		if (!data) {
+			filp_close(fp, 0);
 			goto out;
 		}
 
@@ -264,6 +265,7 @@ static void do_update_uid(struct work_struct *work)
 		// reset line start
 		line_start = pos;
 	}
+	filp_close(fp, 0);
 
 	// now update uid list
 	struct uid_data *np;
@@ -299,7 +301,6 @@ out:
 		list_del(&np->list);
 		kfree(np);
 	}
-	filp_close(fp, 0);
 }
 
 void track_throne()

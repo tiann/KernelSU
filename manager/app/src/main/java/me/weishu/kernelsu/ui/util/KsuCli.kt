@@ -84,7 +84,8 @@ fun execKsud(args: String, newShell: Boolean = false): Boolean {
 
 fun install() {
     val start = SystemClock.elapsedRealtime()
-    val result = execKsud("install", true)
+    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so").absolutePath
+    val result = execKsud("install --magiskboot $magiskboot", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 
@@ -126,48 +127,11 @@ fun uninstallModule(id: String): Boolean {
     return result
 }
 
-fun installModule(
-    uri: Uri,
-    onFinish: (Boolean, Int) -> Unit,
+private fun flashWithIO(
+    cmd: String,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
-): Boolean {
-    val resolver = ksuApp.contentResolver
-    with(resolver.openInputStream(uri)) {
-        val file = File(ksuApp.cacheDir, "module.zip")
-        file.outputStream().use { output ->
-            this?.copyTo(output)
-        }
-        val cmd = "module install ${file.absolutePath}"
-
-        val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-            override fun onAddElement(s: String?) {
-                onStdout(s ?: "")
-            }
-        }
-
-        val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-            override fun onAddElement(s: String?) {
-                onStderr(s ?: "")
-            }
-        }
-
-        val result = withNewRootShell {
-            newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
-        }
-        Log.i("KernelSU", "install module $uri result: $result")
-
-        file.delete()
-
-        onFinish(result.isSuccess, result.code)
-        return result.isSuccess
-    }
-}
-
-fun restoreBoot(
-    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
-    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+): Shell.Result {
 
     val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
         override fun onAddElement(s: String?) {
@@ -181,12 +145,48 @@ fun restoreBoot(
         }
     }
 
-    val result = withNewRootShell {
-        newJob().add("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot")
-            .to(stdoutCallback, stderrCallback)
-            .exec()
+    return withNewRootShell {
+        newJob().add(cmd).to(stdoutCallback, stderrCallback).exec()
     }
+}
 
+fun flashModule(
+    uri: Uri,
+    onFinish: (Boolean, Int) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+): Boolean {
+    val resolver = ksuApp.contentResolver
+    with(resolver.openInputStream(uri)) {
+        val file = File(ksuApp.cacheDir, "module.zip")
+        file.outputStream().use { output ->
+            this?.copyTo(output)
+        }
+        val cmd = "module install ${file.absolutePath}"
+        val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
+        Log.i("KernelSU", "install module $uri result: $result")
+
+        file.delete()
+
+        onFinish(result.isSuccess, result.code)
+        return result.isSuccess
+    }
+}
+
+fun restoreBoot(
+    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Boolean {
+    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+    val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot", onStdout, onStderr)
+    onFinish(result.isSuccess, result.code)
+    return result.isSuccess
+}
+
+fun uninstallPermanently(
+    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Boolean {
+    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
+    val result = flashWithIO("${getKsuDaemonPath()} uninstall --magiskboot $magiskboot", onStdout, onStderr)
     onFinish(result.isSuccess, result.code)
     return result.isSuccess
 }
@@ -265,21 +265,7 @@ fun installBoot(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     cmd += " -o $downloadsDir"
 
-    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStdout(s ?: "")
-        }
-    }
-
-    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStderr(s ?: "")
-        }
-    }
-
-    val result = withNewRootShell {
-        newJob().add("${getKsuDaemonPath()} $cmd").to(stdoutCallback, stderrCallback).exec()
-    }
+    val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
     bootFile?.delete()
@@ -414,7 +400,9 @@ fun launchApp(packageName: String) {
 
     val shell = getRootShell()
     val result =
-        shell.newJob().add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n").exec()
+        shell.newJob()
+            .add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n")
+            .exec()
     Log.i(TAG, "launch $packageName result: $result")
 }
 

@@ -38,6 +38,7 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
 import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.*
+import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
 @RootNavGraph(start = true)
 @Destination
@@ -100,13 +101,18 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 @Composable
 fun UpdateCard() {
     val context = LocalContext.current
-    val newVersion by produceState(initialValue = Triple(0, "", "")) {
-        value = withContext(Dispatchers.IO) { checkNewVersion() }
+    val latestVersionInfo = LatestVersionInfo()
+    val newVersion by produceState(initialValue = latestVersionInfo) {
+        value = withContext(Dispatchers.IO){
+            checkNewVersion()
+        }
     }
+
+
     val currentVersionCode = getManagerVersion(context).second
-    val newVersionCode = newVersion.first
-    val newVersionUrl = newVersion.second
-    val changelog = newVersion.third
+    val newVersionCode = newVersion.versionCode
+    val newVersionUrl = newVersion.downloadUrl
+    val changelog = newVersion.changelog
 
     val uriHandler = LocalUriHandler.current
     val title = stringResource(id = R.string.module_changelog)
@@ -327,7 +333,7 @@ fun LearnMoreCard() {
                 uriHandler.openUri(url)
             }
             .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column() {
+            Column {
                 Text(
                     text = stringResource(R.string.home_learn_kernelsu),
                     style = MaterialTheme.typography.titleSmall
@@ -354,7 +360,7 @@ fun DonateCard() {
                 uriHandler.openUri("https://patreon.com/weishu")
             }
             .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column() {
+            Column {
                 Text(
                     text = stringResource(R.string.home_support_title),
                     style = MaterialTheme.typography.titleSmall

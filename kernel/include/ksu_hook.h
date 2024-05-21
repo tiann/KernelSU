@@ -1,8 +1,8 @@
 #ifndef __KSU_H_KSHOOK
 #define __KSU_H_KSHOOK
 
-#include "linux/fs.h"
-#include "linux/types.h"
+#include <linux/fs.h>
+#include <linux/types.h>
 
 // For sucompat
 

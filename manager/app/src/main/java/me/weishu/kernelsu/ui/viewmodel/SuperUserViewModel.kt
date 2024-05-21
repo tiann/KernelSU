@@ -107,7 +107,7 @@ class SuperUserViewModel : ViewModel() {
             }
         }
 
-        val intent = Intent(ksuApp, KsuService::class.java);
+        val intent = Intent(ksuApp, KsuService::class.java)
 
         val task = KsuService.bindOrTask(
             intent,
@@ -119,7 +119,7 @@ class SuperUserViewModel : ViewModel() {
     }
 
     private fun stopKsuService() {
-        val intent = Intent(ksuApp, KsuService::class.java);
+        val intent = Intent(ksuApp, KsuService::class.java)
         KsuService.stop(intent)
     }
 
