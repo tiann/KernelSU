@@ -6,9 +6,12 @@ import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,25 +27,33 @@ import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Fence
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
@@ -78,6 +89,7 @@ import java.time.format.DateTimeFormatter
  * @author weishu
  * @date 2023/1/1.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
@@ -158,49 +170,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 enableWebDebugging = it
             }
 
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        Icons.Filled.Save,
-                        stringResource(id = R.string.save_log)
-                    )
-                },
-                headlineContent = {
-                    Text(
-                       stringResource(id = R.string.save_log))
-                       },
-                modifier = Modifier.clickable {
-                    scope.launch {
-                        val bugreport = loadingDialog.withLoading {
-                            withContext(Dispatchers.IO) {
-                                getBugreportFile(context)
-                            }
-                        }
-
-                        val uri: Uri =
-                            FileProvider.getUriForFile(
-                                context,
-                                "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                bugreport
-                            )
-                        val filename = getFileNameFromUri(context , uri)
-                        val savefile = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                            addCategory(Intent.CATEGORY_OPENABLE)
-                             type = "application/zip"
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            putExtra(Intent.EXTRA_TITLE, filename)
-                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        }
-                        context.startActivity(
-                            Intent.createChooser(
-                                savefile,
-                              context.getString(R.string.save_log)
-                            )
-                        )
-                    }
-                }
-            )
-
+            var showBottomsheet by remember { mutableStateOf(false) }
 
             ListItem(
                 leadingContent = {
@@ -211,34 +181,127 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 },
                 headlineContent = { Text(stringResource(id = R.string.send_log)) },
                 modifier = Modifier.clickable {
-                    scope.launch {
-                        val bugreport = loadingDialog.withLoading {
-                            withContext(Dispatchers.IO) {
-                                getBugreportFile(context)
-                            }
-                        }
-
-                        val uri: Uri =
-                            FileProvider.getUriForFile(
-                                context,
-                                "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                bugreport
-                            )
-
-                        val shareIntent = Intent(Intent.ACTION_SEND)
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-                        shareIntent.setDataAndType(uri, "application/zip")
-                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-                        context.startActivity(
-                            Intent.createChooser(
-                                shareIntent,
-                                context.getString(R.string.send_log)
-                            )
-                        )
-                    }
+                    showBottomsheet = true
                 }
             )
+            if (showBottomsheet){
+                ModalBottomSheet(
+                    onDismissRequest = { showBottomsheet = false },
+                    content = {
+                        Row(modifier = Modifier.padding(10.dp)
+                            .align(Alignment.CenterHorizontally)
+
+                        ) {
+                            Box{
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
+                                        .clickable {
+                                            scope.launch {
+                                                val bugreport = loadingDialog.withLoading {
+                                                    withContext(Dispatchers.IO) {
+                                                        getBugreportFile(context)
+                                                    }
+                                                }
+
+                                                val uri: Uri =
+                                                    FileProvider.getUriForFile(
+                                                        context,
+                                                        "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                                        bugreport
+                                                    )
+                                                val filename = getFileNameFromUri(context , uri)
+                                                val savefile = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                                    addCategory(Intent.CATEGORY_OPENABLE)
+                                                    type = "application/zip"
+                                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                                    putExtra(Intent.EXTRA_TITLE, filename)
+                                                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                                }
+                                                context.startActivity(
+                                                    Intent.createChooser(
+                                                        savefile,
+                                                        context.getString(R.string.save_log)
+                                                    )
+                                                )
+                                            }
+                                        }
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Save,
+                                        contentDescription = null,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                    Text(
+                                        text = stringResource(id = R.string.save_log),
+                                        modifier = Modifier.padding(top = 16.dp),
+                                        textAlign = TextAlign.Center.also {
+                                            LineHeightStyle(
+                                                alignment = LineHeightStyle.Alignment.Center,
+                                                trim = LineHeightStyle.Trim.None
+                                            )
+                                        }
+
+                                    )
+                                }
+
+                            }
+                            Box{
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
+                                        .clickable {
+                                            scope.launch {
+                                                val bugreport = loadingDialog.withLoading {
+                                                    withContext(Dispatchers.IO) {
+                                                        getBugreportFile(context)
+                                                    }
+                                                }
+
+                                                val uri: Uri =
+                                                    FileProvider.getUriForFile(
+                                                        context,
+                                                        "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                                        bugreport
+                                                    )
+
+                                                val shareIntent = Intent(Intent.ACTION_SEND)
+                                                shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+                                                shareIntent.setDataAndType(uri, "application/zip")
+                                                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                                                context.startActivity(
+                                                    Intent.createChooser(
+                                                        shareIntent,
+                                                        context.getString(R.string.send_log)
+                                                    )
+                                                )
+                                            }
+                                        }
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Share,
+                                        contentDescription = null,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                    Text(
+                                        text = stringResource(id = R.string.send_log),
+                                        modifier = Modifier.padding(top = 16.dp),
+                                        textAlign = TextAlign.Center.also {
+                                            LineHeightStyle(
+                                                alignment = LineHeightStyle.Alignment.Center,
+                                                trim = LineHeightStyle.Trim.None
+                                            )
+                                        }
+
+                                    )
+                                }
+
+                            }
+                        }
+                    }
+                )
+
+
+            }
 
             val shrink = stringResource(id = R.string.shrink_sparse_image)
             val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
