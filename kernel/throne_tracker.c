@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
-#include <linux/workqueue.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -16,8 +15,7 @@
 
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
-#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
-static struct work_struct ksu_update_uid_work;
+#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
 
 struct uid_data {
 	struct list_head list;
@@ -277,14 +275,13 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 	return exist;
 }
 
-static void do_update_uid(struct work_struct *work)
+void track_throne()
 {
 	struct file *fp =
 		ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("do_update_uid, open " SYSTEM_PACKAGES_LIST_PATH
-		       " failed: %ld\n",
-		       PTR_ERR(fp));
+		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
+		       __func__, PTR_ERR(fp));
 		return;
 	}
 
@@ -371,14 +368,9 @@ out:
 	}
 }
 
-void track_throne()
-{
-	ksu_queue_work(&ksu_update_uid_work);
-}
-
 void ksu_throne_tracker_init()
 {
-	INIT_WORK(&ksu_update_uid_work, do_update_uid);
+	// nothing to do
 }
 
 void ksu_throne_tracker_exit()
