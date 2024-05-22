@@ -102,6 +102,14 @@ struct data_path {
 	struct list_head list;
 };
 
+struct apk_path_hash {
+	unsigned int hash;
+	bool exists;
+	struct list_head list;
+};
+
+static struct list_head apk_path_hash_list = LIST_HEAD_INIT(apk_path_hash_list);
+
 struct my_dir_context {
 	struct dir_context ctx;
 	struct list_head *data_path_list;
@@ -163,12 +171,33 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		list_add_tail(&data->list, my_ctx->data_path_list);
 	} else {
 		if ((namelen == 8) && (strncmp(name, "base.apk", namelen) == 0)) {
+			struct apk_path_hash *pos, *n;
+			unsigned int hash = full_name_hash(NULL, dirpath, strlen(dirpath));
+
+			list_for_each_entry(pos, &apk_path_hash_list, list) {
+				if (hash == pos->hash) {
+					pos->exists = true;
+					return FILLDIR_ACTOR_CONTINUE;
+				}
+			}
+
 			bool is_manager = is_manager_apk(dirpath);
-			pr_info("Found base.apk at path: %s, is_manager: %d\n",
+			pr_info("Found new base.apk at path: %s, is_manager: %d\n",
 				dirpath, is_manager);
 			if (is_manager) {
 				crown_manager(dirpath, my_ctx->private_data);
 				*my_ctx->stop = 1;
+
+				// Manager found, clear APK cache list
+				list_for_each_entry_safe(pos, n, &apk_path_hash_list, list) {
+					list_del(&pos->list);
+					kfree(pos);
+				}
+			} else {
+				struct apk_path_hash *apk_data = kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
+				apk_data->hash = hash;
+				apk_data->exists = true;
+				list_add_tail(&apk_data->list, &apk_path_hash_list);
 			}
 		}
 	}
@@ -181,6 +210,12 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 	int i, stop = 0;
 	struct list_head data_path_list;
 	INIT_LIST_HEAD(&data_path_list);
+
+	// Initialize APK cache list
+	struct apk_path_hash *pos, *n;
+	list_for_each_entry(pos, &apk_path_hash_list, list) {
+		pos->exists = false;
+	}
 
 	// First depth
 	struct data_path data;
@@ -214,6 +249,14 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 			list_del(&pos->list);
 			if (pos != &data)
 				kfree(pos);
+		}
+	}
+
+	// Remove stale cached APK entries
+	list_for_each_entry_safe(pos, n, &apk_path_hash_list, list) {
+		if (!pos->exists) {
+			list_del(&pos->list);
+			kfree(pos);
 		}
 	}
 }
