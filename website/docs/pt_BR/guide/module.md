@@ -193,16 +193,16 @@ O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o Mo
 #### Variáveis
 
 - `KSU` (bool): uma variável para marcar que o script está sendo executado no ambiente KernelSU, e o valor desta variável sempre será `true`. Você pode usá-lo para distinguir entre KernelSU e Magisk.
-- `KSU_VER` (string): a string da versão do KernelSU atualmente instalado (por exemplo: `v0.4.0`).
-- `KSU_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do usuário (por exemplo: `10672`).
-- `KSU_KERNEL_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do kernel (por exemplo: `10672`).
+- `KSU_VER` (string): a string da versão do KernelSU atualmente instalado (ex.: `v0.4.0`).
+- `KSU_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do usuário (ex.: `10672`).
+- `KSU_KERNEL_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do kernel (ex.: `10672`).
 - `BOOTMODE` (bool): sempre será `true` no KernelSU.
 - `MODPATH` (path): o caminho onde os arquivos do seu módulo devem ser instalados.
 - `TMPDIR` (path): um lugar onde você pode armazenar arquivos temporariamente.
 - `ZIPFILE` (path): ZIP de instalação do seu módulo.
 - `ARCH` (string): a arquitetura da CPU do dispositivo. O valor é `arm`, `arm64`, `x86` ou `x64`.
 - `IS64BIT` (bool): `true` se `$ARCH` for `arm64` ou `x64`.
-- `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo: `23` para Android 6.0).
+- `API` (int): o nível da API (versão do Android) do dispositivo (ex.: `23` para Android 6.0).
 
 ::: warning AVISO
 No KernelSU, `MAGISK_VER_CODE` é sempre `25200` e `MAGISK_VER` é sempre `v25.2`. Por favor, não use essas duas variáveis ​​para determinar se ele está sendo executado no KernelSU ou não.
