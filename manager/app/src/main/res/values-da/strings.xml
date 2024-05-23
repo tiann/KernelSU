@@ -79,4 +79,5 @@
     <string name="profile_selinux_rules">Regler</string>
     <string name="restart_app">Genstart</string>
     <string name="require_kernel_version">Den nuværende KernelSU version %d er for lav til manageren for at fungere ordentligt. Opgrader til version %d eller højere!</string>
+    <string name="save_log">Gem Logfiler</string>
 </resources>

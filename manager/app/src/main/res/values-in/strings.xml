@@ -131,4 +131,5 @@
     <string name="selected_lkm">LKM dipilih: %s</string>
     <string name="flashing">Pasang</string>
     <string name="flash_failed">Pemasangan Gagal</string>
+    <string name="save_log">Simpan Log</string>
 </resources>
