@@ -8,8 +8,8 @@ First, you should be able to build a bootable kernel from kernel source code. If
 
 If you can build a bootable kernel, there are two ways to integrate KernelSU to the kernel source code:
 
-1. Automatically with `kprobe`.
-2. Manually.
+1. Automatically with `kprobe`
+2. Manually
 
 ## Integrate with kprobe
 
