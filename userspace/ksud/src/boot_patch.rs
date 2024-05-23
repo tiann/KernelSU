@@ -321,7 +321,8 @@ fn do_patch(
 
     let skip_init = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir)?;
+    let (bootimage, bootdevice) =
+        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir)?;
 
     let bootimage = bootimage.display().to_string();
 
