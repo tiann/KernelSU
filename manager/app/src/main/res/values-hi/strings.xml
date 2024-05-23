@@ -80,4 +80,5 @@
     <string name="about_source_code">%1$s पर स्रोत कोड देखें<br/>हमारे %2$s चैनल से जुड़ें</string>
     <string name="home_manager_version">मैनेजर वर्जन</string>
     <string name="new_version_available">नया वर्जन: %s उपलब्ध है,अपग्रेड के लिए क्लिक करें</string>
+    <string name="save_log">लॉग सहेजें</string>
 </resources>

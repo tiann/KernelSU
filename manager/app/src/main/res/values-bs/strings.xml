@@ -79,4 +79,5 @@
     <string name="profile_template">Šablon</string>
     <string name="profile_custom">Prilagođeno</string>
     <string name="profile_name">Naziv profila</string>
+    <string name="save_log">Sačuvaj Dnevnike</string>
 </resources>

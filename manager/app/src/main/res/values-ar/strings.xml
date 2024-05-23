@@ -130,4 +130,5 @@
     <string name="selected_lkm">صورة lkm المحددة: %s</string>
     <string name="settings_restore_stock_image_message">استعادة صورة المصنع المخزنة (في حالة وجود نسخة احتياطية)، والتي تُستخدم عادة قبل OTA؛ إذا كنت بحاجة إلى إلغاء تثبيت KernelSU، فيرجى استخدام \"إلغاء التثبيت الدائم\".</string>
     <string name="settings_uninstall_temporary_message">قم بإلغاء تثبيت KernelSU مؤقتًا، واستعد إلى حالته الأصلية بعد إعادة التشغيل التالية.</string>
+    <string name="save_log">حفظ السجلات</string>
 </resources>
