@@ -131,4 +131,6 @@
     <string name="flash_failed">Flash failed</string>
     <string name="selected_lkm">Selected lkm: %s</string>
     <string name="save_log">Save Logs</string>
+    <string name="save_log_to_download">Download Logs</string>
+    <string name="save_log_to_download_success">The log has been saved to the download directory</string>
 </resources>

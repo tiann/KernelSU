@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
+import android.os.Environment
 import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Fence
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.BottomSheetScaffold
@@ -82,6 +84,8 @@ import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.ui.util.getFileNameFromUri
 import me.weishu.kernelsu.ui.util.shrinkModules
+import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -188,13 +192,15 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 ModalBottomSheet(
                     onDismissRequest = { showBottomsheet = false },
                     content = {
-                        Row(modifier = Modifier.padding(10.dp)
+                        Row(modifier = Modifier
+                            .padding(10.dp)
                             .align(Alignment.CenterHorizontally)
 
                         ) {
                             Box{
                                 Column(
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                         .clickable {
                                             scope.launch {
                                                 val bugreport = loadingDialog.withLoading {
@@ -209,14 +215,16 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                                         "${BuildConfig.APPLICATION_ID}.fileprovider",
                                                         bugreport
                                                     )
-                                                val filename = getFileNameFromUri(context , uri)
-                                                val savefile = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                                                    addCategory(Intent.CATEGORY_OPENABLE)
-                                                    type = "application/zip"
-                                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                                    putExtra(Intent.EXTRA_TITLE, filename)
-                                                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                                }
+                                                val filename = getFileNameFromUri(context, uri)
+                                                val savefile =
+                                                    Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                                        addCategory(Intent.CATEGORY_OPENABLE)
+                                                        type = "application/zip"
+                                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                                        putExtra(Intent.EXTRA_TITLE, filename)
+                                                        flags =
+                                                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                                    }
                                                 context.startActivity(
                                                     Intent.createChooser(
                                                         savefile,
@@ -240,14 +248,67 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                                 trim = LineHeightStyle.Trim.None
                                             )
                                         }
-
                                     )
                                 }
-
                             }
                             Box{
                                 Column(
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .clickable {
+                                            scope.launch {
+                                                val bugreport = loadingDialog.withLoading {
+                                                    withContext(Dispatchers.IO) {
+                                                        getBugreportFile(context)
+                                                    }
+                                                }
+                                                val uri: Uri =
+                                                    FileProvider.getUriForFile(
+                                                        context,
+                                                        "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                                        bugreport
+                                                    )
+                                                val filename = getFileNameFromUri(context, uri)!!
+                                                val downloadDir =
+                                                    Environment.getExternalStoragePublicDirectory(
+                                                        Environment.DIRECTORY_DOWNLOADS
+                                                    )
+                                                if (!downloadDir.exists()) downloadDir.mkdirs()
+                                                val targetFile = File(downloadDir, filename)
+                                                bugreport.inputStream().use { input ->
+                                                    FileOutputStream(targetFile).use { output ->
+                                                        input.copyTo(output)
+                                                    }
+                                                }
+                                                Toast.makeText(
+                                                    context,
+                                                    context.getString(R.string.save_log_to_download_success),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                ) {
+                                    Icon(
+                                        Icons.Filled.SaveAlt,
+                                        contentDescription = null,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                    Text(
+                                        text = stringResource(id = R.string.save_log_to_download),
+                                        modifier = Modifier.padding(top = 16.dp),
+                                        textAlign = TextAlign.Center.also {
+                                            LineHeightStyle(
+                                                alignment = LineHeightStyle.Alignment.Center,
+                                                trim = LineHeightStyle.Trim.None
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                            Box{
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                         .clickable {
                                             scope.launch {
                                                 val bugreport = loadingDialog.withLoading {
