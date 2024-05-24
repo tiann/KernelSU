@@ -195,7 +195,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         Row(modifier = Modifier
                             .padding(10.dp)
                             .align(Alignment.CenterHorizontally)
-
                         ) {
                             Box{
                                 Column(
@@ -352,16 +351,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                                 trim = LineHeightStyle.Trim.None
                                             )
                                         }
-
                                     )
                                 }
-
                             }
                         }
                     }
                 )
-
-
             }
 
             val shrink = stringResource(id = R.string.shrink_sparse_image)
