@@ -547,6 +547,10 @@ fn find_boot_image(
         ensure!(image.exists(), "boot image not found");
         bootimage = std::fs::canonicalize(image)?;
     } else {
+        if cfg!(not(target_os = "android")) {
+            println!("- Current OS is not android, refusing auto bootimage/bootdevice detection");
+            bail!("please specify a boot image");
+        }
         let mut slot_suffix =
             utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
 

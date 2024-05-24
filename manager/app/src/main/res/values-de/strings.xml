@@ -117,4 +117,5 @@
     <string name="open">Öffnen</string>
     <string name="settings_check_update">Updates suchen</string>
     <string name="settings_check_update_summary">Automatisch nach Updates suchen beim Öffnen der App</string>
+    <string name="save_log">Protokolle Speichern</string>
 </resources>

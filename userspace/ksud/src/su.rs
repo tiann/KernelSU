@@ -12,8 +12,6 @@ use crate::{
 };
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use crate::pty::prepare_pty;
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process::getuid,
     thread::{set_thread_res_gid, set_thread_res_uid, Gid, Uid},
@@ -140,7 +138,6 @@ pub fn root_shell() -> Result<()> {
         "Specify a supplementary group. The first specified supplementary group is also used as a primary group if the option -g is not specified.",
         "GROUP",
     );
-    opts.optflag("", "no-pty", "Do not allocate a new pseudo terminal.");
 
     // Replace -cn with -z, -mm with -M for supporting getopt_long
     let args = args
@@ -266,13 +263,6 @@ pub fn root_shell() -> Result<()> {
     // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
     if PathBuf::from(defs::KSURC_PATH).exists() && env::var("ENV").is_err() {
         command = command.env("ENV", defs::KSURC_PATH);
-    }
-
-    #[cfg(target_os = "android")]
-    if !matches.opt_present("no-pty") {
-        if let Err(e) = prepare_pty() {
-            log::error!("failed to prepare pty: {:?}", e);
-        }
     }
 
     // escape from the current cgroup and become session leader

@@ -34,4 +34,5 @@
     <string name="home_not_installed">Tidak terpasang</string>
     <string name="reboot_bootloader">Mulakan semula ke bootloader</string>
     <string name="home_manager_version">Versi Manager</string>
+    <string name="save_log">Simpan Log</string>
 </resources>

@@ -17,7 +17,7 @@
     <string name="home_superuser_count">Superlietotāji: %d</string>
     <string name="home_module_count">Moduļi: %d</string>
     <string name="home_unsupported">Neatbalstīts</string>
-    <string name="home_unsupported_reason">KernelSU tagad atbalsta tikai GKI kodolus</string>
+    <string name="home_unsupported_reason">KernelSU atbalsta tikai GKI kodolus</string>
     <string name="home_kernel">Kodols</string>
     <string name="home_manager_version">Pārvaldnieka versija</string>
     <string name="home_fingerprint">Pirkstu nospiedums</string>
@@ -51,7 +51,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Uzzināt, kā instalēt KernelSU un izmantot moduļus</string>
     <string name="home_support_title">Atbalsti mūs</string>
-    <string name="about_source_code">Skatiet avota kodu vietnē %1$s<br/>Pievienojies mūsu %2$s kanālam</string>
+    <string name="about_source_code">Skatiet avota kodu vietnē %1$s<br/> Pievienojies mūsu %2$s kanālam</string>
     <string name="profile_default">Noklusējums</string>
     <string name="profile_template">Veidne</string>
     <string name="profile_custom">Pielāgots</string>
@@ -101,4 +101,34 @@
     <string name="profile_groups">Grupas</string>
     <string name="profile_namespace_global">Globāli</string>
     <string name="require_kernel_version">Pašreizējā KernelSU versija %d ir pārāk zema, lai pārvaldnieks darbotos pareizi. Lūdzu, atjauniniet uz versiju %d vai jaunāku!</string>
+    <string name="enable_web_debugging">Iespējot WebView atkļūdošanu</string>
+    <string name="select_file_tip">Ieteicams %1$s nodalījuma attēls</string>
+    <string name="install_next">Nākamais</string>
+    <string name="profile_namespace_inherited">Mantots</string>
+    <string name="select_file">Izvēlieties failu</string>
+    <string name="install_inactive_slot">Instalēt neaktīvajā slotā (pēc OTA)</string>
+    <string name="install_inactive_slot_warning">Pēc restartēšanas jūsu ierīce tiks **PIESPIESTI** palaista pašreizējā neaktīvajā slotā!
+\nIzmantojiet šo opciju tikai pēc OTA pabeigšanas
+\nTurpināt?</string>
+    <string name="direct_install">Tiešā instalēšana (Ieteicams)</string>
+    <string name="settings_uninstall">Atinstalēt</string>
+    <string name="settings_uninstall_temporary">Pagaidu atinstalēšana</string>
+    <string name="settings_restore_stock_image">Atjaunot oriģinālo attēlu</string>
+    <string name="settings_uninstall_temporary_message">Īslaicīgi atinstalēt KernelSU, pēc nākamās restartēšanas atjaunot sākotnējo stāvokli.</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (saknes un visu moduļu) pilnīga atinstalēšana.</string>
+    <string name="settings_restore_stock_image_message">Atjaunojot rūpnīcas attēlu (ja ir dublējums), ko parasti izmanto pirms OTA; ja nepieciešams atinstalēt KernelSU, lūdzu, izmantojiet \"Neatgriezeniski atinstalēt\".</string>
+    <string name="selected_lkm">Izvēlētais lkm: %s</string>
+    <string name="grant_root_failed">Neizdevās piešķirt sakni!</string>
+    <string name="open">Atvērt</string>
+    <string name="settings_check_update">Pārbaudīt atjauninājumus</string>
+    <string name="settings_check_update_summary">Automātiski pārbaudīt atjauninājumus atverot aplikāciju</string>
+    <string name="enable_web_debugging_summary">Var izmantot WebUI atkļūdošanai, lūdzu, izmantot tikai tad, kad tas ir nepieciešams.</string>
+    <string name="select_kmi">Izvēlieties KMI</string>
+    <string name="settings_uninstall_permanent">Neatgriezeniski atinstalēt</string>
+    <string name="flashing">Instalē</string>
+    <string name="flash_success">Instalēts veiksmīgi</string>
+    <string name="flash_failed">Instalēšana neizdevās</string>
+    <string name="shrink_sparse_image">Samazināt reto attēlu</string>
+    <string name="shrink_sparse_image_message">Mainīt retā attēla izmēru, kurā atrodas modulis, līdz tā faktiskajam izmēram. Ņemiet vērā, ka tas var izraisīt moduļa neparastu darbību, tāpēc, lūdzu, izmantojiet tikai nepieciešamības gadījumā (piemēram, dublēšanai)</string>
+    <string name="save_log">Išsaugoti Žurnalus</string>
 </resources>

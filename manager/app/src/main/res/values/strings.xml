@@ -130,4 +130,5 @@
     <string name="flash_success">Flash success</string>
     <string name="flash_failed">Flash failed</string>
     <string name="selected_lkm">Selected lkm: %s</string>
+    <string name="save_log">Save Logs</string>
 </resources>

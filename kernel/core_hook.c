@@ -219,6 +219,14 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		return 0;
 	}
 
+	// TODO: find it in throne tracker!
+	uid_t current_uid_val = current_uid().val;
+	uid_t manager_uid = ksu_get_manager_uid();
+	if (current_uid_val != manager_uid &&
+	    current_uid_val % 100000 == manager_uid) {
+		ksu_set_manager_uid(current_uid_val);
+	}
+
 	bool from_root = 0 == current_uid().val;
 	bool from_manager = is_manager();
 

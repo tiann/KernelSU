@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Environment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
 /**
  * @author weishu
@@ -61,9 +62,10 @@ fun download(
     downloadManager.enqueue(request)
 }
 
-fun checkNewVersion(): Triple<Int, String, String> {
+fun checkNewVersion(): LatestVersionInfo {
     val url = "https://api.github.com/repos/tiann/KernelSU/releases/latest"
-    val defaultValue = Triple(0, "", "")
+    // default null value if failed
+    val defaultValue = LatestVersionInfo()
     runCatching {
         okhttp3.OkHttpClient().newCall(okhttp3.Request.Builder().url(url).build()).execute()
             .use { response ->
@@ -88,7 +90,11 @@ fun checkNewVersion(): Triple<Int, String, String> {
                     val versionCode = matchResult.groupValues[2].toInt()
                     val downloadUrl = asset.getString("browser_download_url")
 
-                    return Triple(versionCode, downloadUrl, changelog)
+                    return LatestVersionInfo(
+                        versionCode,
+                        downloadUrl,
+                        changelog
+                    )
                 }
 
             }

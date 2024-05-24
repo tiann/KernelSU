@@ -49,6 +49,13 @@
         "devices": "Poco F4: munch"
     },
     {
+        "maintainer": "Hadad",
+        "maintainer_link": "https://xdaforums.com/m/hadad.8351572/",
+        "kernel_name": "android_kernel_xiaomi_onc",
+        "kernel_link": "https://github.com/hadadarjt/android_kernel_xiaomi_onc/tree/los21-KSU/local-non-gerrit-review",
+        "devices": "Redmi 7: onclite | Redmi Y3: onc"
+    },   
+    {
         "maintainer": "HMTheBoy154",
         "maintainer_link": "https://github.com/hmtheboy154",
         "kernel_name": "Darkmatter-kernel",
@@ -110,6 +117,13 @@
         "kernel_name": "RealKing Kernel",
         "kernel_link": "https://github.com/Rohail33/Realking_kernel_sm8250",
         "devices": "Apollo(Redmi K30S Ultra/Mi 10T/Mi 10T Pro)\uff0cAlioth(Redmi K40/POCO F3/Mi 11X)\uff0cMunch(Redmi K40S/POCO F4), both MIUI and AOSP."
+    },
+    {
+        "maintainer": "Sreeshankar K",
+        "maintainer_link": "https://github.com/sreeshankark",
+        "kernel_name": "NeverSettle Kernel",
+        "kernel_link": "https://github.com/sreeshankark/android_kernel_oneplus_avicii",
+        "devices": "OnePlus Nord (avicii)"
     },
     {
         "maintainer": "PSavarMattas",

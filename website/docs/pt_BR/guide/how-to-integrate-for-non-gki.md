@@ -264,6 +264,8 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
+### Modo de Segurança
+
 Para ativar o Modo de Segurança integrado do KernelSU, você também deve modificar `input_handle_event` em `drivers/input/input.c`:
 
 :::tip DICA
@@ -295,6 +297,38 @@ index 45306f9ef247..815091ebfca4 100755
  
  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
  		add_input_randomness(type, code, value);
+```
+
+:::info ENTRANDO NO MODO DE SEGURANÇA ACIDENTALMENTE?
+Se você estiver usando a integração manual e não desabilitar `CONFIG_KPROBES`, o usuário poderá acionar o Modo de Segurança pressionando o botão de diminuir volume após a inicialização! Portanto, se estiver usando a integração manual, você precisa desabilitar `CONFIG_KPROBES`!
+:::
+
+### Falha ao executar `pm` no terminal?
+
+Você deve modificar `fs/devpts/inode.c`. Referência:
+
+```diff
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 32f6f1c68..d69d8eca2 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -602,6 +602,8 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+        return dentry;
+ }
+
++extern int ksu_handle_devpts(struct inode*);
++
+ /**
+  * devpts_get_priv -- get private data for a slave
+  * @pts_inode: inode of the slave
+@@ -610,6 +612,7 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+  */
+ void *devpts_get_priv(struct dentry *dentry)
+ {
++       ksu_handle_devpts(dentry->d_inode);
+        if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
+                return NULL;
+        return dentry->d_fsdata;
 ```
 
 ### Como portar path_umount
@@ -347,7 +381,3 @@ Você pode fazer com que o recurso "Desmontar módulos" funcione em kernels pré
 ```
 
 Finalmente, construa seu kernel novamente, e então, o KernelSU deve funcionar bem.
-
-:::info ENTRANDO NO MODO DE SEGURANÇA ACIDENTALMENTE?
-Se você estiver usando a integração manual e não desabilitar `CONFIG_KPROBES`, o usuário poderá acionar o Modo de Segurança pressionando o botão de diminuir volume após a inicialização! Portanto, se estiver usando a integração manual, você precisa desabilitar `CONFIG_KPROBES`!
-:::

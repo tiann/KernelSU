@@ -1,15 +1,15 @@
-# How to integrate KernelSU for non GKI kernels?
+# How to integrate KernelSU for non-GKI kernels?
 
-KernelSU can be integrated into non GKI kernels, and was backported to 4.14 and below.
+KernelSU can be integrated into non-GKI kernels, and was backported to 4.14 and below.
 
-Due to the fragmentization of non GKI kernels, we do not have a uniform way to build it, so we can not provide non GKI boot images. But you can build the kernel yourself with KernelSU integrated.
+Due to the fragmentization of non-GKI kernels, we do not have a universal way to build it, so we cannot provide non-GKI boot images. But you can build the kernel yourself with KernelSU integrated.
 
 First, you should be able to build a bootable kernel from kernel source code. If the kernel is not open source, then it is difficult to run KernelSU for your device.
 
 If you can build a bootable kernel, there are two ways to integrate KernelSU to the kernel source code:
 
-1. Automatically with `kprobe`
-2. Manually
+1. Automatically with `kprobe`.
+2. Manually.
 
 ## Integrate with kprobe
 
@@ -23,17 +23,17 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 Then, you should check if *kprobe* is enabled in your kernel config, if it is not, please add these configs to it:
 
-```
+```txt
 CONFIG_KPROBES=y
 CONFIG_HAVE_KPROBES=y
 CONFIG_KPROBE_EVENTS=y
 ```
 
-And build your kernel again, KernelSU should works well.
+And now when you re-build your kernel, KernelSU should work well.
 
-If you find that KPROBES is still not activated, you can try enabling `CONFIG_MODULES`. (If it still doesn't take effect, use `make menuconfig` to search for other dependencies of KPROBES)
+If you find that KPROBES is still not activated, you can try enabling `CONFIG_MODULES`. If it still doesn't take effect, use `make menuconfig` to search for other dependencies of KPROBES.
 
-But if you encounter a boot loop when integrated KernelSU, it is maybe *kprobe is broken in your kernel*, you should fix the kprobe bug or use the second way.
+But if you encounter a boot loop when integrated KernelSU, it might be because *kprobe is broken in your kernel*, which means that you should fix the kprobe bug or use another way.
 
 :::tip How to check if kprobe is broken？
 
@@ -47,7 +47,7 @@ If your kernel is older than 5.9, you should backport `path_umount` to `fs/names
 
 ## Manually modify the kernel source
 
-If kprobe does not work in your kernel (may be an upstream or kernel bug below 4.8), then you can try this way:
+If kprobe does not work in your kernel (may be an upstream or kernel bug below 4.8), then you can try the following:
 
 First, add KernelSU to your kernel source tree:
 
@@ -67,14 +67,14 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 :::
 
-Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs` or in other cases `arch/arm64/configs/vendor/your_defconfig`. For example in your defconfig, Enable `CONFIG_KSU` with y to enable, or n to disable. Your path will be something like:
-`arch/arm64/configs/...` 
-```
+Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs` or in other cases `arch/arm64/configs/vendor/your_defconfig`. For whichever defconfig you're using, make sure to enable `CONFIG_KSU` with `y` to enable or `n` to disable it. For example, in case you chose to enable it, you defconfig should contain the following string:
+
+```txt
 # KernelSU
 CONFIG_KSU=y
 ```
 
-Then, add KernelSU calls to the kernel source, here are some patches to refer:
+Then, add KernelSU calls to the kernel source, here are some patches for reference:
 
 ::: code-group
 
@@ -200,12 +200,12 @@ index 376543199b5a..82adcef03ecc 100644
 
 You should find the four functions in kernel source:
 
-1. do_faccessat, usually in `fs/open.c`
-2. do_execveat_common, usually in `fs/exec.c`
-3. vfs_read, usually in `fs/read_write.c`
-4. vfs_statx, usually in `fs/stat.c`
+1. `do_faccessat`, usually in `fs/open.c`
+2. `do_execveat_common`, usually in `fs/exec.c`
+3. `vfs_read`, usually in `fs/read_write.c`
+4. `vfs_statx`, usually in `fs/stat.c`
 
-If your kernel does not have the `vfs_statx`, use `vfs_fstatat` instead:
+If your kernel does not have the `vfs_statx` function, use `vfs_fstatat` instead:
 
 ```diff
 diff --git a/fs/stat.c b/fs/stat.c
@@ -264,10 +264,12 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
-To enable KernelSU's builtin SafeMode, You should also modify `input_handle_event` in `drivers/input/input.c`:
+### Safe Mode
+
+To enable KernelSU's built-in SafeMode, you should additionally modify `input_handle_event` function in `drivers/input/input.c`:
 
 :::tip
-It is strongly recommended to enable this feature, it is very helpful to prevent bootloops!
+It is strongly recommended to enable this feature, it is very helpful in preventing bootloops!
 :::
 
 ```diff
@@ -295,6 +297,38 @@ index 45306f9ef247..815091ebfca4 100755
  
  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
  		add_input_randomness(type, code, value);
+```
+
+:::info Entering safe mode accidentally?
+If you use manual integration and do not disable `CONFIG_KPROBES`, then the user may trigger safe mode by pressing the volume down button after booting! Therefore if using manual integration you need to disable `CONFIG_KPROBES`!
+:::
+
+### Failed to execute `pm` in terminal?
+
+You should modify `fs/devpts/inode.c`, reference:
+
+```diff
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 32f6f1c68..d69d8eca2 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -602,6 +602,8 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+        return dentry;
+ }
+
++extern int ksu_handle_devpts(struct inode*);
++
+ /**
+  * devpts_get_priv -- get private data for a slave
+  * @pts_inode: inode of the slave
+@@ -610,6 +612,7 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+  */
+ void *devpts_get_priv(struct dentry *dentry)
+ {
++       ksu_handle_devpts(dentry->d_inode);
+        if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
+                return NULL;
+        return dentry->d_fsdata;
 ```
 
 ### How to backport path_umount
@@ -347,7 +381,3 @@ You can get module umount feature working on pre-GKI kernels by manually backpor
 ```
 
 Finally, build your kernel again, KernelSU should work well.
-
-:::info Entering safe mode accidiently?
-If you use manual integration and do not disable `CONFIG_KPROBES`, then the user may trigger safe mode by pressing the volume down button after booting! Therefore if using manual integration you need to disable `CONFIG_KPROBES`!
-:::
