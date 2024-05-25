@@ -44,7 +44,7 @@ O Modo de Segurança integrado é implementado no kernel, portanto não há poss
 
 ### Módulos maliciosos
 
-Se os métodos acima não conseguirem recuperar seu dispositivo, é altamente provável que o módulo que você instalou tenha operações maliciosas ou tenha danificado seu dispositivo por outros meios. Neste caso, existem apenas duas sugestões:
+Se os métodos acima não conseguirem recuperar seu dispositivo, é muito provável que o módulo que você instalou tenha operações maliciosas ou tenha danificado seu dispositivo por outros meios. Neste caso, existem apenas duas sugestões:
 
 1. Limpar os dados e instalar o sistema oficial.
 2. Consultar o serviço pós-venda.

@@ -47,7 +47,7 @@ Achamos que não e esse não é o nosso objetivo. O Magisk é bom o suficiente p
 
 É possível, o KernelSU é portado para o kernel 4.14 agora, para o kernel mais antigo, você precisa portar manualmente e PRs são sempre bem-vindas!
 
-## Como integrar o KernelSU para o kernel antigo?
+## Como integrar o KernelSU para um kernel antigo?
 
 Por favor, consulte a guia [Como integrar o KernelSU para kernels não GKI](how-to-integrate-for-non-gki).
 
@@ -69,7 +69,7 @@ Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar [
 
 ## Por que existe um enorme arquivo de 1 TB?
 
-O arquivo `modules.img` de 1 TB é um arquivo de imagem de disco, **não se preocupe com seu tamanho**, é um tipo especial de arquivo conhecido como [arquivo esparso](https://en.wikipedia.org/wiki/Sparse_file), seu tamanho real é apenas o tamanho do módulo que você usa e diminuirá dinamicamente após você excluir o módulo. Na verdade, ele não ocupa 1 TB de espaço em disco (na verdade, seu celular pode não ter tanto espaço).
+O arquivo `modules.img` de 1 TB é um arquivo de imagem de disco, **não se preocupe com seu tamanho**, é um tipo especial de arquivo conhecido como [arquivo esparso](https://en.wikipedia.org/wiki/Sparse_file), seu tamanho real é apenas o tamanho do módulo que você usa e diminuirá dinamicamente após você excluir o módulo. Na verdade, ele não ocupa 1 TB de espaço em disco (seu celular pode não ter tanto espaço).
 
 Se você estiver realmente insatisfeito com o tamanho deste arquivo, você pode usar o comando `resize2fs -M` para torná-lo seu tamanho real, mas o módulo pode não funcionar corretamente neste momento e não forneceremos nenhum suporte para isso.
 
