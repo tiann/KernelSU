@@ -261,3 +261,64 @@ No KernelSU, os scripts de inicialização são divididos em dois tipos com base
   - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado no OverlayFS montado.
 
 Todos os scripts de inicialização serão executados no shell BusyBox `ash` do KernelSU com o Modo Autônomo ativado.
+
+### Explicação do processo de scripts de inicialização
+
+A seguir está o processo de inicialização relevante para o Android (algumas partes foram omitidas), que inclui a operação do KernelSU (com asteriscos iniciais) e pode ajudá-lo a entender melhor o propósito desses scripts de módulo:
+
+```txt
+0. Bootloader (nada nesta tela)
+load patched boot.img
+load kernel:
+    - Modo GKI: kernel GKI com KernelSU integrado
+    - Modo LKM: kernel stock
+...
+1. kernel exec init (logotipo oem na tela):
+    - Modo GKI: stock init
+    - Modo LKM: exec ksuinit, insmod kernelsu.ko, exec stock init
+mount /dev, /dev/pts, /proc, /sys, etc.
+property-init -> read default props
+read init.rc
+...
+early-init -> init -> late_init
+early-fs
+   start vold
+fs
+  montar /vendor, /system, /persist, etc.
+post-fs-data
+  *verificação do modo de segurança
+  *executar scripts gerais em post-fs-data.d/
+  *carregar sepolicy.rule
+  *montar tmpfs
+  *executar scripts de módulo post-fs-data.sh
+    **(Zygisk)./bin/zygisk-ptrace64 monitor
+  *(pré)carregamento de system.prop (igual a resetprop -n)
+  *remontar módulos em /system
+  *executar scripts gerais em post-mount.d/
+  *executar scripts de módulo post-mount.sh
+zygote-start
+load_all_props_action
+  *executar resetprop (defina adereços reais para resetprop com a opção -n)
+... -> boot
+  class_start core
+    start-service logd, console, vold, etc.
+  class_start main
+    start-service adb, netd (iptables), zygote, etc.
+2. kernel2user init (animação da rom na tela, inicie pelo serviço bootanim)
+*executar scripts gerais em service.d/
+*executar scripts de módulo service.sh
+*definir adereços para resetprop sem a opção -p
+  **(Zygisk) hook zygote (iniciar o zygiskd)
+  **(Zygisk) montar zygisksu/module.prop
+iniciar apps do sistema (início automático)
+...
+inicialização completa (transmitir evento ACTION_BOOT_COMPLETED)
+*executar scripts gerais em boot-completed.d/
+*executar scripts de módulo boot-completed.sh
+3. Operável pelo usuário (tela de bloqueio)
+insira a senha para descriptografar /data/data
+*conjunto real de adereços para resetprop com opção -p
+iniciar apps de usuário (início automático)
+```
+
+Se você estiver interessado na linguagem de inicialização do Android, é recomendável ler sua [documentação](https://android.googlesource.com/platform/system/core/+/master/init/README.md).
