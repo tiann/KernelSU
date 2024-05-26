@@ -293,7 +293,7 @@ post-fs-data
   *mount tmpfs
   *execute module scripts post-fs-data.sh
     **(Zygisk)./bin/zygisk-ptrace64 monitor
-  *(pre)load system.prop (same as `resetprop -n`)
+  *(pre)load system.prop (same as resetprop -n)
   *remount modules /system
   *execute general scripts in post-mount.d/
   *execute module scripts post-mount.sh
