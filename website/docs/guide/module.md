@@ -266,9 +266,14 @@ The following is the relevant boot process for Android (some parts are omitted),
 ```txt
 0. BootLoader (nothing on sceen)
 load patched boot.img
+load kernel:
+    - GKI mode: GKI kernel with KernelSU integrated
+    - LKM mode: stock kernel
 ...
 
-1. kernel init (oem logo on screen)
+1. kernel exec init (oem logo on screen):
+    - GKI mode: stock init
+    - LKM mode: exec ksuinit, insmod kernelsu.ko, exec stock init
 mount /dev, /dev/pts, /proc, /sys, etc.
 property-init -> read default props
 read init.rc
