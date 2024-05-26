@@ -2,7 +2,7 @@
 
 O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é conhecido como "sem sistema".
 
-O mecanismo de módulos do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferença com Magisk](difference-with-magisk.md).
+O mecanismo de módulos do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferenças com Magisk](difference-with-magisk.md).
 
 ## WebUI
 
@@ -21,7 +21,7 @@ Para aqueles que desejam usar o recurso Modo Autônomo fora do KernelSU, existem
 
 Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador do KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 
 O BusyBox do KernelSU agora está usando o arquivo binário compilado diretamente do projeto Magisk. **Obrigado ao Magisk!** Portanto, você não precisa se preocupar com problemas de compatibilidade entre scripts BusyBox no Magisk e KernelSU porque eles são exatamente iguais!
 :::
@@ -82,7 +82,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ├── .
 ```
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
 :::
 
@@ -112,7 +112,7 @@ Por favor, leia a seção [Scripts de inicialização](#scripts-de-inicializacao
 
 Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo, **NÃO** codifique o caminho do seu módulo nos scripts.
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 Você pode usar a variável de ambiente `KSU` para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando no KernelSU, esse valor será definido como `true`.
 :::
 
@@ -149,7 +149,7 @@ REPLACE="
 
 Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` e `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 
 O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
