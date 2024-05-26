@@ -78,4 +78,5 @@
     <string name="profile_selinux_domain">도메인</string>
     <string name="launch_app">실행</string>
     <string name="failed_to_update_sepolicy">다음 앱에 대한 SELinux 규칙 업데이트 실패: %s</string>
+    <string name="save_log">로그 저장</string>
 </resources>

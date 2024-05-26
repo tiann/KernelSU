@@ -12,11 +12,11 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, check [Module Page](module.md) please.
+Yes, check [Module Guide](module.md) please.
 
 ## Does KernelSU support Xposed?
 
-Yes, you can use LSPosed on [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext)
+Yes, you can use LSPosed on [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## Does KernelSU support Zygisk?
 
@@ -26,7 +26,7 @@ KernelSU has no builtin Zygisk support, but you can use [ZygiskNext](https://git
 
 KernelSU's module system is conflict with Magisk's magic mount, if there is any module enabled in KernelSU, then the whole Magisk would not work.
 
-But if you only use the `su` of KernelSU, then it will work well with Magisk: KernelSU modify the `kernel` and Magisk modify the `ramdisk`, they can work together.
+But if you only use the `su` of KernelSU, then it will work well with Magisk: with KernelSU modifying the `kernel` and Magisk modifying the `ramdisk`, both of them can work together simultaneously.
 
 ## Will KernelSU substitute Magisk?
 
@@ -38,18 +38,18 @@ It is possible. But you should download the kernel source and intergrate KernelS
 
 ## Can KernelSU support devices below Android 12?
 
-It is device's kernel that affect KernelSU's compatability and it has nothing to do with Android version.The only restriction is that devices launched with Android 12 must be kernel 5.10+(GKI devices). So:
+It is device's kernel that affect KernelSU's compatability and it has nothing to do with Android version. The only restriction is that devices launched with Android 12 must be kernel of a 5.10+ version (GKI devices). So:
 
 1. Devices launched with Android 12 must be supported.
-2. Devices which have an old kernel (Some Android 12 devices is also old kernel) are compatible (You should build kernel yourself)
+2. Devices which have an old kernel (Some Android 12 devices is also old kernel) are compatible (You should build kernel yourself).
 
 ## Can KernelSU support old kernel?
 
-It is possible, KernelSU is backported to kernel 4.14 now, for older kernel, you need to backport it manully and PRs welcome!
+It is possible, KernelSU is backported to kernel 4.14 now; for older kernel, you need to backport it manually and PRs welcome!
 
-## How to integrate KernelSU for old kernel?
+## How to integrate KernelSU for an older kernel?
 
-Please refer [Guide](how-to-integrate-for-non-gki)
+Please refer to the following [Guide](how-to-integrate-for-non-gki).
 
 ## Why my Android version is 13, and the kernel shows "android12-5.10"?
 
@@ -59,17 +59,17 @@ The Kernel version has nothing to do with Android version, if you need to flash 
 
 GKI1 is completely different from GKI2, you must compile kernel by yourself.
 
-## How can i make `/system` RW?
+## How can I make `/system` RW?
 
 We do not recommend you to modify the system partition directly. You should use the [module](module.md) to modify it systemlessly. If you insist on doing this, check [magisk_overlayfs](https://github.com/HuskyDG/magic_overlayfs).
 
-## Can KernelSU modify hosts? How can i use AdAway？
+## Can KernelSU modify hosts? How can I use AdAway？
 
-Of course. But KernelSU doesn't have builtin hosts support, you can install [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) to do it.
+Of course. But KernelSU doesn't have built-in hosts support, you can install [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) to do it.
 
 ## Why is there a huge 1 TB file?
 
-The 1 TB size `modules.img` is a disk image file, **don't worry about its size**, it's a special type of file known as a [sparse file](https://en.wikipedia.org/wiki/Sparse_file), its actual size is only the size of the module you use, and it will dynamically shrink after you delete the module; it does not actually occupy 1 TB of disk space (actually your mobile phone may not have that much space).
+The 1 TB size `modules.img` is a disk image file, **don't worry about its size**, it's a special type of file known as a [sparse file](https://en.wikipedia.org/wiki/Sparse_file), it's actual size is only the size of the module you use, and it will dynamically shrink after you delete the module; it does not actually occupy 1 TB of disk space (your mobile phone may not actually have that much space).
 
 If you're really unhappy with the size of this file, you can use the `resize2fs -M` command to make it the actual size; but the module may not work properly at this time, and we won't provide any support for this.
 

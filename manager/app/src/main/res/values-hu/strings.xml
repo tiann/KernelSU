@@ -102,4 +102,5 @@
     <string name="app_profile_template_delete">Törlés</string>
     <string name="app_profile_template_import_empty">A vágólap üres!</string>
     <string name="app_profile_template_view">Sablon megnézése</string>
+    <string name="save_log">Naplók Mentése</string>
 </resources>

@@ -1,4 +1,4 @@
-# Module guides
+# Module Guide
 
 KernelSU provides a module mechanism that achieves the effect of modifying the system directory while maintaining the integrity of the system partition. This mechanism is commonly known as "systemless".
 
@@ -6,22 +6,22 @@ The module mechanism of KernelSU is almost the same as that of Magisk. If you ar
 
 ## WebUI
 
-KernelSU's modules support displaying interfaces and interacting with users, please refer to the [WebUI documentation](module-webui.md).
+KernelSU's modules support displaying interfaces and interacting with users. For more, please refer to [WebUI documentation](module-webui.md).
 
 ## Busybox
 
-KernelSU ships with a feature complete BusyBox binary (including full SELinux support). The executable is located at `/data/adb/ksu/bin/busybox`. KernelSU's BusyBox supports runtime toggle-able "ASH Standalone Shell Mode". What this standalone mode means is that when running in the `ash` shell of BusyBox, every single command will directly use the applet within BusyBox, regardless of what is set as `PATH`. For example, commands like `ls`, `rm`, `chmod` will **NOT** use what is in `PATH` (in the case of Android by default it will be `/system/bin/ls`, `/system/bin/rm`, and `/system/bin/chmod` respectively), but will instead directly call internal BusyBox applets. This makes sure that scripts always run in a predictable environment and always have the full suite of commands no matter which Android version it is running on. To force a command _not_ to use BusyBox, you have to call the executable with full paths.
+KernelSU ships with a feature-complete BusyBox binary (including full SELinux support). The executable is located at `/data/adb/ksu/bin/busybox`. KernelSU's BusyBox supports runtime toggle-able "ASH Standalone Shell Mode". What this standalone mode means is that when running in the `ash` shell of BusyBox, every single command will directly use the applet within BusyBox, regardless of what is set as `PATH`. For example, commands like `ls`, `rm`, `chmod` will **NOT** use what is in `PATH` (in the case of Android by default it will be `/system/bin/ls`, `/system/bin/rm`, and `/system/bin/chmod` respectively), but will instead directly call internal BusyBox applets. This makes sure that scripts always run in a predictable environment and always have the full suite of commands no matter which Android version it is running on. To force a command _not_ to use BusyBox, you have to call the executable with full paths.
 
 Every single shell script running in the context of KernelSU will be executed in BusyBox's `ash` shell with standalone mode enabled. For what is relevant to 3rd party developers, this includes all boot scripts and module installation scripts.
 
 For those who want to use this "Standalone Mode" feature outside of KernelSU, there are 2 ways to enable it:
 
-1. Set environment variable `ASH_STANDALONE` to `1`<br>Example: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
+1. Set environment variable `ASH_STANDALONE` to `1` <br>Example: `ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh <script>`
 2. Toggle with command-line options:<br>`/data/adb/ksu/bin/busybox sh -o standalone <script>`
 
-To make sure all subsequent `sh` shell executed also runs in standalone mode, option 1 is the preferred method (and this is what KernelSU and the KernelSU manager internally use) as environment variables are inherited down to child processes.
+To make sure all subsequent `sh` shell executed also runs in standalone mode, option 1 is the preferred method (and this is what KernelSU and the KernelSU manager use internally) as environment variables are inherited down to child processes.
 
-::: tip difference with Magisk
+::: tip Difference with Magisk
 
 KernelSU's BusyBox is now using the binary file compiled directly from the Magisk project. **Thanks to Magisk!** Therefore, you don't have to worry about compatibility issues between BusyBox scripts in Magisk and KernelSU because they are exactly the same!
 :::
@@ -82,7 +82,7 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 ├── .
 ```
 
-::: tip difference with Magisk
+::: tip Difference with Magisk
 KernelSU does not have built-in support for Zygisk, so there is no content related to Zygisk in the module. However, you can use [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) to support Zygisk modules. In this case, the content of the Zygisk module is identical to that supported by Magisk.
 :::
 
@@ -99,20 +99,20 @@ author=<string>
 description=<string>
 ```
 
-- `id` has to match this regular expression: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
-  ex: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
+- `id` has to match this regular expression: `^[a-zA-Z][a-zA-Z0-9._-]+$` .<br>
+  Example: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
   This is the **unique identifier** of your module. You should not change it once published.
-- `versionCode` has to be an **integer**. This is used to compare versions
+- `versionCode` has to be an **integer**. This is used to compare versions.
 - Others that weren't mentioned above can be any **single line** string.
 - Make sure to use the `UNIX (LF)` line break type and not the `Windows (CR+LF)` or `Macintosh (CR)`.
 
 ### Shell scripts
 
-Please read the [Boot Scripts](#boot-scripts) section to understand the difference between `post-fs-data.sh` and `service.sh`. For most module developers, `service.sh` should be good enough if you just need to run a boot script, if you need to run the script after boot completed, please use `boot-completed.sh`. If you want to do something after mounting overlayfs, please use `post-mount.sh`.
+Please read the [Boot scripts](#boot-scripts) section to understand the difference between `post-fs-data.sh` and `service.sh`. For most module developers, `service.sh` should be good enough if you just need to run a boot script, if you need to run the script after boot completed, please use `boot-completed.sh`. If you want to do something after mounting overlayfs, please use `post-mount.sh`.
 
 In all scripts of your module, please use `MODDIR=${0%/*}` to get your module's base directory path; do **NOT** hardcode your module path in scripts.
 
-::: tip difference with Magisk
+::: tip Difference with Magisk
 You can use the environment variable KSU to determine if a script is running in KernelSU or Magisk. If running in KernelSU, this value will be set to true.
 :::
 
@@ -134,20 +134,22 @@ REMOVE="
 "
 ```
 
-The above list will execute `mknod $MODPATH/system/app/YouTuBe c 0 0` and `mknod $MODPATH/system/app/Bloatware c 0 0`; and `/system/app/YouTube` and `/system/app/Bloatware` will be removed after the module takes effect.
+The above list will execute `mknod $MODPATH/system/app/YouTube c 0 0` and `mknod $MODPATH/system/app/Bloatware c 0 0`; and `/system/app/YouTube` and `/system/app/Bloatware` will be removed after the module takes effect.
 
 If you want to replace a directory in the system, you need to create a directory with the same path in your module directory, and then set the attribute `setfattr -n trusted.overlay.opaque -v y <TARGET>` for this directory. This way, the overlayfs system will automatically replace the corresponding directory in the system (without changing the /system partition).
 
 You can declare a variable named `REPLACE` in your `customize.sh` file, which includes a list of directories to be replaced, and KernelSU will automatically perform the corresponding operations in your module directory. For example:
 
+```sh
 REPLACE="
 /system/app/YouTube
 /system/app/Bloatware
 "
+```
 
 This list will automatically create the directories `$MODPATH/system/app/YouTube` and `$MODPATH/system/app/Bloatware`, and then execute `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` and `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. After the module takes effect, `/system/app/YouTube` and `/system/app/Bloatware` will be replaced with empty directories.
 
-::: tip difference with Magisk
+::: tip Difference with Magisk
 
 KernelSU's systemless mechanism is implemented through the kernel's overlayfs, while Magisk currently uses magic mount (bind mount). The two implementation methods have significant differences, but the ultimate goal is the same: to modify /system files without physically modifying the /system partition.
 :::
@@ -177,12 +179,12 @@ module.zip
 ```
 
 :::warning
-KernelSU module is NOT supported to be installed in custom recovery!!
+KernelSU module is **NOT** supported to be installed via a Custom Recovery!
 :::
 
 ### Customization
 
-If you need to customize the module installation process, optionally you can create a script in the installer named `customize.sh`. This script will be _sourced_ (not executed!) by the module installer script after all files are extracted and default permissions and secontext are applied. This is very useful if your module require additional setup based on the device ABI, or you need to set special permissions/secontext for some of your module files.
+If you need to customize the module installation process, optionally you can create a script in the installer named `customize.sh`. This script will be _sourced_ (not executed!) by the module installer script after all files are extracted and default permissions and secontext are applied. This is very useful if your module requires additional setup based on the device ABI, or you need to set special permissions/secontext for some of your module files.
 
 If you would like to fully control and customize the installation process, declare `SKIPUNZIP=1` in `customize.sh` to skip all default installation steps. By doing so, your `customize.sh` will be responsible to install everything by itself.
 
@@ -191,19 +193,19 @@ The `customize.sh` script runs in KernelSU's BusyBox `ash` shell with "Standalon
 #### Variables
 
 - `KSU` (bool): a variable to mark that the script is running in the KernelSU environment, and the value of this variable will always be true. You can use it to distinguish between KernelSU and Magisk.
-- `KSU_VER` (string): the version string of current installed KernelSU (e.g. `v0.4.0`)
-- `KSU_VER_CODE` (int): the version code of current installed KernelSU in userspace (e.g. `10672`)
-- `KSU_KERNEL_VER_CODE` (int): the version code of current installed KernelSU in kernel space (e.g. `10672`)
-- `BOOTMODE` (bool): always be `true` in KernelSU
-- `MODPATH` (path): the path where your module files should be installed
-- `TMPDIR` (path): a place where you can temporarily store files
-- `ZIPFILE` (path): your module's installation zip
-- `ARCH` (string): the CPU architecture of the device. Value is either `arm`, `arm64`, `x86`, or `x64`
-- `IS64BIT` (bool): `true` if `$ARCH` is either `arm64` or `x64`
-- `API` (int): the API level (Android version) of the device (e.g. `23` for Android 6.0)
+- `KSU_VER` (string): the version string of currently installed KernelSU (e.g. `v0.4.0`).
+- `KSU_VER_CODE` (int): the version code of currently installed KernelSU in userspace (e.g. `10672`).
+- `KSU_KERNEL_VER_CODE` (int): the version code of currently installed KernelSU in kernel space (e.g. `10672`).
+- `BOOTMODE` (bool): always be `true` in KernelSU.
+- `MODPATH` (path): the path where your module files should be installed.
+- `TMPDIR` (path): a place where you can temporarily store files.
+- `ZIPFILE` (path): your module's installation zip.
+- `ARCH` (string): the CPU architecture of the device. Value is either `arm`, `arm64`, `x86`, or `x64`.
+- `IS64BIT` (bool): `true` if `$ARCH` is either `arm64` or `x64`.
+- `API` (int): the API level (Android version) of the device (e.g., `23` for Android 6.0).
 
 ::: warning
-In KernelSU, MAGISK_VER_CODE is always 25200 and MAGISK_VER is always v25.2. Please do not use these two variables to determine whether it is running on KernelSU or not.
+In KernelSU, `MAGISK_VER_CODE` is always `25200` and `MAGISK_VER` is always `v25.2`. Please do not use these two variables to determine whether it is running on KernelSU or not.
 :::
 
 #### Functions
@@ -234,28 +236,91 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 
 ## Boot scripts
 
-In KernelSU, scripts are divided into two types based on their running mode: post-fs-data mode and late_start service mode:
+In KernelSU, scripts are divided into two types based on their running mode: post-fs-data mode and late_start service mode.
 
 - post-fs-data mode
   - This stage is BLOCKING. The boot process is paused before execution is done, or 10 seconds have passed.
   - Scripts run before any modules are mounted. This allows a module developer to dynamically adjust their modules before it gets mounted.
-  - This stage happens before Zygote is started, which pretty much means everything in Android
+  - This stage happens before Zygote is started, which pretty much means everything in Android.
   - **WARNING:** using `setprop` will deadlock the boot process! Please use `resetprop -n <prop_name> <prop_value>` instead.
   - **Only run scripts in this mode if necessary.**
 - late_start service mode
   - This stage is NON-BLOCKING. Your script runs in parallel with the rest of the booting process.
   - **This is the recommended stage to run most scripts.**
 
-In KernelSU, startup scripts are divided into two types based on their storage location: general scripts and module scripts:
+In KernelSU, startup scripts are divided into two types based on their storage location: general scripts and module scripts.
 
-- General Scripts
-  - Placed in `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` or `/data/adb/boot-completed.d`
+- General scripts
+  - Placed in `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` or `/data/adb/boot-completed.d.`
   - Only executed if the script is set as executable (`chmod +x script.sh`)
   - Scripts in `post-fs-data.d` runs in post-fs-data mode, and scripts in `service.d` runs in late_start service mode.
-  - Modules should **NOT** add general scripts during installation
-- Module Scripts
-  - Placed in the module's own folder
-  - Only executed if the module is enabled
+  - Modules should **NOT** add general scripts during installation.
+- Module scripts
+  - Placed in the module's own folder.
+  - Only executed if the module is enabled.
   - `post-fs-data.sh` runs in post-fs-data mode, `service.sh` runs in late_start service mode, `boot-completed.sh` runs on boot completed, `post-mount.sh` runs on overlayfs mounted.
 
 All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
+
+### Boot scripts process explanation
+The following is the relevant boot process for Android (some parts are omitted), which includes the operation of KernelSU (with leading asterisks), and can help you better understand the purpose of these module scripts:
+
+```txt
+0. BootLoader (nothing on sceen)
+load patched boot.img
+load kernel:
+    - GKI mode: GKI kernel with KernelSU integrated
+    - LKM mode: stock kernel
+...
+
+1. kernel exec init (oem logo on screen):
+    - GKI mode: stock init
+    - LKM mode: exec ksuinit, insmod kernelsu.ko, exec stock init
+mount /dev, /dev/pts, /proc, /sys, etc.
+property-init -> read default props
+read init.rc
+...
+early-init -> init -> late_init
+early-fs
+   start vold
+fs
+  mount /vendor, /system, /persist, etc.
+post-fs-data
+  *safe mode check
+  *execute general scripts in post-fs-data.d/
+  *load sepolicy.rule
+  *mount tmpfs
+  *execute module scripts post-fs-data.sh
+    **(Zygisk)./bin/zygisk-ptrace64 monitor
+  *(pre)load system.prop (same as `resetprop -n`)
+  *remount modules /system
+  *execute general scripts in post-mount.d/
+  *execute module scripts post-mount.sh
+zygote-start
+load_all_props_action
+  *execute resetprop (actual set props for resetprop with -n option)
+... -> boot
+  class_start core
+    start-service logd, console, vold, etc.
+  class_start main
+    start-service adb, netd (iptables), zygote, etc.
+
+2. kernel2user init (rom animation on screen, start by service bootanim)
+*execute general scripts in service.d/
+*execute module scripts service.sh
+*set props for resetprop without -p option
+  **(Zygisk) hook zygote (start zygiskd)
+  **(Zygisk) mount zygisksu/module.prop
+start system apps (autostart)
+...
+boot complete (broadcast ACTION_BOOT_COMPLETED event)
+*execute general scripts in boot-completed.d/
+*execute module scripts boot-completed.sh
+
+3. User operable (lock screen)
+input password to decrypt /data/data
+*actual set props for resetprop with -p option
+start user apps (autostart)
+```
+
+If you are interested in Android init Language, it is recommended to read its [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md)

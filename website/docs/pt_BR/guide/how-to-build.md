@@ -26,7 +26,7 @@ O `<kernel_manifest.xml>` é um arquivo de manifesto que pode determinar uma com
 
 Por favor, verifique [Como criar kernels](https://source.android.com/docs/setup/build/building-kernels) primeiro.
 
-Por exemplo, precisamos compilar a imagem do kernel `aarch64`:
+Por exemplo, para compilar uma imagem de kernel `aarch64`:
 
 ```sh
 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
@@ -41,7 +41,7 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 ```
 
 :::info INFORMAÇÕES
-Para alguns kernel do Android 14, para fazer o Wi-Fi/Bluetooth funcionar. Pode ser necessário remover todas as exportações protegidas pelo GKI:
+Para alguns kernel do Android 14, para fazer o Wi-Fi/Bluetooth funcionar, pode ser necessário remover todas as exportações protegidas pelo GKI:
 
 ```sh
 rm common/android/abi_gki_protected_exports_*
@@ -50,7 +50,7 @@ rm common/android/abi_gki_protected_exports_*
 
 ## Compilar o kernel com KernelSU
 
-Se você conseguir compilar o kernel com sucesso, então compilar o KernelSU é muito fácil. Selecione qualquer um executado no diretório raiz de origem do kernel:
+Se você conseguir compilar o kernel com sucesso, adicionar suporte ao KernelSU a ele será relativamente fácil. Na raiz do diretório de origem do kernel, execute qualquer uma das opções listadas abaixo:
 
 ::: code-group
 

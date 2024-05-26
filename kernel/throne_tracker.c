@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
-#include <linux/workqueue.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -16,8 +15,7 @@
 
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
-#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
-static struct work_struct ksu_update_uid_work;
+#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
 
 struct uid_data {
 	struct list_head list;
@@ -94,8 +92,25 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 	}
 }
 
+#define DATA_PATH_LEN 384 // 384 is enough for /data/app/<package>/base.apk
+
+struct data_path {
+	char dirpath[DATA_PATH_LEN];
+	int depth;
+	struct list_head list;
+};
+
+struct apk_path_hash {
+	unsigned int hash;
+	bool exists;
+	struct list_head list;
+};
+
+static struct list_head apk_path_hash_list = LIST_HEAD_INIT(apk_path_hash_list);
+
 struct my_dir_context {
 	struct dir_context ctx;
+	struct list_head *data_path_list;
 	char *parent_dir;
 	void *private_data;
 	int depth;
@@ -119,8 +134,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 {
 	struct my_dir_context *my_ctx =
 		container_of(ctx, struct my_dir_context, ctx);
-	struct file *file;
-	char dirpath[384]; // 384 is enough for /data/app/<package>/base.apk
+	char dirpath[DATA_PATH_LEN];
 
 	if (!my_ctx) {
 		pr_err("Invalid context\n");
@@ -134,8 +148,8 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	if (!strncmp(name, "..", namelen) || !strncmp(name, ".", namelen))
 		return FILLDIR_ACTOR_CONTINUE; // Skip "." and ".."
 
-	if (snprintf(dirpath, sizeof(dirpath), "%s/%.*s", my_ctx->parent_dir,
-		     namelen, name) >= sizeof(dirpath)) {
+	if (snprintf(dirpath, DATA_PATH_LEN, "%s/%.*s", my_ctx->parent_dir,
+		     namelen, name) >= DATA_PATH_LEN) {
 		pr_err("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen,
 		       name);
 		return FILLDIR_ACTOR_CONTINUE;
@@ -143,29 +157,45 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 	if (d_type == DT_DIR && my_ctx->depth > 0 &&
 	    (my_ctx->stop && !*my_ctx->stop)) {
-		struct my_dir_context sub_ctx = { .ctx.actor = my_actor,
-						  .parent_dir = dirpath,
-						  .private_data =
-							  my_ctx->private_data,
-						  .depth = my_ctx->depth - 1,
-						  .stop = my_ctx->stop };
-		file = ksu_filp_open_compat(dirpath, O_RDONLY | O_NOFOLLOW, 0);
-		if (IS_ERR(file)) {
-			pr_err("Failed to open directory: %s, err: %ld\n",
-			       dirpath, PTR_ERR(file));
+		struct data_path *data = kmalloc(sizeof(struct data_path), GFP_ATOMIC);
+
+		if (!data) {
+			pr_err("Failed to allocate memory for %s\n", dirpath);
 			return FILLDIR_ACTOR_CONTINUE;
 		}
 
-		iterate_dir(file, &sub_ctx.ctx);
-		filp_close(file, NULL);
+		strscpy(data->dirpath, dirpath, DATA_PATH_LEN);
+		data->depth = my_ctx->depth - 1;
+		list_add_tail(&data->list, my_ctx->data_path_list);
 	} else {
 		if ((namelen == 8) && (strncmp(name, "base.apk", namelen) == 0)) {
+			struct apk_path_hash *pos, *n;
+			unsigned int hash = full_name_hash(NULL, dirpath, strlen(dirpath));
+
+			list_for_each_entry(pos, &apk_path_hash_list, list) {
+				if (hash == pos->hash) {
+					pos->exists = true;
+					return FILLDIR_ACTOR_CONTINUE;
+				}
+			}
+
 			bool is_manager = is_manager_apk(dirpath);
-			pr_info("Found base.apk at path: %s, is_manager: %d\n",
+			pr_info("Found new base.apk at path: %s, is_manager: %d\n",
 				dirpath, is_manager);
 			if (is_manager) {
 				crown_manager(dirpath, my_ctx->private_data);
 				*my_ctx->stop = 1;
+
+				// Manager found, clear APK cache list
+				list_for_each_entry_safe(pos, n, &apk_path_hash_list, list) {
+					list_del(&pos->list);
+					kfree(pos);
+				}
+			} else {
+				struct apk_path_hash *apk_data = kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
+				apk_data->hash = hash;
+				apk_data->exists = true;
+				list_add_tail(&apk_data->list, &apk_path_hash_list);
 			}
 		}
 	}
@@ -175,22 +205,58 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 void search_manager(const char *path, int depth, struct list_head *uid_data)
 {
-	struct file *file;
-	int stop = 0;
-	struct my_dir_context ctx = { .ctx.actor = my_actor,
-				      .parent_dir = (char *)path,
-				      .private_data = uid_data,
-				      .depth = depth,
-				      .stop = &stop };
+	int i, stop = 0;
+	struct list_head data_path_list;
+	INIT_LIST_HEAD(&data_path_list);
 
-	file = ksu_filp_open_compat(path, O_RDONLY | O_NOFOLLOW, 0);
-	if (IS_ERR(file)) {
-		pr_err("Failed to open directory: %s\n", path);
-		return;
+	// Initialize APK cache list
+	struct apk_path_hash *pos, *n;
+	list_for_each_entry(pos, &apk_path_hash_list, list) {
+		pos->exists = false;
 	}
 
-	iterate_dir(file, &ctx.ctx);
-	filp_close(file, NULL);
+	// First depth
+	struct data_path data;
+	strscpy(data.dirpath, path, DATA_PATH_LEN);
+	data.depth = depth;
+	list_add_tail(&data.list, &data_path_list);
+
+	for (i = depth; i > 0; i--) {
+		struct data_path *pos, *n;
+
+		list_for_each_entry_safe(pos, n, &data_path_list, list) {
+			struct my_dir_context ctx = { .ctx.actor = my_actor,
+						      .data_path_list = &data_path_list,
+						      .parent_dir = pos->dirpath,
+						      .private_data = uid_data,
+						      .depth = pos->depth,
+						      .stop = &stop };
+			struct file *file;
+
+			if (!stop) {
+				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
+				if (IS_ERR(file)) {
+					pr_err("Failed to open directory: %s, err: %ld\n", pos->dirpath, PTR_ERR(file));
+					return;
+				}
+
+				iterate_dir(file, &ctx.ctx);
+				filp_close(file, NULL);
+			}
+
+			list_del(&pos->list);
+			if (pos != &data)
+				kfree(pos);
+		}
+	}
+
+	// Remove stale cached APK entries
+	list_for_each_entry_safe(pos, n, &apk_path_hash_list, list) {
+		if (!pos->exists) {
+			list_del(&pos->list);
+			kfree(pos);
+		}
+	}
 }
 
 static bool is_uid_exist(uid_t uid, char *package, void *data)
@@ -209,14 +275,13 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 	return exist;
 }
 
-static void do_update_uid(struct work_struct *work)
+void track_throne()
 {
 	struct file *fp =
 		ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("do_update_uid, open " SYSTEM_PACKAGES_LIST_PATH
-		       " failed: %ld\n",
-		       PTR_ERR(fp));
+		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
+		       __func__, PTR_ERR(fp));
 		return;
 	}
 
@@ -303,14 +368,9 @@ out:
 	}
 }
 
-void track_throne()
-{
-	ksu_queue_work(&ksu_update_uid_work);
-}
-
 void ksu_throne_tracker_init()
 {
-	INIT_WORK(&ksu_update_uid_work, do_update_uid);
+	// nothing to do
 }
 
 void ksu_throne_tracker_exit()

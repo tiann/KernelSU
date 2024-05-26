@@ -108,4 +108,5 @@
     <string name="settings_check_update_summary">Rakenduse avamisel kontrolli automaatselt uuendusi</string>
     <string name="open">Ava</string>
     <string name="enable_web_debugging">Luba WebView silumine</string>
+    <string name="save_log">Salvesta Logid</string>
 </resources>

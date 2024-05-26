@@ -1,6 +1,6 @@
 # Rescue from bootloop
 
-When flashing a device, we may encounter situations where the device becomes "bricked". In theory, if you only use fastboot to flash the boot partition or install unsuitable modules that cause the device to fail to boot, then this can be restored by appropriate operations. This document aims to provide some emergency methods to help you recover from a "bricked" device.
+When flashing a device, we may encounter situations when the device becomes "bricked". In theory, if you only use fastboot to flash the boot partition or install incompatible modules that cause the device to fail to boot, then this can be restored by appropriate operations. This document aims to provide some emergency methods to help you recover from a "bricked" state.
 
 ## Brick by flashing boot partition
 
@@ -44,7 +44,7 @@ The built-in safe mode is implemented in the kernel, so there is no possibility 
 
 ### Malicious modules
 
-If the above methods cannot rescue your device, it is highly likely that the module you installed has malicious operations or has damaged your device through other means. In this case, there are only two suggestions:
+If the above methods cannot rescue your device, it is very likely that the module you installed has malicious operations or has damaged your device through other means. In this case, there are only two suggestions:
 
 1. Wipe the data and flash the official system.
 2. Consult the after-sales service.
