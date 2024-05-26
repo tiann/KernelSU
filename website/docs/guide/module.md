@@ -261,3 +261,66 @@ In KernelSU, startup scripts are divided into two types based on their storage l
   - `post-fs-data.sh` runs in post-fs-data mode, `service.sh` runs in late_start service mode, `boot-completed.sh` runs on boot completed, `post-mount.sh` runs on overlayfs mounted.
 
 All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
+
+### Boot scripts process explanation
+The following is the relevant boot process for Android (some parts are omitted), which includes the operation of KernelSU (with leading asterisks), and can help you better understand the purpose of these module scripts:
+
+```txt
+0. BootLoader (nothing on sceen)
+load patched boot.img
+load kernel:
+    - GKI mode: GKI kernel with KernelSU integrated
+    - LKM mode: stock kernel
+...
+
+1. kernel exec init (oem logo on screen):
+    - GKI mode: stock init
+    - LKM mode: exec ksuinit, insmod kernelsu.ko, exec stock init
+mount /dev, /dev/pts, /proc, /sys, etc.
+property-init -> read default props
+read init.rc
+...
+early-init -> init -> late_init
+early-fs
+   start vold
+fs
+  mount /vendor, /system, /persist, etc.
+post-fs-data
+  *safe mode check
+  *execute general scripts in post-fs-data.d/
+  *load sepolicy.rule
+  *mount tmpfs
+  *execute module scripts post-fs-data.sh
+    **(Zygisk)./bin/zygisk-ptrace64 monitor
+  *(pre)load system.prop (same as `resetprop -n`)
+  *remount modules /system
+  *execute general scripts in post-mount.d/
+  *execute module scripts post-mount.sh
+zygote-start
+load_all_props_action
+  *execute resetprop (actual set props for resetprop with -n option)
+... -> boot
+  class_start core
+    start-service logd, console, vold, etc.
+  class_start main
+    start-service adb, netd (iptables), zygote, etc.
+
+2. kernel2user init (rom animation on screen, start by service bootanim)
+*execute general scripts in service.d/
+*execute module scripts service.sh
+*set props for resetprop without -p option
+  **(Zygisk) hook zygote (start zygiskd)
+  **(Zygisk) mount zygisksu/module.prop
+start system apps (autostart)
+...
+boot complete (broadcast ACTION_BOOT_COMPLETED event)
+*execute general scripts in boot-completed.d/
+*execute module scripts boot-completed.sh
+
+3. User operable (lock screen)
+input password to decrypt /data/data
+*actual set props for resetprop with -p option
+start user apps (autostart)
+```
+
+If you are interested in Android init Language, it is recommended to read its [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md)
