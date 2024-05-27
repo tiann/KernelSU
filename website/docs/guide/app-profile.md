@@ -4,7 +4,7 @@ The App Profile is a mechanism provided by KernelSU for customizing the configur
 
 For applications granted root permissions (i.e., able to use `su`), the App Profile can also be referred to as the Root Profile. It allows customization of the `uid`, `gid`, `groups`, `capabilities`, and `SELinux` rules of the `su` command, thereby restricting the privileges of the root user. For example, it can grant network permissions only to firewall applications while denying file access permissions, or it can grant shell permissions instead of full root access for freeze applications: **keeping the power confined with the principle of least privilege.**
 
-For ordinary applications without root permissions, the App Profile can control the behavior of the kernel and module system towards these applications. For instance, it can determine whether modifications resulting from modules should be addressed. The kernel and module system can make decisions based on this configuration, such as performing operations akin to "hiding"
+For ordinary applications without root permissions, the App Profile can control the behavior of the kernel and module system towards these applications. For instance, it can determine whether modifications resulting from modules should be addressed. The kernel and module system can make decisions based on this configuration, such as performing operations akin to "hiding".
 
 ## Root Profile
 

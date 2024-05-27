@@ -8,8 +8,8 @@ First, you should be able to build a bootable kernel from kernel source code. If
 
 If you can build a bootable kernel, there are two ways to integrate KernelSU to the kernel source code:
 
-1. Automatically with `kprobe`.
-2. Manually.
+1. Automatically with `kprobe`
+2. Manually
 
 ## Integrate with kprobe
 
@@ -316,7 +316,9 @@ index 32f6f1c68..d69d8eca2 100644
         return dentry;
  }
 
++#ifdef CONFIG_KSU
 +extern int ksu_handle_devpts(struct inode*);
++#endif
 +
  /**
   * devpts_get_priv -- get private data for a slave
@@ -325,7 +327,9 @@ index 32f6f1c68..d69d8eca2 100644
   */
  void *devpts_get_priv(struct dentry *dentry)
  {
++       #ifdef CONFIG_KSU
 +       ksu_handle_devpts(dentry->d_inode);
++       #endif
         if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
                 return NULL;
         return dentry->d_fsdata;

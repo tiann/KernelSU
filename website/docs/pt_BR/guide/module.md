@@ -2,11 +2,11 @@
 
 O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é conhecido como "sem sistema".
 
-O mecanismo de módulos do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferença com Magisk](difference-with-magisk.md).
+O mecanismo de módulos do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferenças com Magisk](difference-with-magisk.md).
 
 ## WebUI
 
-Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários, consulte a [documentação do WebUI](module-webui.md).
+Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários. Para mais, consulte a [documentação do WebUI](module-webui.md).
 
 ## BusyBox
 
@@ -21,7 +21,7 @@ Para aqueles que desejam usar o recurso Modo Autônomo fora do KernelSU, existem
 
 Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador do KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 
 O BusyBox do KernelSU agora está usando o arquivo binário compilado diretamente do projeto Magisk. **Obrigado ao Magisk!** Portanto, você não precisa se preocupar com problemas de compatibilidade entre scripts BusyBox no Magisk e KernelSU porque eles são exatamente iguais!
 :::
@@ -82,7 +82,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 ├── .
 ```
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 O KernelSU não possui suporte integrado para o Zygisk, portanto não há conteúdo relacionado ao Zygisk no módulo. No entanto, você pode usar [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) para suportar módulos Zygisk. Neste caso, o conteúdo do módulo Zygisk é idêntico ao suportado pelo Magisk.
 :::
 
@@ -112,7 +112,7 @@ Por favor, leia a seção [Scripts de inicialização](#scripts-de-inicializacao
 
 Em todos os scripts do seu módulo, use `MODDIR=${0%/*}` para obter o caminho do diretório base do seu módulo, **NÃO** codifique o caminho do seu módulo nos scripts.
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 Você pode usar a variável de ambiente `KSU` para determinar se um script está sendo executado no KernelSU ou Magisk. Se estiver executando no KernelSU, esse valor será definido como `true`.
 :::
 
@@ -149,7 +149,7 @@ REPLACE="
 
 Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` e `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
 
-::: tip DIFERENÇA COM MAGISK
+::: tip DIFERENÇAS COM MAGISK
 
 O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
@@ -193,16 +193,16 @@ O script `customize.sh` é executado no shell BusyBox `ash` do KernelSU com o Mo
 #### Variáveis
 
 - `KSU` (bool): uma variável para marcar que o script está sendo executado no ambiente KernelSU, e o valor desta variável sempre será `true`. Você pode usá-lo para distinguir entre KernelSU e Magisk.
-- `KSU_VER` (string): a string da versão do KernelSU atualmente instalado (por exemplo: `v0.4.0`).
-- `KSU_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do usuário (por exemplo: `10672`).
-- `KSU_KERNEL_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do kernel (por exemplo: `10672`).
+- `KSU_VER` (string): a string da versão do KernelSU atualmente instalado (ex.: `v0.4.0`).
+- `KSU_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do usuário (ex.: `10672`).
+- `KSU_KERNEL_VER_CODE` (int): o código da versão do KernelSU atualmente instalado no espaço do kernel (ex.: `10672`).
 - `BOOTMODE` (bool): sempre será `true` no KernelSU.
 - `MODPATH` (path): o caminho onde os arquivos do seu módulo devem ser instalados.
 - `TMPDIR` (path): um lugar onde você pode armazenar arquivos temporariamente.
 - `ZIPFILE` (path): ZIP de instalação do seu módulo.
 - `ARCH` (string): a arquitetura da CPU do dispositivo. O valor é `arm`, `arm64`, `x86` ou `x64`.
 - `IS64BIT` (bool): `true` se `$ARCH` for `arm64` ou `x64`.
-- `API` (int): o nível da API (versão do Android) do dispositivo (por exemplo: `23` para Android 6.0).
+- `API` (int): o nível da API (versão do Android) do dispositivo (ex.: `23` para Android 6.0).
 
 ::: warning AVISO
 No KernelSU, `MAGISK_VER_CODE` é sempre `25200` e `MAGISK_VER` é sempre `v25.2`. Por favor, não use essas duas variáveis ​​para determinar se ele está sendo executado no KernelSU ou não.
@@ -236,7 +236,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 
 ## Scripts de inicialização
 
-No KernelSU, os scripts são divididos em dois tipos com base em seu modo de execução: modo post-fs-data e modo de serviço late_start:
+No KernelSU, os scripts são divididos em dois tipos com base em seu modo de execução: modo post-fs-data e modo de serviço late_start.
 
 - modo post-fs-data
   - Esta etapa está BLOQUEANDO. O processo de inicialização é pausado antes da execução ser concluída ou 10 segundos se passaram.
@@ -248,7 +248,7 @@ No KernelSU, os scripts são divididos em dois tipos com base em seu modo de exe
   - Esta etapa é SEM BLOQUEIO. Seu script é executado em paralelo com o restante do processo de inicialização.
   - **Este é o estágio recomendado para executar a maioria dos scripts**.
 
-No KernelSU, os scripts de inicialização são divididos em dois tipos com base no local de armazenamento: scripts gerais e scripts de módulo:
+No KernelSU, os scripts de inicialização são divididos em dois tipos com base no local de armazenamento: scripts gerais e scripts de módulo.
 
 - Scripts gerais
   - Colocado em `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` ou `/data/adb/boot-completed.d`.
@@ -261,3 +261,64 @@ No KernelSU, os scripts de inicialização são divididos em dois tipos com base
   - `post-fs-data.sh` é executado no modo post-fs-data, `service.sh` é executado no modo de serviço late_start, `boot-completed.sh` é executado na inicialização concluída e `post-mount.sh` é executado no OverlayFS montado.
 
 Todos os scripts de inicialização serão executados no shell BusyBox `ash` do KernelSU com o Modo Autônomo ativado.
+
+### Explicação do processo de scripts de inicialização
+
+A seguir está o processo de inicialização relevante para o Android (algumas partes foram omitidas), que inclui a operação do KernelSU (com asteriscos iniciais) e pode ajudá-lo a entender melhor o propósito desses scripts de módulo:
+
+```txt
+0. Bootloader (nada nesta tela)
+load patched boot.img
+load kernel:
+    - Modo GKI: kernel GKI com KernelSU integrado
+    - Modo LKM: kernel stock
+...
+1. kernel exec init (logotipo oem na tela):
+    - Modo GKI: stock init
+    - Modo LKM: exec ksuinit, insmod kernelsu.ko, exec stock init
+mount /dev, /dev/pts, /proc, /sys, etc.
+property-init -> read default props
+read init.rc
+...
+early-init -> init -> late_init
+early-fs
+   start vold
+fs
+  montar /vendor, /system, /persist, etc.
+post-fs-data
+  *verificação do modo de segurança
+  *executar scripts gerais em post-fs-data.d/
+  *carregar sepolicy.rule
+  *montar tmpfs
+  *executar scripts de módulo post-fs-data.sh
+    **(Zygisk)./bin/zygisk-ptrace64 monitor
+  *(pré)carregamento de system.prop (igual a resetprop -n)
+  *remontar módulos em /system
+  *executar scripts gerais em post-mount.d/
+  *executar scripts de módulo post-mount.sh
+zygote-start
+load_all_props_action
+  *executar resetprop (defina adereços reais para resetprop com a opção -n)
+... -> boot
+  class_start core
+    start-service logd, console, vold, etc.
+  class_start main
+    start-service adb, netd (iptables), zygote, etc.
+2. kernel2user init (animação da rom na tela, inicie pelo serviço bootanim)
+*executar scripts gerais em service.d/
+*executar scripts de módulo service.sh
+*definir adereços para resetprop sem a opção -p
+  **(Zygisk) hook zygote (iniciar o zygiskd)
+  **(Zygisk) montar zygisksu/module.prop
+iniciar apps do sistema (início automático)
+...
+inicialização completa (transmitir evento ACTION_BOOT_COMPLETED)
+*executar scripts gerais em boot-completed.d/
+*executar scripts de módulo boot-completed.sh
+3. Operável pelo usuário (tela de bloqueio)
+insira a senha para descriptografar /data/data
+*conjunto real de adereços para resetprop com opção -p
+iniciar apps de usuário (início automático)
+```
+
+Se você estiver interessado na linguagem de inicialização do Android, é recomendável ler sua [documentação](https://android.googlesource.com/platform/system/core/+/master/init/README.md).
