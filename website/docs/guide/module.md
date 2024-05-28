@@ -324,4 +324,4 @@ input password to decrypt /data/data
 start user apps (autostart)
 ```
 
-If you are interested in Android Init Language, it is recommended to read it's [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md).
+If you are interested in Android Init Language, it is recommended to read its [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md).
