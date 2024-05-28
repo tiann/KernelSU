@@ -190,7 +190,7 @@ pub fn has_magisk() -> bool {
 }
 
 fn is_ok_empty(dir: &str) -> bool {
-    use std::result::Result::{Err, Ok};
+    use std::result::Result::Ok;
 
     match fs::read_dir(dir) {
         Ok(mut entries) => entries.next().is_none(),
@@ -199,7 +199,7 @@ fn is_ok_empty(dir: &str) -> bool {
 }
 
 fn find_temp_path() -> String {
-    use std::result::Result::{Err, Ok};
+    use std::result::Result::Ok;
 
     if is_ok_empty(defs::TEMP_DIR) {
         return defs::TEMP_DIR.to_string();
@@ -286,8 +286,11 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
         module::prune_modules()?;
     }
     println!("- Removing directories..");
-    std::fs::remove_dir_all(defs::WORKING_DIR)?;
-    std::fs::remove_file(defs::DAEMON_PATH)?;
+    std::fs::remove_dir_all(defs::WORKING_DIR).ok();
+    std::fs::remove_file(defs::DAEMON_PATH).ok();
+    crate::mount::umount_dir(defs::MODULE_DIR).ok();
+    std::fs::remove_dir_all(defs::MODULE_DIR).ok();
+    std::fs::remove_dir_all(defs::MODULE_UPDATE_TMP_DIR).ok();
     println!("- Restore boot image..");
     boot_patch::restore(None, magiskboot_path, true)?;
     println!("- Uninstall KernelSU manager..");
