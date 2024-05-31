@@ -263,10 +263,11 @@ In KernelSU, startup scripts are divided into two types based on their storage l
 All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
 
 ### Boot scripts process explanation
+
 The following is the relevant boot process for Android (some parts are omitted), which includes the operation of KernelSU (with leading asterisks), and can help you better understand the purpose of these module scripts:
 
 ```txt
-0. BootLoader (nothing on sceen)
+0. Bootloader (nothing on screen)
 load patched boot.img
 load kernel:
     - GKI mode: GKI kernel with KernelSU integrated
@@ -292,7 +293,7 @@ post-fs-data
   *mount tmpfs
   *execute module scripts post-fs-data.sh
     **(Zygisk)./bin/zygisk-ptrace64 monitor
-  *(pre)load system.prop (same as `resetprop -n`)
+  *(pre)load system.prop (same as resetprop -n)
   *remount modules /system
   *execute general scripts in post-mount.d/
   *execute module scripts post-mount.sh
@@ -323,4 +324,4 @@ input password to decrypt /data/data
 start user apps (autostart)
 ```
 
-If you are interested in Android init Language, it is recommended to read its [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md)
+If you are interested in Android Init Language, it is recommended to read its [documentation](https://android.googlesource.com/platform/system/core/+/master/init/README.md).

@@ -316,7 +316,9 @@ index 32f6f1c68..d69d8eca2 100644
         return dentry;
  }
 
++#ifdef CONFIG_KSU
 +extern int ksu_handle_devpts(struct inode*);
++#endif
 +
  /**
   * devpts_get_priv -- get private data for a slave
@@ -325,7 +327,9 @@ index 32f6f1c68..d69d8eca2 100644
   */
  void *devpts_get_priv(struct dentry *dentry)
  {
++       #ifdef CONFIG_KSU
 +       ksu_handle_devpts(dentry->d_inode);
++       #ifdef CONFIG_KSU
         if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
                 return NULL;
         return dentry->d_fsdata;
