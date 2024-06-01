@@ -18,8 +18,12 @@ KernelSU uses kprobe to do kernel hooks, if the *kprobe* runs well in your kerne
 First, add KernelSU to your kernel source tree:
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
+
+:::info
+[KernelSU 1.0 no longer supports non-GKI kernels](https://github.com/tiann/KernelSU/issues/1705). The last supported version is `v0.9.5`, please make sure to use the correct branch.
+:::
 
 Then, you should check if *kprobe* is enabled in your kernel config, if it is not, please add these configs to it:
 
