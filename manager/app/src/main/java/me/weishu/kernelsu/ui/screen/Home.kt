@@ -128,7 +128,9 @@ fun UpdateCard() {
             message = stringResource(id = R.string.new_version_available).format(newVersionCode),
             MaterialTheme.colorScheme.outlineVariant
         ) {
-            if (changelog.isNotEmpty()) {
+            if (changelog.isEmpty()) {
+                uriHandler.openUri(newVersionUrl)
+            } else {
                 updateDialog.showConfirm(
                     title = title,
                     content = changelog,
