@@ -180,12 +180,7 @@ int ksu_handle_devpts(struct inode *inode)
 		return 0;
 
 	if (ksu_devpts_sid) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 		struct inode_security_struct *sec = selinux_inode(inode);
-#else
-		struct inode_security_struct *sec =
-			(struct inode_security_struct *)inode->i_security;
-#endif
 		if (sec) {
 			sec->sid = ksu_devpts_sid;
 		}
@@ -245,12 +240,8 @@ static struct kprobe execve_kp = {
 static int pts_unix98_lookup_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct inode *inode;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
 	struct file *file = (struct file *)PT_REGS_PARM2(regs);
 	inode = file->f_path.dentry->d_inode;
-#else
-	inode = (struct inode *)PT_REGS_PARM2(regs);
-#endif
 
 	return ksu_handle_devpts(inode);
 }
