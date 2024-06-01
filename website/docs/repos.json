@@ -609,13 +609,6 @@
         "devices": "Samsung Galaxy A34 5G (a34x)"
     },
     {
-        "maintainer": "KJ-Network",
-        "maintainer_link": "https://github.com/KJ-Network",
-        "kernel_name": "K-Nel-M1721",
-        "kernel_link": "https://github.com/KJ-Network/K-Nel-M1721/",
-        "devices": "Meizu M6 Note (M1721)"
-    },
-    {
         "maintainer": "SnowWolf725    ",
         "maintainer_link": "https://github.com/snowwolf725",
         "kernel_name": "android_kernel_oneplus_sm8150",
