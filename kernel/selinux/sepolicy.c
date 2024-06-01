@@ -587,7 +587,6 @@ static void *ksu_realloc(void *old, size_t new_size, size_t old_size)
 
 static bool add_type(struct policydb *db, const char *type_name, bool attr)
 {
-#ifdef KSU_SUPPORT_ADD_TYPE
 	struct type_datum *type = symtab_search(&db->p_types, type_name);
 	if (type) {
 		pr_warn("Type %s already exists\n", type_name);
