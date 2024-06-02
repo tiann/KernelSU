@@ -18,8 +18,12 @@ O KernelSU usa kprobe para fazer ganchos do kernel, se o kprobe funcionar bem em
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
+
+:::info INFORMAÇÕES
+[KernelSU 1.0 não oferece mais suporte a kernels não GKI](https://github.com/tiann/KernelSU/issues/1705). A última versão suportada é a `v0.9.5`, por favor, certifique-se de usar o branch correto.
+:::
 
 Então, você deve verificar se o kprobe está ativado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
 
