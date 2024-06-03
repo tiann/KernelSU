@@ -116,7 +116,7 @@ bool is_zygote(void *sec)
 	return result;
 }
 
-#define DEVPTS_DOMAIN "u:object_r:devpts:s0"
+#define DEVPTS_DOMAIN "u:object_r:ksu_file:s0"
 
 u32 ksu_get_devpts_sid()
 {
