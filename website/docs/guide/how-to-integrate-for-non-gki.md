@@ -22,7 +22,7 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 ```
 
 :::info
-[KernelSU 1.0 no longer supports non-GKI kernels](https://github.com/tiann/KernelSU/issues/1705). The last supported version is `v0.9.5`, please make sure to use the correct branch.
+[KernelSU 1.0 and later versions no longer support non-GKI kernels](https://github.com/tiann/KernelSU/issues/1705). The last supported version is `v0.9.5`, please make sure to use the correct version.
 :::
 
 Then, you should check if *kprobe* is enabled in your kernel config, if it is not, please add these configs to it:
