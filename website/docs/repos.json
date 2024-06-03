@@ -399,20 +399,6 @@
         "devices": "Xiaomi Redmi Note 8/8T (ginkgo/willow)"
     },
     {
-        "maintainer": "Coconutat",
-        "maintainer_link": "https://github.com/Coconutat",
-        "kernel_name": "android_kernel_xiaomi_ruby_exp",
-        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_ruby_exp",
-        "devices": "Redmi Note 12 Pro / Pro+ For MIUI 14"
-    },
-    {
-        "maintainer": "Coconutat",
-        "maintainer_link": "https://github.com/Coconutat",
-        "kernel_name": "android_kernel_xiaomi_sdm845_byd_exp",
-        "kernel_link": "https://github.com/Coconutat/android_kernel_xiaomi_sdm845_byd_exp",
-        "devices": "Xiaomi Mi 8 Pro(UD)[equuleus]/Explorer Edition[ursa]"
-    },
-    {
         "maintainer": "Abdul Wahid Khan",
         "maintainer_link": "https://github.com/Wahid7852",
         "kernel_name": "kernel_xiaomi_begonia",
