@@ -885,7 +885,7 @@ dependencies = [
  "sha256",
  "tempdir",
  "which",
- "zip 2.1.0",
+ "zip 2.1.2",
  "zip-extensions",
 ]
 
@@ -1770,9 +1770,9 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "2.1.0"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2568cd0f20e86cd9a7349fe05178f7bd22f22724678448ae5a9bac266df2689"
+checksum = "098d5d7737fb0b70814faa73c17df84f047d38dd31d13bbf2ec3fb354b5abf45"
 dependencies = [
  "arbitrary",
  "bzip2",
