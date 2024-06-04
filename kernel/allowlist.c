@@ -7,7 +7,9 @@
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/compiler_types.h>
+#endif
 
 #include "ksu.h"
 #include "klog.h" // IWYU pragma: keep
