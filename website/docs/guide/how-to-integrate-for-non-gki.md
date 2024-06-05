@@ -392,7 +392,7 @@ Finally, build your kernel again, KernelSU should work well.
   
 ### SU works but module does not work ?  
   
-You can solve this by modifying `security/salinux/books. c`,and you can use the following patches as a reference：  
+You can solve this by modifying `security/salinux/hooks. c`,and you can use the following patches as a reference：  
 ```
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
