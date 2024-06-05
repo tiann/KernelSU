@@ -17,7 +17,7 @@ zip = { version = "2", features = [
     "time",
     "zstd",
 ], default-features = false }
-zip-extensions = "0.6"
+zip-extensions = "0.7"
 java-properties = "2"
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
