@@ -389,3 +389,50 @@ You can get module umount feature working on pre-GKI kernels by manually backpor
 ```
 
 Finally, build your kernel again, KernelSU should work well.
+  
+### SU works but module does not work ?  
+  
+You can solve this by modifying `security/salinux/books. c`,and you can use the following patches as a reference：  
+```
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2291,9 +2291,18 @@ static int check_nnp_nosuid(const struct linux_binprm *bprm,
+ 			    const struct task_security_struct *old_tsec,
+ 			    const struct task_security_struct *new_tsec)
+ {
++	#ifdef CONFIG_KSU
++	static u32 ksu_sid;
++	char *secdata;
++	int nnp = (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS);
++	int nosuid = !mnt_may_suid(bprm->file->f_path.mnt);
++	int rc, error;
++	u32 seclen;
++	#else
+ 	int nnp = (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS);
+ 	int nosuid = !mnt_may_suid(bprm->file->f_path.mnt);
+ 	int rc;
++	#endif
+ 
+ 	if (!nnp && !nosuid)
+ 		return 0; /* neither NNP nor nosuid */
+@@ -2301,6 +2310,19 @@ static int check_nnp_nosuid(const struct linux_binprm *bprm,
+ 	if (new_tsec->sid == old_tsec->sid)
+ 		return 0; /* No change in credentials */
+ 
++	#ifdef CONFIG_KSU
++	if (!ksu_sid)
++		security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &ksu_sid);
++
++	error = security_secid_to_secctx(old_tsec->sid, &secdata, &seclen);
++	if (!error) {
++		rc = strcmp("u:r:init:s0", secdata);
++		security_release_secctx(secdata, seclen);
++		if (rc == 0 && new_tsec->sid == ksu_sid)
++			return 0;
++	}
++	#endif
++
+ 	/*
+ 	 * The only transitions we permit under NNP or nosuid
+ 	 * are transitions to bounded SIDs, i.e. SIDs that are
+```  

@@ -319,7 +319,7 @@ index 32f6f1c68..d69d8eca2 100644
 
 ### path_umount {#how-to-backport-path-umount}
 
-你可以通过从K5.9向旧版本移植`path_umount`，在GKI之前的内核上获得卸载模块的功能。你可以通过以下补丁作为参考:
+你可以通过从5.9版本的内核向旧版本内核移植`path_umount`，在GKI之前的内核上获得卸载模块的功能。你可以通过以下补丁作为参考:
 
 ```diff
 --- a/fs/namespace.c
@@ -367,3 +367,50 @@ index 32f6f1c68..d69d8eca2 100644
 ```
 
 改完之后重新编译内核即可。
+
+### SU工作但是模块不工作？  
+  
+可以通过修改`security/selinux/hooks.c`来解决，你可以通过以下补丁作为参考：  
+```
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2291,9 +2291,18 @@ static int check_nnp_nosuid(const struct linux_binprm *bprm,
+ 			    const struct task_security_struct *old_tsec,
+ 			    const struct task_security_struct *new_tsec)
+ {
++	#ifdef CONFIG_KSU
++	static u32 ksu_sid;
++	char *secdata;
++	int nnp = (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS);
++	int nosuid = !mnt_may_suid(bprm->file->f_path.mnt);
++	int rc, error;
++	u32 seclen;
++	#else
+ 	int nnp = (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS);
+ 	int nosuid = !mnt_may_suid(bprm->file->f_path.mnt);
+ 	int rc;
++	#endif
+ 
+ 	if (!nnp && !nosuid)
+ 		return 0; /* neither NNP nor nosuid */
+@@ -2301,6 +2310,19 @@ static int check_nnp_nosuid(const struct linux_binprm *bprm,
+ 	if (new_tsec->sid == old_tsec->sid)
+ 		return 0; /* No change in credentials */
+ 
++	#ifdef CONFIG_KSU
++	if (!ksu_sid)
++		security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &ksu_sid);
++
++	error = security_secid_to_secctx(old_tsec->sid, &secdata, &seclen);
++	if (!error) {
++		rc = strcmp("u:r:init:s0", secdata);
++		security_release_secctx(secdata, seclen);
++		if (rc == 0 && new_tsec->sid == ksu_sid)
++			return 0;
++	}
++	#endif
++
+ 	/*
+ 	 * The only transitions we permit under NNP or nosuid
+ 	 * are transitions to bounded SIDs, i.e. SIDs that are
+```
