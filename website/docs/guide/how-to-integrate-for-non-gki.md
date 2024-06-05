@@ -390,9 +390,9 @@ You can get module umount feature working on pre-GKI kernels by manually backpor
 
 Finally, build your kernel again, KernelSU should work well.
   
-### SU works but module does not work ?  
+### Superuser can work normally, but module functions cannot be used ?  
   
-You can solve this by modifying `security/salinux/hooks. c`,and you can use the following patches as a reference：  
+You can solve this by modifying `security/selinux/hooks.c`,and you can use the following patches as a reference：  
 ```
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
