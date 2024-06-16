@@ -2,7 +2,7 @@
 agp = "8.5.0"
 kotlin = "2.0.0"
 ksp = "2.0.0-1.0.21"
-compose-bom = "2024.05.00"
+compose-bom = "2024.06.00"
 lifecycle = "2.8.1"
 accompanist = "0.34.0"
 navigation = "2.7.7"
