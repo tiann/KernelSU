@@ -159,7 +159,11 @@ pub fn restore(
     let workdir = tmpdir.path();
     let magiskboot = find_magiskboot(magiskboot_path, workdir)?;
 
-    let (bootimage, bootdevice) = find_boot_image(&image, false, false, workdir)?;
+    let kmi = get_current_kmi().unwrap_or_else(|_| String::from(""));
+
+    let skip_init = kmi.starts_with("android12-");
+
+    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir)?;
 
     println!("- Unpacking boot image");
     let status = Command::new(&magiskboot)
@@ -309,7 +313,16 @@ fn do_patch(
     let tmpdir = tempdir::TempDir::new("KernelSU").context("create temp dir failed")?;
     let workdir = tmpdir.path();
 
-    let (bootimage, bootdevice) = find_boot_image(&image, ota, is_replace_kernel, workdir)?;
+    let kmi = if let Some(kmi) = kmi {
+        kmi
+    } else {
+        get_current_kmi().context("Unknown KMI, please choose LKM manually")?
+    };
+
+    let skip_init = kmi.starts_with("android12-");
+
+    let (bootimage, bootdevice) =
+        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir)?;
 
     let bootimage = bootimage.display().to_string();
 
@@ -330,11 +343,6 @@ fn do_patch(
         std::fs::copy(kmod, kmod_file).context("copy kernel module failed")?;
     } else {
         // If kmod is not specified, extract from assets
-        let kmi = if let Some(kmi) = kmi {
-            kmi
-        } else {
-            get_current_kmi().context("Unknown KMI, please choose LKM manually")?
-        };
         println!("- KMI: {kmi}");
         let name = format!("{kmi}_kernelsu.ko");
         assets::copy_assets_to_file(&name, kmod_file)
@@ -537,6 +545,7 @@ fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<P
 
 fn find_boot_image(
     image: &Option<PathBuf>,
+    skip_init: bool,
     ota: bool,
     is_replace_kernel: bool,
     workdir: &Path,
@@ -564,7 +573,7 @@ fn find_boot_image(
 
         let init_boot_exist =
             Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
-        let boot_partition = if !is_replace_kernel && init_boot_exist {
+        let boot_partition = if !is_replace_kernel && init_boot_exist && !skip_init {
             format!("/dev/block/by-name/init_boot{slot_suffix}")
         } else {
             format!("/dev/block/by-name/boot{slot_suffix}")

@@ -131,4 +131,5 @@
     <string name="select_file_tip">Nên sử dụng hình ảnh phân vùng %1$s</string>
     <string name="shrink_sparse_image">Giảm thiểu hình ảnh thưa thớt</string>
     <string name="shrink_sparse_image_message">Thay đổi kích thước hình ảnh thưa nơi đặt mô-đun theo kích thước thực tế của nó. Lưu ý điều này có thể khiến module hoạt động không bình thường nên vui lòng chỉ sử dụng khi cần thiết (chẳng hạn như để sao lưu)</string>
+    <string name="save_log">Lưu Nhật Ký</string>
 </resources>

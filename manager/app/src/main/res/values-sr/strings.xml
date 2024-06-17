@@ -7,4 +7,5 @@
     <string name="home_not_installed">Није инсталирано</string>
     <string name="home_working_version">Верзија: %d</string>
     <string name="home_working">Ради</string>
+    <string name="save_log">Сачувај Дневнике</string>
 </resources>

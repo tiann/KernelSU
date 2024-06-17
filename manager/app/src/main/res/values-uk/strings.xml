@@ -131,4 +131,5 @@
     <string name="selected_lkm">Обрано lkm: %s</string>
     <string name="settings_uninstall_permanent_message">Видалити KernelSU (Root і всі модулі) повністю і назавжди.</string>
     <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо є резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU, використовуйте \"Назавжди видалити\".</string>
+    <string name="save_log">Зберегти Журнали</string>
 </resources>

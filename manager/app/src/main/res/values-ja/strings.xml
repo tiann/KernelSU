@@ -131,4 +131,5 @@
     <string name="flash_success">フラッシュ成功</string>
     <string name="flash_failed">フラッシュ失敗</string>
     <string name="selected_lkm">選択された lkm: %s</string>
+    <string name="save_log">ログを保存</string>
 </resources>

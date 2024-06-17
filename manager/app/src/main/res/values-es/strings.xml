@@ -103,4 +103,5 @@
     <string name="app_profile_template_delete">Eliminar</string>
     <string name="app_profile_template_import_empty">El portapapeles esta vacio!</string>
     <string name="app_profile_template_view">Ver plantilla</string>
+    <string name="save_log">Guardar Registros</string>
 </resources>

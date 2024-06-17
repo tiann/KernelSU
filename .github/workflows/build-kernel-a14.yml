@@ -22,9 +22,6 @@ jobs:
       matrix:
         include:
           - version: "5.15"
-            sub_level: 110
-            os_patch_level: 2023-09
-          - version: "5.15"
             sub_level: 131
             os_patch_level: 2023-11
           - version: "5.15"
@@ -91,7 +88,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
-          pip3 install telethon==1.34.0
+          pip3 install telethon
 
       - name: Set boot sign key
         env:
@@ -137,8 +134,8 @@ jobs:
       matrix:
         include:
           - version: "5.15"
-            sub_level: 110
-            os_patch_level: 2023-09
+            sub_level: 148
+            os_patch_level: 2024-05
           - version: "6.1"
             sub_level: 75
             os_patch_level: 2024-05

@@ -63,4 +63,5 @@
 <string name="profile_namespace_global">گلوبال</string>
 <string name="profile_namespace_individual">تکی</string>
 <string name="profile_umount_modules">جداکردن ماژول ها</string>
+    <string name="save_log">ذخیره گزارش‌ها</string>
 </resources>

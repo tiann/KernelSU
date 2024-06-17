@@ -45,7 +45,7 @@ function sidebarGuide() {
         text: 'Guia',
         items: [
           { text: 'O que é KernelSU?', link: '/pt_BR/guide/what-is-kernelsu' },
-          { text: 'Diferença com Magisk', link: '/pt_BR/guide/difference-with-magisk' },
+          { text: 'Diferenças com Magisk', link: '/pt_BR/guide/difference-with-magisk' },
           { text: 'Instalação', link: '/pt_BR/guide/installation' },
           { text: 'Como compilar?', link: '/pt_BR/guide/how-to-build' },
           { text: 'Integração para dispositivos não GKI', link: '/pt_BR/guide/how-to-integrate-for-non-gki'},

@@ -79,4 +79,5 @@
     <string name="launch_app">Pokrenite</string>
     <string name="force_stop_app">Prisilno Zaustavite</string>
     <string name="restart_app">Resetujte</string>
+    <string name="save_log">Spremi Zapise</string>
 </resources>

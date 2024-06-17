@@ -131,4 +131,5 @@
     <string name="selected_lkm">lkm sélectionné : %s</string>
     <string name="settings_uninstall_permanent_message">Désinstallation complète et permanente de KernelSU (root et tous les modules).</string>
     <string name="settings_uninstall_temporary_message">Désinstaller KernelSU temporairement et rétablir l\'état original au redémarrage suivant.</string>
+    <string name="save_log">Enregistrer les Journaux</string>
 </resources>

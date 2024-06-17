@@ -66,4 +66,5 @@
     <string name="about_source_code">%1$s ನಲ್ಲಿ ಮೂಲ ಕೋಡ್ ಅನ್ನು ವೀಕ್ಷಿಸಿ<br/>ನಮ್ಮ %2$s ಚಾನಲ್‌ಗೆ ಸೇರಿ</string>
     <string name="home_manager_version">ಮ್ಯಾನೇಜರ್ ವರ್ಷನ್</string>
     <string name="new_version_available">ಹೊಸ ಆವೃತ್ತಿ: %s ಲಭ್ಯವಿದೆ, ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ</string>
+    <string name="save_log">ಲಾಗ್ಗಳನ್ನು ಉಳಿಸಿ</string>
 </resources>

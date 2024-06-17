@@ -2,11 +2,11 @@
 
 First, you should read the Android Official docs for kernel build:
 
-1. [Building Kernels](https://source.android.com/docs/setup/build/building-kernels).
-2. [GKI Release Builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds).
+1. [Building Kernels](https://source.android.com/docs/setup/build/building-kernels)
+2. [GKI Release Builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
 
 ::: warning
-This page is for GKI devices, if you use an old kernel, please refer [how to integrate KernelSU for old kernel](how-to-integrate-for-non-gki).
+This page is for GKI devices, if you use an old kernel, please refer [How to integrate KernelSU for non-GKI kernels](how-to-integrate-for-non-gki).
 :::
 
 ## Build Kernel
@@ -32,7 +32,7 @@ For example, to build an aarch64 kernel image:
 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
 ```
 
-Don't forget to add the `LTO=thin` flag, otherwise the build may fail if your computer's memory is less then 24Gb.
+Don't forget to add the `LTO=thin` flag, otherwise the build may fail if your computer's memory is less then 24 GB.
 
 Starting from Android 13, the kernel is built by `bazel`:
 

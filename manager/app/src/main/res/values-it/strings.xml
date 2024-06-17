@@ -130,4 +130,5 @@
     <string name="flash_failed">Installazione fallita</string>
     <string name="selected_lkm">LKM selezionato: %s</string>
     <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica del produttore (se il backup è presente), solitamente usato prima di applicare l\'OTA; se devi disinstallare KernelSU, utilizza invece \"Disinstalla Permanentemente\".</string>
+    <string name="save_log">Salva Registri</string>
 </resources>

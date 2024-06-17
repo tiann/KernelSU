@@ -1,10 +1,14 @@
 package me.weishu.kernelsu.ui.util
 
+import android.content.ContentResolver
+import android.content.Context
+import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.Parcelable
 import android.os.SystemClock
+import android.provider.OpenableColumns
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
@@ -46,6 +50,18 @@ inline fun <T> withNewRootShell(
     block: Shell.() -> T
 ): T {
     return createRootShell(globalMnt).use(block)
+}
+
+fun getFileNameFromUri(context: Context, uri: Uri): String? {
+    var fileName: String? = null
+    val contentResolver: ContentResolver = context.contentResolver
+    val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        if (it.moveToFirst()) {
+            fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+        }
+    }
+    return fileName
 }
 
 fun createRootShell(globalMnt: Boolean = false): Shell {

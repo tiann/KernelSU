@@ -1,10 +1,9 @@
 [versions]
-agp = "8.4.0"
-kotlin = "1.9.23"
-ksp = "1.9.23-1.0.20"
-compose-compiler = "1.5.11"
-compose-bom = "2024.05.00"
-lifecycle = "2.8.0"
+agp = "8.5.0"
+kotlin = "2.0.0"
+ksp = "2.0.0-1.0.22"
+compose-bom = "2024.06.00"
+lifecycle = "2.8.1"
 accompanist = "0.34.0"
 navigation = "2.7.7"
 activity-compose = "1.9.0"
@@ -25,6 +24,7 @@ agp-app = { id = "com.android.application", version.ref = "agp" }
 agp-lib = { id = "com.android.library", version.ref = "agp" }
 
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

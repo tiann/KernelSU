@@ -22,29 +22,11 @@ jobs:
       matrix:
         include:
           - version: "5.10"
-            sub_level: 168
-            os_patch_level: 2023-05
-          - version: "5.10"
-            sub_level: 177
-            os_patch_level: 2023-07
-          - version: "5.10"
-            sub_level: 177
-            os_patch_level: 2024-02
-          - version: "5.10"
-            sub_level: 186
-            os_patch_level: 2023-08
-          - version: "5.10"
-            sub_level: 186
-            os_patch_level: 2023-09
-          - version: "5.10"
             sub_level: 189
             os_patch_level: 2023-11
           - version: "5.10"
             sub_level: 198
-            os_patch_level: 2023-12
-          - version: "5.10"
-            sub_level: 205
-            os_patch_level: 2024-02
+            os_patch_level: 2024-01
           - version: "5.10"
             sub_level: 205
             os_patch_level: 2024-03
@@ -52,20 +34,11 @@ jobs:
             sub_level: 209
             os_patch_level: 2024-05
           - version: "5.15"
-            sub_level: 94
-            os_patch_level: 2023-05
-          - version: "5.15"
-            sub_level: 104
-            os_patch_level: 2023-07
-          - version: "5.15"
-            sub_level: 119
-            os_patch_level: 2023-09
-          - version: "5.15"
             sub_level: 123
             os_patch_level: 2023-11
           - version: "5.15"
             sub_level: 137
-            os_patch_level: 2023-12
+            os_patch_level: 2024-01
           - version: "5.15"
             sub_level: 144
             os_patch_level: 2024-03
@@ -112,7 +85,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
-          pip3 install telethon==1.34.0
+          pip3 install telethon
 
       - name: Set boot sign key
         env:
@@ -158,11 +131,11 @@ jobs:
       matrix:
         include:
           - version: "5.10"
-            sub_level: 189
-            os_patch_level: 2023-10
+            sub_level: 209
+            os_patch_level: 2024-05
           - version: "5.15"
-            sub_level: 123
-            os_patch_level: 2023-10
+            sub_level: 148
+            os_patch_level: 2024-05
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android13-${{ matrix.version }}

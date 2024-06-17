@@ -45,15 +45,15 @@ Observe que o SubLevel na versão do kernel não faz parte do KMI! Isso signific
 
 ### Nível do patch de segurança {#security-patch-level}
 
-Dispositivos Android mais recentes podem ter mecanismos anti-rollback que não permitem flashar um boot.img com um nível do patch de segurança antigo. Por exemplo, se o kernel do seu dispositivo for `5.10.101-android12-9-g30979850fc20`, o patch de segurança será `2023-11`, mesmo se você atualizar o kernel consistente com o KMI do kernel, se o nível do patch de segurança for anterior a `2023-11` (como `2023-06`), então isso pode causar bootloop.
+Dispositivos Android mais recentes podem ter mecanismos anti-rollback que não permitem flashar um boot.img com um nível do patch de segurança antigo. Por exemplo, se o kernel do seu dispositivo for `5.10.101-android12-9-g30979850fc20`, o patch de segurança será `2023-11`, mesmo se você atualizar o kernel correspondente ao KMI do kernel, se o nível do patch de segurança for anterior a `2023-11` (como `2023-06`), então isso pode causar bootloop.
 
-Portanto, os kernels com os níveis do patch de segurança mais recentes são preferidos, mantendo a consistência do KMI.
+Portanto, os kernels com os níveis do patch de segurança mais recentes são preferidos para manter a correspondência com o KMI.
 
 ### Versão do kernel vs Versão do Android
 
 Por favor, observe: **A versão do kernel e a versão do Android não são necessariamente iguais!**
 
-Se você descobrir que a versão do seu kernel é `android12-5.10.101`, mas a versão do seu sistema Android é Android 13 ou outra, não se surpreenda, pois o número da versão do sistema Android não é necessariamente igual ao número da versão do kernel Linux. O número da versão do kernel Linux geralmente é consistente com a versão do sistema Android que acompanha o **dispositivo quando ele é enviado**. Se o sistema Android for atualizado posteriormente, a versão do kernel geralmente não será alterada. Se você precisar fazer o flash, **por favor, consulte sempre a versão do kernel!**
+Se você descobrir que a versão do seu kernel é `android12-5.10.101`, mas a versão do seu sistema Android é Android 13 ou outra, não se surpreenda, pois o número da versão do sistema Android não é necessariamente igual ao número da versão do kernel Linux. O número da versão do kernel Linux geralmente é correspondente à versão do sistema Android que acompanha o **dispositivo quando ele é enviado**. Se o sistema Android for atualizado posteriormente, a versão do kernel geralmente não será alterada. Então, antes de flashar qualquer coisa, **consulte sempre a versão do kernel!**
 
 ## Introdução
 
@@ -76,9 +76,9 @@ No modo GKI, o kernel original do dispositivo será substituído pela imagem gen
 No modo LKM, o kernel original do dispositivo não será substituído, mas o módulo do kernel carregável será carregado no kernel do dispositivo. As vantagens do modo LKM são:
 
 1. Não substituirá o kernel original do dispositivo. Se você tiver os requisitos especiais para o kernel original do dispositivo ou quiser usar o KernelSU enquanto usa um kernel de terceiros, poderá usar o modo LKM.
-2. É mais conveniente atualizar o OTA. Ao atualizar o KernelSU, você pode instalá-lo diretamente no gerenciador sem atualizar manualmente. Após o sistema OTA, você pode instalá-lo diretamente no segundo slot sem flashar manualmente.
+2. É mais conveniente atualizar o OTA. Ao atualizar o KernelSU, você pode instalá-lo diretamente no gerenciador sem flashar manualmente. Após o sistema OTA, você pode instalá-lo diretamente no segundo slot sem flashar manualmente.
 3. Adequado para alguns cenários especiais, por exemplo, o LKM também pode ser carregado com privilégios root temporários. Como não é necessário substituir a partição boot, ele não acionará o AVB e não causará o bloqueio do dispositivo.
-4. O LKM pode ser desinstalado temporariamente. Se você deseja cancelar temporariamente o root, você pode desinstalar o LKM, este processo não requer o flash de partições, nem mesmo a reinicialização do dispositivo. Se quiser fazer root novamente, basta reiniciar o dispositivo.
+4. O LKM pode ser desinstalado temporariamente. Se você deseja desativar temporariamente o acesso root, você pode desinstalar o LKM, este processo não requer o flash de partições, nem mesmo a reinicialização do dispositivo. Se quiser ativar o root novamente, basta reiniciar o dispositivo.
 
 :::tip COEXISTÊNCIA DE DOIS MODOS
 Após abrir o gerenciador, você pode ver o modo atual do dispositivo na página inicial. Observe que a prioridade do modo GKI é maior que a do LKM. Por exemplo, se você usar o kernel GKI para substituir o kernel original e usar LKM para corrigir o kernel GKI, o LKM será ignorado e o dispositivo sempre será executado no modo GKI.
@@ -98,13 +98,13 @@ Existem muitas maneiras de obter o firmware oficial. Se o seu dispositivo suport
 
 Se o seu dispositivo não suportar `fastboot boot`, pode ser necessário baixar manualmente o pacote de firmware oficial e extrair o boot dele.
 
-Ao contrário do modo GKI, o modo LKM modificará o `ramdisk`, portanto, em dispositivos com Android 13, ele precisa corrigir a partição `init_boot` em vez da partição `boot`, enquanto o modo GKI sempre opera a partição `boot`.
+Ao contrário do modo GKI, o modo LKM modificará o `ramdisk`, portanto, em dispositivos com Android 13, ele precisa corrigir a partição `init_boot` em vez da partição `boot`, enquanto isso, o modo GKI sempre opera a partição `boot`.
 
 ### Use o gerenciador
 
 Abra o gerenciador, clique no ícone de instalação no canto superior direito e diversas opções aparecerão:
 
-1. Selecione e corrija um arquivo. Se o seu telefone não tiver privilégios root, você pode escolher esta opção e, em seguida, selecionar seu firmware oficial, e o gerenciador irá corrigi-lo automaticamente. Você só precisa flashar este arquivo corrigido para obter privilégios root permanentemente.
+1. Selecione e corrija um arquivo. Se o seu telefone não tiver privilégios root, você pode escolher esta opção e, em seguida, selecionar seu firmware oficial, o gerenciador irá corrigi-lo automaticamente. Você só precisa flashar este arquivo corrigido para obter privilégios root permanentemente.
 2. Instale diretamente. Se o seu telefone já estiver rooteado, você pode escolher esta opção, o gerenciador obterá automaticamente as informações do seu dispositivo e, em seguida, corrigirá o firmware oficial e irá fazer o flash automaticamente. Você pode considerar usar `fastboot boot` e o kernel GKI do KernelSU para obter root temporário e instalar o gerenciador, e então usar esta opção. Esta também é a principal forma de atualizar o KernelSU.
 3. Instale em outra partição. Se o seu dispositivo suportar partição A/B, você pode escolher esta opção, o gerenciador irá corrigir automaticamente o firmware oficial e, em seguida, instalá-lo em outra partição. Este método é adequado para dispositivos após o OTA, você pode instalá-lo diretamente em outra partição após o OTA e, em seguida, reiniciar o dispositivo.
 
@@ -114,7 +114,7 @@ Se não quiser usar o gerenciador, você também pode usar a linha de comando pa
 
 Esta ferramenta oferece suporte ao macOS, Linux e Windows. Você pode baixar a versão correspondente em [GitHub Release](https://github.com/tiann/KernelSU/releases).
 
-Uso: `ksud boot-patch` você pode verificar a ajuda da linha de comando para o uso específico.
+Uso: `ksud boot-patch` você pode verificar a ajuda da linha de comando para opções específicas.
 
 ```sh
 oriole:/ # ksud boot-patch -h
@@ -168,7 +168,7 @@ Você pode baixar o boot.img em [GitHub Release](https://github.com/tiann/Kernel
 Normalmente, existem três arquivos de inicialização em formatos diferentes no mesmo KMI e nível do patch de segurança. Eles são todos iguais, exceto pelo formato de compactação do kernel. Por favor, verifique o formato de compactação do kernel de seu boot.img original. Você deve usar o formato correto, como `lz4` ou `gz`. Se você usar um formato de compactação incorreto, poderá encontrar bootloop após flashar o boot.img.
 
 ::: info FORMATO DE COMPACTAÇÃO DO BOOT.IMG
-1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; é claro que você também pode perguntar a outras pessoas mais experientes com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda, portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
+1. Você pode usar o magiskboot para obter o formato de compactação de seu boot original; alternativamente, você também pode solicitá-lo a membros/desenvolvedores da comunidade com o mesmo modelo do seu dispositivo. Além disso, o formato de compactação do kernel geralmente não muda, portanto, se você inicializar com êxito com um determinado formato de compactação, poderá tentar esse formato mais tarde.
 2. Os dispositivos Xiaomi geralmente usam `gz` ou `uncompressed`.
 3. Para dispositivos Pixel, siga as instruções abaixo:
 :::
@@ -203,7 +203,7 @@ Etapa:
 Dessa forma, é necessário que o app Kernel Flasher tenha privilégios root. Você pode usar os seguintes métodos para conseguir isso:
 
 1. Seu dispositivo está rooteado. Por exemplo, você instalou o KernelSU e deseja atualizar para a versão mais recente ou fez o root por meio de outros métodos (como Magisk).
-2. Se o seu telefone não estiver rooteado, mas o telefone suportar o método de inicialização temporária como `fastboot boot boot.img`, você pode usar a imagem GKI fornecida pelo KernelSU para inicializar temporariamente o seu dispositivo, obter privilégios root temporário e, em seguida, usar o Kernel Flasher para obter privilégios root permanente.
+2. Se o seu dispositivo não estiver rooteado, mas suportar o método de inicialização temporária como `fastboot boot boot.img`, você pode usar a imagem GKI fornecida pelo KernelSU para inicializar temporariamente o seu dispositivo, obter privilégios root temporário e, em seguida, usar o Kernel Flasher para obter privilégios root permanente.
 
 1. [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases)
 2. [Franco Kernel Manager](https://play.google.com/store/apps/details?id=com.franco.kernel)
@@ -213,7 +213,7 @@ Observação: Este método é mais conveniente ao atualizar o KernelSU e pode se
 
 ## Corrigir boot.img manualmente {#patch-boot-image}
 
-Para alguns dispositivos, o formato boot.img não é tão comum como `lz4`, `gz` e `uncompressed`. O mais típico é o Pixel, seu formato boot.img é `lz4_legacy` compactado, ramdisk pode ser `gz` e também pode ser compactado `lz4_legacy`. Neste momento, se você flashar diretamente o boot.img fornecido pelo KernelSU, o telefone pode não conseguir inicializar. Neste momento, você pode corrigir manualmente o boot.img para conseguir isso.
+Para alguns dispositivos, o formato boot.img não é tão comum como `lz4`, `gz` e `uncompressed`. O mais típico é o Pixel, seu formato boot.img é `lz4_legacy` compactado, ramdisk pode ser `gz` e também pode ser compactado `lz4_legacy`. Atualmente, se você flashar diretamente o boot.img fornecido pelo KernelSU, o telefone pode não conseguir inicializar. Neste momento, você pode corrigir manualmente o boot.img para conseguir isso.
 
 É sempre recomendado usar `magiskboot` para corrigir imagens, existem duas maneiras:
 
@@ -223,7 +223,7 @@ Para alguns dispositivos, o formato boot.img não é tão comum como `lz4`, `gz`
 A versão oficial do `magiskboot` só pode rodar em dispositivos Android, se você quiser rodar no PC, você pode tentar a segunda opção.
 
 ::: tip DICA
-Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamente com os metadados de inicialização (como o nível do patch de segurança). Portanto, pode não funcionar em alguns dispositivos.
+Android-Image-Kitchen não é recomendado por enquanto, porque ele não lida corretamente com os metadados de inicialização (como o nível do patch de segurança). Portanto, pode não funcionar em alguns dispositivos.
 :::
 
 ### Preparação
@@ -240,16 +240,16 @@ Android-Image-Kitchen não é recomendado agora, porque ele não lida corretamen
 4. Envie o boot.img padrão e Image em AnyKernel3 para o seu dispositivo.
 5. Entre no ADB shell e no diretório cd `/data/local/tmp/`, em seguida, `chmod +x magiskboot`.
 6. Entre no ADB shell e no diretório cd `/data/local/tmp/`, execute `./magiskboot unpack boot.img` para descompactar `boot.img`, você obterá um arquivo `kernel`, este é o seu kernel padrão.
-7. Substitua `kernel` por `Image`: `mv -f Image kernel`.
+7. Substitua `kernel` por `Image` executando o comando: `mv -f Image kernel`.
 8. Execute `./magiskboot repack boot.img` para reembalar o boot.img, e você obterá um arquivo `new-boot.img`, faça o flash deste arquivo para o dispositivo por fastboot.
 
 ### Usando o magiskboot no PC Windows/macOS/Linux {#using-magiskboot-on-PC}
 
 1. Baixe o `magiskboot` adequado para o seu sistema operacional em [magiskboot_build](https://github.com/ookiineko/magiskboot_build/releases/tag/last-ci).
 2. Prepare o `boot.img` padrão e `Image` em seu PC.
-3. `chmod +x magiskboot`
+3. Execute `chmod +x magiskboot`.
 4. Entre no diretório apropriado, execute `./magiskboot unpack boot.img` para descompactar `boot.img`. Você obterá um arquivo `kernel`, este é o seu kernel padrão.
-5. Substitua `kernel` por `Image`: `mv -f Image kernel`.
+5. Substitua `kernel` por `Image` executando o comando: `mv -f Image kernel`.
 6. Execute `./magiskboot repack boot.img` para reembalar o boot.img, e você obterá um arquivo `new-boot.img`, faça o flash deste arquivo para o dispositivo por fastboot.
 
 ::: info INFORMAÇÕES
@@ -258,13 +258,13 @@ O `magiskboot` oficial pode executar o dispositivo `Linux` normalmente. Se você
 
 ## Instalar com Recovery personalizado {#install-with-custom-recovery}
 
-Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP. Se apenas o Recovery oficial estiver disponível, use outro método.
+Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP. Se não houver Recovery personalizado disponível para o seu dispositivo, use outro método.
 
-Etapa:
+Etapas:
 
-1. Em [GitHub Releases](https://github.com/tiann/KernelSU/releases), baixe o pacote ZIP começando com AnyKernel3 que corresponde à versão do seu telefone. Por exemplo, a versão do kernel do telefone é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
+1. Em [GitHub Releases](https://github.com/tiann/KernelSU/releases), baixe o pacote ZIP começando com AnyKernel3 que corresponde à versão do seu telefone. Por exemplo, a versão do kernel do dispositivo é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
 2. Reinicie o telefone no TWRP.
-3. Use o ADB para colocar AnyKernel3-*.zip no telefone em /sdcard e escolha instalá-lo na interface do TWRP, ou você pode diretamente `adb sideload AnyKernel-*.zip` para instalar.
+3. Use o ADB para colocar AnyKernel3-*.zip no dispositivo em `/sdcard` e escolha instalá-lo na interface do TWRP, ou você pode diretamente executar `adb sideload AnyKernel-*.zip` para instalar.
 
 Observação: Este método é adequado para qualquer instalação (não limitado à instalação inicial ou atualizações subsequentes), desde que você use o TWRP.
 
@@ -272,7 +272,7 @@ Observação: Este método é adequado para qualquer instalação (não limitado
 
 Na verdade, todos esses métodos de instalação têm apenas uma ideia principal, que é **substituir o kernel original pelo fornecido pelo KernelSU**, desde que isso possa ser alcançado, ele pode ser instalado. Por exemplo, a seguir estão outros métodos possíveis.
 
-1. Primeiro instale o Magisk, obtenha privilégios root através do Magisk e então use o Kernel Flasher para fazer o flash no zip AnyKernel do KernelSU.
-2. Use algum kit de ferramentas de flash em PCs para flashar no kernel fornecido pelo KernelSU.
+1. Primeiro instale o Magisk, obtenha privilégios root através do Magisk e então use o Kernel Flasher para fazer o flash no ZIP AnyKernel3 do KernelSU.
+2. Use algum kit de ferramentas de flash em PC para flashar no kernel fornecido pelo KernelSU.
 
-Mas se não funcionar, por favor, tente o método `magiskboot`.
+No entanto, se não funcionar, por favor, tente o método `magiskboot`.

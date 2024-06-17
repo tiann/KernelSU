@@ -131,4 +131,5 @@
     <string name="flash_failed">Flash falhou</string>
     <string name="flashing">Flashando</string>
     <string name="flash_success">Flash bem-sucedido</string>
+    <string name="save_log">Salvar Logs</string>
 </resources>

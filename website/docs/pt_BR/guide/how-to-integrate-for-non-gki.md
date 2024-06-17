@@ -2,7 +2,7 @@
 
 O KernelSU pode ser integrado em kernels não GKI e foi portado para 4.14 e versões anteriores.
 
-Devido à fragmentação de kernels não GKI, não temos uma maneira uniforme de construí-lo, portanto não podemos fornecer o boot.img não GKI. Mas você mesmo pode compilar o kernel com o KernelSU integrado.
+Devido à fragmentação de kernels não GKI, não temos uma maneira universal de construí-lo, portanto não podemos fornecer o boot.img não GKI. Mas você mesmo pode compilar o kernel com o KernelSU integrado.
 
 Primeiro, você deve ser capaz de compilar um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU no seu dispositivo.
 
@@ -18,22 +18,26 @@ O KernelSU usa kprobe para fazer ganchos do kernel, se o kprobe funcionar bem em
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
+
+:::info INFORMAÇÕES
+[KernelSU 1.0 não oferece mais suporte a kernels não GKI](https://github.com/tiann/KernelSU/issues/1705). A última versão suportada é a `v0.9.5`, por favor, certifique-se de usar o branch correto.
+:::
 
 Então, você deve verificar se o kprobe está ativado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
 
-```
+```txt
 CONFIG_KPROBES=y
 CONFIG_HAVE_KPROBES=y
 CONFIG_KPROBE_EVENTS=y
 ```
 
-E construa seu kernel novamente, KernelSU deve funcionar bem.
+E agora, quando você recompilar seu kernel, o KernelSU deve funcionar bem.
 
-Se você descobrir que o KPROBES ainda não está ativado, você pode tentar ativar `CONFIG_MODULES`. (Se ainda assim não surtir efeito, use `make menuconfig` para procurar outras dependências do KPROBES)
+Se você descobrir que o KPROBES ainda não está ativado, você pode tentar ativar `CONFIG_MODULES`. Se ainda assim não surtir efeito, use `make menuconfig` para procurar outras dependências do KPROBES.
 
-Mas se você entrar em um bootloop quando o KernelSU for integrado, talvez o **kprobe esteja quebrado em seu kernel**. Você deve corrigir o bug do kprobe ou usar o segundo caminho.
+Mas se você entrar em um bootloop quando o KernelSU for integrado, pode ser porque o **kprobe esteja quebrado em seu kernel**, o que significa que você deve corrigir o bug do kprobe ou usar outra maneira.
 
 :::tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
 
@@ -47,7 +51,7 @@ Se o seu kernel for inferior a 5.9, você deve portar `path_umount` para `fs/nam
 
 ## Modifique manualmente a fonte do kernel
 
-Se o kprobe não funcionar no seu kernel (pode ser um bug do upstream ou do kernel abaixo de 4.8), então você pode tentar desta forma:
+Se o kprobe não funcionar no seu kernel (pode ser um bug do upstream ou do kernel abaixo de 4.8), então você pode tentar o seguinte:
 
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
@@ -67,9 +71,9 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 
 :::
 
-Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Por exemplo, em seu defconfig, habilite `CONFIG_KSU` com **y** para habilitar ou **n** para desabilitar. Seu caminho será algo como:
-`arch/arm64/configs/...` 
-```
+Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Para qualquer defconfig que você estiver usando, certifique-se de ativar `CONFIG_KSU` com `y` para ativa-lo ou `n` para desativa-lo. Por exemplo, caso você opte por ativa-lo, seu defconfig deverá conter a seguinte string:
+
+```txt
 # KernelSU
 CONFIG_KSU=y
 ```
@@ -200,12 +204,12 @@ index 376543199b5a..82adcef03ecc 100644
 
 Você deve encontrar as quatro funções no código-fonte do kernel:
 
-1. do_faccessat, geralmente em `fs/open.c`
-2. do_execveat_common, geralmente em `fs/exec.c`
-3. vfs_read, geralmente em `fs/read_write.c`
-4. vfs_statx, geralmente em `fs/stat.c`
+1. `do_faccessat`, geralmente em `fs/open.c`
+2. `do_execveat_common`, geralmente em `fs/exec.c`
+3. `vfs_read`, geralmente em `fs/read_write.c`
+4. `vfs_statx`, geralmente em `fs/stat.c`
 
-Se o seu kernel não tiver `vfs_statx`, use `vfs_fstatat`:
+Se o seu kernel não tiver a função `vfs_statx`, use `vfs_fstatat`:
 
 ```diff
 diff --git a/fs/stat.c b/fs/stat.c
@@ -266,7 +270,7 @@ index 2ff887661237..e758d7db7663 100644
 
 ### Modo de Segurança
 
-Para ativar o Modo de Segurança integrado do KernelSU, você também deve modificar `input_handle_event` em `drivers/input/input.c`:
+Para ativar o Modo de Segurança integrado do KernelSU, você também deve modificar a função `input_handle_event` em `drivers/input/input.c`:
 
 :::tip DICA
 É altamente recomendável ativar este recurso, é muito útil para evitar bootloops!
@@ -316,7 +320,9 @@ index 32f6f1c68..d69d8eca2 100644
         return dentry;
  }
 
++#ifdef CONFIG_KSU
 +extern int ksu_handle_devpts(struct inode*);
++#endif
 +
  /**
   * devpts_get_priv -- get private data for a slave
@@ -325,7 +331,9 @@ index 32f6f1c68..d69d8eca2 100644
   */
  void *devpts_get_priv(struct dentry *dentry)
  {
++       #ifdef CONFIG_KSU
 +       ksu_handle_devpts(dentry->d_inode);
++       #ifdef CONFIG_KSU
         if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
                 return NULL;
         return dentry->d_fsdata;

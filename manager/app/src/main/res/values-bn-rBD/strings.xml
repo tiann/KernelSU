@@ -48,4 +48,5 @@
     <string name="module_uninstall_failed">%s আনইনস্টল করা যায়নি</string>
     <string name="module_version">ভার্সন</string>
     <string name="module_author">অথার</string>
+    <string name="save_log">লগ সংরক্ষণ করুন</string>
 </resources>

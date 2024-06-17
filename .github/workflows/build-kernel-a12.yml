@@ -21,12 +21,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - sub_level: 168
-            os_patch_level: 2023-05
-          - sub_level: 177
-            os_patch_level: 2023-07
-          - sub_level: 185
-            os_patch_level: 2023-09
           - sub_level: 198
             os_patch_level: 2024-01
           - sub_level: 205
@@ -73,7 +67,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
-          pip3 install telethon==1.34.0
+          pip3 install telethon
 
       - name: Set boot sign key
         env:
@@ -118,7 +112,7 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
-      version_name: android12-5.10.205
-      tag: android12-5.10-2024-03
-      os_patch_level: 2024-03
+      version_name: android12-5.10.209
+      tag: android12-5.10-2024-05
+      os_patch_level: 2024-05
       patch_path: "5.10"

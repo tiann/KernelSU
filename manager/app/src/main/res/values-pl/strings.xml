@@ -132,4 +132,5 @@
     <string name="flash_success">Flashowanie ukończone pomyślnie</string>
     <string name="flash_failed">Flashowanie nieudane</string>
     <string name="selected_lkm">Wybrano lkm: %s</string>
+    <string name="save_log">Zapisz Dzienniki</string>
 </resources>

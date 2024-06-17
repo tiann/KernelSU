@@ -12,7 +12,7 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, check [Module Page](module.md) please.
+Yes, check [Module Guide](module.md) please.
 
 ## Does KernelSU support Xposed?
 

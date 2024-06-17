@@ -80,4 +80,5 @@
     <string name="settings_umount_modules_default_summary">Visuotinė numatytoji „Modulių atjungimo“ reikšmė programų profiliuose. Jei įjungta, ji pašalins visus sistemos modulio pakeitimus programoms, kurios neturi profilio.</string>
     <string name="module_changelog">Keitimų žurnalas</string>
     <string name="require_kernel_version">Ši KernelSU versija %d yra per žema, kad šis vadybininkas galėtų tinkamai funkcionuoti. Prašome atsinaujinti į versiją %d ar aukščiau!</string>
+    <string name="save_log">Saglabāt Žurnālus</string>
 </resources>

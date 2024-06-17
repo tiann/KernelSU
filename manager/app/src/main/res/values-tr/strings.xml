@@ -132,4 +132,5 @@
     <string name="selected_lkm">Seçili lkm: %s</string>
     <string name="flashing">Flaşlanıyor</string>
     <string name="flash_failed">Flaşlama başarısız</string>
+    <string name="save_log">Günlükleri Kaydet</string>
 </resources>

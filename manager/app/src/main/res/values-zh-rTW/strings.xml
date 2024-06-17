@@ -130,4 +130,5 @@
     <string name="settings_restore_stock_image_message">恢復原廠映像（如果有備份），通常在OTA之前使用；如果需要解除安裝KernelSU，請使用「永久解除安裝」。</string>
     <string name="flash_failed">寫入失敗</string>
     <string name="selected_lkm">選擇的 LKM ：%s</string>
+    <string name="save_log">儲存日誌</string>
 </resources>

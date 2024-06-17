@@ -1,4 +1,4 @@
-# Diferença com Magisk
+# Diferenças com Magisk
 
 Embora existam muitas semelhanças entre os módulos KernelSU e os módulos Magisk, existem inevitavelmente algumas diferenças devido aos seus mecanismos de implementação completamente diferentes. Se você deseja que seu módulo seja executado no Magisk e no KernelSU, você deve entender essas diferenças.
 

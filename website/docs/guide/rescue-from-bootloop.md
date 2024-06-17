@@ -20,8 +20,8 @@ Installing modules can be a more common cause of bricking your device, but we mu
 
 If you have flashed a module that has been proven to be safe but causes your device to fail to boot, then this situation is easily recoverable in KernelSU without any worries. KernelSU has built-in mechanisms to rescue your device, including the following:
 
-1. AB update.
-2. Rescue by pressing Volume Down.
+1. AB update
+2. Rescue by pressing Volume Down
 
 #### AB update
 

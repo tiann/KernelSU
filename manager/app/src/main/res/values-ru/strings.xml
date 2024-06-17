@@ -134,4 +134,5 @@
     <string name="flashing">Установка</string>
     <string name="flash_failed">Установка не выполнена</string>
     <string name="selected_lkm">Выбран lkm: %s</string>
+    <string name="save_log">Сохранить Журналы</string>
 </resources>
