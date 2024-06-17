@@ -117,5 +117,9 @@
     <string name="open">Öffnen</string>
     <string name="settings_check_update">Updates suchen</string>
     <string name="settings_check_update_summary">Automatisch nach Updates suchen beim Öffnen der App</string>
+    <string name="settings_uninstall_temporary">Temporär deinstallieren</string>
+    <string name="settings_uninstall">Deinstallieren</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
+    <string name="shrink_sparse_image_message">Ändert die Größe des Sparse-Images, in dem sich das Modul befindet, auf seine tatsächliche Größe. Beachten Sie, dass dies dazu führen kann, dass das Modul nicht ordnungsgemäß funktioniert; verwenden Sie es daher nur, wenn es notwendig ist (z. B. für ein Backup).</string>
     <string name="save_log">Protokolle Speichern</string>
 </resources>
