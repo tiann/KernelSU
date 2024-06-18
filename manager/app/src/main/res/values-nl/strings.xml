@@ -125,5 +125,8 @@
     <string name="settings_uninstall_permanent">Permanent verwijderen</string>
     <string name="settings_restore_stock_image">Herstel stockafbeelding</string>
     <string name="settings_uninstall_temporary_message">Verwijder KernelSU tijdelijk en herstel het naar de oorspronkelijke staat na de volgende herstart.</string>
+    <string name="settings_uninstall_permanent_message">Het verwijderen van KernelSU (Root en alle modules) volledig en permanent.</string>
+    <string name="settings_restore_stock_image_message">Herstel de fabrieksimage (als er een back-up bestaat), meestal gebruikt vóór OTA; als u KernelSU moet verwijderen, gebruik dan \"Permanent verwijderen\".</string>
+    <string name="flashing">Knipperen</string>
     <string name="save_log">Logboeken Opslaan</string>
 </resources>

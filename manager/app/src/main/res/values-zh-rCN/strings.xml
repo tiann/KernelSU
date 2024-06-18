@@ -128,5 +128,5 @@
     <string name="flash_success">刷写完成</string>
     <string name="flash_failed">刷写失败</string>
     <string name="selected_lkm">选择的 LKM ：%s</string>
-    <string name="save_log">保存日志保存日志</string>
+    <string name="save_log">保存日志</string>
 </resources>
