@@ -15,7 +15,7 @@ markdown = "4.6.2"
 webkit = "1.11.0"
 appiconloader-coil = "1.5.0"
 parcelablelist = "2.0.1"
-libsu = "5.2.2"
+libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
 
