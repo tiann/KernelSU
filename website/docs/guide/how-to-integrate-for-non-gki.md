@@ -58,7 +58,7 @@ First, add KernelSU to your kernel source tree:
 ::: code-group
 
 ```sh[Latest tag(stable)]
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
 ```sh[ main branch(dev)]
