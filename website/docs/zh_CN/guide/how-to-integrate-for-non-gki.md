@@ -51,7 +51,7 @@ CONFIG_KPROBE_EVENTS=y
 首先，把 KernelSU 添加到你的内核源码树，在内核的根目录执行以下命令：
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
 请注意，某些设备的defconfig文件可能在`arch/arm64/configs/设备代号_defconfig`或位于`arch/arm64/configs/vendor/设备代号_defconfig`。在您的defconfig文件中,将 `CONFIG_KSU`设置为`y`以启用KernelSU,或设置为`n`以禁用。比如在某个defconfig中:
