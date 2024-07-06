@@ -10,12 +10,14 @@ rust-version = "1.77.2"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2", features = [
+zip = { git = "https://github.com/zip-rs/zip2.git", features = [
     "deflate",
     "deflate64",
     "bzip2",
     "time",
     "zstd",
+    "lzma",
+    "xz",
 ], default-features = false }
 zip-extensions = "0.7"
 java-properties = "2"
