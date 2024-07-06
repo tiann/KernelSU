@@ -108,7 +108,6 @@ void ksu_show_allow_list(void)
 static void ksu_grant_root_to_shell()
 {
 	struct app_profile profile = {
-		.version = KSU_APP_PROFILE_VER;
 		.allow_su = true,
 		.current_uid = 2000,
 	};
