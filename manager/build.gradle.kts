@@ -28,7 +28,7 @@ cmaker {
     }
     buildTypes {
         if (it.name == "release") {
-            arguments += "-DDEBUG_SYMBOLS_PATH=${buildDir.absolutePath}/symbols"
+            arguments += "-DDEBUG_SYMBOLS_PATH=${layout.buildDirectory.asFile.get().absolutePath}/symbols"
         }
     }
 }
