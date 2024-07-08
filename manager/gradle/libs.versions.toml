@@ -76,3 +76,5 @@ sheet-compose-dialogs-list = { group = "com.maxkeppeler.sheets-compose-dialogs",
 sheet-compose-dialogs-input = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "input", version.ref = "sheets-compose-dialogs" }
 
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
+
+lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "27.0.11718014-beta1" }
