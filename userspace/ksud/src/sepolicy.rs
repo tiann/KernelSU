@@ -352,10 +352,11 @@ where
     let mut statements = vec![];
 
     for line in input.split(['\n', ';']) {
-        if line.trim().is_empty() {
+        let trimmed_line = line.trim();
+        if trimmed_line.is_empty() || trimmed_line.starts_with('#') {
             continue;
         }
-        if let Ok((_, statement)) = PolicyStatement::parse(line.trim()) {
+        if let Ok((_, statement)) = PolicyStatement::parse(trimmed_line) {
             statements.push(statement);
         } else if strict {
             bail!("Failed to parse policy statement: {}", line)
