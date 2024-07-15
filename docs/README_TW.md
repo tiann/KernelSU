@@ -36,7 +36,7 @@ WSA和ChromeOS和執行在容器中的 Android 也可以與 KernelSU 一同運�
 
 若要協助翻譯 KernelSU 或改進現有翻譯，請使用 [Weblate](https://hosted.weblate.org/engage/kernelsu/)。 翻譯管理器的PR不再被接受，因為它會與Weblate衝突。
 
-### 討論
+## 討論
 
 - Telegram：[@KernelSU](https://t.me/KernelSU)
 
