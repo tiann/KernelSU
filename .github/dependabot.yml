@@ -11,12 +11,18 @@ updates:
       interval: daily
     allow:
       - dependency-type: "all"
-
+    groups:
+      crates:
+        patterns:
+          - "*"
   - package-ecosystem: gradle
     directory: manager
     schedule:
       interval: daily
-
+    groups:
+      maven-dependencies:
+        patterns:
+          - "*"
   - package-ecosystem: npm
     directory: website
     schedule:
