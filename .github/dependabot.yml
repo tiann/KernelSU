@@ -9,6 +9,8 @@ updates:
     directory: userspace/ksud
     schedule:
       interval: daily
+    allow:
+      - dependency-type: "all"
 
   - package-ecosystem: gradle
     directory: manager
