@@ -502,9 +502,9 @@ checksum = "7762d17f1241643615821a8455a0b2c3e803784b058693d990b11f2dce25a0ca"
 
 [[package]]
 name = "deflate64"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83ace6c86376be0b6cdcf3fb41882e81d94b31587573d1cfa9d01cd06bba210d"
+checksum = "da692b8d1080ea3045efaab14434d40468c3d8657e42abddfffca87b428f4c1b"
 
 [[package]]
 name = "deranged"
@@ -916,7 +916,7 @@ dependencies = [
  "sha256",
  "tempdir",
  "which",
- "zip 2.1.3",
+ "zip 2.1.4",
  "zip-extensions",
 ]
 
@@ -1818,8 +1818,9 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "2.1.3"
-source = "git+https://github.com/zip-rs/zip2.git#d45bdccc6afbf5121b3a4668b67dfebbaa328cd8"
+version = "2.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e29ab4097989787b2029a5981c41b7bfb427b5a601e23f455daacb4d0360a9e9"
 dependencies = [
  "arbitrary",
  "bzip2",
