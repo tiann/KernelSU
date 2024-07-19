@@ -4,7 +4,10 @@ updates:
     directory: /
     schedule:
       interval: daily
-
+    groups:
+      actions:
+        patterns:
+          - "*"
   - package-ecosystem: cargo
     directory: userspace/ksud
     schedule:
@@ -20,10 +23,16 @@ updates:
     schedule:
       interval: daily
     groups:
-      maven-dependencies:
+      maven:
         patterns:
           - "*"
   - package-ecosystem: npm
     directory: website
     schedule:
       interval: daily
+    allow:
+      - dependency-type: "all"
+    groups:
+      npm:
+        patterns:
+          - "*"
