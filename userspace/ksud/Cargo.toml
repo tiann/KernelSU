@@ -19,7 +19,7 @@ zip = { version = "2.1.4", features = [
     "lzma",
     "xz",
 ], default-features = false }
-zip-extensions = "0.7"
+zip-extensions = "0.8"
 java-properties = "2"
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
