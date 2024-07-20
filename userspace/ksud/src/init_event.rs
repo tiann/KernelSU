@@ -170,6 +170,9 @@ pub fn on_post_data_fs() -> Result<()> {
         if let Err(e) = crate::module::disable_all_modules() {
             warn!("disable all modules failed: {}", e);
         }
+        if Path::new(defs::RESTRICTIONS_XML).exists() {
+            std::fs::remove_file(defs::RESTRICTIONS_XML)?;
+        }
         return Ok(());
     }
 
