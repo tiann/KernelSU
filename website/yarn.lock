@@ -378,7 +378,14 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.19.0.tgz#baf9b65023ea2ecc5e6ec68f787a0fecfd8ee84c"
   integrity sha512-xNo5fV5ycvCCKqiZcpB65VMR11NJB+StnxHz20jdqRAktfdfzhgjTiJ2doTDQE/7dqGaV5I7ZGqKpgph6lCIag==
 
-"@shikijs/core@1.10.3", "@shikijs/core@^1.10.3":
+"@shikijs/core@1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@shikijs/core/-/core-1.11.0.tgz#a07a55037ba74f13b860698149bda03382b74cc1"
+  integrity sha512-VbEhDAhT/2ozO0TPr5/ZQBO/NWLqtk4ZiBf6NplYpF38mKjNfMMied5fNEfIfYfN+cdKvhDB4VMcKvG/g9c3zg==
+  dependencies:
+    "@types/hast" "^3.0.4"
+
+"@shikijs/core@^1.10.3":
   version "1.10.3"
   resolved "https://registry.yarnpkg.com/@shikijs/core/-/core-1.10.3.tgz#f01763b36f08ad3d2ef46cea7e61858d9d9947d6"
   integrity sha512-D45PMaBaeDHxww+EkcDQtDAtzv00Gcsp72ukBtaLSmqRvh0WgGMq3Al0rl1QQBZfuneO75NXMIzEZGFitThWbg==
@@ -386,11 +393,11 @@
     "@types/hast" "^3.0.4"
 
 "@shikijs/transformers@^1.10.3":
-  version "1.10.3"
-  resolved "https://registry.yarnpkg.com/@shikijs/transformers/-/transformers-1.10.3.tgz#7bda4d272f5347eacfb107e26db8d68ffa2267c7"
-  integrity sha512-MNjsyye2WHVdxfZUSr5frS97sLGe6G1T+1P41QjyBFJehZphMcr4aBlRLmq6OSPBslYe9byQPVvt/LJCOfxw8Q==
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@shikijs/transformers/-/transformers-1.11.0.tgz#9d96205d9f2ad17c402f967b9b709205f1257146"
+  integrity sha512-RNEUyOxF1cPYVG2EvBv0CZeDU1Tp4fSxmsVD2Ofv+8h9hBqqgpq+l+7uyouyqV1JHNlqwRmUwAqrQU3GQQ3csQ==
   dependencies:
-    shiki "1.10.3"
+    shiki "1.11.0"
 
 "@types/estree@1.0.5":
   version "1.0.5"
@@ -687,9 +694,9 @@ mark.js@8.11.1:
   integrity sha512-1I+1qpDt4idfgLQG+BNWmrqku+7/2bi5nLf4YwF8y8zXvmfiTBY3PV3ZibfrjBueCByROpuBjLLFCajqkgYoLQ==
 
 minisearch@^7.0.0:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/minisearch/-/minisearch-7.0.2.tgz#537c15a63e25ff8b9eb4ef0f0566ca6c1be43309"
-  integrity sha512-Pf0sFXaCgRpOBDr4G8wTbVAEH9o9rvJzCMwj0TMe3L/NfUuG188xabfx6Vm3vD/Dv5L500n7JeiMB9Mq3sWMfQ==
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/minisearch/-/minisearch-7.1.0.tgz#f5830e9109b5919ee7b291c29a304f381aa68770"
+  integrity sha512-tv7c/uefWdEhcu6hvrfTihflgeEi2tN6VV7HJnCjK6VxM75QQJh4t9FwJCsA2EsRS8LCnu3W87CuGPWMocOLCA==
 
 mitt@^3.0.1:
   version "3.0.1"
@@ -755,12 +762,12 @@ rollup@^4.13.0:
     "@rollup/rollup-win32-x64-msvc" "4.19.0"
     fsevents "~2.3.2"
 
-shiki@1.10.3, shiki@^1.10.3:
-  version "1.10.3"
-  resolved "https://registry.yarnpkg.com/shiki/-/shiki-1.10.3.tgz#2276fb21a07043b28c5b16001e6a04fef99dbb8f"
-  integrity sha512-eneCLncGuvPdTutJuLyUGS8QNPAVFO5Trvld2wgEq1e002mwctAhJKeMGWtWVXOIEzmlcLRqcgPSorR6AVzOmQ==
+shiki@1.11.0, shiki@^1.10.3:
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/shiki/-/shiki-1.11.0.tgz#fad958667d7dc8e58f58e7c6ebd24d75d7c4e199"
+  integrity sha512-NqH/O1zRHvnuk/WfSL6b7+DtI7/kkMMSQGlZhm9DyzSU+SoIHhaw/fBZMr+zp9R8KjdIzkk3JKSC6hORuGDyng==
   dependencies:
-    "@shikijs/core" "1.10.3"
+    "@shikijs/core" "1.11.0"
     "@types/hast" "^3.0.4"
 
 source-map-js@^1.2.0:
