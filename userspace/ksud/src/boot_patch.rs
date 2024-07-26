@@ -10,6 +10,7 @@ use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Context;
 use anyhow::Result;
+use regex_lite::Regex;
 use which::which;
 
 use crate::defs;
@@ -27,7 +28,6 @@ fn ensure_gki_kernel() -> Result<()> {
 
 #[cfg(target_os = "android")]
 pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
-    use regex::Regex;
     let uname = rustix::system::uname();
     let version = uname.release().to_string_lossy();
     let re = Regex::new(r"(\d+)\.(\d+)\.(\d+)")?;
@@ -52,7 +52,6 @@ pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
 
 #[cfg(target_os = "android")]
 fn parse_kmi(version: &str) -> Result<String> {
-    use regex::Regex;
     let re = Regex::new(r"(.* )?(\d+\.\d+)(\S+)?(android\d+)(.*)")?;
     let cap = re
         .captures(version)
@@ -98,7 +97,6 @@ pub fn get_current_kmi() -> Result<String> {
 }
 
 fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
-    use regex::Regex;
     use std::fs::{copy, File};
     use std::io::{BufReader, Read};
     let kernel_path = workdir.join("kernel");
@@ -146,7 +144,10 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
         .context("Failed to execute magiskboot command")?;
 
     if !status.success() {
-        bail!("magiskboot unpack failed with status: {:?}", status.code().unwrap());
+        bail!(
+            "magiskboot unpack failed with status: {:?}",
+            status.code().unwrap()
+        );
     }
 
     parse_kmi_from_kernel(&image_path, workdir)

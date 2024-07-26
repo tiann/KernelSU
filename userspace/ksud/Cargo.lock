@@ -899,7 +899,7 @@ dependencies = [
  "loopdev",
  "nom",
  "procfs",
- "regex",
+ "regex-lite",
  "retry",
  "rust-embed",
  "rustix 0.38.34 (git+https://github.com/Kernel-SU/rustix.git?branch=main)",
@@ -1250,6 +1250,12 @@ dependencies = [
  "memchr",
  "regex-syntax",
 ]
+
+[[package]]
+name = "regex-lite"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53a49587ad06b26609c52e423de037e7f57f20d53535d66e08c695f347df952a"
 
 [[package]]
 name = "regex-syntax"
