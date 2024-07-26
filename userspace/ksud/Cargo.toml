@@ -10,16 +10,14 @@ rust-version = "1.77.2"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2.1.5", features = [
+zip = { version = "2.1.5", default-features = false }
+zip-extensions = { version = "0.8.1", features = [
     "deflate",
     "deflate64",
-    "bzip2",
     "time",
-    "zstd",
     "lzma",
     "xz",
 ], default-features = false }
-zip-extensions = "0.8"
 java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
