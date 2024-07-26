@@ -57,7 +57,7 @@ loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 android_logger = { version = "0.14", default-features = false }
 
 [profile.release]
-strip = "symbols"
+strip = true
 opt-level = "z"
-lto = "fat"
+lto = true
 codegen-units = 1
