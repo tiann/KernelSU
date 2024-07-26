@@ -100,7 +100,7 @@ fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
     use std::fs::{copy, File};
     use std::io::{BufReader, Read};
     let kernel_path = workdir.join("kernel");
-    copy(&kernel, &kernel_path).context("Failed to copy kernel")?;
+    copy(kernel, &kernel_path).context("Failed to copy kernel")?;
 
     let file = File::open(&kernel_path).context("Failed to open kernel file")?;
     let mut reader = BufReader::new(file);
@@ -132,7 +132,7 @@ fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
 fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Result<String> {
     let image_path = workdir.join("image");
 
-    std::fs::copy(&image, &image_path).context("Failed to copy image")?;
+    std::fs::copy(image, &image_path).context("Failed to copy image")?;
 
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -375,7 +375,7 @@ fn do_patch(
     let kmi = if let Some(kmi) = kmi {
         kmi
     } else {
-        let kmi = match get_current_kmi() {
+        match get_current_kmi() {
             Ok(value) => value,
             Err(e) => {
                 println!("- {}", e);
@@ -395,8 +395,7 @@ fn do_patch(
                     "".to_string()
                 }
             }
-        };
-        kmi
+        }
     };
 
     let skip_init = kmi.starts_with("android12-");
