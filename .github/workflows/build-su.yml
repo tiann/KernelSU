@@ -28,7 +28,7 @@ jobs:
         fi
     - uses: nttld/setup-ndk@v1
       with:
-        ndk-version: r26d
+        ndk-version: r27
     - name: Build su
       working-directory: ./userspace/su
       run: ndk-build
