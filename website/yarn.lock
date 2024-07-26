@@ -378,7 +378,14 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.19.0.tgz#baf9b65023ea2ecc5e6ec68f787a0fecfd8ee84c"
   integrity sha512-xNo5fV5ycvCCKqiZcpB65VMR11NJB+StnxHz20jdqRAktfdfzhgjTiJ2doTDQE/7dqGaV5I7ZGqKpgph6lCIag==
 
-"@shikijs/core@1.11.1", "@shikijs/core@^1.10.3":
+"@shikijs/core@1.11.2":
+  version "1.11.2"
+  resolved "https://registry.yarnpkg.com/@shikijs/core/-/core-1.11.2.tgz#d70c2bfc58408c6d23e7921767d4c693db78bcf6"
+  integrity sha512-9IBY31lvOo2uhrZjqRt2wTqfqfrXJnddnIx0PFL5E8a5RQUNOhkx+PD11PogZtyrIHlL4aTYDVlb+eyryzy+pQ==
+  dependencies:
+    "@types/hast" "^3.0.4"
+
+"@shikijs/core@^1.10.3":
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/@shikijs/core/-/core-1.11.1.tgz#a102cf56f32fa8cf3ceb9f918f2da5511782efe7"
   integrity sha512-Qsn8h15SWgv5TDRoDmiHNzdQO2BxDe86Yq6vIHf5T0cCvmfmccJKIzHtep8bQO9HMBZYCtCBzaXdd1MnxZBPSg==
@@ -386,11 +393,11 @@
     "@types/hast" "^3.0.4"
 
 "@shikijs/transformers@^1.10.3":
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/@shikijs/transformers/-/transformers-1.11.1.tgz#917f542f6b1eab8e599013bb0afd2b52bd4eee4e"
-  integrity sha512-e6DUvZRylv+V8htF5q3ZuNyPaxJYQnsLyTd2S/K6ePs8t132NJS82LG2vARmtfSFP3I3CcBXfJ73FaCgI9kAMg==
+  version "1.11.2"
+  resolved "https://registry.yarnpkg.com/@shikijs/transformers/-/transformers-1.11.2.tgz#7c8c9d69bad44cf15b95223cd896de41dd78a324"
+  integrity sha512-5ge1XsuZvboCID8onSGe546iVHNiSZBZMTCk+CAgTbiLGst8j0KlYKq8aaDGIg7wCt5yntvXDEq1u+pu5rdbdA==
   dependencies:
-    shiki "1.11.1"
+    shiki "1.11.2"
 
 "@types/estree@1.0.5":
   version "1.0.5"
@@ -755,12 +762,12 @@ rollup@^4.13.0:
     "@rollup/rollup-win32-x64-msvc" "4.19.0"
     fsevents "~2.3.2"
 
-shiki@1.11.1, shiki@^1.10.3:
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/shiki/-/shiki-1.11.1.tgz#6c06c5fcf55f1dac2db2596af935fef6a41a209d"
-  integrity sha512-VHD3Q0EBXaaa245jqayBe5zQyMQUdXBFjmGr9MpDaDpAKRMYn7Ff00DM5MLk26UyKjnml3yQ0O2HNX7PtYVNFQ==
+shiki@1.11.2, shiki@^1.10.3:
+  version "1.11.2"
+  resolved "https://registry.yarnpkg.com/shiki/-/shiki-1.11.2.tgz#3d0b65f4cc3a45632900e1432f09d4eab2e83cb3"
+  integrity sha512-WEHfKf+JWEKm/p8BoiE5F4m6VwV6LzY7nFfwRz0nAj+sVD1sRyWiODYScDu3Q8P/Dpi7xKe1TDJF3ZOQnhfT1g==
   dependencies:
-    "@shikijs/core" "1.11.1"
+    "@shikijs/core" "1.11.2"
     "@types/hast" "^3.0.4"
 
 source-map-js@^1.2.0:
@@ -819,9 +826,9 @@ vitepress@^1.3.1:
     vue "^3.4.31"
 
 vue-demi@>=0.14.8:
-  version "0.14.9"
-  resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.14.9.tgz#db2be43705e2bc8501f01ca6163e34ada2f2eb21"
-  integrity sha512-dC1TJMODGM8lxhP6wLToncaDPPNB3biVxxRDuNCYpuXwi70ou7NsGd97KVTJ2omepGId429JZt8oaZKeXbqxwg==
+  version "0.14.10"
+  resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.14.10.tgz#afc78de3d6f9e11bf78c55e8510ee12814522f04"
+  integrity sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==
 
 vue@^3.4.31, vue@^3.4.34:
   version "3.4.34"
