@@ -574,7 +574,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6dc8c8ff84895b051f07a0e65f975cf225131742531338752abfb324e4449ff"
 dependencies = [
  "log",
- "regex",
 ]
 
 [[package]]
