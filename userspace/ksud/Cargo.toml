@@ -2,7 +2,6 @@
 name = "ksud"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,8 +9,8 @@ rust-version = "1.77.2"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2.1.5", default-features = false }
-zip-extensions = { version = "0.8.1", features = [
+zip = { version = "2", default-features = false }
+zip-extensions = { version = "0.8", features = [
     "deflate",
     "deflate64",
     "time",
@@ -43,7 +42,7 @@ sha1 = "0.10"
 tempdir = "0.3"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
-regex-lite = "0.1.6"
+regex-lite = "0.1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
@@ -58,6 +57,7 @@ loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 android_logger = { version = "0.14", default-features = false }
 
 [profile.release]
-strip = true
+strip = "symbols"
 opt-level = "z"
-lto = true
+lto = "fat"
+codegen-units = 1
