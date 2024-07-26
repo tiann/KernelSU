@@ -20,7 +20,7 @@ zip = { version = "2.1.5", features = [
     "xz",
 ], default-features = false }
 zip-extensions = "0.8"
-java-properties = "2"
+java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
 serde = { version = "1" }
