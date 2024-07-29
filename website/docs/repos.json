@@ -637,6 +637,13 @@
         "devices": "Samsung Galaxy A03 | Unisoc T606 | Scorpio Kernel"
     },
     {
+        "maintainer": "IverCoder",
+        "maintainer_link": "https://github.com/IverCoder",
+        "kernel_name": "android_kernel_samsung_a3core",
+        "kernel_link": "https://github.com/IverCoder/android_kernel_samsung_a3core/tree/stable-ksu",
+        "devices": "Samsung Galaxy A03 Core (a3core) | Unisoc SC9863A"
+    },
+    {
         "maintainer": "ArchVisions",
         "maintainer_link": "https://github.com/ArchVisions",
         "kernel_name": "android_kernel_samsung_gts9fewifi",
