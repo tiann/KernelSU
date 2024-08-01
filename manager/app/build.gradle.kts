@@ -70,6 +70,32 @@ android {
     }
 }
 
+tasks.register<Exec>("createFlashableFolders") {
+    commandLine("mkdir", "-p", "${project.projectDir}/src/main/resources/META-INF/com/google/android")
+    commandLine("mkdir", "-p", "${project.projectDir}/src/main/resources/addon")
+}
+
+tasks.register<Copy>("mergeFlashableScript") {
+    into("${project.projectDir}/src/main/resources/META-INF/com/google/android")
+    from(rootProject.file("${project.rootDir}/scripts/update-binary.sh")) {
+        rename { "update-binary" }
+    }
+    from(rootProject.file("${project.rootDir}/scripts/updater-script.sh")) {
+        rename { "updater-script" }
+    }
+}
+
+tasks.register<Copy>("mergeInstallKSU") {
+    into("${project.projectDir}/src/main/resources/addon")
+    from(rootProject.file("${project.rootDir}/scripts/InstallKSU.sh"))
+}
+
+tasks.getByName("preBuild").dependsOn(
+    "createFlashableFolders",
+    "mergeFlashableScript",
+    "mergeInstallKSU",
+)
+
 dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
