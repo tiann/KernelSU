@@ -1,7 +1,7 @@
-#!/sbin/bash
+#!/bin/sh
 # By SakuraKyuo
 
-OUTFD=$1
+OUTFD=/proc/self/fd/$2
 
 function ui_print() {
   echo -e "ui_print $1\nui_print" >> $OUTFD

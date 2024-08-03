@@ -22,4 +22,4 @@ export INSTALLER=$TMPDIR/install
 $BBBIN mkdir -p $INSTALLER
 $BBBIN unzip -o "$3" "addon/*" "META-INF/com/google/*" "lib/*" "META-INF/com/google/*" -x "lib/*/libbusybox.so" -d $INSTALLER >&2
 export ASH_STANDALONE=1
-exec $BBBIN sh "$INSTALLER/META-INF/com/google/android/updater-script" "$@"
+exec $BBBIN sh "addon/InstallKSU.sh" "$@"
