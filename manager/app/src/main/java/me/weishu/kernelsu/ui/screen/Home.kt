@@ -416,8 +416,8 @@ private fun InfoCard() {
 }
 
 fun getManagerVersion(context: Context): Pair<String, Int> {
-    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-    return Pair(packageInfo.versionName, packageInfo.versionCode)
+    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)!!
+    return Pair(packageInfo.versionName!!, packageInfo.versionCode)
 }
 
 @Preview
