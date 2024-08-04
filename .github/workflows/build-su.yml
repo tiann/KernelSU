@@ -28,7 +28,7 @@ jobs:
         fi
     - name: Build su
       working-directory: ./userspace/su
-      run: ndk-build
+      run: $ANDROID_NDK/ndk-build
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:
