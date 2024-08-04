@@ -26,9 +26,6 @@ jobs:
         else
           echo "UPLOAD=false" >> $GITHUB_OUTPUT
         fi
-    - uses: nttld/setup-ndk@v1
-      with:
-        ndk-version: r26d
     - name: Build su
       working-directory: ./userspace/su
       run: ndk-build
