@@ -10,7 +10,7 @@ rust-version = "1.77.2"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2.1.5", default-features = false }
+zip = { version = "2.1.6", default-features = false }
 zip-extensions = { version = "0.8.1", features = [
     "deflate",
     "deflate64",
