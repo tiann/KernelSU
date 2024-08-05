@@ -165,10 +165,16 @@ pub fn on_post_data_fs() -> Result<()> {
     ksucalls::report_module_mounted();
 
     // if we are in safe mode, we should disable all modules
+    // and remove /data/system/users/0/package-restrictions.xml
     if safe_mode {
         warn!("safe mode, skip post-fs-data scripts and disable all modules!");
         if let Err(e) = crate::module::disable_all_modules() {
             warn!("disable all modules failed: {}", e);
+        }
+        let restrictions_xml = defs::RESTRICTIONS_XML;
+        if Path::new(restrictions_xml).exists() {
+            warn!("safe mode, remove {}", restrictions_xml);
+            std::fs::remove_file(restrictions_xml)?;
         }
         return Ok(());
     }
