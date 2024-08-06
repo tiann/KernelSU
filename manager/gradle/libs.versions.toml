@@ -1,6 +1,6 @@
 [versions]
 agp = "8.5.1"
-kotlin = "2.0.0"
+kotlin = "2.0.10"
 ksp = "2.0.0-1.0.24"
 compose-bom = "2024.06.00"
 lifecycle = "2.8.4"
