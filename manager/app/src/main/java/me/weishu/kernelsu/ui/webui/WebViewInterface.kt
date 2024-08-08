@@ -20,7 +20,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CompletableFuture
 
-class WebViewInterface(val context: Context, private val webView: WebView) {
+class WebViewInterface(val context: Context, private val webView: WebView, private val moduleId: String) {
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -168,6 +168,11 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
                 }
             }
         }
+    }
+
+    @JavascriptInterface
+    fun getModuleId(): String {
+        return moduleId;
     }
 
 }

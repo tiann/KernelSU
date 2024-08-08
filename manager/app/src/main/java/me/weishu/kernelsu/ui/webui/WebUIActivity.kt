@@ -52,7 +52,7 @@ class WebUIActivity : ComponentActivity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.allowFileAccess = false
-            webviewInterface = WebViewInterface(this@WebUIActivity, this)
+            webviewInterface = WebViewInterface(this@WebUIActivity, this, moduleId)
             addJavascriptInterface(webviewInterface, "ksu")
             setWebViewClient(webViewClient)
             loadUrl("https://mui.kernelsu.org/index.html")
