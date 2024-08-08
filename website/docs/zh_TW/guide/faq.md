@@ -26,7 +26,7 @@ KernelSU 沒有內建 Zygisk 支援，但是您可以用 [ZygiskNext](https://gi
 
 KernelSU 的模組系統與 Magisk 的 magic mount 存在衝突，如果在 KernelSU 中啟用了任何模組，那麼整個 Magisk 將無法正常運作。
 
-但是如果您只使用 KernelSU 的 `su`，那么它會和 Magisk 一同運作：KernelSU 修改 `kernel` 、 Magisk 修改 `ramdisk`，它們可以搭配使用。
+但是如果您只使用 KernelSU 的 `su`，那么它會和 Magisk 一同運作：KernelSU 修改 `kernel`、Magisk 修改 `ramdisk`，它們可以搭配使用。
 
 ## KernelSU 会取代 Magisk 嗎？
 
@@ -49,11 +49,11 @@ KernelSU 的模組系統與 Magisk 的 magic mount 存在衝突，如果在 Kern
 
 ## 如何為舊版核心整合 KernelSU？
 
-請參閱[指南](how-to-integrate-for-non-gki)
+請參閱[指南](how-to-integrate-for-non-gki.md)
 
 ## 為何我的 Android 版本為 13，但核心版本卻是 "android12-5.10"？
 
-核心版本與 Android 版本無關，如果您要刷新 KernelSU，請一律使用**核心版本**而非 Android 版本，如果你為 "android12-5.10" 的裝置刷新 Android 13 的核心，等候您的將會是開機迴圈。
+核心版本與 Android 版本無關，如果您要使用 KernelSU，請一律使用**核心版本**而非 Android 版本，如果你為 "android12-5.10" 的裝置寫入 Android 13 的核心，等候您的將會是開機迴圈。
 
 ## 我是 GKI1.0，能用 KernelSU 嗎？
 
