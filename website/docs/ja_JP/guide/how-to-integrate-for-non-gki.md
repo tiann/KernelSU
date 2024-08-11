@@ -55,24 +55,9 @@ KPROBES がまだ有効化されていない場合は、CONFIG_MODULES を有効
 
 まず、KernelSU をカーネルソースツリーに追加してください：
 
-::: code-group
-
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
-
-[ main branch(dev)]
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
-```
-
-[Select tag(Such as v0.5.2)]
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
-```
-
-
-:::
 
 いくつかのデバイスでは、あなたの defconfig が `arch/arm64/configs` にあったり、または他のケースでは `arch/arm64/configs/vendor/your_defconfig` にあることを念頭に置いてください。例えばあなたの defconfig で、`CONFIG_KSU` を y で有効に、または n で無効に設定します。あなたのパスは次のようになるでしょう：
 `arch/arm64/configs/...`

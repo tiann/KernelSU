@@ -53,19 +53,7 @@ CONFIG_KPROBE_EVENTS=y
 - Последний тэг(стабильный)
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-```
-
-- Основная ветвь(разработка)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
-```
-
-- Выбранный тэг(Например, версия v0.5.2)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
 Затем добавьте вызовы KernelSU в исходный код ядра, вот патч, на который можно сослаться:

@@ -49,7 +49,7 @@ Nếu kprobe không thể hoạt động trong kernel của bạn (có thể là
 Đầu tiên, thêm KernelSU vào mã nguồn kernel của bạn:
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
 Sau đó, thêm lệnh gọi KernelSU vào mã nguồn kernel, đây là một patch bạn có thể tham khảo:

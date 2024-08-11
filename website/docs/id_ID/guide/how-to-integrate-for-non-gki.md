@@ -46,7 +46,7 @@ Jika kprobe tidak dapat bekerja pada kernel Anda (mungkin karena bug di upstream
 Pertama, tambahkan KernelSU ke dalam direktori kernel source tree:
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
 Kemudian, tambahkan panggilan KernelSU ke source kernel, berikut ini adalah patch yang dapat dirujuk:
