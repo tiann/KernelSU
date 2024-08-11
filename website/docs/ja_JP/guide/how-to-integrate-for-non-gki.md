@@ -18,8 +18,12 @@ KernelSU は kprobe を使ってカーネルフックを行います。もし *k
 まず、KernelSU をカーネルソースツリーに追加してください：
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
+
+:::info
+[KernelSU 1.0 およびそれ以降のバージョンでは、非 GKI カーネルがサポートされなくなりました](https://github.com/tiann/KernelSU/issues/1705). 最終サポートバージョンは`v0.9.5`です, 正しいバージョンをお使いください。
+:::
 
 次に、*kprobe* がカーネル設定で有効になっているか確認してください。もし有効でなければ、これらの設定を追加してください：
 

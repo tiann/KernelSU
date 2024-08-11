@@ -21,20 +21,12 @@ KernelSU sử dụng kprobe để thực hiện hook kernel, nếu *kprobe* ch�
 - Thẻ mới nhất (ổn định)
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-- Nhánh chính (dev)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
-```
-
-- Chọn thẻ (chẳng hạn như v0.5.2)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
-```
+:::info
+[KernelSU 1.0 and later versions no longer support non-GKI kernels](https://github.com/tiann/KernelSU/issues/1705). The last supported version is `v0.9.5`, please make sure to use the correct version.
+:::
 
 Sau đó, bạn nên kiểm tra xem *kprobe* có được bật trong config của bạn hay không, nếu không, vui lòng thêm các cấu hình sau vào:
 

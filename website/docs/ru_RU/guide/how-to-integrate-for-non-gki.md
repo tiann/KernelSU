@@ -18,8 +18,12 @@ KernelSU использует kprobe для выполнения хуков яд
 Сначала добавьте KernelSU в дерево исходных текстов ядра:
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash - v0.9.5
 ```
+
+:::info
+[KernelSU 1.0 и более поздние версии больше не поддерживают ядра, отличные от GKI](https://github.com/tiann/KernelSU/issues/1705). Последняя поддерживаемая версия - `v0.9.5`, пожалуйста, убедитесь, что вы используете правильную версию.
+:::
 
 Затем необходимо проверить, включена ли функция *kprobe* в конфигурации ядра, если нет, то добавьте в нее эти настройки:
 

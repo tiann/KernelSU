@@ -17,23 +17,13 @@ KernelSU 使用 kprobe 機制來處理核心的相關 hook，如果 *kprobe* 可
 
 首先，把 KernelSU 新增至您的核心來源樹狀結構，再核心的根目錄執行以下命令：
 
-- 最新 tag (稳定版本)
-
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-- main 分支(開發版本)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
-```
-
-- 選取 tag (例如 v0.5.2)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
-```
+:::info
+[KernelSU 1.0 及其後的版本不再支援非 GKI 核心](https://github.com/tiann/KernelSU/issues/1705)，最後支援的版本是 `v0.9.5`，請務必使用正確的版本。
+:::
 
 然後，您需要檢查您的核心是否啟用 *kprobe* 相關組態，如果未啟用，則需要新增以下組態：
 
@@ -66,7 +56,7 @@ CONFIG_KPROBE_EVENTS=y
 首先，將 KernelSU 新增至您的原始碼樹狀結構，再核心的根目錄執行以下命令：
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
 然後，手動修改核心原始碼，您可以參閱下方的 patch：
