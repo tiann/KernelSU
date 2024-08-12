@@ -6,7 +6,7 @@ const pkg = require('vitepress/package.json')
 
 export default defineConfig({
   lang: 'zh-TW',
-  description: '一個以核心為基礎，適用於 Android GKI 的 Root 解決方案。',
+  description: '一個基於核心，適用於 Android GKI 的 Root 解決方案。',
 
   themeConfig: {
     nav: nav(),
