@@ -11,7 +11,7 @@ use nom::{
     sequence::Tuple,
     IResult, Parser,
 };
-use std::{path::Path, vec};
+use std::{ffi, path::Path, vec};
 
 type SeObject<'a> = Vec<&'a str>;
 
@@ -352,10 +352,11 @@ where
     let mut statements = vec![];
 
     for line in input.split(['\n', ';']) {
-        if line.trim().is_empty() {
+        let trimmed_line = line.trim();
+        if trimmed_line.is_empty() || trimmed_line.starts_with('#') {
             continue;
         }
-        if let Ok((_, statement)) = PolicyStatement::parse(line.trim()) {
+        if let Ok((_, statement)) = PolicyStatement::parse(trimmed_line) {
             statements.push(statement);
         } else if strict {
             bail!("Failed to parse policy statement: {}", line)
@@ -659,19 +660,19 @@ impl<'a> TryFrom<&'a PolicyStatement<'a>> for Vec<AtomicStatement> {
 struct FfiPolicy {
     cmd: u32,
     subcmd: u32,
-    sepol1: *const libc::c_char,
-    sepol2: *const libc::c_char,
-    sepol3: *const libc::c_char,
-    sepol4: *const libc::c_char,
-    sepol5: *const libc::c_char,
-    sepol6: *const libc::c_char,
-    sepol7: *const libc::c_char,
+    sepol1: *const ffi::c_char,
+    sepol2: *const ffi::c_char,
+    sepol3: *const ffi::c_char,
+    sepol4: *const ffi::c_char,
+    sepol5: *const ffi::c_char,
+    sepol6: *const ffi::c_char,
+    sepol7: *const ffi::c_char,
 }
 
-fn to_c_ptr(pol: &PolicyObject) -> *const libc::c_char {
+fn to_c_ptr(pol: &PolicyObject) -> *const ffi::c_char {
     match pol {
         PolicyObject::None | PolicyObject::All => std::ptr::null(),
-        PolicyObject::One(s) => s.as_ptr().cast::<libc::c_char>(),
+        PolicyObject::One(s) => s.as_ptr().cast::<ffi::c_char>(),
     }
 }
 

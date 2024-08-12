@@ -1,21 +1,21 @@
 [versions]
-agp = "8.5.0"
+agp = "8.5.1"
 kotlin = "2.0.0"
-ksp = "2.0.0-1.0.22"
+ksp = "2.0.0-1.0.24"
 compose-bom = "2024.06.00"
-lifecycle = "2.8.1"
+lifecycle = "2.8.4"
 accompanist = "0.34.0"
 navigation = "2.7.7"
-activity-compose = "1.9.0"
+activity-compose = "1.9.1"
 kotlinx-coroutines = "1.8.1"
-coil-compose = "2.6.0"
+coil-compose = "2.7.0"
 compose-destination = "1.10.2"
 sheets-compose-dialogs = "1.3.0"
 markdown = "4.6.2"
 webkit = "1.11.0"
 appiconloader-coil = "1.5.0"
 parcelablelist = "2.0.1"
-libsu = "5.2.2"
+libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
 
@@ -76,3 +76,5 @@ sheet-compose-dialogs-list = { group = "com.maxkeppeler.sheets-compose-dialogs",
 sheet-compose-dialogs-input = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "input", version.ref = "sheets-compose-dialogs" }
 
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
+
+lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "27.0.12077973" }
