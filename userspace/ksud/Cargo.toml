@@ -2,16 +2,15 @@
 name = "ksud"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1"
-clap = { version = "4", features = ["derive"] }
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2.1.6", default-features = false }
-zip-extensions = { version = "0.8.1", features = [
+zip = { version = "2.1", default-features = false }
+zip-extensions = { version = "0.8", features = [
     "deflate",
     "deflate64",
     "time",
@@ -21,29 +20,29 @@ zip-extensions = { version = "0.8.1", features = [
 java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
-serde = { version = "1" }
-serde_json = "1"
+serde = { version = "1.0" }
+serde_json = "1.0"
 encoding_rs = "0.8"
-retry = "2"
-humansize = "2"
+retry = "2.0"
+humansize = "2.1"
 libc = "0.2"
-extattr = "1"
+extattr = "1.0"
 jwalk = "0.8"
-is_executable = "1"
-nom = "7"
+is_executable = "1.0"
+nom = "7.1"
 derive-new = "0.6"
-rust-embed = { version = "8", features = [
+rust-embed = { version = "8.5", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "6"
+which = "6.0"
 getopts = "0.2"
 sha256 = "1"
 sha1 = "0.10"
-tempdir = "0.3"
+tempfile = "3.12"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
-regex-lite = "0.1.6"
+regex-lite = "0.1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
@@ -61,3 +60,4 @@ android_logger = { version = "0.14", default-features = false }
 strip = true
 opt-level = "z"
 lto = true
+codegen-units = 1
