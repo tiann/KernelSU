@@ -1,17 +1,15 @@
 use anyhow::{bail, Context, Error, Ok, Result};
 use std::{
-    fs::{self, create_dir_all, remove_file, write, File, OpenOptions},
+    fs::{create_dir_all, remove_file, write, File, OpenOptions},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
     },
     path::Path,
     process::Command,
-    sync::OnceLock,
 };
 
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
-use std::fs::metadata;
 #[allow(unused_imports)]
 use std::fs::{set_permissions, Permissions};
 #[cfg(unix)]
@@ -187,68 +185,6 @@ pub fn umask(_mask: u32) {
 
 pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
-}
-
-fn is_ok_empty(dir: &str) -> bool {
-    use std::result::Result::Ok;
-
-    match fs::read_dir(dir) {
-        Ok(mut entries) => entries.next().is_none(),
-        Err(_) => false,
-    }
-}
-
-fn find_temp_path() -> String {
-    use std::result::Result::Ok;
-
-    if is_ok_empty(defs::TEMP_DIR) {
-        return defs::TEMP_DIR.to_string();
-    }
-
-    // Try to create a random directory in /dev/
-    let r = tempfile::tempdir_in("/dev/");
-    match r {
-        Ok(tmp_dir) => {
-            if let Some(path) = tmp_dir.into_path().to_str() {
-                return path.to_string();
-            }
-        }
-        Err(_e) => {}
-    }
-
-    let dirs = [
-        defs::TEMP_DIR,
-        "/patch_hw",
-        "/oem",
-        "/root",
-        defs::TEMP_DIR_LEGACY,
-    ];
-
-    // find empty directory
-    for dir in dirs {
-        if is_ok_empty(dir) {
-            return dir.to_string();
-        }
-    }
-
-    // Fallback to non-empty directory
-    for dir in dirs {
-        if metadata(dir).is_ok() {
-            return dir.to_string();
-        }
-    }
-
-    "".to_string()
-}
-
-pub fn get_tmp_path() -> &'static str {
-    static CHOSEN_TMP_PATH: OnceLock<String> = OnceLock::new();
-
-    CHOSEN_TMP_PATH.get_or_init(|| {
-        let r = find_temp_path();
-        log::info!("Chosen temp_path: {}", r);
-        r
-    })
 }
 
 #[cfg(target_os = "android")]
