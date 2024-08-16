@@ -191,7 +191,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // mount temp dir
-    if let Err(e) = mount::mount_tmpfs(utils::get_tmp_path()) {
+    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
         warn!("do temp dir mount failed: {}", e);
     }
 
