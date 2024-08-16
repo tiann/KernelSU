@@ -18,6 +18,9 @@ jobs:
   build-a14-kernel:
     uses: ./.github/workflows/build-kernel-a14.yml
     secrets: inherit
+  build-a15-kernel:
+    uses: ./.github/workflows/build-kernel-a15.yml
+    secrets: inherit
   build-wsa-kernel:
     uses: ./.github/workflows/build-kernel-wsa.yml
     secrets: inherit
