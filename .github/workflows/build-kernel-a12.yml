@@ -27,6 +27,8 @@ jobs:
             os_patch_level: 2024-03
           - sub_level: 209
             os_patch_level: 2024-05
+          - sub_level: 218
+            os_patch_level: 2024-08
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -63,7 +65,7 @@ jobs:
       - name: Download prebuilt toolchain
         run: |
           AOSP_MIRROR=https://android.googlesource.com
-          BRANCH=main-kernel-build-2023
+          BRANCH=main-kernel-build-2024
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
@@ -112,7 +114,7 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
-      version_name: android12-5.10.209
-      tag: android12-5.10-2024-05
-      os_patch_level: 2024-05
+      version_name: android12-5.10.218
+      tag: android12-5.10-2024-08
+      os_patch_level: 2024-08
       patch_path: "5.10"
