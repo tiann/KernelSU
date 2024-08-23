@@ -9,7 +9,7 @@ edition = "2021"
 anyhow = "1.0"
 clap = { version = "4.5", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2.1", default-features = false }
+zip = { version = "2.2", default-features = false }
 zip-extensions = { version = "0.8", features = [
     "deflate",
     "deflate64",
