@@ -54,7 +54,7 @@
         "kernel_name": "android_kernel_xiaomi_onc",
         "kernel_link": "https://github.com/hadadarjt/android_kernel_xiaomi_onc/tree/los21-KSU/local-non-gerrit-review",
         "devices": "Redmi 7: onclite | Redmi Y3: onc"
-    },   
+    },
     {
         "maintainer": "HMTheBoy154",
         "maintainer_link": "https://github.com/hmtheboy154",
@@ -691,5 +691,12 @@
         "kernel_name": "kernel_xiaomi_chopin",
         "kernel_link": "https://github.com/ChopinKernels/kernel_xiaomi_chopin_android_S",
         "devices": "Redmi Note 10 Pro 5G (chopin) / Poco X3 GT (choping)"
+    },
+    {
+        "maintainer": "Fede2782",
+        "maintainer_link": "https://github.com/Fede2782",
+        "kernel_name": "android_kernel_motorola_sdm632",
+        "kernel_link": "https://github.com/Fede2782/android_kernel_motorola_sdm632",
+        "devices": "Motorola Moto G7 (river)"
     }
 ]
