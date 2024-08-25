@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/ja_JP/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU のインストール方法やモジュールの使い方はこちら</string>
     <string name="home_support_title">支援する</string>
-    <string name="home_support_content">KernelSU はこれからもずっとフリーでオープンソースです。寄付をすることで私たちを気にかけていることを示せます。</string>
+    <string name="home_support_content">KernelSU はこれからもずっと無料でオープンソースです。寄付をして頂くことで、開発を支援していただけます。</string>
     <string name="about_source_code"><![CDATA[%1$s でソースコードを表示<br/>%2$s チャンネルに参加]]></string>
     <string name="profile">アプリのプロファイル</string>
     <string name="profile_default">既定</string>
