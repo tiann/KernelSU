@@ -1,8 +1,8 @@
 [versions]
 agp = "8.5.2"
-kotlin = "2.0.10"
-ksp = "2.0.10-1.0.24"
-compose-bom = "2024.06.00"
+kotlin = "2.0.20"
+ksp = "2.0.20-1.0.24"
+compose-bom = "2024.08.00"
 lifecycle = "2.8.4"
 accompanist = "0.34.0"
 navigation = "2.7.7"
