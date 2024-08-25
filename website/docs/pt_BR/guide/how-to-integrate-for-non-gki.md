@@ -55,21 +55,9 @@ Se o kprobe não funcionar no seu kernel (pode ser um bug do upstream ou do kern
 
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
-::: code-group
-
-```sh[Tag mais recente (estável)]
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+```sh
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
-
-```sh[Branch principal (dev)]
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
-```
-
-```sh[Selecionar tag (como v0.5.2)]
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
-```
-
-:::
 
 Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Para qualquer defconfig que você estiver usando, certifique-se de ativar `CONFIG_KSU` com `y` para ativa-lo ou `n` para desativa-lo. Por exemplo, caso você opte por ativa-lo, seu defconfig deverá conter a seguinte string:
 
