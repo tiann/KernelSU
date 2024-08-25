@@ -1,4 +1,4 @@
-# 如何為非 GKI 核心整合 KernelSU {#introduction}
+# 如何為非 GKI 核心整合 KernelSU {#how-to-integrate-kernelsu-for-non-gki-kernels}
 
 KernelSU 可以被整合到非 GKI 核心中，現在它最低支援到核心 4.14 版本；理論上也可以支援更低的版本。
 
@@ -11,31 +11,21 @@ KernelSU 可以被整合到非 GKI 核心中，現在它最低支援到核心 4.
 1. 藉助 `kprobe` 自動整合
 2. 手動修改核心原始碼
 
-## 使用 kprobe 整合 {#using-kprobes}
+## 使用 kprobe 整合 {#integrate-with-kprobe}
 
 KernelSU 使用 kprobe 機制來處理核心的相關 hook，如果 *kprobe* 可以在您建置的核心中正常運作，那麼建議使用這個方法進行整合。
 
 首先，把 KernelSU 新增至您的核心來源樹狀結構，再核心的根目錄執行以下命令：
 
-- 最新 tag (稳定版本)
-
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-- main 分支(開發版本)
+:::info 公告
+[KernelSU 1.0 及更新版本不再支援非 GKI 核心](https://github.com/tiann/KernelSU/issues/1705)。最後一個支援的版本為 `v0.9.5`，請確保使用的版本正確。
+:::
 
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
-```
-
-- 選取 tag (例如 v0.5.2)
-
-```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.5.2
-```
-
-然後，您需要檢查您的核心是否啟用 *kprobe* 相關組態，如果未啟用，則需要新增以下組態：
+然後，您需要檢查您的核心是否啟用 *kprobe*，如果未啟用，則需要新增以下設定：
 
 ```
 CONFIG_KPROBES=y
@@ -45,33 +35,40 @@ CONFIG_KPROBE_EVENTS=y
 
 最後，重新建置您的核心即可。
 
-如果您發現 KPROBES 仍未生效，很有可能是因為它的相依性 `CONFIG_MODULES` 並未被啟用 (如果還是未生效請輸入 `make menuconfig` 搜尋 KPROBES 的其他相依性並啟用)
+如果您發現 KPROBES 仍未生效，很有可能是因為它依賴的 `CONFIG_MODULES` 並未被啟用，如果還是未生效請輸入 `make menuconfig` 搜尋 KPROBES 的其他相依性並啟用。
 
 如果您在整合 KernelSU 之後手機無法啟動，那麼很可能您的核心中 **kprobe 無法正常運作**，您需要修正這個錯誤，或者使用第二種方法。
 
 :::tip 如何檢查 kprobe 是否損毀？
 
-將 `KernelSU/kernel/ksu.c` 中的 `ksu_enable_sucompat()` 和 `ksu_enable_ksud()` 取消註解，如果正常開機，即 kprobe 已損毀；或者您可以手動嘗試使用 kprobe 功能，如果不正常，手機會直接重新啟動。
+將 `KernelSU/kernel/ksu.c` 中的 `ksu_enable_sucompat()` 和 `ksu_enable_ksud()` 註解掉，如果正常開機，即 kprobe 已損毀；或者您可以手動嘗試使用 kprobe 功能，如果不正常，手機會直接重新啟動。
 :::
 
 :::info 如何為非 GKI 核心啟用卸載模組功能
 
-如果你的內核版本小於 5.10，你應該將 `path_umount` 向後移植至 `fs/namespace.c`。 卸載模組功能依賴於這個函數。 如果你沒有向後移植 `path_umount`，卸載模組功能將無法工作。 你可以在底下查看更多關於 `path_unmount` 的資料。 
+如果你的內核版本小於 5.10，你應該將 `path_umount` 向後移植至 `fs/namespace.c`。卸載模組功能依賴於這個函數。如果你沒有向後移植 `path_umount`，卸載模組功能將無法工作。你可以在[這裡查看更多關於 `path_unmount` 的資料](#how-to-backport-path_unpount)。 
 :::
 
-## 手動修改核心原始碼 {#modify-kernel-source-code}
+## 手動修改核心原始碼 {#manually-modify-the-kernel-source}
 
-如果 kprobe 無法正常運作 (可能是上游的錯誤或核心版本過低)，那您可以嘗試這種方法：
+如果 kprobe 無法正常運作 (在4.8之前可能是上游或核心的錯誤)，那您可以嘗試這種方法：
 
-首先，將 KernelSU 新增至您的原始碼樹狀結構，再核心的根目錄執行以下命令：
+首先，將 KernelSU 新增至您的原始碼樹狀結構，在核心的根目錄執行以下命令：
 
 ```sh
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+```
+請記住，在某些裝置上，您的 `defconfig` 可能位於 `arch/arm64/configs` 中，或在其他情況下位於 `arch/arm64/configs/vendor/你的defconfig` 中。無論您使用哪個 `defconfig`，請確保使用 `CONFIG_KSU=y` 啟用KernelSU，或使用 `n` 停用它。例如，如果您選擇啟用它，則 `defconfig` 應包含以下字串：
+```conf
+# KernelSU
+CONFIG_KSU=y
 ```
 
 然後，手動修改核心原始碼，您可以參閱下方的 patch：
 
-```diff
+::: code-group
+
+```diff[exec.c]
 diff --git a/fs/exec.c b/fs/exec.c
 index ac59664eaecf..bdd585e1d2cc 100644
 --- a/fs/exec.c
@@ -97,7 +94,7 @@ index ac59664eaecf..bdd585e1d2cc 100644
  	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
  }
 ```
-```diff
+```diff[open.c]
 diff --git a/fs/open.c b/fs/open.c
 index 05036d819197..965b84d486b8 100644
 --- a/fs/open.c
@@ -128,7 +125,7 @@ index 05036d819197..965b84d486b8 100644
  	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
  		return -EINVAL;
 ```
-```diff
+```diff[read_write.c]
 diff --git a/fs/read_write.c b/fs/read_write.c
 index 650fc7e0f3a6..55be193913b6 100644
 --- a/fs/read_write.c
@@ -151,7 +148,7 @@ index 650fc7e0f3a6..55be193913b6 100644
  		return -EBADF;
  	if (!(file->f_mode & FMODE_CAN_READ))
 ```
-```diff
+```diff[stat.c]
 diff --git a/fs/stat.c b/fs/stat.c
 index 376543199b5a..82adcef03ecc 100644
 --- a/fs/stat.c
@@ -174,6 +171,8 @@ index 376543199b5a..82adcef03ecc 100644
  		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
  		return -EINVAL;
 ```
+
+:::
 
 主要修改四個項目：
 
@@ -236,9 +235,11 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
+### 安全模式 {#safe-mode}
+
 若要啟用 KernelSU 內建的安全模式，您還需要修改 `drivers/input/input.c` 中的 `input_handle_event` 方法：
 
-:::tip
+:::tip 小建議
 強烈建議啟用此功能，如果遇到開機迴圈，這將會非常有用！
 :::
 
@@ -266,9 +267,45 @@ index 45306f9ef247..815091ebfca4 100755
  		add_input_randomness(type, code, value);
 ```
 
+:::info 不小心進入安全模式？
+如果您使用手動整合且不停用 `CONFIG_KPROBES`，那麼您將可能會在啟動後透過按下音量來減少按鈕來觸發安全模式！因此，如果使用手動集成，您需要停用 `CONFIG_KPROBES` ！
+:::
+
+### 無法在終端中執行 `pm` ? {#failed-to-execute-pm-in-terminal}
+
+你應該修改 `fs/devpts/inode.c`，參考:
+
+```diff
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 32f6f1c68..d69d8eca2 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -602,6 +602,8 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+        return dentry;
+ }
+
++#ifdef CONFIG_KSU
++extern int ksu_handle_devpts(struct inode*);
++#endif
++
+ /**
+  * devpts_get_priv -- get private data for a slave
+  * @pts_inode: inode of the slave
+@@ -610,6 +612,7 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
+  */
+ void *devpts_get_priv(struct dentry *dentry)
+ {
++       #ifdef CONFIG_KSU
++       ksu_handle_devpts(dentry->d_inode);
++       #endif
+        if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
+                return NULL;
+        return dentry->d_fsdata;
+```
+
 ### 如何向後移植 path_umount {#how-to-backport-path_unpount}
 
-你可以透過向後移植 `path_umount` 來讓卸載模組功能在小於 5.10 的非 GKI 核心上運作. 你可以參考這個修改:
+你可以透過向後移植 `path_umount` 來讓卸載模組功能在低於 5.10 的非 GKI 核心上運作。你可以參考這個修改:
 
 ```diff
 --- a/fs/namespace.c
@@ -314,6 +351,5 @@ index 45306f9ef247..815091ebfca4 100755
   * Now umount can handle mount points as well as block devices.
   * This is important for filesystems which use unnamed block devices.
 ```
-
 
 最後，再次建置您的核心，KernelSU 將會如期運作。
