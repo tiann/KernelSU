@@ -33,6 +33,15 @@ jobs:
           - version: "5.10"
             sub_level: 209
             os_patch_level: 2024-05
+          - version: "5.10"
+            sub_level: 210
+            os_patch_level: 2024-06
+          - version: "5.10"
+            sub_level: 214
+            os_patch_level: 2024-07
+          - version: "5.10"
+            sub_level: 218
+            os_patch_level: 2024-08
           - version: "5.15"
             sub_level: 123
             os_patch_level: 2023-11
@@ -45,6 +54,12 @@ jobs:
           - version: "5.15"
             sub_level: 148
             os_patch_level: 2024-05
+          - version: "5.15"
+            sub_level: 149
+            os_patch_level: 2024-07
+          - version: "5.15"
+            sub_level: 151
+            os_patch_level: 2024-08
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -81,7 +96,7 @@ jobs:
       - name: Download prebuilt toolchain
         run: |
           AOSP_MIRROR=https://android.googlesource.com
-          BRANCH=main-kernel-build-2023
+          BRANCH=main-kernel-build-2024
           git clone $AOSP_MIRROR/platform/prebuilts/build-tools -b $BRANCH --depth 1 build-tools
           git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
@@ -131,11 +146,11 @@ jobs:
       matrix:
         include:
           - version: "5.10"
-            sub_level: 209
-            os_patch_level: 2024-05
+            sub_level: 218
+            os_patch_level: 2024-08
           - version: "5.15"
-            sub_level: 148
-            os_patch_level: 2024-05
+            sub_level: 151
+            os_patch_level: 2024-08
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android13-${{ matrix.version }}
