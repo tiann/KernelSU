@@ -11,14 +11,14 @@
     <string name="home_unsupported">Unsupported</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
     <string name="home_kernel">Kernel</string>
-    <string name="home_manager_version">Manager Version</string>
+    <string name="home_manager_version">Manager version</string>
     <string name="home_fingerprint">Fingerprint</string>
     <string name="home_selinux_status">SELinux status</string>
     <string name="selinux_status_disabled">Disabled</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
-    <string name="superuser">SuperUser</string>
+    <string name="superuser">Superuser</string>
     <string name="module_failed_to_enable">Failed to enable module: %s</string>
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No installed modules</string>
@@ -67,7 +67,7 @@
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
-    <string name="require_kernel_version">The current KernelSU version %d is too low for the manager to function properly. Please upgrade to version %d or higher!</string>
+    <string name="require_kernel_version">The current KernelSU version %d is too low for the manager to work properly. Please upgrade to version %d or higher!</string>
     <string name="settings_umount_modules_default">Umount modules by default</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a Profile set.</string>
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU to restore any modified files by the modules for this app.</string>
