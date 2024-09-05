@@ -37,6 +37,7 @@ jobs:
           branch: "add-device-${{ github.event.issue.number }}"
           labels: add-device
           delete-branch: true
+          sign-commits: true
       - name: Check outputs
         if: ${{ steps.cpr.outputs.pull-request-number }}
         run: |
