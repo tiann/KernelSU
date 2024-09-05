@@ -26,7 +26,7 @@ jobs:
       - name: Make pull request
         if: steps.handle-add-device.outputs.success == 'true'
         id: cpr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[add device]: ${{ steps.handle-add-device.outputs.device }}"
@@ -37,6 +37,7 @@ jobs:
           branch: "add-device-${{ github.event.issue.number }}"
           labels: add-device
           delete-branch: true
+          sign-commits: true
       - name: Check outputs
         if: ${{ steps.cpr.outputs.pull-request-number }}
         run: |
