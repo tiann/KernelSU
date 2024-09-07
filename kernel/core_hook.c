@@ -15,6 +15,7 @@
 #include <linux/sched.h>
 #include <linux/security.h>
 #include <linux/stddef.h>
+#include <linux/string.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
@@ -193,7 +194,7 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 		return 0;
 	}
 
-	if (strcmp(buf, "/system/packages.list")) {
+	if (!strstr(buf, "/system/packages.list")) {
 		return 0;
 	}
 	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
