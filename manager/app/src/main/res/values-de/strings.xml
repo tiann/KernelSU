@@ -18,7 +18,7 @@
     <string name="about">Über KernelSU</string>
     <string name="module_magisk_conflict">Module sind deaktiviert, weil es einen Konflikt mit Magisk gibt!</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">Erfahren, wie KernelSU installiert und Module verwendet werden</string>
+    <string name="home_click_to_learn_kernelsu">Erfahren, wie KernelSU installiert wird und Module verwendet werden</string>
     <string name="home_support_title">Unterstütze uns</string>
     <string name="home_support_content">KernelSU ist und wird immer frei und quelloffen sein. Du kannst uns jedoch deine Unterstützung zeigen, indem du eine Spende tätigst.</string>
     <string name="profile_selinux_context">SELinux-Kontext</string>
@@ -78,7 +78,7 @@
     <string name="reboot_userspace">Soft-Reboot</string>
     <string name="module_uninstall_confirm">Möchtest du wirklich Modul %s deinstallieren?</string>
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
-    <string name="require_kernel_version">Die aktuelle Kernel-Version %d ist zu alt für diese Manager-Version. Bitte auf Version %d oder höher upgraden!</string>
+    <string name="require_kernel_version">Die aktuelle KernelSU-Version %d ist zu alt für diese Manager-Version. Bitte auf Version %d oder höher upgraden!</string>
     <string name="module_changelog">Änderungsprotokoll</string>
     <string name="app_profile_template_import_success">Erfolgreich importiert</string>
     <string name="app_profile_export_to_clipboard">In Zwischenablage exportieren</string>
@@ -95,7 +95,7 @@
     <string name="app_profile_template_save_failed">Fehler beim Speichern</string>
     <string name="app_profile_template_edit">Vorlage bearbeiten</string>
     <string name="app_profile_template_id">ID</string>
-    <string name="settings_profile_template">App-Profil-Template</string>
+    <string name="settings_profile_template">App-Profil-Vorlage</string>
     <string name="app_profile_template_description">Beschreibung</string>
     <string name="app_profile_template_save">Speichern</string>
     <string name="settings_profile_template_summary">verwalte lokale und online Profil Vorlagen</string>
