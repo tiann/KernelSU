@@ -1,16 +1,12 @@
 package me.weishu.kernelsu.ui.util
 
-import android.content.ContentResolver
 import android.content.Context
-import android.net.Uri
 import android.os.Build
-import android.os.ParcelFileDescriptor
 import android.system.Os
 import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.screen.getManagerVersion
 import java.io.File
-import java.io.FileOutputStream
 import java.io.FileWriter
 import java.io.PrintWriter
 import java.time.LocalDateTime
@@ -59,7 +55,8 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("ls -alRZ /data/adb > ${adbFileDetails.absolutePath}").exec()
     shell.newJob().add("du -sh /data/adb/ksu/* > ${ksuFileSize.absolutePath}").exec()
     shell.newJob().add("cp /data/system/packages.list ${appListFile.absolutePath}").exec()
-    shell.newJob().add("getprop > ${propFile.absolutePath}").exec()
+    // set restricted context to filter privacy props
+    shell.newJob().add("echo -n u:r:untrusted_app:s0 > /proc/thread-self/attr/current; getprop > ${propFile.absolutePath}").exec()
     shell.newJob().add("cp /data/adb/ksu/.allowlist ${allowListFile.absolutePath}").exec()
     shell.newJob().add("cp /proc/modules ${procModules.absolutePath}").exec()
     shell.newJob().add("cp /proc/bootconfig ${bootConfig.absolutePath}").exec()
@@ -112,4 +109,3 @@ fun getBugreportFile(context: Context): File {
 
     return targetFile
 }
-
