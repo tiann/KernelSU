@@ -4,7 +4,7 @@
     <string name="home_not_installed">ยังไม่ได้ติดตั้ง</string>
     <string name="home_click_to_install">กดเพื่อติดตั้ง</string>
     <string name="home_working">กำลังทำงาน</string>
-    <string name="home_working_version">เวอร์ชั่น: %d</string>
+    <string name="home_working_version">เวอร์ชัน: %d</string>
     <string name="home_manager_version">เวอร์ชันตัวจัดการ</string>
     <string name="home_superuser_count">สิทธิ์ผู้ใช้ขั้นสูง: %d</string>
     <string name="home_module_count">โมดูล: %d</string>
@@ -38,7 +38,7 @@
     <string name="module_overlay_fs_not_available">โมดูลไม่สามารถใช้งานได้เนื่องจาก OverlayFS ถูกปิดใช้งานโดยเคอร์เนล</string>
     <string name="module_uninstall_confirm">คุณแน่ใจว่าจะถอนการติดตั้งโมดูล %s หรือไม่\?</string>
     <string name="module_author">ผู้สร้าง</string>
-    <string name="module_version">เวอร์ชั่น</string>
+    <string name="module_version">เวอร์ชัน</string>
     <string name="show_system_apps">แสดงแอประบบ</string>
     <string name="hide_system_apps">ซ่อนแอประบบ</string>
     <string name="refresh">รีเฟรช</string>
@@ -72,7 +72,7 @@
     <string name="profile_selinux_rules">กฎ</string>
     <string name="module_downloading">กำลังดาวน์โหลดโมดูล: %s</string>
     <string name="module_start_downloading">กำลังเริ่มดาวน์โหลด: %s</string>
-    <string name="new_version_available">เวอร์ชั่นใหม่: %s พร้อมใช้งาน คลิกเพื่ออัปเกรด</string>
+    <string name="new_version_available">เวอร์ชันใหม่: %s พร้อมใช้งาน คลิกเพื่ออัปเกรด</string>
     <string name="force_stop_app">บังคับหยุด</string>
     <string name="restart_app">รีสตาร์ท</string>
     <string name="settings_umount_modules_default_summary">หากเปิดใช้งานค่าเริ่มต้นโดยทั่วไปสำหรับ \"Umount โมดูล\" ในโปรไฟล์แอป จะเป็นการลบการแก้ไขโมดูลทั้งหมดในระบบสำหรับแอปพลิเคชันที่ไม่มีการตั้งค่าโปรไฟล์</string>
