@@ -698,5 +698,19 @@
         "kernel_name": "android_kernel_motorola_sdm632",
         "kernel_link": "https://github.com/Fede2782/android_kernel_motorola_sdm632",
         "devices": "Motorola Moto G7 (river)"
+    },
+    {
+        "maintainer": "EmanuelCN",
+        "maintainer_link": "https://github.com/EmanuelCN",
+        "kernel_name": "N0Kernel",
+        "kernel_link": "https://github.com/EmanuelCN/kernel_xiaomi_sm8250",
+        "devices": "Poco F3 (alioth) | Mi 10T/Pro (apollo) | Poco F4 (munch)"
+    },
+    {
+        "maintainer": "kvsnr113",
+        "maintainer_link": "https://github.com/kvsnr113",
+        "kernel_name": "NOVA Kernel",
+        "kernel_link": "https://github.com/kvsnr113/xiaomi_sm8250_kernel",
+        "devices": "Poco F3 (alioth) | Mi 10T/Pro (apollo) | Poco F4 (munch)"
     }
 ]
