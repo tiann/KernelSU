@@ -41,11 +41,13 @@ tools/bazel build --config=fast //common:kernel_aarch64_dist
 ```
 
 :::info
-For some of the Android 14 kernels, to make Wi-Fi/Bluetooth work, it might be necessary to remove all the GKI protected exports:
+Starting with Android 13; 5.10, the easiest way to make GKI modules work which are needed for Wi-Fi/Bluetooth, among other things, is disabling signature protection:
 
 ```sh
-rm common/android/abi_gki_protected_exports_*
+sed -i 's/CONFIG_MODULE_SIG_PROTECT=y/# CONFIG_MODULE_SIG_PROTECT is not set/g' kernel/samsung/e1s/arch/*/configs/gki_defconfig
 ```
+
+Alternatively, you could look into building the required modules yourself, in which case you would need to set CONFIG_MODULE_SIG_ALL=y in your defconfig.
 :::
 
 ## Build Kernel with KernelSU
