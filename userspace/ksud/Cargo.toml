@@ -30,7 +30,7 @@ extattr = "1.0"
 jwalk = "0.8"
 is_executable = "1.0"
 nom = "7.1"
-derive-new = "0.6"
+derive-new = "0.7"
 rust-embed = { version = "8.5", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
