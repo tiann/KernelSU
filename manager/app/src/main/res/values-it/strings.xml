@@ -45,7 +45,7 @@
     <string name="send_log">Invia log</string>
     <string name="safe_mode">Modalità provvisoria</string>
     <string name="reboot_to_apply">Riavvia per applicare la modifica</string>
-    <string name="module_magisk_conflict">I moduli sono disabilitati perché in conflitto con quelli di Magisk!</string>
+    <string name="module_magisk_conflict">I moduli sono disabilitati perché in conflitto con Magisk!</string>
     <string name="home_learn_kernelsu">Scopri KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Scopri come installare KernelSU e utilizzare i moduli</string>
@@ -82,16 +82,16 @@
     <string name="module_changelog">Registro aggiornamenti</string>
     <string name="app_profile_template_create">Crea modello</string>
     <string name="app_profile_template_edit">Modifica modello</string>
-    <string name="app_profile_template_id">identificativo</string>
+    <string name="app_profile_template_id">identificatore</string>
     <string name="app_profile_template_id_invalid">Identificativo modello non valido</string>
     <string name="app_profile_template_name">Nome</string>
     <string name="app_profile_template_view">Visualizza modello</string>
     <string name="app_profile_template_readonly">Sola lettura</string>
-    <string name="app_profile_template_id_exist">L\'identificativo del modello esiste già!</string>
+    <string name="app_profile_template_id_exist">L\'identificatore del modello è già in uso!</string>
     <string name="app_profile_import_export">Importa/Esporta</string>
     <string name="app_profile_import_from_clipboard">Importa dagli appunti</string>
     <string name="app_profile_export_to_clipboard">Esporta negli appunti</string>
-    <string name="app_profile_template_export_empty">Impossibile trovare modello locale da esportare!</string>
+    <string name="app_profile_template_export_empty">Impossibile trovare un modello locale da esportare!</string>
     <string name="app_profile_template_import_success">Importato con successo</string>
     <string name="app_profile_template_sync">Sincronizza i modelli remoti</string>
     <string name="app_profile_template_import_empty">Gli appunti sono vuoti!</string>
@@ -106,29 +106,29 @@
     <string name="module_changelog_failed">Impossibile reperire il changelog: %s</string>
     <string name="settings_check_update">Controlla aggiornamenti</string>
     <string name="settings_check_update_summary">Controlla automaticamente la disponibilità di aggiornamenti all\'apertura dell\'applicazione</string>
-    <string name="enable_web_debugging">Abilita il Debug di WebView</string>
+    <string name="enable_web_debugging">Abilita il debug di WebView</string>
     <string name="enable_web_debugging_summary">Può essere usato per svolgere il debug di WebUI, è consigliato attivarlo solo quando necessario.</string>
     <string name="select_file_tip">È consigliato usare immagine della partizione %1$s</string>
     <string name="select_kmi">Scegli il KMI</string>
     <string name="install_next">Avanti</string>
     <string name="direct_install">Installazione diretta (Raccomandata)</string>
-    <string name="select_file">Scegli un File</string>
-    <string name="install_inactive_slot">Installa nello Slot Inattivo (Dopo OTA)</string>
+    <string name="select_file">Scegli un file</string>
+    <string name="install_inactive_slot">Installa nello slot inattivo (dopo OTA)</string>
     <string name="install_inactive_slot_warning">Il tuo dispositivo sarà **FORZATO** ad avviarsi nello slot inattivo dopo il riavvio!
 \nUsa questa opzione solo quando l\'applicazione dell\'aggiornamento OTA è terminata.
 \nProcedere?</string>
     <string name="shrink_sparse_image">Riduci la dimensione dell\'immagine moduli sparse al minimo</string>
-    <string name="shrink_sparse_image_message">Riduci la dimensione dell\'immagine sparse dei moduli alla sua reale dimenzione. Nota che questo potrebbe causare malfunzionamenti dei moduli quindi utilizzala solo quando necessario (ad esempio in caso di backup)</string>
+    <string name="shrink_sparse_image_message">Riduci la dimensione dell\'immagine sparse dei moduli alla sua reale dimensione. Nota che questo potrebbe causare malfunzionamenti dei moduli quindi utilizzala solo quando necessario (ad esempio in caso di backup)</string>
     <string name="settings_uninstall">Disinstalla</string>
-    <string name="settings_uninstall_temporary">Disinstalla Temporaneamente</string>
-    <string name="settings_uninstall_permanent">Disinstalla Permanentemente</string>
+    <string name="settings_uninstall_temporary">Disinstalla temporaneamente</string>
+    <string name="settings_uninstall_permanent">Disinstalla permanentemente</string>
     <string name="settings_restore_stock_image">Ripristina immagine originale del produttore</string>
     <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU, ripristina lo stato originale dopo il prossimo riavvio.</string>
-    <string name="settings_uninstall_permanent_message">Disinstalla KernelSU (Root e tutti i moduli) completamente e permanentemente.</string>
+    <string name="settings_uninstall_permanent_message">Disinstalla KernelSU (root e tutti i moduli) completamente e permanentemente.</string>
     <string name="flashing">Installazione</string>
     <string name="flash_success">Installazione completata</string>
     <string name="flash_failed">Installazione fallita</string>
     <string name="selected_lkm">LKM selezionato: %s</string>
-    <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica del produttore (se il backup è presente), solitamente usato prima di applicare l\'OTA; se devi disinstallare KernelSU, utilizza invece \"Disinstalla Permanentemente\".</string>
+    <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica del produttore (se il backup è presente), solitamente usato prima di applicare l\'OTA; se devi disinstallare KernelSU, utilizza invece \"Disinstalla permanentemente\".</string>
     <string name="save_log">Salva Registri</string>
 </resources>
