@@ -29,7 +29,8 @@ class WebUIActivity : ComponentActivity() {
         val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
         WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
 
-        val webRoot = File("/data/adb/modules/${moduleId}/webroot")
+        val moduleDir = "/data/adb/modules/${moduleId}"
+        val webRoot = File("${moduleDir}/webroot")
         val rootShell = createRootShell(true).also { this.rootShell = it }
         val webViewAssetLoader = WebViewAssetLoader.Builder()
             .setDomain("mui.kernelsu.org")
@@ -52,7 +53,7 @@ class WebUIActivity : ComponentActivity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.allowFileAccess = false
-            webviewInterface = WebViewInterface(this@WebUIActivity, this)
+            webviewInterface = WebViewInterface(this@WebUIActivity, this, moduleDir)
             addJavascriptInterface(webviewInterface, "ksu")
             setWebViewClient(webViewClient)
             loadUrl("https://mui.kernelsu.org/index.html")

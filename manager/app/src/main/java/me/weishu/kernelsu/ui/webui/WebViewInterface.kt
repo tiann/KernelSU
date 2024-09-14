@@ -14,13 +14,15 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
+import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.withNewRootShell
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CompletableFuture
+import java.io.File
 
-class WebViewInterface(val context: Context, private val webView: WebView) {
+class WebViewInterface(val context: Context, private val webView: WebView, private val modDir: String) {
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -170,6 +172,27 @@ class WebViewInterface(val context: Context, private val webView: WebView) {
         }
     }
 
+    @JavascriptInterface
+    fun moduleInfo(): String {
+        val moduleInfos = JSONArray(listModules())
+        var currentModuleInfo = JSONObject()
+        currentModuleInfo.put("moduleDir", modDir)
+        val moduleId = File(modDir).getName()
+        for (i in 0 until moduleInfos.length()) {
+            val currentInfo = moduleInfos.getJSONObject(i)
+
+            if (currentInfo.getString("id") != moduleId) {
+                continue
+            }
+
+            var keys = currentInfo.keys()
+            for(key in keys) {
+                currentModuleInfo.put(key, currentInfo.get(key));
+            }
+            break;
+        }
+        return currentModuleInfo.toString();
+    }
 }
 
 fun hideSystemUI(window: Window) {
