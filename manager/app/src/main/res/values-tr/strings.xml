@@ -39,14 +39,14 @@
     <string name="module_uninstall_failed">Kaldırma başarısız: %s</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Geliştirici</string>
-    <string name="module_overlay_fs_not_available">overlayfs mevcut değil, modül çalışamaz!</string>
+    <string name="module_overlay_fs_not_available">OverlayFS çekirdek tarafından devre dışı bırakıldığı için modüller kullanılamıyor.</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
-    <string name="send_log">Günlük raporu gönder</string>
+    <string name="send_log">Günlükleri gönder</string>
     <string name="safe_mode">Güvenli mod</string>
     <string name="reboot_to_apply">Değişikliklerin uygulanması için cihazı yeniden başlat</string>
-    <string name="module_magisk_conflict">Modüller, Magisk\'tekiler ile çakıştığı için devre dışı bırakıldı!</string>
+    <string name="module_magisk_conflict">Magisk ile çakışma nedeniyle modüller kullanılamıyor!</string>
     <string name="home_learn_kernelsu">KernelSU\'yu öğrenin</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
@@ -76,7 +76,7 @@
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
     <string name="module_start_downloading">İndirme başladı: %s</string>
-    <string name="new_version_available">Yeni sürüm: %s mevcut, güncellemek için tıklayın</string>
+    <string name="new_version_available">Yeni sürüm: %s var, güncellemek için tıklayın.</string>
     <string name="launch_app">Uygulamayı başlat</string>
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
@@ -93,8 +93,8 @@
     <string name="app_profile_template_save">Kaydet</string>
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_view">Şablonu görüntüle</string>
-    <string name="app_profile_template_readonly">salt okunur</string>
-    <string name="app_profile_template_id_exist">Şablon kimliği zaten mevcut!</string>
+    <string name="app_profile_template_readonly">Salt okunur</string>
+    <string name="app_profile_template_id_exist">Şablon kimliği zaten var!</string>
     <string name="app_profile_import_export">İçe aktar/Dışa aktar</string>
     <string name="app_profile_import_from_clipboard">Panodan içe aktar</string>
     <string name="app_profile_export_to_clipboard">Panodan dışa aktar</string>
@@ -108,11 +108,11 @@
     <string name="settings_check_update_summary">Uygulamayı açarken güncellemeleri otomatik denetle</string>
     <string name="grant_root_failed">Root izni verilemedi!</string>
     <string name="open">Aç</string>
-    <string name="enable_web_debugging">Web Görünümü Hata Ayıklamasını Etkinleştir</string>
+    <string name="enable_web_debugging">Web görünümü hata ayıklamasını etkinleştir</string>
     <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
-    <string name="direct_install">Doğrudan Kur (Tavsiye Edilen)</string>
-    <string name="select_file">Bir Dosya Seçin</string>
-    <string name="install_inactive_slot">Etkin Olmayan Yuvaya Kur (OTA\'dan Sonra)</string>
+    <string name="direct_install">Doğrudan kur (Tavsiye edilen)</string>
+    <string name="select_file">Bir dosya seçin</string>
+    <string name="install_inactive_slot">Etkin olmayan yuvaya kur (OTA\'dan sonra)</string>
     <string name="install_inactive_slot_warning">Cihazınız geçerli etkin olmayan yuvaya **ZORLA** yeniden başlatılacaktır!
 \nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
 \nDevam edilsin mi?</string>
@@ -120,16 +120,16 @@
     <string name="select_kmi">KMI seçin</string>
     <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
     <string name="shrink_sparse_image">Sparse imajını küçültün</string>
-    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi)</string>
-    <string name="settings_uninstall_temporary">Geçici Olarak Kaldır</string>
-    <string name="settings_uninstall_permanent">Kalıcı Olarak Kaldır</string>
-    <string name="settings_restore_stock_image">Stok İmajı Geri Yükle</string>
+    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi).</string>
+    <string name="settings_uninstall_temporary">Geçici olarak kaldır</string>
+    <string name="settings_uninstall_permanent">Kalıcı olarak kaldır</string>
+    <string name="settings_restore_stock_image">Stok imajı geri yükle</string>
     <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldır, bir sonraki yeniden başlatmadan sonra orijinal durumuna geri yükle.</string>
     <string name="settings_uninstall">Kaldır</string>
     <string name="settings_uninstall_permanent_message">KernelSU (Root ve tüm modüller) tamamen ve kalıcı olarak kaldırılıyor.</string>
-    <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı Olarak Kaldır\" seçeneğini kullanın.</string>
+    <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın.</string>
     <string name="flash_success">Flaşlama başarılı</string>
-    <string name="selected_lkm">Seçili lkm: %s</string>
+    <string name="selected_lkm">Seçili LKM: %s</string>
     <string name="flashing">Flaşlanıyor</string>
     <string name="flash_failed">Flaşlama başarısız</string>
     <string name="save_log">Günlükleri Kaydet</string>

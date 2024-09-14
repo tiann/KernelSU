@@ -20,7 +20,7 @@
     <string name="superuser">スーパーユーザー</string>
     <string name="module_failed_to_enable">モジュールの有効化に失敗: %s</string>
     <string name="module_failed_to_disable">モジュールの無効化に失敗: %s</string>
-    <string name="module_empty">モジュールをインストールしていません</string>
+    <string name="module_empty">モジュールがインストールされていません</string>
     <string name="module">モジュール</string>
     <string name="uninstall">アンインストール</string>
     <string name="module_install">インストール</string>
@@ -38,19 +38,19 @@
     <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
     <string name="module_version">バージョン</string>
     <string name="module_author">制作者</string>
-    <string name="module_overlay_fs_not_available">OverlayFS が有効でないためモジュールは動作しません！</string>
+    <string name="module_overlay_fs_not_available">カーネルによって OverlayFS が無効になっているため、モジュールが利用できません。</string>
     <string name="refresh">更新</string>
     <string name="show_system_apps">システムアプリを表示</string>
     <string name="hide_system_apps">システムアプリを非表示</string>
     <string name="send_log">ログを送信</string>
     <string name="safe_mode">セーフモード</string>
     <string name="reboot_to_apply">再起動すると有効化されます</string>
-    <string name="module_magisk_conflict">Magisk と競合しているためモジュールは無効になっています！</string>
+    <string name="module_magisk_conflict">モジュールが Magisk との競合により利用できません!</string>
     <string name="home_learn_kernelsu">KernelSU について</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/ja_JP/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU のインストール方法やモジュールの使い方はこちら</string>
     <string name="home_support_title">支援する</string>
-    <string name="home_support_content">KernelSU はこれからもずっとフリーでオープンソースです。寄付をすることで私たちを気にかけていることを示せます。</string>
+    <string name="home_support_content">KernelSU はこれからもずっと無料でオープンソースです。寄付をして頂くことで、開発を支援していただけます。</string>
     <string name="about_source_code"><![CDATA[%1$s でソースコードを表示<br/>%2$s チャンネルに参加]]></string>
     <string name="profile">アプリのプロファイル</string>
     <string name="profile_default">既定</string>
@@ -67,7 +67,7 @@
     <string name="failed_to_update_app_profile">%s のアプリのプロファイルの更新をできませでした</string>
     <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
-    <string name="new_version_available">新しいバージョン: %s が利用可能です。タップしてダウンロード</string>
+    <string name="new_version_available">新しいバージョン %s が利用可能です。タップしてダウンロード。</string>
     <string name="module_update">アップデート</string>
     <string name="module_start_downloading">ダウンロードを開始: %s</string>
     <string name="launch_app">起動</string>
@@ -84,7 +84,7 @@
     <string name="app_profile_template_import_success">インポート成功</string>
     <string name="app_profile_export_to_clipboard">クリップボードからエクスポート</string>
     <string name="app_profile_template_export_empty">エクスポートするローカル テンプレートが見つかりません！</string>
-    <string name="app_profile_template_id_exist">テンプレート id はすでに存在します！</string>
+    <string name="app_profile_template_id_exist">テンプレート ID はすでに存在します！</string>
     <string name="app_profile_import_from_clipboard">クリップボードからインポート</string>
     <string name="module_changelog_failed">変更ログの取得に失敗しました: %s</string>
     <string name="app_profile_template_name">名前</string>
@@ -95,7 +95,7 @@
     <string name="app_profile_import_export">インポート/エクスポート</string>
     <string name="app_profile_template_save_failed">テンプレートの保存に失敗しました</string>
     <string name="app_profile_template_edit">テンプレートの編集</string>
-    <string name="app_profile_template_id">id</string>
+    <string name="app_profile_template_id">ID</string>
     <string name="settings_profile_template">アプリプロファイルのテンプレート</string>
     <string name="app_profile_template_description">説明</string>
     <string name="app_profile_template_save">保存</string>
@@ -119,7 +119,7 @@
     <string name="direct_install">直接インストール (推奨)</string>
     <string name="select_file">ファイルを選択してください</string>
     <string name="shrink_sparse_image">スパースイメージを最小化</string>
-    <string name="shrink_sparse_image_message">モジュールが配置されているスパースイメージのサイズを実際のサイズに変更します。 モジュールが正常に動作しなくなる可能性がありますので、必要な場合にのみご使用ください</string>
+    <string name="shrink_sparse_image_message">モジュールが配置されているスパースイメージのサイズを実際のサイズに変更します。 モジュールが正常に動作しなくなる可能性がありますので、必要な場合にのみご使用ください。</string>
     <string name="settings_uninstall_permanent">完全にアンインストールする</string>
     <string name="settings_restore_stock_image">ストックイメージを復元</string>
     <string name="settings_uninstall_temporary">一時的にアンインストールする</string>
@@ -130,6 +130,6 @@
     <string name="flashing">フラッシュ</string>
     <string name="flash_success">フラッシュ成功</string>
     <string name="flash_failed">フラッシュ失敗</string>
-    <string name="selected_lkm">選択された lkm: %s</string>
+    <string name="selected_lkm">選択された LKM: %s</string>
     <string name="save_log">ログを保存</string>
 </resources>
