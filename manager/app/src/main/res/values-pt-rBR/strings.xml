@@ -42,7 +42,7 @@
     <string name="refresh">Atualizar</string>
     <string name="show_system_apps">Mostrar apps do sistema</string>
     <string name="hide_system_apps">Ocultar apps do sistema</string>
-    <string name="send_log">Reportar registro</string>
+    <string name="send_log">Reportar registros</string>
     <string name="safe_mode">Modo de segurança</string>
     <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
     <string name="module_magisk_conflict">Os módulos estão indisponíveis devido a um conflito com Magisk!</string>
@@ -126,10 +126,10 @@
     <string name="settings_restore_stock_image">Restaurar imagem de fábrica</string>
     <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica (se existir um backup), geralmente usada antes do OTA. Se você precisar desinstalar o KernelSU, use \"Desinstalar permanentemente\".</string>
     <string name="settings_uninstall_temporary_message">Desinstale temporariamente o KernelSU e restaure ao estado original após a próxima reinicialização</string>
-    <string name="settings_uninstall_permanent_message">Desinstale o KernelSU (Root e todos os módulos) completamente e permanentemente</string>
+    <string name="settings_uninstall_permanent_message">Desinstale o KernelSU (root e todos os módulos) completamente e permanentemente</string>
     <string name="selected_lkm">LKM selecionado: %s</string>
     <string name="flash_failed">Flash falhou</string>
     <string name="flashing">Flashando</string>
     <string name="flash_success">Flash bem-sucedido</string>
-    <string name="save_log">Salvar Logs</string>
+    <string name="save_log">Salvar registros</string>
 </resources>
