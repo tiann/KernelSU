@@ -55,3 +55,4 @@ For information on reporting security vulnerabilities in KernelSU, see [SECURITY
 - [Magisk](https://github.com/topjohnwu/Magisk): the powerful root tool.
 - [genuine](https://github.com/brevent/genuine/): apk v2 signature validation.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): some rootkit skills.
+[![](https://jitpack.io/v/Faaryz1/KernelSU.svg)](https://jitpack.io/#Faaryz1/KernelSU)
