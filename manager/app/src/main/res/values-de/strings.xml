@@ -28,15 +28,15 @@
     <string name="profile_template">Vorlage</string>
     <string name="profile_custom">Benutzerdefiniert</string>
     <string name="failed_to_update_app_profile">App-Profilaktualisierung für %s fehlgeschlagen</string>
-    <string name="profile_namespace_inherited">Vererbt</string>
+    <string name="profile_namespace_inherited">Geerbt</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_individual">Individuell</string>
     <string name="profile_selinux_domain">Domäne</string>
     <string name="module_update">Aktualisieren</string>
     <string name="profile_umount_modules_summary">Wenn du diese Option aktivierst, kann KernelSU alle von den Modulen für diese App geänderten Dateien wiederherstellen.</string>
     <string name="profile_selinux_rules">Regeln</string>
-    <string name="module_start_downloading">Herunterladen startet: %s</string>
-    <string name="failed_to_update_sepolicy">Fehler beim Aktualisieren der SELinux-Regeln für: %s</string>
+    <string name="module_start_downloading">Starte Download: %s</string>
+    <string name="failed_to_update_sepolicy">Aktualisieren der SELinux-Regeln für %s fehlgeschlagen</string>
     <string name="launch_app">Starten</string>
     <string name="new_version_available">Neue Version: %s verfügbar, tippen zum Aktualisieren</string>
     <string name="force_stop_app">Stopp erzwingen</string>
@@ -69,7 +69,7 @@
     <string name="profile_groups">Gruppen</string>
     <string name="profile_capabilities">Fähigkeiten</string>
     <string name="profile_umount_modules">Module aushängen</string>
-    <string name="module_downloading">Modul herunterladen: %s</string>
+    <string name="module_downloading">Lädt Modul %s herunter</string>
     <string name="home_unsupported">Nicht unterstützt</string>
     <string name="home_unsupported_reason">KernelSU unterstützt derzeit nur GKI-Kernel</string>
     <string name="home_kernel">Kernel</string>
