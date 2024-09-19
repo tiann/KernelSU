@@ -23,7 +23,7 @@
     <string name="home_support_content">KernelSU ist und wird immer frei und quelloffen sein. Du kannst uns jedoch deine Unterstützung zeigen, indem du eine Spende tätigst.</string>
     <string name="profile_selinux_context">SELinux-Kontext</string>
     <string name="settings_umount_modules_default">Module standardmäßig aushängen</string>
-    <string name="settings_umount_modules_default_summary">Globaler Standardwert für \'Module aushängen\' in App-Profilen. Falls aktiviert, werden alle Moduländerungen im System für alle Apps entfernt, für die kein Profil festgelegt ist.</string>
+    <string name="settings_umount_modules_default_summary">Globaler Standardwert für \"Module aushängen\" im App-Profil. Falls er aktiviert ist, werden alle Moduländerungen im System für alle Apps entfernt, für die kein Profil festgelegt ist.</string>
     <string name="profile_default">Standard</string>
     <string name="profile_template">Vorlage</string>
     <string name="profile_custom">Benutzerdefiniert</string>
@@ -38,7 +38,7 @@
     <string name="module_start_downloading">Starte Download: %s</string>
     <string name="failed_to_update_sepolicy">Aktualisieren der SELinux-Regeln für %s fehlgeschlagen</string>
     <string name="launch_app">Starten</string>
-    <string name="new_version_available">Neue Version: %s verfügbar, tippen zum Aktualisieren</string>
+    <string name="new_version_available">Neue Version %s verfügbar, tippen zum Aktualisieren.</string>
     <string name="force_stop_app">Stopp erzwingen</string>
     <string name="restart_app">Neustarten</string>
     <string name="home_module_count">Module: %d</string>
@@ -63,7 +63,7 @@
     <string name="home_learn_kernelsu">KernelSU verstehen</string>
     <string name="safe_mode">Sicherer Modus</string>
     <string name="reboot_to_apply">Neustarten, damit Änderungen wirksam werden</string>
-    <string name="about_source_code">Schau dir den Quellcode an auf %1$s<br/>Trete unserem %2$s-Kanal bei</string>
+    <string name="about_source_code">Schau dir den Quellcode an auf %1$s<br/>Trete unserem %2$s Kanal bei</string>
     <string name="profile_name">Profilname</string>
     <string name="profile_namespace">Namespace einhängen</string>
     <string name="profile_groups">Gruppen</string>
@@ -78,7 +78,7 @@
     <string name="reboot_userspace">Soft-Reboot</string>
     <string name="module_uninstall_confirm">Möchtest du wirklich Modul %s deinstallieren?</string>
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
-    <string name="require_kernel_version">Die aktuelle KernelSU-Version %d ist zu alt für diese Manager-Version. Bitte auf Version %d oder höher upgraden!</string>
+    <string name="require_kernel_version">Die aktuelle KernelSU-Version %d ist zu alt für diese Manager-Version. Bitte auf Version %d oder höher aktualisieren!</string>
     <string name="module_changelog">Änderungsprotokoll</string>
     <string name="app_profile_template_import_success">Erfolgreich importiert</string>
     <string name="app_profile_export_to_clipboard">In Zwischenablage exportieren</string>
