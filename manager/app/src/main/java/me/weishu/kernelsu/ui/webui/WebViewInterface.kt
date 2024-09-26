@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.internal.UiThreadHandler
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.withNewRootShell
@@ -110,13 +111,13 @@ class WebViewInterface(val context: Context, private val webView: WebView, priva
             }
         }
 
-        val stdout = object : CallbackList<String>() {
+        val stdout = object : CallbackList<String>(UiThreadHandler::runAndWait) {
             override fun onAddElement(s: String) {
                 emitData("stdout", s)
             }
         }
 
-        val stderr = object : CallbackList<String>() {
+        val stderr = object : CallbackList<String>(UiThreadHandler::runAndWait) {
             override fun onAddElement(s: String) {
                 emitData("stderr", s)
             }
