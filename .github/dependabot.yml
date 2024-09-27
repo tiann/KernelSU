@@ -4,18 +4,35 @@ updates:
     directory: /
     schedule:
       interval: daily
-
+    groups:
+      actions:
+        patterns:
+          - "*"
   - package-ecosystem: cargo
     directory: userspace/ksud
     schedule:
       interval: daily
-
+    allow:
+      - dependency-type: "all"
+    groups:
+      crates:
+        patterns:
+          - "*"
   - package-ecosystem: gradle
     directory: manager
     schedule:
       interval: daily
-
+    groups:
+      maven:
+        patterns:
+          - "*"
   - package-ecosystem: npm
     directory: website
     schedule:
       interval: daily
+    allow:
+      - dependency-type: "all"
+    groups:
+      npm:
+        patterns:
+          - "*"

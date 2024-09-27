@@ -37,14 +37,14 @@
     <string name="module_uninstall_failed">卸载失败: %s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="module_overlay_fs_not_available">内核不支持 overlayfs，模块功能无法运作！</string>
+    <string name="module_overlay_fs_not_available">OverlayFS被内核禁用，模块不可用。</string>
     <string name="refresh">刷新</string>
     <string name="show_system_apps">显示系统应用</string>
     <string name="hide_system_apps">隐藏系统应用</string>
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">重启生效</string>
-    <string name="module_magisk_conflict">所有模块已被禁用，因为它与 Magisk 的模块系统有冲突！</string>
+    <string name="module_magisk_conflict">因与Magisk有冲突，所有模块不可用！</string>
     <string name="home_module_count">模块数：%d</string>
     <string name="home_learn_kernelsu">了解 KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_CN/guide/what-is-kernelsu.html</string>
@@ -74,7 +74,7 @@
     <string name="module_update">更新</string>
     <string name="module_downloading">正在下载模块：%s</string>
     <string name="module_start_downloading">开始下载：%s</string>
-    <string name="new_version_available">发现新版本：%s，点击升级</string>
+    <string name="new_version_available">发现新版本：%s，点击升级。</string>
     <string name="launch_app">启动</string>
     <string name="force_stop_app">强制停止</string>
     <string name="restart_app">重新启动</string>

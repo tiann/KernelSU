@@ -7,9 +7,9 @@ jobs:
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android12-5.10
-      version_name: android12-5.10.209
-      tag: android12-5.10-2024-05
-      os_patch_level: 2024-05
+      version_name: android12-5.10.218
+      tag: android12-5.10-2024-08
+      os_patch_level: 2024-08
       patch_path: "5.10"
       debug: true
   build-debug-kernel-a13:
@@ -17,11 +17,11 @@ jobs:
       matrix:
         include:
           - version: "5.10"
-            sub_level: 209
-            os_patch_level: 2024-05
+            sub_level: 218
+            os_patch_level: 2024-08
           - version: "5.15"
-            sub_level: 148
-            os_patch_level: 2024-05
+            sub_level: 151
+            os_patch_level: 2024-08
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android13-${{ matrix.version }}
@@ -34,15 +34,29 @@ jobs:
       matrix:
         include:
           - version: "5.15"
-            sub_level: 148
-            os_patch_level: 2024-05
+            sub_level: 158
+            os_patch_level: 2024-08
           - version: "6.1"
-            sub_level: 75
-            os_patch_level: 2024-05
+            sub_level: 90
+            os_patch_level: 2024-08
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android14-${{ matrix.version }}
       version_name: android14-${{ matrix.version }}.${{ matrix.sub_level }}
       tag: android14-${{ matrix.version }}-${{ matrix.os_patch_level }}
+      patch_path: ${{ matrix.version }}
+      debug: true
+  build-debug-kernel-a15:
+    strategy:
+      matrix:
+        include:
+          - version: "6.6"
+            sub_level: 30
+            os_patch_level: 2024-08
+    uses: ./.github/workflows/gki-kernel.yml
+    with:
+      version: android15-${{ matrix.version }}
+      version_name: android15-${{ matrix.version }}.${{ matrix.sub_level }}
+      tag: android15-${{ matrix.version }}-${{ matrix.os_patch_level }}
       patch_path: ${{ matrix.version }}
       debug: true

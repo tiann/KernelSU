@@ -10,13 +10,10 @@
         "READPROC"
     ],
     "capabilities":[
-        "CAP_SYS_MODULE",
-        "CAP_SYS_NICE",
-        "CAP_SYS_RESOURCE",
         "CAP_KILL",
         "CAP_SYSLOG",
-        "CAP_PERFMON",
-        "CAP_SYS_BOOT"
+        "CAP_SYS_BOOT",
+        "CAP_DAC_OVERRIDE"
     ],
     "context":"u:r:su:s0",
     "namespace":"INHERITED",

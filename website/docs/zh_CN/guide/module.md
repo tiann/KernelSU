@@ -72,9 +72,9 @@ KernelSU 模块就是一个放置在 `/data/adb/modules` 内且满足如下结�
 │   │
 │   │      *** 自动生成的目录，不要手动创建或者修改！ ***
 │   │
-│   ├── vendor              <--- A symlink to $MODID/system/vendor
-│   ├── product             <--- A symlink to $MODID/system/product
-│   ├── system_ext          <--- A symlink to $MODID/system/system_ext
+│   ├── vendor              <--- 如果 /system/vendor 是符号链接且存在，从 $MODID/system/vendor 移动到模块根目录
+│   ├── product             <--- 如果 /system/product 是符号链接且存在，从 $MODID/system/product 移动到模块根目录
+│   ├── system_ext          <--- 如果 /system/system_ext 是符号链接且存在，从 $MODID/system/system_ext 移动到模块根目录
 │   │
 │   │      *** Any additional files / folders are allowed ***
 │   │
