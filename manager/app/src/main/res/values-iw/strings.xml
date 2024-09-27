@@ -81,4 +81,5 @@
     <string name="home_manager_version">גרסת מנהל</string>
     <string name="new_version_available">גרסה חדשה עבור: %s זמינה, לחץ כדי לשדרג</string>
     <string name="save_log">שמור יומנים</string>
+    <string name="kernelsu_is_not_installed">KernelSU לא מותקן</string>
 </resources>

@@ -79,4 +79,5 @@
     <string name="launch_app">लाँच करा</string>
     <string name="restart_app">पुन्हा सुरू करा</string>
     <string name="save_log">लॉग जतन करा</string>
+    <string name="kernelsu_is_not_installed">KernelSU इंस्टॉल केलेले नाही</string>
 </resources>

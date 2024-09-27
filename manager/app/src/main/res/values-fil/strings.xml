@@ -67,4 +67,5 @@
     <string name="profile_namespace_inherited">Minana</string>
     <string name="settings_umount_modules_default_summary">Ang pangkalahatang default na halaga para sa \"Umount modules\" sa Mga Profile ng App. Kung pinagana, aalisin nito ang lahat ng mga pagbabago sa modyul sa system para sa mga aplikasyon na walang hanay ng Profile.</string>
     <string name="save_log">I-save ang mga Log</string>
+    <string name="kernelsu_is_not_installed">Hindi naka-install ang KernelSU</string>
 </resources>

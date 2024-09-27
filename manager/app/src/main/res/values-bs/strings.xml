@@ -80,4 +80,5 @@
     <string name="profile_custom">Prilagođeno</string>
     <string name="profile_name">Naziv profila</string>
     <string name="save_log">Sačuvaj Dnevnike</string>
+    <string name="kernelsu_is_not_installed">Kernel su nije instaliran</string>
 </resources>

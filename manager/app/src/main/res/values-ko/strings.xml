@@ -79,4 +79,5 @@
     <string name="launch_app">실행</string>
     <string name="failed_to_update_sepolicy">다음 앱에 대한 SELinux 규칙 업데이트 실패: %s</string>
     <string name="save_log">로그 저장</string>
+    <string name="kernelsu_is_not_installed">KernelSU 설치되지 않음</string>
 </resources>

@@ -65,4 +65,5 @@
     <string name="profile_umount_modules">আনমাউন্ট মোডিউল</string>
     <string name="require_kernel_version">ম্যানেজার সঠিকভাবে কাজ করার জন্য বর্তমান KernelSU সংস্করণ %d খুবই কম। অনুগ্রহ করে %d বা উচ্চতর সংস্করণে আপগ্রেড করুন!</string>
     <string name="save_log">লগ সংরক্ষণ করুন</string>
+        <string name="kernelsu_is_not_installed">Kernel su ইনস্টল করা হয়নি</string>
 </resources>

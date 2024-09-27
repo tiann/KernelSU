@@ -81,4 +81,5 @@
     <string name="module_changelog">Keitimų žurnalas</string>
     <string name="require_kernel_version">Ši KernelSU versija %d yra per žema, kad šis vadybininkas galėtų tinkamai funkcionuoti. Prašome atsinaujinti į versiją %d ar aukščiau!</string>
     <string name="save_log">Saglabāt Žurnālus</string>
+    <string name="kernelsu_is_not_installed">KernelSU neįdiegtas</string>
 </resources>

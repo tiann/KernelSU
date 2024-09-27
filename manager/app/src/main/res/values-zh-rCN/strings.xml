@@ -129,4 +129,5 @@
     <string name="flash_failed">刷写失败</string>
     <string name="selected_lkm">选择的 LKM ：%s</string>
     <string name="save_log">保存日志</string>
+    <string name="kernelsu_is_not_installed">Kernel su 未安装</string>
 </resources>

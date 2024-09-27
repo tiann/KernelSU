@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.os.PowerManager
 import android.system.Os
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
@@ -103,7 +104,7 @@ fun UpdateCard() {
     val context = LocalContext.current
     val latestVersionInfo = LatestVersionInfo()
     val newVersion by produceState(initialValue = latestVersionInfo) {
-        value = withContext(Dispatchers.IO){
+        value = withContext(Dispatchers.IO) {
             checkNewVersion()
         }
     }
@@ -117,6 +118,7 @@ fun UpdateCard() {
     val uriHandler = LocalUriHandler.current
     val title = stringResource(id = R.string.module_changelog)
     val updateText = stringResource(id = R.string.module_update)
+
 
     AnimatedVisibility(
         visible = newVersionCode > currentVersionCode,
@@ -143,10 +145,23 @@ fun UpdateCard() {
 }
 
 @Composable
-fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
+fun RebootDropdownItem(
+    @StringRes id: Int,
+    reason: String = "",
+    context: Context = LocalContext.current
+) {
+    val kernelsuisnotinstalled = stringResource(id = R.string.kernelsu_is_not_installed)
     DropdownMenuItem(text = {
         Text(stringResource(id))
     }, onClick = {
+        val iskernelsu = Natives.becomeManager(ksuApp.packageName)
+        if (!iskernelsu)
+            return@DropdownMenuItem Toast.makeText(
+                context,
+                kernelsuisnotinstalled,
+                Toast.LENGTH_SHORT
+            ).show()
+
         reboot(reason)
     })
 }

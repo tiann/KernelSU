@@ -104,4 +104,5 @@
     <string name="app_profile_template_import_empty">El portapapeles esta vacio!</string>
     <string name="app_profile_template_view">Ver plantilla</string>
     <string name="save_log">Guardar Registros</string>
+    <string name="kernelsu_is_not_installed">KernelSU no está instalado</string>
 </resources>

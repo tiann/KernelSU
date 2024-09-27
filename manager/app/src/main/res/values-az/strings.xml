@@ -79,4 +79,5 @@
     <string name="restart_app">Yenidən başlat</string>
     <string name="failed_to_update_sepolicy">%s görə SELinux qaydalarını güncəlləmək mümkün olmadı</string>
     <string name="save_log">Girişləri Saxla</string>
+       <string name="kernelsu_is_not_installed">Kernel su quraşdırılmayıb</string>
 </resources>

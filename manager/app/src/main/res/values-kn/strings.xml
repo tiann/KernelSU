@@ -67,4 +67,5 @@
     <string name="home_manager_version">ಮ್ಯಾನೇಜರ್ ವರ್ಷನ್</string>
     <string name="new_version_available">ಹೊಸ ಆವೃತ್ತಿ: %s ಲಭ್ಯವಿದೆ, ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ</string>
     <string name="save_log">ಲಾಗ್ಗಳನ್ನು ಉಳಿಸಿ</string>
+        <string name="kernelsu_is_not_installed">KernelSU ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ</string>
 </resources>

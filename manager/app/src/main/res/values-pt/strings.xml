@@ -80,4 +80,6 @@
     <string name="new_version_available">Nova versão: %s está disponível, clique para baixar</string>
     <string name="require_kernel_version">A versão atual do KernelSU %d é muito baixa para o gerenciador funcionar corretamente. Atualize para a versão %d ou superior!</string>
     <string name="save_log">Salvar Registros</string>
+    <string name="kernelsu_is_not_installed">Kernel su is not installed</string>
+    <string name="kernelsu_is_not_installed">Kernel su não está instalado</string>
 </resources>

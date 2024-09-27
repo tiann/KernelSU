@@ -35,4 +35,5 @@
     <string name="reboot_bootloader">Mulakan semula ke bootloader</string>
     <string name="home_manager_version">Versi Manager</string>
     <string name="save_log">Simpan Log</string>
+    <string name="kernelsu_is_not_installed">KernelSU tidak terpasang</string>
 </resources>

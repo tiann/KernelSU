@@ -18,4 +18,5 @@
     <string name="home_superuser_count">సూపర్‌యూజర్‌లు: %d</string>
     <string name="home_module_count">మాడ్యూల్స్: %d</string>
     <string name="save_log">లాగ్‌లు సేవ్ చేయండి</string>
+    <string name="kernelsu_is_not_installed">కర్నల్ సు ఇన్‌స్టాల్ చేయబడలేదు</string>
 </resources>

@@ -132,4 +132,5 @@
     <string name="flash_failed">フラッシュ失敗</string>
     <string name="selected_lkm">選択された LKM: %s</string>
     <string name="save_log">ログを保存</string>
+    <string name="kernelsu_is_not_installed">KernelSU はインストールされていません</string>
 </resources>

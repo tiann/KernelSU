@@ -129,4 +129,5 @@
     <string name="flash_success">Instalare reușită</string>
     <string name="flash_failed">Instalarea a eșuat</string>
     <string name="save_log">Salvează Jurnale</string>
+    <string name="kernelsu_is_not_installed">Kernel su nu este instalat</string>
 </resources>

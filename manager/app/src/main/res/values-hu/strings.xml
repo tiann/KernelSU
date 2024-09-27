@@ -103,4 +103,5 @@
     <string name="app_profile_template_import_empty">A vágólap üres!</string>
     <string name="app_profile_template_view">Sablon megnézése</string>
     <string name="save_log">Naplók Mentése</string>
+    <string name="kernelsu_is_not_installed">KernelSU nincs telepítve</string>
 </resources>

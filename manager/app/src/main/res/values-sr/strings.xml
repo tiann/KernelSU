@@ -8,4 +8,5 @@
     <string name="home_working_version">Верзија: %d</string>
     <string name="home_working">Ради</string>
     <string name="save_log">Сачувај Дневнике</string>
+    <string name="kernelsu_is_not_installed">Kernel su nije instaliran</string>
 </resources>

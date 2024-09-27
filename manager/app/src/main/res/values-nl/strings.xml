@@ -129,4 +129,5 @@
     <string name="settings_restore_stock_image_message">Herstel de fabrieksimage (als er een back-up bestaat), meestal gebruikt vóór OTA; als u KernelSU moet verwijderen, gebruik dan \"Permanent verwijderen\".</string>
     <string name="flashing">Knipperen</string>
     <string name="save_log">Logboeken Opslaan</string>
+    <string name="kernelsu_is_not_installed">KernelSU is niet geïnstalleerd</string>
 </resources>

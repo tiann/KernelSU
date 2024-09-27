@@ -133,4 +133,5 @@
     <string name="flashing">Flaşlanıyor</string>
     <string name="flash_failed">Flaşlama başarısız</string>
     <string name="save_log">Günlükleri Kaydet</string>
+    <string name="kernelsu_is_not_installed">Kernel su yüklü değil</string>
 </resources>

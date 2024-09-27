@@ -133,4 +133,5 @@
     <string name="flash_failed">Flashowanie nieudane</string>
     <string name="selected_lkm">Wybrano LMK: %s</string>
     <string name="save_log">Zapisz Dzienniki</string>
+    <string name="kernelsu_is_not_installed">KernelSU nie jest zainstalowany</string>
 </resources>

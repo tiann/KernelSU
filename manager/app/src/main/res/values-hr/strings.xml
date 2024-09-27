@@ -80,4 +80,5 @@
     <string name="force_stop_app">Prisilno Zaustavite</string>
     <string name="restart_app">Resetujte</string>
     <string name="save_log">Spremi Zapise</string>
+    <string name="kernelsu_is_not_installed">KernelSU nije instaliran</string>
 </resources>

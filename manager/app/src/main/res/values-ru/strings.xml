@@ -135,4 +135,5 @@
     <string name="flash_failed">Установка не выполнена</string>
     <string name="selected_lkm">Выбран LKM: %s</string>
     <string name="save_log">Сохранить логи</string>
+    <string name="kernelsu_is_not_installed">Kernel su не установлен</string>
 </resources>
