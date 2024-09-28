@@ -92,7 +92,8 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                     }
                 },
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val refreshState = rememberPullRefreshState(
             refreshing = viewModel.isRefreshing,

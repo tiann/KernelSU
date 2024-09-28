@@ -1,18 +1,18 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.net.Uri
-import android.provider.OpenableColumns
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,8 +81,6 @@ import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.ui.util.getFileNameFromUri
 import me.weishu.kernelsu.ui.util.shrinkModules
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 /**
  * @author weishu
@@ -98,7 +95,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             TopBar(onBack = {
                 navigator.popBackStack()
             })
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         val aboutDialog = rememberCustomDialog {
             AboutDialog(it)
@@ -184,17 +182,20 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     showBottomsheet = true
                 }
             )
-            if (showBottomsheet){
+            if (showBottomsheet) {
                 ModalBottomSheet(
                     onDismissRequest = { showBottomsheet = false },
                     content = {
-                        Row(modifier = Modifier.padding(10.dp)
-                            .align(Alignment.CenterHorizontally)
+                        Row(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .align(Alignment.CenterHorizontally)
 
                         ) {
-                            Box{
+                            Box {
                                 Column(
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                         .clickable {
                                             scope.launch {
                                                 val bugreport = loadingDialog.withLoading {
@@ -209,14 +210,15 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                                         "${BuildConfig.APPLICATION_ID}.fileprovider",
                                                         bugreport
                                                     )
-                                                val filename = getFileNameFromUri(context , uri)
-                                                val savefile = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                                                    addCategory(Intent.CATEGORY_OPENABLE)
-                                                    type = "application/zip"
-                                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                                    putExtra(Intent.EXTRA_TITLE, filename)
-                                                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                                }
+                                                val filename = getFileNameFromUri(context, uri)
+                                                val savefile =
+                                                    Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                                        addCategory(Intent.CATEGORY_OPENABLE)
+                                                        type = "application/zip"
+                                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                                        putExtra(Intent.EXTRA_TITLE, filename)
+                                                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                                    }
                                                 context.startActivity(
                                                     Intent.createChooser(
                                                         savefile,
@@ -245,9 +247,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 }
 
                             }
-                            Box{
+                            Box {
                                 Column(
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                         .clickable {
                                             scope.launch {
                                                 val bugreport = loadingDialog.withLoading {
@@ -350,6 +353,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     }
 }
+
 @Composable
 fun UninstallItem(
     navigator: DestinationsNavigator,
@@ -464,6 +468,7 @@ private fun TopBar(onBack: () -> Unit = {}) {
                 onClick = onBack
             ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         },
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     )
 }
 

@@ -7,12 +7,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorScheme = darkColorScheme(
     primary = YELLOW,
@@ -40,20 +36,6 @@ fun KernelSUTheme(
         }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
-    }
-
-    val systemUiController = rememberSystemUiController()
-    SideEffect {
-        systemUiController.setStatusBarColor(
-            color = colorScheme.surface,
-            darkIcons = !darkTheme
-        )
-
-        // To match the App Navbar color
-        systemUiController.setNavigationBarColor(
-            color = colorScheme.surfaceColorAtElevation(8.dp),
-            darkIcons = !darkTheme,
-        )
     }
 
     MaterialTheme(

@@ -3,8 +3,12 @@ package me.weishu.kernelsu.ui.screen
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -108,6 +112,7 @@ fun TemplateEditorScreen(
                     }
                 })
         },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -242,37 +247,40 @@ private fun TopBar(
     onDelete: () -> Unit = {},
     onSave: () -> Unit = {}
 ) {
-    TopAppBar(title = {
-        Column {
-            Text(title)
-            if (summary.isNotBlank()) {
-                Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodyMedium,
+    TopAppBar(
+        title = {
+            Column {
+                Text(title)
+                if (summary.isNotBlank()) {
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }, navigationIcon = {
+            IconButton(
+                onClick = onBack
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+        }, actions = {
+            if (readOnly) {
+                return@TopAppBar
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    Icons.Filled.DeleteForever,
+                    contentDescription = stringResource(id = R.string.app_profile_template_delete)
                 )
             }
-        }
-    }, navigationIcon = {
-        IconButton(
-            onClick = onBack
-        ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
-    }, actions = {
-        if (readOnly) {
-            return@TopAppBar
-        }
-        IconButton(onClick = onDelete) {
-            Icon(
-                Icons.Filled.DeleteForever,
-                contentDescription = stringResource(id = R.string.app_profile_template_delete)
-            )
-        }
-        IconButton(onClick = onSave) {
-            Icon(
-                imageVector = Icons.Filled.Save,
-                contentDescription = stringResource(id = R.string.app_profile_template_save)
-            )
-        }
-    })
+            IconButton(onClick = onSave) {
+                Icon(
+                    imageVector = Icons.Filled.Save,
+                    contentDescription = stringResource(id = R.string.app_profile_template_save)
+                )
+            }
+        },
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    )
 }
 
 @Composable
@@ -289,17 +297,16 @@ private fun TextEdit(
             value = text,
             modifier = Modifier.fillMaxWidth(),
             label = { Text(label) },
-            suffix =
-            if (errorHint.isNotBlank()) {
-                {
+            suffix = {
+                if (errorHint.isNotBlank()) {
                     Text(
                         text = if (isError) errorHint else "",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
+                } else {
+                    null
                 }
-            } else {
-                null
             },
             isError = isError,
             keyboardOptions = KeyboardOptions(
