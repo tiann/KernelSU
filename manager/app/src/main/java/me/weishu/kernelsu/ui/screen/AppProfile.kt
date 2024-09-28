@@ -54,6 +54,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
@@ -62,8 +65,6 @@ import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
-import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
-import me.weishu.kernelsu.ui.screen.destinations.TemplateEditorScreenDestination
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
@@ -77,7 +78,7 @@ import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
  * @author weishu
  * @date 2023/5/16.
  */
-@Destination
+@Destination<RootGraph>
 @Composable
 fun AppProfileScreen(
     navigator: DestinationsNavigator,

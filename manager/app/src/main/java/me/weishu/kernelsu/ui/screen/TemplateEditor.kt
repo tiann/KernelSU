@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -56,7 +57,7 @@ import me.weishu.kernelsu.ui.viewmodel.toJSON
  * @date 2023/10/20.
  */
 @OptIn(ExperimentalComposeUiApi::class)
-@Destination
+@Destination<RootGraph>
 @Composable
 fun TemplateEditorScreen(
     navigator: ResultBackNavigator<Boolean>,

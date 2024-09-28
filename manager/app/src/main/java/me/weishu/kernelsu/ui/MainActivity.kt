@@ -27,11 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.screen.BottomBarDestination
-import me.weishu.kernelsu.ui.screen.NavGraphs
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -74,6 +75,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun BottomBar(navController: NavHostController) {
+    val navigator = navController.rememberDestinationsNavigator()
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     NavigationBar(
@@ -87,11 +89,10 @@ private fun BottomBar(navController: NavHostController) {
                 selected = isCurrentDestOnBackStack,
                 onClick = {
                     if (isCurrentDestOnBackStack) {
-                        navController.popBackStack(destination.direction, false)
+                        navigator.popBackStack(destination.direction, false)
                     }
-
-                    navController.navigate(destination.direction.route) {
-                        popUpTo(NavGraphs.root.route) {
+                    navigator.navigate(destination.direction) {
+                        popUpTo(NavGraphs.root) {
                             saveState = true
                         }
                         launchSingleTop = true

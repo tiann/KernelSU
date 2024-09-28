@@ -61,6 +61,9 @@ import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
@@ -76,8 +79,6 @@ import me.weishu.kernelsu.ui.component.SwitchItem
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
-import me.weishu.kernelsu.ui.screen.destinations.AppProfileTemplateScreenDestination
-import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.getBugreportFile
 import me.weishu.kernelsu.ui.util.getFileNameFromUri
 import me.weishu.kernelsu.ui.util.shrinkModules
@@ -87,7 +88,7 @@ import me.weishu.kernelsu.ui.util.shrinkModules
  * @date 2023/1/1.
  */
 @OptIn(ExperimentalMaterial3Api::class)
-@Destination
+@Destination<RootGraph>
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
     Scaffold(
@@ -378,11 +379,9 @@ fun UninstallItem(
                         UninstallType.PERMANENT -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashUninstall)
                         )
-
                         UninstallType.RESTORE_STOCK_IMAGE -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashRestore)
                         )
-
                         UninstallType.NONE -> Unit
                     }
                 }

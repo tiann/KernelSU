@@ -51,13 +51,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.screen.destinations.TemplateEditorScreenDestination
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 
 /**
@@ -66,7 +67,7 @@ import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
  */
 
 @OptIn(ExperimentalMaterialApi::class)
-@Destination
+@Destination<RootGraph>
 @Composable
 fun AppProfileTemplateScreen(
     navigator: DestinationsNavigator,

@@ -9,7 +9,6 @@ import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
@@ -22,7 +21,11 @@ import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
-class WebViewInterface(val context: Context, private val webView: WebView, private val modDir: String) {
+class WebViewInterface(
+    val context: Context,
+    private val webView: WebView,
+    private val modDir: String
+) {
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -186,7 +189,7 @@ class WebViewInterface(val context: Context, private val webView: WebView, priva
             }
 
             var keys = currentInfo.keys()
-            for(key in keys) {
+            for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }
             break
@@ -195,15 +198,11 @@ class WebViewInterface(val context: Context, private val webView: WebView, priva
     }
 }
 
-fun hideSystemUI(window: Window) {
-    WindowCompat.setDecorFitsSystemWindows(window, false)
+fun hideSystemUI(window: Window) =
     WindowInsetsControllerCompat(window, window.decorView).let { controller ->
         controller.hide(WindowInsetsCompat.Type.systemBars())
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
-}
 
-fun showSystemUI(window: Window) {
-    WindowCompat.setDecorFitsSystemWindows(window, true)
+fun showSystemUI(window: Window) =
     WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())
-}
