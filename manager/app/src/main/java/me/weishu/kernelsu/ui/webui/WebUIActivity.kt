@@ -11,7 +11,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
@@ -71,10 +70,7 @@ class WebUIActivity : ComponentActivity() {
 
         val webView = WebView(this).apply {
             ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
-                val inset = Insets.max(
-                    insets.getInsets(WindowInsetsCompat.Type.systemBars()),
-                    insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-                )
+                val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
                 view.updateLayoutParams<MarginLayoutParams> {
                     leftMargin = inset.left
                     rightMargin = inset.right
