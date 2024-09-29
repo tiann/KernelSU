@@ -4,8 +4,12 @@ import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -35,6 +39,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
@@ -66,7 +71,7 @@ enum class FlashingStatus {
  * @date 2023/1/1.
  */
 @Composable
-@Destination
+@Destination<RootGraph>
 fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 
     var text by rememberSaveable { mutableStateOf("") }
@@ -139,8 +144,8 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                     text = { Text(text = reboot) },
                 )
             }
-
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         KeyEventBlocker {
             it.key == Key.VolumeDown || it.key == Key.VolumeUp
@@ -227,7 +232,8 @@ private fun TopBar(status: FlashingStatus, onBack: () -> Unit = {}, onSave: () -
                     contentDescription = "Localized description"
                 )
             }
-        }
+        },
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     )
 }
 

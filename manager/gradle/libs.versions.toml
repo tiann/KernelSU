@@ -1,18 +1,18 @@
 [versions]
-agp = "8.5.2"
+agp = "8.6.1"
 kotlin = "2.0.20"
-ksp = "2.0.20-1.0.24"
-compose-bom = "2024.08.00"
-lifecycle = "2.8.4"
-accompanist = "0.34.0"
-navigation = "2.7.7"
-activity-compose = "1.9.1"
-kotlinx-coroutines = "1.8.1"
+ksp = "2.0.20-1.0.25"
+compose-bom = "2024.09.02"
+lifecycle = "2.8.6"
+accompanist = "0.36.0"
+navigation = "2.8.1"
+activity-compose = "1.9.2"
+kotlinx-coroutines = "1.9.0"
 coil-compose = "2.7.0"
-compose-destination = "1.10.2"
+compose-destination = "2.1.0-beta12"
 sheets-compose-dialogs = "1.3.0"
 markdown = "4.6.2"
-webkit = "1.11.0"
+webkit = "1.12.0"
 appiconloader-coil = "1.5.0"
 parcelablelist = "2.0.1"
 libsu = "6.0.0"
@@ -53,7 +53,6 @@ androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 
 com-google-accompanist-drawablepainter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
 com-google-accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
-com-google-accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 com-google-accompanist-webview = { group = "com.google.accompanist", name = "accompanist-webview", version.ref = "accompanist" }
 
 com-github-topjohnwu-libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
@@ -68,7 +67,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 
 me-zhanghai-android-appiconloader-coil = { group = "me.zhanghai.android.appiconloader", name = "appiconloader-coil", version.ref = "appiconloader-coil" }
 
-compose-destinations-animations-core = { group = "io.github.raamcosta.compose-destinations", name = "animations-core", version.ref = "compose-destination" }
+compose-destinations-core = { group = "io.github.raamcosta.compose-destinations", name = "core", version.ref = "compose-destination" }
 compose-destinations-ksp = { group = "io.github.raamcosta.compose-destinations", name = "ksp", version.ref = "compose-destination" }
 
 sheet-compose-dialogs-core = { group = "com.maxkeppeler.sheets-compose-dialogs", name = "core", version.ref = "sheets-compose-dialogs" }

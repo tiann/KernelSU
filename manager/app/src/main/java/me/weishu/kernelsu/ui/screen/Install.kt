@@ -9,8 +9,12 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileUpload
@@ -40,13 +44,14 @@ import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DialogHandle
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
-import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getCurrentKmi
 import me.weishu.kernelsu.ui.util.getSupportedKmis
@@ -58,7 +63,7 @@ import me.weishu.kernelsu.ui.util.rootAvailable
  * @author weishu
  * @date 2024/3/12.
  */
-@Destination
+@Destination<RootGraph>
 @Composable
 fun InstallScreen(navigator: DestinationsNavigator) {
     var installMethod by remember {
@@ -113,11 +118,14 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         })
     }
 
-    Scaffold(topBar = {
-        TopBar(
-            onBack = { navigator.popBackStack() }, onLkmUpload = onLkmUpload
-        )
-    }) {
+    Scaffold(
+        topBar = {
+            TopBar(
+                onBack = { navigator.popBackStack() }, onLkmUpload = onLkmUpload
+            )
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    ) {
         Column(modifier = Modifier.padding(it)) {
             SelectInstallMethod { method ->
                 installMethod = method
@@ -293,15 +301,18 @@ fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
-    TopAppBar(title = { Text(stringResource(R.string.install)) }, navigationIcon = {
-        IconButton(
-            onClick = onBack
-        ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
-    }, actions = {
-        IconButton(onClick = onLkmUpload) {
-            Icon(Icons.Filled.FileUpload, contentDescription = null)
-        }
-    })
+    TopAppBar(
+        title = { Text(stringResource(R.string.install)) }, navigationIcon = {
+            IconButton(
+                onClick = onBack
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+        }, actions = {
+            IconButton(onClick = onLkmUpload) {
+                Icon(Icons.Filled.FileUpload, contentDescription = null)
+            }
+        },
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    )
 }
 
 @Composable

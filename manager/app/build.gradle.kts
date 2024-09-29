@@ -61,7 +61,6 @@ android {
             val output = it as BaseVariantOutputImpl
             output.outputFileName = "KernelSU_${managerVersionName}_${managerVersionCode}-$name.apk"
         }
-
         kotlin.sourceSets {
             getByName(name) {
                 kotlin.srcDir("build/generated/ksp/$name/kotlin")
@@ -90,10 +89,9 @@ dependencies {
 
     implementation(libs.com.google.accompanist.drawablepainter)
     implementation(libs.com.google.accompanist.navigation.animation)
-    implementation(libs.com.google.accompanist.systemuicontroller)
     implementation(libs.com.google.accompanist.webview)
 
-    implementation(libs.compose.destinations.animations.core)
+    implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
 
     implementation(libs.com.github.topjohnwu.libsu.core)
