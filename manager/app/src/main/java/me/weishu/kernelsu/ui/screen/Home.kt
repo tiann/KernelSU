@@ -27,32 +27,35 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.*
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
-import me.weishu.kernelsu.ui.screen.destinations.InstallScreenDestination
-import me.weishu.kernelsu.ui.screen.destinations.SettingScreenDestination
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
-@RootNavGraph(start = true)
-@Destination
+@Destination<RootGraph>(start = true)
 @Composable
 fun HomeScreen(navigator: DestinationsNavigator) {
     val kernelVersion = getKernelVersion()
 
-    Scaffold(topBar = {
-        TopBar(kernelVersion, onSettingsClick = {
-            navigator.navigate(SettingScreenDestination)
-        }, onInstallClick = {
-            navigator.navigate(InstallScreenDestination)
-        })
-    }) { innerPadding ->
+    Scaffold(
+        topBar = {
+            TopBar(kernelVersion, onSettingsClick = {
+                navigator.navigate(SettingScreenDestination)
+            }, onInstallClick = {
+                navigator.navigate(InstallScreenDestination)
+            })
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -103,11 +106,10 @@ fun UpdateCard() {
     val context = LocalContext.current
     val latestVersionInfo = LatestVersionInfo()
     val newVersion by produceState(initialValue = latestVersionInfo) {
-        value = withContext(Dispatchers.IO){
+        value = withContext(Dispatchers.IO) {
             checkNewVersion()
         }
     }
-
 
     val currentVersionCode = getManagerVersion(context).second
     val newVersionCode = newVersion.versionCode
@@ -158,50 +160,54 @@ private fun TopBar(
     onInstallClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
-        if (kernelVersion.isGKI()) {
-            IconButton(onClick = onInstallClick) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.app_name)) },
+        actions = {
+            if (kernelVersion.isGKI()) {
+                IconButton(onClick = onInstallClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Archive,
+                        contentDescription = stringResource(id = R.string.install)
+                    )
+                }
+            }
+
+            var showDropdown by remember { mutableStateOf(false) }
+            IconButton(onClick = {
+                showDropdown = true
+            }) {
                 Icon(
-                    imageVector = Icons.Filled.Archive,
-                    contentDescription = stringResource(id = R.string.install)
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = stringResource(id = R.string.reboot)
+                )
+
+                DropdownMenu(expanded = showDropdown, onDismissRequest = {
+                    showDropdown = false
+                }) {
+
+                    RebootDropdownItem(id = R.string.reboot)
+
+                    val pm =
+                        LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
+                        RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
+                    }
+                    RebootDropdownItem(id = R.string.reboot_recovery, reason = "recovery")
+                    RebootDropdownItem(id = R.string.reboot_bootloader, reason = "bootloader")
+                    RebootDropdownItem(id = R.string.reboot_download, reason = "download")
+                    RebootDropdownItem(id = R.string.reboot_edl, reason = "edl")
+                }
+            }
+
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = stringResource(id = R.string.settings)
                 )
             }
-        }
-
-        var showDropdown by remember { mutableStateOf(false) }
-        IconButton(onClick = {
-            showDropdown = true
-        }) {
-            Icon(
-                imageVector = Icons.Filled.Refresh,
-                contentDescription = stringResource(id = R.string.reboot)
-            )
-
-            DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                showDropdown = false
-            }) {
-
-                RebootDropdownItem(id = R.string.reboot)
-
-                val pm =
-                    LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
-                    RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
-                }
-                RebootDropdownItem(id = R.string.reboot_recovery, reason = "recovery")
-                RebootDropdownItem(id = R.string.reboot_bootloader, reason = "bootloader")
-                RebootDropdownItem(id = R.string.reboot_download, reason = "download")
-                RebootDropdownItem(id = R.string.reboot_edl, reason = "edl")
-            }
-        }
-
-        IconButton(onClick = onSettingsClick) {
-            Icon(
-                imageVector = Icons.Filled.Settings,
-                contentDescription = stringResource(id = R.string.settings)
-            )
-        }
-    })
+        },
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    )
 }
 
 @Composable
@@ -415,9 +421,10 @@ private fun InfoCard() {
     }
 }
 
-fun getManagerVersion(context: Context): Pair<String, Int> {
+fun getManagerVersion(context: Context): Pair<String, Long> {
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)!!
-    return Pair(packageInfo.versionName!!, packageInfo.versionCode)
+    val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+    return Pair(packageInfo.versionName!!, versionCode)
 }
 
 @Preview

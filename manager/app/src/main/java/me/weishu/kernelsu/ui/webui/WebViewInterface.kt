@@ -9,21 +9,24 @@ import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.UiThreadHandler
-import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.createRootShell
+import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.withNewRootShell
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.concurrent.CompletableFuture
 import java.io.File
+import java.util.concurrent.CompletableFuture
 
-class WebViewInterface(val context: Context, private val webView: WebView, private val modDir: String) {
+class WebViewInterface(
+    val context: Context,
+    private val webView: WebView,
+    private val modDir: String
+) {
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -187,28 +190,20 @@ class WebViewInterface(val context: Context, private val webView: WebView, priva
             }
 
             var keys = currentInfo.keys()
-            for(key in keys) {
-                currentModuleInfo.put(key, currentInfo.get(key));
+            for (key in keys) {
+                currentModuleInfo.put(key, currentInfo.get(key))
             }
-            break;
+            break
         }
-        return currentModuleInfo.toString();
+        return currentModuleInfo.toString()
     }
 }
 
-fun hideSystemUI(window: Window) {
-    WindowCompat.setDecorFitsSystemWindows(window, false)
+fun hideSystemUI(window: Window) =
     WindowInsetsControllerCompat(window, window.decorView).let { controller ->
         controller.hide(WindowInsetsCompat.Type.systemBars())
-        controller.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
-}
 
-fun showSystemUI(window: Window) {
-    WindowCompat.setDecorFitsSystemWindows(window, true)
-    WindowInsetsControllerCompat(
-        window,
-        window.decorView
-    ).show(WindowInsetsCompat.Type.systemBars())
-}
+fun showSystemUI(window: Window) =
+    WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())

@@ -14,11 +14,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +33,6 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -64,6 +67,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,7 +78,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
-import me.weishu.kernelsu.ui.screen.destinations.FlashScreenDestination
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.download
@@ -85,7 +89,7 @@ import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import okhttp3.OkHttpClient
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
@@ -102,41 +106,46 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     val hideInstallButton = isSafeMode || hasMagisk
 
-    Scaffold(topBar = {
-        TopBar()
-    }, floatingActionButton = if (hideInstallButton) {
-        { /* Empty */ }
-    } else {
-        {
-            val moduleInstall = stringResource(id = R.string.module_install)
-            val selectZipLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.StartActivityForResult()
-            ) {
-                if (it.resultCode != RESULT_OK) {
-                    return@rememberLauncherForActivityResult
+    Scaffold(
+        topBar = {
+            TopBar()
+        },
+        floatingActionButton = {
+            if (hideInstallButton) {
+                /* Empty */
+            } else {
+                val moduleInstall = stringResource(id = R.string.module_install)
+                val selectZipLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult()
+                ) {
+                    if (it.resultCode != RESULT_OK) {
+                        return@rememberLauncherForActivityResult
+                    }
+                    val data = it.data ?: return@rememberLauncherForActivityResult
+                    val uri = data.data ?: return@rememberLauncherForActivityResult
+
+                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(uri)))
+
+                    viewModel.markNeedRefresh()
+
+                    Log.i("ModuleScreen", "select zip result: ${it.data}")
                 }
-                val data = it.data ?: return@rememberLauncherForActivityResult
-                val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(uri)))
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // select the zip file to install
+                        val intent = Intent(Intent.ACTION_GET_CONTENT)
+                        intent.type = "application/zip"
+                        selectZipLauncher.launch(intent)
+                    },
+                    icon = { Icon(Icons.Filled.Add, moduleInstall) },
+                    text = { Text(text = moduleInstall) },
+                )
 
-                viewModel.markNeedRefresh()
-
-                Log.i("ModuleScreen", "select zip result: ${it.data}")
             }
-
-            ExtendedFloatingActionButton(
-                onClick = {
-                    // select the zip file to install
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "application/zip"
-                    selectZipLauncher.launch(intent)
-                },
-                icon = { Icon(Icons.Filled.Add, moduleInstall) },
-                text = { Text(text = moduleInstall) },
-            )
-        }
-    }) { innerPadding ->
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    ) { innerPadding ->
 
         when {
             hasMagisk -> {
@@ -163,10 +172,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
                     }, onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
-                            context.startActivity(Intent(context, WebUIActivity::class.java)
-                                .setData(Uri.parse("kernelsu://webui/$id"))
-                                .putExtra("id", id)
-                                .putExtra("name", name)
+                            context.startActivity(
+                                Intent(context, WebUIActivity::class.java)
+                                    .setData(Uri.parse("kernelsu://webui/$id"))
+                                    .putExtra("id", id)
+                                    .putExtra("name", name)
                             )
                         }
                     })
@@ -419,7 +429,10 @@ private fun ModuleList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar() {
-    TopAppBar(title = { Text(stringResource(R.string.module)) })
+    TopAppBar(
+        title = { Text(stringResource(R.string.module)) },
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    )
 }
 
 @Composable
@@ -433,13 +446,16 @@ private fun ModuleItem(
     onClick: (ModuleViewModel.ModuleInfo) -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
+        modifier = Modifier.fillMaxWidth()
     ) {
 
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
 
-        Column(modifier = Modifier.clickable { onClick(module) }.padding(24.dp, 16.dp, 24.dp, 0.dp)) {
+        Column(
+            modifier = Modifier
+                .clickable { onClick(module) }
+                .padding(24.dp, 16.dp, 24.dp, 0.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
