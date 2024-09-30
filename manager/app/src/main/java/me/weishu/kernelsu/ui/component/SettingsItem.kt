@@ -73,6 +73,6 @@ fun RadioItem(
         },
         leadingContent = {
             RadioButton(selected = selected, onClick = onClick)
-        },
+        }
     )
 }

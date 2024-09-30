@@ -7,7 +7,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -58,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -164,13 +167,14 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
             else -> {
                 ModuleList(
-                    viewModel = viewModel, modifier = Modifier
+                    viewModel = viewModel,
+                    modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize(),
-                    onInstallModule =
-                    {
+                    onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
-                    }, onClickModule = { id, name, hasWebUi ->
+                    },
+                    onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             context.startActivity(
                                 Intent(context, WebUIActivity::class.java)
@@ -179,7 +183,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     .putExtra("name", name)
                             )
                         }
-                    })
+                    }
+                )
             }
         }
     }
@@ -316,8 +321,10 @@ private fun ModuleList(
         }
     }
 
-    val refreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing,
-        onRefresh = { viewModel.fetchModuleList() })
+    val refreshState = rememberPullRefreshState(
+        refreshing = viewModel.isRefreshing,
+        onRefresh = { viewModel.fetchModuleList() }
+    )
     Box(modifier.pullRefresh(refreshState)) {
         val context = LocalContext.current
 
@@ -448,12 +455,32 @@ private fun ModuleItem(
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()
     ) {
-
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
+        val interactionSource = remember { MutableInteractionSource() }
+        val indication = LocalIndication.current
 
         Column(
             modifier = Modifier
-                .clickable { onClick(module) }
+                .run {
+                    if (module.hasWebUi) {
+                        toggleable(
+                            value = isChecked,
+                            interactionSource = interactionSource,
+                            role = Role.Button,
+                            indication = indication,
+                            onValueChange = { onClick(module) }
+                        )
+                    } else {
+                        toggleable(
+                            value = isChecked,
+                            interactionSource = interactionSource,
+                            role = Role.Switch,
+                            indication = indication,
+                            onValueChange = onCheckChanged,
+                            enabled = !module.update
+                        )
+                    }
+                }
                 .padding(24.dp, 16.dp, 24.dp, 0.dp)
         ) {
             Row(
@@ -499,7 +526,8 @@ private fun ModuleItem(
                     Switch(
                         enabled = !module.update,
                         checked = isChecked,
-                        onCheckedChange = onCheckChanged
+                        onCheckedChange = onCheckChanged,
+                        interactionSource = if (!module.hasWebUi) interactionSource else null
                     )
                 }
             }
@@ -559,6 +587,7 @@ private fun ModuleItem(
                 if (module.hasWebUi) {
                     TextButton(
                         onClick = { onClick(module) },
+                        interactionSource = interactionSource
                     ) {
                         Text(
                             fontFamily = MaterialTheme.typography.labelMedium.fontFamily,

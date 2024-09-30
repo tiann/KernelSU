@@ -48,7 +48,7 @@ android {
         }
         resources {
             // https://stackoverflow.com/a/58956288
-            // It will break Layout Inspector.
+            // It will break Layout Inspector, but it's unused for release build.
             excludes += "META-INF/*.version"
             // https://github.com/Kotlin/kotlinx.coroutines?tab=readme-ov-file#avoiding-including-the-debug-infrastructure-in-the-resulting-apk
             excludes += "DebugProbesKt.bin"
