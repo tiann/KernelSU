@@ -87,10 +87,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    implementation(libs.com.google.accompanist.drawablepainter)
-    implementation(libs.com.google.accompanist.navigation.animation)
-    implementation(libs.com.google.accompanist.webview)
-
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
 

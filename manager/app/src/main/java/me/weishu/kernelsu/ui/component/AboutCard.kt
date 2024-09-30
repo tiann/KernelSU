@@ -11,24 +11,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.HtmlCompat
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 
@@ -36,8 +38,7 @@ import me.weishu.kernelsu.R
 @Composable
 fun AboutCard() {
     ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
     ) {
         Row(
@@ -52,7 +53,9 @@ fun AboutCard() {
 
 @Composable
 fun AboutDialog(dismiss: () -> Unit) {
-    Dialog(onDismissRequest = { dismiss() }) {
+    Dialog(
+        onDismissRequest = { dismiss() }
+    ) {
         AboutCard()
     }
 }
@@ -60,21 +63,20 @@ fun AboutDialog(dismiss: () -> Unit) {
 @Composable
 private fun AboutCardContent() {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
-        val drawable = ResourcesCompat.getDrawable(
-            LocalContext.current.resources,
-            R.mipmap.ic_launcher,
-            LocalContext.current.theme
-        )
-
         Row {
-            Image(
-                painter = rememberDrawablePainter(drawable),
-                contentDescription = "icon",
-                modifier = Modifier.size(40.dp)
-            )
+            Surface(
+                modifier = Modifier.size(40.dp),
+                color = colorResource(id = R.color.ic_launcher_background),
+                shape = CircleShape
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "icon",
+                    modifier = Modifier.scale(1.4f)
+                )
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 

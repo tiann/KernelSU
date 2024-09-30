@@ -4,7 +4,6 @@ kotlin = "2.0.20"
 ksp = "2.0.20-1.0.25"
 compose-bom = "2024.09.02"
 lifecycle = "2.8.6"
-accompanist = "0.36.0"
 navigation = "2.8.1"
 activity-compose = "1.9.2"
 kotlinx-coroutines = "1.9.0"
@@ -50,10 +49,6 @@ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lif
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
-
-com-google-accompanist-drawablepainter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
-com-google-accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
-com-google-accompanist-webview = { group = "com.google.accompanist", name = "accompanist-webview", version.ref = "accompanist" }
 
 com-github-topjohnwu-libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
 com-github-topjohnwu-libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
