@@ -26,6 +26,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -56,7 +60,7 @@ import me.weishu.kernelsu.ui.viewmodel.toJSON
  * @author weishu
  * @date 2023/10/20.
  */
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun TemplateEditorScreen(
@@ -71,6 +75,8 @@ fun TemplateEditorScreen(
     var template by rememberSaveable {
         mutableStateOf(initialTemplate)
     }
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     BackHandler {
         navigator.navigateBack(result = !readOnly)
@@ -111,13 +117,16 @@ fun TemplateEditorScreen(
                     } else {
                         Toast.makeText(context, saveTemplateFailed, Toast.LENGTH_SHORT).show()
                     }
-                })
+                },
+                scrollBehavior = scrollBehavior
+            )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
                 .pointerInteropFilter {
                     // disable click and ripple if readOnly
@@ -246,7 +255,8 @@ private fun TopBar(
     summary: String = "",
     onBack: () -> Unit,
     onDelete: () -> Unit = {},
-    onSave: () -> Unit = {}
+    onSave: () -> Unit = {},
+    scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     TopAppBar(
         title = {
@@ -280,7 +290,8 @@ private fun TopBar(
                 )
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        scrollBehavior = scrollBehavior
     )
 }
 
@@ -305,8 +316,6 @@ private fun TextEdit(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
-                } else {
-                    null
                 }
             },
             isError = isError,
@@ -322,7 +331,7 @@ private fun TextEdit(
 }
 
 private fun isValidTemplateId(id: String): Boolean {
-    return Regex("""^([A-Za-z]{1}[A-Za-z\d_]*\.)*[A-Za-z][A-Za-z\d_]*$""").matches(id)
+    return Regex("""^([A-Za-z][A-Za-z\d_]*\.)*[A-Za-z][A-Za-z\d_]*$""").matches(id)
 }
 
 private fun isTemplateExist(id: String): Boolean {

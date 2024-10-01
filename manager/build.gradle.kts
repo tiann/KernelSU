@@ -79,6 +79,9 @@ subprojects {
                     versionCode = managerVersionCode
                     versionName = managerVersionName
                 }
+                ndk {
+                    abiFilters += listOf("arm64-v8a", "x86_64", "riscv64")
+                }
             }
 
             lint {

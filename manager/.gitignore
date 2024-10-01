@@ -1,9 +1,10 @@
 *.iml
 .gradle
-local.properties
 .idea
+.kotlin
 .DS_Store
 build
 captures
 .cxx
+local.properties
 key.jks

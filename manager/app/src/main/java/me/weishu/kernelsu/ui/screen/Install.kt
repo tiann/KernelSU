@@ -6,7 +6,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,6 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileUpload
@@ -27,6 +31,9 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +42,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.maxkeppeker.sheets.core.models.base.Header
@@ -63,6 +72,7 @@ import me.weishu.kernelsu.ui.util.rootAvailable
  * @author weishu
  * @date 2024/3/12.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun InstallScreen(navigator: DestinationsNavigator) {
@@ -118,15 +128,24 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         })
     }
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
             TopBar(
-                onBack = { navigator.popBackStack() }, onLkmUpload = onLkmUpload
+                onBack = { navigator.popBackStack() },
+                onLkmUpload = onLkmUpload,
+                scrollBehavior = scrollBehavior
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-    ) {
-        Column(modifier = Modifier.padding(it)) {
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .verticalScroll(rememberScrollState())
+        ) {
             SelectInstallMethod { method ->
                 installMethod = method
             }
@@ -239,16 +258,31 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 
     Column {
         radioOptions.forEach { option ->
-            Row(verticalAlignment = Alignment.CenterVertically,
+            val interactionSource = remember { MutableInteractionSource() }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
+                    .toggleable(
+                        value = option.javaClass == selectedOption?.javaClass,
+                        onValueChange = {
+                            onClick(option)
+                        },
+                        role = Role.RadioButton,
+                        indication = LocalIndication.current,
+                        interactionSource = interactionSource
+                    )
+            ) {
+                RadioButton(
+                    selected = option.javaClass == selectedOption?.javaClass,
+                    onClick = {
                         onClick(option)
-                    }) {
-                RadioButton(selected = option.javaClass == selectedOption?.javaClass, onClick = {
-                    onClick(option)
-                })
-                Column {
+                    },
+                    interactionSource = interactionSource
+                )
+                Column(
+                    modifier = Modifier.padding(vertical = 12.dp)
+                ) {
                     Text(
                         text = stringResource(id = option.label),
                         fontSize = MaterialTheme.typography.titleMedium.fontSize,
@@ -300,7 +334,11 @@ fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
+private fun TopBar(
+    onBack: () -> Unit = {},
+    onLkmUpload: () -> Unit = {},
+    scrollBehavior: TopAppBarScrollBehavior? = null
+) {
     TopAppBar(
         title = { Text(stringResource(R.string.install)) }, navigationIcon = {
             IconButton(
@@ -311,7 +349,8 @@ private fun TopBar(onBack: () -> Unit = {}, onLkmUpload: () -> Unit = {}) {
                 Icon(Icons.Filled.FileUpload, contentDescription = null)
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        scrollBehavior = scrollBehavior
     )
 }
 

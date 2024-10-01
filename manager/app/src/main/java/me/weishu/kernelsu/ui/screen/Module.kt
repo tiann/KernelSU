@@ -7,7 +7,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -45,6 +47,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,8 +61,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -89,6 +96,7 @@ import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import okhttp3.OkHttpClient
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun ModuleScreen(navigator: DestinationsNavigator) {
@@ -106,9 +114,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     val hideInstallButton = isSafeMode || hasMagisk
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
-            TopBar()
+            TopBar(scrollBehavior = scrollBehavior)
         },
         floatingActionButton = {
             if (hideInstallButton) {
@@ -146,7 +156,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-
         when {
             hasMagisk -> {
                 Box(
@@ -161,16 +170,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     )
                 }
             }
-
             else -> {
                 ModuleList(
-                    viewModel = viewModel, modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    onInstallModule =
-                    {
+                    viewModel = viewModel,
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                    boxModifier = Modifier.padding(innerPadding),
+                    onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
-                    }, onClickModule = { id, name, hasWebUi ->
+                    },
+                    onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             context.startActivity(
                                 Intent(context, WebUIActivity::class.java)
@@ -179,7 +187,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     .putExtra("name", name)
                             )
                         }
-                    })
+                    }
+                )
             }
         }
     }
@@ -190,6 +199,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 private fun ModuleList(
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
+    boxModifier: Modifier = Modifier,
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit
 ) {
@@ -197,12 +207,12 @@ private fun ModuleList(
     val failedDisable = stringResource(R.string.module_failed_to_disable)
     val failedUninstall = stringResource(R.string.module_uninstall_failed)
     val successUninstall = stringResource(R.string.module_uninstall_success)
-    val reboot = stringResource(id = R.string.reboot)
-    val rebootToApply = stringResource(id = R.string.reboot_to_apply)
-    val moduleStr = stringResource(id = R.string.module)
-    val uninstall = stringResource(id = R.string.uninstall)
-    val cancel = stringResource(id = android.R.string.cancel)
-    val moduleUninstallConfirm = stringResource(id = R.string.module_uninstall_confirm)
+    val reboot = stringResource(R.string.reboot)
+    val rebootToApply = stringResource(R.string.reboot_to_apply)
+    val moduleStr = stringResource(R.string.module)
+    val uninstall = stringResource(R.string.uninstall)
+    val cancel = stringResource(android.R.string.cancel)
+    val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
     val updateText = stringResource(R.string.module_update)
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
@@ -316,13 +326,15 @@ private fun ModuleList(
         }
     }
 
-    val refreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing,
-        onRefresh = { viewModel.fetchModuleList() })
-    Box(modifier.pullRefresh(refreshState)) {
-        val context = LocalContext.current
-
+    val refreshState = rememberPullRefreshState(
+        refreshing = viewModel.isRefreshing,
+        onRefresh = { viewModel.fetchModuleList() }
+    )
+    Box(
+        boxModifier.pullRefresh(refreshState)
+    ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = remember {
                 PaddingValues(
@@ -428,8 +440,11 @@ private fun ModuleList(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar() {
+private fun TopBar(
+    scrollBehavior: TopAppBarScrollBehavior? = null
+) {
     TopAppBar(
+        scrollBehavior = scrollBehavior,
         title = { Text(stringResource(R.string.module)) },
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     )
@@ -448,12 +463,32 @@ private fun ModuleItem(
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()
     ) {
-
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
+        val interactionSource = remember { MutableInteractionSource() }
+        val indication = LocalIndication.current
 
         Column(
             modifier = Modifier
-                .clickable { onClick(module) }
+                .run {
+                    if (module.hasWebUi) {
+                        toggleable(
+                            value = isChecked,
+                            interactionSource = interactionSource,
+                            role = Role.Button,
+                            indication = indication,
+                            onValueChange = { onClick(module) }
+                        )
+                    } else {
+                        toggleable(
+                            value = isChecked,
+                            interactionSource = interactionSource,
+                            role = Role.Switch,
+                            indication = indication,
+                            onValueChange = onCheckChanged,
+                            enabled = !module.update
+                        )
+                    }
+                }
                 .padding(24.dp, 16.dp, 24.dp, 0.dp)
         ) {
             Row(
@@ -499,7 +534,8 @@ private fun ModuleItem(
                     Switch(
                         enabled = !module.update,
                         checked = isChecked,
-                        onCheckedChange = onCheckChanged
+                        onCheckedChange = onCheckChanged,
+                        interactionSource = if (!module.hasWebUi) interactionSource else null
                     )
                 }
             }
@@ -559,6 +595,7 @@ private fun ModuleItem(
                 if (module.hasWebUi) {
                     TextButton(
                         onClick = { onClick(module) },
+                        interactionSource = interactionSource
                     ) {
                         Text(
                             fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
