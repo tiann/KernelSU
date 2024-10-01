@@ -7,9 +7,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -80,7 +82,9 @@ private fun BottomBar(navController: NavHostController) {
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     NavigationBar(
         tonalElevation = 8.dp,
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+        windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+        )
     ) {
         BottomBarDestination.entries.forEach { destination ->
             if (!fullFeatured && destination.rootRequired) return@forEach
