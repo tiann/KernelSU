@@ -37,6 +37,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -91,11 +95,16 @@ import me.weishu.kernelsu.ui.util.shrinkModules
 @Destination<RootGraph>
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
-            TopBar(onBack = {
-                navigator.popBackStack()
-            })
+            TopBar(
+                onBack = {
+                    navigator.popBackStack()
+                },
+                scrollBehavior = scrollBehavior
+            )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
@@ -108,6 +117,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
         ) {
 
@@ -459,15 +469,21 @@ fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(onBack: () -> Unit = {}) {
+private fun TopBar(
+    onBack: () -> Unit = {},
+    scrollBehavior: TopAppBarScrollBehavior? = null
+) {
     TopAppBar(
         title = { Text(stringResource(R.string.settings)) },
         navigationIcon = {
             IconButton(
                 onClick = onBack
-            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        scrollBehavior = scrollBehavior
     )
 }
 
