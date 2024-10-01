@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.component
 
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Icon
@@ -28,9 +27,6 @@ fun SwitchItem(
 
     ListItem(
         modifier = Modifier
-            .clickable {
-                onCheckedChange.invoke(!checked)
-            }
             .toggleable(
                 value = checked,
                 interactionSource = interactionSource,
