@@ -1,7 +1,5 @@
 package me.weishu.kernelsu.ui.component
 
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,23 +12,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
-import androidx.core.text.HtmlCompat
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 
@@ -39,7 +39,7 @@ import me.weishu.kernelsu.R
 fun AboutCard() {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Row(
             modifier = Modifier
@@ -95,31 +95,31 @@ private fun AboutCardContent() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                HtmlText(
-                    html = stringResource(
+                val annotatedString = AnnotatedString.Companion.fromHtml(
+                    htmlString = stringResource(
                         id = R.string.about_source_code,
                         "<b><a href=\"https://github.com/tiann/KernelSU\">GitHub</a></b>",
                         "<b><a href=\"https://t.me/KernelSU\">Telegram</a></b>"
+                    ),
+                    linkStyles = TextLinkStyles(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline
+                        ),
+                        pressedStyle = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            background = MaterialTheme.colorScheme.secondaryContainer,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    )
+                )
+                Text(
+                    text = annotatedString,
+                    style = TextStyle(
+                        fontSize = 14.sp
                     )
                 )
             }
         }
     }
-}
-
-@Composable
-fun HtmlText(html: String, modifier: Modifier = Modifier) {
-    val contentColor = LocalContentColor.current
-    AndroidView(
-        modifier = modifier,
-        factory = { context ->
-            TextView(context).also {
-                it.movementMethod = LinkMovementMethod.getInstance()
-            }
-        },
-        update = {
-            it.text = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT)
-            it.setTextColor(contentColor.toArgb())
-        }
-    )
 }
