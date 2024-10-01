@@ -47,6 +47,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,6 +61,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -92,6 +96,7 @@ import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import okhttp3.OkHttpClient
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun ModuleScreen(navigator: DestinationsNavigator) {
@@ -109,9 +114,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     val hideInstallButton = isSafeMode || hasMagisk
 
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
         topBar = {
-            TopBar()
+            TopBar(scrollBehavior = scrollBehavior)
         },
         floatingActionButton = {
             if (hideInstallButton) {
@@ -149,7 +156,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-
         when {
             hasMagisk -> {
                 Box(
@@ -164,13 +170,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     )
                 }
             }
-
             else -> {
                 ModuleList(
                     viewModel = viewModel,
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                    boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
                     },
@@ -195,6 +199,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 private fun ModuleList(
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
+    boxModifier: Modifier = Modifier,
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit
 ) {
@@ -202,12 +207,12 @@ private fun ModuleList(
     val failedDisable = stringResource(R.string.module_failed_to_disable)
     val failedUninstall = stringResource(R.string.module_uninstall_failed)
     val successUninstall = stringResource(R.string.module_uninstall_success)
-    val reboot = stringResource(id = R.string.reboot)
-    val rebootToApply = stringResource(id = R.string.reboot_to_apply)
-    val moduleStr = stringResource(id = R.string.module)
-    val uninstall = stringResource(id = R.string.uninstall)
-    val cancel = stringResource(id = android.R.string.cancel)
-    val moduleUninstallConfirm = stringResource(id = R.string.module_uninstall_confirm)
+    val reboot = stringResource(R.string.reboot)
+    val rebootToApply = stringResource(R.string.reboot_to_apply)
+    val moduleStr = stringResource(R.string.module)
+    val uninstall = stringResource(R.string.uninstall)
+    val cancel = stringResource(android.R.string.cancel)
+    val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
     val updateText = stringResource(R.string.module_update)
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
@@ -325,11 +330,11 @@ private fun ModuleList(
         refreshing = viewModel.isRefreshing,
         onRefresh = { viewModel.fetchModuleList() }
     )
-    Box(modifier.pullRefresh(refreshState)) {
-        val context = LocalContext.current
-
+    Box(
+        boxModifier.pullRefresh(refreshState)
+    ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = remember {
                 PaddingValues(
@@ -435,8 +440,11 @@ private fun ModuleList(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar() {
+private fun TopBar(
+    scrollBehavior: TopAppBarScrollBehavior? = null
+) {
     TopAppBar(
+        scrollBehavior = scrollBehavior,
         title = { Text(stringResource(R.string.module)) },
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     )

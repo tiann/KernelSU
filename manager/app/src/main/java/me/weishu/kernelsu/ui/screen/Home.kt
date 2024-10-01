@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -41,26 +42,34 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(start = true)
 @Composable
 fun HomeScreen(navigator: DestinationsNavigator) {
     val kernelVersion = getKernelVersion()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
         topBar = {
-            TopBar(kernelVersion, onSettingsClick = {
-                navigator.navigate(SettingScreenDestination)
-            }, onInstallClick = {
-                navigator.navigate(InstallScreenDestination)
-            })
+            TopBar(
+                kernelVersion,
+                onSettingsClick = {
+                    navigator.navigate(SettingScreenDestination)
+                },
+                onInstallClick = {
+                    navigator.navigate(InstallScreenDestination)
+                },
+                scrollBehavior = scrollBehavior
+            )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val isManager = Natives.becomeManager(ksuApp.packageName)
@@ -158,7 +167,8 @@ fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
 private fun TopBar(
     kernelVersion: KernelVersion,
     onInstallClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     TopAppBar(
         title = { Text(stringResource(R.string.app_name)) },
@@ -187,8 +197,8 @@ private fun TopBar(
 
                     RebootDropdownItem(id = R.string.reboot)
 
-                    val pm =
-                        LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+                    val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+                    @Suppress("DEPRECATION")
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
                         RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
                     }
@@ -206,7 +216,8 @@ private fun TopBar(
                 )
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        scrollBehavior = scrollBehavior
     )
 }
 
