@@ -712,5 +712,12 @@
         "kernel_name": "NOVA Kernel",
         "kernel_link": "https://github.com/kvsnr113/xiaomi_sm8250_kernel",
         "devices": "Poco F3 (alioth) | Mi 10T/Pro (apollo) | Poco F4 (munch)"
+    },
+    {
+        "maintainer": "anVzdGFtb25",
+        "maintainer_link": "https://github.com/anVzdGFtb25",
+        "kernel_name": "android_kernel_xiaomi_mt6768",
+        "kernel_link": "https://github.com/anVzdGFtb25/android_kernel_xiaomi_mt6768",
+        "devices": "Redmi 9 ( lancelot )"
     }
 ]
