@@ -128,7 +128,7 @@
     <string name="settings_uninstall_permanent">Удалить полностью</string>
     <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки.</string>
     <string name="settings_uninstall">Удалить</string>
-    <string name="settings_restore_stock_image">Восстановить исходный образ</string>
+    <string name="settings_restore_stock_image">Восстановить сток образ</string>
     <string name="settings_restore_stock_image_message">Восстановить исходный заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить полностью».</string>
     <string name="flash_success">Установка выполнена</string>
     <string name="flashing">Установка</string>
