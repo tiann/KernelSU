@@ -313,7 +313,7 @@ handle_partition() {
         ui_print "- Handle partition /$1"
         # we create a symlink if module want to access $MODPATH/system/$1
         # but it doesn't always work(ie. write it in post-fs-data.sh would fail because it is readonly)
-        mv -f $MODPATH/system/$1 $MODPATH/$1 && ln -sf ../$1 $MODPATH/system/$1
+        cp -rf $MODPATH/system/$1 $MODPATH/ && rm -rf $MODPATH/system/$1 && ln -sf ../$1 $MODPATH/system/$1
     fi
 }
 
