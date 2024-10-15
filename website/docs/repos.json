@@ -719,5 +719,12 @@
         "kernel_name": "android_kernel_xiaomi_mt6768",
         "kernel_link": "https://github.com/anVzdGFtb25/android_kernel_xiaomi_mt6768",
         "devices": "Redmi 9 ( lancelot )"
+    },
+    {
+        "maintainer": "rifsxd",
+        "maintainer_link": "https://github.com/rifsxd",
+        "kernel_name": "android_t_kernel_realme_RMX3511",
+        "kernel_link": "https://github.com/rifsxd/android_t_kernel_realme_RMX3511",
+        "devices": "Realme C35 (RMX3511)"
     }
 ]
