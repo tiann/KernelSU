@@ -39,6 +39,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -318,7 +319,11 @@ private fun ModuleList(
         } else {
             null
         }
-        val result = snackBarHost.showSnackbar(message, actionLabel = actionLabel)
+        val result = snackBarHost.showSnackbar(
+            message = message,
+            actionLabel = actionLabel,
+            duration = SnackbarDuration.Long
+        )
         if (result == SnackbarResult.ActionPerformed) {
             reboot()
         }
@@ -395,7 +400,9 @@ private fun ModuleList(
                                     viewModel.fetchModuleList()
 
                                     val result = snackBarHost.showSnackbar(
-                                        rebootToApply, actionLabel = reboot
+                                        message = rebootToApply,
+                                        actionLabel = reboot,
+                                        duration = SnackbarDuration.Long
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
                                         reboot()
