@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -31,9 +32,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +40,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -49,6 +50,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -102,6 +104,7 @@ import okhttp3.OkHttpClient
 fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
+    val snackBarHost = LocalSnackbarHost.current
 
     LaunchedEffect(Unit) {
         if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
@@ -154,7 +157,8 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
             }
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        snackbarHost = { SnackbarHost(hostState = snackBarHost) }
     ) { innerPadding ->
         when {
             hasMagisk -> {
@@ -187,21 +191,25 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     .putExtra("name", name)
                             )
                         }
-                    }
+                    },
+                    context = context,
+                    snackBarHost = snackBarHost
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun ModuleList(
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     boxModifier: Modifier = Modifier,
     onInstallModule: (Uri) -> Unit,
-    onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit
+    onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
+    context: Context,
+    snackBarHost: SnackbarHostState
 ) {
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -218,9 +226,6 @@ private fun ModuleList(
     val downloadingText = stringResource(R.string.module_downloading)
     val startDownloadingText = stringResource(R.string.module_start_downloading)
     val fetchChangeLogFailed = stringResource(R.string.module_changelog_failed)
-
-    val snackBarHost = LocalSnackbarHost.current
-    val context = LocalContext.current
 
     val loadingDialog = rememberLoadingDialog()
     val confirmDialog = rememberConfirmDialog()
@@ -320,18 +325,21 @@ private fun ModuleList(
         } else {
             null
         }
-        val result = snackBarHost.showSnackbar(message, actionLabel = actionLabel)
+        val result = snackBarHost.showSnackbar(
+            message = message,
+            actionLabel = actionLabel,
+            duration = SnackbarDuration.Long
+        )
         if (result == SnackbarResult.ActionPerformed) {
             reboot()
         }
     }
-
-    val refreshState = rememberPullRefreshState(
-        refreshing = viewModel.isRefreshing,
-        onRefresh = { viewModel.fetchModuleList() }
-    )
-    Box(
-        boxModifier.pullRefresh(refreshState)
+    PullToRefreshBox(
+        modifier = boxModifier,
+        onRefresh = {
+            viewModel.fetchModuleList()
+        },
+        isRefreshing = viewModel.isRefreshing
     ) {
         LazyColumn(
             modifier = modifier,
@@ -341,7 +349,7 @@ private fun ModuleList(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */
+                    bottom = 16.dp + 56.dp + 16.dp + 48.dp + 6.dp /* Scaffold Fab Spacing + Fab container height + SnackBar height */
                 )
             },
         ) {
@@ -398,7 +406,9 @@ private fun ModuleList(
                                     viewModel.fetchModuleList()
 
                                     val result = snackBarHost.showSnackbar(
-                                        rebootToApply, actionLabel = reboot
+                                        message = rebootToApply,
+                                        actionLabel = reboot,
+                                        duration = SnackbarDuration.Long
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
                                         reboot()
@@ -430,11 +440,6 @@ private fun ModuleList(
 
         DownloadListener(context, onInstallModule)
 
-        PullRefreshIndicator(
-            refreshing = viewModel.isRefreshing, state = refreshState, modifier = Modifier.align(
-                Alignment.TopCenter
-            )
-        )
     }
 }
 
