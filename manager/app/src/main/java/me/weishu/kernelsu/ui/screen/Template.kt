@@ -163,7 +163,7 @@ fun AppProfileTemplateScreen(
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection),
                 contentPadding = remember {
-                    PaddingValues(bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */)
+                    PaddingValues(bottom = 16.dp + 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */)
                 }
             ) {
                 items(viewModel.templateList, key = { it.id }) { app ->

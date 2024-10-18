@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -89,7 +90,7 @@ fun AppProfileScreen(
     appInfo: SuperUserViewModel.AppInfo,
 ) {
     val context = LocalContext.current
-    val snackbarHost = LocalSnackbarHost.current
+    val snackBarHost = LocalSnackbarHost.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
@@ -111,6 +112,7 @@ fun AppProfileScreen(
                 scrollBehavior = scrollBehavior
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         AppProfileInner(
@@ -143,12 +145,12 @@ fun AppProfileScreen(
                 scope.launch {
                     if (it.allowSu && !it.rootUseDefault && it.rules.isNotEmpty()) {
                         if (!setSepolicy(profile.name, it.rules)) {
-                            snackbarHost.showSnackbar(failToUpdateSepolicy)
+                            snackBarHost.showSnackbar(failToUpdateSepolicy)
                             return@launch
                         }
                     }
                     if (!Natives.setAppProfile(it)) {
-                        snackbarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
+                        snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
                     } else {
                         profile = it
                     }
@@ -188,7 +190,9 @@ private fun AppProfileInner(
         )
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
-            Column {
+            Column(
+                modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
+            ) {
                 if (current) {
                     val initialMode = if (profile.rootUseDefault) {
                         Mode.Default

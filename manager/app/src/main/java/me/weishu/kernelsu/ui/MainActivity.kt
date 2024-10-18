@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,26 +61,23 @@ class MainActivity : ComponentActivity() {
         setContent {
             KernelSUTheme {
                 val navController = rememberNavController()
-                val snackbarHostState = remember { SnackbarHostState() }
+                val snackBarHostState = remember { SnackbarHostState() }
                 Scaffold(
                     bottomBar = { BottomBar(navController) },
-                    snackbarHost = { SnackbarHost(snackbarHostState) },
                     contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
                     CompositionLocalProvider(
-                        LocalSnackbarHost provides snackbarHostState,
+                        LocalSnackbarHost provides snackBarHostState,
                     ) {
                         DestinationsNavHost(
                             modifier = Modifier.padding(innerPadding),
                             navGraph = NavGraphs.root,
                             navController = navController,
                             defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
-                                    fadeIn(animationSpec = tween(340))
-                                }
-                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
-                                    fadeOut(animationSpec = tween(340))
-                                }
+                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition
+                                    get() = { fadeIn(animationSpec = tween(340)) }
+                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition
+                                    get() = { fadeOut(animationSpec = tween(340)) }
                             }
                         )
                     }
