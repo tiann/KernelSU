@@ -9,12 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -99,14 +96,12 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val refreshState = rememberPullRefreshState(
-            refreshing = viewModel.isRefreshing,
-            onRefresh = { scope.launch { viewModel.fetchAppList() } },
-        )
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .pullRefresh(refreshState)
+        PullToRefreshBox(
+            modifier = Modifier.padding(innerPadding),
+            onRefresh = {
+                scope.launch { viewModel.fetchAppList() }
+            },
+            isRefreshing = viewModel.isRefreshing
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -117,15 +112,8 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                     AppItem(app) {
                         navigator.navigate(AppProfileScreenDestination(app))
                     }
-
                 }
             }
-
-            PullRefreshIndicator(
-                refreshing = viewModel.isRefreshing,
-                state = refreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
         }
     }
 }
