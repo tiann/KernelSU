@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -21,9 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +42,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -155,33 +151,25 @@ fun AppProfileTemplateScreen(
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val refreshState = rememberPullRefreshState(
-            refreshing = viewModel.isRefreshing,
-            onRefresh = { scope.launch { viewModel.fetchTemplates() } },
-        )
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .pullRefresh(refreshState)
+        PullToRefreshBox(
+            modifier = Modifier.padding(innerPadding),
+            isRefreshing = viewModel.isRefreshing,
+            onRefresh = {
+                scope.launch { viewModel.fetchTemplates() }
+            }
         ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection),
                 contentPadding = remember {
-                    PaddingValues(bottom = 16.dp + 16.dp + 56.dp /*  Scaffold Fab Spacing + Fab container height */)
+                    PaddingValues(bottom = 16.dp + 56.dp + 16.dp /* Scaffold Fab Spacing + Fab container height */)
                 }
             ) {
                 items(viewModel.templateList, key = { it.id }) { app ->
                     TemplateItem(navigator, app)
                 }
             }
-
-            PullRefreshIndicator(
-                refreshing = viewModel.isRefreshing,
-                state = refreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
         }
     }
 }
