@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
@@ -32,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,8 +79,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -176,6 +180,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             }
             else -> {
                 ModuleList(
+                    navigator,
                     viewModel = viewModel,
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     boxModifier = Modifier.padding(innerPadding),
@@ -203,6 +208,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun ModuleList(
+    navigator: DestinationsNavigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     boxModifier: Modifier = Modifier,
@@ -392,7 +398,7 @@ private fun ModuleList(
                             }
                         }
 
-                        ModuleItem(module, isChecked, updatedModule.first, onUninstall = {
+                        ModuleItem(navigator, module, isChecked, updatedModule.first, onUninstall = {
                             scope.launch { onModuleUninstall(module) }
                         }, onCheckChanged = {
                             scope.launch {
@@ -457,6 +463,7 @@ private fun TopBar(
 
 @Composable
 private fun ModuleItem(
+    navigator: DestinationsNavigator,
     module: ModuleViewModel.ModuleInfo,
     isChecked: Boolean,
     updateUrl: String,
@@ -609,6 +616,33 @@ private fun ModuleItem(
                         )
                     }
                 }
+
+                if (module.hasActionScript) {
+                    Button(
+                        onClick = { navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) },
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .defaultMinSize(52.dp, 32.dp),
+                        shape = RoundedCornerShape(6.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(6.dp)
+                                .size(20.dp),
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = null
+                        )
+                        Text(
+                            modifier = Modifier.padding(end = 6.dp),
+                            text = stringResource(R.string.action),
+                            maxLines = 1,
+                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            softWrap = false
+                        )
+                    }
+                }
             }
         }
     }
@@ -629,6 +663,7 @@ fun ModuleItemPreview() {
         remove = true,
         updateJson = "",
         hasWebUi = false,
+        hasActionScript = false,
     )
-    ModuleItem(module, true, "", {}, {}, {}, {})
+    ModuleItem(EmptyDestinationsNavigator, module, true, "", {}, {}, {}, {})
 }

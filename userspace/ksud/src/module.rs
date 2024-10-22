@@ -570,6 +570,28 @@ pub fn uninstall_module(id: &str) -> Result<()> {
     })
 }
 
+pub fn run_action(id: &str) -> Result<()> {
+    let action_script_path = format!("/data/adb/modules/{}/action.sh", id);
+    let result = Command::new(assets::BUSYBOX_PATH)
+        .args(["sh", &action_script_path])
+        .env("ASH_STANDALONE", "1")
+        .env(
+            "PATH",
+            format!(
+                "{}:{}",
+                env_var("PATH").unwrap(),
+                defs::BINARY_DIR.trim_end_matches('/')
+            ),
+        )
+        .env("KSU", "true")
+        .env("KSU_VER", defs::VERSION_NAME)
+        .env("KSU_KERNEL_VER_CODE", defs::VERSION_CODE)
+        .env("OUTFD", "1")
+        .status()?;
+    ensure!(result.success(), "Failed to execute action script");
+    Ok(())
+}
+
 fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
     let src_module_path = format!("{module_dir}/{mid}");
     let src_module = Path::new(&src_module_path);
@@ -668,11 +690,13 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
         let update = path.join(defs::UPDATE_FILE_NAME).exists();
         let remove = path.join(defs::REMOVE_FILE_NAME).exists();
         let web = path.join(defs::MODULE_WEB_DIR).exists();
+        let action = path.join(defs::MODULE_ACTION_SH).exists();
 
         module_prop_map.insert("enabled".to_owned(), enabled.to_string());
         module_prop_map.insert("update".to_owned(), update.to_string());
         module_prop_map.insert("remove".to_owned(), remove.to_string());
         module_prop_map.insert("web".to_owned(), web.to_string());
+        module_prop_map.insert("action".to_owned(), action.to_string());
 
         if result.is_err() {
             warn!("Failed to parse module.prop: {}", module_prop.display());

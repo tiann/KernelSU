@@ -223,6 +223,12 @@ enum Module {
         id: String,
     },
 
+    /// run action for module <id>
+    Action {
+        // module id
+        id: String,
+    },
+
     /// list all modules
     List,
 
@@ -306,6 +312,7 @@ pub fn run() -> Result<()> {
                 Module::Uninstall { id } => module::uninstall_module(&id),
                 Module::Enable { id } => module::enable_module(&id),
                 Module::Disable { id } => module::disable_module(&id),
+                Module::Action { id } => module::run_action(&id),
                 Module::List => module::list_modules(),
                 Module::Shrink => module::shrink_ksu_images(),
             }
