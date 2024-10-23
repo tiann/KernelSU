@@ -49,7 +49,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -183,6 +182,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     )
                 }
             }
+
             else -> {
                 ModuleList(
                     navigator,
@@ -403,44 +403,53 @@ private fun ModuleList(
                             }
                         }
 
-                        ModuleItem(navigator, module, isChecked, updatedModule.first, onUninstall = {
-                            scope.launch { onModuleUninstall(module) }
-                        }, onCheckChanged = {
-                            scope.launch {
-                                val success = loadingDialog.withLoading {
-                                    withContext(Dispatchers.IO) {
-                                        toggleModule(module.id, !isChecked)
+                        ModuleItem(
+                            navigator = navigator,
+                            module = module,
+                            isChecked = isChecked,
+                            updateUrl = updatedModule.first,
+                            onUninstall = {
+                                scope.launch { onModuleUninstall(module) }
+                            },
+                            onCheckChanged = {
+                                scope.launch {
+                                    val success = loadingDialog.withLoading {
+                                        withContext(Dispatchers.IO) {
+                                            toggleModule(module.id, !isChecked)
+                                        }
                                     }
-                                }
-                                if (success) {
-                                    isChecked = it
-                                    viewModel.fetchModuleList()
+                                    if (success) {
+                                        isChecked = it
+                                        viewModel.fetchModuleList()
 
-                                    val result = snackBarHost.showSnackbar(
-                                        message = rebootToApply,
-                                        actionLabel = reboot,
-                                        duration = SnackbarDuration.Long
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        reboot()
+                                        val result = snackBarHost.showSnackbar(
+                                            message = rebootToApply,
+                                            actionLabel = reboot,
+                                            duration = SnackbarDuration.Long
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            reboot()
+                                        }
+                                    } else {
+                                        val message = if (isChecked) failedDisable else failedEnable
+                                        snackBarHost.showSnackbar(message.format(module.name))
                                     }
-                                } else {
-                                    val message = if (isChecked) failedDisable else failedEnable
-                                    snackBarHost.showSnackbar(message.format(module.name))
                                 }
+                            },
+                            onUpdate = {
+                                scope.launch {
+                                    onModuleUpdate(
+                                        module,
+                                        updatedModule.third,
+                                        updatedModule.first,
+                                        "${module.name}-${updatedModule.second}.zip"
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onClickModule(it.id, it.name, it.hasWebUi)
                             }
-                        }, onUpdate = {
-                            scope.launch {
-                                onModuleUpdate(
-                                    module,
-                                    updatedModule.third,
-                                    updatedModule.first,
-                                    "${module.name}-${updatedModule.second}.zip"
-                                )
-                            }
-                        }, onClick = {
-                            onClickModule(it.id, it.name, it.hasWebUi)
-                        })
+                        )
 
                         // fix last item shadow incomplete in LazyColumn
                         Spacer(Modifier.height(1.dp))
@@ -637,10 +646,11 @@ fun ModuleItem(
                     Spacer(modifier = Modifier.weight(0.1f, true))
                 }
 
-                TextButton(
+                FilledTonalButton(
                     modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                     enabled = !module.remove,
-                    onClick = { onUninstall(module) }
+                    onClick = { onUninstall(module) },
+                    contentPadding = ButtonDefaults.TextButtonContentPadding
                 ) {
                     Text(
                         fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
