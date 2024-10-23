@@ -105,6 +105,7 @@
     <string name="settings_check_update">检查更新</string>
     <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版</string>
     <string name="grant_root_failed">获取 root 失败！</string>
+    <string name="action">执行</string>
     <string name="open">打开</string>
     <string name="enable_web_debugging">启用 WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI ，请仅在需要时启用。</string>
