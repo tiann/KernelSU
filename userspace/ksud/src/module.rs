@@ -572,24 +572,7 @@ pub fn uninstall_module(id: &str) -> Result<()> {
 
 pub fn run_action(id: &str) -> Result<()> {
     let action_script_path = format!("/data/adb/modules/{}/action.sh", id);
-    let result = Command::new(assets::BUSYBOX_PATH)
-        .args(["sh", &action_script_path])
-        .env("ASH_STANDALONE", "1")
-        .env(
-            "PATH",
-            format!(
-                "{}:{}",
-                env_var("PATH").unwrap(),
-                defs::BINARY_DIR.trim_end_matches('/')
-            ),
-        )
-        .env("KSU", "true")
-        .env("KSU_VER", defs::VERSION_NAME)
-        .env("KSU_KERNEL_VER_CODE", defs::VERSION_CODE)
-        .env("OUTFD", "1")
-        .status()?;
-    ensure!(result.success(), "Failed to execute action script");
-    Ok(())
+    exec_script(&action_script_path, true)
 }
 
 fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
