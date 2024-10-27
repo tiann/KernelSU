@@ -188,6 +188,30 @@ fun flashModule(
     }
 }
 
+fun runModuleAction(
+    moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Boolean {
+    val shell = getRootShell()
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result = shell.newJob().add("${getKsuDaemonPath()} module action $moduleId")
+        .to(stdoutCallback, stderrCallback).exec()
+    Log.i("KernelSU", "Module runAction result: $result")
+
+    return result.isSuccess
+}
+
 fun restoreBoot(
     onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
