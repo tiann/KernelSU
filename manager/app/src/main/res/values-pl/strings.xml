@@ -133,4 +133,5 @@
     <string name="flash_failed">Flashowanie nieudane</string>
     <string name="selected_lkm">Wybrano LKM: %s</string>
     <string name="save_log">Zapisz dzienniki</string>
+    <string name="action">Akcja</string>
 </resources>
