@@ -32,6 +32,7 @@ pub const TEMP_DIR: &str = "/debug_ramdisk";
 pub const TEMP_DIR_LEGACY: &str = "/sbin";
 
 pub const MODULE_WEB_DIR: &str = "webroot";
+pub const MODULE_ACTION_SH: &str = "action.sh";
 pub const DISABLE_FILE_NAME: &str = "disable";
 pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
