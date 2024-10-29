@@ -51,8 +51,7 @@
     <string name="home_support_title">Soutenez-nous</string>
     <string name="home_click_to_learn_kernelsu">Découvrez comment installer KernelSU et utiliser les modules</string>
     <string name="home_support_content">KernelSU est, et restera toujours, gratuit et open source. Vous pouvez cependant nous témoigner de votre soutien en nous faisant un don.</string>
-    <string name="about_source_code">Voir le code source sur %1$s<br/>
-\nRejoindre notre canal %2$s</string>
+    <string name="about_source_code">Voir le code source sur %1$s<br/> \nRejoindre notre canal %2$s</string>
     <string name="profile_template">Modèle</string>
     <string name="profile_default">Par défaut</string>
     <string name="profile_custom">Personnalisé</string>
