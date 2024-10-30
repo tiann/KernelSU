@@ -131,9 +131,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
             )
         },
         floatingActionButton = {
-            if (hideInstallButton) {
-                /* Empty */
-            } else {
+            if (!hideInstallButton) {
                 val moduleInstall = stringResource(id = R.string.module_install)
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
@@ -162,7 +160,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     icon = { Icon(Icons.Filled.Add, moduleInstall) },
                     text = { Text(text = moduleInstall) },
                 )
-
             }
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),

@@ -51,10 +51,10 @@ inline fun <T> withNewRootShell(
     return createRootShell(globalMnt).use(block)
 }
 
-fun getFileNameFromUri(context: Context, uri: Uri): String? {
+fun Uri.getFileName(context: Context): String? {
     var fileName: String? = null
     val contentResolver: ContentResolver = context.contentResolver
-    val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
+    val cursor: Cursor? = contentResolver.query(this, null, null, null, null)
     cursor?.use {
         if (it.moveToFirst()) {
             fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
