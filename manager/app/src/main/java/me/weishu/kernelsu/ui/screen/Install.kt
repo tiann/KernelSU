@@ -356,6 +356,6 @@ private fun TopBar(
 
 @Composable
 @Preview
-fun SelectInstall_Preview() {
+fun SelectInstallPreview() {
     InstallScreen(EmptyDestinationsNavigator)
 }
