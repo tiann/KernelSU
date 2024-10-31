@@ -7,7 +7,7 @@
     <string name="home_working_version">KernelSU 版本：%d</string>
     <string name="home_superuser_count">已授權 Root：%d 個</string>
     <string name="home_unsupported">不支援</string>
-    <string name="home_unsupported_reason">KernelSU 現在僅支援 GKI 核心</string>
+    <string name="home_unsupported_reason">KernelSU 現在只支援 GKI 核心</string>
     <string name="home_kernel">核心</string>
     <string name="home_manager_version">管理器版本</string>
     <string name="home_fingerprint">指紋</string>
@@ -81,7 +81,7 @@
     <string name="failed_to_update_sepolicy">無法為 %s 更新 SELinux</string>
     <string name="module_changelog">變更記錄</string>
     <string name="app_profile_template_id_invalid">模板 ID 無效</string>
-    <string name="app_profile_template_create">創建模板</string>
+    <string name="app_profile_template_create">新建模板</string>
     <string name="app_profile_template_edit">編輯模板</string>
     <string name="app_profile_template_id">模板 ID</string>
     <string name="settings_profile_template">App Profile 模板</string>
@@ -91,7 +91,7 @@
     <string name="app_profile_template_export_empty">沒有本地模板可匯出！</string>
     <string name="app_profile_template_id_exist">模板 ID 已存在！</string>
     <string name="app_profile_import_from_clipboard">從剪貼簿匯入</string>
-    <string name="module_changelog_failed">獲取更新日誌失敗：%s</string>
+    <string name="module_changelog_failed">擷取更新日誌失敗：%s</string>
     <string name="app_profile_template_name">名稱</string>
     <string name="app_profile_template_sync">與線上規則同步</string>
     <string name="app_profile_template_readonly">唯讀</string>
@@ -102,33 +102,32 @@
     <string name="app_profile_template_delete">刪除</string>
     <string name="app_profile_template_import_empty">剪貼簿沒有內容！</string>
     <string name="app_profile_template_view">檢查模板</string>
-    <string name="enable_web_debugging_summary">可用於偵錯 WebUI，請僅在需要時啟用。</string>
+    <string name="enable_web_debugging_summary">可用於偵錯 WebUI，請只在需要時啟用。</string>
     <string name="enable_web_debugging">啟用 WebView 偵錯</string>
-    <string name="grant_root_failed">取得root失敗！</string>
+    <string name="grant_root_failed">取得 Root 失敗！</string>
     <string name="open">開啟</string>
     <string name="settings_check_update">檢查更新</string>
-    <string name="settings_check_update_summary">在打開App時自動檢查更新</string>
+    <string name="settings_check_update_summary">在開啟應用程式時自動檢查更新</string>
     <string name="select_file">選擇一個檔案</string>
     <string name="install_inactive_slot">安裝到非使用中的槽位（在 OTA 更新後）</string>
-    <string name="install_inactive_slot_warning">您的裝置將在下次重新啟動後強制切換到非使用中的槽位！
-\n這個選項僅在 OTA 更新完畢後使用。
-\n請問是否繼續？</string>
+    <string name="install_inactive_slot_warning">您的裝置將在下次重新啟動後強制切換到非使用中的槽位！ \n這個選項只在 OTA 更新完畢後使用。 \n請問是否繼續？</string>
     <string name="direct_install">直接安裝（建議）</string>
     <string name="install_next">下一步</string>
     <string name="select_kmi">選擇 KMI</string>
-    <string name="select_file_tip">建議使用 %1$s 分區</string>
+    <string name="select_file_tip">建議使用 %1$s 分割區映像</string>
     <string name="shrink_sparse_image">最小化模組稀疏映像</string>
-    <string name="shrink_sparse_image_message">將模組的稀疏映像調整為其實際大小，請注意這可能導致模組工作異常，請僅在需要時（如備份）使用</string>
+    <string name="shrink_sparse_image_message">將模組的稀疏映像調整為其實際大小，請注意這可能導致模組工作異常，請只有在需要時（如備份）使用。</string>
     <string name="settings_uninstall">解除安裝</string>
     <string name="settings_uninstall_temporary">暫時解除安裝</string>
     <string name="settings_restore_stock_image">還原原廠映像</string>
-    <string name="settings_uninstall_temporary_message">暫時卸載KernelSU，下次重啟後恢復原狀。</string>
+    <string name="settings_uninstall_temporary_message">暫時卸載 KernelSU，下次重啟後恢復原狀。</string>
     <string name="settings_uninstall_permanent">永久解除安裝</string>
     <string name="settings_uninstall_permanent_message">完全的（永久的）解除安裝 KernelSU（Root 和所有模組）。</string>
     <string name="flashing">寫入中</string>
     <string name="flash_success">寫入完成</string>
-    <string name="settings_restore_stock_image_message">恢復原廠映像（如果有備份），通常在OTA之前使用；如果需要解除安裝KernelSU，請使用「永久解除安裝」。</string>
+    <string name="settings_restore_stock_image_message">恢復原廠映像（如果有備份），通常在 OTA 之前使用；如果需要解除安裝 KernelSU，請使用「永久解除安裝」。</string>
     <string name="flash_failed">寫入失敗</string>
     <string name="selected_lkm">選擇的 LKM ：%s</string>
     <string name="save_log">儲存日誌</string>
+    <string name="action">執行</string>
 </resources>
