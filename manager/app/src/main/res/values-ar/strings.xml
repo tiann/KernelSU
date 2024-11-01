@@ -132,4 +132,5 @@
     <string name="settings_uninstall_temporary_message">قم بإلغاء تثبيت KernelSU مؤقتًا، واستعد إلى حالته الأصلية بعد إعادة التشغيل التالية.</string>
     <string name="save_log">حفظ السجلات</string>
     <string name="action">إجراء</string>
+    <string name="log_saved">السجلات محفوظة</string>
 </resources>
