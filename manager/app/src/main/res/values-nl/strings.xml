@@ -132,4 +132,6 @@
     <string name="flash_success">Flash-succes</string>
     <string name="flash_failed">Flash is mislukt</string>
     <string name="selected_lkm">Geselecteerde LKM: %s</string>
+    <string name="action">Actie</string>
+    <string name="log_saved">Logs opgeslagen</string>
 </resources>
