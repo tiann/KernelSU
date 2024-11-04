@@ -132,4 +132,6 @@
     <string name="flash_failed">フラッシュ失敗</string>
     <string name="selected_lkm">選択された LKM: %s</string>
     <string name="save_log">ログを保存</string>
+    <string name="action">アクション</string>
+    <string name="log_saved">保存されたログ</string>
 </resources>
