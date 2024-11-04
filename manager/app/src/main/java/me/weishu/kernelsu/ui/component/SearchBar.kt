@@ -1,16 +1,21 @@
 package me.weishu.kernelsu.ui.component
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
+import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -20,7 +25,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -28,18 +33,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 
 private const val TAG = "SearchBar"
 
@@ -56,93 +65,150 @@ fun SearchAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    var onSearch by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    var onSearch by remember { mutableStateOf(false) }
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
-    if (onSearch) {
-        LaunchedEffect(Unit) { focusRequester.requestFocus() }
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            keyboardController?.hide()
-        }
-    }
-
-    TopAppBar(
-        title = {
-            Box {
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    visible = !onSearch,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    content = { title() }
-                )
-
-                AnimatedVisibility(
-                    visible = onSearch,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 2.dp, bottom = 2.dp, end = if (onBackClick != null) 0.dp else 14.dp)
-                            .focusRequester(focusRequester)
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) onSearch = true
-                                Log.d(TAG, "onFocusChanged: $focusState")
-                            },
-                        value = searchText,
-                        onValueChange = onSearchTextChange,
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    onSearch = false
-                                    keyboardController?.hide()
-                                    onClearClick()
-                                },
-                                content = { Icon(Icons.Filled.Close, null) }
-                            )
-                        },
-                        maxLines = 1,
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            keyboardController?.hide()
-                            onConfirm?.invoke()
-                        })
+    AnimatedContent(targetState = onSearch, label = "SearchAppBarToggle") { state ->
+        if (!state) return@AnimatedContent TopAppBar(
+            title = title,
+            navigationIcon = {
+                onBackClick?.let {
+                    IconButton(
+                        onClick = it,
+                        content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
                     )
                 }
-            }
-        },
-        navigationIcon = {
-            if (onBackClick != null) {
-                IconButton(
-                    onClick = onBackClick,
-                    content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
-                )
-            }
-        },
-        actions = {
-            AnimatedVisibility(
-                visible = !onSearch
-            ) {
+            },
+            actions = {
                 IconButton(
                     onClick = { onSearch = true },
                     content = { Icon(Icons.Filled.Search, null) }
                 )
-            }
+                dropdownContent?.invoke()
+            },
+            scrollBehavior = scrollBehavior
+        )
 
-            if (dropdownContent != null) {
-                dropdownContent()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SearchBox(
+                searchText = searchText,
+                onSearchTextChange = onSearchTextChange,
+                onClearClick = {
+                    backDispatcher?.onBackPressed()
+                    onClearClick.invoke()
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester),
+                keyboardActions = KeyboardActions(onDone = {
+                    keyboardController?.hide()
+                    onConfirm?.invoke()
+                })
+            )
+            dropdownContent?.invoke()
+            DisposableEffect(Unit) {
+                onDispose {
+                    onSearchTextChange.invoke("")
+                }
             }
+        }
+    }
+    BackHandler(onSearch) { onSearch = false }
 
-        },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
-        scrollBehavior = scrollBehavior
+    LaunchedEffect(onSearch) {
+        if (onSearch) {
+            focusRequester.requestFocus()
+        }
+    }
+}
+
+
+@Composable
+private fun SearchBox(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    onClearClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    keyboardActions: KeyboardActions = KeyboardActions()
+) {
+    BasicTextField(
+        value = searchText,
+        onValueChange = onSearchTextChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+            .then(modifier),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+        keyboardActions = keyboardActions,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
+    ) { innerTF ->
+        ConstraintLayout(
+            modifier = Modifier
+                .padding(8.dp)
+                .border(1.5f.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraLarge)
+        ) {
+            val (leadingIconRef, textFieldRef, trailingIconRef) = createRefs()
+
+            IconButton(
+                onClick = {},
+                modifier = Modifier.constrainAs(leadingIconRef) {
+                    start.linkTo(parent.start)
+                    centerVerticallyTo(parent)
+                },
+                enabled = false
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Box(
+                modifier = Modifier.constrainAs(textFieldRef) {
+                    start.linkTo(leadingIconRef.end)
+                    centerVerticallyTo(parent)
+                },
+                content = { innerTF.invoke() }
+            )
+            IconButton(
+                onClick = onClearClick,
+                modifier = Modifier.constrainAs(trailingIconRef) {
+                    end.linkTo(parent.end)
+                    centerVerticallyTo(parent)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+@Preview(
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+private fun SearchBoxPreview() {
+    var searchText by rememberSaveable { mutableStateOf("") }
+    SearchBox(
+        searchText = searchText,
+        onSearchTextChange = { searchText = it },
+        onClearClick = { searchText = "" }
     )
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview

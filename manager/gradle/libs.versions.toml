@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.1"
+constraintlayout-compose = "1.1.0"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.26"
 compose-bom = "2024.10.00"
@@ -33,6 +34,7 @@ lsplugin-cmaker = { id = "org.lsposed.lsplugin.cmaker", version.ref = "cmaker" }
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 
+androidx-compose-constraintlayout = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayout-compose" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
