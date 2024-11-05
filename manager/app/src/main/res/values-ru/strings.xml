@@ -78,7 +78,7 @@
     <string name="module_downloading">Скачивание модуля: %s</string>
     <string name="module_start_downloading">Начало скачивания: %s</string>
     <string name="new_version_available">Новая версия: %s доступна, нажмите чтобы скачать.</string>
-    <string name="force_stop_app">Принудительно остановить</string>
+    <string name="force_stop_app">Остановить принудительно</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
     <string name="launch_app">Запустить</string>
     <string name="restart_app">Перезапустить</string>
@@ -135,6 +135,6 @@
     <string name="flash_failed">Установка не выполнена</string>
     <string name="selected_lkm">Выбран LKM: %s</string>
     <string name="save_log">Сохранить логи</string>
-    <string name="action">Действие</string>
+    <string name="action">Открыть</string>
     <string name="log_saved">Логи сохранены</string>
 </resources>
