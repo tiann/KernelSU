@@ -127,10 +127,11 @@
     <string name="settings_uninstall">Odinstaluj</string>
     <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj KernelSU, przywróć do oryginalnego stanu po następnym ponownym uruchomieniu.</string>
     <string name="settings_uninstall_permanent_message">Całkowite i trwałe odinstalowanie KernelSU (Root i wszystkich modułów).</string>
-    <string name="settings_restore_stock_image_message">Przywróć obraz fabryczny (jeśli istnieje kopia zapasowa), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU, użyj opcji \"Odinstaluj zupełnie\".</string>
+    <string name="settings_restore_stock_image_message">Przywróć obraz fabryczny (jeśli istnieje kopia zapasowa), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU, użyj opcji \"Odinstaluj całkowicie\".</string>
     <string name="flashing">Flashowanie</string>
     <string name="flash_success">Flashowanie ukończone pomyślnie</string>
     <string name="flash_failed">Flashowanie nieudane</string>
-    <string name="selected_lkm">Wybrano LMK: %s</string>
-    <string name="save_log">Zapisz Dzienniki</string>
+    <string name="selected_lkm">Wybrano LKM: %s</string>
+    <string name="save_log">Zapisz dzienniki</string>
+    <string name="action">Akcja</string>
 </resources>

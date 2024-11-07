@@ -132,4 +132,5 @@
     <string name="flashing">Flashando</string>
     <string name="flash_success">Flash bem-sucedido</string>
     <string name="save_log">Salvar registros</string>
+    <string name="action">Ação</string>
 </resources>
