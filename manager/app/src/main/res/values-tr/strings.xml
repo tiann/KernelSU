@@ -52,7 +52,7 @@
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
     <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="about_source_code">%1$s adresinde kaynak kodunu görüntüleyin. <br/>%2$s kanalımıza katılın.</string>
+    <string name="about_source_code"><![CDATA[%1$s adresinde kaynak kodunu görüntüleyin.<br/>%2$s kanalımıza katılın.]]></string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
     <string name="profile_template">Şablon</string>
@@ -133,4 +133,6 @@
     <string name="flashing">Flaşlanıyor</string>
     <string name="flash_failed">Flaşlama başarısız</string>
     <string name="save_log">Günlükleri Kaydet</string>
+    <string name="action">Aksiyon</string>
+    <string name="log_saved">Günlükler kaydedildi</string>
 </resources>
