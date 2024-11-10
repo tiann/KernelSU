@@ -1,0 +1,41 @@
+{
+    "id":"adb",
+    "name":"Adb",
+    "author":"kernelsu.org",
+    "description":"Minimal rules required by most apps using ADB privilege.",
+    "uid":2000,
+    "gid":2000,
+    "groups":[
+        "ADB"
+    ],
+    "locales": {
+        "bn": {
+            "name": "এডিবি",
+            "description": "নূন্যতম অনুমতি যার দ্বারা এডিবি স্বচ্ছন্দে কাজ করতে পারে।"
+        },
+        "zh_CN": {
+            "name": "Adb 模版",
+            "description": "大多数使用 ADB 权限应用所需要的最小权限"
+        },
+        "zh_TW": {
+            "name": "Adb",
+            "description": "大多數使用 ADB 權限應用程式所需要的最低權限"
+        },
+        "tr": {
+            "name": "Adb",
+            "description": "ADB ayrıcalığını kullanan çoğu uygulama için gereken minimum kurallar."
+        },
+        "pt_BR": {
+            "name": "Adb",
+            "description": "Regras mínimas exigidas pela maioria dos apps que usam privilégio ADB."
+        },
+        "ja": {
+            "name": "Adb",
+            "description": "ほとんどのアプリが使用するために必要な最小限のルール ADB."
+        },
+        "it_IT": {
+            "name": "Adb",
+            "description": "Autorizzazioni minime richieste dalla maggior parte delle app che usano i privilegi di ADB."
+        } 
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "id":"kernelmanager.root",
+    "name":"Kernel Manager",
+    "author":"Rem01Gaming",
+    "description":"Commonly used in Kernel managers such as FKM and SmartPack.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT",
+        "READPROC"
+    ],
+    "capabilities":[
+        "CAP_KILL",
+        "CAP_SYSLOG",
+        "CAP_SYS_BOOT",
+        "CAP_DAC_OVERRIDE"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED",
+    "locales": {
+        "bn": {
+            "name": "কার্নেল ম্যানেজার",
+            "description": "এফ কে এম বা স্মার্টপ্যাক কার্নেল ম্যানেজারের যে অনুমতি লাগে।"
+        },
+        "zh_TW": {
+            "name": "核心管理器",
+            "description": "常用於 FKM 和 SmartPack 等核心管理器"
+        },
+        "in": {
+            "name": "Kernel Manager",
+            "description": "Umumnya digunakan pada Kernel manager seperti FKM dan SmartPack."
+        },
+        "tr": {
+            "name": "Kernel Yöneticisi",
+            "description": "FKM ve SmartPack gibi Kernel Yöneticilerinde yaygın olarak kullanılır."
+        },
+        "pt_BR": {
+            "name": "Gerenciador de Kernel",
+            "description": "Comumente usado em gerenciadores de Kernel como FKM e SmartPack."
+        },
+        "ja": {
+            "name": "Kernel マネージャー",
+            "description": "FKM や SmartPack などの XXX マネージャーでよく使用されます。"
+        },
+        "it_IT": {
+            "name": "Gestore Kernel",
+            "description": "Autorizzazioni comunemente richieste in applicazioni per gestire il Kernel come FKM e SmartPack."
+        } 
+    }
+}

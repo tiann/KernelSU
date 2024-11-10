@@ -1,0 +1,37 @@
+name: Clippy check
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/clippy.yml'
+      - 'userspace/ksud/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/clippy.yml'
+      - 'userspace/ksud/**'
+
+env:
+  RUSTFLAGS: '-Dwarnings'
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update --force-non-host stable-x86_64-unknown-linux-gnu
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: userspace/ksud
+
+      - name: Install cross
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
+
+      - name: Run clippy
+        run: |
+          cross clippy --manifest-path userspace/ksud/Cargo.toml --target aarch64-linux-android --release
+          cross clippy --manifest-path userspace/ksud/Cargo.toml --target x86_64-linux-android --release

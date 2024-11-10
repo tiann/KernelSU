@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature Request
+    url: https://github.com/tiann/KernelSU/issues/1705
+    about: "We do not accept external Feature Requests, see this link for more details."

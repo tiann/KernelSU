@@ -1,0 +1,40 @@
+{
+    "id":"adaway.root",
+    "name":"Adaway Root",
+    "author":"JohnRTitor",
+    "description":"Only essential permissions to let Adaway modify hosts file and operate a web server.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "capabilities":[
+        "CAP_DAC_OVERRIDE",
+        "CAP_NET_BIND_SERVICE",
+        "CAP_SYS_PTRACE"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED",
+    "locales": {
+        "zh_TW": {
+            "name": "Adaway Root",
+            "description": "僅允許 Adaway 修改 hosts 和執行 Web 伺服器的必要權限"
+        },
+        "bn": {
+            "name": "অ্যাডঅ্যাওয়ে রুট",
+            "description": "অ্যাডঅ্যাওয়ে সিস্টেমের হোস্ট ফাইল পরিবর্তন এবং ওয়েবসার্ভার চালু করতে কমপক্ষে যা অনুমতি লাগে।"
+        },
+        "pt_BR": {
+            "name": "Adaway Root",
+            "description": "Apenas permissões essenciais para permitir que Adaway modifique o arquivo hosts e opere um servidor web."
+        },
+        "tr": {
+            "name": "Adaway Root",
+            "description": "Adaway'in hosts dosyasını değiştirmesine ve bir web sunucusunu çalıştırmasına izin vermek için gerekli izinler."
+        },
+        "it_IT": {
+            "name": "Adaway Root",
+            "description": "Concede le autorizzazioni essenziali affinché Adaway possa modificare il file host e gestire un server web. "
+        }        
+    }
+}

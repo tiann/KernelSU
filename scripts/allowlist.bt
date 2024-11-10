@@ -1,0 +1,89 @@
+// Define constants as per the provided structure.
+#define KSU_MAX_PACKAGE_NAME 256
+#define KSU_MAX_GROUPS 32
+#define KSU_SELINUX_DOMAIN 64
+
+// Define the root_profile structure with padding for 64-bit alignment.
+struct root_profile {
+    uint32 uid;
+    uint32 gid;
+
+    uint32 groups_count;
+    uint32 groups[KSU_MAX_GROUPS];
+    char padding1[4]; // Padding for 64-bit alignment.
+
+    struct {
+        uint64 effective;
+        uint64 permitted;
+        uint64 inheritable;
+    } capabilities;
+
+    char selinux_domain[KSU_SELINUX_DOMAIN];
+    
+    uint32 namespaces;
+    char padding2[4]; // Padding for 64-bit alignment.
+};
+
+// Define the non_root_profile structure with padding for 64-bit alignment.
+struct non_root_profile {
+    byte umount_modules;
+    char padding[7]; // Padding to make the total size a multiple of 8.
+};
+
+// Define the rp_config structure with padding for 64-bit alignment.
+struct rp_config_t {
+    byte use_default;
+    
+    char template_name[KSU_MAX_PACKAGE_NAME];
+    char padding[7]; // Padding to make the total size a multiple of 8.
+
+    struct root_profile profile;
+};
+
+// Define the nrp_config structure with padding for 64-bit alignment.
+struct nrp_config_t {
+    byte use_default;
+    char padding1[7]; // Padding to make the total size a multiple of 8.
+
+    struct non_root_profile profile;
+    char padding2[488]; // Padding to align the union
+};
+
+// Define the main app_profile structure
+typedef struct {
+    uint32 version;
+    char key[KSU_MAX_PACKAGE_NAME];
+    int32 current_uid;
+    int64 allow_su;
+
+    // Based on allow_su, decide which profile to use
+    if (allow_su != 0) {
+        rp_config_t rp_config;
+    } else {
+        nrp_config_t nrp_config;
+    }
+
+} app_profile;
+
+// Define the file header with magic number and version
+typedef struct {
+    uint32 magic;
+    uint32 version;
+} file_header;
+
+// Main entry for parsing the file
+file_header header;
+
+if (header.magic != 0x7f4b5355) {
+    Printf("Invalid file magic number.\n");
+    return;
+}
+
+FSeek(8); // Skip the header
+
+
+// Continually read app_profile instances until end of file
+while (!FEof()) {
+    app_profile profile;
+}
+

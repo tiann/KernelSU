@@ -1,0 +1,11 @@
+name: Custom issue template
+description: WARNING! If you are reporting a bug but use this template, the issue will be closed directly.
+title: '[Custom]'
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe your problem."
+    validations:
+      required: true
+

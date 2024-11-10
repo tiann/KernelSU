@@ -1,0 +1,137 @@
+name: GKI Kernel Build
+
+on:
+  workflow_call:
+    inputs:
+      version_name:
+        required: true
+        type: string
+        description: >
+          With SUBLEVEL of kernel,
+          for example: android12-5.10.66
+      arch:
+        required: true
+        type: string
+        description: >
+          Build arch: aarch64/x86_64
+      debug:
+        required: false
+        type: boolean
+        default: true
+      manifest_name:
+        required: false
+        type: string
+        description: >
+          Local repo manifest xml path,
+          typically for AVD kernel build.
+    secrets:
+      BOOT_SIGN_KEY:
+        required: false
+      CHAT_ID:
+        required: false
+      BOT_TOKEN:
+        required: false
+      MESSAGE_THREAD_ID:
+        required: false
+
+jobs:
+  build:
+    name: Build ${{ inputs.version_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          temp-reserve-mb: 2048
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+
+      - uses: actions/checkout@v4
+        with:
+          path: KernelSU
+          fetch-depth: 0
+
+      - name: Setup need_upload
+        id: need_upload
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "UPLOAD=true" >> $GITHUB_OUTPUT
+          else
+            echo "UPLOAD=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup kernel source
+        run: |
+          echo "Free space:"
+          df -h
+          cd $GITHUB_WORKSPACE
+          sudo apt-get install repo -y
+          mkdir android-kernel && cd android-kernel
+          repo init --depth=1 -u https://android.googlesource.com/kernel/manifest -m "$GITHUB_WORKSPACE/KernelSU/.github/manifests/${{ inputs.manifest_name }}" --repo-rev=v2.16
+          repo --version
+          repo --trace sync -c -j$(nproc --all) --no-tags
+          df -h
+
+      - name: Setup KernelSU
+        env:
+          PATCH_PATH: ${{ inputs.patch_path }}
+          IS_DEBUG_KERNEL: ${{ inputs.debug }}
+        run: |
+          cd $GITHUB_WORKSPACE/android-kernel
+          echo "[+] KernelSU setup"
+          GKI_ROOT=$(pwd)
+          echo "[+] GKI_ROOT: $GKI_ROOT"
+          echo "[+] Copy KernelSU driver to $GKI_ROOT/common/drivers"
+          ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $GKI_ROOT/common/drivers/kernelsu
+          echo "[+] Add KernelSU driver to Makefile"
+          DRIVER_MAKEFILE=$GKI_ROOT/common/drivers/Makefile
+          DRIVER_KCONFIG=$GKI_ROOT/common/drivers/Kconfig
+          grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
+          grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
+          echo "[+] Apply KernelSU patches"
+          cd $GKI_ROOT/common/ && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/$PATCH_PATH/*.patch || echo "[-] No patch found"
+
+          if [ "$IS_DEBUG_KERNEL" = "true" ]; then
+            echo "[+] Enable debug features for kernel"
+            printf "\nccflags-y += -DCONFIG_KSU_DEBUG\n" >> $GITHUB_WORKSPACE/KernelSU/kernel/Makefile
+          fi
+          repo status
+          echo "[+] KernelSU setup done."
+          cd $GITHUB_WORKSPACE/KernelSU
+          VERSION=$(($(git rev-list --count HEAD) + 10200))
+          echo "VERSION: $VERSION"
+          echo "kernelsu_version=$VERSION" >> $GITHUB_ENV
+
+      - name: Make working directory clean to avoid dirty
+        working-directory: android-kernel
+        run: |
+          rm common/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          git config --global user.email "bot@kernelsu.org"
+          git config --global user.name "KernelSUBot"
+          cd common/ && git add -A && git commit -a -m "Add KernelSU"
+          repo status
+
+      - name: Build kernel
+        working-directory: android-kernel
+        run: |
+          if [ ! -z ${{ vars.EXPECTED_SIZE }} ] && [ ! -z ${{ vars.EXPECTED_HASH }} ]; then
+            export KSU_EXPECTED_SIZE=${{ vars.EXPECTED_SIZE }}
+            export KSU_EXPECTED_HASH=${{ vars.EXPECTED_HASH }}
+          fi
+          tools/bazel run --config=fast --config=stamp --lto=thin //common-modules/virtual-device:virtual_device_${{ inputs.arch }}_dist -- --dist_dir=dist
+          NAME=kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
+          TARGET_IMAGE=dist/bzImage
+          if [ ! -e $TARGET_IMAGE ]; then
+            TARGET_IMAGE=dist/Image
+          fi
+          mv $TARGET_IMAGE $NAME
+          echo "file_path=android-kernel/$NAME" >> $GITHUB_ENV
+
+      - name: Upload Kernel
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
+          path: "${{ env.file_path }}"

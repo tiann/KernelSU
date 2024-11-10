@@ -1,0 +1,38 @@
+name: Build Kernel - WSA
+on:
+  push:
+    branches: ["main", "ci", "checkci"]
+    paths:
+      - ".github/workflows/build-kernel-wsa.yml"
+      - ".github/workflows/wsa-kernel.yml"
+      - "kernel/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/build-kernel-wsa.yml"
+      - ".github/workflows/wsa-kernel.yml"
+      - "kernel/**"
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+        version: ["5.15.94.2", "5.15.104.1", "5.15.104.2", "5.15.104.3", "5.15.104.4"]
+    uses: ./.github/workflows/wsa-kernel.yml
+    with:
+      arch: ${{ matrix.arch }}
+      version: ${{ matrix.version }}
+
+  check_build:
+    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
+    uses: ./.github/workflows/wsa-kernel.yml
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+    with:
+      arch: ${{ matrix.arch }}
+      version: "5.15.104.4"

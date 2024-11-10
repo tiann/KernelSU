@@ -1,0 +1,48 @@
+{
+    "id":"rootexploler.root",
+    "name":"Root Explorer",
+    "author":"Rem01Gaming",
+    "description":"File manager with Root capabilities.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "capabilities":[
+        "CAP_DAC_READ_SEARCH",
+        "CAP_DAC_OVERRIDE",
+        "CAP_SYS_ADMIN"
+    ],
+    "context":"u:r:su:s0",
+    "namespace":"INHERITED",
+    "locales": {
+        "bn": {
+            "name": "রুট এক্সপ্লোরার",
+            "description": "রুট অনুমতি যুক্ত ফাইল ম্যানেজার।"
+        },
+        "zh_TW": {
+            "name": "Root Explorer",
+            "description": "具有根目錄讀寫權限的檔案管理器"
+        },
+        "in": {
+            "name": "Root Explorer",
+            "description": "File manager dengan kemampuan Root."
+        },
+        "tr": {
+            "name": "Root Dosya Tarayıcı",
+            "description": "Root özelliklerine sahip dosya yöneticisi."
+        },
+        "pt_BR": {
+            "name": "Explorador Root",
+            "description": "Gerenciador de arquivos com recursos root."
+        },
+        "ja": {
+            "name": "Root ブラウザ",
+            "description": "Root 機能を備えたファイル マネージャー。"
+        },
+        "it_IT": {
+            "name": "Gestore file root",
+            "description": "Gestore file con permessi root."
+        } 
+    }
+}

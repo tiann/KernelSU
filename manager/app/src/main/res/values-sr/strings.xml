@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_superuser_count">Superkorisnici</string>
+    <string name="home_module_count">Moduli: %d</string>
+    <string name="home_click_to_install">Додирните да бисте инсталирали</string>
+    <string name="home">Почетна</string>
+    <string name="home_not_installed">Није инсталирано</string>
+    <string name="home_working_version">Верзија: %d</string>
+    <string name="home_working">Ради</string>
+    <string name="save_log">Сачувај Дневнике</string>
+</resources>

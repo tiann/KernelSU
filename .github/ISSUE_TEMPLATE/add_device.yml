@@ -1,0 +1,33 @@
+name: Contribute to Unofficially Supported Device
+description: Add your device kernel source to KernelSU's Unofficially Supported Device List
+title: "[Add Device]: "
+labels: ["add-device"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for supporting KernelSU!
+  - type: input
+    id: repo-url
+    attributes:
+      label: Repository URL
+      description: Your repository URL
+      placeholder: https://github.com/tiann/KernelSU
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: Please describe the device maintained by you.
+      placeholder: GKI 2.0 Device
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you should be the maintainer of the repository.
+      options:
+        - label: I'm the maintainer of this repository
+          required: true

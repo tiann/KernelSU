@@ -1,0 +1,41 @@
+{
+    "id":"incompetent.root",
+    "name":"Incompetent root",
+    "author":"kernelsu.org",
+    "description":"A incompetent root user without any capability.",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "locales": {
+        "bn": {
+            "name": "অযোগ্য রুট ইউজার",
+            "description": "অযোগ্য রুট ইউজার যার কোনো স্পেশাল ক্ষমতা নেই।"
+        },
+        "zh_CN": {
+            "name": "无能的 Root",
+            "description": "无任何权能的 root 用户。"
+        },
+        "zh_TW": {
+            "name": "無能的 Root",
+            "description": "無任何權限的 root"
+        },
+        "tr": {
+            "name": "Yetersiz root",
+            "description": "Herhangi bir özelliği olmayan yetersiz bir root kullanıcısı."
+        },
+        "pt_BR": {
+            "name": "Root incompetente",
+            "description": "Um usuário root incompetente sem qualquer capacidade."
+        },
+        "ja": {
+            "name": "無能な root",
+            "description": "権限のない root ユーザー。"
+        },
+        "it_IT": {
+            "name": "Root incompetente",
+            "description": "Un utente root senza nessuna capacità."
+        } 
+    }
+}

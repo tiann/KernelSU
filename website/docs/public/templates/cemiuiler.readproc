@@ -1,0 +1,47 @@
+{
+    "id":"cemiuiler.readproc",
+    "name":"Cemiuiler",
+    "author":"refined-fish",
+    "description":"Grant Cemiuiler the minimum permissions to work properly-to restart the application.",
+    "namespace":"INHERITED",
+    "uid":10000,
+    "gid":10000,
+    "groups":[
+        "READPROC"
+    ],
+    "capabilities":[
+        "CAP_KILL"
+    ],
+    "context":"u:r:su:s0",
+    "rules":"",
+    "locales": {
+        "bn": {
+            "name": "সিমিউলার",
+            "description": "নূন্যতম অনুমতি যার দ্বারা সিমিউলার আবার কাজে বহাল হতে পারে।"
+        },
+        "zh_CN": {
+            "name": "西米露Cemiuiler",
+            "description": "授予Cemiuiler能正常工作——重启作用域应用的最小限度权限。"
+        },
+        "zh_TW": {
+            "name": "Cemiuiler",
+            "description": "授予Cemiuiler能正常運作－重啟作用域應用程式的最低權限"
+        },
+        "tr": {
+            "name": "Cemiuiler",
+            "description": "Cemiuiler uygulamasına düzgün çalışması için minimum izinleri verin."
+        },
+        "pt_BR": {
+            "name": "Cemiuiler",
+            "description": "Conceda ao Cemiuiler as permissões mínimas para funcionar corretamente para reiniciar o app."
+        },
+        "ja": {
+            "name": "Cemiuiler",
+            "description": "Cemiuiler に適切に動作するための最小限の権限を付与し、アプリケーションを再起動します。"
+        },
+        "it_IT": {
+            "name": "Cemiuiler",
+            "description": "Concedi a Cemiuiler le autorizzazioni minime per riavviare correttamente l'applicazione."
+        } 
+    }
+}
