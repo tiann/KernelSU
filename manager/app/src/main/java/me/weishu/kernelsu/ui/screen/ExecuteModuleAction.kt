@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -40,6 +41,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.runModuleAction
+import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,6 +55,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
     val snackBarHost = LocalSnackbarHost.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val viewModel = viewModel<ModuleViewModel>()
     var actionResult: Boolean
 
     LaunchedEffect(Unit) {
@@ -73,7 +76,10 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                 actionResult = it
             }
         }
-        if (actionResult) navigator.popBackStack()
+        if (actionResult) {
+        	viewModel.fetchModuleList()
+        	navigator.popBackStack()
+    	}
     }
 
     Scaffold(
