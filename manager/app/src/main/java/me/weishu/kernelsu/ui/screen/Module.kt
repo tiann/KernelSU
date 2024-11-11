@@ -477,6 +477,7 @@ fun ModuleItem(
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
+        val viewModel = viewModel<ModuleViewModel>()
 
         Column(
             modifier = Modifier
@@ -580,7 +581,10 @@ fun ModuleItem(
                 if (module.hasActionScript) {
                     FilledTonalButton(
                         modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                        onClick = { navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) },
+                        onClick = {
+                        	navigator.navigate(ExecuteModuleActionScreenDestination(module.id))
+                        	viewModel.markNeedRefresh()
+                        },
                         contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
                         Icon(
