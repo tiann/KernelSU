@@ -35,11 +35,11 @@ rust-embed = { version = "8.5", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "6.0"
+which = "7.0"
 getopts = "0.2"
 sha256 = "1"
 sha1 = "0.10"
-tempfile = "3.13"
+tempfile = "3.14"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
 regex-lite = "0.1"
