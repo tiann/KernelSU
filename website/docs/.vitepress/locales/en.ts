@@ -50,7 +50,7 @@ function sidebarGuide() {
           { text: 'How to build?', link: '/guide/how-to-build' },
           { text: 'Intergrate for non-GKI devices', link: '/guide/how-to-integrate-for-non-gki'},
           { text: 'Unofficially supported devices', link: '/guide/unofficially-support-devices.md' },
-          { text: 'Module Guide', link: '/guide/module.md' },
+          { text: 'Module guide', link: '/guide/module.md' },
           { text: 'Module WebUI', link: '/guide/module-webui.md' },
           { text: 'App Profile', link: '/guide/app-profile.md' },
           { text: 'Rescue from bootloop', link: '/guide/rescue-from-bootloop.md' },

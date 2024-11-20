@@ -6,12 +6,12 @@ Although there are many similarities between KernelSU modules and Magisk modules
 
 - Module file format: both use zip format to organize modules, and the format of modules is almost the same.
 - Module installation directory: both located in `/data/adb/modules`.
-- Systemless: both support modifying /system in a systemless way through modules.
+- Systemless: both support modifying `/system` in a systemless way through modules.
 - post-fs-data.sh: the execution time and semantics are exactly the same.
 - service.sh: the execution time and semantics are exactly the same.
 - system.prop: completely the same.
 - sepolicy.rule: completely the same.
-- BusyBox: scripts are run in BusyBox with "standalone mode" enabled in both cases.
+- BusyBox: scripts are run in BusyBox with "Standalone Mode" enabled in both cases.
 
 ## Differences
 
@@ -25,4 +25,4 @@ Here are some differences:
 - The directories for BusyBox are different. The built-in BusyBox in KernelSU is located in `/data/adb/ksu/bin/busybox`, while in Magisk it is in `/data/adb/magisk/busybox`. **Note that this is an internal behavior of KernelSU and may change in the future!**
 - KernelSU does not support `.replace` files; however, KernelSU supports the `REMOVE` and `REPLACE` variable to remove or replace files and folders.
 - KernelSU adds `boot-completed` stage to run some scripts on boot completed.
-- KernelSU adds `post-mount` stage to run some scripts after mounting overlayfs.
+- KernelSU adds `post-mount` stage to run some scripts after mounting OverlayFS.
