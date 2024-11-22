@@ -33,12 +33,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./llvm
-          key: llvm-12.0.1
+          key: llvm-18.1.8
 
       - name: Setup LLVM
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: "12.0.1"
+          version: "18.1.8"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Checkout KernelSU
