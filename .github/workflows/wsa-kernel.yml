@@ -1,4 +1,4 @@
-name: Build Kernel - WSAt
+name: Build Kernel - WSA
 on:
   workflow_call:
     inputs:
