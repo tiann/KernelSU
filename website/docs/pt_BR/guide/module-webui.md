@@ -4,7 +4,7 @@ Além de executar scripts de inicialização e modificar arquivos do sistema, os
 
 O módulo pode escrever páginas HTML + CSS + JavaScript através de qualquer tecnologia web. O gerenciador do KernelSU exibirá essas páginas através do WebView. Ele também fornece algumas APIs para interagir com o sistema, como executar comandos shell.
 
-## Diretório webroot
+## Diretório `webroot`
 
 Os arquivos de recursos da web devem ser colocados no subdiretório `webroot` do diretório raiz do módulo, e **DEVE** haver um arquivo chamado `index.html`, que é a entrada da página do módulo. A estrutura do módulo mais simples contendo uma interface web é a seguinte:
 

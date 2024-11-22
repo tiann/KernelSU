@@ -16,7 +16,7 @@ Para dispositivos mostrando `Sem suporte`, aqui está os [Dispositivos com supor
 Antes de fazer o flash, você deve primeiro fazer backup de seu boot.img padrão. Se você encontrar algum bootloop, você sempre pode restaurar o sistema voltando para o boot padrão de fábrica usando o fastboot.
 
 ::: warning AVISO
-Flashar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu telefone, se necessário.
+Flashar pode causar perda de dados, certifique-se de executar esta etapa bem antes de prosseguir para a próxima! Você também pode fazer backup de todos os dados do seu dispositivo, se necessário.
 :::
 
 ## Conhecimento necessário
@@ -104,8 +104,8 @@ Ao contrário do modo GKI, o modo LKM modificará o `ramdisk`, portanto, em disp
 
 Abra o gerenciador, clique no ícone de instalação no canto superior direito e diversas opções aparecerão:
 
-1. Selecione e corrija um arquivo. Se o seu telefone não tiver privilégios root, você pode escolher esta opção e, em seguida, selecionar seu firmware oficial, o gerenciador irá corrigi-lo automaticamente. Você só precisa flashar este arquivo corrigido para obter privilégios root permanentemente.
-2. Instale diretamente. Se o seu telefone já estiver rooteado, você pode escolher esta opção, o gerenciador obterá automaticamente as informações do seu dispositivo e, em seguida, corrigirá o firmware oficial e irá fazer o flash automaticamente. Você pode considerar usar `fastboot boot` e o kernel GKI do KernelSU para obter root temporário e instalar o gerenciador, e então usar esta opção. Esta também é a principal forma de atualizar o KernelSU.
+1. Selecione e corrija um arquivo. Se o seu dispositivo não tiver privilégios root, você pode escolher esta opção e, em seguida, selecionar seu firmware oficial, o gerenciador irá corrigi-lo automaticamente. Você só precisa flashar este arquivo corrigido para obter privilégios root permanentemente.
+2. Instale diretamente. Se o seu dispositivo já estiver rooteado, você pode escolher esta opção, o gerenciador obterá automaticamente as informações do seu dispositivo e, em seguida, corrigirá o firmware oficial e irá fazer o flash automaticamente. Você pode considerar usar `fastboot boot` e o kernel GKI do KernelSU para obter root temporário e instalar o gerenciador, e então usar esta opção. Esta também é a principal forma de atualizar o KernelSU.
 3. Instale em outra partição. Se o seu dispositivo suportar partição A/B, você pode escolher esta opção, o gerenciador irá corrigir automaticamente o firmware oficial e, em seguida, instalá-lo em outra partição. Este método é adequado para dispositivos após o OTA, você pode instalá-lo diretamente em outra partição após o OTA e, em seguida, reiniciar o dispositivo.
 
 ### Use a linha de comando
@@ -213,7 +213,7 @@ Observação: Este método é mais conveniente ao atualizar o KernelSU e pode se
 
 ## Corrigir boot.img manualmente {#patch-boot-image}
 
-Para alguns dispositivos, o formato boot.img não é tão comum como `lz4`, `gz` e `uncompressed`. O mais típico é o Pixel, seu formato boot.img é `lz4_legacy` compactado, ramdisk pode ser `gz` e também pode ser compactado `lz4_legacy`. Atualmente, se você flashar diretamente o boot.img fornecido pelo KernelSU, o telefone pode não conseguir inicializar. Neste momento, você pode corrigir manualmente o boot.img para conseguir isso.
+Para alguns dispositivos, o formato boot.img não é tão comum como `lz4`, `gz` e `uncompressed`. O mais típico é o Pixel, seu formato boot.img é `lz4_legacy` compactado, ramdisk pode ser `gz` e também pode ser compactado `lz4_legacy`. Atualmente, se você flashar diretamente o boot.img fornecido pelo KernelSU, o dispositivo pode não conseguir inicializar. Neste momento, você pode corrigir manualmente o boot.img para conseguir isso.
 
 É sempre recomendado usar `magiskboot` para corrigir imagens, existem duas maneiras:
 
@@ -228,7 +228,7 @@ Android-Image-Kitchen não é recomendado por enquanto, porque ele não lida cor
 
 ### Preparação
 
-1. Obtenha o boot.img padrão do telefone. Você pode obtê-lo com os fabricantes do seu dispositivo. Talvez você precise do [payload-dumper-go](https://github.com/ssut/payload-dumper-go).
+1. Obtenha o boot.img padrão do dispositivo. Você pode obtê-lo com os fabricantes do seu dispositivo. Talvez você precise do [payload-dumper-go](https://github.com/ssut/payload-dumper-go).
 2. Baixe o arquivo ZIP AnyKernel3 fornecido pelo KernelSU que corresponde à versão KMI do seu dispositivo. Você pode consultar [Instalar com Recovery personalizado](#install-with-custom-recovery).
 3. Descompacte o pacote AnyKernel3 e obtenha o arquivo `Image`, que é o arquivo do kernel do KernelSU.
 
@@ -262,15 +262,15 @@ Pré-requisito: Seu dispositivo deve ter um Recovery personalizado, como TWRP. S
 
 Etapas:
 
-1. Em [GitHub Releases](https://github.com/tiann/KernelSU/releases), baixe o pacote ZIP começando com AnyKernel3 que corresponde à versão do seu telefone. Por exemplo, a versão do kernel do dispositivo é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
-2. Reinicie o telefone no TWRP.
+1. Em [GitHub Releases](https://github.com/tiann/KernelSU/releases), baixe o pacote ZIP começando com AnyKernel3 que corresponde à versão do seu dispositivo. Por exemplo, a versão do kernel do dispositivo é `android12-5.10. 66`, então você deve baixar o arquivo `AnyKernel3-android12-5.10.66_yyyy-MM.zip` (onde `yyyy` é o ano e `MM` é o mês).
+2. Reinicie o dispositivo no TWRP.
 3. Use o ADB para colocar AnyKernel3-*.zip no dispositivo em `/sdcard` e escolha instalá-lo na interface do TWRP, ou você pode diretamente executar `adb sideload AnyKernel-*.zip` para instalar.
 
 Observação: Este método é adequado para qualquer instalação (não limitado à instalação inicial ou atualizações subsequentes), desde que você use o TWRP.
 
 ## Outros métodos
 
-Na verdade, todos esses métodos de instalação têm apenas uma ideia principal, que é **substituir o kernel original pelo fornecido pelo KernelSU**, desde que isso possa ser alcançado, ele pode ser instalado. Por exemplo, a seguir estão outros métodos possíveis.
+Na verdade, todos esses métodos de instalação têm apenas uma ideia principal, que é **substituir o kernel original pelo fornecido pelo KernelSU**, desde que isso possa ser alcançado, ele pode ser instalado. A seguir estão outros métodos possíveis:
 
 1. Primeiro instale o Magisk, obtenha privilégios root através do Magisk e então use o Kernel Flasher para fazer o flash no ZIP AnyKernel3 do KernelSU.
 2. Use algum kit de ferramentas de flash em PC para flashar no kernel fornecido pelo KernelSU.

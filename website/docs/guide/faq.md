@@ -4,7 +4,7 @@
 
 First, your devices should be able to unlock the bootloader. If it can't, then it is unsupported.
 
-Then install KernelSU manager App to your device and open it, if it shows `Unsupported` then your device cannot be supported out of box, but you can build kernel source and integrate KernelSU to make it work or using [unofficially-support-devices](unofficially-support-devices).
+Then install KernelSU manager App to your device and open it, if it shows `Unsupported` then your device cannot be supported out of box, but you can build kernel source and integrate KernelSU to make it work or using [Unofficially supported devices](unofficially-support-devices).
 
 ## Does KernelSU need to unlock Bootloader?
 
@@ -12,7 +12,7 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, check [Module Guide](module.md) please.
+Yes, check [Module guide](module.md) please.
 
 ## Does KernelSU support Xposed?
 
@@ -49,7 +49,7 @@ It is possible, KernelSU is backported to kernel 4.14 now; for older kernel, you
 
 ## How to integrate KernelSU for an older kernel?
 
-Please refer to the following [Guide](how-to-integrate-for-non-gki).
+Please refer to the following [How to integrate KernelSU for non-GKI kernels](how-to-integrate-for-non-gki) guide.
 
 ## Why my Android version is 13, and the kernel shows "android12-5.10"?
 
