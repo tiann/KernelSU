@@ -14,7 +14,6 @@
     <string name="module_uninstall_confirm">Biztos benne hogy eltávolítja a következő modult: %s?</string>
     <string name="module_uninstall_failed">Nem sikerült eltávolítani: %s</string>
     <string name="module_author">Készítő</string>
-    <string name="module_overlay_fs_not_available">A modulok nem érhetők el, mivel az OverlayFS-t a kernel letiltotta.</string>
     <string name="refresh">Frissítés</string>
     <string name="show_system_apps">Rendszeralkalmazások megjelenítése</string>
     <string name="hide_system_apps">Rendszeralkalmazások elrejtése</string>

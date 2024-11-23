@@ -14,7 +14,6 @@
     <string name="reboot_download">In den Download-Modus neustarten</string>
     <string name="reboot_edl">In den EDL-Modus neustarten</string>
     <string name="module_author">Autor</string>
-    <string name="module_overlay_fs_not_available">Module sind nicht verfügbar, da OverlayFS vom Kernel deaktiviert ist.</string>
     <string name="about">Über KernelSU</string>
     <string name="module_magisk_conflict">Module sind aufgrund eines Konfliktes mit Magisk nicht verfügbar!</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>

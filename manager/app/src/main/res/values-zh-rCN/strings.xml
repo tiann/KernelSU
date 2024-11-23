@@ -40,7 +40,6 @@
     <string name="module_uninstall_failed">卸载失败：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="module_overlay_fs_not_available">OverlayFS 被内核禁用，模块不可用！</string>
     <string name="refresh">刷新</string>
     <string name="show_system_apps">显示系统应用</string>
     <string name="hide_system_apps">隐藏系统应用</string>

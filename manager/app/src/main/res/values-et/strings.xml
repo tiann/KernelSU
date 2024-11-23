@@ -59,7 +59,6 @@
     <string name="module_author">Autor</string>
     <string name="module_uninstall_failed">Eemaldamine ebaõnnestus: %s</string>
     <string name="module_version">Versioon</string>
-    <string name="module_overlay_fs_not_available">Moodulid pole saadaval, kuna OverlayFS on kernelis keelatud.</string>
     <string name="show_system_apps">Kuva süsteemirakendused</string>
     <string name="hide_system_apps">Peida süsteemirakendused</string>
     <string name="module_magisk_conflict">Moodulid pole saadaval Magiski konflikti tõttu!</string>

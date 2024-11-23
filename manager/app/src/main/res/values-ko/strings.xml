@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">모듈 삭제 실패: %s</string>
     <string name="module_version">버전</string>
     <string name="module_author">제작자</string>
-    <string name="module_overlay_fs_not_available">커널에서 OverlayFS가 비활성화되어 모듈을 사용할 수 없습니다!</string>
     <string name="refresh">새로고침</string>
     <string name="show_system_apps">시스템 앱 표시</string>
     <string name="hide_system_apps">시스템 앱 숨기기</string>
