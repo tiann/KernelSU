@@ -40,7 +40,6 @@
     <string name="module_uninstall_failed">Не удалось удалить %s</string>
     <string name="module_version">Версия</string>
     <string name="module_author">Автор</string>
-    <string name="module_overlay_fs_not_available">Модули недоступны, так как OverlayFS отключен ядром!</string>
     <string name="refresh">Обновить страницу</string>
     <string name="show_system_apps">Показать системные приложения</string>
     <string name="hide_system_apps">Скрыть системные приложения</string>

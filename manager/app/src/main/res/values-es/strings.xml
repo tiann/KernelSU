@@ -39,7 +39,6 @@
     <string name="module_uninstall_failed">Fallo al desinstalar: %s</string>
     <string name="module_version">Versión</string>
     <string name="module_author">Autor</string>
-    <string name="module_overlay_fs_not_available">Los módulos no están disponibles ya que OverlayFS está desactivado por el kernel.</string>
     <string name="refresh">Refrescar</string>
     <string name="show_system_apps">Mostrar aplicaciones del sistema</string>
     <string name="hide_system_apps">Ocultar aplicaciones del sistema</string>

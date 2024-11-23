@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">Gagal menghapus: %s</string>
     <string name="module_version">Versi</string>
     <string name="module_author">Oleh</string>
-    <string name="module_overlay_fs_not_available">Modul tidak tersedia karena kernel tidak mendukung OverlayFS!</string>
     <string name="refresh">Muat ulang</string>
     <string name="show_system_apps">Tampilkan aplikasi sistem</string>
     <string name="hide_system_apps">Sembunyikan aplikasi sistem</string>

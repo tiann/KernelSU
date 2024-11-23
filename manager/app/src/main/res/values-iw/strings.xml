@@ -44,7 +44,6 @@
     <string name="home_click_to_install">לחץ להתקנה</string>
     <string name="profile_selinux_rules">כללים</string>
     <string name="profile_groups">קבוצה</string>
-    <string name="module_overlay_fs_not_available">שכבות-על לא זמינות, המודול לא יכול לעבוד!</string>
     <string name="module">מודולים</string>
     <string name="module_author">יוצר</string>
     <string name="about">אודות</string>

@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">アンインストールに失敗しました: %s</string>
     <string name="module_version">バージョン</string>
     <string name="module_author">制作者</string>
-    <string name="module_overlay_fs_not_available">カーネルによって OverlayFS が無効になっているため、モジュールが利用できません!</string>
     <string name="refresh">更新</string>
     <string name="show_system_apps">システムアプリを表示</string>
     <string name="hide_system_apps">システムアプリを非表示</string>

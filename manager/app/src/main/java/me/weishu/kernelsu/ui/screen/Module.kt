@@ -756,26 +756,6 @@ private fun ModuleList(
     }
 
     when {
-        !viewModel.isOverlayAvailable -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = innerPadding.calculateTopPadding(),
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection),
-                        bottom = bottomInnerPadding
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.module_overlay_fs_not_available),
-                    textAlign = TextAlign.Center,
-                    color = Color.Gray,
-                )
-            }
-        }
-
         modules.isEmpty() -> {
             Box(
                 modifier = Modifier
