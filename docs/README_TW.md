@@ -22,7 +22,7 @@
 
 理論上採以 Android GKI 2.0 的裝置（核心版本 5.10+），皆受 KernelSU 支援；採以老舊核心版本（4.14+）的裝置在手動建置核心後，亦受支援。
 
-另可在 WSA、ChromeOS 一類的容器式 Android 上運作。
+另可在 WSA、ChromeOS 一類的容器式 Android 中運作。
 
 目前僅適用 `arm64-v8a` 以及 `x86_64` 架構。
 
