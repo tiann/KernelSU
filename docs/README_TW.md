@@ -14,9 +14,9 @@
 
 ## 特色功能
 
-1. 基於核心內 `su` 管理 Root 存取。
-2. 基於 [OverlayFS](https://zh.wikipedia.org/zh-tw/OverlayFS) 運作模組系統。
-3. [App Profile](https://kernelsu.org/zh_TW/guide/app-profile.html)：為 Root 掌握的生殺大權受制於此。
+1. 以核心內 `su` 管理 Root 存取。
+2. 以 [OverlayFS](https://zh.wikipedia.org/zh-tw/OverlayFS) 運作模組系統。
+3. [App Profile](https://kernelsu.org/zh_TW/guide/app-profile.html)：使 Root 掌握的生殺大權受制於此。
 
 ## 相容事態
 
@@ -34,7 +34,7 @@
 
 ## 多語翻譯
 
-欲要協助 KernelSU 邁向多語化抑或改進品質，請前往 [Weblate](https://hosted.weblate.org/engage/kernelsu/) 進行翻譯。為避免與 Weblate 上的翻譯發生衝突，現已不再受理翻譯相關的管理工具 PR。
+欲要協助 KernelSU 邁向多語化，抑或改進翻譯品質，請前往 [Weblate](https://hosted.weblate.org/engage/kernelsu/) 進行翻譯。為避免與 Weblate 上的翻譯發生衝突，現已不再受理翻譯相關的管理工具 PR。
 
 ## 綜合討論
 
