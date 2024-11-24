@@ -15,8 +15,8 @@
 ## 特色功能
 
 1. 基於核心內 `su` 管理 Root 存取。
-2. 基於 [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) 運作模組系統。
-3. [App Profile](https://kernelsu.org/guide/app-profile.html)：為 Root 掌握的生殺大權受制於此。
+2. 基於 [OverlayFS](https://zh.wikipedia.org/zh-tw/OverlayFS) 運作模組系統。
+3. [App Profile](https://kernelsu.org/zh_TW/guide/app-profile.html)：為 Root 掌握的生殺大權受制於此。
 
 ## 相容事態
 
@@ -28,9 +28,9 @@
 
 ## 使用手冊
 
-- [安裝教學](https://kernelsu.org/guide/installation.html)
-- [如何建置 KernelSU？](https://kernelsu.org/guide/how-to-build.html)
-- [官方網站](https://kernelsu.org/)
+- [安裝教學](https://kernelsu.org/zh_TW/guide/installation.html)
+- [如何建置 KernelSU？](https://kernelsu.org/zh_TW/guide/how-to-build.html)
+- [官方網站](https://kernelsu.org/zh_TW/)
 
 ## 多語翻譯
 
@@ -46,8 +46,8 @@
 
 ## 授權條款
 
-- 位列 `kernel` 資料夾名下的檔案以[《GPL-2.0-only》](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)規範。
-- 非位列 `kernel` 資料夾的其他檔案以[《GPL-3.0-or-later》](https://www.gnu.org/licenses/gpl-3.0.html)規範。
+- 位於 `kernel` 資料夾的檔案以[《GPL-2.0-only》](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)規範。
+- 非位於 `kernel` 資料夾的其他檔案以[《GPL-3.0-or-later》](https://www.gnu.org/licenses/gpl-3.0.html)規範。
 
 ## 致謝名單
 
