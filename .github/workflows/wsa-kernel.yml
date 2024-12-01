@@ -36,11 +36,9 @@ jobs:
           key: llvm-12.0.1
 
       - name: Setup LLVM
-        uses: KyleMayes/install-llvm-action@v1
+        uses: KyleMayes/install-llvm-action@v2
         with:
           version: "12.0.1"
-          force-version: true
-          ubuntu-version: "16.04"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Checkout KernelSU
