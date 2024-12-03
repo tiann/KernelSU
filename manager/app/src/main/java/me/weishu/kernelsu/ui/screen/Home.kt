@@ -102,6 +102,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             if (checkUpdate) {
                 UpdateCard()
             }
+            Next()
             InfoCard()
             DonateCard()
             LearnMoreCard()
@@ -299,15 +300,15 @@ private fun StatusCard(
                 }
 
                 else -> {
-                    Icon(Icons.Outlined.Block, stringResource(R.string.home_unsupported))
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_failure))
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(
-                            text = stringResource(R.string.home_unsupported),
+                            text = stringResource(R.string.home_failure),
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.home_unsupported_reason),
+                            text = stringResource(R.string.home_failure_reason),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -420,7 +421,7 @@ private fun InfoCard() {
             val managerVersion = getManagerVersion(context)
             InfoCardItem(
                 stringResource(R.string.home_manager_version),
-                "${managerVersion.first} (${managerVersion.second})"
+                "${managerVersion.first}-next (${managerVersion.second})"
             )
 
             Spacer(Modifier.height(16.dp))
@@ -428,6 +429,34 @@ private fun InfoCard() {
 
             Spacer(Modifier.height(16.dp))
             InfoCardItem(stringResource(R.string.home_selinux_status), getSELinuxStatus())
+        }
+    }
+}
+
+@Composable
+fun Next() {
+    val uriHandler = LocalUriHandler.current
+    val url = stringResource(R.string.home_next_kernelsu_announce)
+
+    ElevatedCard {
+
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                uriHandler.openUri(url)
+            }
+            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                Text(
+                    text = stringResource(R.string.home_next_kernelsu),
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.home_next_kernelsu_body),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
