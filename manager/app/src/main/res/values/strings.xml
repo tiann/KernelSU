@@ -51,7 +51,7 @@
     <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
     <string name="home_next_kernelsu">🔥 Next Build</string>
     <string name="home_next_kernelsu_announce">https://github.com/rifsxd/KernelSU</string>
-    <string name="home_next_kernelsu_body">Next modifications branch; Check out the repo!</string>
+    <string name="home_next_kernelsu_body">Next modifications branch, Check it out!</string>
     <string name="home_learn_kernelsu">Learn KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Learn how to install KernelSU and use modules</string>
