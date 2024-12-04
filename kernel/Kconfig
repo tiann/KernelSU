@@ -16,4 +16,144 @@ config KSU_DEBUG
 	help
 	  Enable KernelSU debug mode.
 
+menu "KernelSU - SUSFS"
+config KSU_SUSFS
+    bool "KernelSU addon - SUSFS"
+    depends on KSU
+    default y
+    help
+      Patch and Enable SUSFS to kernel with KernelSU.
+
+config KSU_SUSFS_SUS_PATH
+    bool "Enable to hide suspicious path (NOT recommended)"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow hiding the user-defined path and all its sub-paths from various system calls.
+      - tmpfs filesystem is not allowed to be added. 
+      - Effective on process with uid > 2000 only.
+      - Use with cautious as it may cause performance loss and will be vulnerable to side channel attacks,
+        just disable this feature if it doesn't work for you or you don't need it at all.
+
+config KSU_SUSFS_SUS_MOUNT
+    bool "Enable to hide suspicious mounts"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow hiding the user-defined mount paths from /proc/self/[mounts|mountinfo|mountstat].
+      - Effective on all processes for hiding mount entries.
+      - Mounts mounted by process with ksu domain will be forced to be assigned the dev name "KSU".
+      - mnt_id and mnt_group_id of the sus mount will be assigned to a much bigger number to solve the issue of id not being contiguous.  
+
+config KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT
+    bool "Enable to hide KSU's default mounts automatically (experimental)"
+    depends on KSU_SUSFS_SUS_MOUNT
+    default y
+    help
+      - Automatically add KSU's default mounts to sus_mount.
+      - No susfs command is needed in userspace.
+      - Only mount operation from process with ksu domain will be checked.
+
+config KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT
+    bool "Enable to hide suspicious bind mounts automatically (experimental)"
+    depends on KSU_SUSFS_SUS_MOUNT
+    default y
+    help
+      - Automatically add binded mounts to sus_mount.
+      - No susfs command is needed in userspace.
+      - Only mount operation from process with ksu domain will be checked.
+
+config KSU_SUSFS_SUS_KSTAT
+    bool "Enable to spoof suspicious kstat"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow spoofing the kstat of user-defined file/directory.
+      - Effective on all processes.
+
+config KSU_SUSFS_SUS_OVERLAYFS
+    bool "Enable to automatically spoof kstat and kstatfs for overlayed files/directories"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Automatically spoof the kstat and kstatfs for overlayed files/directories.
+      - No susfs command is needed in userspace.
+      - Effective on all processes.
+
+config KSU_SUSFS_TRY_UMOUNT
+    bool "Enable to use ksu's try_umount"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow using ksu's umount to umount other user-defined mount paths prior to ksu's default umount paths.
+      - Effective on all NO-root-access-granted processes.
+
+config KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT
+    bool "Enable to add bind mounts to ksu's try_umount automatically (experimental)"
+    depends on KSU_SUSFS_TRY_UMOUNT
+    default y
+    help
+      - Automatically add binded mounts to ksu's try_umount.
+      - No susfs command is needed in userspace.
+      - Only mount operation from process with ksu domain will be checked.
+
+config KSU_SUSFS_SPOOF_UNAME
+    bool "Enable to spoof uname"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow spoofing the string returned by uname syscall to user-defined string.
+      - Effective on all processes.
+      
+config KSU_SUSFS_ENABLE_LOG
+    bool "Enable logging susfs log to kernel"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow logging susfs log to kernel, uncheck it to completely disable all susfs log.
+
+config KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
+    bool "Enable to automatically hide ksu and susfs symbols from /proc/kallsyms"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Automatically hide ksu and susfs symbols from '/proc/kallsyms'.
+      - Effective on all processes.
+
+config KSU_SUSFS_SPOOF_BOOTCONFIG
+    bool "Enable to spoof /proc/bootconfig"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Spoof the output of /proc/bootconfig with a user-defined file.
+      - Effective on all processes.
+
+config KSU_SUSFS_OPEN_REDIRECT
+    bool "Enable to redirect a path to be opened with another path (experimental)"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow redirecting a target path to be opened with another user-defined path.
+      - Effective only on processes with uid < 2000.
+      - Please be reminded that process with open access to the target and redirected path can be detected.
+
+config KSU_SUSFS_SUS_SU
+    bool "Enable SUS-SU in runtime temporarily"
+    depends on KSU_SUSFS && KPROBES && HAVE_KPROBES && KPROBE_EVENTS
+    default y
+    help
+      - Allow user to enable or disable core ksu kprobes hooks temporarily in runtime. There are 2 modes for sus_su.
+      - Mode 1: when enabling sus_su, ksu kprobes will be disabled, and a fifo driver will be created in
+        /dev/[random_string] (for first time only), then user needs to mount the 'sus_su' to /system/bin/su using overlayfs or whatever
+        techniques, and run 'su' to get root shell from the fifo driver. Or, refer to the method in service.sh from module template.
+        ** sus_su userspace tool and an overlay mount is required **
+      - Mode 2: When enabling sus_su, ksu kprobes will be disabled, and the kernel inline hooks will be enabled,
+        just same as the su implementaion of non-gki kernel without kprobe supported.
+        ** Needs no extra userspace tools and mounts **
+      - When disabling sus_su, ksu kprobes will be enabled again, and the fifo driver will be deleted.
+      - Only apps with root access granted by ksu manager are allowed to get root.
+      - Also overlayfs is required.
+
+endmenu
+
 endmenu
