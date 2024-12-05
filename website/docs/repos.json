@@ -560,13 +560,6 @@
         "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
     },
     {
-        "maintainer": "rsuntk",
-        "maintainer_link": "https://github.com/rsuntk",
-        "kernel_name": "android_kernel_samsung_a12s",
-        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s",
-        "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
-    },
-    {
         "maintainer": "Lonelystar9x",
         "maintainer_link": "https://github.com/lonelystar9x",
         "kernel_name": "Kernel_xiaomi_sdm845",
@@ -628,13 +621,6 @@
         "kernel_name": "android_kernel_samsung_gta4xl",
         "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
         "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
-    },
-    {
-        "maintainer": "rsuntk",
-        "maintainer_link": "https://github.com/rsuntk",
-        "kernel_name": "android_kernel_samsung_a03",
-        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a03",
-        "devices": "Samsung Galaxy A03 | Unisoc T606 | Scorpio Kernel"
     },
     {
         "maintainer": "ArchVisions",
