@@ -154,6 +154,13 @@ config KSU_SUSFS_SUS_SU
       - Only apps with root access granted by ksu manager are allowed to get root.
       - Also overlayfs is required.
 
+config KSU_SUSFS_INFO
+    bool "Enable meta-data of susfs"
+    depends on KSU_SUSFS
+    default y
+    help
+      - Allow parsing meta-data of susfs version info.
+
 endmenu
 
 endmenu

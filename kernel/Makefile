@@ -196,6 +196,9 @@ endif
 ifdef KSU_SUSFS_SUS_SU
 ccflags-y += -DKSU_SUSFS_SUS_SU
 endif
+ifdef KSU_SUSFS_INFO
+ccflags-y += -DKSU_SUSFS_INFO
+endif
 else
 $(info -- You have not integrate susfs in your kernel.)
 $(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)

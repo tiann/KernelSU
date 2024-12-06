@@ -590,6 +590,49 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			return 0;
 		}
 #endif //#ifdef CONFIG_KSU_SUSFS_SUS_SU
+#ifdef CONFIG_KSU_SUSFS_INFO
+		if (arg2 == CMD_SUSFS_SHOW_VERSION) {
+			const char *version = SUSFS_VERSION;
+			int error = 0;
+
+			if (copy_to_user((void __user*)arg3, version, strlen(version) + 1)) {
+				pr_info("susfs: copy_to_user() failed\n");
+				error = -EFAULT;
+			}
+
+			if (copy_to_user((void __user*)arg5, version, strlen(version) + 1)) {
+				pr_info("susfs: copy_to_user() failed\n");
+				error = -EFAULT;
+			}
+
+			if (copy_to_user((void __user*)arg5 + strlen(version) + 1, &error, sizeof(error))) {
+				pr_info("susfs: copy_to_user() failed (error status)\n");
+			}
+
+			return 0;
+		}
+
+		if (arg2 == CMD_SUSFS_SHOW_VARIANT) {
+			const char *variant = SUSFS_VARIANT;
+			int error = 0;
+
+			if (copy_to_user((void __user*)arg3, variant, strlen(variant) + 1)) {
+				pr_info("susfs: copy_to_user() failed\n");
+				error = -EFAULT;
+			}
+
+			if (copy_to_user((void __user*)arg5, variant, strlen(variant) + 1)) {
+				pr_info("susfs: copy_to_user() failed\n");
+				error = -EFAULT;
+			}
+
+			if (copy_to_user((void __user*)arg5 + strlen(variant) + 1, &error, sizeof(error))) {
+				pr_info("susfs: copy_to_user() failed (error status)\n");
+			}
+
+			return 0;
+		}
+#endif //#ifdef CONFIG_KSU_SUSFS_INFO
 	}
 #endif //#ifdef CONFIG_KSU_SUSFS
 
