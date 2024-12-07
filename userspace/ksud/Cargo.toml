@@ -41,7 +41,6 @@ sha256 = "1"
 sha1 = "0.10"
 tempfile = "3.14"
 chrono = "0.4"
-hole-punch = { git = "https://github.com/tiann/hole-punch" }
 regex-lite = "0.1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]

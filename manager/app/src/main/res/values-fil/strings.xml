@@ -28,7 +28,6 @@
     <string name="module_uninstall_success">Na-uninstall ang %s</string>
     <string name="module_uninstall_failed">Nabigong i-uninstall: %s</string>
     <string name="module_author">May-akda</string>
-    <string name="module_overlay_fs_not_available">Ang overlayfs ay hindi magagamit, ang modyul ay hindi gagana!</string>
     <string name="refresh">I-refresh</string>
     <string name="show_system_apps">Ipakita ang mga application ng system</string>
     <string name="send_log">Magpadala ng Log</string>

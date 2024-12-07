@@ -19,7 +19,6 @@
     <string name="module_uninstall_success">%s išdiegtas</string>
     <string name="module_version">Versija</string>
     <string name="module_author">Autorius</string>
-    <string name="module_overlay_fs_not_available">overlayfs nepasiekiamas, modulis negali veikti!</string>
     <string name="show_system_apps">Rodyti sistemos programas</string>
     <string name="hide_system_apps">Slėpti sistemos programas</string>
     <string name="send_log">Siųsti žurnalą</string>

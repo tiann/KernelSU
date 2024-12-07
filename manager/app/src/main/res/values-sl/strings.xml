@@ -24,7 +24,6 @@
     <string name="module_uninstall_confirm">Ste prepričani, da želite odstraniti modul %s?</string>
     <string name="module_uninstall_success">%s je odmeščen</string>
     <string name="module_author">Avtor</string>
-    <string name="module_overlay_fs_not_available">overlayfs ni na voljo, modul ne more delovati!</string>
     <string name="hide_system_apps">Skrij prikaz sistemskih aplikacij</string>
     <string name="send_log">Prijavite dnevnik</string>
     <string name="home_learn_kernelsu">Naučite se KernelSU</string>

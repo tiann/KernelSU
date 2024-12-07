@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">Mislukt om te verwijderen: %s</string>
     <string name="module_version">Versie</string>
     <string name="module_author">Auteur</string>
-    <string name="module_overlay_fs_not_available">Modules zijn niet beschikbaar omdat OverlayFS door de kernel is uitgeschakeld.</string>
     <string name="refresh">Vernieuwen</string>
     <string name="show_system_apps">Toon systeem apps</string>
     <string name="hide_system_apps">Verberg systeem apps</string>

@@ -25,7 +25,6 @@
     <string name="module_uninstall_confirm">Er du sikker på, at du vil afinstallere modulet %s\?</string>
     <string name="module_uninstall_success">%s afinstalleret</string>
     <string name="module_uninstall_failed">Afinstallation af: %s fejlede</string>
-    <string name="module_overlay_fs_not_available">overlayfs er ikke tilgængeligt, modulet kan ikke fungere!</string>
     <string name="refresh">Opdater</string>
     <string name="send_log">Send Log</string>
     <string name="safe_mode">Sikker tilstand</string>

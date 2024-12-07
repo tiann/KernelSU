@@ -85,7 +85,7 @@ setup_flashable() {
   $BOOTMODE && return
   if [ -z $OUTFD ] || readlink /proc/$$/fd/$OUTFD | grep -q /tmp; then
     # We will have to manually find out OUTFD
-    for FD in `ls /proc/$$/fd`; do
+    for FD in /proc/$$/fd/*; do
       if readlink /proc/$$/fd/$FD | grep -q pipe; then
         if ps | grep -v grep | grep -qE " 3 $FD |status_fd=$FD"; then
           OUTFD=$FD
@@ -302,18 +302,16 @@ is_legacy_script() {
 }
 
 handle_partition() {
-    # if /system/vendor is a symlink, we need to move it out of $MODPATH/system, otherwise it will be overlayed
-    # if /system/vendor is a normal directory, it is ok to overlay it and we don't need to overlay it separately.
-    if [ ! -e $MODPATH/system/$1 ]; then
+    PARTITION="$1"
+    REQUIRE_SYMLINK="$2"
+    if [ ! -e "$MODPATH/system/$PARTITION" ]; then
         # no partition found
         return;
     fi
 
-    if [ -L "/system/$1" ] && [ "$(readlink -f /system/$1)" = "/$1" ]; then
-        ui_print "- Handle partition /$1"
-        # we create a symlink if module want to access $MODPATH/system/$1
-        # but it doesn't always work(ie. write it in post-fs-data.sh would fail because it is readonly)
-        mv -f $MODPATH/system/$1 $MODPATH/$1 && ln -sf ../$1 $MODPATH/system/$1
+    if [ "$REQUIRE_SYMLINK" = "false" ] || [ -L "/system/$PARTITION" ] && [ "$(readlink -f "/system/$PARTITION")" = "/$PARTITION" ]; then
+        ui_print "- Handle partition /$PARTITION"
+        ln -sf "./system/$PARTITION" "$MODPATH/$PARTITION"
     fi
 }
 
@@ -391,21 +389,22 @@ install_module() {
     [ -f $MODPATH/customize.sh ] && . $MODPATH/customize.sh
   fi
 
+  handle_partition vendor true
+  handle_partition system_ext true
+  handle_partition product true
+  handle_partition odm false
+
   # Handle replace folders
   for TARGET in $REPLACE; do
     ui_print "- Replace target: $TARGET"
-    mark_replace $MODPATH$TARGET
+    mark_replace "$MODPATH$TARGET"
   done
 
   # Handle remove files
   for TARGET in $REMOVE; do
     ui_print "- Remove target: $TARGET"
-    mark_remove $MODPATH$TARGET
+    mark_remove "$MODPATH$TARGET"
   done
-
-  handle_partition vendor
-  handle_partition system_ext
-  handle_partition product
 
   if $BOOTMODE; then
     mktouch $NVBASE/modules/$MODID/update

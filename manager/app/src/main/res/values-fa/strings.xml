@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">پاک کردن ناموفق بود: %s</string>
     <string name="module_version">نسخه</string>
     <string name="module_author">سازنده</string>
-    <string name="module_overlay_fs_not_available">overlayfs موجود نیست. مازول کار نمیکند!!</string>
     <string name="refresh">تازه‌سازی</string>
     <string name="show_system_apps">نمایش برنامه های سیستمی</string>
     <string name="hide_system_apps">مخفی کردن برنامه های سیستمی</string>

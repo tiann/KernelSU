@@ -57,7 +57,6 @@
     <string name="module_uninstall_failed">Lỗi khi gỡ cài đặt: %s</string>
     <string name="module_version">Phiên bản</string>
     <string name="module_author">Tác giả</string>
-    <string name="module_overlay_fs_not_available">overlayfs hiện không khả dụng, mô-đun không thể hoạt động!</string>
     <string name="refresh">Làm mới</string>
     <string name="show_system_apps">Hiển thị ứng dụng hệ thống</string>
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>

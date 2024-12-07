@@ -73,7 +73,6 @@
     <string name="selinux_status_disabled">Isključeno</string>
     <string name="about">O</string>
     <string name="module_uninstall_confirm">Jeste li sigurni da želite deinstalirati modulu %s\?</string>
-    <string name="module_overlay_fs_not_available">overlayfs nije dostupan, modula ne može raditi!</string>
     <string name="home_support_content">KernelSU je, i uvijek če biti, besplatan, i otvorenog izvora. Možete nam međutim pokazati da vas je briga s time da napravite donaciju.</string>
     <string name="profile_default">Zadano</string>
     <string name="profile_template">Šablon</string>

@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">Dezinstalare eșuată: %s</string>
     <string name="module_version">Versiune</string>
     <string name="module_author">Autor</string>
-    <string name="module_overlay_fs_not_available">overlayfs nu este disponibil, modulul nu poate funcționa!</string>
     <string name="refresh">Reîmprospătează</string>
     <string name="show_system_apps">Arată aplicațiile de sistem</string>
     <string name="hide_system_apps">Ascunde aplicațiile de sistem</string>

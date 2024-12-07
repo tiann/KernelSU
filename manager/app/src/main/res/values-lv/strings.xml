@@ -94,7 +94,6 @@
     <string name="module_install">Instalēt</string>
     <string name="module_uninstall_confirm">Vai tiešām vēlaties atinstalēt moduli %s?</string>
     <string name="module_version">Versija</string>
-    <string name="module_overlay_fs_not_available">overlayfs nav pieejams, modulis nevar darboties!</string>
     <string name="safe_mode">Drošais režīms</string>
     <string name="module_magisk_conflict">Moduļi ir atspējoti, jo tie konfliktē ar Magisk!</string>
     <string name="home_support_content">KernelSU ir un vienmēr būs bezmaksas un atvērtā koda. Tomēr jūs varat parādīt mums, ka jums rūp, veicot ziedojumu.</string>

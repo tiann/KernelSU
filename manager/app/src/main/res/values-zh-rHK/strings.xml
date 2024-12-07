@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">無法解除安裝：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="module_overlay_fs_not_available">OverlayFS 無法使用，模組無法正常運作！</string>
     <string name="refresh">重新整理</string>
     <string name="show_system_apps">顯示系統應用程式</string>
     <string name="hide_system_apps">隱藏系統應用程式</string>

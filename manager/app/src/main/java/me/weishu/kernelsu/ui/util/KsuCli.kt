@@ -351,12 +351,6 @@ suspend fun getSupportedKmis(): List<String> = withContext(Dispatchers.IO) {
     out.filter { it.isNotBlank() }.map { it.trim() }
 }
 
-fun overlayFsAvailable(): Boolean {
-    val shell = getRootShell()
-    // check /proc/filesystems
-    return ShellUtils.fastCmdResult(shell, "cat /proc/filesystems | grep overlay")
-}
-
 fun hasMagisk(): Boolean {
     val shell = getRootShell(true)
     val result = shell.newJob().add("which magisk").exec()

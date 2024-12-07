@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">আনইন্সটল ব্যর্থ: %s</string>
     <string name="module_version">ভার্সন</string>
     <string name="module_author">লেখক</string>
-    <string name="module_overlay_fs_not_available">ওভারলেএফএস উপলব্ধ নয়, মডিউল কাজ করতে পারে না!</string>
     <string name="refresh">রিফ্রেশ</string>
     <string name="show_system_apps">শো সিস্টেম অ্যাপস</string>
     <string name="hide_system_apps">হাইড সিস্টেম অ্যাপস</string>

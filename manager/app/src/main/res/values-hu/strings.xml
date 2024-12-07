@@ -14,7 +14,6 @@
     <string name="module_uninstall_confirm">Biztos vagy benne hogy eltávolítod a következő modult: %s\?</string>
     <string name="module_uninstall_failed">Nem sikerült eltávolítani: %s</string>
     <string name="module_author">Készítő</string>
-    <string name="module_overlay_fs_not_available">Overlayfs nem elérhető, a modul nem tud enélkül működni!</string>
     <string name="refresh">Újratöltés</string>
     <string name="show_system_apps">Mutasd a rendszer alkalmazásokat</string>
     <string name="hide_system_apps">Rejtsd el a rendszer alkalmazásokat</string>

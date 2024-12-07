@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">Не вдалося видалити: %s</string>
     <string name="module_version">Версія</string>
     <string name="module_author">Автор</string>
-    <string name="module_overlay_fs_not_available">overlayfs не доступний, модуль не може працювати!</string>
     <string name="refresh">Освіжати(Оновити)</string>
     <string name="show_system_apps">Показати системні додатки</string>
     <string name="hide_system_apps">Сховати системні додатки</string>

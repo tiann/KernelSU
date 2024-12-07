@@ -39,7 +39,6 @@
     <string name="module_uninstall_failed">Kaldırma başarısız: %s</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Geliştirici</string>
-    <string name="module_overlay_fs_not_available">OverlayFS çekirdek tarafından devre dışı bırakıldığı için modüller kullanılamıyor.</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>

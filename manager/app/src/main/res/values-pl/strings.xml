@@ -39,7 +39,6 @@
     <string name="module_uninstall_failed">Nie udało się odinstalować:: %s</string>
     <string name="module_version">Wersja</string>
     <string name="module_author">Autor</string>
-    <string name="module_overlay_fs_not_available">Moduły są niedostępne, ponieważ OverlayFS jest wyłączony przez jądro.</string>
     <string name="refresh">Odśwież</string>
     <string name="show_system_apps">Pokaż aplikacje systemowe</string>
     <string name="hide_system_apps">Ukryj aplikacje systemowe</string>

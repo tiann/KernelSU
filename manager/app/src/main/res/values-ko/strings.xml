@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">모듈 삭제 실패: %s</string>
     <string name="module_version">버전</string>
     <string name="module_author">제작자</string>
-    <string name="module_overlay_fs_not_available">overlayfs 사용 불가, 모듈을 사용할 수 없습니다!</string>
     <string name="refresh">새로고침</string>
     <string name="show_system_apps">시스템 앱 보이기</string>
     <string name="hide_system_apps">시스템 앱 숨기기</string>

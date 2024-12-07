@@ -40,7 +40,6 @@
     <string name="module_uninstall_failed">Silmək mümkün olmadı: %s</string>
     <string name="module_uninstall_success">%s silindi</string>
     <string name="hide_system_apps">Sistem proqramlarını gizlət</string>
-    <string name="module_overlay_fs_not_available">overlayfs mövcud deyil,modul işləyə bilməyəcək!</string>
     <string name="send_log">Log-u göndər</string>
     <string name="refresh">Yenilə</string>
     <string name="safe_mode">Təhlükəsiz rejimi</string>

@@ -1,12 +1,13 @@
 use anyhow::{Ok, Result};
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[cfg(target_os = "android")]
 use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
+use crate::defs::KSUD_VERBOSE_LOG_FILE;
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, utils};
 
 /// KernelSU userspace cli
@@ -15,6 +16,9 @@ use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, utils};
 struct Args {
     #[command(subcommand)]
     command: Commands,
+
+    #[arg(short, long, default_value_t = cfg!(debug_assertions))]
+    verbose: bool,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -161,17 +165,6 @@ enum Debug {
 
     Mount,
 
-    /// Copy sparse file
-    Xcp {
-        /// source file
-        src: String,
-        /// destination file
-        dst: String,
-        /// punch hole
-        #[arg(short, long, default_value = "false")]
-        punch_hole: bool,
-    },
-
     /// For testing
     Test,
 }
@@ -231,9 +224,6 @@ enum Module {
 
     /// list all modules
     List,
-
-    /// Shrink module image size
-    Shrink,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -295,6 +285,10 @@ pub fn run() -> Result<()> {
 
     let cli = Args::parse();
 
+    if !cli.verbose && !Path::new(KSUD_VERBOSE_LOG_FILE).exists() {
+        log::set_max_level(LevelFilter::Info);
+    }
+
     log::info!("command: {:?}", cli.command);
 
     let result = match cli.command {
@@ -314,7 +308,6 @@ pub fn run() -> Result<()> {
                 Module::Disable { id } => module::disable_module(&id),
                 Module::Action { id } => module::run_action(&id),
                 Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_ksu_images(),
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
@@ -348,15 +341,7 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
-            Debug::Mount => init_event::mount_modules_systemlessly(defs::MODULE_DIR),
-            Debug::Xcp {
-                src,
-                dst,
-                punch_hole,
-            } => {
-                utils::copy_sparse_file(src, dst, punch_hole)?;
-                Ok(())
-            }
+            Debug::Mount => init_event::mount_modules_systemlessly(),
             Debug::Test => assets::ensure_binaries(false),
         },
 
