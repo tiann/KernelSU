@@ -135,6 +135,6 @@
     <string name="flash_failed">Установка не выполнена</string>
     <string name="selected_lkm">Выбран LKM: %s</string>
     <string name="save_log">Сохранить логи</string>
-    <string name="action">Открыть</string>
+    <string name="action">Действие</string>
     <string name="log_saved">Логи сохранены</string>
 </resources>
