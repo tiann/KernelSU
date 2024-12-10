@@ -68,7 +68,7 @@ android {
     applicationVariants.all {
         outputs.forEach {
             val output = it as BaseVariantOutputImpl
-            output.outputFileName = "KernelSU_${managerVersionName}_${managerVersionCode}-next-$name.apk"
+            output.outputFileName = "KernelSU_${managerVersionName}_${managerVersionCode}-next-magic-$name.apk"
         }
         kotlin.sourceSets {
             getByName(name) {
