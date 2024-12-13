@@ -1,4 +1,4 @@
-# Module Guide
+# Module guide
 
 KernelSU provides a module mechanism that achieves the effect of modifying the system directory while maintaining the integrity of the system partition. This mechanism is commonly known as "systemless".
 
@@ -108,7 +108,7 @@ description=<string>
 
 ### Shell scripts
 
-Please read the [Boot scripts](#boot-scripts) section to understand the difference between `post-fs-data.sh` and `service.sh`. For most module developers, `service.sh` should be good enough if you just need to run a boot script, if you need to run the script after boot completed, please use `boot-completed.sh`. If you want to do something after mounting overlayfs, please use `post-mount.sh`.
+Please read the [Boot scripts](#boot-scripts) section to understand the difference between `post-fs-data.sh` and `service.sh`. For most module developers, `service.sh` should be good enough if you just need to run a boot script, if you need to run the script after boot completed, please use `boot-completed.sh`. If you want to do something after mounting OverlayFS, please use `post-mount.sh`.
 
 In all scripts of your module, please use `MODDIR=${0%/*}` to get your module's base directory path; do **NOT** hardcode your module path in scripts.
 
@@ -118,12 +118,12 @@ You can use the environment variable KSU to determine if a script is running in 
 
 ### `system` directory
 
-The contents of this directory will be overlaid on top of the system's /system partition using overlayfs after the system is booted. This means that:
+The contents of this directory will be overlaid on top of the system's `/system` partition using OverlayFS after the system is booted. This means that:
 
 1. Files with the same name as those in the corresponding directory in the system will be overwritten by the files in this directory.
 2. Folders with the same name as those in the corresponding directory in the system will be merged with the folders in this directory.
 
-If you want to delete a file or folder in the original system directory, you need to create a file with the same name as the file/folder in the module directory using `mknod filename c 0 0`. This way, the overlayfs system will automatically "whiteout" this file as if it has been deleted (the /system partition is not actually changed).
+If you want to delete a file or folder in the original system directory, you need to create a file with the same name as the file/folder in the module directory using `mknod filename c 0 0`. This way, the OverlayFS system will automatically "whiteout" this file as if it has been deleted (the /system partition is not actually changed).
 
 You can also declare a variable named `REMOVE` containing a list of directories in `customize.sh` to execute removal operations, and KernelSU will automatically execute `mknod <TARGET> c 0 0` in the corresponding directories of the module. For example:
 
@@ -136,7 +136,7 @@ REMOVE="
 
 The above list will execute `mknod $MODPATH/system/app/YouTube c 0 0` and `mknod $MODPATH/system/app/Bloatware c 0 0`; and `/system/app/YouTube` and `/system/app/Bloatware` will be removed after the module takes effect.
 
-If you want to replace a directory in the system, you need to create a directory with the same path in your module directory, and then set the attribute `setfattr -n trusted.overlay.opaque -v y <TARGET>` for this directory. This way, the overlayfs system will automatically replace the corresponding directory in the system (without changing the /system partition).
+If you want to replace a directory in the system, you need to create a directory with the same path in your module directory, and then set the attribute `setfattr -n trusted.overlay.opaque -v y <TARGET>` for this directory. This way, the OverlayFS system will automatically replace the corresponding directory in the system (without changing the /system partition).
 
 You can declare a variable named `REPLACE` in your `customize.sh` file, which includes a list of directories to be replaced, and KernelSU will automatically perform the corresponding operations in your module directory. For example:
 
@@ -151,10 +151,10 @@ This list will automatically create the directories `$MODPATH/system/app/YouTube
 
 ::: tip Difference with Magisk
 
-KernelSU's systemless mechanism is implemented through the kernel's overlayfs, while Magisk currently uses magic mount (bind mount). The two implementation methods have significant differences, but the ultimate goal is the same: to modify /system files without physically modifying the /system partition.
+KernelSU's systemless mechanism is implemented through the kernel's OverlayFS, while Magisk currently uses magic mount (bind mount). The two implementation methods have significant differences, but the ultimate goal is the same: to modify /system files without physically modifying the /system partition.
 :::
 
-If you are interested in overlayfs, it is recommended to read the Linux Kernel's [documentation on overlayfs](https://docs.kernel.org/filesystems/overlayfs.html).
+If you are interested in OverlayFS, it is recommended to read the Linux Kernel's [documentation on OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html).
 
 ### system.prop
 
@@ -166,7 +166,7 @@ If your module requires some additional sepolicy patches, please add those rules
 
 ## Module installer
 
-A KernelSU module installer is a KernelSU module packaged in a zip file that can be flashed in the KernelSU manager APP. The simplest KernelSU module installer is just a KernelSU module packed as a zip file.
+A KernelSU module installer is a KernelSU module packaged in a zip file that can be flashed in the KernelSU manager. The simplest KernelSU module installer is just a KernelSU module packed as a zip file.
 
 ```txt
 module.zip
@@ -184,7 +184,7 @@ KernelSU module is **NOT** supported to be installed via a Custom Recovery!
 
 ### Customization
 
-If you need to customize the module installation process, optionally you can create a script in the installer named `customize.sh`. This script will be _sourced_ (not executed!) by the module installer script after all files are extracted and default permissions and secontext are applied. This is very useful if your module requires additional setup based on the device ABI, or you need to set special permissions/secontext for some of your module files.
+If you need to customize the module installation process, optionally you can create a script in the installer named `customize.sh`. This script will be **sourced** (not executed) by the module installer script after all files are extracted and default permissions and secontext are applied. This is very useful if your module requires additional setup based on the device ABI, or you need to set special permissions/secontext for some of your module files.
 
 If you would like to fully control and customize the installation process, declare `SKIPUNZIP=1` in `customize.sh` to skip all default installation steps. By doing so, your `customize.sh` will be responsible to install everything by itself.
 
@@ -258,7 +258,7 @@ In KernelSU, startup scripts are divided into two types based on their storage l
 - Module scripts
   - Placed in the module's own folder.
   - Only executed if the module is enabled.
-  - `post-fs-data.sh` runs in post-fs-data mode, `service.sh` runs in late_start service mode, `boot-completed.sh` runs on boot completed, `post-mount.sh` runs on overlayfs mounted.
+  - `post-fs-data.sh` runs in post-fs-data mode, `service.sh` runs in late_start service mode, `boot-completed.sh` runs on boot completed, `post-mount.sh` runs on OverlayFS mounted.
 
 All boot scripts will run in KernelSU's BusyBox `ash` shell with "Standalone Mode" enabled.
 
