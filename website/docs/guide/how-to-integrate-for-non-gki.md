@@ -59,7 +59,7 @@ First, add KernelSU to your kernel source tree:
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs` or in other cases `arch/arm64/configs/vendor/your_defconfig`. For whichever defconfig you're using, make sure to enable `CONFIG_KSU` with `y` to enable or `n` to disable it. For example, in case you chose to enable it, you defconfig should contain the following string:
+Keep in mind that on some devices, your defconfig may be in `arch/arm64/configs` or in other cases `arch/arm64/configs/vendor/your_defconfig`. For whichever defconfig you are using, make sure to enable `CONFIG_KSU` with `y` to enable or `n` to disable it. For example, in case you chose to enable it, you defconfig should contain the following string:
 
 ```txt
 # KernelSU
@@ -258,7 +258,7 @@ index 2ff887661237..e758d7db7663 100644
 
 ### Safe Mode
 
-To enable KernelSU's built-in SafeMode, you should additionally modify `input_handle_event` function in `drivers/input/input.c`:
+To enable KernelSU's built-in Safe Mode, you should additionally modify `input_handle_event` function in `drivers/input/input.c`:
 
 :::tip
 It is strongly recommended to enable this feature, it is very helpful in preventing bootloops!
@@ -297,7 +297,7 @@ If you use manual integration and do not disable `CONFIG_KPROBES`, then the user
 
 ### Failed to execute `pm` in terminal?
 
-You should modify `fs/devpts/inode.c`, reference:
+You should modify `fs/devpts/inode.c`. Reference:
 
 ```diff
 diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
@@ -329,7 +329,7 @@ index 32f6f1c68..d69d8eca2 100644
 
 ### How to backport path_umount
 
-You can get module umount feature working on pre-GKI kernels by manually backporting `path_umount` from 5.9. You can use this patch as reference:
+You can get "Umount modules" feature working on pre-GKI kernels by manually backporting `path_umount` from 5.9. You can use this patch as reference:
 
 ```diff
 --- a/fs/namespace.c
