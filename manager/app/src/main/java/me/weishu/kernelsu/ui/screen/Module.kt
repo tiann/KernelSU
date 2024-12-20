@@ -493,15 +493,8 @@ fun ModuleItem(
                             onValueChange = { onClick(module) }
                         )
                     } else {
-                        toggleable(
-                            value = isChecked,
-                            interactionSource = interactionSource,
-                            role = Role.Switch,
-                            indication = indication,
-                            onValueChange = onCheckChanged,
-                            enabled = !module.update
-                        )
-                    }
+			this
+		    }
                 }
                 .padding(22.dp, 18.dp, 22.dp, 12.dp)
         ) {
