@@ -33,6 +33,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
@@ -491,15 +493,8 @@ fun ModuleItem(
                             onValueChange = { onClick(module) }
                         )
                     } else {
-                        toggleable(
-                            value = isChecked,
-                            interactionSource = interactionSource,
-                            role = Role.Switch,
-                            indication = indication,
-                            onValueChange = onCheckChanged,
-                            enabled = !module.update
-                        )
-                    }
+			this
+		    }
                 }
                 .padding(22.dp, 18.dp, 22.dp, 12.dp)
         ) {
@@ -588,17 +583,18 @@ fun ModuleItem(
                         contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
                         Icon(
-                            modifier = Modifier
-                                .padding(end = 7.dp)
-                                .size(20.dp),
+			    modifier = Modifier.size(20.dp),
                             imageVector = Icons.Outlined.PlayArrow,
                             contentDescription = null
                         )
-                        Text(
-                            text = stringResource(R.string.action),
-                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize
-                        )
+			if (!module.hasWebUi && updateUrl.isEmpty()) {
+                            Text(
+				modifier = Modifier.padding(start = 7.dp),
+                                text = stringResource(R.string.action),
+                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize
+                            )
+			}
                     }
 
                     Spacer(modifier = Modifier.weight(0.1f, true))
@@ -611,20 +607,19 @@ fun ModuleItem(
                         interactionSource = interactionSource,
                         contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
-                        if (!module.hasActionScript) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(end = 7.dp)
-                                    .size(20.dp),
-                                imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
-                                contentDescription = null
+                        Icon(
+			    modifier = Modifier.size(20.dp),
+                            imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
+                            contentDescription = null
+                        )
+                        if (!module.hasActionScript && updateUrl.isEmpty()) {
+                            Text(
+				modifier = Modifier.padding(start = 7.dp),
+                            	fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                            	fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            	text = stringResource(R.string.open)
                             )
                         }
-                        Text(
-                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            text = stringResource(R.string.open)
-                        )
                     }
                 }
 
@@ -637,11 +632,19 @@ fun ModuleItem(
                         shape = ButtonDefaults.textShape,
                         contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
-                        Text(
-                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            text = stringResource(R.string.module_update)
-                        )
+			Icon(
+    			    modifier = Modifier.size(20.dp),
+    			    imageVector = Icons.Outlined.Download,
+    			    contentDescription = null
+			)
+			if (!module.hasActionScript || !module.hasWebUi) {  
+                            Text(
+				modifier = Modifier.padding(start = 7.dp),
+                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                text = stringResource(R.string.module_update)
+                            )
+			}
                     }
 
                     Spacer(modifier = Modifier.weight(0.1f, true))
@@ -653,11 +656,19 @@ fun ModuleItem(
                     onClick = { onUninstall(module) },
                     contentPadding = ButtonDefaults.TextButtonContentPadding
                 ) {
-                    Text(
-                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        text = stringResource(R.string.uninstall)
-                    )
+		    Icon(
+    			modifier = Modifier.size(20.dp),
+    		    	imageVector = Icons.Outlined.Delete,
+    		    	contentDescription = null
+		    )
+		    if (!module.hasActionScript && !module.hasWebUi && updateUrl.isEmpty()) {  
+                    	Text(
+			    modifier = Modifier.padding(start = 7.dp),
+                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            text = stringResource(R.string.uninstall)
+                        )
+		    }
                 }
             }
         }
