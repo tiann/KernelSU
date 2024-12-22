@@ -81,6 +81,7 @@ enum class FlashingStatus {
 fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 
     var text by rememberSaveable { mutableStateOf("") }
+    var tempText : String
     val logContent = rememberSaveable { StringBuilder() }
     var showFloatAction by rememberSaveable { mutableStateOf(false) }
 
@@ -107,7 +108,12 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 }
                 flashing = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
             }, onStdout = {
-                text += "$it\n"
+                tempText = "$it\n"
+                if (tempText.startsWith("[H[J")) { // clear command
+                    text = tempText.substring(6)
+                } else {
+                    text += tempText
+                }
                 logContent.append(it).append("\n")
             }, onStderr = {
                 logContent.append(it).append("\n")
