@@ -112,7 +112,7 @@ Abra o gerenciador, clique no ícone de instalação no canto superior direito e
 
 Se não quiser usar o gerenciador, você também pode usar a linha de comando para instalar o LKM. A ferramenta `ksud` fornecida pelo KernelSU pode ajudá-lo a corrigir rapidamente o firmware oficial e depois fazer o flash.
 
-Esta ferramenta oferece suporte ao macOS, Linux e Windows. Você pode baixar a versão correspondente em [GitHub Release](https://github.com/tiann/KernelSU/releases).
+Esta ferramenta oferece suporte ao macOS, Linux e Windows. Você pode baixar a versão correspondente em [GitHub Actions](https://github.com/tiann/KernelSU/actions).
 
 Uso: `ksud boot-patch` você pode verificar a ajuda da linha de comando para opções específicas.
 

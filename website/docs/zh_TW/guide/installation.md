@@ -113,7 +113,7 @@ LKM 模式不會替換掉裝置原有的核心，而是使用可載入核心模�
 
 如果你不想使用管理器，你也可以使用命令列來安裝 LKM。KernelSU 提供的 `ksud` 可以幫助你快速修補官方韌體，然後寫入。
 
-這個工具支援 macOS、Linux 和 Windows，你可以在 [GitHub Release](https://github.com/tiann/KernelSU/releases) 下載對應的版本。
+這個工具支援 macOS、Linux 和 Windows，你可以在 [GitHub Actions](https://github.com/tiann/KernelSU/actions) 下載對應的版本。
 
 使用方法：`ksud boot-patch`。 你可以查看命令列的提示了解具體的使用方法。
 

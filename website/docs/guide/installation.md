@@ -112,7 +112,7 @@ Open the manager, click the installation icon in the upper right corner, and sev
 
 If you do not want to use the manager, you can also use the command line to install LKM. The `ksud` tool provided by KernelSU can help you quickly patch the official firmware and then flash it.
 
-This tool supports macOS, Linux, and Windows. You can download the corresponding version from [GitHub Release](https://github.com/tiann/KernelSU/releases).
+This tool supports macOS, Linux, and Windows. You can download the corresponding version from [GitHub Actions](https://github.com/tiann/KernelSU/actions).
 
 Usage: `ksud boot-patch` you can check the command line help for specific options.
 
