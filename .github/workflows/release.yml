@@ -39,6 +39,20 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
+      - name: Rename ksud
+        run: |
+          mkdir -p ksud
+          for dir in ./ksud-*; do
+              if [ -d "$dir" ]; then
+                 echo "----- Rename $dir -----"
+                 ksud_platform_name=$(basename "$dir")
+                 find "$dir" -type f -name "ksud" -path "*/release/*" | while read -r ksud_file; do
+                   if [ -f "$ksud_file" ]; then
+                     mv "$ksud_file" "ksud/$ksud_platform_name"
+                   fi
+                 done
+              fi
+          done
       - name: Zip AnyKernel3
         run: |
           for dir in AnyKernel3-*; do
@@ -79,4 +93,4 @@ jobs:
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip
             kernel-ARCVM*.zip
-            ksud-*
+            ksud/ksud-*
