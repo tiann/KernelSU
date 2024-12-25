@@ -14,8 +14,6 @@ import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import org.json.JSONArray
 import org.json.JSONObject
-import java.text.Collator
-import java.util.Locale
 
 class ModuleViewModel : ViewModel() {
 
@@ -52,8 +50,14 @@ class ModuleViewModel : ViewModel() {
     var isOverlayAvailable by mutableStateOf(overlayFsAvailable())
         private set
 
+    var sortEnabledFirst by mutableStateOf(false)
+    var sortActionFirst by mutableStateOf(false)
     val moduleList by derivedStateOf {
-        val comparator = compareBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
+        val comparator =
+            compareBy<ModuleInfo>(
+                { if (sortEnabledFirst) !it.enabled else 0 },
+                { if (sortActionFirst) !it.hasWebUi && !it.hasActionScript else 0 },
+                { it.id })
         modules.sortedWith(comparator).also {
             isRefreshing = false
         }
