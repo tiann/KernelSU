@@ -137,4 +137,6 @@
     <string name="save_log">Сохранить логи</string>
     <string name="action">Действие</string>
     <string name="log_saved">Логи сохранены</string>
+    <string name="module_sort_action_first">Сортировка (Сначала действие)</string>
+    <string name="module_sort_enabled_first">Сортировать (Сначала включено)</string>
 </resources>
