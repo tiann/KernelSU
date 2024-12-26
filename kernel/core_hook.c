@@ -106,6 +106,24 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
 	set_groups(cred, group_info);
 }
 
+static void disable_seccomp()
+{
+	assert_spin_locked(&current->sighand->siglock);
+	// disable seccomp
+#if defined(CONFIG_GENERIC_ENTRY) &&                                           \
+	LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
+#else
+	current_thread_info()->flags &= ~(TIF_SECCOMP | _TIF_SECCOMP);
+#endif
+
+#ifdef CONFIG_SECCOMP
+	current->seccomp.mode = 0;
+	current->seccomp.filter = NULL;
+#else
+#endif
+}
+
 void escape_to_root(void)
 {
 	struct cred *cred;
@@ -147,19 +165,11 @@ void escape_to_root(void)
 	memcpy(&cred->cap_ambient, &profile->capabilities.effective,
 	       sizeof(cred->cap_ambient));
 
-	// disable seccomp
-#if defined(CONFIG_GENERIC_ENTRY) &&                                           \
-	LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
-#else
-	current_thread_info()->flags &= ~(TIF_SECCOMP | _TIF_SECCOMP);
-#endif
-
-#ifdef CONFIG_SECCOMP
-	current->seccomp.mode = 0;
-	current->seccomp.filter = NULL;
-#else
-#endif
+	// Refer to kernel/seccomp.c: seccomp_set_mode_strict
+	// When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
+	spin_lock_irq(&current->sighand->siglock);
+	disable_seccomp();
+	spin_unlock_irq(&current->sighand->siglock);
 
 	setup_groups(profile, cred);
 
