@@ -131,6 +131,8 @@
     <string name="settings_uninstall_permanent_message">การถอนการติดตั้ง KernelSU (การรูทและโมดูลทั้งหมด) อย่างสมบูรณ์โดยถาวร</string>
     <string name="settings_restore_stock_image_message">คืนค่าโรงงานอิมเมจดั้งเดิม (หากมีข้อมูลสำรอง) ส่วนใหญ่มักใช้ก่อนทำการ OTA ซึ่งหากคุณต้องการถอนการติดตั้ง KernelSU โปรดใช้ \"ถอนการติดตั้งถาวร\"</string>
     <string name="save_log">บันทึกบันทึก</string>
-    <string name="action">รันคำสั่ง</string>
+    <string name="action">คำสั่ง</string>
     <string name="log_saved">บันทึก Log แล้ว</string>
+    <string name="module_sort_action_first">เรียงลำดับ (รันคำสั่งก่อน)</string>
+    <string name="module_sort_enabled_first">เรียงลำดับ (เปิดใช้งานก่อน)</string>
 </resources>
