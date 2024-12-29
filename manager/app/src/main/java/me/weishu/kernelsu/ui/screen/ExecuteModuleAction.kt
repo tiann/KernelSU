@@ -106,7 +106,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                             val date = format.format(Date())
                             val file = File(
                                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                                "KernelSU_Next_module_action_log_${date}.log"
+                                "KernelSU_module_action_log_${date}.log"
                             )
                             file.writeText(logContent.toString())
                             snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
@@ -128,7 +128,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                 )
             }
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackBarHost) }
     ) { innerPadding ->
         KeyEventBlocker {
