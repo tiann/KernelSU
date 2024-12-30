@@ -134,4 +134,6 @@
     <string name="save_log">ログを保存</string>
     <string name="action">アクション</string>
     <string name="log_saved">保存されたログ</string>
+    <string name="module_sort_enabled_first">並べ替え（最初に有効）</string>
+    <string name="module_sort_action_first">並べ替え（アクション優先）</string>
 </resources>
