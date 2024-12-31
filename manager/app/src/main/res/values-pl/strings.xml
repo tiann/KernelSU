@@ -134,4 +134,7 @@
     <string name="selected_lkm">Wybrano LKM: %s</string>
     <string name="save_log">Zapisz dzienniki</string>
     <string name="action">Akcja</string>
+    <string name="log_saved">Dzienniki zapisane</string>
+    <string name="module_sort_action_first">Sortuj (najpierw działania)</string>
+    <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
 </resources>

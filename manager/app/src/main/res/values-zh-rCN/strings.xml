@@ -22,7 +22,7 @@
     <string name="module_empty">没有安装模块</string>
     <string name="module">模块</string>
     <string name="module_sort_action_first">可执行优先</string>
-    <string name="module_sort_enabled_first">已启用优先</string>
+    <string name="module_sort_enabled_first">管理器版本</string>
     <string name="uninstall">卸载</string>
     <string name="module_install">安装</string>
     <string name="install">安装</string>
