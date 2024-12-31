@@ -95,6 +95,7 @@ import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmResult
+import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.DownloadListener
@@ -139,8 +140,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                actions = {
+            SearchAppBar(
+                title = { Text(stringResource(R.string.module)) },
+                searchText = viewModel.search,
+                onSearchTextChange = { viewModel.search = it },
+                onClearClick = { viewModel.search = "" },
+                dropdownContent = {
                     var showDropdown by remember { mutableStateOf(false) }
 
                     IconButton(
@@ -192,8 +197,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                title = { Text(stringResource(R.string.module)) },
-                windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
             )
         },
         floatingActionButton = {
@@ -458,7 +461,7 @@ private fun ModuleList(
 
                 else -> {
                     items(viewModel.moduleList) { module ->
-                        var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
+                        val isChecked = module.enabled
                         val scope = rememberCoroutineScope()
                         val updatedModule by produceState(initialValue = Triple("", "", "")) {
                             scope.launch(Dispatchers.IO) {
@@ -482,7 +485,6 @@ private fun ModuleList(
                                         }
                                     }
                                     if (success) {
-                                        isChecked = it
                                         viewModel.fetchModuleList()
 
                                         val result = snackBarHost.showSnackbar(
