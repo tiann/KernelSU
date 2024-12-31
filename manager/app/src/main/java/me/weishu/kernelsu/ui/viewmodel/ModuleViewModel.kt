@@ -14,6 +14,8 @@ import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.Collator
+import java.util.Locale
 
 class ModuleViewModel : ViewModel() {
 
@@ -57,7 +59,7 @@ class ModuleViewModel : ViewModel() {
             compareBy<ModuleInfo>(
                 { if (sortEnabledFirst) !it.enabled else 0 },
                 { if (sortActionFirst) !it.hasWebUi && !it.hasActionScript else 0 },
-                { it.id })
+            ).thenBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
         modules.sortedWith(comparator).also {
             isRefreshing = false
         }
