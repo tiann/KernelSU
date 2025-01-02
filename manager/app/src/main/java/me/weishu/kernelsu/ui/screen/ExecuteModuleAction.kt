@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.only
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -98,6 +99,9 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         topBar = {
             TopBar(
                 isActionRunning = isActionRunning,
+                onBack = {
+                    navigator.popBackStack()
+                },
                 onSave = {
                     if (!isActionRunning) {
                         scope.launch {
@@ -153,9 +157,15 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(isActionRunning: Boolean, onSave: () -> Unit = {}) {
+private fun TopBar(isActionRunning: Boolean, onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
     TopAppBar(
         title = { Text(stringResource(R.string.action)) },
+        navigationIcon = {
+            IconButton(
+                onClick = onBack,
+                enabled = !isActionRunning
+            ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+        },
         actions = {
             IconButton(
                 onClick = onSave,
