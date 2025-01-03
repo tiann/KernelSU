@@ -134,4 +134,6 @@
     <string name="save_log">Simpan Log</string>
     <string name="action">Action</string>
     <string name="log_saved">Log disimpan</string>
+    <string name="module_sort_enabled_first">Urut (Diaktifkan terlebih dahulu)</string>
+    <string name="module_sort_action_first">Urut (Tindakan pertama)</string>
 </resources>
