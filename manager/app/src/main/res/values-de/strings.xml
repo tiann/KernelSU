@@ -63,7 +63,7 @@
     <string name="home_learn_kernelsu">KernelSU verstehen</string>
     <string name="safe_mode">Sicherer Modus</string>
     <string name="reboot_to_apply">Neustarten, damit Änderungen wirksam werden</string>
-    <string name="about_source_code">Schau dir den Quellcode an auf %1$s<br/>Trete unserem %2$s Kanal bei</string>
+    <string name="about_source_code"><![CDATA[Quellcode einsehen unter %1$s<br/>Unserem %2$s-Kanal beitreten]]></string>
     <string name="profile_name">Profilname</string>
     <string name="profile_namespace">Namespace einhängen</string>
     <string name="profile_groups">Gruppen</string>
@@ -131,4 +131,6 @@
     <string name="flash_failed">Schreiben fehlgeschlagen</string>
     <string name="selected_lkm">Wähle LKM: %s</string>
     <string name="shrink_sparse_image">Spärliches Bild minimieren</string>
+    <string name="action">Aktion</string>
+    <string name="log_saved">Protokolle gespeichert</string>
 </resources>

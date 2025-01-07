@@ -133,4 +133,7 @@
     <string name="flash_success">Flash bem-sucedido</string>
     <string name="save_log">Salvar registros</string>
     <string name="action">Ação</string>
+    <string name="log_saved">Registros salvos</string>
+    <string name="module_sort_action_first">Ordenar (Ação primeiro)</string>
+    <string name="module_sort_enabled_first">Ordenar (Ativado primeiro)</string>
 </resources>

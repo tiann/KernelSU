@@ -126,10 +126,14 @@
     <string name="settings_restore_stock_image">Herstel stockafbeelding</string>
     <string name="settings_uninstall_temporary_message">Verwijder KernelSU tijdelijk en herstel het naar de oorspronkelijke staat na de volgende herstart.</string>
     <string name="settings_uninstall_permanent_message">Het verwijderen van KernelSU (Root en alle modules) volledig en permanent.</string>
-    <string name="settings_restore_stock_image_message">Herstel de standaard fabrieksimage (als er een back-up bestaat), die normaal gesproken vóór OTA wordt gebruikt. Als u KernelSU moet verwijderen, gebruikt u \'Permanent verwijderen\'.</string>
+    <string name="settings_restore_stock_image_message">Herstel de standaard fabrieksimage (als er een back-up bestaat), die normaal gesproken vóór OTA wordt gebruikt. Als u KernelSU moet verwijderen, gebruikt u permanent verwijderen.</string>
     <string name="flashing">Knipperen</string>
     <string name="save_log">Logboeken Opslaan</string>
     <string name="flash_success">Flash-succes</string>
     <string name="flash_failed">Flash is mislukt</string>
     <string name="selected_lkm">Geselecteerde LKM: %s</string>
+    <string name="action">Actie</string>
+    <string name="log_saved">Logs opgeslagen</string>
+    <string name="module_sort_enabled_first">Sorteren (eerst ingeschakeld)</string>
+    <string name="module_sort_action_first">Sorteren (actie eerst)</string>
 </resources>

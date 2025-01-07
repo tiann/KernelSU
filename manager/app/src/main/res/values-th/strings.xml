@@ -51,7 +51,7 @@
     <string name="home_click_to_learn_kernelsu">เรียนรู้วิธีการติดตั้ง KernelSU และวิธีใช้งานโมดูลต่าง ๆ</string>
     <string name="home_support_title">สนับสนุนพวกเรา</string>
     <string name="home_support_content">KernelSU เป็นโอเพ่นซอร์สฟรีทั้งจากนี้และตลอดไป อย่างไรก็ตาม คุณสามารถแสดงความห่วงใยได้ด้วยการบริจาค</string>
-    <string name="about_source_code">ดูซอร์สโค้ดที่ %1$s<br/> และเข้าร่วมช่อง %2$s ของเรา</string>
+    <string name="about_source_code"><![CDATA[ดูซอร์สโค้ดได้ที่ %1$s<br/>และเข้าร่วมช่อง %2$s channel]]></string>
     <string name="profile_custom">กำหนดเอง</string>
     <string name="profile_default">ค่าเริ่มต้น</string>
     <string name="profile_template">เทมเพลต</string>
@@ -112,7 +112,7 @@
     <string name="select_file">เลือกไฟล์</string>
     <string name="install_inactive_slot">ติดตั้งลงในสล็อตที่ไม่ใช้งาน (หลังจาก OTA)</string>
     <string name="direct_install">ติดตั้งโดยตรง (แนะนำ)</string>
-    <string name="select_file_tip">แนะนำให้ใช้อิมเมจพาร์ติชั่น %1$s</string>
+    <string name="select_file_tip">แนะนำให้ใช้อิมเมจพาร์ติชัน %1$s</string>
     <string name="enable_web_debugging_summary">สามารถใช้เพื่อดีบัก WebUI โปรดเปิดใช้งานเมื่อจำเป็นเท่านั้น</string>
     <string name="install_inactive_slot_warning">อุปกรณ์ของคุณจะถูก **บังคับ** ให้บูตไปยังสล็อตที่ไม่ได้ใช้งานหลังจากรีบูต!
 \nโปรดใช้ตัวเลือกนี้หลังจาก OTA เสร็จแล้วเท่านั้น
@@ -131,4 +131,8 @@
     <string name="settings_uninstall_permanent_message">การถอนการติดตั้ง KernelSU (การรูทและโมดูลทั้งหมด) อย่างสมบูรณ์โดยถาวร</string>
     <string name="settings_restore_stock_image_message">คืนค่าโรงงานอิมเมจดั้งเดิม (หากมีข้อมูลสำรอง) ส่วนใหญ่มักใช้ก่อนทำการ OTA ซึ่งหากคุณต้องการถอนการติดตั้ง KernelSU โปรดใช้ \"ถอนการติดตั้งถาวร\"</string>
     <string name="save_log">บันทึกบันทึก</string>
+    <string name="action">คำสั่ง</string>
+    <string name="log_saved">บันทึก Log แล้ว</string>
+    <string name="module_sort_action_first">เรียงลำดับ (แบบรันคำสั่งก่อน)</string>
+    <string name="module_sort_enabled_first">เรียงลำดับ (แบบเปิดใช้งานก่อน)</string>
 </resources>

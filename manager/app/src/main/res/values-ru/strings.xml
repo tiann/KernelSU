@@ -78,7 +78,7 @@
     <string name="module_downloading">Скачивание модуля: %s</string>
     <string name="module_start_downloading">Начало скачивания: %s</string>
     <string name="new_version_available">Новая версия: %s доступна, нажмите чтобы скачать.</string>
-    <string name="force_stop_app">Принудительно остановить</string>
+    <string name="force_stop_app">Остановить принудительно</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
     <string name="launch_app">Запустить</string>
     <string name="restart_app">Перезапустить</string>
@@ -122,7 +122,7 @@
     <string name="select_kmi">Выбрать KMI</string>
     <string name="select_file_tip">%1$s образ раздела рекомендуется</string>
     <string name="shrink_sparse_image">Минимизировать разреженный образ</string>
-    <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования)</string>
+    <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования).</string>
     <string name="settings_uninstall_temporary">Удалить на время</string>
     <string name="settings_uninstall_permanent_message">Удалить KernelSU (Root и все модули) полностью.</string>
     <string name="settings_uninstall_permanent">Удалить полностью</string>
@@ -135,4 +135,8 @@
     <string name="flash_failed">Установка не выполнена</string>
     <string name="selected_lkm">Выбран LKM: %s</string>
     <string name="save_log">Сохранить логи</string>
+    <string name="action">Действие</string>
+    <string name="log_saved">Логи сохранены</string>
+    <string name="module_sort_action_first">Сортировка (Сначала с действием)</string>
+    <string name="module_sort_enabled_first">Сортировать (Сначала включённые)</string>
 </resources>
