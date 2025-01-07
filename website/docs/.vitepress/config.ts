@@ -6,6 +6,13 @@ import { resolve } from 'path'
 export default defineConfig( {
     title: 'KernelSU',
     locales: locales.locales,
+    head: [
+        ['script', {
+            async: 'async',
+            src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2610070972052494',
+            crossorigin: 'anonymous',
+        }],
+    ],
     sitemap: {
         hostname: 'https://kernelsu.org'
     },
