@@ -126,7 +126,7 @@
     <string name="settings_restore_stock_image">恢复原厂镜像</string>
     <string name="settings_uninstall_temporary_message">临时卸载 KernelSU，下次重启后恢复</string>
     <string name="settings_uninstall_permanent_message">完全并永久卸载 KernelSU (Root 权限和所有模块)。</string>
-    <string name="settings_restore_stock_image_message">恢复原厂镜像，一般在 OTA 前使用；如需卸载请使用“永久卸载”</string>
+    <string name="settings_restore_stock_image_message">恢复原厂镜像 (若存在备份)，一般在 OTA 前使用；如果你需要卸载 KernelSU，请使用 “永久卸载”。</string>
     <string name="flashing">刷写中</string>
     <string name="flash_success">刷写完成</string>
     <string name="flash_failed">刷写失败</string>
