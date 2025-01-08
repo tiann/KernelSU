@@ -89,7 +89,7 @@
     <string name="app_profile_template_create">Create template</string>
     <string name="app_profile_template_edit">Edit template</string>
     <string name="app_profile_template_id">ID</string>
-    <string name="app_profile_template_id_invalid">Invalid template id</string>
+    <string name="app_profile_template_id_invalid">Invalid template ID</string>
     <string name="app_profile_template_name">Name</string>
     <string name="app_profile_template_description">Description</string>
     <string name="app_profile_template_save">Save</string>
@@ -112,7 +112,7 @@
     <string name="action">Action</string>
     <string name="open">Open</string>
     <string name="enable_web_debugging">Enable WebView debugging</string>
-    <string name="enable_web_debugging_summary">Can be used to debug WebUI, please enable only when needed.</string>
+    <string name="enable_web_debugging_summary">Can be used to debug WebUI. Please enable only when needed.</string>
     <string name="direct_install">Direct install (Recommended)</string>
     <string name="select_file">Select a file</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
