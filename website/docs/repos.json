@@ -712,5 +712,12 @@
         "kernel_name": "android_kernel_realme_RMX3511",
         "kernel_link": "https://github.com/rifsxd/android_kernel_realme_RMX3511",
         "devices": "Realme C35 (RMX3511)"
+     },
+    {
+        "maintainer": "itejo443",
+        "maintainer_link": "https://github.com/itejo443",
+        "kernel_name": "android_kernel_samsung_sm7225",
+        "kernel_link": "https://github.com/itejo443/android_kernel_samsung_sm7225",
+        "devices": "Samsung Galaxy F23 and M23 (m23xq)"
     }
 ]
