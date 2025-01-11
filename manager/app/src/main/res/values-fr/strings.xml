@@ -67,7 +67,7 @@
     <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>
     <string name="profile_umount_modules_summary">L\'activation de cette option permettra à KernelSU de restaurer tous les fichiers modifiés par les modules pour cette application.</string>
     <string name="settings_umount_modules_default">Démonter les modules par défaut</string>
-    <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour l\'option « Démonter les modules » dans les profils d\'application. Lorsqu\'elle est activée, les modifications apportées au système par les modules seront supprimées pour les applications qui n\'ont pas de profil défini.</string>
+    <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour l\'option « Démonter les modules » dans les profils d\'application. Lorsqu\'elle est activée, les modifications apportées au système par les modules seront supprimées pour les applications qui n\'ont pas de profil défini.</string>
     <string name="profile_selinux_domain">Domaine</string>
     <string name="profile_selinux_rules">Règles</string>
     <string name="module_update">Mettre à jour</string>
@@ -123,7 +123,7 @@
     <string name="settings_uninstall_temporary">Désinstaller temporairement</string>
     <string name="settings_uninstall_permanent">Désinstaller définitivement</string>
     <string name="settings_restore_stock_image">Restaurer l\'image d\'origine</string>
-    <string name="settings_restore_stock_image_message">Restaurer l\'image d\'origine d\'usine (s\'il en existe une sauvegarde), option généralement utilisée avant une mise à jour OTA ; si vous avez besoin de désinstaller KernelSU, utilisez plutôt l\'option « Désinstaller définitivement ».</string>
+    <string name="settings_restore_stock_image_message">Restaurer l\'image d\'origine d\'usine (s\'il en existe une sauvegarde), option généralement utilisée avant une mise à jour OTA ; si vous avez besoin de désinstaller KernelSU, utilisez plutôt l\'option « Désinstaller définitivement ».</string>
     <string name="flashing">Flash en cours</string>
     <string name="flash_success">Flash réussi</string>
     <string name="flash_failed">Échec du flash</string>

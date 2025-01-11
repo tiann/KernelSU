@@ -131,4 +131,6 @@
     <string name="settings_check_update">업데이트 확인</string>
     <string name="settings_check_update_summary">앱 실행시 자동으로 업데이트 확인</string>
     <string name="log_saved">로그 저장됨</string>
+    <string name="module_sort_enabled_first">정렬 (활성화됨 우선)</string>
+    <string name="module_sort_action_first">정렬 (동작이 있는 것 우선)</string>
 </resources>
