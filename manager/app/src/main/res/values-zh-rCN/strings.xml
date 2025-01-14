@@ -99,9 +99,9 @@
     <string name="app_profile_import_from_clipboard">从剪切板导入</string>
     <string name="app_profile_export_to_clipboard">导出到剪切板</string>
     <string name="app_profile_template_export_empty">没有可以导出的本地模板！</string>
-    <string name="app_profile_template_import_success">导入成功！</string>
+    <string name="app_profile_template_import_success">导入成功</string>
     <string name="app_profile_template_sync">同步在线规则</string>
-    <string name="app_profile_template_save_failed">模版保存失败！</string>
+    <string name="app_profile_template_save_failed">模版保存失败</string>
     <string name="app_profile_template_import_empty">剪切板为空！</string>
     <string name="module_changelog_failed">获取更新日志失败：%s</string>
     <string name="settings_check_update">检查更新</string>
@@ -124,7 +124,7 @@
     <string name="settings_uninstall_temporary">临时卸载</string>
     <string name="settings_uninstall_permanent">永久卸载</string>
     <string name="settings_restore_stock_image">恢复原厂镜像</string>
-    <string name="settings_uninstall_temporary_message">临时卸载 KernelSU，下次重启后恢复</string>
+    <string name="settings_uninstall_temporary_message">临时卸载 KernelSU，下次重启后恢复至原始状态。</string>
     <string name="settings_uninstall_permanent_message">完全并永久卸载 KernelSU（Root 权限和所有模块）。</string>
     <string name="settings_restore_stock_image_message">恢复原厂镜像（若存在备份），一般在 OTA 前使用；如果你需要卸载 KernelSU，请使用“永久卸载”。</string>
     <string name="flashing">刷写中</string>
