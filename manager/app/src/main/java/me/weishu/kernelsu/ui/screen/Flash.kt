@@ -48,6 +48,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -65,16 +66,54 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * @author weishu
+ * @date 2023/1/1.
+ */
+ 
 enum class FlashingStatus {
     FLASHING,
     SUCCESS,
     FAILED
 }
 
-/**
- * @author weishu
- * @date 2023/1/1.
- */
+// Lets you flash modules sequentially when mutiple zipUris are selected
+fun flashModulesSequentially(
+    uris: List<Uri>,
+    onFinish: (Boolean, Int) -> Unit,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+) {
+    val iterator = uris.iterator()
+
+    // Start processing from the first module inside a coroutine
+    CoroutineScope(Dispatchers.IO).launch {
+        // Define the recursive function within the coroutine
+        suspend fun processNext() {
+            if (iterator.hasNext()) {
+                // Flash the current module
+                flashModule(iterator.next(), onFinish = { showReboot, code ->
+                    // If successful, continue to the next one
+                    if (code == 0) {
+                        // Recursively call to process the next module
+                        launch {
+                            processNext()
+                        }
+                    } else {
+                        onFinish(showReboot, code)  // If failed, finish the process
+                    }
+                }, onStdout, onStderr)
+            } else {
+                // No more modules to process, finish the process
+                onFinish(true, 0)
+            }
+        }
+
+        // Start the process
+        processNext()
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Destination<RootGraph>
@@ -193,6 +232,8 @@ sealed class FlashIt : Parcelable {
 
     data class FlashModule(val uri: Uri) : FlashIt()
 
+    data class FlashModules(val uris: List<Uri>) : FlashIt()
+
     data object FlashRestore : FlashIt()
 
     data object FlashUninstall : FlashIt()
@@ -214,6 +255,10 @@ fun flashIt(
         )
 
         is FlashIt.FlashModule -> flashModule(flashIt.uri, onFinish, onStdout, onStderr)
+
+        is FlashIt.FlashModules -> {
+            flashModulesSequentially(flashIt.uris, onFinish, onStdout, onStderr)
+        }
 
         FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
 

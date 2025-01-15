@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -56,6 +57,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
@@ -103,6 +105,7 @@ import me.weishu.kernelsu.ui.util.hasMagisk
 import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.toggleModule
 import me.weishu.kernelsu.ui.util.uninstallModule
+import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import okhttp3.OkHttpClient
@@ -131,6 +134,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     val hideInstallButton = isSafeMode || hasMagisk
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
+    var zipUri by remember { mutableStateOf<Uri?>(null) }
+    var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+
+    var showConfirmDialog by remember { mutableStateOf(false) }
 
     val webUILauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -207,20 +215,27 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         return@rememberLauncherForActivityResult
                     }
                     val data = it.data ?: return@rememberLauncherForActivityResult
-                    val uri = data.data ?: return@rememberLauncherForActivityResult
+                    val clipData = data.clipData
 
-                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(uri)))
+                    val uris = mutableListOf<Uri>()
+                    if (clipData != null) {
+                        for (i in 0 until clipData.itemCount) {
+                            clipData.getItemAt(i)?.uri?.let { uris.add(it) }
+                        }
+                    } else {
+                        data.data?.let { uris.add(it) }
+                    }
 
-                    viewModel.markNeedRefresh()
-
-                    Log.i("ModuleScreen", "select zip result: ${it.data}")
+                    zipUris = uris
+                    showConfirmDialog = uris.isNotEmpty()
                 }
 
                 ExtendedFloatingActionButton(
                     onClick = {
-                        // select the zip file to install
+                        // Select the zip files to install
                         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                             type = "application/zip"
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                         }
                         selectZipLauncher.launch(intent)
                     },
@@ -232,6 +247,36 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         snackbarHost = { SnackbarHost(hostState = snackBarHost) }
     ) { innerPadding ->
+
+        // confirmation dialog
+        if (showConfirmDialog && zipUris.isNotEmpty()) {
+            val moduleNames = zipUris.joinToString("\n") { it.getFileName(context).toString() }
+
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showConfirmDialog = false
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris)))
+                        viewModel.markNeedRefresh()
+                    }) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDialog = false }) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                },
+                title = { Text(stringResource(R.string.module)) },
+                text = {
+                    Text(
+                        stringResource(R.string.module_install_prompt_with_name, moduleNames)
+                    )
+                }
+            )
+        }
+
         when {
             hasMagisk -> {
                 Box(
