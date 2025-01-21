@@ -564,6 +564,7 @@ fun ModuleItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 val moduleVersion = stringResource(id = R.string.module_version)
+                val moduleId = stringResource(id = R.string.module_id)
                 val moduleAuthor = stringResource(id = R.string.module_author)
 
                 Column(
@@ -580,6 +581,14 @@ fun ModuleItem(
 
                     Text(
                         text = "$moduleVersion: ${module.version}",
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                        fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                        textDecoration = textDecoration
+                    )
+
+                    Text(
+                        text = "$moduleId: ${module.id}",
                         fontSize = MaterialTheme.typography.bodySmall.fontSize,
                         lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
                         fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
