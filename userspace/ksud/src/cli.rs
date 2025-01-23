@@ -305,7 +305,6 @@ pub fn run() -> Result<()> {
             #[cfg(any(target_os = "linux", target_os = "android"))]
             {
                 utils::switch_mnt_ns(1)?;
-                utils::unshare_mnt_ns()?;
             }
             match command {
                 Module::Install { zip } => module::install_module(&zip),
