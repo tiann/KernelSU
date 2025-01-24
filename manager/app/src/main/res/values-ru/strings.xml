@@ -91,7 +91,7 @@
     <string name="app_profile_import_from_clipboard">Импортировать из буфера обмена</string>
     <string name="module_changelog_failed">Не удалось получить список изменений: %s</string>
     <string name="app_profile_template_name">Название</string>
-    <string name="app_profile_template_id_invalid">Неверный id шаблона</string>
+    <string name="app_profile_template_id_invalid">Неверный ID шаблона</string>
     <string name="app_profile_template_sync">Синхронизировать онлайн-шаблоны</string>
     <string name="app_profile_template_create">Создать шаблон</string>
     <string name="app_profile_template_readonly">Только чтение</string>
@@ -137,6 +137,6 @@
     <string name="save_log">Сохранить логи</string>
     <string name="action">Действие</string>
     <string name="log_saved">Логи сохранены</string>
-    <string name="module_sort_action_first">Сортировка (Сначала с действием)</string>
+    <string name="module_sort_action_first">Сортировать (Сначала с действием)</string>
     <string name="module_sort_enabled_first">Сортировать (Сначала включённые)</string>
 </resources>
