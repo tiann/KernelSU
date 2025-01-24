@@ -548,6 +548,7 @@ fun ModuleItem(
                     if (module.hasWebUi) {
                         toggleable(
                             value = module.enabled,
+                            enabled = !module.remove && module.enabled,
                             interactionSource = interactionSource,
                             role = Role.Button,
                             indication = indication,
@@ -637,6 +638,7 @@ fun ModuleItem(
                 if (module.hasActionScript) {
                     FilledTonalButton(
                         modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = !module.remove && module.enabled,
                         onClick = {
                             navigator.navigate(ExecuteModuleActionScreenDestination(module.id))
                             viewModel.markNeedRefresh()
@@ -664,6 +666,7 @@ fun ModuleItem(
                 if (module.hasWebUi) {
                     FilledTonalButton(
                         modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = !module.remove && module.enabled,
                         onClick = { onClick(module) },
                         interactionSource = interactionSource,
                         contentPadding = ButtonDefaults.TextButtonContentPadding
@@ -689,6 +692,7 @@ fun ModuleItem(
                 if (updateUrl.isNotEmpty()) {
                     Button(
                         modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = !module.remove,
                         onClick = { onUpdate(module) },
                         shape = ButtonDefaults.textShape,
                         contentPadding = ButtonDefaults.TextButtonContentPadding
