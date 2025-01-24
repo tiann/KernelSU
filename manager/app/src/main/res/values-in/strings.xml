@@ -88,7 +88,7 @@
     <string name="app_profile_import_from_clipboard">Impor dari papan klip</string>
     <string name="module_changelog_failed">Gagal mengambil Changelog: %s</string>
     <string name="app_profile_template_name">Nama</string>
-    <string name="app_profile_template_id_invalid">Id templat tidak valid</string>
+    <string name="app_profile_template_id_invalid">ID template tidak valid</string>
     <string name="app_profile_template_sync">Sinkronkan templat daring</string>
     <string name="app_profile_template_create">Buat templat</string>
     <string name="app_profile_import_export">Impor/Ekspor</string>
@@ -104,7 +104,7 @@
     <string name="app_profile_template_view">Lihat templat</string>
     <string name="app_profile_template_readonly">readonly</string>
     <string name="enable_web_debugging">Pengawakutuan WebView</string>
-    <string name="enable_web_debugging_summary">Dapat mengawakutu WebView, hanya aktifkan jika butuh.</string>
+    <string name="enable_web_debugging_summary">Dapat digunakan untuk men-debug WebUI. Harap aktifkan hanya bila diperlukan.</string>
     <string name="select_file_tip">%1$s image partisi terekomendasi</string>
     <string name="select_kmi">Pilih KMI</string>
     <string name="install_next">Selanjutnya</string>

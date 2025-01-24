@@ -85,7 +85,7 @@
     <string name="app_profile_template_create">Maken sjabloon</string>
     <string name="app_profile_template_edit">Bewerkin sjabloon</string>
     <string name="app_profile_template_id">ID</string>
-    <string name="app_profile_template_id_invalid">Ongeldige sjabloon id</string>
+    <string name="app_profile_template_id_invalid">Ongeldige sjabloon ID</string>
     <string name="app_profile_template_name">Naam</string>
     <string name="app_profile_template_save">Redde</string>
     <string name="app_profile_template_view">Bekijken sjabloon</string>

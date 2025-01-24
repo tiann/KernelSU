@@ -719,5 +719,19 @@
         "kernel_name": "kernel_oneplus_sdm845",
         "kernel_link": "https://github.com/qlAD/kernel_oneplus_sdm845",
         "devices": "OnePlus 6 (enchilada) with PixelExperience "
+    },
+    {
+      "maintainer": "rsuntkOrgs",
+        "maintainer_link": "https://github.com/rsuntkOrgs",
+        "kernel_name": "android_kernel_samsung_a05",
+        "kernel_link": "https://github.com/rsuntkOrgs/android_kernel_samsung_a05",
+        "devices": "Samsung Galaxy A05 (a05m) | SM-A055F/M | MT6768"
+     },
+    {
+        "maintainer": "itejo443",
+        "maintainer_link": "https://github.com/itejo443",
+        "kernel_name": "android_kernel_samsung_sm7225",
+        "kernel_link": "https://github.com/itejo443/android_kernel_samsung_sm7225",
+        "devices": "Samsung Galaxy F23 and M23 (m23xq)"
     }
 ]

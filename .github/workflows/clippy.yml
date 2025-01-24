@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: rustup update --force-non-host stable-x86_64-unknown-linux-gnu
+      - run: rustup update stable
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: userspace/ksud
