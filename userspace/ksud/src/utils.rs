@@ -141,12 +141,6 @@ pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn unshare_mnt_ns() -> Result<()> {
-    unshare(UnshareFlags::NEWNS)?;
-    Ok(())
-}
-
 fn switch_cgroup(grp: &str, pid: u32) {
     let path = Path::new(grp).join("cgroup.procs");
     if !path.exists() {
