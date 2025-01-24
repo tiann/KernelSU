@@ -714,7 +714,14 @@
         "devices": "Realme C35 (RMX3511)"
     },
     {
-        "maintainer": "rsuntkOrgs",
+        "maintainer": "qlAD",
+        "maintainer_link": "https://github.com/qlAD",
+        "kernel_name": "kernel_oneplus_sdm845",
+        "kernel_link": "https://github.com/qlAD/kernel_oneplus_sdm845",
+        "devices": "OnePlus 6 (enchilada) with PixelExperience "
+    },
+    {
+      "maintainer": "rsuntkOrgs",
         "maintainer_link": "https://github.com/rsuntkOrgs",
         "kernel_name": "android_kernel_samsung_a05",
         "kernel_link": "https://github.com/rsuntkOrgs/android_kernel_samsung_a05",
