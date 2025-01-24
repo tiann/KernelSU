@@ -712,6 +712,13 @@
         "kernel_name": "android_kernel_realme_RMX3511",
         "kernel_link": "https://github.com/rifsxd/android_kernel_realme_RMX3511",
         "devices": "Realme C35 (RMX3511)"
+    },
+    {
+        "maintainer": "rsuntkOrgs",
+        "maintainer_link": "https://github.com/rsuntkOrgs",
+        "kernel_name": "android_kernel_samsung_a05",
+        "kernel_link": "https://github.com/rsuntkOrgs/android_kernel_samsung_a05",
+        "devices": "Samsung Galaxy A05 (a05m) | SM-A055F/M | MT6768"
      },
     {
         "maintainer": "itejo443",
