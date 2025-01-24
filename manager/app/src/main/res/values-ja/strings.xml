@@ -88,7 +88,7 @@
     <string name="app_profile_import_from_clipboard">クリップボードからインポート</string>
     <string name="module_changelog_failed">変更ログの取得に失敗しました: %s</string>
     <string name="app_profile_template_name">名前</string>
-    <string name="app_profile_template_id_invalid">無効なテンプレート id</string>
+    <string name="app_profile_template_id_invalid">無効なテンプレート ID</string>
     <string name="app_profile_template_sync">オンラインテンプレートの同期</string>
     <string name="app_profile_template_create">テンプレートの作成</string>
     <string name="app_profile_template_readonly">読み取り専用</string>
