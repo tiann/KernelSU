@@ -162,14 +162,10 @@ void escape_to_root(void)
 		profile->capabilities.effective | CAP_DAC_READ_SEARCH;
 	memcpy(&cred->cap_effective, &cap_for_ksud,
 	       sizeof(cred->cap_effective));
-	memcpy(&cred->cap_inheritable, &profile->capabilities.effective,
-	       sizeof(cred->cap_inheritable));
 	memcpy(&cred->cap_permitted, &profile->capabilities.effective,
 	       sizeof(cred->cap_permitted));
 	memcpy(&cred->cap_bset, &profile->capabilities.effective,
 	       sizeof(cred->cap_bset));
-	memcpy(&cred->cap_ambient, &profile->capabilities.effective,
-	       sizeof(cred->cap_ambient));
 
 	setup_groups(profile, cred);
 
