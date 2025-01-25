@@ -24,7 +24,7 @@ use std::path::PathBuf;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process,
-    thread::{move_into_link_name_space, unshare, LinkNameSpaceType, UnshareFlags},
+    thread::{move_into_link_name_space, LinkNameSpaceType},
 };
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
