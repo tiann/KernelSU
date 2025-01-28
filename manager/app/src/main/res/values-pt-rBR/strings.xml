@@ -18,8 +18,8 @@
     <string name="selinux_status_permissive">Permissivo</string>
     <string name="selinux_status_unknown">Desconhecido</string>
     <string name="superuser">SuperUsuário</string>
-    <string name="module_failed_to_enable">Falha ao ativar o módulo %s</string>
-    <string name="module_failed_to_disable">Falha ao desativar o módulo %s</string>
+    <string name="module_failed_to_enable">Não foi possível ativar o módulo %s</string>
+    <string name="module_failed_to_disable">Não foi possível desativar o módulo %s</string>
     <string name="module_empty">Nenhum módulo instalado</string>
     <string name="module">Módulo</string>
     <string name="uninstall">Desinstalar</string>
@@ -35,7 +35,7 @@
     <string name="about">Sobre</string>
     <string name="module_uninstall_confirm">Tem certeza que deseja desinstalar o módulo %s?</string>
     <string name="module_uninstall_success">%s desinstalado</string>
-    <string name="module_uninstall_failed">Falha ao desinstalar %s</string>
+    <string name="module_uninstall_failed">Não foi possível desinstalar %s</string>
     <string name="module_version">Versão</string>
     <string name="module_author">Autor</string>
     <string name="module_overlay_fs_not_available">Os módulos estão indisponíveis porque OverlayFS está desabilitado pelo kernel!</string>
@@ -78,7 +78,7 @@
     <string name="launch_app">Iniciar</string>
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
-    <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
+    <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para %s</string>
     <string name="require_kernel_version">A versão atual do KernelSU %d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %d ou superior!</string>
     <string name="module_changelog">Registro de alterações</string>
     <string name="app_profile_template_import_success">Importado com sucesso</string>
