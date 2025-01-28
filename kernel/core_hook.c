@@ -151,6 +151,7 @@ void escape_to_root(void)
 	cred->fsgid.val = profile->gid;
 	cred->sgid.val = profile->gid;
 	cred->egid.val = profile->gid;
+	cred->securebits = 0;
 
 	BUILD_BUG_ON(sizeof(profile->capabilities.effective) !=
 		     sizeof(kernel_cap_t));
