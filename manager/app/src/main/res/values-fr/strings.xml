@@ -17,15 +17,15 @@
     <string name="home">Accueil</string>
     <string name="home_click_to_install">Appuyez ici pour installer</string>
     <string name="home_unsupported">Non pris en charge</string>
-    <string name="module_uninstall_failed">Échec de la désinstallation : %s</string>
+    <string name="module_uninstall_failed">Échec de la désinstallation : %s</string>
     <string name="module_version">Version</string>
     <string name="home_manager_version">Version du gestionnaire</string>
     <string name="selinux_status_enforcing">Enforcing</string>
-    <string name="module_failed_to_enable">Échec de l\'activation du module : %s</string>
+    <string name="module_failed_to_enable">Échec de l\'activation du module : %s</string>
     <string name="module">Modules</string>
     <string name="uninstall">Désinstaller</string>
     <string name="module_install">Installer</string>
-    <string name="module_failed_to_disable">Échec de la désactivation du module : %s</string>
+    <string name="module_failed_to_disable">Échec de la désactivation du module : %s</string>
     <string name="reboot">Redémarrer</string>
     <string name="install">Installer</string>
     <string name="settings">Paramètres</string>
@@ -77,7 +77,7 @@
     <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
-    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
+    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
     <string name="require_kernel_version">La version actuelle de KernelSU (%d) est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
     <string name="app_profile_template_import_success">Importation réussie</string>
     <string name="app_profile_export_to_clipboard">Exporter vers le presse-papiers</string>
