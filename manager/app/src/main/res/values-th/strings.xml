@@ -20,8 +20,8 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">ไม่ทราบ</string>
     <string name="superuser">สิทธิ์ผู้ใช้ขั้นสูง</string>
-    <string name="module_failed_to_enable">ล้มเหลวในการเปิดใช้งานโมดูล: %s</string>
-    <string name="module_failed_to_disable">ล้มเหลวในการปิดใช้งานโมดูล: %s</string>
+    <string name="module_failed_to_enable">ไม่สามารถเปิดใช้งานโมดูล %s</string>
+    <string name="module_failed_to_disable">ไม่สามารถปิดใช้งานโมดูล: %s</string>
     <string name="module_empty">ไม่มีโมดูลที่ติดตั้ง</string>
     <string name="module">โมดูล</string>
     <string name="uninstall">ถอนการติดตั้ง</string>
@@ -34,8 +34,8 @@
     <string name="reboot_download">รีบูตเข้าสู่โหมด Download</string>
     <string name="reboot_edl">รีบูตเข้าสู่โหมด EDL</string>
     <string name="module_uninstall_success">%s ถอนการติดตั้งสำเร็จ</string>
-    <string name="module_uninstall_failed">ล้มเหลวในการถอนการติดตั้ง: %s</string>
-    <string name="module_overlay_fs_not_available">โมดูลไม่สามารถใช้งานได้เนื่องจาก OverlayFS ถูกปิดใช้งานโดยเคอร์เนล</string>
+    <string name="module_uninstall_failed">ไม่สามารถถอนการติดตั้ง %s</string>
+    <string name="module_overlay_fs_not_available">โมดูลไม่สามารถใช้งานได้เนื่องจาก OverlayFS ถูกปิดใช้งานโดยเคอร์เนล!</string>
     <string name="module_uninstall_confirm">คุณแน่ใจว่าจะถอนการติดตั้งโมดูล %s หรือไม่\?</string>
     <string name="module_author">ผู้สร้าง</string>
     <string name="module_version">เวอร์ชัน</string>
@@ -77,7 +77,7 @@
     <string name="restart_app">รีสตาร์ท</string>
     <string name="settings_umount_modules_default_summary">หากเปิดใช้งานค่าเริ่มต้นโดยทั่วไปสำหรับ \"Umount โมดูล\" ในโปรไฟล์แอป จะเป็นการลบการแก้ไขโมดูลทั้งหมดในระบบสำหรับแอปพลิเคชันที่ไม่มีการตั้งค่าโปรไฟล์</string>
     <string name="launch_app">เปิด</string>
-    <string name="failed_to_update_sepolicy">ไม่สามารถอัปเดตกฎ SElinux สำหรับ: %s ได้</string>
+    <string name="failed_to_update_sepolicy">ไม่สามารถอัปเดตกฎ SElinux สำหรับ %s</string>
     <string name="require_kernel_version">KernelSU เวอร์ชัน %d ต่ำเกินไป ทำให้ตัวจัดการไม่สามารถทำงานได้อย่างถูกต้อง โปรดอัปเกรดเป็นเวอร์ชัน %d หรือสูงกว่า!</string>
     <string name="module_changelog">บันทึกการเปลี่ยนแปลง</string>
     <string name="app_profile_template_import_success">นำเข้าเสร็จสิ้น</string>
