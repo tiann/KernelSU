@@ -2,14 +2,14 @@
 
 First, you should read the Android Official docs for kernel build:
 
-1. [Building Kernels](https://source.android.com/docs/setup/build/building-kernels)
-2. [GKI Release Builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
+1. [Build kernels](https://source.android.com/docs/setup/build/building-kernels)
+2. [GKI release builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)
 
 ::: warning
 This page is for GKI devices, if you use an old kernel, please refer [How to integrate KernelSU for non-GKI kernels](how-to-integrate-for-non-gki).
 :::
 
-## Build Kernel
+## Build kernel
 
 ### Sync the kernel source code
 
@@ -20,13 +20,13 @@ repo init -m manifest.xml
 repo sync
 ```
 
-The `<kernel_manifest.xml>` is a manifest file which can determine a build uniquely, you can use the manifest to do a re-preducable build. You should download the manifest file from [Google GKI release builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds).
+The `<kernel_manifest.xml>` is a manifest file which can determine a build uniquely, you can use the manifest to do a re-preducable build. You should download the manifest file from [GKI release builds](https://source.android.com/docs/core/architecture/kernel/gki-release-builds).
 
 ### Build
 
 Please check the [official docs](https://source.android.com/docs/setup/build/building-kernels) first.
 
-For example, to build an aarch64 kernel image:
+For example, to build an `aarch64` kernel image:
 
 ```sh
 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
@@ -50,7 +50,7 @@ rm common/android/abi_gki_protected_exports_*
 
 ## Build Kernel with KernelSU
 
-If you're able to build the kernel successfully, then adding KernelSU support to it is relatively easy. In the root of kernel source directory, run any of the command options listed below:
+If you are able to build the kernel successfully, then adding KernelSU support to it is relatively easy. In the root of kernel source directory, run any of the command options listed below:
 
 ::: code-group
 

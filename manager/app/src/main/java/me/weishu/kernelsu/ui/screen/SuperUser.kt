@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -40,10 +41,18 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val listState = rememberLazyListState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(key1 = navigator) {
+        viewModel.search = ""
         if (viewModel.appList.isEmpty()) {
             viewModel.fetchAppList()
+        }
+    }
+
+    LaunchedEffect(viewModel.search) {
+        if (viewModel.search.isEmpty()) {
+            listState.scrollToItem(0)
         }
     }
 
@@ -104,6 +113,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
             isRefreshing = viewModel.isRefreshing
         ) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)

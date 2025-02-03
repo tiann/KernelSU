@@ -25,19 +25,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -46,10 +56,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -59,7 +66,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,14 +83,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmResult
+import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.DownloadListener
@@ -105,9 +114,13 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     val viewModel = viewModel<ModuleViewModel>()
     val context = LocalContext.current
     val snackBarHost = LocalSnackbarHost.current
+    val scope = rememberCoroutineScope()
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     LaunchedEffect(Unit) {
         if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
+            viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
+            viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
             viewModel.fetchModuleList()
         }
     }
@@ -119,14 +132,73 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
+    val webUILauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { viewModel.fetchModuleList() }
+
     Scaffold(
         topBar = {
-            TopBar(scrollBehavior = scrollBehavior)
+            SearchAppBar(
+                title = { Text(stringResource(R.string.module)) },
+                searchText = viewModel.search,
+                onSearchTextChange = { viewModel.search = it },
+                onClearClick = { viewModel.search = "" },
+                dropdownContent = {
+                    var showDropdown by remember { mutableStateOf(false) }
+
+                    IconButton(
+                        onClick = { showDropdown = true },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(id = R.string.settings)
+                        )
+
+                        DropdownMenu(expanded = showDropdown, onDismissRequest = {
+                            showDropdown = false
+                        }) {
+                            DropdownMenuItem(text = {
+                                Text(stringResource(R.string.module_sort_action_first))
+                            }, trailingIcon = {
+                                Checkbox(viewModel.sortActionFirst, null)
+                            }, onClick = {
+                                viewModel.sortActionFirst =
+                                    !viewModel.sortActionFirst
+                                prefs.edit()
+                                    .putBoolean(
+                                        "module_sort_action_first",
+                                        viewModel.sortActionFirst
+                                    )
+                                    .apply()
+                                scope.launch {
+                                    viewModel.fetchModuleList()
+                                }
+                            })
+                            DropdownMenuItem(text = {
+                                Text(stringResource(R.string.module_sort_enabled_first))
+                            }, trailingIcon = {
+                                Checkbox(viewModel.sortEnabledFirst, null)
+                            }, onClick = {
+                                viewModel.sortEnabledFirst =
+                                    !viewModel.sortEnabledFirst
+                                prefs.edit()
+                                    .putBoolean(
+                                        "module_sort_enabled_first",
+                                        viewModel.sortEnabledFirst
+                                    )
+                                    .apply()
+                                scope.launch {
+                                    viewModel.fetchModuleList()
+                                }
+                            })
+                        }
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+            )
         },
         floatingActionButton = {
-            if (hideInstallButton) {
-                /* Empty */
-            } else {
+            if (!hideInstallButton) {
                 val moduleInstall = stringResource(id = R.string.module_install)
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
@@ -147,14 +219,14 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         // select the zip file to install
-                        val intent = Intent(Intent.ACTION_GET_CONTENT)
-                        intent.type = "application/zip"
+                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "application/zip"
+                        }
                         selectZipLauncher.launch(intent)
                     },
                     icon = { Icon(Icons.Filled.Add, moduleInstall) },
                     text = { Text(text = moduleInstall) },
                 )
-
             }
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
@@ -174,8 +246,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     )
                 }
             }
+
             else -> {
                 ModuleList(
+                    navigator,
                     viewModel = viewModel,
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     boxModifier = Modifier.padding(innerPadding),
@@ -184,7 +258,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     },
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
-                            context.startActivity(
+                            webUILauncher.launch(
                                 Intent(context, WebUIActivity::class.java)
                                     .setData(Uri.parse("kernelsu://webui/$id"))
                                     .putExtra("id", id)
@@ -200,9 +274,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ModuleList(
+    navigator: DestinationsNavigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     boxModifier: Modifier = Modifier,
@@ -384,7 +459,6 @@ private fun ModuleList(
 
                 else -> {
                     items(viewModel.moduleList) { module ->
-                        var isChecked by rememberSaveable(module) { mutableStateOf(module.enabled) }
                         val scope = rememberCoroutineScope()
                         val updatedModule by produceState(initialValue = Triple("", "", "")) {
                             scope.launch(Dispatchers.IO) {
@@ -392,44 +466,51 @@ private fun ModuleList(
                             }
                         }
 
-                        ModuleItem(module, isChecked, updatedModule.first, onUninstall = {
-                            scope.launch { onModuleUninstall(module) }
-                        }, onCheckChanged = {
-                            scope.launch {
-                                val success = loadingDialog.withLoading {
-                                    withContext(Dispatchers.IO) {
-                                        toggleModule(module.id, !isChecked)
+                        ModuleItem(
+                            navigator = navigator,
+                            module = module,
+                            updateUrl = updatedModule.first,
+                            onUninstall = {
+                                scope.launch { onModuleUninstall(module) }
+                            },
+                            onCheckChanged = {
+                                scope.launch {
+                                    val success = loadingDialog.withLoading {
+                                        withContext(Dispatchers.IO) {
+                                            toggleModule(module.id, !module.enabled)
+                                        }
                                     }
-                                }
-                                if (success) {
-                                    isChecked = it
-                                    viewModel.fetchModuleList()
+                                    if (success) {
+                                        viewModel.fetchModuleList()
 
-                                    val result = snackBarHost.showSnackbar(
-                                        message = rebootToApply,
-                                        actionLabel = reboot,
-                                        duration = SnackbarDuration.Long
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        reboot()
+                                        val result = snackBarHost.showSnackbar(
+                                            message = rebootToApply,
+                                            actionLabel = reboot,
+                                            duration = SnackbarDuration.Long
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            reboot()
+                                        }
+                                    } else {
+                                        val message = if (module.enabled) failedDisable else failedEnable
+                                        snackBarHost.showSnackbar(message.format(module.name))
                                     }
-                                } else {
-                                    val message = if (isChecked) failedDisable else failedEnable
-                                    snackBarHost.showSnackbar(message.format(module.name))
                                 }
+                            },
+                            onUpdate = {
+                                scope.launch {
+                                    onModuleUpdate(
+                                        module,
+                                        updatedModule.third,
+                                        updatedModule.first,
+                                        "${module.name}-${updatedModule.second}.zip"
+                                    )
+                                }
+                            },
+                            onClick = {
+                                onClickModule(it.id, it.name, it.hasWebUi)
                             }
-                        }, onUpdate = {
-                            scope.launch {
-                                onModuleUpdate(
-                                    module,
-                                    updatedModule.third,
-                                    updatedModule.first,
-                                    "${module.name}-${updatedModule.second}.zip"
-                                )
-                            }
-                        }, onClick = {
-                            onClickModule(it.id, it.name, it.hasWebUi)
-                        })
+                        )
 
                         // fix last item shadow incomplete in LazyColumn
                         Spacer(Modifier.height(1.dp))
@@ -443,22 +524,10 @@ private fun ModuleList(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(
-    scrollBehavior: TopAppBarScrollBehavior? = null
-) {
-    TopAppBar(
-        scrollBehavior = scrollBehavior,
-        title = { Text(stringResource(R.string.module)) },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-    )
-}
-
-@Composable
-private fun ModuleItem(
+fun ModuleItem(
+    navigator: DestinationsNavigator,
     module: ModuleViewModel.ModuleInfo,
-    isChecked: Boolean,
     updateUrl: String,
     onUninstall: (ModuleViewModel.ModuleInfo) -> Unit,
     onCheckChanged: (Boolean) -> Unit,
@@ -471,30 +540,25 @@ private fun ModuleItem(
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
+        val viewModel = viewModel<ModuleViewModel>()
 
         Column(
             modifier = Modifier
                 .run {
                     if (module.hasWebUi) {
                         toggleable(
-                            value = isChecked,
+                            value = module.enabled,
+                            enabled = !module.remove && module.enabled,
                             interactionSource = interactionSource,
                             role = Role.Button,
                             indication = indication,
                             onValueChange = { onClick(module) }
                         )
                     } else {
-                        toggleable(
-                            value = isChecked,
-                            interactionSource = interactionSource,
-                            role = Role.Switch,
-                            indication = indication,
-                            onValueChange = onCheckChanged,
-                            enabled = !module.update
-                        )
+                        this
                     }
                 }
-                .padding(24.dp, 16.dp, 24.dp, 0.dp)
+                .padding(22.dp, 18.dp, 22.dp, 12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -503,7 +567,9 @@ private fun ModuleItem(
                 val moduleVersion = stringResource(id = R.string.module_version)
                 val moduleAuthor = stringResource(id = R.string.module_author)
 
-                Column(modifier = Modifier.fillMaxWidth(0.8f)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
                     Text(
                         text = module.name,
                         fontSize = MaterialTheme.typography.titleMedium.fontSize,
@@ -538,7 +604,7 @@ private fun ModuleItem(
                 ) {
                     Switch(
                         enabled = !module.update,
-                        checked = isChecked,
+                        checked = module.enabled,
                         onCheckedChange = onCheckChanged,
                         interactionSource = if (!module.hasWebUi) interactionSource else null
                     )
@@ -558,54 +624,114 @@ private fun ModuleItem(
                 textDecoration = textDecoration
             )
 
-
             Spacer(modifier = Modifier.height(16.dp))
 
             HorizontalDivider(thickness = Dp.Hairline)
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                if (module.hasActionScript) {
+                    FilledTonalButton(
+                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = !module.remove && module.enabled,
+                        onClick = {
+                            navigator.navigate(ExecuteModuleActionScreenDestination(module.id))
+                            viewModel.markNeedRefresh()
+                        },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Outlined.PlayArrow,
+                            contentDescription = null
+                        )
+                        if (!module.hasWebUi && updateUrl.isEmpty()) {
+                            Text(
+                                modifier = Modifier.padding(start = 7.dp),
+                                text = stringResource(R.string.action),
+                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(0.1f, true))
+                }
+
+                if (module.hasWebUi) {
+                    FilledTonalButton(
+                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = !module.remove && module.enabled,
+                        onClick = { onClick(module) },
+                        interactionSource = interactionSource,
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
+                            contentDescription = null
+                        )
+                        if (!module.hasActionScript && updateUrl.isEmpty()) {
+                            Text(
+                                modifier = Modifier.padding(start = 7.dp),
+                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                text = stringResource(R.string.open)
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.weight(1f, true))
 
                 if (updateUrl.isNotEmpty()) {
                     Button(
-                        modifier = Modifier
-                            .padding(0.dp)
-                            .defaultMinSize(52.dp, 32.dp),
+                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = !module.remove,
                         onClick = { onUpdate(module) },
-                        shape = RoundedCornerShape(6.dp),
-                        contentPadding = PaddingValues(0.dp)
+                        shape = ButtonDefaults.textShape,
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
                     ) {
-                        Text(
-                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            text = stringResource(R.string.module_update),
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Outlined.Download,
+                            contentDescription = null
                         )
+                        if (!module.hasActionScript || !module.hasWebUi) {
+                            Text(
+                                modifier = Modifier.padding(start = 7.dp),
+                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                text = stringResource(R.string.module_update)
+                            )
+                        }
                     }
+
+                    Spacer(modifier = Modifier.weight(0.1f, true))
                 }
 
-                TextButton(
+                FilledTonalButton(
+                    modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                     enabled = !module.remove,
                     onClick = { onUninstall(module) },
+                    contentPadding = ButtonDefaults.TextButtonContentPadding
                 ) {
-                    Text(
-                        fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        text = stringResource(R.string.uninstall),
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null
                     )
-                }
-
-                if (module.hasWebUi) {
-                    TextButton(
-                        onClick = { onClick(module) },
-                        interactionSource = interactionSource
-                    ) {
+                    if (!module.hasActionScript && !module.hasWebUi && updateUrl.isEmpty()) {
                         Text(
+                            modifier = Modifier.padding(start = 7.dp),
                             fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
                             fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            text = stringResource(R.string.open),
+                            text = stringResource(R.string.uninstall)
                         )
                     }
                 }
@@ -626,9 +752,10 @@ fun ModuleItemPreview() {
         description = "I am a test module and i do nothing but show a very long description",
         enabled = true,
         update = true,
-        remove = true,
+        remove = false,
         updateJson = "",
         hasWebUi = false,
+        hasActionScript = false
     )
-    ModuleItem(module, true, "", {}, {}, {}, {})
+    ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {})
 }

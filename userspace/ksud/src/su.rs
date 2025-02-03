@@ -26,7 +26,6 @@ pub fn grant_root(global_mnt: bool) -> Result<()> {
         command.pre_exec(move || {
             if global_mnt {
                 let _ = utils::switch_mnt_ns(1);
-                let _ = utils::unshare_mnt_ns();
             }
             Result::Ok(())
         })
@@ -263,7 +262,6 @@ pub fn root_shell() -> Result<()> {
             #[cfg(any(target_os = "linux", target_os = "android"))]
             if mount_master {
                 let _ = utils::switch_mnt_ns(1);
-                let _ = utils::unshare_mnt_ns();
             }
 
             set_identity(uid, gid, &groups);

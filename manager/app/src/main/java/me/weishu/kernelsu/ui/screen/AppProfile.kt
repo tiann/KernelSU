@@ -326,7 +326,8 @@ private fun AppMenuBox(packageName: String, content: @Composable () -> Unit) {
                     touchPoint = it
                     expanded = true
                 }
-            }) {
+            }
+    ) {
 
         content()
 

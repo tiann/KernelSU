@@ -560,13 +560,6 @@
         "devices": "Google Pixel 3a & 3a XL (sargo & bonito)"
     },
     {
-        "maintainer": "rsuntk",
-        "maintainer_link": "https://github.com/rsuntk",
-        "kernel_name": "android_kernel_samsung_a12s",
-        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a12s",
-        "devices": "Samsung Galaxy A12s (Nacho) | Exynos 850"
-    },
-    {
         "maintainer": "Lonelystar9x",
         "maintainer_link": "https://github.com/lonelystar9x",
         "kernel_name": "Kernel_xiaomi_sdm845",
@@ -628,13 +621,6 @@
         "kernel_name": "android_kernel_samsung_gta4xl",
         "kernel_link": "https://github.com/Fede2782/android_kernel_samsung_gta4xl",
         "devices": "Galaxy Tab S6 Lite LTE (gta4xl)"
-    },
-    {
-        "maintainer": "rsuntk",
-        "maintainer_link": "https://github.com/rsuntk",
-        "kernel_name": "android_kernel_samsung_a03",
-        "kernel_link": "https://github.com/rsuntk/android_kernel_samsung_a03",
-        "devices": "Samsung Galaxy A03 | Unisoc T606 | Scorpio Kernel"
     },
     {
         "maintainer": "ArchVisions",
@@ -723,8 +709,29 @@
     {
         "maintainer": "rifsxd",
         "maintainer_link": "https://github.com/rifsxd",
-        "kernel_name": "android_t_kernel_realme_RMX3511",
-        "kernel_link": "https://github.com/rifsxd/android_t_kernel_realme_RMX3511",
+        "kernel_name": "android_kernel_realme_RMX3511",
+        "kernel_link": "https://github.com/rifsxd/android_kernel_realme_RMX3511",
         "devices": "Realme C35 (RMX3511)"
+    },
+    {
+        "maintainer": "qlAD",
+        "maintainer_link": "https://github.com/qlAD",
+        "kernel_name": "kernel_oneplus_sdm845",
+        "kernel_link": "https://github.com/qlAD/kernel_oneplus_sdm845",
+        "devices": "OnePlus 6 (enchilada) with PixelExperience "
+    },
+    {
+      "maintainer": "rsuntkOrgs",
+        "maintainer_link": "https://github.com/rsuntkOrgs",
+        "kernel_name": "android_kernel_samsung_a05",
+        "kernel_link": "https://github.com/rsuntkOrgs/android_kernel_samsung_a05",
+        "devices": "Samsung Galaxy A05 (a05m) | SM-A055F/M | MT6768"
+     },
+    {
+        "maintainer": "itejo443",
+        "maintainer_link": "https://github.com/itejo443",
+        "kernel_name": "android_kernel_samsung_sm7225",
+        "kernel_link": "https://github.com/itejo443/android_kernel_samsung_sm7225",
+        "devices": "Samsung Galaxy F23 and M23 (m23xq)"
     }
 ]

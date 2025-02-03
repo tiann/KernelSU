@@ -45,6 +45,7 @@ import me.weishu.kernelsu.ui.screen.BottomBarDestination
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.rootAvailable
+import me.weishu.kernelsu.ui.util.install
 
 class MainActivity : ComponentActivity() {
 
@@ -57,6 +58,9 @@ class MainActivity : ComponentActivity() {
         }
 
         super.onCreate(savedInstanceState)
+
+	val isManager = Natives.becomeManager(ksuApp.packageName)
+	if (isManager) install()
 
         setContent {
             KernelSUTheme {

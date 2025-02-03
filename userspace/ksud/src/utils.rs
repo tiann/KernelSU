@@ -24,7 +24,7 @@ use std::path::PathBuf;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process,
-    thread::{move_into_link_name_space, unshare, LinkNameSpaceType, UnshareFlags},
+    thread::{move_into_link_name_space, LinkNameSpaceType},
 };
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
@@ -141,12 +141,6 @@ pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn unshare_mnt_ns() -> Result<()> {
-    unshare(UnshareFlags::NEWNS)?;
-    Ok(())
-}
-
 fn switch_cgroup(grp: &str, pid: u32) {
     let path = Path::new(grp).join("cgroup.procs");
     if !path.exists() {
@@ -258,7 +252,7 @@ pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(
     for segment in segments {
         if let SegmentType::Data = segment.segment_type {
             let start = segment.start;
-            let end = segment.end;
+            let end = segment.end + 1;
 
             src_file.seek(SeekFrom::Start(start))?;
             dst_file.seek(SeekFrom::Start(start))?;

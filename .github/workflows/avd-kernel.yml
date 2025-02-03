@@ -37,7 +37,7 @@ on:
 jobs:
   build:
     name: Build ${{ inputs.version_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master

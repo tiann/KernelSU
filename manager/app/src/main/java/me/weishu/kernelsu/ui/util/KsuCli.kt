@@ -51,10 +51,10 @@ inline fun <T> withNewRootShell(
     return createRootShell(globalMnt).use(block)
 }
 
-fun getFileNameFromUri(context: Context, uri: Uri): String? {
+fun Uri.getFileName(context: Context): String? {
     var fileName: String? = null
     val contentResolver: ContentResolver = context.contentResolver
-    val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
+    val cursor: Cursor? = contentResolver.query(this, null, null, null, null)
     cursor?.use {
         if (it.moveToFirst()) {
             fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
@@ -186,6 +186,30 @@ fun flashModule(
         onFinish(result.isSuccess, result.code)
         return result.isSuccess
     }
+}
+
+fun runModuleAction(
+    moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Boolean {
+    val shell = getRootShell()
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result = shell.newJob().add("${getKsuDaemonPath()} module action $moduleId")
+        .to(stdoutCallback, stderrCallback).exec()
+    Log.i("KernelSU", "Module runAction result: $result")
+
+    return result.isSuccess
 }
 
 fun restoreBoot(

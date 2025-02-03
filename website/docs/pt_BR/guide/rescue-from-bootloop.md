@@ -6,9 +6,9 @@ Ao atualizar um dispositivo, podemos encontrar situações em que o dispositivo 
 
 No KernelSU, as seguintes situações podem causar bloqueio de inicialização ao flashar a partição boot:
 
-1. Você flashou uma imagem boot no formato errado. Por exemplo, se o formato de boot do seu telefone for `gz`, mas você flashou uma imagem no formato `lz4`, o telefone não será capaz de inicializar.
-2. Seu telefone precisa desativar a verificação AVB para inicializar corretamente (geralmente exigindo a limpeza de todos os dados do telefone).
-3. Seu kernel tem alguns bugs ou não é adequado para o flash do seu telefone.
+1. Você flashou uma imagem boot no formato errado. Por exemplo, se o formato de boot do seu dispositivo for `gz`, mas você flashou uma imagem no formato `lz4`, o dispositivo não será capaz de inicializar.
+2. Seu dispositivo precisa desativar a verificação AVB para inicializar corretamente (geralmente exigindo a limpeza de todos os dados do dispositivo).
+3. Seu kernel tem alguns bugs ou não é adequado para o flash do seu dispositivo.
 
 Não importa qual seja a situação, você pode recuperar **flashando a imagem de boot padrão**. Portanto, no início do tutorial de instalação, recomendamos fortemente que você faça backup de seu boot padrão antes de fazer o flash. Se você não fez backup, poderá obter o boot original de fábrica de outros usuários com o mesmo dispositivo que você ou do firmware oficial.
 
