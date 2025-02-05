@@ -19,8 +19,8 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
     <string name="superuser">Superuser</string>
-    <string name="module_failed_to_enable">Couldn\'t turn on the %s module</string>
-    <string name="module_failed_to_disable">Couldn\'t turn off the %s module</string>
+    <string name="module_failed_to_enable">Failed to enable module: %s</string>
+    <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
     <string name="module_sort_action_first">Sort (Action first)</string>
@@ -38,7 +38,7 @@
     <string name="about">About</string>
     <string name="module_uninstall_confirm">Are you sure you want to uninstall module %s?</string>
     <string name="module_uninstall_success">%s uninstalled</string>
-    <string name="module_uninstall_failed">Couldn\'t uninstall %s</string>
+    <string name="module_uninstall_failed">Failed to uninstall: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
     <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel!</string>
