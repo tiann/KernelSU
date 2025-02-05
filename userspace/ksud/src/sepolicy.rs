@@ -167,7 +167,7 @@ enum PolicyStatement<'a> {
 }
 
 impl<'a> SeObjectParser<'a> for NormalPerm<'a> {
-    fn parse(input: &'a str) -> IResult<&str, Self> {
+    fn parse(input: &'a str) -> IResult<&'a str, Self> {
         let (input, op) = alt((
             tag("allow"),
             tag("deny"),

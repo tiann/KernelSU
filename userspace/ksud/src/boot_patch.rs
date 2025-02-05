@@ -74,7 +74,7 @@ fn parse_kmi_from_modules() -> Result<String> {
     // find a *.ko in /vendor/lib/modules
     let modfile = std::fs::read_dir("/vendor/lib/modules")?
         .filter_map(Result::ok)
-        .find(|entry| entry.path().extension().map_or(false, |ext| ext == "ko"))
+        .find(|entry| entry.path().extension().is_some_and(|ext| ext == "ko"))
         .map(|entry| entry.path())
         .ok_or_else(|| anyhow!("No kernel module found"))?;
     let output = Command::new("modinfo").arg(modfile).output()?;
