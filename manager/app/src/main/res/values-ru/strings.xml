@@ -20,8 +20,8 @@
     <string name="selinux_status_unknown">Неизвестно</string>
     <string name="superuser">SU пользователь</string>
     <!--Don't translate this string!-->
-    <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
-    <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
+    <string name="module_failed_to_enable">Не удалось включить модуль %s</string>
+    <string name="module_failed_to_disable">Не удалось отключить модуль %s</string>
     <string name="module_empty">Нет установленных модулей</string>
     <string name="module">Модули</string>
     <string name="uninstall">Удалить</string>
@@ -37,10 +37,10 @@
     <string name="about">О приложении</string>
     <string name="module_uninstall_confirm">Вы уверены, что хотите удалить модуль %s?</string>
     <string name="module_uninstall_success">%s удалён</string>
-    <string name="module_uninstall_failed">Не удалось удалить: %s</string>
+    <string name="module_uninstall_failed">Не удалось удалить %s</string>
     <string name="module_version">Версия</string>
     <string name="module_author">Автор</string>
-    <string name="module_overlay_fs_not_available">Модули недоступны, так как OverlayFS отключен ядром.</string>
+    <string name="module_overlay_fs_not_available">Модули недоступны, так как OverlayFS отключен ядром!</string>
     <string name="refresh">Обновить страницу</string>
     <string name="show_system_apps">Показать системные приложения</string>
     <string name="hide_system_apps">Скрыть системные приложения</string>

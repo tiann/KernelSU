@@ -18,7 +18,7 @@
     <string name="selinux_status_permissive">متساهل</string>
     <string name="selinux_status_unknown">مجهول</string>
     <string name="superuser">مستخدم خارق</string>
-    <string name="module_failed_to_enable">فشل في تمكين الإضافة: %s</string>
+    <string name="module_failed_to_enable">لا يمكن تشغيل %s الوحدة</string>
     <string name="module_failed_to_disable">فشل تعطيل الإضافة : %s</string>
     <string name="module_empty">لا توجد إضافات مثبتة</string>
     <string name="module">الإضافات</string>
@@ -35,10 +35,10 @@
     <string name="about">من نحن</string>
     <string name="module_uninstall_confirm">هل أنت متأكد أنك تريد إلغاء تثبيت الإضافة %s ?</string>
     <string name="module_uninstall_success">تم إلغاء تثبيتها %s</string>
-    <string name="module_uninstall_failed">فشل إلغاء التثبيت: %s</string>
+    <string name="module_uninstall_failed">فشل إلغاء تثبيت %s</string>
     <string name="module_version">الإصدار</string>
     <string name="module_author">المطور</string>
-    <string name="module_overlay_fs_not_available">الوحدات غير متوفرة حيث يتم تعطيل نظام الملفات المتراكب بواسطة النواة.</string>
+    <string name="module_overlay_fs_not_available">الوحدات غير متوفرة حيث يتم تعطيل نظام الملفات المتراكب بواسطة النواة!</string>
     <string name="refresh">إنعاش</string>
     <string name="show_system_apps">إظهار تطبيقات النظام</string>
     <string name="hide_system_apps">إخفاء تطبيقات النظام</string>
@@ -76,7 +76,7 @@
     <string name="profile_selinux_domain">المجال</string>
     <string name="profile_selinux_rules">القواعد</string>
     <string name="restart_app">إعادة تشغيل التطبيق</string>
-    <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لما يلي: %s</string>
+    <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لـ %s</string>
     <string name="profile_name">اسم الملف الشخصي</string>
     <string name="require_kernel_version">إصدار KernelSU الحالي %d منخفض جدًا بحيث لا يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %d أو أعلى!</string>
     <string name="module_changelog">سجل التغييرات</string>

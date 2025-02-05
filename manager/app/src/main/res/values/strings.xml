@@ -41,7 +41,7 @@
     <string name="module_uninstall_failed">Failed to uninstall: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
-    <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel.</string>
+    <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel!</string>
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
@@ -82,7 +82,7 @@
     <string name="launch_app">Launch</string>
     <string name="force_stop_app">Force stop</string>
     <string name="restart_app">Restart</string>
-    <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
+    <string name="failed_to_update_sepolicy">Failed to update SELinux rules for %s</string>
     <string name="module_changelog">Changelog</string>
     <string name="settings_profile_template">App Profile Template</string>
     <string name="settings_profile_template_summary">Manage local and online template of App Profile</string>
