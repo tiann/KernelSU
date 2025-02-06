@@ -18,7 +18,7 @@
 
 支持。LSPosed 可以在 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 的支持下正常运行。
 
-## KernelSU 支持 Zygisk 吗?
+## KernelSU 支持 Zygisk 吗？
 
 KernelSU 本体不支持 Zygisk，但是你可以用 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 来使用 Zygisk 模块。
 
@@ -51,11 +51,11 @@ KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU �
 
 参考[教程](how-to-integrate-for-non-gki)
 
-## 为什么我手机系统是 Android 13，但内核版本却是 "android12-5.10"?
+## 为什么我手机系统是 Android 13，但内核版本却是 "android12-5.10"？
 
 内核版本与 Android 版本无关，如果你需要刷入 KernelSU，请永远使用**内核版本**而非 Android 版本，如果你为 "android12-5.10" 的设备刷入 Android 13 的内核，等待你的将是 bootloop.
 
-## 我是 GKI1.0, 能用 KernelSU 吗?
+## 我是 GKI1.0, 能用 KernelSU 吗？
 
 GKI1 跟 GKI2 完全是两个东西，所以你需要自行编译内核。
 

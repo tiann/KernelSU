@@ -1,4 +1,4 @@
-# 什么是 KernelSU? {#introduction}
+# 什么是 KernelSU？ {#introduction}
 
 KernelSU 是 Android GKI 设备的 root 解决方案，它工作在内核模式，并直接在内核空间中为用户空间应用程序授予 root 权限。
 

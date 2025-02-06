@@ -1,4 +1,4 @@
-# 如何构建 KernelSU?
+# 如何构建 KernelSU？
 
 首先，您应该阅读内核构建的 Android 官方文档：
 
