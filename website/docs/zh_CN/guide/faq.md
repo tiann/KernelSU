@@ -1,20 +1,20 @@
 # 常见问题
 
-## KernelSU 是否支持我的设备 ？
+## KernelSU 是否支持我的设备？
 
 首先，您的设备应该能够解锁 bootloader。 如果不能，则不支持。
 
 然后在你的设备上安装 KernelSU 管理器并打开它，如果它显示 `不支持` ，那么你的设备没有官方支持的开箱即用的 boot image；但你可以自己编译内核集成 KernelSU 进而使用它。
 
-## KernelSU 是否需要解锁 Bootloader ？
+## KernelSU 是否需要解锁 Bootloader？
 
 当然需要。
 
-## KernelSU 是否支持模块 ？
+## KernelSU 是否支持模块？
 
 支持。请查阅 [模块](module.md)。
 
-## KernelSU 是否支持 Xposed ？
+## KernelSU 是否支持 Xposed？
 
 支持。LSPosed 可以在 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 的支持下正常运行。
 
@@ -22,7 +22,7 @@
 
 KernelSU 本体不支持 Zygisk，但是你可以用 [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) 来使用 Zygisk 模块。
 
-## KernelSU 与 Magisk 兼容吗 ？
+## KernelSU 与 Magisk 兼容吗？
 
 KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU 中启用了任何模块，那么整个 Magisk 将无法工作。
 
