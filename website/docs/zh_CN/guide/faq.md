@@ -38,7 +38,7 @@ KernelSU 的模块系统与 Magisk 的 magic mount 有冲突，如果 KernelSU �
 
 ## KernelSU 支持 Android 12 以下的设备吗？
 
-影响 KernelSU 兼容性的是设备内核的版本，它与设备的 Android 版本没有直接的关系。唯一有关联的是：**出厂** Android 12 的设备，一定是 5.10 或更高的内核（GKI设备）；因此结论如下：
+影响 KernelSU 兼容性的是设备内核的版本，它与设备的 Android 版本没有直接的关系。唯一有关联的是：**出厂** Android 12 的设备，一定是 5.10 或更高的内核（GKI 设备）；因此结论如下：
 
 1. 出厂 Android 12 的设备必定是支持的（GKI 设备）
 2. 旧版本内核的设备（即使是 Android 12，也可能是旧内核）是兼容的（你需要自己编译内核）
