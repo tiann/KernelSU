@@ -35,7 +35,7 @@ CONFIG_KPROBE_EVENTS=y
 
 最后，重新编译你的内核即可。
 
-如果你发现KPROBES仍未生效，很有可能是因为它的依赖项`CONFIG_MODULES`没有被启用（如果还是未生效请键入`make menuconfig`搜索KPROBES 的其它依赖并启用 ）
+如果你发现 KPROBES 仍未生效，很有可能是因为它的依赖项`CONFIG_MODULES`没有被启用（如果还是未生效请键入`make menuconfig`搜索 KPROBES 的其它依赖并启用）
 
 如果你在集成 KernelSU 之后手机无法启动，那么很可能你的内核中 **kprobe 工作不正常**，你需要修复这个 bug 或者用第二种方法。
 
@@ -54,7 +54,7 @@ CONFIG_KPROBE_EVENTS=y
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-请注意，某些设备的defconfig文件可能在`arch/arm64/configs/设备代号_defconfig`或位于`arch/arm64/configs/vendor/设备代号_defconfig`。在您的defconfig文件中,将 `CONFIG_KSU`设置为`y`以启用KernelSU,或设置为`n`以禁用。比如在某个defconfig中:
+请注意，某些设备的 defconfig 文件可能在`arch/arm64/configs/设备代号_defconfig`或位于`arch/arm64/configs/vendor/设备代号_defconfig`。在您的 defconfig 文件中，将`CONFIG_KSU`设置为`y`以启用 KernelSU，或设置为`n`以禁用。比如在某个 defconfig 中：
 `arch/arm64/configs/...` 
 ```sh
 +# KernelSU
@@ -319,7 +319,7 @@ index 32f6f1c68..d69d8eca2 100644
 
 ### path_umount {#how-to-backport-path-umount}
 
-你可以通过从K5.9向旧版本移植`path_umount`，在GKI之前的内核上获得卸载模块的功能。你可以通过以下补丁作为参考:
+你可以通过从 K5.9 向旧版本移植 `path_umount`，在 GKI 之前的内核上获得卸载模块的功能。你可以通过以下补丁作为参考:
 
 ```diff
 --- a/fs/namespace.c

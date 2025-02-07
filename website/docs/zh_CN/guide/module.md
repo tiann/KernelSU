@@ -10,12 +10,12 @@ KernelSU 的模块支持显示界面并与用户交互，请参阅 [WebUI 文档
 
 ## Busybox
 
-KernelSU 提供了一个功能完备的 BusyBox 二进制文件（包括完整的SELinux支持）。可执行文件位于 `/data/adb/ksu/bin/busybox`。
+KernelSU 提供了一个功能完备的 BusyBox 二进制文件（包括完整的 SELinux 支持）。可执行文件位于 `/data/adb/ksu/bin/busybox`。
 KernelSU 的 BusyBox 支持运行时可切换的 "ASH Standalone Shell Mode"。
 这种独立模式意味着在运行 BusyBox 的 ash shell 时，每个命令都会直接使用 BusyBox 中内置的应用程序，而不管 PATH 设置为什么。
-例如，`ls`、`rm`、`chmod` 等命令将不会使用 PATH 中设置的命令（在Android的情况下，默认情况下分别为 `/system/bin/ls`、`/system/bin/rm` 和 `/system/bin/chmod`），而是直接调用 BusyBox 内置的应用程序。
-这确保了脚本始终在可预测的环境中运行，并始终具有完整的命令套件，无论它运行在哪个Android版本上。
-要强制一个命令不使用BusyBox，你必须使用完整路径调用可执行文件。
+例如，`ls`、`rm`、`chmod` 等命令将不会使用 PATH 中设置的命令（在 Android 的情况下，默认情况下分别为 `/system/bin/ls`、`/system/bin/rm` 和 `/system/bin/chmod`），而是直接调用 BusyBox 内置的应用程序。
+这确保了脚本始终在可预测的环境中运行，并始终具有完整的命令套件，无论它运行在哪个 Android 版本上。
+要强制一个命令不使用 BusyBox，你必须使用完整路径调用可执行文件。
 
 在 KernelSU 上下文中运行的每个 shell 脚本都将在 BusyBox 的 ash shell 中以独立模式运行。对于第三方开发者相关的内容，包括所有启动脚本和模块安装脚本。
 
@@ -108,13 +108,13 @@ description=<string>
 - id 必须与这个正则表达式匹配：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a  module`，✗ `1_module`，✗ `-a-module`。这是您的模块的唯一标识符，发布后不应更改。
 - versionCode 必须是一个整数，用于比较版本。
 - 其他未在上面提到的内容可以是任何单行字符串。
-- 请确保使用 UNIX（LF）换行类型，而不是Windows（CR + LF）或 Macintosh（CR）。
+- 请确保使用 UNIX（LF）换行类型，而不是 Windows（CR + LF）或 Macintosh（CR）。
 
 ### Shell 脚本 {#shell-scripts}
 
 请阅读 [启动脚本](#boot-scripts) 一节，以了解 `post-fs-data.sh`, `post-mount.sh`, `service.sh` 和 `boot-completed.sh` 之间的区别。对于大多数模块开发者来说，如果您只需要运行一个启动脚本，`service.sh` 应该已经足够了。
 
-在您的模块的所有脚本中，请使用 `MODDIR=${0%/*}`来获取您的模块的基本目录路径；请勿在脚本中硬编码您的模块路径。
+在您的模块的所有脚本中，请使用`MODDIR=${0%/*}`来获取您的模块的基本目录路径；请勿在脚本中硬编码您的模块路径。
 
 :::tip 与 Magisk 的差异
 你可以通过环境变量 `KSU` 来判断脚本是运行在 KernelSU 还是 Magisk 中，如果运行在 KernelSU，这个值会被设置为 `true`。

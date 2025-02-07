@@ -45,7 +45,7 @@ w      .x         .y       -zzz           -k            -something
 
 ### 安全补丁级别 {#security-patch-level}
 
-新的 Android 设备上可能采取了防回滚机制，它不允许刷入一个安全补丁更旧的内核。比如，如果你的设备内核是 `5.10.101-android12-9-g30979850fc20`，它的安全补丁为 `2023-11`；即使你刷入与内核 KMI 一致的内核，如果安全补丁级别比 `2023-11`要老（例如`2023-06`），那么很可能会无法开机。
+新的 Android 设备上可能采取了防回滚机制，它不允许刷入一个安全补丁更旧的内核。比如，如果你的设备内核是 `5.10.101-android12-9-g30979850fc20`，它的安全补丁为 `2023-11`；即使你刷入与内核 KMI 一致的内核，如果安全补丁级别比 `2023-11` 要老（例如`2023-06`），那么很可能会无法开机。
 
 因此，在保持 KMI 一致的情况下，优先采用安全补丁级别更新的内核。
 
@@ -163,7 +163,7 @@ GKI 的安装方法有如下几种，各自适用于不同的场景，请按需�
 
 KernelSU 为 GKI 设备提供了通用的 boot.img，您应该将 boot.img 刷写到设备的 boot 分区。
 
-您可以从 [GitHub Release](https://github.com/tiann/KernelSU/releases) 下载 boot.img, 请注意您应该使用正确版本的 boot.img。如果您不知道应该下载哪一个文件，请仔细阅读本文档中关于 [KMI](#kmi) 和 [安全补丁级别](#security-patch-level)的描述。
+您可以从 [GitHub Release](https://github.com/tiann/KernelSU/releases) 下载 boot.img, 请注意您应该使用正确版本的 boot.img。如果您不知道应该下载哪一个文件，请仔细阅读本文档中关于 [KMI](#kmi) 和[安全补丁级别](#security-patch-level)的描述。
 
 通常情况下，同一个 KMI 和 安全补丁级别下会有三个不同格式的 boot 文件，它们除了内核压缩格式不同之外都一样。请检查您原有 boot.img 的内核压缩格式，您应该使用正确的格式，例如 `lz4`、`gz`；如果是用不正确的压缩格式，刷入 boot 后可能无法开机。
 
@@ -197,7 +197,7 @@ fastboot reboot
 
 步骤：
 
-1. 下载 AnyKernel3 的刷机包，如果你不知道下载哪一个，请仔细查阅上述文档中关于 [KMI](#kmi) 和 [安全补丁级别](#security-patch-level)的描述；下载错误的刷机包很可能导致无法开机，请注意备份。
+1. 下载 AnyKernel3 的刷机包，如果你不知道下载哪一个，请仔细查阅上述文档中关于 [KMI](#kmi) 和[安全补丁级别](#security-patch-level)的描述；下载错误的刷机包很可能导致无法开机，请注意备份。
 2. 打开内核刷写 App（授予必要的 root 权限），使用提供的 AnyKernel3 刷机包刷入。
 
 这种方法需要内核刷写 App 拥有 root 权限，你可以用如下几种方法实现：
@@ -229,8 +229,8 @@ Magisk 官方提供的 `magiskboot` 只能运行在 Android/Linux 设备上，�
 
 ### 准备 {#patch-preparation}
 
-1. 获取你手机的原厂 boot.img；你可以通过你手机的线刷包解压后之间获取，如果你是卡刷包，那你也许需要[payload-dumper-go](https://github.com/ssut/payload-dumper-go)
-2. 下载 KernelSU 提供的与你设备 KMI 版本一致的 AnyKernel3 刷机包；如果您不知道应该下载哪一个文件，请仔细阅读本文档中关于 [KMI](#kmi) 和 [安全补丁级别](#security-patch-level)的描述。
+1. 获取你手机的原厂 boot.img；你可以通过你手机的线刷包解压后之间获取，如果你是卡刷包，那你也许需要 [payload-dumper-go](https://github.com/ssut/payload-dumper-go)
+2. 下载 KernelSU 提供的与你设备 KMI 版本一致的 AnyKernel3 刷机包；如果您不知道应该下载哪一个文件，请仔细阅读本文档中关于 [KMI](#kmi) 和[安全补丁级别](#security-patch-level)的描述。
 3. 解压缩 AnyKernel3 刷机包，获取其中的 `Image` 文件，此文件为 KernelSU 的内核文件。
 
 ### 在 Android 设备上使用 magiskboot {#using-magiskboot-on-Android-devices}
@@ -263,7 +263,7 @@ Magisk 官方的 `magiskboot` 可以在 Linux 设备上执行，如果你是 Lin
 
 步骤：
 
-1. 在 KernelSU 的 [Release 页面](https://github.com/tiann/KernelSU/releases) 下载与你手机版本匹配的以 AnyKernel3 开头的 zip 刷机包；如果你不知道下载哪一个，请仔细查阅上述文档中关于**KMI**和**安全补丁级别**的描述；下载错误的刷机包很可能导致无法开机，请注意备份。
+1. 在 KernelSU 的 [Release 页面](https://github.com/tiann/KernelSU/releases) 下载与你手机版本匹配的以 AnyKernel3 开头的 zip 刷机包；如果你不知道下载哪一个，请仔细查阅上述文档中关于 **KMI** 和**安全补丁级别**的描述；下载错误的刷机包很可能导致无法开机，请注意备份。
 2. 重启手机进入 TWRP。
 3. 使用 adb 将 AnyKernel3-*.zip 放到手机 /sdcard 然后在 TWRP 图形界面选择安装；或者你也可以直接 `adb sideload AnyKernel-*.zip` 安装。
 
