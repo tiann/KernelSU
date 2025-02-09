@@ -1,11 +1,11 @@
-# Unofficially Supported Devices
+# Unofficially supported devices
 
 ::: warning
 In this page, there are kernels for non-GKI devices supporting KernelSU maintained by other developers.
 :::
 
 ::: warning
-This page is only for you to find the source code corresponding to your device, it does **NOT** mean that the source code has been reviewed by _KernelSU Developers_. You should use it at your own risk.
+This page is intended only to help you find the source code corresponding to your device. It **DOES NOT** mean that the source code has been reviewed by KernelSU developers. You should use it at your own risk.
 :::
 
 <script setup>

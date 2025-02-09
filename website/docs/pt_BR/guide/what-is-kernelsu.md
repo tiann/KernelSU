@@ -4,7 +4,7 @@ O KernelSU é uma solução root para dispositivos Android GKI, funciona no modo
 
 ## Características
 
-A principal característica do KernelSU é que ele é **baseado em kernel**. O KernelSU funciona no modo kernel, portanto pode fornecer uma interface de kernel que nunca tivemos antes. Por exemplo, podemos adicionar um ponto de interrupção de hardware a qualquer processo no modo kernel, podemos acessar a memória física de qualquer processo sem que ninguém perceba, podemos interceptar qualquer syscall no espaço do kernel, etc.
+A principal característica do KernelSU é que ele é baseado em kernel. O KernelSU funciona no modo kernel, portanto pode fornecer uma interface de kernel que nunca tivemos antes. Por exemplo, é possível adicionar pontos de interrupção de hardware a qualquer processo no modo kernel, acessar a memória física de qualquer processo de forma invisível, interceptar qualquer chamada de sistema (syscall) no espaço do kernel, entre outras funcionalidades.
 
 E também, o KernelSU fornece um sistema de módulos via OverlayFS, que permite carregar seu plugin personalizado no sistema. Ele também fornece um mecanismo para modificar arquivos na partição `/system`.
 
@@ -14,7 +14,7 @@ Por favor, consulte: [Instalação](installation)
 
 ## Como compilar o KernelSU?
 
-Por favor, consulte: [Como compilar?](how-to-build)
+Por favor, consulte: [Como compilar](how-to-build)
 
 ## Discussão
 

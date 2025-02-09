@@ -1,8 +1,8 @@
 # Module WebUI
 
-In addition to executing boot scripts and modifying system files, KernelSU's modules also support displaying UI interfaces and interacting with users.
+In addition to executing boot scripts and modifying system files, KernelSU's modules also support displaying UI interfaces and interacting directly with users.
 
-The module can write HTML + CSS + JavaScript pages through any web technology. KernelSU's manager will display these pages through WebView. It also provides some APIs for interacting with the system, such as executing shell commands.
+The module can write HTML + CSS + JavaScript pages through any web technology. KernelSU's manager will display these pages through WebView. It also provides some APIs to interact with the system, such as executing shell commands.
 
 ## `webroot` directory
 
@@ -16,17 +16,17 @@ Web resource files should be placed in the `webroot` subdirectory of the module 
     `-- index.html
 ```
 
-:::warning
-When installing the module, KernelSU will automatically set the permissions and SELinux context of this directory. If you do not know what you are doing, please do not set the permissions of this directory yourself!
+::: warning
+When installing the module, KernelSU will automatically set the permissions and SELinux context for this directory. If you don't know what you're doing, do not set the permissions for this directory yourself!
 :::
 
 If your page contains CSS and JavaScript, you need to place it in this directory as well.
 
 ## JavaScript API
 
-If it is just a display page, it is no different from a normal web page. More importantly, KernelSU provides a series of system API that allows you to implement the unique functions of the module.
+If it's just a display page, it will function like a regular web page. However, the most important thing is that KernelSU provides a series of system APIs, allowing the implementation of module-specific functions.
 
-KernelSU provides a JavaScript library and [publishes it on npm](https://www.npmjs.com/package/kernelsu), which you can use in the JavaScript code of your web pages.
+KernelSU provides a JavaScript library, which is published on [npm](https://www.npmjs.com/package/kernelsu) and can be used in the JavaScript code of your web pages.
 
 For example, you can execute a shell command to obtain a specific configuration or modify a property:
 
@@ -38,11 +38,11 @@ const { errno, stdout } = exec("getprop ro.product.model");
 
 For another example, you can make the web page display full screen, or display a toast.
 
-[API documentation](https://www.npmjs.com/package/kernelsu).
+[API documentation](https://www.npmjs.com/package/kernelsu)
 
-If you find that the existing API does not meet your needs or is inconvenient to use, you are welcome to give us suggestions [here](https://github.com/tiann/KernelSU/issues)!
+If you find that the existing API doesn't meet your needs or is inconvenient to use, you're welcome to give us suggestions [here](https://github.com/tiann/KernelSU/issues)!
 
 ## Some tips
 
-1. You can use `localStorage` normally to store some data, but it will be lost after the manager app is uninstalled. If you need to save persistently, you can write data to a custom directory yourself.
-2. For simple pages, I recommend you use [parceljs](https://parceljs.org/) for packaging. It requires zero configuration and is very convenient to use. However, if you are a front-end master or have your own preferences, then just choose the one you like!
+1. You can use `localStorage` as usual to store some data, but keep in mind that it will be lost if the manager app is uninstalled. If you need persistent storage, you will need to manually save the data in a specific directory.
+2. For simple pages, we recommend using [parceljs](https://parceljs.org/) for packaging. It requires no initial configuration and is extremely easy to use. However, if you're a front-end expert or have your own preferences, feel free to use the tool of your choice!
