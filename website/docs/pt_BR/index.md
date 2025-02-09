@@ -1,10 +1,10 @@
 ---
 layout: home
-title: Uma solução root baseada em kernel para Android
+title: Início
 
 hero:
   name: KernelSU
-  text: Uma solução root baseada em kernel para Android
+  text: Uma solução root baseado em kernel para Android
   tagline: ""
   image:
     src: /logo.png
@@ -25,4 +25,4 @@ features:
   - title: Privilégios root personalizáveis
     details: KernelSU permite a personalização de su, uid, gid, grupos, capacidades e regras do SELinux, bloqueando privilégios root.
   - title: Módulos
-    details: Os módulos podem modificar /system sem sistema usando OverlayFS permitindo uma grande potência.
+    details: Os módulos podem modificar /system sem sistema usando OverlayFS proporcionando flexibilidade significativa.

@@ -1,10 +1,10 @@
-# Como integrar o KernelSU para kernels não GKI?
+# Integração para dispositivos não-GKI
 
-O KernelSU pode ser integrado em kernels não GKI e foi portado para 4.14 e versões anteriores.
+O KernelSU pode ser integrado a kernels não-GKI e foi portado para 4.14 e versões anteriores.
 
-Devido à fragmentação de kernels não GKI, não temos uma maneira universal de construí-lo, portanto não podemos fornecer o boot.img não GKI. Mas você mesmo pode compilar o kernel com o KernelSU integrado.
+Devido à fragmentação dos kernels não-GKI, não temos um método universal para construí-lo, portanto, não podemos fornecer o boot.img não-GKI. No entanto, você pode compilar o kernel com o KernelSU integrado por conta própria.
 
-Primeiro, você deve ser capaz de compilar um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU no seu dispositivo.
+Primeiro, você deve ser capaz de compilar um kernel inicializável a partir do código-fonte do kernel. Se o kernel não for de código aberto, será difícil executar o KernelSU para o seu dispositivo.
 
 Se você puder compilar um kernel inicializável, existem duas maneiras de integrar o KernelSU ao código-fonte do kernel:
 
@@ -21,11 +21,11 @@ Primeiro, adicione o KernelSU à árvore de origem do kernel:
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-:::info INFORMAÇÕES
-[KernelSU 1.0 e versões posteriores não suportam mais kernels não GKI](https://github.com/tiann/KernelSU/issues/1705). A última versão suportada é a `v0.9.5`, por favor, certifique-se de usar a versão correta.
+::: info INFORMAÇÕES
+[KernelSU 1.0 e versões posteriores não suportam mais kernels não-GKI](https://github.com/tiann/KernelSU/issues/1705). A última versão suportada é a `v0.9.5`, portanto, certifique-se de usar a versão correta.
 :::
 
-Então, você deve verificar se o kprobe está ativado na configuração do seu kernel, se não estiver, adicione estas configurações a ele:
+Então, você deve verificar se o kprobe está ativado na configuração do seu kernel. Caso não esteja, adicione estas configurações a ele:
 
 ```txt
 CONFIG_KPROBES=y
@@ -33,25 +33,23 @@ CONFIG_HAVE_KPROBES=y
 CONFIG_KPROBE_EVENTS=y
 ```
 
-E agora, quando você recompilar seu kernel, o KernelSU deve funcionar bem.
+Agora, ao recompilar seu kernel, o KernelSU deve funcionar corretamente.
 
-Se você descobrir que o KPROBES ainda não está ativado, você pode tentar ativar `CONFIG_MODULES`. Se ainda assim não surtir efeito, use `make menuconfig` para procurar outras dependências do KPROBES.
+Se você descobrir que o KPROBES ainda não está ativado, pode tentar ativar `CONFIG_MODULES`. Se isso não resolver, use `make menuconfig` para procurar outras dependências do KPROBES.
 
-Mas se você entrar em um bootloop quando o KernelSU for integrado, pode ser porque o **kprobe esteja quebrado em seu kernel**, o que significa que você deve corrigir o bug do kprobe ou usar outra maneira.
+Porém, se você entrar em um bootloop após integrar o KernelSU, isso pode indicar que o **kprobe está quebrado no seu kernel**, o que significa que você precisará corrigir o bug do kprobe ou usar outra maneira.
 
-:::tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
-
+::: tip COMO VERIFICAR SE O KPROBE ESTÁ QUEBRADO?
 Comente `ksu_enable_sucompat()` e `ksu_enable_ksud()` em `KernelSU/kernel/ksu.c`, se o dispositivo inicializar normalmente, então o kprobe pode estar quebrado.
 :::
 
-:::info COMO FAZER COM QUE O RECURSO DE DESMONTAR MÓDULOS FUNCIONE NO PRÉ-GKI?
-
-Se o seu kernel for inferior a 5.9, você deve portar `path_umount` para `fs/namespace.c`. Isso é necessário para que o recurso de quantidade do módulo funcione. Se você não portar `path_umount`, o recurso "Desmontar módulos" não funcionará. Você pode obter mais informações sobre como conseguir isso no final desta página.
+::: info COMO FAZER COM QUE O RECURSO DE DESMONTAR MÓDULOS FUNCIONE NO PRÉ-GKI?
+Se o seu kernel for inferior a 5.9, você deve portar `path_umount` para `fs/namespace.c`. Isso é necessário para que o recurso "Desmontar módulos" funcione corretamente. Caso você não porte `path_umount`, o recurso "Desmontar módulos" não funcionará. Você pode obter mais informações sobre como conseguir isso no final desta página.
 :::
 
 ## Modifique manualmente a fonte do kernel
 
-Se o kprobe não funcionar no seu kernel (pode ser um bug do upstream ou do kernel abaixo de 4.8), então você pode tentar o seguinte:
+Se o kprobe não funcionar no seu kernel (isso pode ser causado por um bug no upstream ou do kernel abaixo de 4.8), então você pode tentar o seguinte:
 
 Primeiro, adicione o KernelSU à árvore de origem do kernel:
 
@@ -59,14 +57,14 @@ Primeiro, adicione o KernelSU à árvore de origem do kernel:
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 ```
 
-Tenha em mente que em alguns dispositivos, seu defconfig pode estar em `arch/arm64/configs` ou em outros casos `arch/arm64/configs/vendor/your_defconfig`. Para qualquer defconfig que você estiver usando, certifique-se de ativar `CONFIG_KSU` com `y` para ativa-lo ou `n` para desativa-lo. Por exemplo, caso você opte por ativa-lo, seu defconfig deverá conter a seguinte string:
+Tenha em mente que, em alguns dispositivos, seu defconfig pode estar localizado em `arch/arm64/configs` ou em outros casos pode estar em `arch/arm64/configs/vendor/your_defconfig`. Independentemente do defconfig que você estiver usando, certifique-se de ativar `CONFIG_KSU` com `y` para ativa-lo ou `n` para desativa-lo. Por exemplo, se optar por ativá-lo, seu defconfig deverá conter a seguinte linha:
 
 ```txt
 # KernelSU
 CONFIG_KSU=y
 ```
 
-Em seguida, adicione chamadas do KernelSU à fonte do kernel. Aqui estão alguns patches para referência:
+Em seguida, adicione chamadas do KernelSU à fonte do kernel. Abaixo estão alguns patches para referência:
 
 ::: code-group
 
@@ -258,9 +256,9 @@ index 2ff887661237..e758d7db7663 100644
 
 ### Modo de Segurança
 
-Para ativar o Modo de Segurança integrado do KernelSU, você também deve modificar a função `input_handle_event` em `drivers/input/input.c`:
+Para ativar o Modo de Segurança integrado do KernelSU, você deve modificar a função `input_handle_event` em `drivers/input/input.c`:
 
-:::tip DICA
+::: tip DICA
 É altamente recomendável ativar este recurso, é muito útil para evitar bootloops!
 :::
 
@@ -291,8 +289,8 @@ index 45306f9ef247..815091ebfca4 100755
  		add_input_randomness(type, code, value);
 ```
 
-:::info ENTRANDO NO MODO DE SEGURANÇA ACIDENTALMENTE?
-Se você estiver usando a integração manual e não desabilitar `CONFIG_KPROBES`, o usuário poderá acionar o Modo de Segurança pressionando o botão de diminuir volume após a inicialização! Portanto, se estiver usando a integração manual, você precisa desabilitar `CONFIG_KPROBES`!
+::: info ENTRANDO NO MODO DE SEGURANÇA ACIDENTALMENTE?
+Se você estiver usando a integração manual e não desativar `CONFIG_KPROBES`, o usuário poderá acionar o Modo de Segurança pressionando o botão de diminuir volume após a inicialização! Portanto, se estiver usando a integração manual, é necessário desativar `CONFIG_KPROBES`!
 :::
 
 ### Falha ao executar `pm` no terminal?
@@ -376,4 +374,4 @@ Você pode fazer com que o recurso "Desmontar módulos" funcione em kernels pré
   * Isto é importante para filesystems que usam dispositivos bloqueados sem nome.
 ```
 
-Finalmente, construa seu kernel novamente, e então, o KernelSU deve funcionar bem.
+Finalmente, compile seu kernel novamente e o KernelSU deverá funcionar corretamente.
