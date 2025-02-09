@@ -23,7 +23,7 @@ export default defineConfig({
 
     footer: {
         message: 'Phát hành dưới giấy phép GPL3.',
-        copyright: 'Bản Quyền © 2022-nay KernelSU Developers'
+        copyright: 'Bản Quyền © 2022-nay KernelSU developers.'
     },
 
     editLink: {

@@ -4,7 +4,7 @@
 
 <img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
 
-A Kernel-based root solution for Android devices.
+A kernel-based root solution for Android devices.
 
 [![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
@@ -18,19 +18,19 @@ A Kernel-based root solution for Android devices.
 2. Module system based on [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
 3. [App Profile](https://kernelsu.org/guide/app-profile.html): Lock up the root power in a cage.
 
-## Compatibility State
+## Compatibility state
 
-KernelSU officially supports Android GKI 2.0 devices (kernel 5.10+). Older kernels (4.14+) are also compatible, but the kernel will have to be built manually.
+KernelSU officially supports Android GKI 2.0 devices (kernel 5.10+). Older kernels (4.14+) are also supported, but the kernel will need to be built manually.
 
 With this, WSA, ChromeOS, and container-based Android are all supported.
 
-Currently, only `arm64-v8a` and `x86_64` are supported.
+Currently, only the `arm64-v8a` and `x86_64` architectures are supported.
 
 ## Usage
 
-- [Installation Instruction](https://kernelsu.org/guide/installation.html)
-- [How to build?](https://kernelsu.org/guide/how-to-build.html)
-- [Official Website](https://kernelsu.org/)
+- [Installation](https://kernelsu.org/guide/installation.html)
+- [How to build](https://kernelsu.org/guide/how-to-build.html)
+- [Official website](https://kernelsu.org/)
 
 ## Translation
 
@@ -51,7 +51,7 @@ For information on reporting security vulnerabilities in KernelSU, see [SECURITY
 
 ## Credits
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): the KernelSU idea.
-- [Magisk](https://github.com/topjohnwu/Magisk): the powerful root tool.
-- [genuine](https://github.com/brevent/genuine/): apk v2 signature validation.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): some rootkit skills.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): The KernelSU idea.
+- [Magisk](https://github.com/topjohnwu/Magisk): The powerful root tool.
+- [genuine](https://github.com/brevent/genuine/): APK v2 signature validation.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Some rootkit skills.

@@ -1,12 +1,12 @@
 # Guias de módulo
 
-O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Este mecanismo é conhecido como "sem sistema".
+O KernelSU fornece um mecanismo de módulo que consegue modificar o diretório do sistema enquanto mantém a integridade da partição do sistema. Esse mecanismo é conhecido como "sem sistema".
 
-O mecanismo de módulos do KernelSU é quase o mesmo do Magisk. Se você está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferenças com Magisk](difference-with-magisk.md).
+O mecanismo de módulos do KernelSU é quase o mesmo do Magisk. Se você já está familiarizado com o desenvolvimento de módulos Magisk, o desenvolvimento de módulos KernelSU é muito semelhante. Você pode pular a introdução dos módulos abaixo e só precisa ler [Diferenças com Magisk](difference-with-magisk.md).
 
 ## WebUI
 
-Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários. Para mais, consulte a [documentação do WebUI](module-webui.md).
+Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários. Para mais detalhes, consulte a [documentação do WebUI](module-webui.md).
 
 ## BusyBox
 
@@ -22,7 +22,6 @@ Para aqueles que desejam usar o recurso Modo Autônomo fora do KernelSU, existem
 Para garantir que todos os shells `sh` subsequentes executados também sejam executados no Modo Autônomo, a opção 1 é o método preferido (e é isso que o KernelSU e o gerenciador do KernelSU usam internamente), pois as variáveis ​​de ambiente são herdadas para os subprocesso.
 
 ::: tip DIFERENÇAS COM MAGISK
-
 O BusyBox do KernelSU agora está usando o arquivo binário compilado diretamente do projeto Magisk. **Obrigado ao Magisk!** Portanto, você não precisa se preocupar com problemas de compatibilidade entre scripts BusyBox no Magisk e KernelSU porque eles são exatamente iguais!
 :::
 
@@ -61,6 +60,7 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 │   ├── service.sh          <--- Este script será executado no serviço late_start
 │   ├── boot-completed.sh   <--- Este script será executado na inicialização concluída
 |   ├── uninstall.sh        <--- Este script será executado quando o KernelSU remover seu módulo
+|   ├── action.sh           <--- Este script será executado quando o usuário clicar no botão Ação no KernelSU
 │   ├── system.prop         <--- As propriedades neste arquivo serão carregadas como propriedades do sistema por resetprop
 │   ├── sepolicy.rule       <--- Regras adicionais do sepolicy personalizadas
 │   │
@@ -150,7 +150,6 @@ REPLACE="
 Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` e `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
 
 ::: tip DIFERENÇAS COM MAGISK
-
 O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
 :::
 
@@ -239,11 +238,11 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 No KernelSU, os scripts são divididos em dois tipos com base em seu modo de execução: modo post-fs-data e modo de serviço late_start.
 
 - modo post-fs-data
-  - Esta etapa está BLOQUEANDO. O processo de inicialização é pausado antes da execução ser concluída ou 10 segundos se passaram.
+  - Esta etapa está BLOQUEANDO. O processo de inicialização é pausado antes da conclusão da execução ou após 10 segundos.
   - Os scripts são executados antes de qualquer módulo ser montado. Isso permite que um desenvolvedor de módulo ajuste dinamicamente seus módulos antes de serem montados.
   - Este estágio acontece antes do início do Zygote, o que significa praticamente tudo no Android.
   - **AVISO:** Usar `setprop` irá bloquear o processo de inicialização! Por favor, use `resetprop -n <prop_name> <prop_value>` em vez disso.
-  - **Execute scripts neste modo apenas se necessário.**
+  - **Execute scripts neste modo apenas se necessário**.
 - modo de serviço late_start
   - Esta etapa é SEM BLOQUEIO. Seu script é executado em paralelo com o restante do processo de inicialização.
   - **Este é o estágio recomendado para executar a maioria dos scripts**.
@@ -273,7 +272,8 @@ load kernel:
     - Modo GKI: kernel GKI com KernelSU integrado
     - Modo LKM: kernel stock
 ...
-1. kernel exec init (logotipo oem na tela):
+
+1. kernel exec init (logo OEM na tela):
     - Modo GKI: stock init
     - Modo LKM: exec ksuinit, insmod kernelsu.ko, exec stock init
 mount /dev, /dev/pts, /proc, /sys, etc.
@@ -284,7 +284,7 @@ early-init -> init -> late_init
 early-fs
    start vold
 fs
-  montar /vendor, /system, /persist, etc.
+  mount /vendor, /system, /persist, etc.
 post-fs-data
   *verificação do modo de segurança
   *executar scripts gerais em post-fs-data.d/
@@ -304,7 +304,8 @@ load_all_props_action
     start-service logd, console, vold, etc.
   class_start main
     start-service adb, netd (iptables), zygote, etc.
-2. kernel2user init (animação da rom na tela, inicie pelo serviço bootanim)
+
+2. kernel2user init (animação da ROM na tela, inicie pelo serviço bootanim)
 *executar scripts gerais em service.d/
 *executar scripts de módulo service.sh
 *definir adereços para resetprop sem a opção -p
@@ -315,6 +316,7 @@ iniciar apps do sistema (início automático)
 inicialização completa (transmitir evento ACTION_BOOT_COMPLETED)
 *executar scripts gerais em boot-completed.d/
 *executar scripts de módulo boot-completed.sh
+
 3. Operável pelo usuário (tela de bloqueio)
 insira a senha para descriptografar /data/data
 *conjunto real de adereços para resetprop com opção -p

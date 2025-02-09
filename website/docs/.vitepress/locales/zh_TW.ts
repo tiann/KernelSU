@@ -23,7 +23,7 @@ export default defineConfig({
 
     footer: {
         message: '係依據 GPL3 授權發行。',
-        copyright: 'Copyright © 2022-目前 KernelSU 開發人員'
+        copyright: 'Copyright © 2022-目前 KernelSU 開發人員。'
     },
 
     editLink: {

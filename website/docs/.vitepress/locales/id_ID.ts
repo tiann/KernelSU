@@ -23,7 +23,7 @@ export default defineConfig({
 
     footer: {
         message: 'Rilis Dibawah Lisensi GPL3.',
-        copyright: 'Copyright © 2022-Sekarang pengembang KernelSU '
+        copyright: 'Copyright © 2022-Sekarang pengembang KernelSU.'
     },
 
     editLink: {
