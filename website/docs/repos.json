@@ -595,27 +595,6 @@
         "devices": "Oneplus 7(guacamoleb)/7 Pro(guacamole)/7T(hotdog)/7TPro (hotdogb)"
     },
     {
-        "maintainer": "backslashxx",
-        "maintainer_link": "https://github.com/backslashxx/",
-        "kernel_name": "msm8953-los21",
-        "kernel_link": "https://github.com/backslashxx/msm8953-los21",
-        "devices": "Mi A2 Lite (daisy) / Redmi 6 Pro (sakura) + Redmi S2/Y2 (ysl)"
-    },
-    {
-        "maintainer": "backslashxx",
-        "maintainer_link": "https://github.com/backslashxx/",
-        "kernel_name": "mojito_krenol",
-        "kernel_link": "https://github.com/backslashxx/mojito_krenol",
-        "devices": "Redmi Note 10 (sunny/mojito)"
-    },
-    {
-        "maintainer": "backslashxx",
-        "maintainer_link": "https://github.com/backslashxx/",
-        "kernel_name": "fog_kramel",
-        "kernel_link": "https://github.com/backslashxx/fog_kramel",
-        "devices": "Redmi 10C (fog/rain/wind)"
-    },
-    {
         "maintainer": "Fede2782",
         "maintainer_link": "https://github.com/Fede2782",
         "kernel_name": "android_kernel_samsung_gta4xl",
