@@ -2,8 +2,8 @@
     {
         "maintainer": "diphons",
         "maintainer_link": "https://github.com/diphons",
-        "kernel_name": "D8G_Kernel_oxygen",
-        "kernel_link": "https://github.com/diphons/D8G_Kernel_oxygen/tree/13",
+        "kernel_name": "kernel_xiaomi_sm8250",
+        "kernel_link": "https://github.com/diphons/kernel_xiaomi_sm8250/tree/main",
         "devices": "Poco F3: alioth | Poco F4: munch | MI10T/PRO: Apollo"
     },
     {
@@ -16,16 +16,16 @@
     {
         "maintainer": "diphons",
         "maintainer_link": "https://github.com/diphons",
-        "kernel_name": "D8G_Kernel_SDM845",
-        "kernel_link": "https://github.com/diphons/D8G_Kernel/tree/main",
-        "devices": "Poco F1 | MI8 | MiMix2S"
+        "kernel_name": "kernel_xiaomi_sdm845",
+        "kernel_link": "https://github.com/diphons/kernel_xiaomi_sdm845/tree/main",
+        "devices": "Poco F1"
     },
     {
         "maintainer": "diphons",
         "maintainer_link": "https://github.com/diphons",
-        "kernel_name": "D8G_Kernel_SM8350",
-        "kernel_link": "https://github.com/diphons/D8G_Kernel_SM8350/tree/13",
-        "devices": "Vili"
+        "kernel_name": "kernel_xiaomi_sm8350",
+        "kernel_link": "https://github.com/diphons/kernel_xiaomi_sm8350/tree/15",
+        "devices": "MI11T Pro: vili"
     },
     {
         "maintainer": "diphons",
@@ -33,6 +33,13 @@
         "kernel_name": "D8G_Kernel_Marble",
         "kernel_link": "https://github.com/diphons/D8G_Kernel_Marble/tree/op",
         "devices": "Poco F5 | Redmi Note 12 Turbo | Marble"
+    },
+    {
+        "maintainer": "diphons",
+        "maintainer_link": "https://github.com/diphons",
+        "kernel_name": "kernel_xiaomi_sm8635",
+        "kernel_link": "https://github.com/diphons/kernel_xiaomi_sm8635/tree/main",
+        "devices": "Poco F6: peridot"
     },
     {
         "maintainer": "th1nhhdk",
