@@ -1,6 +1,6 @@
 ---
 layout: home
-title: A kernel-based root solution for Android
+title: Home
 
 hero:
   name: KernelSU
@@ -21,8 +21,8 @@ features:
   - title: Kernel-based
     details: As the name suggests, KernelSU works under the Linux kernel giving it more control over userspace apps.
   - title: Root access control
-    details: Only permitted apps may access or see su, all other apps are not aware of this.
+    details: Only permitted apps may access or see su, all other apps aren't aware of this.
   - title: Customizable root privileges
     details: KernelSU allows customization of su's uid, gid, groups, capabilities, and SELinux rules, locking up root privileges.
   - title: Modules
-    details: Modules may modify /system systemlessly using OverlayFS enabling great power.
+    details: Modules may modify /system systemlessly using OverlayFS providing significant flexibility.
