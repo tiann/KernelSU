@@ -296,3 +296,13 @@ JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_uidShouldUmount(JNIEnv *env, jobject thiz, jint uid) {
     return uid_should_umount(uid);
 }
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isSuEnabled(JNIEnv *env, jobject thiz) {
+    return is_su_enabled();
+}
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_setSuEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
+    return set_su_enabled(enabled);
+}
