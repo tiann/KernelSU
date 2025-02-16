@@ -181,7 +181,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     title = stringResource(id = R.string.settings_disable_su),
                     summary = stringResource(id = R.string.settings_disable_su_summary),
                     checked = isSuDisabled,
-                    enabled = !isSuDisabled // we can't re-enable su if it's disabled.
                 ) { checked ->
                     val shouldEnable = !checked
                     if (Natives.setSuEnabled(shouldEnable)) {
