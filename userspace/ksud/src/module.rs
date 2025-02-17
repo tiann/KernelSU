@@ -294,7 +294,7 @@ pub fn prune_modules() -> Result<()> {
     Ok(())
 }
 
-fn create_module_image(image: &str, image_size: u64, journal_size: u64) -> Result<()> {
+fn create_module_image(image: &str, image_size: u64) -> Result<()> {
     File::create(image)
         .context("Failed to create ext4 image file")?
         .set_len(image_size)
@@ -302,8 +302,8 @@ fn create_module_image(image: &str, image_size: u64, journal_size: u64) -> Resul
 
     // format the img to ext4 filesystem
     let result = Command::new("mkfs.ext4")
-        .arg("-J")
-        .arg(format!("size={journal_size}"))
+        .arg("-O")
+        .arg("^has_journal")
         .arg(image)
         .stdout(Stdio::piped())
         .output()?;
@@ -315,6 +315,7 @@ fn create_module_image(image: &str, image_size: u64, journal_size: u64) -> Resul
     check_image(image)?;
     Ok(())
 }
+
 fn _install_module(zip: &str) -> Result<()> {
     ensure_boot_completed()?;
 
@@ -375,12 +376,11 @@ fn _install_module(zip: &str) -> Result<()> {
     );
 
     let sparse_image_size = 1 << 40; // 1T
-    let journal_size = 8; // 8M
     if !modules_img_exist && !modules_update_img_exist {
         // if no modules and modules_update, it is brand new installation, we should create a new img
         // create a tmp module img and mount it to modules_update
         info!("Creating brand new module image");
-        create_module_image(tmp_module_img, sparse_image_size, journal_size)?;
+        create_module_image(tmp_module_img, sparse_image_size)?;
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
@@ -402,7 +402,7 @@ fn _install_module(zip: &str) -> Result<()> {
         // legacy image, it's block size is 1024 with unlimited journal size
         if blksize == 1024 {
             println!("- Legacy image, migrating to new format, please be patient...");
-            create_module_image(tmp_module_img, sparse_image_size, journal_size)?;
+            create_module_image(tmp_module_img, sparse_image_size)?;
             let _dontdrop =
                 mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)
                     .with_context(|| format!("Failed to mount {tmp_module_img}"))?;
