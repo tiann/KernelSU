@@ -95,6 +95,7 @@ fun AppProfileScreen(
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
+    val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
 
     val packageName = appInfo.packageName
     val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
@@ -143,8 +144,13 @@ fun AppProfileScreen(
             },
             onProfileChange = {
                 scope.launch {
-                    if (it.allowSu && !it.rootUseDefault && it.rules.isNotEmpty()) {
-                        if (!setSepolicy(profile.name, it.rules)) {
+                    if (it.allowSu) {
+                        // sync with allowlist.c - forbid_system_uid
+                        if (appInfo.uid < 2000 && appInfo.uid != 1000) {
+                            snackBarHost.showSnackbar(suNotAllowed)
+                            return@launch
+                        }
+                        if (!it.rootUseDefault && it.rules.isNotEmpty() && !setSepolicy(profile.name, it.rules)) {
                             snackBarHost.showSnackbar(failToUpdateSepolicy)
                             return@launch
                         }
