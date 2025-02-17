@@ -10,12 +10,12 @@ yarn add kernelsu
 
 ### exec
 
-Spawns a **root** shell and runs a command within that shell, passing the `stdout` and `stderr` to a Promise when complete.
+Spawns a **root** shell and runs a command within that shell, returning a Promise that resolves with the `stdout` and `stderr` outputs upon completion.
 
 - `command` `<string>` The command to run, with space-separated arguments.
 - `options` `<Object>`
-  - `cwd` - Current working directory of the child process
-  - `env` - Environment key-value pairs
+  - `cwd` - Current working directory of the child process.
+  - `env` - Environment key-value pairs.
 
 ```javascript
 import { exec } from 'kernelsu';
@@ -31,13 +31,13 @@ if (errno === 0) {
 
 Spawns a new process using the given `command` in **root** shell, with command-line arguments in `args`. If omitted, `args` defaults to an empty array.
 
-Returns a `ChildProcess`, Instances of the ChildProcess represent spawned child processes.
+Returns a `ChildProcess` instance. Instances of `ChildProcess` represent spawned child processes.
 
 - `command` `<string>` The command to run.
 - `args` `<string[]>` List of string arguments.
 - `options` `<Object>`:
-  - `cwd` `<string>` - Current working directory of the child process
-  - `env` `<Object>` - Environment key-value pairs
+  - `cwd` `<string>` - Current working directory of the child process.
+  - `env` `<Object>` - Environment key-value pairs.
 
 Example of running `ls -lh /data`, capturing `stdout`, `stderr`, and the exit code:
 
@@ -63,9 +63,9 @@ ls.on('exit', (code) => {
 
 ##### Event 'exit'
 
-- `code` `<number>` The exit code if the child exited on its own.
+- `code` `<number>` The exit code if the child process exited on its own.
 
-The `'exit'` event is emitted after the child process ends. If the process exited, `code` is the final exit code of the process, otherwise null
+The `'exit'` event is emitted when the child process ends. If the process exits, `code` contains the final exit code; otherwise, it is null.
 
 ##### Event 'error'
 
@@ -112,7 +112,8 @@ toast('Hello, world!');
 
 ### moduleInfo
 
-Get Module info.
+Get module info.
+
 ```javascript
 import { moduleInfo } from 'kernelsu';
 // print moduleId in console

@@ -79,4 +79,8 @@ bool set_app_profile(const app_profile *profile);
 
 bool get_app_profile(p_key_t key, app_profile *profile);
 
+bool set_su_enabled(bool enabled);
+
+bool is_su_enabled();
+
 #endif //KERNELSU_KSU_H
