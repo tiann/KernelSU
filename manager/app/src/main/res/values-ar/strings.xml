@@ -135,4 +135,6 @@
     <string name="log_saved">السجلات محفوظة</string>
     <string name="module_sort_enabled_first">فرز (الممكن أولاً)</string>
     <string name="module_sort_action_first">فرز (الإجراء أولاً)</string>
+    <string name="settings_disable_su">تعطيل توافق su</string>
+    <string name="settings_disable_su_summary">قم بتعطيل أي تطبيقات مؤقتا من الحصول على امتيازات الجذر عبر الأمر su (لن تتأثر عمليات الجذر الحالية).</string>
 </resources>
