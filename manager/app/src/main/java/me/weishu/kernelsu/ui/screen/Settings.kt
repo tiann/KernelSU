@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Fence
+import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
@@ -161,13 +162,30 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 mutableStateOf(Natives.isDefaultUmountModules())
             }
             SwitchItem(
-                icon = Icons.Filled.RemoveModerator,
+                icon = Icons.Filled.FolderDelete,
                 title = stringResource(id = R.string.settings_umount_modules_default),
                 summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                 checked = umountChecked
             ) {
                 if (Natives.setDefaultUmountModules(it)) {
                     umountChecked = it
+                }
+            }
+
+            if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
+                var isSuDisabled by rememberSaveable {
+                    mutableStateOf(!Natives.isSuEnabled())
+                }
+                SwitchItem(
+                    icon = Icons.Filled.RemoveModerator,
+                    title = stringResource(id = R.string.settings_disable_su),
+                    summary = stringResource(id = R.string.settings_disable_su_summary),
+                    checked = isSuDisabled,
+                ) { checked ->
+                    val shouldEnable = !checked
+                    if (Natives.setSuEnabled(shouldEnable)) {
+                        isSuDisabled = !shouldEnable
+                    }
                 }
             }
 

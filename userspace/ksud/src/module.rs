@@ -279,6 +279,18 @@ pub fn prune_modules() -> Result<()> {
         Ok(())
     })?;
 
+    // collect remaining modules, if none, remove img
+    let remaining_modules: Vec<_> = std::fs::read_dir(defs::MODULE_DIR)?
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().join("module.prop").exists())
+        .collect();
+
+    if remaining_modules.is_empty() {
+        info!("no remaining modules, deleting image files.");
+        std::fs::remove_file(defs::MODULE_IMG).ok();
+        std::fs::remove_file(defs::MODULE_UPDATE_IMG).ok();
+    }
+
     Ok(())
 }
 
