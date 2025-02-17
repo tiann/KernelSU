@@ -224,6 +224,24 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 	return 0;
 }
 
+static void nuke_ext4_sysfs() {
+	struct path path;
+	int err = kern_path("/data/adb/modules", 0, &path);
+	if (err) {
+		pr_err("nuke path err: %d\n", err);
+		return;
+	}
+
+	struct super_block* sb = path.dentry->d_inode->i_sb;
+	const char* name = sb->s_type->name;
+	if (strcmp(name, "ext4") != 0) {
+		pr_info("nuke but module aren't mounted\n");
+		return;
+	}
+
+	ext4_unregister_sysfs(sb);
+}
+
 int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		     unsigned long arg4, unsigned long arg5)
 {
@@ -318,6 +336,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		case EVENT_MODULE_MOUNTED: {
 			ksu_module_mounted = true;
 			pr_info("module mounted!\n");
+			nuke_ext4_sysfs();
 			break;
 		}
 		default:
