@@ -135,4 +135,6 @@
     <string name="module_sort_enabled_first">Trier par activé</string>
     <string name="action">Action</string>
     <string name="log_saved">Journaux enregistrés</string>
+    <string name="settings_disable_su">Désactiver la compatibilité avec su</string>
+    <string name="settings_disable_su_summary">Désactivez temporairement l\'accès des applications aux privilèges root par le biais de la commande su (les processus root existants ne seront pas affectés).</string>
 </resources>
