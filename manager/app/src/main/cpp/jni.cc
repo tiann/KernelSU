@@ -12,7 +12,7 @@
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_becomeManager(JNIEnv *env, jobject, jstring pkg) {
+Java_dev_icy_ksu_Natives_becomeManager(JNIEnv *env, jobject, jstring pkg) {
     auto cpkg = env->GetStringUTFChars(pkg, nullptr);
     auto result = become_manager(cpkg);
     env->ReleaseStringUTFChars(pkg, cpkg);
@@ -21,13 +21,13 @@ Java_me_weishu_kernelsu_Natives_becomeManager(JNIEnv *env, jobject, jstring pkg)
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_me_weishu_kernelsu_Natives_getVersion(JNIEnv *env, jobject) {
+Java_dev_icy_ksu_Natives_getVersion(JNIEnv *env, jobject) {
     return get_version();
 }
 
 extern "C"
 JNIEXPORT jintArray JNICALL
-Java_me_weishu_kernelsu_Natives_getAllowList(JNIEnv *env, jobject) {
+Java_dev_icy_ksu_Natives_getAllowList(JNIEnv *env, jobject) {
     int uids[1024];
     int size = 0;
     bool result = get_allow_list(uids, &size);
@@ -42,13 +42,13 @@ Java_me_weishu_kernelsu_Natives_getAllowList(JNIEnv *env, jobject) {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_isSafeMode(JNIEnv *env, jclass clazz) {
+Java_dev_icy_ksu_Natives_isSafeMode(JNIEnv *env, jclass clazz) {
     return is_safe_mode();
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_isLkmMode(JNIEnv *env, jclass clazz) {
+Java_dev_icy_ksu_Natives_isLkmMode(JNIEnv *env, jclass clazz) {
     return is_lkm_mode();
 }
 
@@ -111,7 +111,7 @@ static void fillArrayWithList(JNIEnv *env, jobject list, int *data, int count) {
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg, jint uid) {
+Java_dev_icy_ksu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg, jint uid) {
     if (env->GetStringLength(pkg) > KSU_MAX_PACKAGE_NAME) {
         return nullptr;
     }
@@ -129,7 +129,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
 
     bool useDefaultProfile = !get_app_profile(key, &profile);
 
-    auto cls = env->FindClass("me/weishu/kernelsu/Natives$Profile");
+    auto cls = env->FindClass("dev/icy/ksu/Natives$Profile");
     auto constructor = env->GetMethodID(cls, "<init>", "()V");
     auto obj = env->NewObject(cls, constructor);
     auto keyField = env->GetFieldID(cls, "name", "Ljava/lang/String;");
@@ -207,8 +207,8 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobject profile) {
-    auto cls = env->FindClass("me/weishu/kernelsu/Natives$Profile");
+Java_dev_icy_ksu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobject profile) {
+    auto cls = env->FindClass("dev/icy/ksu/Natives$Profile");
 
     auto keyField = env->GetFieldID(cls, "name", "Ljava/lang/String;");
     auto currentUidField = env->GetFieldID(cls, "currentUid", "I");
@@ -293,6 +293,6 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
 }
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_uidShouldUmount(JNIEnv *env, jobject thiz, jint uid) {
+Java_dev_icy_ksu_Natives_uidShouldUmount(JNIEnv *env, jobject thiz, jint uid) {
     return uid_should_umount(uid);
 }

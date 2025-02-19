@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.component
+package dev.icy.ksu.ui.component
 
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
@@ -29,8 +29,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.HtmlCompat
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import me.weishu.kernelsu.BuildConfig
-import me.weishu.kernelsu.R
+import dev.icy.ksu.BuildConfig
+import dev.icy.ksu.R
 
 @Preview
 @Composable

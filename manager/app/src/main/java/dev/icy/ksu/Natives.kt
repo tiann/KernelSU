@@ -1,4 +1,4 @@
-package me.weishu.kernelsu
+package dev.icy.ksu
 
 import android.os.Parcelable
 import androidx.annotation.Keep

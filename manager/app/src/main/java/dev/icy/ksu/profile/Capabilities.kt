@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.profile
+package dev.icy.ksu.profile
 
 /**
  * @author weishu

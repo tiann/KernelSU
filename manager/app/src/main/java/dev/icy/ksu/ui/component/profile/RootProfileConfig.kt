@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package me.weishu.kernelsu.ui.component.profile
+package dev.icy.ksu.ui.component.profile
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -48,12 +48,12 @@ import com.maxkeppeler.sheets.input.models.ValidationResult
 import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
-import me.weishu.kernelsu.Natives
-import me.weishu.kernelsu.R
-import me.weishu.kernelsu.profile.Capabilities
-import me.weishu.kernelsu.profile.Groups
-import me.weishu.kernelsu.ui.component.rememberCustomDialog
-import me.weishu.kernelsu.ui.util.isSepolicyValid
+import dev.icy.ksu.Natives
+import dev.icy.ksu.R
+import dev.icy.ksu.profile.Capabilities
+import dev.icy.ksu.profile.Groups
+import dev.icy.ksu.ui.component.rememberCustomDialog
+import dev.icy.ksu.ui.util.isSepolicyValid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,5 +1,4 @@
-// IKsuInterface.aidl
-package me.weishu.kernelsu;
+package dev.icy.ksu;
 
 import android.content.pm.PackageInfo;
 import rikka.parcelablelist.ParcelableListSlice;

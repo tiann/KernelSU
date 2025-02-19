@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.component.profile
+package dev.icy.ksu.ui.component.profile
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.OutlinedTextField
@@ -11,9 +11,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import me.weishu.kernelsu.Natives
-import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.SwitchItem
+import dev.icy.ksu.Natives
+import dev.icy.ksu.R
+import dev.icy.ksu.ui.component.SwitchItem
 
 @Composable
 fun AppProfileConfig(
