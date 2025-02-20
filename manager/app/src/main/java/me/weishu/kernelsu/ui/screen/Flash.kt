@@ -53,9 +53,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.flashModule
+import me.weishu.kernelsu.ui.util.flashModules
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.restoreBoot
@@ -81,7 +82,7 @@ enum class FlashingStatus {
 fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
 
     var text by rememberSaveable { mutableStateOf("") }
-    var tempText : String
+    var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
     var showFloatAction by rememberSaveable { mutableStateOf(false) }
 
@@ -98,16 +99,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             return@LaunchedEffect
         }
         withContext(Dispatchers.IO) {
-            flashIt(flashIt, onFinish = { showReboot, code ->
-                if (code != 0) {
-                    text += "Error: exit code = $code.\nPlease save and check the log.\n"
-                }
-                if (showReboot) {
-                    text += "\n\n\n"
-                    showFloatAction = true
-                }
-                flashing = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
-            }, onStdout = {
+            flashIt(flashIt, onStdout = {
                 tempText = "$it\n"
                 if (tempText.startsWith("[H[J")) { // clear command
                     text = tempText.substring(6)
@@ -117,7 +109,16 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 logContent.append(it).append("\n")
             }, onStderr = {
                 logContent.append(it).append("\n")
-            })
+            }).apply {
+                if (code != 0) {
+                    text += "Error code: $code.\n $err Please save and check the log.\n"
+                }
+                if (showReboot) {
+                    text += "\n\n\n"
+                    showFloatAction = true
+                }
+                flashing = if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED
+            }
         }
     }
 
@@ -191,7 +192,7 @@ sealed class FlashIt : Parcelable {
     data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean) :
         FlashIt()
 
-    data class FlashModule(val uri: Uri) : FlashIt()
+    data class FlashModules(val uri: List<Uri>) : FlashIt()
 
     data object FlashRestore : FlashIt()
 
@@ -199,25 +200,24 @@ sealed class FlashIt : Parcelable {
 }
 
 fun flashIt(
-    flashIt: FlashIt, onFinish: (Boolean, Int) -> Unit,
+    flashIt: FlashIt,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
-) {
-    when (flashIt) {
+): FlashResult {
+    return when (flashIt) {
         is FlashIt.FlashBoot -> installBoot(
             flashIt.boot,
             flashIt.lkm,
             flashIt.ota,
-            onFinish,
             onStdout,
             onStderr
         )
 
-        is FlashIt.FlashModule -> flashModule(flashIt.uri, onFinish, onStdout, onStderr)
+        is FlashIt.FlashModules -> flashModules(flashIt.uri, onStdout, onStderr)
 
-        FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
+        FlashIt.FlashRestore -> restoreBoot(onStdout, onStderr)
 
-        FlashIt.FlashUninstall -> uninstallPermanently(onFinish, onStdout, onStderr)
+        FlashIt.FlashUninstall -> uninstallPermanently(onStdout, onStderr)
     }
 }
 

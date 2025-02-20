@@ -209,7 +209,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     val data = it.data ?: return@rememberLauncherForActivityResult
                     val uri = data.data ?: return@rememberLauncherForActivityResult
 
-                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(uri)))
+                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri))))
 
                     viewModel.markNeedRefresh()
 
@@ -254,7 +254,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it))))
                     },
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
