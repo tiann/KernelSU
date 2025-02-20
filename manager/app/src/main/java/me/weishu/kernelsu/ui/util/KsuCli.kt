@@ -33,6 +33,11 @@ private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
 }
 
+data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
+    constructor(result: Shell.Result, showReboot: Boolean) : this(result.code, result.err.joinToString("\n"), showReboot)
+    constructor(result: Shell.Result) : this(result, result.isSuccess)
+}
+
 object KsuCli {
     val SHELL: Shell = createRootShell()
     val GLOBAL_MNT_SHELL: Shell = createRootShell(true)
@@ -167,10 +172,9 @@ private fun flashWithIO(
 
 fun flashModule(
     uri: Uri,
-    onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
-): Boolean {
+): FlashResult {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
         val file = File(ksuApp.cacheDir, "module.zip")
@@ -183,9 +187,22 @@ fun flashModule(
 
         file.delete()
 
-        onFinish(result.isSuccess, result.code)
-        return result.isSuccess
+        return FlashResult(result)
     }
+}
+
+fun flashModules(
+    uris: List<Uri>,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+): FlashResult {
+    for (uri in uris) {
+        val result = flashModule(uri, onStdout, onStderr)
+        if (result.code != 0) {
+            return result
+        }
+    }
+    return FlashResult(0, "", true)
 }
 
 fun runModuleAction(
@@ -213,21 +230,19 @@ fun runModuleAction(
 }
 
 fun restoreBoot(
-    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
+    onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): FlashResult {
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
     val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot", onStdout, onStderr)
-    onFinish(result.isSuccess, result.code)
-    return result.isSuccess
+    return FlashResult(result)
 }
 
 fun uninstallPermanently(
-    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
+    onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): FlashResult {
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
     val result = flashWithIO("${getKsuDaemonPath()} uninstall --magiskboot $magiskboot", onStdout, onStderr)
-    onFinish(result.isSuccess, result.code)
-    return result.isSuccess
+    return FlashResult(result)
 }
 
 suspend fun shrinkModules(): Boolean = withContext(Dispatchers.IO) {
@@ -245,10 +260,9 @@ fun installBoot(
     bootUri: Uri?,
     lkm: LkmSelection,
     ota: Boolean,
-    onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
-): Boolean {
+): FlashResult {
     val resolver = ksuApp.contentResolver
 
     val bootFile = bootUri?.let { uri ->
@@ -311,8 +325,7 @@ fun installBoot(
     lkmFile?.delete()
 
     // if boot uri is empty, it is direct install, when success, we should show reboot button
-    onFinish(bootUri == null && result.isSuccess, result.code)
-    return result.isSuccess
+    return FlashResult(result, bootUri == null && result.isSuccess)
 }
 
 fun reboot(reason: String = "") {
