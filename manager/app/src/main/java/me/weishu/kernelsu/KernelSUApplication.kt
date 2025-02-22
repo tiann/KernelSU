@@ -6,11 +6,24 @@ import coil.Coil
 import coil.ImageLoader
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import java.io.File
+import java.util.Locale
 
 lateinit var ksuApp: KernelSUApplication
 
 class KernelSUApplication : Application() {
+
+    val okhttpClient =
+        OkHttpClient.Builder().cache(Cache(File(cacheDir, "okhttp"), 10 * 1024 * 1024))
+            .addInterceptor { block ->
+                block.proceed(
+                    block.request().newBuilder()
+                        .header("User-Agent", "KernelSU/${BuildConfig.VERSION_CODE}")
+                        .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
+                )
+            }.build()
 
     override fun onCreate() {
         super.onCreate()
