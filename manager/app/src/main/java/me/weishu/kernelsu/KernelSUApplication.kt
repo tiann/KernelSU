@@ -15,15 +15,7 @@ lateinit var ksuApp: KernelSUApplication
 
 class KernelSUApplication : Application() {
 
-    val okhttpClient =
-        OkHttpClient.Builder().cache(Cache(File(cacheDir, "okhttp"), 10 * 1024 * 1024))
-            .addInterceptor { block ->
-                block.proceed(
-                    block.request().newBuilder()
-                        .header("User-Agent", "KernelSU/${BuildConfig.VERSION_CODE}")
-                        .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
-                )
-            }.build()
+    lateinit var okhttpClient: OkHttpClient
 
     override fun onCreate() {
         super.onCreate()
@@ -47,6 +39,16 @@ class KernelSUApplication : Application() {
 
         // Provide working env for rust's temp_dir()
         Os.setenv("TMPDIR", cacheDir.absolutePath, true)
+
+        okhttpClient =
+            OkHttpClient.Builder().cache(Cache(File(cacheDir, "okhttp"), 10 * 1024 * 1024))
+                .addInterceptor { block ->
+                    block.proceed(
+                        block.request().newBuilder()
+                            .header("User-Agent", "KernelSU/${BuildConfig.VERSION_CODE}")
+                            .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
+                    )
+                }.build()
     }
 
 
