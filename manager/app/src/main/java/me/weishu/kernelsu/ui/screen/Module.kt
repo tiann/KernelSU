@@ -228,7 +228,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
 
                     if (uris.size == 1) {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(uris.first())))
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first()))))
                     } else if (uris.size > 1)  {
                         // multiple files selected
                         val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
