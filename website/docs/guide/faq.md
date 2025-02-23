@@ -2,13 +2,13 @@
 
 ## Does KernelSU support my device?
 
-KernelSU supports devices running Android with a unlockable bootloader, morever offical support is only for GKI Linux Kernels 5.10+ (in practice this means that your device needs to have Android 12 out of the factory in order to be supported).
+KernelSU supports devices running Android with an unlockable bootloader, moreover official support is only for GKI Linux Kernels 5.10+ (in practice this means that your device needs to have Android 12 out of the factory in order to be supported).
 
 You can easily check support for your device via the KernelSU Manager, which you can get [here](https://github.com/tiann/KernelSU/releases). 
 
-If it shows `Not Installed`, then your device most likely supports KernelSU offically.
+If it shows `Not Installed`, then your device most likely supports KernelSU officially.
 
-If it shows `Unsupported`, then your device is not offically supported at present. However, you can build kernel source and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
+If it shows `Unsupported`, then your device is not officially supported at present. However, you can build kernel source and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
 
 ## Does KernelSU need to unlock bootloader?
 
@@ -20,7 +20,7 @@ Yes, most Magisk modules work out-of-the-box with KernelSU, check [Module guide]
 
 ## Does KernelSU support Xposed?
 
-Yes, you can use LSPosed with [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+Yes, you can use LSPosed (or other modern XPosed derivative) with [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## Does KernelSU support Zygisk?
 
