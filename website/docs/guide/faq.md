@@ -2,13 +2,13 @@
 
 ## Does KernelSU support my device?
 
-KernelSU supports devices running Android with an unlockable bootloader, moreover official support is only for GKI Linux Kernels 5.10+ (in practice this means that your device needs to have Android 12 out of the factory in order to be supported).
+KernelSU supports devices running Android with an unlocked bootloader. However, official support is only for GKI Linux Kernels 5.10+ (in practice, this means your device needs to have Android 12 out-of-the-box to be supported).
 
-You can easily check support for your device via the KernelSU Manager, which you can get [here](https://github.com/tiann/KernelSU/releases). 
+You can easily check the support for your device through the KernelSU manager, which is available [here](https://github.com/tiann/KernelSU/releases). 
 
-If it shows `Not Installed`, then your device most likely supports KernelSU officially.
+If the app shows `Not installed`, it means your device is officially supported by KernelSU.
 
-If it shows `Unsupported`, then your device is not officially supported at present. However, you can build kernel source and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
+If the app shows `Unsupported`, it means your device isn't officially supported at present. However, you can build kernel source code and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
 
 ## Does KernelSU need to unlock bootloader?
 
@@ -16,15 +16,15 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, most Magisk modules work out-of-the-box with KernelSU, check [Module guide](module.md) for more info.
+Yes, most Magisk modules work on KernelSU. Check [Module guide](module.md) for more info.
 
 ## Does KernelSU support Xposed?
 
-Yes, you can use LSPosed (or other modern XPosed derivative) with [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+Yes, you can use LSPosed (or other modern Xposed derivative) with [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## Does KernelSU support Zygisk?
 
-KernelSU has no built-in Zygisk support, but you can a module like [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) to support it.
+KernelSU has no built-in Zygisk support, but you can use a module like [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) to support it.
 
 ## Is KernelSU compatible with Magisk?
 
