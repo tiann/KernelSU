@@ -191,20 +191,6 @@ fun flashModule(
     }
 }
 
-fun flashModules(
-    uris: List<Uri>,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
-): FlashResult {
-    for (uri in uris) {
-        val result = flashModule(uri, onStdout, onStderr)
-        if (result.code != 0) {
-            return result
-        }
-    }
-    return FlashResult(0, "", true)
-}
-
 fun runModuleAction(
     moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {

@@ -56,7 +56,7 @@ import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.flashModules
+import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.restoreBoot
@@ -66,16 +66,33 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * @author weishu
+ * @date 2023/1/1.
+ */
+
 enum class FlashingStatus {
     FLASHING,
     SUCCESS,
     FAILED
 }
 
-/**
- * @author weishu
- * @date 2023/1/1.
- */
+// Lets you flash modules sequentially when mutiple zipUris are selected
+fun flashModulesSequentially(
+    uris: List<Uri>,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+): FlashResult {
+    for (uri in uris) {
+        flashModule(uri, onStdout, onStderr).apply {
+            if (code != 0) {
+                return FlashResult(code, err, showReboot)
+            }
+        }
+    }
+    return FlashResult(0, "", true)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Destination<RootGraph>
@@ -192,7 +209,7 @@ sealed class FlashIt : Parcelable {
     data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean) :
         FlashIt()
 
-    data class FlashModules(val uri: List<Uri>) : FlashIt()
+    data class FlashModules(val uris: List<Uri>) : FlashIt()
 
     data object FlashRestore : FlashIt()
 
@@ -213,7 +230,9 @@ fun flashIt(
             onStderr
         )
 
-        is FlashIt.FlashModules -> flashModules(flashIt.uri, onStdout, onStderr)
+        is FlashIt.FlashModules -> {
+            flashModulesSequentially(flashIt.uris, onStdout, onStderr)
+        }
 
         FlashIt.FlashRestore -> restoreBoot(onStdout, onStderr)
 
