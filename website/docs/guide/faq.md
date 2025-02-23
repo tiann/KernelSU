@@ -2,9 +2,13 @@
 
 ## Does KernelSU support my device?
 
-First, your devices should be able to unlock the bootloader. If not, then there is unsupported.
+KernelSU supports devices running Android with a unlockable bootloader, morever offical support is only for GKI Linux Kernels 5.10+ (in practice this means that your device needs to have Android 12 out of the factory in order to be supported).
 
-Next, install the KernelSU manager on your device and open it. If it shows `Unsupported`, then your device cannot be supported immediately. However, you can build kernel source and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
+You can easily check support for your device via the KernelSU Manager, which you can get [here](https://github.com/tiann/KernelSU/releases). 
+
+If it shows `Not Installed`, then your device most likely supports KernelSU offically.
+
+If it shows `Unsupported`, then your device is not offically supported at present. However, you can build kernel source and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
 
 ## Does KernelSU need to unlock bootloader?
 
@@ -12,7 +16,7 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, check [Module guide](module.md).
+Yes, most Magisk modules work out-of-the-box with KernelSU, check [Module guide](module.md) for more info.
 
 ## Does KernelSU support Xposed?
 
@@ -20,7 +24,7 @@ Yes, you can use LSPosed with [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext
 
 ## Does KernelSU support Zygisk?
 
-KernelSU has no built-in Zygisk support, but you can use [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+KernelSU has no built-in Zygisk support, but you can a module like [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) to support it.
 
 ## Is KernelSU compatible with Magisk?
 
@@ -65,7 +69,7 @@ We don't recommend that you modify the system partition directly. Please check [
 
 ## Can KernelSU modify hosts? How can I use AdAway？
 
-Of course. But KernelSU doesn't have built-in hosts support, you can install [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) to do it.
+Of course. But KernelSU doesn't have built-in hosts support, you can install a module like [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) to do it.
 
 ## Why is there a huge 1 TB file?
 
