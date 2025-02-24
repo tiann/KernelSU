@@ -1,11 +1,11 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use derive_new::new;
 use nom::{
+    AsChar, IResult, Parser,
     branch::alt,
-    bytes::complete::{tag, take_while, take_while1, take_while_m_n},
+    bytes::complete::{tag, take_while, take_while_m_n, take_while1},
     character::complete::{space0, space1},
     combinator::map,
-    AsChar, IResult, Parser,
 };
 use std::{ffi, path::Path, vec};
 
