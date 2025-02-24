@@ -77,7 +77,7 @@
     <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
-    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour : %s</string>
+    <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour %s</string>
     <string name="require_kernel_version">La version actuelle de KernelSU (%d) est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
     <string name="app_profile_template_import_success">Importation réussie</string>
     <string name="app_profile_export_to_clipboard">Exporter vers le presse-papiers</string>
@@ -135,4 +135,6 @@
     <string name="module_sort_enabled_first">Trier par activé</string>
     <string name="action">Action</string>
     <string name="log_saved">Journaux enregistrés</string>
+    <string name="settings_disable_su">Désactiver la compatibilité avec su</string>
+    <string name="settings_disable_su_summary">Désactivez temporairement l\'accès des applications aux privilèges root par le biais de la commande su (les processus root existants ne seront pas affectés).</string>
 </resources>

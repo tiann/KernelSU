@@ -39,7 +39,7 @@
     <string name="module_uninstall_failed">卸载失败：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="module_overlay_fs_not_available">OverlayFS 被内核禁用，模块不可用。</string>
+    <string name="module_overlay_fs_not_available">OverlayFS 被内核禁用，模块不可用！</string>
     <string name="refresh">刷新</string>
     <string name="show_system_apps">显示系统应用</string>
     <string name="hide_system_apps">隐藏系统应用</string>
@@ -80,7 +80,7 @@
     <string name="launch_app">启动</string>
     <string name="force_stop_app">强制停止</string>
     <string name="restart_app">重新启动</string>
-    <string name="failed_to_update_sepolicy">为：%s 更新翻译失败</string>
+    <string name="failed_to_update_sepolicy">为 %s 更新 SELinux 策略失败</string>
     <string name="su_not_allowed">不允许授予：%s 超级用户权限</string>
     <string name="module_changelog">更新日志</string>
     <string name="settings_profile_template">App Profile 模版</string>
