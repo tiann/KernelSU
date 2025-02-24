@@ -41,7 +41,7 @@ tempfile = "3"
 chrono = "0.4"
 hole-punch = { git = "https://github.com/tiann/hole-punch" }
 regex-lite = "0.1"
-fs4 = "0.12"
+fs4 = "0.13"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
