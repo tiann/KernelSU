@@ -99,7 +99,7 @@ author=<string>
 description=<string>
 ```
 
-- `id` has to match this regular expression: `^[a-zA-Z][a-zA-Z0-9._-]+$` .<br>
+- `id` has to match this regular expression: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
   Example: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
   This is the **unique identifier** of your module. You should not change it once published.
 - `versionCode` has to be an **integer**. This is used to compare versions.
@@ -150,7 +150,7 @@ REPLACE="
 This list will automatically create the directories `$MODPATH/system/app/YouTube` and `$MODPATH/system/app/Bloatware`, and then execute `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` and `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. After the module takes effect, `/system/app/YouTube` and `/system/app/Bloatware` will be replaced with empty directories.
 
 ::: tip DIFFERENCE WITH MAGISK
-KernelSU's systemless mechanism is implemented through the kernel's OverlayFS, while Magisk currently uses magic mount (bind mount). These two implementation methods have significant differences, but the ultimate goal is the same: modifying /system files without physically modifying the /system partition.
+KernelSU's systemless mechanism is implemented through the kernel's OverlayFS, while Magisk currently uses magic mount (bind mount). These two implementation methods have significant differences, but the ultimate goal is the same: modifying `/system` files without physically modifying the `/system` partition.
 :::
 
 If you're interested in OverlayFS, it's recommended to read the Linux Kernel's [documentation on OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html).
@@ -250,8 +250,8 @@ In KernelSU, scripts are divided into two types based on their running mode: pos
 In KernelSU, startup scripts are divided into two types based on their storage location: general scripts and module scripts.
 
 - General scripts
-  - Placed in `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` or `/data/adb/boot-completed.d.`
-  - Only executed if the script is set as executable (`chmod +x script.sh`)
+  - Placed in `/data/adb/post-fs-data.d`, `/data/adb/service.d`, `/data/adb/post-mount.d` or `/data/adb/boot-completed.d`.
+  - Only executed if the script is set as executable (`chmod +x script.sh`).
   - Scripts in `post-fs-data.d` runs in post-fs-data mode, and scripts in `service.d` runs in late_start service mode.
   - Modules should **NOT** add general scripts during installation.
 - Module scripts
