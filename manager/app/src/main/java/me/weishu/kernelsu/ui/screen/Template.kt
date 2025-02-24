@@ -49,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -100,7 +101,13 @@ fun AppProfileTemplateScreen(
                 }
             }
             TopBar(
-                onBack = { navigator.popBackStack() },
+                onBack = {
+                    navigator.currentBackStackEntry?.let { entry ->
+                        if (entry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+                            navigator.popBackStack()
+                        }
+                    }
+                },
                 onSync = {
                     scope.launch { viewModel.fetchTemplates(true) }
                 },

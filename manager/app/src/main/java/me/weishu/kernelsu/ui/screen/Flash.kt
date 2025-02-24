@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -144,7 +145,11 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             TopBar(
                 flashing,
                 onBack = {
-                    navigator.popBackStack()
+                    navigator.currentBackStackEntry?.let { entry ->
+                        if (entry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+                            navigator.popBackStack()
+                        }
+                    }
                 },
                 onSave = {
                     scope.launch {

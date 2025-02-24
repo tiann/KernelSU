@@ -30,6 +30,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -86,7 +87,11 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         topBar = {
             TopBar(
                 onBack = {
-                    navigator.popBackStack()
+                    navigator.currentBackStackEntry?.let { entry ->
+                        if (entry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+                            navigator.popBackStack()
+                        }
+                    }
                 },
                 onSave = {
                     scope.launch {
