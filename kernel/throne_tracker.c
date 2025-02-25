@@ -155,6 +155,14 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		return FILLDIR_ACTOR_CONTINUE;
 	}
 
+	pr_info("KernelSU: Processing entry: %.*s (type: %s) in %s, depth: %d\n", 
+		namelen, name,
+		d_type == DT_DIR ? "directory" :
+		d_type == DT_REG ? "regular file" :
+		d_type == DT_LNK ? "symbolic link" : "other",
+		my_ctx->parent_dir,
+		my_ctx->depth);
+
 	if (d_type == DT_DIR && my_ctx->depth > 0 &&
 	    (my_ctx->stop && !*my_ctx->stop)) {
 		struct data_path *data = kmalloc(sizeof(struct data_path), GFP_ATOMIC);
@@ -222,6 +230,8 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 
 	for (i = depth; i > 0; i--) {
 		struct data_path *pos, *n;
+		pr_info("KernelSU: Examining directory: %s (depth: %d)\n",
+			pos->dirpath, pos->depth);
 
 		list_for_each_entry_safe(pos, n, &data_path_list, list) {
 			struct my_dir_context ctx = { .ctx.actor = my_actor,
@@ -231,6 +241,8 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 						      .depth = pos->depth,
 						      .stop = &stop };
 			struct file *file;
+
+			pr_info("KernelSU: Checking directory: %s\n", pos->dirpath);
 
 			if (!stop) {
 				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
