@@ -230,8 +230,6 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 
 	for (i = depth; i > 0; i--) {
 		struct data_path *pos, *n;
-		pr_info("KernelSU: Examining directory: %s (depth: %d)\n",
-			pos->dirpath, pos->depth);
 
 		list_for_each_entry_safe(pos, n, &data_path_list, list) {
 			struct my_dir_context ctx = { .ctx.actor = my_actor,
