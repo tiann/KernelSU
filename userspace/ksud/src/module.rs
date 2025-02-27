@@ -6,7 +6,7 @@ use crate::{
     sepolicy, utils,
 };
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use const_format::concatcp;
 use is_executable::is_executable;
 use java_properties::PropertiesIter;
@@ -16,7 +16,7 @@ use std::fs::OpenOptions;
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, remove_file, set_permissions, File, Permissions},
+    fs::{File, Permissions, remove_dir_all, remove_file, set_permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -672,12 +672,15 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
             });
 
         if !module_prop_map.contains_key("id") || module_prop_map["id"].is_empty() {
-            if let Some(id) = entry.file_name().to_str() {
-                info!("Use dir name as module id: {}", id);
-                module_prop_map.insert("id".to_owned(), id.to_owned());
-            } else {
-                info!("Failed to get module id: {:?}", module_prop);
-                continue;
+            match entry.file_name().to_str() {
+                Some(id) => {
+                    info!("Use dir name as module id: {}", id);
+                    module_prop_map.insert("id".to_owned(), id.to_owned());
+                }
+                _ => {
+                    info!("Failed to get module id: {:?}", module_prop);
+                    continue;
+                }
             }
         }
 

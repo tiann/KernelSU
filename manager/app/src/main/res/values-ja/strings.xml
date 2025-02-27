@@ -18,8 +18,8 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">不明</string>
     <string name="superuser">スーパーユーザー</string>
-    <string name="module_failed_to_enable">%s モジュールをオンにできませんでした</string>
-    <string name="module_failed_to_disable">%s モジュールをオフにできませんでした</string>
+    <string name="module_failed_to_enable">モジュールの有効化に失敗しました: %s</string>
+    <string name="module_failed_to_disable">モジュールの無効化に失敗しました: %s</string>
     <string name="module_empty">モジュールがインストールされていません</string>
     <string name="module">モジュール</string>
     <string name="uninstall">アンインストール</string>
@@ -35,7 +35,7 @@
     <string name="about">アプリについて</string>
     <string name="module_uninstall_confirm">モジュール %s をアンインストールしますか？</string>
     <string name="module_uninstall_success">%s はアンインストールされました</string>
-    <string name="module_uninstall_failed">%s をアンインストールできませんでした</string>
+    <string name="module_uninstall_failed">アンインストールに失敗しました: %s</string>
     <string name="module_version">バージョン</string>
     <string name="module_author">制作者</string>
     <string name="module_overlay_fs_not_available">カーネルによって OverlayFS が無効になっているため、モジュールが利用できません!</string>

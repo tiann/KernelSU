@@ -139,5 +139,5 @@
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
     <string name="settings_disable_su">Disable su compatibility</string>
-    <string name="settings_disable_su_summary">Temporarily disable any applications from obtaining root privileges via the ⁠su command (existing root processes will not be affected).</string>
+    <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
 </resources>

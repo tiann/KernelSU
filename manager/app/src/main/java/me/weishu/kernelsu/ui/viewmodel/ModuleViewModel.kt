@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.overlayFsAvailable
@@ -137,11 +138,8 @@ class ModuleViewModel : ViewModel() {
         val result = kotlin.runCatching {
             val url = m.updateJson
             Log.i(TAG, "checkUpdate url: $url")
-            val response = okhttp3.OkHttpClient()
-                .newCall(
-                    okhttp3.Request.Builder()
-                        .url(url)
-                        .build()
+            val response = ksuApp.okhttpClient.newCall(
+                    okhttp3.Request.Builder().url(url).build()
                 ).execute()
             Log.d(TAG, "checkUpdate code: ${response.code}")
             if (response.isSuccessful) {

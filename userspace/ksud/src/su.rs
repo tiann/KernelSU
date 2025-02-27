@@ -14,7 +14,7 @@ use crate::{
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process::getuid,
-    thread::{set_thread_res_gid, set_thread_res_uid, Gid, Uid},
+    thread::{Gid, Uid, set_thread_res_gid, set_thread_res_uid},
 };
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -280,6 +280,6 @@ fn add_path_to_env(path: &str) -> Result<()> {
     let new_path = PathBuf::from(path.trim_end_matches('/'));
     paths.push(new_path);
     let new_path_env = env::join_paths(paths)?;
-    env::set_var("PATH", new_path_env);
+    unsafe { env::set_var("PATH", new_path_env) };
     Ok(())
 }

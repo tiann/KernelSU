@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -143,7 +144,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         topBar = {
             TopBar(
                 flashing,
-                onBack = {
+                onBack = dropUnlessResumed {
                     navigator.popBackStack()
                 },
                 onSave = {

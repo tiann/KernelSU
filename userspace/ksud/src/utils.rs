@@ -1,6 +1,6 @@
-use anyhow::{bail, Context, Error, Ok, Result};
+use anyhow::{Context, Error, Ok, Result, bail};
 use std::{
-    fs::{create_dir_all, remove_file, write, File, OpenOptions},
+    fs::{File, OpenOptions, create_dir_all, remove_file, write},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
@@ -11,7 +11,7 @@ use std::{
 
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
 #[allow(unused_imports)]
-use std::fs::{set_permissions, Permissions};
+use std::fs::{Permissions, set_permissions};
 #[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
 
@@ -24,7 +24,7 @@ use std::path::PathBuf;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process,
-    thread::{move_into_link_name_space, LinkNameSpaceType},
+    thread::{LinkNameSpaceType, move_into_link_name_space},
 };
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
@@ -129,7 +129,7 @@ pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     use rustix::{
         fd::AsFd,
-        fs::{open, Mode, OFlags},
+        fs::{Mode, OFlags, open},
     };
     let path = format!("/proc/{pid}/ns/mnt");
     let fd = open(path, OFlags::RDONLY, Mode::from_raw_mode(0))?;

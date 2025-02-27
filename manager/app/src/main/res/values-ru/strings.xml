@@ -139,4 +139,6 @@
     <string name="log_saved">Логи сохранены</string>
     <string name="module_sort_action_first">Сортировать (Сначала с действием)</string>
     <string name="module_sort_enabled_first">Сортировать (Сначала включённые)</string>
+    <string name="settings_disable_su">Отключить su совместимость</string>
+    <string name="settings_disable_su_summary">Временно отключить возможность получения root привилегий любым приложениям с помощью команды su (существующие root процессы не будут затронуты).</string>
 </resources>

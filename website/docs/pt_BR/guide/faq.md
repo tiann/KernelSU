@@ -2,9 +2,13 @@
 
 ## KernelSU oferece suporte ao meu dispositivo?
 
-Primeiro, seu dispositivo deve ser capaz de desbloquear o bootloader. Se não, então não há suporte.
+O KernelSU suporta dispositivos rodando Android com bootloader desbloqueado. No entanto, o suporte oficial é apenas para kernels Linux GKI 5.10+ (na prática isso significa que seu dispositivo precisa ter Android 12 de fábrica para ser compatível).
 
-Em seguida, instale o gerenciador do KernelSU no seu dispositivo e abra-o. Se aparecer `Sem suporte` então seu dispositivo não pode ser suportado imediatamente. No entanto, você pode compilar a fonte do kernel e integrar o KernelSU para fazê-lo funcionar ou usar [Dispositivos com suporte não oficial](unofficially-support-devices).
+Você pode verificar facilmente o suporte para o seu dispositivo através do gerenciador do KernelSU, que está disponível [aqui](https://github.com/tiann/KernelSU/releases). 
+
+Se o app mostrar `Não instalado`, significa que seu dispositivo é oficialmente suportado pelo KernelSU.
+
+Se o app mostrar `Sem suporte`, significa que seu dispositivo não é oficialmente suportado no momento. No entanto, você pode compilar o código-fonte do kernel e integrar o KernelSU para fazê-lo funcionar, ou usar [Dispositivos com suporte não oficial](unofficially-support-devices).
 
 ## Para usar o KernelSU precisa desbloquear o bootloader?
 
@@ -12,15 +16,15 @@ Certamente, sim.
 
 ## KernelSU suporta módulos?
 
-Sim, verifique [Guias de módulo](module.md).
+Sim, a maioria dos módulos Magisk funcionam no KernelSU. Verifique [Guias de módulo](module.md) para mais informações.
 
 ## KernelSU suporta Xposed?
 
-Sim, você pode usar LSPosed com [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+Sim, você pode usar LSPosed (ou outro derivado moderno do Xposed) com [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
 
 ## KernelSU suporta Zygisk?
 
-KernelSU não tem suporte integrado ao Zygisk, mas você pode usar [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+KernelSU não tem suporte integrado ao Zygisk, mas você pode usar um módulo como [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) para suportá-lo.
 
 ## KernelSU é compatível com o Magisk?
 
@@ -65,7 +69,7 @@ Não recomendamos que você modifique a partição do sistema diretamente. Por f
 
 ## KernelSU pode modificar hosts? Como posso usar AdAway?
 
-Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
+Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar um módulo como [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
 
 ## Por que existe um enorme arquivo de 1 TB?
 

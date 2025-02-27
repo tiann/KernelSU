@@ -94,6 +94,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.SearchAppBar
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -108,7 +109,6 @@ import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
-import okhttp3.OkHttpClient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -342,7 +342,7 @@ private fun ModuleList(
         val changelogResult = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
                 runCatching {
-                    OkHttpClient().newCall(
+                    ksuApp.okhttpClient.newCall(
                         okhttp3.Request.Builder().url(changelogUrl).build()
                     ).execute().body!!.string()
                 }

@@ -18,7 +18,7 @@
     <string name="selinux_status_permissive">متساهل</string>
     <string name="selinux_status_unknown">مجهول</string>
     <string name="superuser">مستخدم خارق</string>
-    <string name="module_failed_to_enable">لا يمكن تشغيل %s الوحدة</string>
+    <string name="module_failed_to_enable">فشل في تمكين الوحدة %s</string>
     <string name="module_failed_to_disable">فشل تعطيل الإضافة : %s</string>
     <string name="module_empty">لا توجد إضافات مثبتة</string>
     <string name="module">الإضافات</string>
@@ -135,4 +135,6 @@
     <string name="log_saved">السجلات محفوظة</string>
     <string name="module_sort_enabled_first">فرز (الممكن أولاً)</string>
     <string name="module_sort_action_first">فرز (الإجراء أولاً)</string>
+    <string name="settings_disable_su">تعطيل توافق su</string>
+    <string name="settings_disable_su_summary">قم بتعطيل أي تطبيقات مؤقتا من الحصول على امتيازات الجذر عبر الأمر su (لن تتأثر عمليات الجذر الحالية).</string>
 </resources>

@@ -150,7 +150,7 @@ REPLACE="
 Esta lista criará automaticamente os diretórios `$MODPATH/system/app/YouTube` e `$MODPATH/system/app/Bloatware` e, em seguida, executará `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` e `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. Após o módulo entrar em vigor, `/system/app/YouTube` e `/system/app/Bloatware` serão substituídos por diretórios vazios.
 
 ::: tip DIFERENÇAS COM MAGISK
-O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos /system sem modificar fisicamente a partição /system.
+O mecanismo sem sistema do KernelSU é implementado através do OverlayFS do kernel, enquanto o Magisk atualmente usa montagem mágica (montagem de ligação). Os dois métodos de implementação têm diferenças significativas, mas o objetivo final é o mesmo: modificar os arquivos `/system` sem modificar fisicamente a partição `/system`.
 :::
 
 Se você estiver interessado em OverlayFS, é recomendável ler a [documentação sobre OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html) do kernel Linux.
@@ -229,7 +229,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
     se [context] não está definido, o padrão é "u:object_r:system_file:s0"
     para todos os arquivos em <directory>, ele chamará:
        set_perm arquivo proprietário do grupo filepermission
-    para todos os diretórios em <directory> (including itself), ele vai ligar:
+    para todos os diretórios em <directory> (incluindo ele mesmo), ele vai ligar:
        set_perm dir owner group dirpermission context
 ```
 
