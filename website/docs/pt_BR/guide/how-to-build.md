@@ -58,7 +58,7 @@ Se você conseguir compilar o kernel com sucesso, adicionar suporte ao KernelSU 
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
 ```
 
-```sh[Branch principal (dev)]
+```sh[Branch main (dev)]
 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 ```
 

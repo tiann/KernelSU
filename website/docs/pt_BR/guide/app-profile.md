@@ -61,8 +61,8 @@ SELinux é um poderoso mecanismo do Controle de Acesso Obrigatório (MAC). Ele o
 
 O SELinux pode ser executado em dois modos globais:
 
-1. Modo permissivo: Os eventos de negação são registrados, mas não aplicados.
-2. Modo de aplicação: Os eventos de negação são registrados e aplicados.
+1. Modo permissivo (Permissive): Os eventos de negação são registrados, mas não aplicados.
+2. Modo impondo (Enforcing): Os eventos de negação são registrados e aplicados.
 
 ::: warning AVISO
 Os sistemas Android modernos dependem fortemente do SELinux para garantir a segurança geral do sistema. É altamente recomendável não usar nenhum sistema personalizado executado em "Modo permissivo", pois ele não oferece vantagens significativas em relação a um sistema completamente aberto.
@@ -85,7 +85,7 @@ typeattribute app1 mlstrustedsubject
 allow app1 * * *
 ```
 
-Observe que a regra `allow app1 * * *` é usada apenas para fins de demonstração. Na prática, esta regra não deve ser utilizada extensivamente, pois não difere muito do Modo permissivo.
+Observe que a regra `allow app1 * * *` é usada apenas para fins de demonstração. Na prática, esta regra não deve ser usada extensivamente, pois não difere muito do Modo permissivo.
 
 ### Escalação
 
@@ -99,7 +99,7 @@ Por exemplo, se você conceder permissão root a um usuário ADB shell (que é u
 ::: warning OBSERVAÇÃO
 Este comportamento é totalmente esperado e não é um bug. Portanto, recomendamos o seguinte:
 
-Se você realmente precisa conceder privilégios root ao ADB (por exemplo, como desenvolvedor), não é aconselhável alterar o UID para `2000` ao configurar o Perfil root. Usar `1000` (system) seria uma melhor escolha.
+Se você realmente precisa conceder privilégios root ao ADB (por exemplo, como desenvolvedor), não é aconselhável alterar o UID para `2000` ao configurar o Perfil root. Usar `1000` (sistema) seria uma melhor escolha.
 :::
 
 ## Perfil não root
