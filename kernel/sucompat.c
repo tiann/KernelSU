@@ -232,8 +232,6 @@ static int pts_unix98_lookup_pre(struct kprobe *p, struct pt_regs *regs)
 	return ksu_handle_devpts(inode);
 }
 
-#endif
-
 static struct kprobe *init_kprobe(const char *name,
 				  kprobe_pre_handler_t handler)
 {
@@ -265,6 +263,7 @@ static void destroy_kprobe(struct kprobe **kp_ptr)
 }
 
 static struct kprobe *su_kps[4];
+#endif
 
 // sucompat: permited process can execute 'su' to gain root access.
 void ksu_sucompat_init()
