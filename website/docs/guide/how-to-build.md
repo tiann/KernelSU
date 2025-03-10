@@ -69,3 +69,4 @@ curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
 :::
 
 Then, rebuild the kernel and you will get a kernel image with KernelSU!
+rm common/android/abi_gki_protected_exports_*
