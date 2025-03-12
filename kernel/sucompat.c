@@ -23,7 +23,7 @@
 extern void escape_to_root();
 
 #ifndef CONFIG_KPROBES
-bool ksu_sucompat_non_kp __read_mostly = true;
+static bool ksu_sucompat_non_kp __read_mostly = true;
 #endif
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
