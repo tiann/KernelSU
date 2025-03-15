@@ -309,7 +309,8 @@ handle_partition() {
         return;
     fi
 
-    if [ -L "/system/$1" ] && [ "$(readlink -f /system/$1)" = "/$1" ]; then
+    # we move the folder to / only if it is a native folder that is not a symlink
+    if [ -d "/$1" ] && [ ! -L "/$1" ]; then
         ui_print "- Handle partition /$1"
         # we create a symlink if module want to access $MODPATH/system/$1
         # but it doesn't always work(ie. write it in post-fs-data.sh would fail because it is readonly)
