@@ -406,6 +406,7 @@ install_module() {
   handle_partition vendor
   handle_partition system_ext
   handle_partition product
+  handle_partition odm
 
   if $BOOTMODE; then
     mktouch $NVBASE/modules/$MODID/update
