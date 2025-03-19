@@ -509,34 +509,7 @@ struct mount_entry {
 };
 LIST_HEAD(mount_list);
 
-static bool should_umount(struct path *path)
-{
-	if (!path) {
-		return false;
-	}
-
-	if (current->nsproxy->mnt_ns == init_nsproxy.mnt_ns) {
-		pr_info("ignore global mnt namespace process: %d\n",
-			current_uid().val);
-		return false;
-	}
-
-	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
-		const char *fstype = path->mnt->mnt_sb->s_type->name;
-		return strcmp(fstype, "overlay") == 0;
-	}
-	return false;
-}
-
-static void ksu_umount_mnt(struct path *path, int flags)
-{
-	int err = path_umount(path, flags);
-	if (err) {
-		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
-	}
-}
-
-static void try_umount(const char *mnt, bool check_mnt, int flags)
+static void try_umount(const char *mnt, int flags)
 {
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
@@ -548,18 +521,18 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 		// it is not root mountpoint, maybe umounted by others already.
 		return;
 	}
-
-	// we are only interest in some specific mounts
-	if (check_mnt && !should_umount(&path)) {
-		return;
-	}
-
-	ksu_umount_mnt(&path, flags);
+	
+	int val = path_umount(&path, flags);
+	if (val)
+		pr_info("umount %s failed: %d\n", mnt, val);
+	else
+		pr_info("umount %s success: %d\n", mnt, val);
 }
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
 {
 	char buf[256];
+
 	struct mount_entry *entry, *tmp;
 
 	// this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
@@ -614,13 +587,13 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 	list_for_each_entry_safe(entry, tmp, &mount_list, list) {
 		char *actual_path = d_path(&entry->path, buf, sizeof(buf));
-		try_umount(actual_path, false, MNT_DETACH);
+		try_umount(actual_path, MNT_DETACH);
 	}
-	
-	try_umount("/data/adb/modules", false, MNT_DETACH);
+
+	try_umount("/data/adb/modules", MNT_DETACH);
 
 	// try umount ksu temp path
-	try_umount("/debug_ramdisk", false, MNT_DETACH);
+	try_umount("/debug_ramdisk", MNT_DETACH);
 
 	return 0;
 }
@@ -645,12 +618,12 @@ int ksu_mount_monitor(const char *dev_name, const struct path *path, const char 
 			pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, path->dentry->d_iname);
 		}
 	}
-	
 out:
 	kfree(device_name_copy);
 	kfree(fstype_copy);
 	return 0;
 }
+
 
 // Init functons
 
