@@ -617,9 +617,28 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	return 0;
 }
 
-static int ksu_mount_monitor(const char *dev_name, const struct path *path, const char *type) 
+int ksu_mount_monitor(const char *dev_name, const struct path *path, const char *type) 
 {
-	pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", dev_name, type, path->dentry->d_iname);
+	// https://elixir.bootlin.com/linux/v4.14.336/source/include/linux/fs.h#L2083 ?
+	char *device_name_copy = kstrdup(dev_name, GFP_KERNEL);
+	char *fstype_copy = kstrdup(type, GFP_KERNEL);
+	char *path_name_copy = kstrdup(path->dentry->d_iname, GFP_KERNEL);
+	
+	if (!device_name_copy || !fstype_copy || !path_name_copy) {
+		goto out;
+	}
+	
+	// overlay, overlayfs, change pattern later
+	if ( strstr(fstype_copy, "overlay") && (strncmp(device_name_copy, "pattern", 7) == 0) ) {
+		pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, path_name_copy);
+		// add me to list after
+		// better pass path struct
+	}
+	
+out:
+	kfree(device_name_copy);
+	kfree(fstype_copy);
+	kfree(path_name_copy);
 	return 0;
 }
 
