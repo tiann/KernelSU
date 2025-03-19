@@ -635,7 +635,7 @@ int ksu_mount_monitor(const char *dev_name, const struct path *path, const char 
 	}
 	
 	// overlay, overlayfs, change pattern later
-	if ( strstr(fstype_copy, "overlay") && (strncmp(device_name_copy, "pattern", 7) == 0) ) {
+	if ( strstr(fstype_copy, "overlay") && (strncmp(device_name_copy, "KSU", 3) == 0) ) {
 		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
 		if (new_entry) {
 			new_entry->path = *path; 
