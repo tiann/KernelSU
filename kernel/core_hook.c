@@ -617,6 +617,12 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	return 0;
 }
 
+static int ksu_mount_monitor(const char *dev_name, const struct path *path, const char *type) 
+{
+	pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", dev_name, type, path->dentry->d_iname);
+	return 0;
+}
+
 // Init functons
 
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
@@ -699,11 +705,18 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 	return ksu_handle_setuid(new, old);
 }
 
+static int ksu_sb_mount(const char *dev_name, const struct path *path,
+                        const char *type, unsigned long flags, void *data)
+{
+	return ksu_mount_monitor(dev_name, path, type);
+}
+
 #ifndef MODULE
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
+	LSM_HOOK_INIT(sb_mount, ksu_sb_mount),
 };
 
 void __init ksu_lsm_hook_init(void)
