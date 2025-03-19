@@ -503,6 +503,12 @@ static bool is_appuid(kuid_t uid)
 	return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
 }
 
+struct mount_entry {
+    struct path path;
+    struct list_head list;
+};
+LIST_HEAD(mount_list);
+
 static bool should_umount(struct path *path)
 {
 	if (!path) {
@@ -622,23 +628,25 @@ int ksu_mount_monitor(const char *dev_name, const struct path *path, const char 
 	// https://elixir.bootlin.com/linux/v4.14.336/source/include/linux/fs.h#L2083 ?
 	char *device_name_copy = kstrdup(dev_name, GFP_KERNEL);
 	char *fstype_copy = kstrdup(type, GFP_KERNEL);
-	char *path_name_copy = kstrdup(path->dentry->d_iname, GFP_KERNEL);
+	struct mount_entry *new_entry;
 	
-	if (!device_name_copy || !fstype_copy || !path_name_copy) {
+	if (!device_name_copy || !fstype_copy ) {
 		goto out;
 	}
 	
 	// overlay, overlayfs, change pattern later
 	if ( strstr(fstype_copy, "overlay") && (strncmp(device_name_copy, "pattern", 7) == 0) ) {
-		pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, path_name_copy);
-		// add me to list after
-		// better pass path struct
+		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+		if (new_entry) {
+			new_entry->path = *path; 
+			list_add(&new_entry->list, &mount_list);
+			pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, path->dentry->d_iname);
+		}
 	}
 	
 out:
 	kfree(device_name_copy);
 	kfree(fstype_copy);
-	kfree(path_name_copy);
 	return 0;
 }
 
