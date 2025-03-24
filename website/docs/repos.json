@@ -709,9 +709,9 @@
     {
       "maintainer": "rsuntkOrgs",
         "maintainer_link": "https://github.com/rsuntkOrgs",
-        "kernel_name": "android_kernel_samsung_a05",
-        "kernel_link": "https://github.com/rsuntkOrgs/android_kernel_samsung_a05",
-        "devices": "Samsung Galaxy A05 (a05m) | SM-A055F/M | MT6768"
+        "kernel_name": "kernel_samsung_wingtech",
+        "kernel_link": "https://github.com/rsuntkOrgs/kernel_samsung_wingtech",
+        "devices": "Samsung Galaxy A05 (a05m) and A04 (a04)"
      },
     {
         "maintainer": "itejo443",
