@@ -104,10 +104,11 @@ pub fn root_shell() -> Result<()> {
         "preserve-environment",
         "preserve the entire environment",
     );
-    opts.optflag(
+    opts.optopt(
         "s",
         "shell",
         "use SHELL instead of the default /system/bin/sh",
+        "SHELL",
     );
     opts.optflag("v", "version", "display version number and exit");
     opts.optflag("V", "", "display version code and exit");
