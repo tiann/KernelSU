@@ -587,10 +587,8 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		try_umount(entry->umountable, MNT_DETACH);
 	}
 
+	// unconditional umount for modules.img
 	try_umount("/data/adb/modules", MNT_DETACH);
-
-	// try umount ksu temp path
-	try_umount("/debug_ramdisk", MNT_DETACH);
 
 	return 0;
 }
@@ -606,13 +604,13 @@ int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *typ
 		goto out;
 	}
 	
-	// overlay, overlayfs, change pattern later
-	if ( strstr(fstype_copy, "overlay") && (strncmp(device_name_copy, "KSU", 3) == 0) ) {
+	// KSU devname, overlay/fs and tmpfs
+	if ( !strncmp(device_name_copy, "KSU", 3) && ( strstr(fstype_copy, "overlay") || !strncmp(fstype_copy, "tmpfs", 5) ) ) {
 		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
 		if (new_entry) {
 			new_entry->umountable = kstrdup(dirname, GFP_KERNEL);
 			list_add(&new_entry->list, &mount_list);
-			pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, new_entry->umountable);
+			pr_info("ksu_mount_monitor: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, new_entry->umountable);
 		}
 	}
 out:
