@@ -559,6 +559,7 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
 {
+	char buf[256];
 	struct mount_entry *entry, *tmp;
 
 	// this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
@@ -612,7 +613,8 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 #endif
 
 	list_for_each_entry_safe(entry, tmp, &mount_list, list) {
-		ksu_umount_mnt(&entry->path, 0); 
+		char *actual_path = d_path(&entry->path, buf, sizeof(buf));
+		try_umount(actual_path, false, MNT_DETACH);
 	}
 	
 	try_umount("/data/adb/modules", false, MNT_DETACH);
