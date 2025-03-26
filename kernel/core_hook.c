@@ -595,9 +595,9 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	return 0;
 }
 
-int ksu_mount_monitor(const char *dev_name, const struct path *path, const char *type) 
+int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *type) 
 {
-	char buf[256];
+	
 	char *device_name_copy = kstrdup(dev_name, GFP_KERNEL);
 	char *fstype_copy = kstrdup(type, GFP_KERNEL);
 	struct mount_entry *new_entry;
@@ -610,7 +610,7 @@ int ksu_mount_monitor(const char *dev_name, const struct path *path, const char 
 	if ( strstr(fstype_copy, "overlay") && (strncmp(device_name_copy, "KSU", 3) == 0) ) {
 		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
 		if (new_entry) {
-			new_entry->umountable = kstrdup(d_path(path, buf, sizeof(buf)), GFP_KERNEL);
+			new_entry->umountable = kstrdup(dirname, GFP_KERNEL);
 			list_add(&new_entry->list, &mount_list);
 			pr_info("security_sb_mount: devicename %s fstype: %s path: %s\n", device_name_copy, fstype_copy, new_entry->umountable);
 		}
@@ -707,7 +707,13 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 static int ksu_sb_mount(const char *dev_name, const struct path *path,
                         const char *type, unsigned long flags, void *data)
 {
-	return ksu_mount_monitor(dev_name, path, type);
+	char buf[256];
+	char *dir_name = d_path(path, buf, sizeof(buf));
+	
+	if (dir_name)
+		return ksu_mount_monitor(dev_name, dir_name, type);
+	else
+		return 0;
 }
 
 #ifndef MODULE
