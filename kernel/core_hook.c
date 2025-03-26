@@ -587,9 +587,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		try_umount(entry->umountable, MNT_DETACH);
 	}
 
-	// unconditional umount for modules.img
-	try_umount("/data/adb/modules", MNT_DETACH);
-
 	return 0;
 }
 
@@ -598,14 +595,15 @@ int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *typ
 	
 	char *device_name_copy = kstrdup(dev_name, GFP_KERNEL);
 	char *fstype_copy = kstrdup(type, GFP_KERNEL);
+	char *dirname_copy = kstrdup(dirname, GFP_KERNEL);
 	struct mount_entry *new_entry;
 	
-	if (!device_name_copy || !fstype_copy ) {
+	if (!device_name_copy || !fstype_copy || !dirname_copy) {
 		goto out;
 	}
 	
-	// KSU devname, overlay/fs and tmpfs
-	if ( !strncmp(device_name_copy, "KSU", 3) && ( strstr(fstype_copy, "overlay") || !strncmp(fstype_copy, "tmpfs", 5) ) ) {
+	// KSU devname, overlay/fs or tmpfs || /data/adb/modules, modules_update
+	if ( ( !strncmp(device_name_copy, "KSU", 3) && ( strstr(fstype_copy, "overlay") || !strncmp(fstype_copy, "tmpfs", 5) ) ) || strstr(dirname_copy, "/data/adb/modules") ) {
 		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
 		if (new_entry) {
 			new_entry->umountable = kstrdup(dirname, GFP_KERNEL);
@@ -616,6 +614,7 @@ int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *typ
 out:
 	kfree(device_name_copy);
 	kfree(fstype_copy);
+	kfree(dirname_copy);
 	return 0;
 }
 
