@@ -603,7 +603,7 @@ int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *typ
 	}
 	
 	// KSU devname, overlay/fs or tmpfs || /data/adb/modules, modules_update
-	if ( ( !strncmp(device_name_copy, "KSU", 3) && ( strstr(fstype_copy, "overlay") || !strncmp(fstype_copy, "tmpfs", 5) ) ) || strstr(dirname_copy, "/data/adb/modules") ) {
+	if (( !strcmp(device_name_copy, "KSU")  && ( strstarts(fstype_copy, "overlay") || !strcmp(fstype_copy, "tmpfs") ) ) || strstarts(dirname_copy, "/data/adb/modules") ) {
 		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
 		if (new_entry) {
 			new_entry->umountable = kstrdup(dirname, GFP_KERNEL);
