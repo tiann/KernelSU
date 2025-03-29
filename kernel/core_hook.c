@@ -704,10 +704,13 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 static int ksu_sb_mount(const char *dev_name, const struct path *path,
                         const char *type, unsigned long flags, void *data)
 {
-	char buf[256];
+	// 384 is what throne_tracker uses, something sensible even for /data/app
+	// we can pattern match revanced mounts even.
+	// we are not really interested on mountpoints that are longer than that
+	char buf[384];
 	char *dir_name = d_path(path, buf, sizeof(buf));
-	
-	if (dir_name)
+
+	if (dir_name && dir_name != buf)
 		return ksu_mount_monitor(dev_name, dir_name, type);
 	else
 		return 0;
