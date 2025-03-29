@@ -710,10 +710,15 @@ static int ksu_sb_mount(const char *dev_name, const struct path *path,
 	char buf[384];
 	char *dir_name = d_path(path, buf, sizeof(buf));
 
-	if (dir_name && dir_name != buf)
+	if (dir_name && dir_name != buf) {
+#ifdef CONFIG_KSU_DEBUG
+		// for modders, feel free to get creative.
+		pr_info("security_sb_mount: devname: %s path: %s type: %s flags: %d \n", dev_name, dir_name, type, flags);
+#endif
 		return ksu_mount_monitor(dev_name, dir_name, type);
-	else
+	} else {
 		return 0;
+	}
 }
 
 #ifndef MODULE
