@@ -600,12 +600,13 @@ int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *typ
 	char *dirname_copy = kstrdup(dirname, GFP_KERNEL);
 	struct mount_entry *new_entry;
 	
-	if (!device_name_copy || !fstype_copy || !dirname_copy) {
+	if (!device_name_copy || !dirname_copy) {
 		goto out;
 	}
 	
-	// KSU devname, overlay/fs or tmpfs || /data/adb/modules, modules_update
-	if (( !strcmp(device_name_copy, "KSU")  && ( strstarts(fstype_copy, "overlay") || !strcmp(fstype_copy, "tmpfs") ) ) || strstarts(dirname_copy, "/data/adb/modules") ) {
+	// KSU devname, overlay/fs or tmpfs || /data/adb/modules, modules_update || MKSU magic mount
+	if (( !strcmp(device_name_copy, "KSU")  && ( strstarts(fstype_copy, "overlay") || !strcmp(fstype_copy, "tmpfs") ) ) || strstarts(dirname_copy, "/data/adb/modules") || 
+		( strstarts(device_name_copy, "/dev/workdir") && !strstarts(dirname_copy, "/dev/workdir")) || strstarts(device_name_copy, "/data/adb/modules") ) {
 		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
 		if (new_entry) {
 			new_entry->umountable = kstrdup(dirname, GFP_KERNEL);
