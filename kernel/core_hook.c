@@ -50,7 +50,6 @@ static bool ksu_module_mounted = false;
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
 static bool ksu_su_compat_enabled = true;
-static bool ksu_mount_monitor_enabled = true;
 extern void ksu_sucompat_init();
 extern void ksu_sucompat_exit();
 
@@ -333,9 +332,6 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			if (!boot_complete_lock) {
 				boot_complete_lock = true;
 				pr_info("boot_complete triggered\n");
-				// turn off mount monitor
-				pr_info("turning off ksu_mount_monitor\n");
-				ksu_mount_monitor_enabled = false;
 			}
 			break;
 		}
@@ -596,10 +592,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *type) 
 {
-	if (!ksu_mount_monitor_enabled) {
-		return 0;
-	}
-
+	
 	char *device_name_copy = kstrdup(dev_name, GFP_KERNEL);
 	char *fstype_copy = kstrdup(type, GFP_KERNEL);
 	char *dirname_copy = kstrdup(dirname, GFP_KERNEL);
@@ -711,10 +704,6 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 static int ksu_sb_mount(const char *dev_name, const struct path *path,
                         const char *type, unsigned long flags, void *data)
 {
-	if (!ksu_mount_monitor_enabled) {
-		return 0;
-	}
-
 	// 384 is what throne_tracker uses, something sensible even for /data/app
 	// we can pattern match revanced mounts even.
 	// we are not really interested on mountpoints that are longer than that
