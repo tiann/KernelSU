@@ -525,8 +525,10 @@ static void try_umount(const char *mnt, int flags)
 	int val = path_umount(&path, flags);
 	if (val)
 		pr_info("umount %s failed: %d\n", mnt, val);
+#ifdef CONFIG_KSU_DEBUG
 	else
 		pr_info("umount %s success: %d\n", mnt, val);
+#endif
 }
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
@@ -710,10 +712,14 @@ static int ksu_sb_mount(const char *dev_name, const struct path *path,
 	char buf[384];
 	char *dir_name = d_path(path, buf, sizeof(buf));
 
-	if (dir_name && dir_name != buf)
+	if (dir_name && dir_name != buf) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("security_sb_mount: devname: %s path: %s type: %s \n", dev_name, dir_name, type);
+#endif
 		return ksu_mount_monitor(dev_name, dir_name, type);
-	else
+	} else {
 		return 0;
+	}
 }
 
 #ifndef MODULE
