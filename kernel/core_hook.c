@@ -661,6 +661,21 @@ static struct kprobe renameat_kp = {
 	.pre_handler = renameat_handler_pre,
 };
 
+
+static int mount_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	const char *dev_name = (const char *)PT_REGS_PARM1(regs); 
+	const char *dir_name = (const char *)PT_REGS_PARM2(regs);
+ 	const char *type = (const char *)PT_REGS_PARM3(regs);
+
+	return ksu_mount_monitor(dev_name, dir_name, type);
+}
+
+static struct kprobe mount_hook_kp = {
+	.symbol_name = "do_mount",
+	.pre_handler = mount_handler_pre,
+};
+
 __maybe_unused int ksu_kprobe_init(void)
 {
 	int rc = 0;
@@ -899,6 +914,7 @@ void __init ksu_lsm_hook_init(void)
 	} else {
 		pr_warn("Failed to find task_fix_setuid!\n");
 	}
+	register_kprobe(&mount_hook_kp);
 	smp_mb();
 }
 #endif
