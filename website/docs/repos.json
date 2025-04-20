@@ -726,5 +726,12 @@
         "kernel_name": "M30s-custom-kernel",
         "kernel_link": "https://github.com/JuiIm/M30s-custom-kernel-M307f---KernelSU-support/",
         "devices": "Samsung Galaxy M30s (M307F)"
+    },
+    {
+        "maintainer": "poqdavid",
+        "maintainer_link": "https://github.com/poqdavid",
+        "kernel_name": "android_kernel_samsung_sma155f",
+        "kernel_link": "https://github.com/poqdavid/android_kernel_samsung_sma155f",
+        "devices": "Samsung Galaxy A15 4G (sma155f) | MediaTek Helio G99"
     }
 ]
