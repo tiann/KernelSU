@@ -32,7 +32,7 @@ jobs:
             defconfig: arm64_arcvm_defconfig
 
     name: Build ChromeOS ARCVM kernel
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       LTO: thin
       ROOT_DIR: /
