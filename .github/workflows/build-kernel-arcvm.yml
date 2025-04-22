@@ -50,7 +50,7 @@ jobs:
 
           sudo ln -s --force python3 /usr/bin/python
 
-          export LLVM_VERSION=12
+          export LLVM_VERSION=14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh $LLVM_VERSION
