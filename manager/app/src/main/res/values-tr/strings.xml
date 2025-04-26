@@ -18,11 +18,15 @@
     <string name="selinux_status_enforcing">Etkin (Enforcing)</string>
     <string name="selinux_status_permissive">Serbest (Permissive)</string>
     <string name="selinux_status_unknown">Bilinmiyor</string>
-    <string name="superuser">Süper kullanıcı</string>
+    <string name="superuser">SüperKullanıcı</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
     <string name="module_empty">Kurulu modül yok</string>
     <string name="module">Modül</string>
+    <string name="module_install_prompt_with_name">Aşağıdaki modüller yüklenecek: %1$s</string>
+    <string name="module_sort_action_first">Sırala (Action önce)</string>
+    <string name="module_sort_enabled_first">Sırala (Etkin önce)</string>
+    <string name="confirm">Onayla</string>
     <string name="uninstall">Kaldır</string>
     <string name="module_install">Kur</string>
     <string name="install">Kur</string>
@@ -39,7 +43,7 @@
     <string name="module_uninstall_failed">Kaldırma başarısız: %s</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Geliştirici</string>
-    <string name="module_overlay_fs_not_available">OverlayFS çekirdek tarafından devre dışı bırakıldığı için modüller kullanılamıyor.</string>
+    <string name="module_overlay_fs_not_available">OverlayFS çekirdek tarafından devre dışı bırakıldığı için modüller kullanılamaz!</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
@@ -81,6 +85,7 @@
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi.</string>
+    <string name="su_not_allowed">%s için süper kullanıcı izni verilemiyor</string>
     <string name="module_changelog">Değişiklik geçmişi</string>
     <string name="settings_profile_template">Uygulama profili şablonu</string>
     <string name="settings_profile_template_summary">Yerel ve çevrimiçi uygulama profili şablonlarını yönetin</string>
@@ -107,6 +112,7 @@
     <string name="settings_check_update">Güncellemeleri denetle</string>
     <string name="settings_check_update_summary">Uygulamayı açarken güncellemeleri otomatik denetle</string>
     <string name="grant_root_failed">Root izni verilemedi!</string>
+    <string name="action">Action</string>
     <string name="open">Aç</string>
     <string name="enable_web_debugging">Web görünümü hata ayıklamasını etkinleştir</string>
     <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
@@ -117,22 +123,22 @@
 \nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.
 \nDevam edilsin mi?</string>
     <string name="install_next">Sonraki</string>
-    <string name="select_kmi">KMI seçin</string>
     <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
-    <string name="shrink_sparse_image">Sparse imajını küçültün</string>
-    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi).</string>
+    <string name="select_kmi">KMI seçin/string>
+    <string name="shrink_sparse_image">Seyrek görüntüyü küçült</string>
+    <string name="shrink_sparse_image_message">Modülün bulunduğu seyrek görüntüyü gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu yüzden yalnızca gerekli olduğunda kullanın (Örneğin yedekleme için).</string>    <string name="settings_uninstall">Kaldır</string>
     <string name="settings_uninstall_temporary">Geçici olarak kaldır</string>
     <string name="settings_uninstall_permanent">Kalıcı olarak kaldır</string>
     <string name="settings_restore_stock_image">Stok imajı geri yükle</string>
     <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldır, bir sonraki yeniden başlatmadan sonra orijinal durumuna geri yükle.</string>
-    <string name="settings_uninstall">Kaldır</string>
     <string name="settings_uninstall_permanent_message">KernelSU (Root ve tüm modüller) tamamen ve kalıcı olarak kaldırılıyor.</string>
     <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın.</string>
-    <string name="flash_success">Flaşlama başarılı</string>
-    <string name="selected_lkm">Seçili LKM: %s</string>
     <string name="flashing">Flaşlanıyor</string>
+    <string name="flash_success">Flaşlama başarılı</string>
     <string name="flash_failed">Flaşlama başarısız</string>
+    <string name="selected_lkm">Seçili LKM: %s</string>
     <string name="save_log">Günlükleri Kaydet</string>
-    <string name="action">Aksiyon</string>
     <string name="log_saved">Günlükler kaydedildi</string>
+    <string name="settings_disable_su">su uyumluluğunu devre dışı bırak</string>
+    <string name="settings_disable_su_summary">Geçici olarak herhangi bir uygulamanın su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini devre dışı bırakır (mevcut kök işlemleri etkilenmez).</string>
 </resources>
