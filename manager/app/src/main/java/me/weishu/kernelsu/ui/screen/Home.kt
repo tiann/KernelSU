@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.*
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.util.*
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
@@ -180,7 +181,7 @@ private fun TopBar(
             }
 
             var showDropdown by remember { mutableStateOf(false) }
-            if (Natives.isKsuValid(ksuApp.packageName)) {
+            KsuIsValid() {
                 IconButton(onClick = {
                     showDropdown = true
                 }) {

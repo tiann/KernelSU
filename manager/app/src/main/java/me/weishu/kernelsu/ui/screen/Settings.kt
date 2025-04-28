@@ -86,6 +86,7 @@ import me.weishu.kernelsu.ui.component.AboutDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.DialogHandle
 import me.weishu.kernelsu.ui.component.SwitchItem
+import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
@@ -105,7 +106,6 @@ import java.time.format.DateTimeFormatter
 fun SettingScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
-    val ksuIsValid = Natives.isKsuValid(ksuApp.packageName)
 
     Scaffold(
         topBar = {
@@ -152,7 +152,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             val profileTemplate = stringResource(id = R.string.settings_profile_template)
-            if (ksuIsValid) {
+            KsuIsValid() {
                 ListItem(
                     leadingContent = { Icon(Icons.Filled.Fence, profileTemplate) },
                     headlineContent = { Text(profileTemplate) },
@@ -167,7 +167,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 mutableStateOf(Natives.isDefaultUmountModules())
             }
             
-            if (ksuIsValid) {
+            KsuIsValid() {
                 SwitchItem(
                     icon = Icons.Filled.FolderDelete,
                     title = stringResource(id = R.string.settings_umount_modules_default),
@@ -180,7 +180,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
             
-            if (ksuIsValid) {
+            KsuIsValid() {
                 if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
                     var isSuDisabled by rememberSaveable {
                         mutableStateOf(!Natives.isSuEnabled())
@@ -221,7 +221,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 )
             }
             
-            if (ksuIsValid) {
+            KsuIsValid() {
                 SwitchItem(
                     icon = Icons.Filled.DeveloperMode,
                     title = stringResource(id = R.string.enable_web_debugging),
@@ -344,7 +344,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             val shrink = stringResource(id = R.string.shrink_sparse_image)
             val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
-            if (ksuIsValid) {
+            KsuIsValid() {
                 ListItem(
                     leadingContent = {
                         Icon(
