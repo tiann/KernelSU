@@ -183,6 +183,7 @@ jobs:
             sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
             if [ -e common/modules.bzl ]; then
               sed -i 's/_COMMON_GKI_MODULES_LIST = \[/_COMMON_GKI_MODULES_LIST = \[ "drivers\/kernelsu\/kernelsu.ko",/g' common/modules.bzl
+              sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' common/BUILD.bazel
             fi
           else
             TARGET_FILE="build/kernel/build.sh"
