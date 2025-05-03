@@ -85,6 +85,7 @@ import me.weishu.kernelsu.ui.component.AboutDialog
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.DialogHandle
 import me.weishu.kernelsu.ui.component.SwitchItem
+import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberCustomDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
@@ -150,42 +151,49 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             val profileTemplate = stringResource(id = R.string.settings_profile_template)
-            ListItem(
-                leadingContent = { Icon(Icons.Filled.Fence, profileTemplate) },
-                headlineContent = { Text(profileTemplate) },
-                supportingContent = { Text(stringResource(id = R.string.settings_profile_template_summary)) },
-                modifier = Modifier.clickable {
-                    navigator.navigate(AppProfileTemplateScreenDestination)
-                }
-            )
+            KsuIsValid() {
+                ListItem(
+                    leadingContent = { Icon(Icons.Filled.Fence, profileTemplate) },
+                    headlineContent = { Text(profileTemplate) },
+                    supportingContent = { Text(stringResource(id = R.string.settings_profile_template_summary)) },
+                    modifier = Modifier.clickable {
+                        navigator.navigate(AppProfileTemplateScreenDestination)
+                    }
+                )
+            }
 
             var umountChecked by rememberSaveable {
                 mutableStateOf(Natives.isDefaultUmountModules())
             }
-            SwitchItem(
-                icon = Icons.Filled.FolderDelete,
-                title = stringResource(id = R.string.settings_umount_modules_default),
-                summary = stringResource(id = R.string.settings_umount_modules_default_summary),
-                checked = umountChecked
-            ) {
-                if (Natives.setDefaultUmountModules(it)) {
-                    umountChecked = it
+            
+            KsuIsValid() {
+                SwitchItem(
+                    icon = Icons.Filled.FolderDelete,
+                    title = stringResource(id = R.string.settings_umount_modules_default),
+                    summary = stringResource(id = R.string.settings_umount_modules_default_summary),
+                    checked = umountChecked
+                ) {
+                    if (Natives.setDefaultUmountModules(it)) {
+                        umountChecked = it
+                    }
                 }
             }
-
-            if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
-                var isSuDisabled by rememberSaveable {
-                    mutableStateOf(!Natives.isSuEnabled())
-                }
-                SwitchItem(
-                    icon = Icons.Filled.RemoveModerator,
-                    title = stringResource(id = R.string.settings_disable_su),
-                    summary = stringResource(id = R.string.settings_disable_su_summary),
-                    checked = isSuDisabled,
-                ) { checked ->
-                    val shouldEnable = !checked
-                    if (Natives.setSuEnabled(shouldEnable)) {
-                        isSuDisabled = !shouldEnable
+            
+            KsuIsValid() {
+                if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
+                    var isSuDisabled by rememberSaveable {
+                        mutableStateOf(!Natives.isSuEnabled())
+                    }
+                    SwitchItem(
+                        icon = Icons.Filled.RemoveModerator,
+                        title = stringResource(id = R.string.settings_disable_su),
+                        summary = stringResource(id = R.string.settings_disable_su_summary),
+                        checked = isSuDisabled,
+                    ) { checked ->
+                        val shouldEnable = !checked
+                        if (Natives.setSuEnabled(shouldEnable)) {
+                            isSuDisabled = !shouldEnable
+                        }
                     }
                 }
             }
@@ -211,14 +219,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     prefs.getBoolean("enable_web_debugging", false)
                 )
             }
-            SwitchItem(
-                icon = Icons.Filled.DeveloperMode,
-                title = stringResource(id = R.string.enable_web_debugging),
-                summary = stringResource(id = R.string.enable_web_debugging_summary),
-                checked = enableWebDebugging
-            ) {
-                prefs.edit().putBoolean("enable_web_debugging", it).apply()
-                enableWebDebugging = it
+            
+            KsuIsValid() {
+                SwitchItem(
+                    icon = Icons.Filled.DeveloperMode,
+                    title = stringResource(id = R.string.enable_web_debugging),
+                    summary = stringResource(id = R.string.enable_web_debugging_summary),
+                    checked = enableWebDebugging
+                ) {
+                    prefs.edit().putBoolean("enable_web_debugging", it).apply()
+                    enableWebDebugging = it
+                }
             }
 
             var showBottomsheet by remember { mutableStateOf(false) }
@@ -332,25 +343,27 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             val shrink = stringResource(id = R.string.shrink_sparse_image)
             val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        Icons.Filled.Compress,
-                        shrink
-                    )
-                },
-                headlineContent = { Text(shrink) },
-                modifier = Modifier.clickable {
-                    scope.launch {
-                        val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
-                        if (result == ConfirmResult.Confirmed) {
-                            loadingDialog.withLoading {
-                                shrinkModules()
+            KsuIsValid() {
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Compress,
+                            shrink
+                        )
+                    },
+                    headlineContent = { Text(shrink) },
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
+                            if (result == ConfirmResult.Confirmed) {
+                                loadingDialog.withLoading {
+                                    shrinkModules()
+                                }
                             }
                         }
                     }
-                }
-            )
+                )
+            }
 
             val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
             if (lkmMode) {
