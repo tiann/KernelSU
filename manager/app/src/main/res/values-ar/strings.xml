@@ -136,5 +136,8 @@
     <string name="module_sort_enabled_first">فرز (الممكن أولاً)</string>
     <string name="module_sort_action_first">فرز (الإجراء أولاً)</string>
     <string name="settings_disable_su">تعطيل توافق su</string>
-    <string name="settings_disable_su_summary">قم بتعطيل أي تطبيقات مؤقتا من الحصول على امتيازات الجذر عبر الأمر su (لن تتأثر عمليات الجذر الحالية).</string>
+    <string name="settings_disable_su_summary">قم بتعطيل قدره التطبيقات مؤقتا من الحصول على امتيازات المسخدم الخارق عبر الأمر su (لن تتأثر عمليات الجذر الحالية).</string>
+    <string name="module_install_prompt_with_name">الحزم الاتيه سيتم تثبيتها %1$s</string>
+    <string name="confirm">تأكيد</string>
+    <string name="su_not_allowed">من الغير ممكن اعطاء صلاحيات (المسخدم الخارق) لـ %s</string>
 </resources>
