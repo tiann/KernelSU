@@ -137,4 +137,9 @@
     <string name="log_saved">Dzienniki zapisane</string>
     <string name="module_sort_action_first">Sortuj (najpierw działania)</string>
     <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
+    <string name="confirm">Potwierdź</string>
+    <string name="settings_disable_su_summary">Tymczasowo wyłącz możliwość uzyskania uprawnień roota przez dowolną aplikację za pomocą polecenia su (nie wpłynie to na istniejące procesy roota).</string>
+    <string name="module_install_prompt_with_name">Zainstalowane zostaną następujące moduły: %1$s</string>
+    <string name="settings_disable_su">Wyłącz zgodność z su</string>
+    <string name="su_not_allowed">Nie można przyznać dostępu superużytkownika do %s</string>
 </resources>

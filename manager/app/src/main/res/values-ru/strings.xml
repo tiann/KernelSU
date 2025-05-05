@@ -141,4 +141,7 @@
     <string name="module_sort_enabled_first">Сортировать (Сначала включённые)</string>
     <string name="settings_disable_su">Отключить su совместимость</string>
     <string name="settings_disable_su_summary">Временно отключить возможность получения root привилегий любым приложениям с помощью команды su (существующие root процессы не будут затронуты).</string>
+    <string name="module_install_prompt_with_name">Будут установлены следующие модули: %1$s</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="su_not_allowed">Не удалось предоставить права Суперпользователя к %s</string>
 </resources>

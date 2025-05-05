@@ -78,7 +78,7 @@
     <string name="force_stop_app">Forceer stop</string>
     <string name="restart_app">Herstart</string>
     <string name="module_start_downloading">Begin met downloaden: %s</string>
-    <string name="failed_to_update_sepolicy">Kan SELinux-regels niet bijwerken voor: %s</string>
+    <string name="failed_to_update_sepolicy">Kan SELinux-regels niet bijwerken voor %s</string>
     <string name="require_kernel_version">De huidige KernelSU-versie %d is te laag voor de manager om goed te werken. Upgrade naar versie %d of hoger!</string>
     <string name="module_changelog">wijzigings logboek</string>
     <string name="settings_profile_template">App-profiel Sjabloon</string>
@@ -136,4 +136,9 @@
     <string name="log_saved">Logs opgeslagen</string>
     <string name="module_sort_enabled_first">Sorteren (eerst ingeschakeld)</string>
     <string name="module_sort_action_first">Sorteren (actie eerst)</string>
+    <string name="module_install_prompt_with_name">De volgende modules worden geïnstalleerd: %1$s</string>
+    <string name="su_not_allowed">Kan geen Superuser-toegang verlenen aan %s</string>
+    <string name="settings_disable_su">su-compatibiliteit uitschakelen</string>
+    <string name="confirm">Bevestigen</string>
+    <string name="settings_disable_su_summary">Schakel tijdelijk de mogelijkheid uit voor een app om rootrechten te verkrijgen via de opdracht ⁠su (bestaande rootprocessen worden hierdoor niet beïnvloed).</string>
 </resources>
