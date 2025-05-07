@@ -53,7 +53,7 @@ procfs = "0.17"
 loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
-android_logger = { version = "0.14", default-features = false }
+android_logger = { version = "0.15", default-features = false }
 
 [profile.release]
 strip = true
