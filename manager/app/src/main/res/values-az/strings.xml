@@ -76,7 +76,12 @@
     <string name="profile_umount_modules_summary">Bu seçimi aktivləşdirmək KernelSU-ya bu proqram üçün modullar tərəfindən hər hansı dəyişdirilmiş faylları bərpa etməyə imkan verəcək.</string>
     <string name="launch_app">Aç</string>
     <string name="force_stop_app">Məcburi dayandır</string>
-    <string name="restart_app">Yenidən başlat</string>
+    <string name="restart_app">Təkrar başlat</string>
     <string name="failed_to_update_sepolicy">%s görə SELinux qaydalarını güncəlləmək mümkün olmadı</string>
     <string name="save_log">Girişləri Saxla</string>
+    <string name="require_kernel_version">Cari KernelSU versiyası %d menecerin düzgün işləməsi üçün çox aşağıdır. Lütfən, %d və ya daha yüksək versiyaya təkmilləşdirin!</string>
+    <string name="module_install_prompt_with_name">Aşağıdakı modullar quraşdırılacaq: %1$s</string>
+    <string name="confirm">Təsdiq edin</string>
+    <string name="module_sort_action_first">Sıralama (ilk hərəkət)</string>
+    <string name="module_sort_enabled_first">Sıralama (Əvvəlcə aktivdir)</string>
 </resources>
