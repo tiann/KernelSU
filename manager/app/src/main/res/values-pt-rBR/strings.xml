@@ -138,4 +138,7 @@
     <string name="module_sort_enabled_first">Ordenar (Ativado primeiro)</string>
     <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
     <string name="settings_disable_su">Desativar compatibilidade su</string>
+    <string name="confirm">Confirmar</string>
+    <string name="su_not_allowed">Não foi possível conceder acesso de SuperUsuário a %s</string>
+    <string name="module_install_prompt_with_name">Os seguintes módulos serão instalados: %1$s</string>
 </resources>

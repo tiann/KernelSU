@@ -136,4 +136,9 @@
     <string name="log_saved">保存されたログ</string>
     <string name="module_sort_enabled_first">並べ替え（最初に有効）</string>
     <string name="module_sort_action_first">並べ替え（アクション優先）</string>
+    <string name="settings_disable_su_summary">⁠su コマンドを使用してアプリがルート権限を取得する機能を一時的に無効にします (既存のルート プロセスは影響を受けません)。</string>
+    <string name="su_not_allowed">%s にスーパーユーザーアクセスを許可できませんでした</string>
+    <string name="settings_disable_su">su互換性を無効にする</string>
+    <string name="module_install_prompt_with_name">次のモジュールがインストールされます: %1$s</string>
+    <string name="confirm">確認</string>
 </resources>
