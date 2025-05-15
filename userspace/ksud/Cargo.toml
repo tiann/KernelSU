@@ -9,7 +9,7 @@ edition = "2024"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2", default-features = false }
+zip = { version = "3", default-features = false }
 zip-extensions = { version = "0.8", features = [
     "deflate",
     "deflate64",
@@ -53,7 +53,7 @@ procfs = "0.17"
 loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
-android_logger = { version = "0.14", default-features = false }
+android_logger = { version = "0.15", default-features = false }
 
 [profile.release]
 strip = true
