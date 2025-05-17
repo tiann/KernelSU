@@ -54,3 +54,4 @@ fn main() {
         .write_all(name.trim().as_bytes())
         .expect("Failed to write VERSION_NAME");
 }
+
