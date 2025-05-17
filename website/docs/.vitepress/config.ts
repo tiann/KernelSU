@@ -9,7 +9,7 @@ export default defineConfig( {
     head: [
         ['script', {
             async: 'async',
-            src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4345548567024241',
+            src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2610070972052494',
             crossorigin: 'anonymous',
         }],
     ],
