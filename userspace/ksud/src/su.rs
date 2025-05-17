@@ -72,7 +72,6 @@ pub fn root_shell() -> Result<()> {
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
-
     use anyhow::anyhow;
     let env_args: Vec<String> = env::args().collect();
     let program = env_args[0].clone();
