@@ -27,6 +27,10 @@ jobs:
             os_patch_level: 2024-08
           - sub_level: 226
             os_patch_level: 2024-11
+          - sub_level: 233
+            os_patch_level: 2025-02
+          - sub_level: 236
+            os_patch_level: 2025-05
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
