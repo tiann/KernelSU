@@ -9,8 +9,14 @@ edition = "2024"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "3", default-features = false }
-zip-extensions = { version = "0.8.3", features = [
+zip = { version = "3",  features = [
+    "deflate",
+    "deflate64",
+    "time",
+    "lzma",
+    "xz",
+], default-features = false }
+zip-extensions = { version = "0.8", features = [
     "deflate",
     "lzma",
     "xz",
