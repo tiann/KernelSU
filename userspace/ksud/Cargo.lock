@@ -1724,7 +1724,6 @@ checksum = "12598812502ed0105f607f941c386f43d441e00148fce9dec3ca5ffb0bde9308"
 dependencies = [
  "arbitrary",
  "crc32fast",
- "crossbeam-utils",
  "deflate64",
  "displaydoc",
  "flate2",
