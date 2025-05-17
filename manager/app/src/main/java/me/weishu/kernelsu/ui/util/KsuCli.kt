@@ -81,9 +81,9 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
         Log.w(TAG, "ksu failed: ", e)
         try {
             if (globalMnt) {
-                builder.build("su")
-            } else {
                 builder.build("su", "-mm")
+            } else {
+                builder.build("su")
             }
         } catch (e: Throwable) {
             Log.e(TAG, "su failed: ", e)
