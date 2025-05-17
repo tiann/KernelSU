@@ -837,7 +837,7 @@ dependencies = [
  "sha256",
  "tempfile",
  "which",
- "zip 3.0.0",
+ "zip",
  "zip-extensions",
 ]
 
@@ -1718,13 +1718,12 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "2.4.2"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fabe6324e908f85a1c52063ce7aa26b68dcb7eb6dbc83a2d148403c9bc3eba50"
+checksum = "12598812502ed0105f607f941c386f43d441e00148fce9dec3ca5ffb0bde9308"
 dependencies = [
  "arbitrary",
  "crc32fast",
- "crossbeam-utils",
  "deflate64",
  "displaydoc",
  "flate2",
@@ -1738,24 +1737,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "zip"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12598812502ed0105f607f941c386f43d441e00148fce9dec3ca5ffb0bde9308"
-dependencies = [
- "arbitrary",
- "crc32fast",
- "indexmap",
- "memchr",
-]
-
-[[package]]
 name = "zip-extensions"
-version = "0.8.1"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "386508a00aae1d8218b9252a41f59bba739ccee3f8e420bb90bcb1c30d960d4a"
+checksum = "9f105becb0a5da773e655775dd05fee454ca1475bcc980ec9d940a02f42cee40"
 dependencies = [
- "zip 2.4.2",
+ "zip",
 ]
 
 [[package]]
