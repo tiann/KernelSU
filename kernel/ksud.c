@@ -146,16 +146,10 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 }
 
 // IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
-int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
+static int __ksu_handle_execveat_ksud(int *fd, char *filename,
 			     struct user_arg_ptr *argv,
 			     struct user_arg_ptr *envp, int *flags)
 {
-#ifndef CONFIG_KPROBES
-	if (!ksu_execveat_hook) {
-		return 0;
-	}
-#endif
-	struct filename *filename;
 
 	static const char app_process[] = "/system/bin/app_process";
 	static bool first_app_process = true;
@@ -166,15 +160,10 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	static const char old_system_init[] = "/init";
 	static bool init_second_stage_executed = false;
 
-	if (!filename_ptr)
+	if (!filename)
 		return 0;
 
-	filename = *filename_ptr;
-	if (IS_ERR(filename)) {
-		return 0;
-	}
-
-	if (unlikely(!memcmp(filename->name, system_bin_init,
+	if (unlikely(!memcmp(filename, system_bin_init,
 			     sizeof(system_bin_init) - 1) &&
 		     argv)) {
 		// /system/bin/init executed
@@ -198,7 +187,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				pr_err("/system/bin/init parse args err!\n");
 			}
 		}
-	} else if (unlikely(!memcmp(filename->name, old_system_init,
+	} else if (unlikely(!memcmp(filename, old_system_init,
 				    sizeof(old_system_init) - 1) &&
 			    argv)) {
 		// /init executed
@@ -261,7 +250,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		}
 	}
 
-	if (unlikely(first_app_process && !memcmp(filename->name, app_process,
+	if (unlikely(first_app_process && !memcmp(filename, app_process,
 						  sizeof(app_process) - 1))) {
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared, second_stage: %d\n",
@@ -271,6 +260,26 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	}
 
 	return 0;
+}
+
+// we keep this for manually hooked build.
+__maybe_unused int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
+			     struct user_arg_ptr *argv, struct user_arg_ptr *envp,
+			     int *flags)
+{
+#ifndef CONFIG_KPROBES
+	if (!ksu_execveat_hook) {
+		return 0;
+	}
+#endif
+	if (!filename_ptr)
+		return 0;
+
+	struct filename *filename = *filename_ptr;
+	if (IS_ERR(filename))
+		return 0;
+
+	return __ksu_handle_execveat_ksud(fd, (char *)filename->name, argv, envp, flags);
 }
 
 static ssize_t (*orig_read)(struct file *, char __user *, size_t, loff_t *);
@@ -471,7 +480,6 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	const char __user *const __user *__argv =
 		(const char __user *const __user *)PT_REGS_PARM2(real_regs);
 	struct user_arg_ptr argv = { .ptr.native = __argv };
-	struct filename filename_in, *filename_p;
 	char path[32];
 
 	if (!filename_user)
@@ -479,11 +487,8 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 	memset(path, 0, sizeof(path));
 	ksu_strncpy_from_user_nofault(path, *filename_user, 32);
-	filename_in.name = path;
-
-	filename_p = &filename_in;
-	return ksu_handle_execveat_ksud(AT_FDCWD, &filename_p, &argv, NULL,
-					NULL);
+	
+	return __ksu_handle_execveat_ksud(AT_FDCWD, path, &argv, NULL, NULL);
 }
 
 static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
