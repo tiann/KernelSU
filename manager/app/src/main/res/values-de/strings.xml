@@ -133,4 +133,6 @@
     <string name="shrink_sparse_image">Spärliches Bild minimieren</string>
     <string name="action">Aktion</string>
     <string name="log_saved">Protokolle gespeichert</string>
+    <string name="module_install_prompt_with_name">Folgende Module werden installiert: %1$s</string>
+    <string name="confirm">Bestätigen</string>
 </resources>
