@@ -408,6 +408,7 @@ install_module() {
   handle_partition system_ext
   handle_partition product
   handle_partition odm
+  handle_partition my_bigball
 
   if $BOOTMODE; then
     mktouch $NVBASE/modules/$MODID/update

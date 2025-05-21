@@ -42,7 +42,7 @@ pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
 
     let mut system_lowerdir: Vec<String> = Vec::new();
 
-    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
+    let partition = vec!["vendor", "product", "system_ext", "odm", "my_bigball", "oem"];
     let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
     for ele in &partition {
         partition_lowerdir.insert((*ele).to_string(), Vec::new());
