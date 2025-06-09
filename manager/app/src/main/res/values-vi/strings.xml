@@ -17,7 +17,7 @@
     <string name="home_learn_kernelsu">Tìm hiểu thêm về KernelSU</string>
     <string name="home_click_to_learn_kernelsu">Tìm hiểu cách cài đặt KernelSU và sử dụng các mô-đun</string>
     <string name="home_support_title">Hỗ trợ chúng tôi</string>
-    <string name="home_support_content">KernelSU sẽ và luôn luôn miễn phí, mã nguồn mở. Nếu bạn thấy hữu ích, hãy ủng hộ chúng tôi bằng một khoản quyên góp nhỏ.</string>
+    <string name="home_support_content">KernelSU sẽ và luôn miễn phí, mã nguồn mở. Nếu bạn thấy hữu ích, hãy ủng hộ chúng tôi bằng một khoản quyên góp nhỏ.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Tham gia kênh %2$s của chúng tôi]]></string>
     <string name="module_magisk_conflict">Module không hoạt động do xung đột với Magisk!</string>
     <string name="module_uninstall_confirm">Bạn có muốn gỡ cài đặt mô-đun %s không\?</string>
@@ -37,7 +37,7 @@
     <string name="selinux_status_enforcing">Thực thi</string>
     <string name="selinux_status_permissive">Cho phép</string>
     <string name="selinux_status_unknown">Không rõ</string>
-    <string name="superuser">Superuser</string>
+    <string name="superuser">Siêu người dùng</string>
     <string name="module_failed_to_enable">Không thể kích hoạt mô-đun: %s</string>
     <string name="module_failed_to_disable">Không thể vô hiệu hóa mô-đun: %s</string>
     <string name="module_empty">Chưa cài đặt mô-đun nào</string>
@@ -70,7 +70,7 @@
     <string name="profile_selinux_rules">Quy tắc</string>
     <string name="launch_app">Khởi chạy</string>
     <string name="restart_app">Khởi động lại</string>
-    <string name="profile_namespace">Mount namespace</string>
+    <string name="profile_namespace">Gắn namespace</string>
     <string name="profile_capabilities">Quyền</string>
     <string name="failed_to_update_sepolicy">Không thể cập nhật quy tắc SELinux cho %s</string>
     <string name="force_stop_app">Buộc dừng</string>
