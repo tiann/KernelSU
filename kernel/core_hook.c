@@ -108,6 +108,7 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
 
 	groups_sort(group_info);
 	set_groups(cred, group_info);
+	put_group_info(group_info);
 }
 
 static void disable_seccomp()
@@ -142,6 +143,7 @@ void escape_to_root(void)
 	if (cred->euid.val == 0) {
 		pr_warn("Already root, don't escape!\n");
 		rcu_read_unlock();
+		put_cred(cred);
 		return;
 	}
 	struct root_profile *profile = ksu_get_root_profile(cred->uid.val);
@@ -175,6 +177,7 @@ void escape_to_root(void)
 	setup_groups(profile, cred);
 
 	rcu_read_unlock();
+	put_cred(cred);
 
 	// Refer to kernel/seccomp.c: seccomp_set_mode_strict
 	// When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
