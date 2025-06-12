@@ -251,8 +251,10 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 					if (file->f_inode->i_sb->s_magic) {
 						data_app_magic = file->f_inode->i_sb->s_magic;
 						pr_info("%s: dir: %s got magic! 0x%lx\n", __func__, pos->dirpath, data_app_magic);
-					} else
+					} else {
+						filp_close(file, NULL);
 						goto skip_iterate;
+					}
 				}
 				
 				if (file->f_inode->i_sb->s_magic != data_app_magic) {
