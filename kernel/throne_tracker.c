@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
-#include <linux/namei.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -116,7 +115,6 @@ struct my_dir_context {
 	void *private_data;
 	int depth;
 	int *stop;
-	struct super_block* root_sb;
 };
 // https://docs.kernel.org/filesystems/porting.html
 // filldir_t (readdir callbacks) calling conventions have changed. Instead of returning 0 or -E... it returns bool now. false means "no more" (as -E... used to) and true - "keep going" (as 0 in old calling conventions). Rationale: callers never looked at specific -E... values anyway. -> iterate_shared() instances require no changes at all, all filldir_t ones in the tree converted.
@@ -137,8 +135,6 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	struct my_dir_context *my_ctx =
 		container_of(ctx, struct my_dir_context, ctx);
 	char dirpath[DATA_PATH_LEN];
-	int err;
-	struct path path;
 
 	if (!my_ctx) {
 		pr_err("Invalid context\n");
@@ -162,18 +158,6 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		     namelen, name) >= DATA_PATH_LEN) {
 		pr_err("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen,
 		       name);
-		return FILLDIR_ACTOR_CONTINUE;
-	}
-
-	err = kern_path(dirpath, 0, &path);
-
-	if (err) {
-		pr_err("get dirpath %s err: %d\n", dirpath, err);
-		return FILLDIR_ACTOR_CONTINUE;
-	}
-
-	if (my_ctx->root_sb != path.dentry->d_inode->i_sb) {
-		pr_info("skip cross fs: %s", dirpath);
 		return FILLDIR_ACTOR_CONTINUE;
 	}
 
@@ -226,18 +210,9 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 void search_manager(const char *path, int depth, struct list_head *uid_data)
 {
-	int i, stop = 0, err;
+	int i, stop = 0;
 	struct list_head data_path_list;
-	struct path kpath;
-	struct super_block* root_sb;
 	INIT_LIST_HEAD(&data_path_list);
-
-	err = kern_path(path, 0, &kpath);
-
-	if (err) {
-		pr_err("get search root %s err: %d\n", path, err);
-		return;
-	}
 
 	// Initialize APK cache list
 	struct apk_path_hash *pos, *n;
@@ -251,8 +226,6 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 	data.depth = depth;
 	list_add_tail(&data.list, &data_path_list);
 
-	root_sb = kpath.dentry->d_inode->i_sb;
-
 	for (i = depth; i >= 0; i--) {
 		struct data_path *pos, *n;
 
@@ -262,8 +235,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 						      .parent_dir = pos->dirpath,
 						      .private_data = uid_data,
 						      .depth = pos->depth,
-						      .stop = &stop,
-						      .root_sb = root_sb };
+						      .stop = &stop };
 			struct file *file;
 
 			if (!stop) {
