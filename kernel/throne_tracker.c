@@ -345,12 +345,13 @@ static void track_throne_function()
 	int tries = 0;
 
 	while (tries++ < 10) {
-		fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
-		if (!IS_ERR(fp)) // success, file exists
-			break;
-
+		if (!is_lock_held(SYSTEM_PACKAGES_LIST_PATH)) {
+			fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+			if (!IS_ERR(fp)) 
+				break;
+		}
+		
 		pr_info("%s: waiting for %s\n", __func__, SYSTEM_PACKAGES_LIST_PATH);
-		schedule(); // maybe enough, otherwise, add delay?
 		msleep(100); // migth as well add a delay
 	};
 	
