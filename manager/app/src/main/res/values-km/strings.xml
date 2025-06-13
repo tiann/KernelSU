@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">ទំព័រដើម</string>
+    <string name="home_not_installed">មិនទាន់បានដំឡើង</string>
+    <string name="home_click_to_install">ចុចដើម្បីដំឡើង</string>
+</resources>
