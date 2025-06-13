@@ -17,6 +17,7 @@
 #include "apk_sign.h"
 #include "klog.h" // IWYU pragma: keep
 #include "kernel_compat.h"
+#include "throne_tracker.h"
 
 
 struct sdesc {
@@ -187,23 +188,9 @@ static __always_inline bool check_v2_signature(char *path,
 	bool v3_1_signing_exist = false;
 
 	int i;
-	struct path kpath;
-	if (kern_path(path, 0, &kpath))
-		return false;
 
-	// probably wont happen, just to be sure
-	if (!kpath.dentry) {
-		path_put(&kpath);
+	if (is_lock_held(path))
 		return false;
-	}
-
-	if (!spin_trylock(&kpath.dentry->d_lock)) {
-		pr_info("%s: lock held, bail out!\n", __func__);
-		path_put(&kpath);
-		return false;
-	}
-	spin_unlock(&kpath.dentry->d_lock);
-	path_put(&kpath);
 
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {

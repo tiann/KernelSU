@@ -212,6 +212,39 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	return FILLDIR_ACTOR_CONTINUE;
 }
 
+/*
+ * small helper to check if lock is held
+ * false - file is stable
+ * true - file is being created/deleted/renamed
+ * possibly optional
+ *
+ */
+bool is_lock_held(const char *path) 
+{
+	struct path kpath;
+
+	// kern_path returns 0 on success
+	if (kern_path(path, 0, &kpath))
+		return true;
+
+	// just being defensive
+	if (!kpath.dentry) {
+		path_put(&kpath);
+		return true;
+	}
+
+	if (!spin_trylock(&kpath.dentry->d_lock)) {
+		pr_info("%s: lock held, bail out!\n", __func__);
+		path_put(&kpath);
+		return true;
+	}
+	// we hold it ourselves here!
+
+	spin_unlock(&kpath.dentry->d_lock);
+	path_put(&kpath);
+	return false;
+}
+
 void search_manager(const char *path, int depth, struct list_head *uid_data)
 {
 	int i, stop = 0;
@@ -242,24 +275,9 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 						      .depth = pos->depth,
 						      .stop = &stop };
 			struct file *file;
-			struct path kpath;
 
-			if (kern_path(path, 0, &kpath))
+			if (is_lock_held(path))
 				goto skip_iterate;
-
-			// probably wont happen, just to be sure
-			if (!kpath.dentry) {
-				path_put(&kpath);
-				goto skip_iterate;
-			}
-
-			if (!spin_trylock(&kpath.dentry->d_lock)) {
-				pr_info("%s: lock held, bail out!\n", __func__);
-				path_put(&kpath);
-				goto skip_iterate;
-			}
-			spin_unlock(&kpath.dentry->d_lock);
-			path_put(&kpath);
 
 			if (!stop) {
 				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);

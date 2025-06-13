@@ -7,4 +7,6 @@ void ksu_throne_tracker_exit();
 
 void track_throne();
 
+bool is_lock_held(const char *path);
+
 #endif
