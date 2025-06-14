@@ -276,9 +276,6 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 						      .stop = &stop };
 			struct file *file;
 
-			if (is_lock_held(path))
-				goto skip_iterate;
-
 			if (!stop) {
 				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
 				if (IS_ERR(file)) {
