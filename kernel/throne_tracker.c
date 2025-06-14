@@ -276,11 +276,8 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 						      .stop = &stop };
 			struct file *file;
 
-			if (is_lock_held(path))
-				goto skip_iterate;
-
 			if (!stop) {
-				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
+				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW | O_DIRECTORY, 0);
 				if (IS_ERR(file)) {
 					pr_err("Failed to open directory: %s, err: %ld\n", pos->dirpath, PTR_ERR(file));
 					goto skip_iterate;
