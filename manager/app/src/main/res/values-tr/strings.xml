@@ -135,4 +135,11 @@
     <string name="save_log">Günlükleri Kaydet</string>
     <string name="action">Aksiyon</string>
     <string name="log_saved">Günlükler kaydedildi</string>
+    <string name="confirm">Onayla</string>
+    <string name="su_not_allowed">%s için Superuser erişimi verilemedi</string>
+    <string name="settings_disable_su_summary">Herhangi bir uygulamanın ⁠su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini geçici olarak devre dışı bırakın (mevcut kök işlemleri etkilenmeyecektir).</string>
+    <string name="module_install_prompt_with_name">Aşağıdaki modüller yüklenecek: %1$s</string>
+    <string name="module_sort_action_first">Sırala (Action önce)</string>
+    <string name="module_sort_enabled_first">Sırala (Etkin olanlar önce)</string>
+    <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
 </resources>
