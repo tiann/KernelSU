@@ -6,7 +6,7 @@
 
 안드로이드 기기에서 사용되는 커널 기반 루팅 솔루션입니다.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,7 +16,7 @@
 
 1. 커널 기반 `su` 및 루트 액세스 관리.
 2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) 기반 모듈 시스템.
-3. [App Profile](https://kernelsu.org/guide/app-profile.html): 루트 권한을 케이지에 가둡니다.
+3. [App profile](https://kernelsu.org/guide/app-profile.html): 루트 권한을 케이지에 가둡니다.
 
 ## 호환 상태
 
@@ -51,7 +51,7 @@ KernelSU의 보안 취약점 보고에 대한 자세한 내용은 [SECURITY.md](
 
 ## 크래딧
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU의 아이디어.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU의 아이디어.
 - [Magisk](https://github.com/topjohnwu/Magisk): 강력한 루팅 도구.
-- [genuine](https://github.com/brevent/genuine/): apk v2 서명 유효성 검사.
+- [genuine](https://github.com/brevent/genuine/): APK v2 서명 유효성 검사.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): 일부 rootkit 스킬.

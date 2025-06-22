@@ -6,7 +6,7 @@
 
 Uma solução root baseada em kernel para dispositivos Android.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localização-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Seguir-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/Licença-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,7 +16,7 @@ Uma solução root baseada em kernel para dispositivos Android.
 
 1. `su` e gerenciamento de acesso root baseado em kernel.
 2. Sistema de módulos baseado em [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
-3. [Perfil do Aplicativo](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
+3. [Perfil do app](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
 
 ## Estado de compatibilidade
 
