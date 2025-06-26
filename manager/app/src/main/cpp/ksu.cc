@@ -55,7 +55,10 @@ int get_version() {
     int32_t version = -1;
     int32_t lkm = 0;
     ksuctl(CMD_GET_VERSION, &version, &lkm);
-    if (!is_lkm && lkm != 0) {
+    if (!is_lkm && lkm == 1) {
+    int32_t flags = 0;
+    ksuctl(CMD_GET_VERSION, &version, &flags);
+    if (!is_lkm && (flags & 0x1)) {
         is_lkm = true;
     }
     return version;
