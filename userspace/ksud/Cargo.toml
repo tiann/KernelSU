@@ -37,7 +37,7 @@ rust-embed = { version = "8", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "7"
+which = "8"
 getopts = "0.2"
 sha256 = "1"
 sha1 = "0.10"
