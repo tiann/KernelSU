@@ -6,7 +6,7 @@
 
 Giải pháp root thông qua thay đổi trên Kernel hệ điều hành cho các thiết bị Android.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,7 +16,7 @@ Giải pháp root thông qua thay đổi trên Kernel hệ điều hành cho cá
 
 1. Hỗ trợ gói thực thi `su` và quản lý quyền root.
 2. Hệ thống mô-đun thông qua [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
-3. [App Profile](https://kernelsu.org/guide/app-profile.html): Hạn chế quyền root của ứng dụng.
+3. [App profile](https://kernelsu.org/guide/app-profile.html): Hạn chế quyền root của ứng dụng.
 
 ## Tình trạng tương thích
 
@@ -47,7 +47,7 @@ Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặ
 
 ## Lời cảm ơn
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ý tưởng cho KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): công cụ root mạnh mẽ.
-- [genuine](https://github.com/brevent/genuine/): phương pháp xác thực apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): các phương pháp ẩn của rootkit.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): Ý tưởng cho KernelSU.
+- [Magisk](https://github.com/topjohnwu/Magisk): Công cụ root mạnh mẽ.
+- [genuine](https://github.com/brevent/genuine/): Phương pháp xác thực APK v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Các phương pháp ẩn của rootkit.

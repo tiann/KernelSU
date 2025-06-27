@@ -6,7 +6,7 @@
 
 Rozwiązanie root oparte na jądrze dla urządzeń z systemem Android.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,6 +16,7 @@ Rozwiązanie root oparte na jądrze dla urządzeń z systemem Android.
 
 1. Oparte na jądrze `su` i zarządzanie dostępem roota.
 2. System modułów oparty na [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+3. [App profile](https://kernelsu.org/guide/app-profile.html): Zamknij moc root w klatce.
 
 ## Kompatybilność
 
@@ -29,6 +30,7 @@ Aktualnie obsługiwane ABI to : `arm64-v8a` i `x86_64`.
 
 - [Instalacja](https://kernelsu.org/guide/installation.html)
 - [Jak skompilować?](https://kernelsu.org/guide/how-to-build.html)
+- [Oficjalna strona internetowa](https://kernelsu.org/)
 
 ## Tłumaczenie
 
@@ -49,7 +51,7 @@ Informacje na temat zgłaszania luk w zabezpieczeniach w KernelSU można znaleź
 
 ## Podziękowania
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): pomysłodawca KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): implementacja sepolicy.
-- [genuine](https://github.com/brevent/genuine/): walidacja podpisu apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): cenna znajomość rootkitów.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): Pomysłodawca KernelSU.
+- [Magisk](https://github.com/topjohnwu/Magisk): Implementacja sepolicy.
+- [genuine](https://github.com/brevent/genuine/): Walidacja podpisu APK v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Cenna znajomość rootkitów.

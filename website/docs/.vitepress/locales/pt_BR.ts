@@ -52,7 +52,7 @@ function sidebarGuide() {
           { text: 'Dispositivos com suporte não oficial', link: '/pt_BR/guide/unofficially-support-devices.md' },
           { text: 'Guias de módulo', link: '/pt_BR/guide/module.md' },
           { text: 'Módulo WebUI', link: '/pt_BR/guide/module-webui.md' },
-          { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
+          { text: 'Perfil do app', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
           { text: 'Perguntas frequentes', link: '/pt_BR/guide/faq' },
           { text: 'Recursos ocultos', link: '/pt_BR/guide/hidden-features' },
