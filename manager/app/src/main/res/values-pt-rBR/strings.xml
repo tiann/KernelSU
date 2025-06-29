@@ -9,7 +9,7 @@
     <string name="home_module_count">Módulos: %d</string>
     <string name="home_unsupported">Sem suporte</string>
     <string name="home_unsupported_reason">KernelSU suporta apenas kernels GKI agora</string>
-    <string name="home_kernel">Kernel</string>
+    <string name="home_kernel">Versão do kernel</string>
     <string name="home_manager_version">Versão do gerenciador</string>
     <string name="home_fingerprint">Impressão digital</string>
     <string name="home_selinux_status">Status do SELinux</string>
