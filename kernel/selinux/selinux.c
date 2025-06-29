@@ -94,7 +94,7 @@ bool is_ksu_domain()
 #endif
 	bool result;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
-	int err = security_secid_to_secctx(current_sid(), &ctx.context, &ctx.len);
+	int err = security_secid_to_secctx(current_sid(), &ctx);
 #else
 	int err = security_secid_to_secctx(current_sid(), &domain, &seclen);
 #endif
@@ -125,7 +125,7 @@ bool is_zygote(void *sec)
 #endif
     bool result;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
-	int err = security_secid_to_secctx(tsec->sid, &ctx.context, &ctx.len);
+	int err = security_secid_to_secctx(tsec->sid, &ctx);
 #else
 	int err = security_secid_to_secctx(tsec->sid, &domain, &seclen);
 #endif
