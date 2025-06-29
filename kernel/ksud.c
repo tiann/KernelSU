@@ -175,7 +175,6 @@ first_app_process:
 
 int ksu_handle_pre_ksud(const char *filename)
 {
-
 	if (likely(!ksu_execveat_hook))
 		return 0;
 
@@ -198,48 +197,43 @@ int ksu_handle_pre_ksud(const char *filename)
 	size_t arg_len = arg_end - arg_start;
 	size_t envp_len = env_end - env_start;
 
-	if (arg_len <= 0|| envp_len <= 0) // this wont make sense, filter it
+	if (arg_len <= 0 || envp_len <= 0) // this wont make sense, filter it
 		return 0;
 
-	char *args = kmalloc(arg_len + 1, GFP_ATOMIC);
-	char *envp = kmalloc(envp_len + 1, GFP_ATOMIC);
-	if (!args || !envp )
-		goto out;
+	#define ARGV_MAX 32  // this is enough for argv1
+	#define ENVP_MAX 256  // this is enough for INIT_SECOND_STAGE
+	char args[ARGV_MAX];
+	size_t argv_copy_len = (arg_len > ARGV_MAX) ? ARGV_MAX : arg_len;
+	char envp[ENVP_MAX];
+	size_t envp_copy_len = (envp_len > ENVP_MAX) ? ENVP_MAX : envp_len;
 
 	// we cant use strncpy on here, else it will truncate once it sees \0
-	if (ksu_copy_from_user_retry(args, (void __user *)arg_start, arg_len))
-		goto out;
+	if (ksu_copy_from_user_retry(args, (void __user *)arg_start, argv_copy_len))
+		return 0;
 
-	if (ksu_copy_from_user_retry(envp, (void __user *)env_start, envp_len))
-		goto out;
+	if (ksu_copy_from_user_retry(envp, (void __user *)env_start, envp_copy_len))
+		return 0;
 
-	args[arg_len] = '\0';
+	args[ARGV_MAX - 1] = '\0';
+	envp[ENVP_MAX - 1] = '\0';
 
 #ifdef CONFIG_KSU_DEBUG
-	const char *envp_n = envp;
+	char *envp_n = envp;
 	unsigned int envc = 1;
 	do {
 		pr_info("%s: envp[%d]: %s\n", __func__, envc, envp_n);
 		envp_n += strlen(envp_n) + 1;
 		envc++;
-	} while (envp_n < envp + envp_len);
+	} while (envp_n < envp + envp_copy_len);
 #endif
 
 	// we only need argv1 !
 	// abuse strlen here since it only gets length up to \0
 	char *argv1 = args + strlen(args) + 1;
-	if (argv1 >= args + arg_len) // out of bounds!
+	if (argv1 >= args + argv_copy_len) // out of bounds!
 		argv1 = "";
 
-	// pass whole for envp?!!
-	// pr_info("%s: fname: %s argv1: %s \n", __func__, filename, argv1);
-	ksu_handle_bprm_ksud(filename, argv1, envp, envp_len);
-
-out:
-	kfree(args);
-	kfree(envp);
-
-	return 0;
+	return ksu_handle_bprm_ksud(filename, argv1, envp, envp_copy_len);
 }
 
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
