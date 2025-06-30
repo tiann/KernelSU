@@ -21,6 +21,7 @@
 #include <linux/uidgid.h>
 #include <linux/version.h>
 #include <linux/mount.h>
+#include <linux/binfmts.h>
 
 #include <linux/fs.h>
 #include <linux/namei.h>
@@ -684,6 +685,19 @@ __maybe_unused int ksu_kprobe_exit(void)
 	return 0;
 }
 
+static int ksu_bprm_check(struct linux_binprm *bprm)
+{
+	char *filename = (char *)bprm->filename;
+	
+	if (likely(!ksu_execveat_hook))
+		return 0;
+
+	ksu_handle_pre_ksud(filename);
+
+	return 0;
+
+}
+
 static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 			  unsigned long arg4, unsigned long arg5)
 {
@@ -705,6 +719,7 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 
 #ifndef MODULE
 static struct security_hook_list ksu_hooks[] = {
+	LSM_HOOK_INIT(bprm_check_security, ksu_bprm_check),
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),

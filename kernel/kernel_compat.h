@@ -32,4 +32,21 @@ extern ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count,
 extern ssize_t ksu_kernel_write_compat(struct file *p, const void *buf,
 				       size_t count, loff_t *pos);
 
+/*
+ * ksu_copy_from_user_retry
+ * try nofault copy first, if it fails, try with plain
+ * paramters are the same as copy_from_user
+ * 0 = success
+ */
+static long ksu_copy_from_user_retry(void *to, 
+		const void __user *from, unsigned long count)
+{
+	long ret = copy_from_user_nofault(to, from, count);
+	if (likely(!ret))
+		return ret;
+
+	// we faulted! fallback to slow path
+	return copy_from_user(to, from, count);
+}
+
 #endif
