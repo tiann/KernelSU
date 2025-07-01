@@ -140,5 +140,5 @@
     <string name="confirm">Oke</string>
     <string name="su_not_allowed">Akses SU tidak dapat diberikan ke %s</string>
     <string name="settings_disable_su">Nonaktifkan kompatibilats SU</string>
-    <string name="settings_disable_su_summary">Nonaktifkan sementara kemampuan apl untuk memperoleh hak akses root via perintah SU (tidak mempengaruhi proses root yg sudah ada).</string>
+    <string name="settings_disable_su_summary">Nonaktifkan sementara kemampuan aplikasi memperoleh hak akses root via perintah SU (tidak mempengaruhi proses root yg sudah ada).</string>
 </resources>
