@@ -13,7 +13,7 @@
     <string name="reboot_recovery">รีบูตเข้าสู่โหมดกู้คืน</string>
     <string name="reboot_userspace">ซอฟต์รีบูต</string>
     <string name="home_unsupported_reason">ตอนนี้ KernelSU รองรับเคอร์เนลประเภท GKI เท่านั้น</string>
-    <string name="home_kernel">เคอร์เนล</string>
+    <string name="home_kernel">เวอร์ชันเคอร์เนล</string>
     <string name="selinux_status_disabled">ปิดใช้งาน</string>
     <string name="home_fingerprint">ลายนิ้วมือ</string>
     <string name="home_selinux_status">สถานะ SELinux</string>
