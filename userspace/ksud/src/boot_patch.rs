@@ -4,7 +4,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::process::Stdio;
-use std::io::Result;
 
 use anyhow::Context;
 use anyhow::Result;
@@ -154,21 +153,12 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
     parse_kmi_from_kernel(&image_path, workdir)
 }
 
-fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cmd: &str) -> Result<()> {
-    let status = Command::new(magiskboot)
-        .current_dir(workdir)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .arg("cpio")
-        .arg("ramdisk.cpio")
-        .arg(cmd)
-        .status()?;
-
-    ensure!(status.success(), "magiskboot cpio {} failed", cmd);
-    Ok(())
-}
-
-fn do_cpio_cmd(magiskboot: impl AsRef<Path>, workdir: impl AsRef<Path>, cpio_path: impl AsRef<Path>, cmd: &str) -> Result<()> {
+fn do_cpio_cmd(
+    magiskboot: impl AsRef<Path>,
+    workdir: impl AsRef<Path>,
+    cpio_path: impl AsRef<Path>,
+    cmd: &str,
+) -> Result<()> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
         .stdout(Stdio::null())
@@ -181,19 +171,11 @@ fn do_cpio_cmd(magiskboot: impl AsRef<Path>, workdir: impl AsRef<Path>, cpio_pat
     Ok(())
 }
 
-fn is_magisk_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
-    let status = Command::new(magiskboot)
-        .current_dir(workdir)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .args(["cpio", "ramdisk.cpio", "test"])
-        .status()?;
-
-    // 0: stock, 1: magisk
-    Ok(status.code() == Some(1))
-}
-
-fn is_magisk_patched(magiskboot: impl AsRef<Path>, workdir: impl AsRef<Path>, cpio_path: impl AsRef<Path>) {
+fn is_magisk_patched(
+    magiskboot: impl AsRef<Path>,
+    workdir: impl AsRef<Path>,
+    cpio_path: impl AsRef<Path>,
+) {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
         .stdout(Stdio::null())
@@ -207,7 +189,7 @@ fn is_magisk_patched(magiskboot: impl AsRef<Path>, workdir: impl AsRef<Path>, cp
 }
 
 fn is_kernelsu_patched(magiskboot: &Path, workdir: &Path, target: &str) -> Result<bool> {
-    let cpio_path: PathBuf = match target {
+    let cpio_path = match target {
         "ramdisk.cpio" => PathBuf::from("ramdisk.cpio"),
         "vendor/init_boot.cpio" => workdir.join("vendor_ramdisk").join("init_boot.cpio"),
         "vendor/ramdisk.cpio" => workdir.join("vendor_ramdisk").join("ramdisk.cpio"),
@@ -218,11 +200,7 @@ fn is_kernelsu_patched(magiskboot: &Path, workdir: &Path, target: &str) -> Resul
         .current_dir(workdir)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .args([
-            "cpio",
-            cpio_path.to_str().unwrap(),
-            "exists kernelsu.ko",
-        ])
+        .args(["cpio", cpio_path.to_str().unwrap(), "exists kernelsu.ko"])
         .status()?;
 
     Ok(status.success())
@@ -319,24 +297,22 @@ pub fn restore(
         if no_ramdisk {
             if !no_vendor_init_boot {
                 // vendor init_boot restore
-                do_vendor_init_boot_cpio_cmd(&magiskboot, workdir, "rm kernelsu.ko")?;
+                do_cpio_cmd(&magiskboot, workdir, "rm kernelsu.ko")?;
 
-                let status =
-                    do_vendor_init_boot_cpio_cmd(&magiskboot, workdir, "exists init.real").is_ok();
+                let status = do_cpio_cmd(&magiskboot, workdir, "exists init.real").is_ok();
                 if status {
-                    do_vendor_init_boot_cpio_cmd(&magiskboot, workdir, "mv init.real init")?;
+                    do_cpio_cmd(&magiskboot, workdir, "mv init.real init")?;
                 } else {
                     let vendor_init_boot = workdir.join("vendor_ramdisk").join("init_boot.cpio");
                     std::fs::remove_file(vendor_init_boot)?;
                 }
             } else if !no_vendor_ramdisk {
                 // vendor ramdisk restore
-                do_vendor_ramdisk_cpio_cmd(&magiskboot, workdir, "rm kernelsu.ko")?;
+                do_cpio_cmd(&magiskboot, workdir, "rm kernelsu.ko")?;
 
-                let status =
-                    do_vendor_ramdisk_cpio_cmd(&magiskboot, workdir, "exists init.real").is_ok();
+                let status = do_cpio_cmd(&magiskboot, workdir, "exists init.real").is_ok();
                 if status {
-                    do_vendor_ramdisk_cpio_cmd(&magiskboot, workdir, "mv init.real init")?;
+                    do_cpio_cmd(&magiskboot, workdir, "mv init.real init")?;
                 } else {
                     let vendor_ramdisk = workdir.join("vendor_ramdisk").join("ramdisk.cpio");
                     std::fs::remove_file(vendor_ramdisk)?;
@@ -561,7 +537,12 @@ fn do_patch(
     }
 
     do_cpio_cmd(&magiskboot, workdir, ramdisk, "add 0755 init init")?;
-    do_cpio_cmd(&magiskboot, workdir, ramdisk, "add 0755 kernelsu.ko kernelsu.ko")?;
+    do_cpio_cmd(
+        &magiskboot,
+        workdir,
+        ramdisk,
+        "add 0755 kernelsu.ko kernelsu.ko",
+    )?;
 
     #[cfg(target_os = "android")]
     if need_backup {
