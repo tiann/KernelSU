@@ -135,7 +135,7 @@ pub fn mount_overlayfs(
     })();
 
     if let Err(e) = result {
-        warn!("fsopen mount failed: {:#}, fallback to mount", e);
+        warn!("fsopen mount failed: {e:#}, fallback to mount");
         let mut data = format!("lowerdir={lowerdir_config}");
         if let (Some(upperdir), Some(workdir)) = (upperdir, workdir) {
             data = format!("{data},upperdir={upperdir},workdir={workdir}");
@@ -225,7 +225,7 @@ fn mount_overlay_child(
     }
     // merge modules and stock
     if let Err(e) = mount_overlayfs(&lower_dirs, stock_root, None, None, mount_point) {
-        warn!("failed: {:#}, fallback to bind mount", e);
+        warn!("failed: {e:#}, fallback to bind mount");
         bind_mount(stock_root, mount_point)?;
     }
     Ok(())
@@ -238,7 +238,7 @@ pub fn mount_overlay(
     workdir: Option<PathBuf>,
     upperdir: Option<PathBuf>,
 ) -> Result<()> {
-    info!("mount overlay for {}", root);
+    info!("mount overlay for {root}");
     std::env::set_current_dir(root).with_context(|| format!("failed to chdir to {root}"))?;
     let stock_root = ".";
 
@@ -269,10 +269,7 @@ pub fn mount_overlay(
             continue;
         }
         if let Err(e) = mount_overlay_child(mount_point, &relative, module_roots, &stock_root) {
-            warn!(
-                "failed to mount overlay for child {}: {:#}, revert",
-                mount_point, e
-            );
+            warn!("failed to mount overlay for child {mount_point}: {e:#}, revert");
             umount_dir(root).with_context(|| format!("failed to revert {root}"))?;
             bail!(e);
         }

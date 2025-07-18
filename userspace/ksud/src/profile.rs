@@ -70,9 +70,9 @@ pub fn apply_sepolies() -> Result<()> {
         };
         let sepolicy = sepolicy.path();
         if sepolicy::apply_file(&sepolicy).is_ok() {
-            log::info!("profile sepolicy applied: {:?}", sepolicy);
+            log::info!("profile sepolicy applied: {sepolicy:?}");
         } else {
-            log::info!("profile sepolicy apply failed: {:?}", sepolicy);
+            log::info!("profile sepolicy apply failed: {sepolicy:?}");
         }
     }
     Ok(())
