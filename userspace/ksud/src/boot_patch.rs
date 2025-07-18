@@ -159,7 +159,7 @@ fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cpio_path: &Path, cmd: &str) -
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .arg("cpio")
-        .arg(cpio_path.as_ref())
+        .arg(cpio_path)
         .arg(cmd)
         .status()?;
     ensure!(status.success(), "magiskboot cpio {} failed", cmd);
