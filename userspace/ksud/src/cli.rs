@@ -374,13 +374,13 @@ pub fn run() -> Result<()> {
         Commands::BootInfo { command } => match command {
             BootInfo::CurrentKmi => {
                 let kmi = crate::boot_patch::get_current_kmi()?;
-                println!("{}", kmi);
+                println!("{kmi}");
                 // return here to avoid printing the error message
                 return Ok(());
             }
             BootInfo::SupportedKmi => {
                 let kmi = crate::assets::list_supported_kmi()?;
-                kmi.iter().for_each(|kmi| println!("{}", kmi));
+                kmi.iter().for_each(|kmi| println!("{kmi}"));
                 return Ok(());
             }
         },
@@ -392,7 +392,7 @@ pub fn run() -> Result<()> {
     };
 
     if let Err(e) = &result {
-        log::error!("Error: {:?}", e);
+        log::error!("Error: {e:?}");
     }
     result
 }
