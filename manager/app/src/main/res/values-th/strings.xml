@@ -13,7 +13,7 @@
     <string name="reboot_recovery">รีบูตเข้าสู่โหมดกู้คืน</string>
     <string name="reboot_userspace">ซอฟต์รีบูต</string>
     <string name="home_unsupported_reason">ตอนนี้ KernelSU รองรับเคอร์เนลประเภท GKI เท่านั้น</string>
-    <string name="home_kernel">เคอร์เนล</string>
+    <string name="home_kernel">เวอร์ชันเคอร์เนล</string>
     <string name="selinux_status_disabled">ปิดใช้งาน</string>
     <string name="home_fingerprint">ลายนิ้วมือ</string>
     <string name="home_selinux_status">สถานะ SELinux</string>
@@ -135,4 +135,9 @@
     <string name="log_saved">บันทึก Log แล้ว</string>
     <string name="module_sort_action_first">เรียงลำดับ (แบบรันคำสั่งก่อน)</string>
     <string name="module_sort_enabled_first">เรียงลำดับ (แบบเปิดใช้งานก่อน)</string>
+    <string name="settings_disable_su_summary">ปิดใช้งานความสามารถของแอปต่าง ๆ ในการรับสิทธิ์ root ชั่วคราวโดยใช้คำสั่ง ⁠su (กระบวนการ root ที่มีอยู่จะไม่ได้รับผลกระทบ)</string>
+    <string name="module_install_prompt_with_name">โมดูล %1$s จะถูกติดตั้ง</string>
+    <string name="confirm">ยืนยัน</string>
+    <string name="su_not_allowed">ไม่สามารถให้สิทธิ์ผู้ใช้ขั้นสูงกับ %s ได้</string>
+    <string name="settings_disable_su">ปิดใช้งานความเข้ากันได้ของ su</string>
 </resources>
