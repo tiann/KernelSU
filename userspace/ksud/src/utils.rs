@@ -108,12 +108,12 @@ pub fn is_safe_mode() -> bool {
         || getprop("ro.sys.safemode")
             .filter(|prop| prop == "1")
             .is_some();
-    log::info!("safemode: {}", safemode);
+    log::info!("safemode: {safemode}");
     if safemode {
         return true;
     }
     let safemode = ksucalls::check_kernel_safemode();
-    log::info!("kernel_safemode: {}", safemode);
+    log::info!("kernel_safemode: {safemode}");
     safemode
 }
 
@@ -303,7 +303,7 @@ fn copy_xattrs(src_path: impl AsRef<Path>, dest_path: impl AsRef<Path>) -> Resul
         if let Err(e) =
             extattr::lsetxattr(dest_path.as_ref(), &xattr, &value, extattr::Flags::empty())
         {
-            log::warn!("Failed to set xattr: {}", e);
+            log::warn!("Failed to set xattr: {e}");
         }
     }
     Ok(())
@@ -336,7 +336,7 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
                 std::fs::remove_file(&dest_path).context("Failed to remove file")?;
             }
             let target = std::fs::read_link(entry.path()).context("Failed to read symlink")?;
-            log::info!("Symlink: {:?} -> {:?}", dest_path, target);
+            log::info!("Symlink: {dest_path:?} -> {target:?}");
             std::os::unix::fs::symlink(target, &dest_path).context("Failed to create symlink")?;
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_dir() {

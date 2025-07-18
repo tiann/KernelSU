@@ -268,7 +268,7 @@ pub fn prune_modules() -> Result<()> {
         let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists() {
             if let Err(e) = exec_script(uninstaller, true) {
-                warn!("Failed to exec uninstaller: {}", e);
+                warn!("Failed to exec uninstaller: {e}");
             }
         }
 
@@ -341,7 +341,7 @@ fn _install_module(zip: &str) -> Result<()> {
             module_prop.insert(k, v);
         },
     )?;
-    info!("module prop: {:?}", module_prop);
+    info!("module prop: {module_prop:?}");
 
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
@@ -440,13 +440,13 @@ fn _install_module(zip: &str) -> Result<()> {
 
     let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
 
-    info!("mounted {} to {}", tmp_module_img, module_update_tmp_dir);
+    info!("mounted {tmp_module_img} to {module_update_tmp_dir}");
 
     setsyscon(module_update_tmp_dir)?;
 
     let module_dir = format!("{module_update_tmp_dir}/{module_id}");
     ensure_clean_dir(&module_dir)?;
-    info!("module dir: {}", module_dir);
+    info!("module dir: {module_dir}");
 
     // unzip the image and move it to modules_update/<id> dir
     let file = File::open(zip)?;
@@ -584,7 +584,7 @@ pub fn uninstall_module(id: &str) -> Result<()> {
 }
 
 pub fn run_action(id: &str) -> Result<()> {
-    let action_script_path = format!("/data/adb/modules/{}/action.sh", id);
+    let action_script_path = format!("/data/adb/modules/{id}/action.sh");
     exec_script(&action_script_path, true)
 }
 
@@ -674,11 +674,11 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
         if !module_prop_map.contains_key("id") || module_prop_map["id"].is_empty() {
             match entry.file_name().to_str() {
                 Some(id) => {
-                    info!("Use dir name as module id: {}", id);
+                    info!("Use dir name as module id: {id}");
                     module_prop_map.insert("id".to_owned(), id.to_owned());
                 }
                 _ => {
-                    info!("Failed to get module id: {:?}", module_prop);
+                    info!("Failed to get module id: {module_prop:?}");
                     continue;
                 }
             }

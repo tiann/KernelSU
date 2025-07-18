@@ -14,7 +14,7 @@ fn get_git_version() -> Result<(u32, String), std::io::Error> {
     let version_code: u32 = version_code
         .trim()
         .parse()
-        .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Failed to parse git count"))?;
+        .map_err(|_| std::io::Error::other("Failed to parse git count"))?;
     let version_code = 10000 + 200 + version_code; // For historical reasons
 
     let version_name = String::from_utf8(
@@ -23,12 +23,7 @@ fn get_git_version() -> Result<(u32, String), std::io::Error> {
             .output()?
             .stdout,
     )
-    .map_err(|_| {
-        std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Failed to read git describe stdout",
-        )
-    })?;
+    .map_err(|_| std::io::Error::other("Failed to read git describe stdout"))?;
     let version_name = version_name.trim_start_matches('v').to_string();
     Ok((version_code, version_name))
 }

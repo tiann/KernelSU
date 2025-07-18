@@ -697,7 +697,7 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
 
     for policy in policies {
         if !rustix::process::ksu_set_policy(&FfiPolicy::from(policy)) {
-            log::warn!("apply rule: {:?} failed.", statement);
+            log::warn!("apply rule: {statement:?} failed.");
             if strict {
                 return Err(anyhow::anyhow!("apply rule {:?} failed.", statement));
             }

@@ -245,7 +245,7 @@ pub fn restore(
         do_cpio_cmd(
             &magiskboot,
             workdir,
-            &format!("extract {0} {0}", BACKUP_FILENAME),
+            &format!("extract {BACKUP_FILENAME} {BACKUP_FILENAME}"),
         )?;
         let sha = std::fs::read(workdir.join(BACKUP_FILENAME))?;
         let sha = String::from_utf8(sha)?;
@@ -384,7 +384,7 @@ fn do_patch(
         match get_current_kmi() {
             Ok(value) => value,
             Err(e) => {
-                println!("- {}", e);
+                println!("- {e}");
                 if let Some(image_path) = &image {
                     println!(
                         "- Trying to auto detect KMI version for {}",
@@ -542,7 +542,7 @@ fn calculate_sha1(file_path: impl AsRef<Path>) -> Result<String> {
     }
 
     let result = hasher.finalize();
-    Ok(format!("{:x}", result))
+    Ok(format!("{result:x}"))
 }
 
 #[cfg(target_os = "android")]
@@ -558,7 +558,7 @@ fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
     do_cpio_cmd(
         magiskboot,
         workdir,
-        &format!("add 0755 {0} {0}", BACKUP_FILENAME),
+        &format!("add 0755 {BACKUP_FILENAME} {BACKUP_FILENAME}"),
     )?;
     println!("- Stock image has been backup to");
     println!("- {target}");
@@ -568,7 +568,7 @@ fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
 #[cfg(target_os = "android")]
 fn clean_backup(sha1: &str) -> Result<()> {
     println!("- Clean up backup");
-    let backup_name = format!("{}{}", KSU_BACKUP_FILE_PREFIX, sha1);
+    let backup_name = format!("{KSU_BACKUP_FILE_PREFIX}{sha1}");
     let dir = std::fs::read_dir(defs::KSU_BACKUP_DIR)?;
     for entry in dir.flatten() {
         let path = entry.path();
