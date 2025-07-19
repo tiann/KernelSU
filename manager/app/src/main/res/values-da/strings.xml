@@ -25,7 +25,7 @@
     <string name="module_uninstall_confirm">Er du sikker på, at du vil afinstallere modulet %s\?</string>
     <string name="module_uninstall_success">%s afinstalleret</string>
     <string name="module_uninstall_failed">Afinstallation af: %s fejlede</string>
-    <string name="module_overlay_fs_not_available">overlayfs er ikke tilgængeligt, modulet kan ikke fungere!</string>
+    <string name="module_overlay_fs_not_available">Moduler utilgængelige - OverlayFS deaktiveret i kern\'en!</string>
     <string name="refresh">Opdater</string>
     <string name="send_log">Send Log</string>
     <string name="safe_mode">Sikker tilstand</string>
@@ -50,7 +50,7 @@
     <string name="new_version_available">Ny version: %s er tilgængelig, kilk for at downloade</string>
     <string name="launch_app">Start</string>
     <string name="force_stop_app">Tving Stop</string>
-    <string name="failed_to_update_sepolicy">Opdatering af SELinux-regler for: %s fejlede</string>
+    <string name="failed_to_update_sepolicy">Opdatering af SELinux-regler mislykkedes for %s</string>
     <string name="module_start_downloading">Start download: %s</string>
     <string name="home_click_to_install">Klik for at installere</string>
     <string name="home_working_version">Version: %d</string>
@@ -80,4 +80,9 @@
     <string name="restart_app">Genstart</string>
     <string name="require_kernel_version">Den nuværende KernelSU version %d er for lav til manageren for at fungere ordentligt. Opgrader til version %d eller højere!</string>
     <string name="save_log">Gem Logfiler</string>
+    <string name="module_install_prompt_with_name">Følgende moduler installeres: %1$s</string>
+    <string name="module_sort_action_first">Sorter (Handling først)</string>
+    <string name="module_sort_enabled_first">Sorter (Aktiveret først)</string>
+    <string name="confirm">Bekræft</string>
+    <string name="su_not_allowed">Kunne ikke tildele superbruger-adgang til %s</string>
 </resources>
