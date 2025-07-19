@@ -6,7 +6,7 @@
 
 Solusi root berbasis Kernel untuk perangkat Android.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,7 +16,7 @@ Solusi root berbasis Kernel untuk perangkat Android.
 
 1. Manajemen akses root dan `su` berbasis kernel.
 2. Sistem modul berdasarkan [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
-3. [Profil Aplikasi](https://kernelsu.org/guide/app-profile.html): Kunci daya root di dalam sangkar.
+3. [App profile](https://kernelsu.org/guide/app-profile.html): Kunci daya root di dalam sangkar.
 
 ## Status Kompatibilitas
 
@@ -47,7 +47,7 @@ Untuk menerjemahkan KernelSU ke dalam bahasa Anda atau menyempurnakan terjemahan
 
 ## Kredit
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ide KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): alat root yang ampuh.
-- [genuine](https://github.com/brevent/genuine/): validasi tanda tangan apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): beberapa keterampilan rootkit.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): Ide KernelSU.
+- [Magisk](https://github.com/topjohnwu/Magisk): Alat root yang ampuh.
+- [genuine](https://github.com/brevent/genuine/): Validasi tanda tangan APK v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Beberapa keterampilan rootkit.

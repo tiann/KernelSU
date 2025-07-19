@@ -6,7 +6,7 @@
 
 Android cihazlar için kernel tabanlı root çözümü.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,7 +16,7 @@ Android cihazlar için kernel tabanlı root çözümü.
 
 1. Kernel-tabanlı `su` ve root erişimi yönetimi.
 2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS)'ye dayalı modül sistemi.
-3. [Uygulama profili](https://kernelsu.org/guide/app-profile.html): Root gücünü bir kafese kapatın.
+3. [App profile](https://kernelsu.org/guide/app-profile.html): Root gücünü bir kafese kapatın.
 
 ## Uyumluluk Durumu
 
@@ -51,7 +51,7 @@ KernelSU'daki güvenlik açıklarını bildirme hakkında bilgi için, bkz [SECU
 
 ## Krediler
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU fikri.
-- [Magisk](https://github.com/topjohnwu/Magisk): güçlü root aracı.
-- [genuine](https://github.com/brevent/genuine/): apk v2 imza doğrulaması.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): bazı rootkit becerileri.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU fikri.
+- [Magisk](https://github.com/topjohnwu/Magisk): Güçlü root aracı.
+- [genuine](https://github.com/brevent/genuine/): APK v2 imza doğrulaması.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Bazı rootkit becerileri.

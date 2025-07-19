@@ -1,12 +1,12 @@
-# App Profile
+# App profile
 
-The App Profile is a mechanism provided by KernelSU for customizing the configuration of various apps.
+The App profile is a mechanism provided by KernelSU for customizing the configuration of various apps.
 
-For apps granted root permissions (i.e., able to use `su`), the App Profile can also be referred to as the Root Profile. It allows customization of the `uid`, `gid`, `groups`, `capabilities`, and `SELinux` rules of the `su` command, thereby restricting the privileges of the root user. For example, it can grant network permissions only to firewall apps while denying file access permissions, or it can grant shell permissions instead of full root access for freeze apps: **keeping the power confined with the principle of least privilege.**
+For apps granted root permissions (i.e., able to use `su`), the App profile can also be referred to as the Root profile. It allows customization of the `uid`, `gid`, `groups`, `capabilities`, and `SELinux` rules of the `su` command, thereby restricting the privileges of the root user. For example, it can grant network permissions only to firewall apps while denying file access permissions, or it can grant shell permissions instead of full root access for freeze apps: **keeping the power confined with the principle of least privilege.**
 
-For ordinary apps without root permissions, the App Profile can control the behavior of the kernel and module system towards these apps. For instance, it can determine whether modifications resulting from modules should be addressed. The kernel and module system can make decisions based on this configuration, such as performing operations akin to "hiding".
+For ordinary apps without root permissions, the App profile can control the behavior of the kernel and module system towards these apps. For instance, it can determine whether modifications resulting from modules should be addressed. The kernel and module system can make decisions based on this configuration, such as performing operations akin to "hiding".
 
-## Root Profile
+## Root profile
 
 ### UID, GID, and Groups
 
@@ -31,13 +31,13 @@ uid=2000(shell) gid=2000(shell) groups=2000(shell),1004(input),1007(log),1011(ad
 
 Here, the UID is `2000`, and the GID (primary group ID) is also `2000`. Additionally, it belongs to several supplementary groups, such as `inet` (indicating the ability to create `AF_INET` and `AF_INET6` sockets) and `sdcard_rw` (indicating read/write permissions for the SD card).
 
-KernelSU's Root Profile allows customization of the UID, GID, and groups for the root process after executing `su`. For example, the Root Profile of a root app can set its UID to `2000`, which means that when using `su`, the app's actual permissions are at the ADB shell level. Additionally, the `inet` group can be removed, preventing the `su` command from accessing the network.
+KernelSU's Root profile allows customization of the UID, GID, and groups for the root process after executing `su`. For example, the Root profile of a root app can set its UID to `2000`, which means that when using `su`, the app's actual permissions are at the ADB shell level. Additionally, the `inet` group can be removed, preventing the `su` command from accessing the network.
 
 ::: tip NOTE
-The App Profile only controls the permissions of the root process after using `su` and doesn't control the app's own permissions. If an app has requested network access permission, it can still access the network even without using `su`. Removing the `inet` group from `su` only prevents `su` from accessing the network.
+The App profile only controls the permissions of the root process after using `su` and doesn't control the app's own permissions. If an app has requested network access permission, it can still access the network even without using `su`. Removing the `inet` group from `su` only prevents `su` from accessing the network.
 :::
 
-Root Profile is enforced in the kernel and doesn't rely on the voluntary behavior of root apps, unlike switching users or groups through `su`. Granting `su` permissions is entirely controlled by the user, not the developer.
+Root profile is enforced in the kernel and doesn't rely on the voluntary behavior of root apps, unlike switching users or groups through `su`. Granting `su` permissions is entirely controlled by the user, not the developer.
 
 ### Capabilities
 
@@ -49,7 +49,7 @@ Starting with Linux 2.2, Linux divides the privileges traditionally associated w
 
 Each capability represents one or more privileges. For example, `CAP_DAC_READ_SEARCH` represents the ability to bypass permission checks for file reading, as well as directory read and execute permissions. If a user with an effective UID of `0` (root user) doesn't have the `CAP_DAC_READ_SEARCH` capability or higher, this means that even as root, they cannot freely read files.
 
-KernelSU's Root Profile allows customization of the capabilities of the root process after executing `su`, thus granting partial "root privileges". Unlike the UID and GID mentioned above, certain root apps require a UID of `0` after using `su`. In such cases, limiting the capabilities of this root user with UID `0` can restrict the operations they're allowed to perform.
+KernelSU's Root profile allows customization of the capabilities of the root process after executing `su`, thus granting partial "root privileges". Unlike the UID and GID mentioned above, certain root apps require a UID of `0` after using `su`. In such cases, limiting the capabilities of this root user with UID `0` can restrict the operations they're allowed to perform.
 
 ::: tip STRONG RECOMMENDATION
 Linux's capability [official documentation](https://man7.org/linux/man-pages/man7/capabilities.7.html) provides detailed explanations of the abilities represented by each capability. If you intend to customize capabilities, it's strongly recommended that you read this document first.
@@ -74,9 +74,9 @@ Explaining the full concept of SELinux is complex and beyond the scope of this d
 2. [Red Hat: What Is SELinux?](https://www.redhat.com/en/topics/linux/what-is-selinux)
 3. [ArchLinux: SELinux](https://wiki.archlinux.org/title/SELinux)
 
-KernelSU's Root Profile allows customization of the SELinux context of the root process after executing `su`. Specific access control rules can be set for this context, enabling fine-grained control over root permissions.
+KernelSU's Root profile allows customization of the SELinux context of the root process after executing `su`. Specific access control rules can be set for this context, enabling fine-grained control over root permissions.
 
-In typical scenarios, when an app executes `su`, it switches the process to a SELinux domain with **unrestricted access**, such as `u:r:su:s0`. Through the Root Profile, this domain can be switched to a custom domain, such as `u:r:app1:s0`, and a series of rules can be defined for this domain:
+In typical scenarios, when an app executes `su`, it switches the process to a SELinux domain with **unrestricted access**, such as `u:r:su:s0`. Through the Root profile, this domain can be switched to a custom domain, such as `u:r:app1:s0`, and a series of rules can be defined for this domain:
 
 ```sh
 type app1
@@ -89,17 +89,17 @@ Note that the `allow app1 * * *` rule is used for demonstration purposes only. I
 
 ### Escalation
 
-If the configuration of the Root Profile isn't set properly, an escalation scenario may occur. The restrictions imposed by the Root Profile can unintentionally fail.
+If the configuration of the Root profile isn't set properly, an escalation scenario may occur. The restrictions imposed by the Root profile can unintentionally fail.
 
-For example, if you grant root permission to an ADB shell user (which is a common case) and then grant root permission to a regular app, but configure its Root Profile with UID 2000 (which is the UID of the ADB shell user), the app can obtain full root access by executing the `su` command twice:
+For example, if you grant root permission to an ADB shell user (which is a common case) and then grant root permission to a regular app, but configure its Root profile with UID 2000 (which is the UID of the ADB shell user), the app can obtain full root access by executing the `su` command twice:
 
-1. The first execution of `su` will be subject to the App Profile and will switch to UID `2000` (ADB shell) instead of `0` (root).
+1. The first execution of `su` will be subject to the App profile and will switch to UID `2000` (ADB shell) instead of `0` (root).
 2. The second execution of `su`, since the UID is `2000` and root access has been granted to UID `2000` (ADB shell) in the configuration, the app will gain full root privileges.
 
 ::: warning NOTE
 This behavior is fully expected and isn't a bug. Therefore, we recommend the following:
 
-If you genuinely need to grant root permissions to ADB (e.g., as a developer), it isn't advisable to change the UID to `2000` when configuring the Root Profile. Using `1000` (system) would be a better choice.
+If you genuinely need to grant root permissions to ADB (e.g., as a developer), it isn't advisable to change the UID to `2000` when configuring the Root profile. Using `1000` (system) would be a better choice.
 :::
 
 ## Non-root profile
@@ -110,8 +110,8 @@ KernelSU provides a systemless mechanism to modify system partitions, achieved t
 
 Additionally, the KernelSU manager's settings interface provides the "Umount modules by default". By default, this option is **enabled**, which means that KernelSU or some modules will unload modules for this app unless additional settings are applied. If you don't prefer this setting or if it affects certain apps, you have the following options:
 
-1. Keep the "Umount modules by default" option enabled and individually disable the "Umount modules" option in the App Profile for apps requiring module loading (acting as a "whitelist").
-2. Disable the "Umount modules by default" option and individually enable the "Umount modules" option in the App Profile for apps requiring module loading (acting as a "blacklist").
+1. Keep the "Umount modules by default" option enabled and individually disable the "Umount modules" option in the App profile for apps requiring module loading (acting as a "whitelist").
+2. Disable the "Umount modules by default" option and individually enable the "Umount modules" option in the App profile for apps requiring module loading (acting as a "blacklist").
 
 ::: info
 In devices running kernel version 5.10 and above, the kernel performs without any further action the unloading of modules. However, for devices running kernel versions below 5.10, this option is merely a configuration setting, and KernelSU itself doesn't take any action. If you want to use the "Umount modules" option in kernel versions before 5.10 you need to backport the `path_umount` function in `fs/namespace.c`. You can get more information at the end of the [Intergrate for non-GKI devices](https://kernelsu.org/guide/how-to-integrate-for-non-gki.html#how-to-backport-path_umount) page. Some modules, such as Zygisksu, may also use this option to determine if module unloading is necessary.
