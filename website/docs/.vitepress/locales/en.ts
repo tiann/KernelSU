@@ -52,7 +52,7 @@ function sidebarGuide() {
           { text: 'Unofficially supported devices', link: '/guide/unofficially-support-devices.md' },
           { text: 'Module guide', link: '/guide/module.md' },
           { text: 'Module WebUI', link: '/guide/module-webui.md' },
-          { text: 'App Profile', link: '/guide/app-profile.md' },
+          { text: 'App profile', link: '/guide/app-profile.md' },
           { text: 'Rescue from bootloop', link: '/guide/rescue-from-bootloop.md' },
           { text: 'FAQ', link: '/guide/faq' },
           { text: 'Hidden features', link: '/guide/hidden-features' },
