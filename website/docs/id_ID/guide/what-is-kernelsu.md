@@ -12,7 +12,7 @@ Dan juga, KernelSU menyediakan sistem modul melalui overlayfs, yang memungkinkan
 
 Silakan merujuk ke: [Installation](installation)
 
-## Bagaimana cara men-buildnya
+## Bagaimana cara mem-buildnya
 
 [How to build](how-to-build)
 
