@@ -148,6 +148,22 @@ jobs:
           repo status
           echo "[+] KernelSU setup done."
 
+      - name: Fix sdcard on Samsung 5.10/5.15/6.1 GKI devices
+        if: ${{ ( ( inputs.version == 'android12-5.10' || inputs.version == 'android13-5.10' || inputs.version == 'android13-5.15' || inputs.version == 'android14-5.15' || inputs.version == 'android14-6.1' ) && inputs.build_lkm == false ) }}
+        run: |
+          COMMON_ROOT=$GITHUB_WORKSPACE/android-kernel/common
+          KSU_ROOT=$GITHUB_WORKSPACE/KernelSU
+          cd $COMMON_ROOT
+          PATCH="$KSU_ROOT/.github/patches/5.10/add-sdfat_fs-support.patch"
+          if patch -p1 --dry-run < $PATCH; then
+            echo "[+] Successfully added Samsung SDFAT filesystem support"
+            patch -p1 --no-backup-if-mismatch < $PATCH
+          fi
+          sed -i '/#define MSDOS_SUPER_MAGIC/i\#define SDFAT_SUPER_MAGIC       0x5EC5DFA4' $COMMON_ROOT/include/uapi/linux/magic.h
+          echo "[+] Adding Samsung SDFAT filesystem to Makefile"
+          echo 'obj-$(CONFIG_SDFAT_FS)          += sdfat/' >> $COMMON_ROOT/fs/Makefile
+          sed -i '/source "fs\/fat\/Kconfig"/i\source "fs\/sdfat\/Kconfig"' $COMMON_ROOT/fs/Kconfig
+
       - name: Fix WiFi and Bluetooth on Samsung 6.6 GKI devices
         if: ${{ ( inputs.version == 'android15-6.6' && inputs.build_lkm == false ) }}
         run: |
