@@ -3,7 +3,7 @@
     <string name="home_working">Arbejder</string>
     <string name="home_module_count">Moduler: %d</string>
     <string name="home_unsupported">Ikke understøttet</string>
-    <string name="home_kernel">Kerneverzion</string>
+    <string name="home_kernel">Kernel-version</string>
     <string name="home_unsupported_reason">KernelSU understøtter kun GKI kernels</string>
     <string name="home_manager_version">Manager version</string>
     <string name="home_selinux_status">SELinux-status</string>
@@ -33,7 +33,7 @@
     <string name="home_learn_kernelsu">Lær KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Lær hvordan man installerer KernelSU og moduler</string>
-    <string name="about_source_code">Se kildekoden på %1$s<br/>Deltag i vores %2$s-kanal</string>
+    <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
     <string name="profile_default">Standard</string>
     <string name="profile_template">Skabelon</string>
     <string name="profile_namespace">Monter navnerum</string>
@@ -54,7 +54,7 @@
     <string name="module_start_downloading">Start download: %s</string>
     <string name="home_click_to_install">Klik for at installere</string>
     <string name="home_working_version">Version: %d</string>
-    <string name="home">Hjem</string>
+    <string name="home">Home</string>
     <string name="home_not_installed">Ikke installeret</string>
     <string name="home_superuser_count">Superbrugere: %d</string>
     <string name="home_fingerprint">Fingeraftryk</string>
