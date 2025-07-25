@@ -13,7 +13,7 @@
     <string name="home_manager_version">Versi manajer</string>
     <string name="home_fingerprint">Identitas</string>
     <string name="home_selinux_status">Status SELinux</string>
-    <string name="selinux_status_disabled">Nonaktif</string>
+    <string name="selinux_status_disabled">Dinonaktifkan</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permisif</string>
     <string name="selinux_status_unknown">Tidak diketahui</string>
@@ -57,7 +57,7 @@
     <string name="profile_template">Templat</string>
     <string name="profile_custom">Khusus</string>
     <string name="profile_name">Nama profil</string>
-    <string name="profile_namespace">Mount Namespace</string>
+    <string name="profile_namespace">Gunakan Namespace</string>
     <string name="profile_namespace_inherited">Diwariskan</string>
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Individual</string>
