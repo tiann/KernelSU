@@ -9,7 +9,7 @@
     <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Niet ondersteund</string>
     <string name="home_unsupported_reason">KernelSU ondersteunt alleen GKI kernels</string>
-    <string name="home_kernel">Kernel</string>
+    <string name="home_kernel">Kernel version</string>
     <string name="home_manager_version">Manager versie</string>
     <string name="home_fingerprint">Fingerprint</string>
     <string name="home_selinux_status">SELinux status</string>
@@ -38,7 +38,7 @@
     <string name="module_uninstall_failed">Mislukt om te verwijderen: %s</string>
     <string name="module_version">Versie</string>
     <string name="module_author">Auteur</string>
-    <string name="module_overlay_fs_not_available">Modules zijn niet beschikbaar omdat OverlayFS door de kernel is uitgeschakeld.</string>
+    <string name="module_overlay_fs_not_available">Modules zijn niet beschikbaar omdat OverlayFS door de kernel is uitgeschakeld!</string>
     <string name="refresh">Vernieuwen</string>
     <string name="show_system_apps">Toon systeem apps</string>
     <string name="hide_system_apps">Verberg systeem apps</string>
@@ -81,7 +81,7 @@
     <string name="failed_to_update_sepolicy">Kan SELinux-regels niet bijwerken voor %s</string>
     <string name="require_kernel_version">De huidige KernelSU-versie %d is te laag voor de manager om goed te werken. Upgrade naar versie %d of hoger!</string>
     <string name="module_changelog">wijzigings logboek</string>
-    <string name="settings_profile_template">App-profiel Sjabloon</string>
+    <string name="settings_profile_template">App-profiel sjabloon</string>
     <string name="app_profile_template_create">Maken sjabloon</string>
     <string name="app_profile_template_edit">Bewerkin sjabloon</string>
     <string name="app_profile_template_id">ID</string>
@@ -101,7 +101,7 @@
     <string name="app_profile_import_from_clipboard">Importeren vanaf klembord</string>
     <string name="module_changelog_failed">Ophalen van wijzigingslogboek mislukt: %s</string>
     <string name="app_profile_export_to_clipboard">Exporteren naar klembord</string>
-    <string name="settings_check_update">Controleer update</string>
+    <string name="settings_check_update">Controleer for updates</string>
     <string name="enable_web_debugging">Schakel WebView-foutopsporing</string>
     <string name="enable_web_debugging_summary">Kan worden gebruikt om WebUI te debuggen. Schakel dit alleen in als dat nodig is.</string>
     <string name="app_profile_template_export_empty">Kan niet geen lokale sjabloon vinden om te exporteren!</string>
@@ -140,5 +140,5 @@
     <string name="su_not_allowed">Kan geen Superuser-toegang verlenen aan %s</string>
     <string name="settings_disable_su">su-compatibiliteit uitschakelen</string>
     <string name="confirm">Bevestigen</string>
-    <string name="settings_disable_su_summary">Schakel tijdelijk de mogelijkheid uit voor een app om rootrechten te verkrijgen via de opdracht ⁠su (bestaande rootprocessen worden hierdoor niet beïnvloed).</string>
+    <string name="settings_disable_su_summary">Schakel tijdelijk de mogelijkheid uit voor een app om rootrechten te verkrijgen via de opdracht ⁠su (Bestaande rootprocessen worden hierdoor niet beïnvloed).</string>
 </resources>

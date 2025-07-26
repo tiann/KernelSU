@@ -9,7 +9,7 @@
     <string name="home_module_count">Módulos: %d</string>
     <string name="home_unsupported">Sem suporte</string>
     <string name="home_unsupported_reason">KernelSU suporta apenas kernels GKI agora</string>
-    <string name="home_kernel">Kernel</string>
+    <string name="home_kernel">Versão do kernel</string>
     <string name="home_manager_version">Versão do gerenciador</string>
     <string name="home_fingerprint">Impressão digital</string>
     <string name="home_selinux_status">Status do SELinux</string>
@@ -103,7 +103,7 @@
     <string name="app_profile_template_delete">Excluir</string>
     <string name="app_profile_template_import_empty">A área de transferência está vazia!</string>
     <string name="app_profile_template_view">Ver modelo</string>
-    <string name="settings_check_update">Verificar por atualização</string>
+    <string name="settings_check_update">Verificar por atualizações</string>
     <string name="settings_check_update_summary">Verifique automaticamente se há atualizações ao abrir o app</string>
     <string name="grant_root_failed">Falha ao conceder acesso root!</string>
     <string name="open">Abrir</string>
@@ -136,7 +136,7 @@
     <string name="log_saved">Registros salvos</string>
     <string name="module_sort_action_first">Ordenar (Ação primeiro)</string>
     <string name="module_sort_enabled_first">Ordenar (Ativado primeiro)</string>
-    <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
+    <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (Processos root existentes não serão afetados).</string>
     <string name="settings_disable_su">Desativar compatibilidade su</string>
     <string name="confirm">Confirmar</string>
     <string name="su_not_allowed">Não foi possível conceder acesso de SuperUsuário a %s</string>
