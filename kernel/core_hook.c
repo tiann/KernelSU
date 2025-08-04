@@ -595,7 +595,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 #ifdef CONFIG_KSU_DEBUG
 		pr_info("handle umount for unsupported application uid: %d\n", new_uid.val);
 #endif
-		goto umount;
+		goto do_umount;
 	}
 
 	if (ksu_is_allow_uid(new_uid.val)) {
@@ -613,7 +613,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 #endif
 	}
 
-umount:
+do_umount:
 	// check old process's selinux context, if it is not zygote, ignore it!
 	// because some su apps may setuid to untrusted_app but they are in global mount namespace
 	// when we umount for such process, that is a disaster!
