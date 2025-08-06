@@ -26,7 +26,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
     
     - name: Prepare LKM fies
       if: ${{ inputs.pack_lkm }}
