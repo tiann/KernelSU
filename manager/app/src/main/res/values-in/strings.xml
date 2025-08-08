@@ -134,7 +134,7 @@
     <string name="save_log">Simpan Log</string>
     <string name="action">Aksi</string>
     <string name="log_saved">Log disimpan</string>
-    <string name="module_sort_enabled_first">Urut (Diaktifkan terlebih dahulu)</string>
+    <string name="module_sort_enabled_first">Urut (Aktif pertama)</string>
     <string name="module_sort_action_first">Urut (Tindakan pertama)</string>
     <string name="module_install_prompt_with_name">Modul yg akan diinstal: %1$s</string>
     <string name="confirm">Oke</string>
