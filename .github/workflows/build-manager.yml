@@ -110,15 +110,7 @@ jobs:
           cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
 
       - name: Build with Gradle
-        run: |
-          {
-            echo 'org.gradle.parallel=true'
-            echo 'org.gradle.vfs.watch=true'
-            echo 'org.gradle.jvmargs=-Xmx2048m'
-            echo 'android.native.buildOutput=verbose'
-          } >> gradle.properties
-          sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
-          ./gradlew clean assembleRelease
+        run: ./gradlew clean assembleRelease
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

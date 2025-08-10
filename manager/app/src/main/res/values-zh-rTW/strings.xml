@@ -131,4 +131,9 @@
     <string name="save_log">儲存運作日誌</string>
     <string name="action">執行</string>
     <string name="log_saved">已儲存運作日誌</string>
+    <string name="processing">處理中…</string>
+    <string name="refresh_pulling">下拉刷新</string>
+    <string name="refresh_release">鬆開刷新</string>
+    <string name="refresh_refresh">正在刷新…</string>
+    <string name="refresh_complete">刷新成功</string>
 </resources>

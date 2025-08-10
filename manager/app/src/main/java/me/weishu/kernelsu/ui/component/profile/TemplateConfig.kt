@@ -1,20 +1,9 @@
 package me.weishu.kernelsu.ui.component.profile
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ReadMore
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.rounded.Create
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,17 +12,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.extra.DropDownMode
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
  * @author weishu
  * @date 2023/10/21.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TemplateConfig(
     profile: Natives.Profile,
@@ -48,70 +42,54 @@ fun TemplateConfig(
     val profileTemplates = listAppProfileTemplates()
     val noTemplates = profileTemplates.isEmpty()
 
-    ListItem(headlineContent = {
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-        ) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                readOnly = true,
-                label = { Text(stringResource(R.string.profile_template)) },
-                value = template.ifEmpty { "None" },
-                onValueChange = {},
-                trailingIcon = {
-                    if (noTemplates) {
-                        IconButton(
-                            onClick = onManageTemplate
-                        ) {
-                            Icon(Icons.Filled.Create, null)
-                        }
-                    } else if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
-                    else Icon(Icons.Filled.ArrowDropDown, null)
+    if (noTemplates) {
+        SuperArrow(
+            title = stringResource(R.string.app_profile_template_create),
+            leftAction = {
+                Icon(
+                    Icons.Rounded.Create,
+                    null,
+                    modifier = Modifier.padding(end = 16.dp),
+                    tint = MiuixTheme.colorScheme.onBackground
+                )
+            },
+            onClick = onManageTemplate,
+        )
+    } else {
+        Column {
+            SuperDropdown(
+                title = stringResource(R.string.profile_template),
+                items = profileTemplates,
+                selectedIndex = profileTemplates.indexOf(template).takeIf { it >= 0 } ?: 0,
+                onSelectedIndexChange = { index ->
+                    if (index < 0 || index >= profileTemplates.size) return@SuperDropdown
+                    template = profileTemplates[index]
+                    val templateInfo = getTemplateInfoById(template)
+                    if (templateInfo != null && setSepolicy(template, templateInfo.rules.joinToString("\n"))) {
+                        onProfileChange(
+                            profile.copy(
+                                rootTemplate = template,
+                                rootUseDefault = false,
+                                uid = templateInfo.uid,
+                                gid = templateInfo.gid,
+                                groups = templateInfo.groups,
+                                capabilities = templateInfo.capabilities,
+                                context = templateInfo.context,
+                                namespace = templateInfo.namespace,
+                            )
+                        )
+                    }
                 },
+                onClick = {
+                    expanded = !expanded
+                },
+                mode = DropDownMode.AlwaysOnRight,
+                maxHeight = 280.dp
             )
-            if (profileTemplates.isEmpty()) {
-                return@ExposedDropdownMenuBox
-            }
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                profileTemplates.forEach { tid ->
-                    val templateInfo =
-                        getTemplateInfoById(tid) ?: return@forEach
-                    DropdownMenuItem(
-                        text = { Text(tid) },
-                        onClick = {
-                            template = tid
-                            if (setSepolicy(tid, templateInfo.rules.joinToString("\n"))) {
-                                onProfileChange(
-                                    profile.copy(
-                                        rootTemplate = tid,
-                                        rootUseDefault = false,
-                                        uid = templateInfo.uid,
-                                        gid = templateInfo.gid,
-                                        groups = templateInfo.groups,
-                                        capabilities = templateInfo.capabilities,
-                                        context = templateInfo.context,
-                                        namespace = templateInfo.namespace,
-                                    )
-                                )
-                            }
-                            expanded = false
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                onViewTemplate(tid)
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.ReadMore, null)
-                            }
-                        }
-                    )
-                }
-            }
+            SuperArrow(
+                title = stringResource(R.string.app_profile_template_view),
+                onClick = { onViewTemplate(template) }
+            )
         }
-    })
+    }
 }

@@ -140,4 +140,9 @@
     <string name="log_saved">Logs saved</string>
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+    <string name="processing">Processing…</string>
+    <string name="refresh_pulling">Pull down to refresh</string>
+    <string name="refresh_release">Release to refresh</string>
+    <string name="refresh_refresh">Refreshing…</string>
+    <string name="refresh_complete">Refreshed successfully</string>
 </resources>

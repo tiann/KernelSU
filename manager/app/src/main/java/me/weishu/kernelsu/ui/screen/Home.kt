@@ -5,20 +5,44 @@ import android.os.Build
 import android.os.PowerManager
 import android.system.Os
 import androidx.annotation.StringRes
-import androidx.compose.animation.*
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Block
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.CheckCircleOutline
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Link
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,84 +50,159 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.*
+import me.weishu.kernelsu.KernelVersion
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.getKernelVersion
+import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.KsuIsValid
-import me.weishu.kernelsu.ui.util.*
+import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.util.checkNewVersion
+import me.weishu.kernelsu.ui.util.getModuleCount
+import me.weishu.kernelsu.ui.util.getSELinuxStatus
+import me.weishu.kernelsu.ui.util.getSuperuserCount
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
+import me.weishu.kernelsu.ui.util.reboot
+import me.weishu.kernelsu.ui.util.rootAvailable
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Reboot
+import top.yukonga.miuix.kmp.icon.icons.useful.Save
+import top.yukonga.miuix.kmp.icon.icons.useful.Settings
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
+import top.yukonga.miuix.kmp.utils.getWindowSize
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Destination<RootGraph>(start = true)
 @Composable
-fun HomeScreen(navigator: DestinationsNavigator) {
+fun HomePager(
+    pagerState: PagerState,
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
+) {
     val kernelVersion = getKernelVersion()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = MiuixScrollBehavior()
 
     Scaffold(
         topBar = {
             TopBar(
-                kernelVersion,
+                kernelVersion = kernelVersion,
                 onSettingsClick = {
-                    navigator.navigate(SettingScreenDestination)
+                    navigator.navigate(SettingScreenDestination) {
+                        popUpTo(SettingScreenDestination) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
                 onInstallClick = {
-                    navigator.navigate(InstallScreenDestination)
+                    navigator.navigate(InstallScreenDestination) {
+                        popUpTo(InstallScreenDestination) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        popupHost = { },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
+                .height(getWindowSize().height.dp)
+                .scrollEndHaptic()
+                .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 12.dp),
+            contentPadding = innerPadding,
+            overscrollEffect = null,
         ) {
-            val isManager = Natives.becomeManager(ksuApp.packageName)
-            val ksuVersion = if (isManager) Natives.version else null
-            val lkmMode = ksuVersion?.let {
-                if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
-            }
+            item {
+                val coroutineScope = rememberCoroutineScope()
+                val isManager = Natives.becomeManager(ksuApp.packageName)
+                val ksuVersion = if (isManager) Natives.version else null
+                val lkmMode = ksuVersion?.let {
+                    if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
+                }
 
-            StatusCard(kernelVersion, ksuVersion, lkmMode) {
-                navigator.navigate(InstallScreenDestination)
-            }
-            if (isManager && Natives.requireNewKernel()) {
-                WarningCard(
-                    stringResource(id = R.string.require_kernel_version).format(
-                        ksuVersion, Natives.MINIMAL_SUPPORTED_KERNEL
+                Column(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    if (isManager && Natives.requireNewKernel()) {
+                        WarningCard(
+                            stringResource(id = R.string.require_kernel_version).format(
+                                ksuVersion, Natives.MINIMAL_SUPPORTED_KERNEL
+                            )
+                        )
+                    }
+                    if (ksuVersion != null && !rootAvailable()) {
+                        WarningCard(
+                            stringResource(id = R.string.grant_root_failed)
+                        )
+                    }
+                    StatusCard(
+                        kernelVersion, ksuVersion, lkmMode,
+                        onClickInstall = {
+                            navigator.navigate(InstallScreenDestination) {
+                                launchSingleTop = true
+                            }
+                        },
+                        onClickSuperuser = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
+                        },
+                        onclickModule = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(2)
+                            }
+                        }
                     )
-                )
+
+
+                    val checkUpdate =
+                        LocalContext.current.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                            .getBoolean("check_update", true)
+                    if (checkUpdate) {
+                        UpdateCard()
+                    }
+                    InfoCard()
+                    DonateCard()
+                    LearnMoreCard()
+                }
+                Spacer(Modifier.height(bottomInnerPadding))
             }
-            if (ksuVersion != null && !rootAvailable()) {
-                WarningCard(
-                    stringResource(id = R.string.grant_root_failed)
-                )
-            }
-            val checkUpdate =
-                LocalContext.current.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                    .getBoolean("check_update", true)
-            if (checkUpdate) {
-                UpdateCard()
-            }
-            InfoCard()
-            DonateCard()
-            LearnMoreCard()
-            Spacer(Modifier)
         }
     }
 }
@@ -135,7 +234,7 @@ fun UpdateCard() {
         val updateDialog = rememberConfirmDialog(onConfirm = { uriHandler.openUri(newVersionUrl) })
         WarningCard(
             message = stringResource(id = R.string.new_version_available).format(newVersionCode),
-            MaterialTheme.colorScheme.outlineVariant
+            colorScheme.outline
         ) {
             if (changelog.isEmpty()) {
                 uriHandler.openUri(newVersionUrl)
@@ -152,71 +251,134 @@ fun UpdateCard() {
 }
 
 @Composable
-fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
-    DropdownMenuItem(text = {
-        Text(stringResource(id))
-    }, onClick = {
-        reboot(reason)
-    })
+fun RebootDropdownItem(
+    @StringRes id: Int, reason: String = "",
+    showTopPopup: MutableState<Boolean>,
+    optionSize: Int,
+    index: Int,
+) {
+    DropdownItem(
+        text = stringResource(id),
+        optionSize = optionSize,
+        onSelectedIndexChange = {
+            reboot(reason)
+            showTopPopup.value = false
+        },
+        index = index
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     kernelVersion: KernelVersion,
     onInstallClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: ScrollBehavior,
 ) {
     TopAppBar(
-        title = { Text(stringResource(R.string.app_name)) },
-        actions = {
-            if (kernelVersion.isGKI()) {
-                IconButton(onClick = onInstallClick) {
-                    Icon(
-                        imageVector = Icons.Filled.Archive,
-                        contentDescription = stringResource(id = R.string.install)
-                    )
-                }
-            }
-
-            var showDropdown by remember { mutableStateOf(false) }
-            KsuIsValid() {
-                IconButton(onClick = {
-                    showDropdown = true
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = stringResource(id = R.string.reboot)
-                    )
-
-                    DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                        showDropdown = false
-                    }) {
-
-                        RebootDropdownItem(id = R.string.reboot)
-
-                        val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
-                        @Suppress("DEPRECATION")
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
-                            RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
-                        }
-                        RebootDropdownItem(id = R.string.reboot_recovery, reason = "recovery")
-                        RebootDropdownItem(id = R.string.reboot_bootloader, reason = "bootloader")
-                        RebootDropdownItem(id = R.string.reboot_download, reason = "download")
-                        RebootDropdownItem(id = R.string.reboot_edl, reason = "edl")
-                    }
-                }
-            }
-
-            IconButton(onClick = onSettingsClick) {
+        title = stringResource(R.string.app_name),
+        navigationIcon = {
+            IconButton(
+                modifier = Modifier.padding(start = 16.dp),
+                onClick = onSettingsClick
+            ) {
                 Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = stringResource(id = R.string.settings)
+                    imageVector = MiuixIcons.Useful.Settings,
+                    contentDescription = stringResource(id = R.string.settings),
+                    tint = colorScheme.onBackground
                 )
             }
         },
-        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+        actions = {
+            if (kernelVersion.isGKI()) {
+                IconButton(
+                    modifier = Modifier.padding(end = 16.dp),
+                    onClick = onInstallClick,
+                ) {
+                    Icon(
+                        imageVector = MiuixIcons.Useful.Save,
+                        contentDescription = stringResource(id = R.string.install),
+                        tint = colorScheme.onBackground
+                    )
+                }
+            }
+            val showTopPopup = remember { mutableStateOf(false) }
+            KsuIsValid {
+                IconButton(
+                    modifier = Modifier.padding(end = 16.dp),
+                    onClick = { showTopPopup.value = true },
+                    holdDownState = showTopPopup.value
+                ) {
+                    Icon(
+                        imageVector = MiuixIcons.Useful.Reboot,
+                        contentDescription = stringResource(id = R.string.reboot),
+                        tint = colorScheme.onBackground
+                    )
+                }
+                ListPopup(
+                    show = showTopPopup,
+                    popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                    alignment = PopupPositionProvider.Align.TopRight,
+                    onDismissRequest = {
+                        showTopPopup.value = false
+                    }
+                ) {
+                    val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+
+                    @Suppress("DEPRECATION")
+                    val isRebootingUserspaceSupported =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true
+
+                    ListPopupColumn {
+                        RebootDropdownItem(
+                            id = R.string.reboot,
+                            showTopPopup = showTopPopup,
+                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
+                            index = 0
+                        )
+
+
+                        if (isRebootingUserspaceSupported) {
+                            RebootDropdownItem(
+                                id = R.string.reboot_userspace,
+                                reason = "userspace",
+                                showTopPopup = showTopPopup,
+                                optionSize = 5,
+                                index = 1
+                            )
+                        }
+                        RebootDropdownItem(
+                            id = R.string.reboot_recovery,
+                            reason = "recovery",
+                            showTopPopup = showTopPopup,
+                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
+                            index = if (isRebootingUserspaceSupported) 2 else 1
+                        )
+                        RebootDropdownItem(
+                            id = R.string.reboot_bootloader,
+                            reason = "bootloader",
+                            showTopPopup = showTopPopup,
+                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
+                            index = if (isRebootingUserspaceSupported) 3 else 2
+                        )
+                        RebootDropdownItem(
+                            id = R.string.reboot_download,
+                            reason = "download",
+                            showTopPopup = showTopPopup,
+                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
+                            index = if (isRebootingUserspaceSupported) 4 else 3
+                        )
+                        RebootDropdownItem(
+                            id = R.string.reboot_edl,
+                            reason = "edl",
+                            showTopPopup = showTopPopup,
+                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
+                            index = if (isRebootingUserspaceSupported) 5 else 4
+                        )
+                    }
+                }
+            }
+        },
         scrollBehavior = scrollBehavior
     )
 }
@@ -226,91 +388,187 @@ private fun StatusCard(
     kernelVersion: KernelVersion,
     ksuVersion: Int?,
     lkmMode: Boolean?,
-    onClickInstall: () -> Unit = {}
+    onClickInstall: () -> Unit = {},
+    onClickSuperuser: () -> Unit = {},
+    onclickModule: () -> Unit = {},
 ) {
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(containerColor = run {
-            if (ksuVersion != null) MaterialTheme.colorScheme.secondaryContainer
-            else MaterialTheme.colorScheme.errorContainer
-        })
+    Column(
+        modifier = Modifier
     ) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                if (kernelVersion.isGKI()) {
-                    onClickInstall()
+        when {
+            ksuVersion != null -> {
+                val safeMode = when {
+                    Natives.isSafeMode -> " [${stringResource(id = R.string.safe_mode)}]"
+                    else -> ""
+                }
+
+                val workingMode = when (lkmMode) {
+                    null -> ""
+                    true -> " <LKM>"
+                    else -> " <GKI>"
+                }
+
+                "${stringResource(id = R.string.home_working)}$workingMode$safeMode"
+
+                Row(
+                    modifier = Modifier
+                        .height(180.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .weight(1f),
+                        colors = CardDefaults.defaultColors(
+                            color = if (isSystemInDarkTheme()) Color(0xFF1A3825) else Color(0xFFDFFAE4)
+                        ),
+                        onClick = {
+                            if (kernelVersion.isGKI()) onClickInstall()
+                        },
+                        showIndication = true,
+                        pressFeedbackType = PressFeedbackType.Tilt
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .offset(38.dp, 45.dp),
+                                contentAlignment = Alignment.BottomEnd
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(170.dp),
+                                    imageVector = Icons.Rounded.CheckCircleOutline,
+                                    tint = Color(0xFF36D167),
+                                    contentDescription = null
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(all = 16.dp)
+                            ) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = stringResource(R.string.home_working) + workingMode,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    stringResource(R.string.home_working_version, ksuVersion),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                )
+                            }
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .weight(1f)
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            insideMargin = PaddingValues(16.dp),
+                            onClick = { onClickSuperuser() },
+                            showIndication = true,
+                            pressFeedbackType = PressFeedbackType.Tilt
+                        ) {
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.superuser),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                    color = colorScheme.onSurfaceVariantSummary
+                                )
+                                Text(
+                                    text = getSuperuserCount().toString(),
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            insideMargin = PaddingValues(16.dp),
+                            onClick = { onclickModule() },
+                            showIndication = true,
+                            pressFeedbackType = PressFeedbackType.Tilt
+                        ) {
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.module),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                    color = colorScheme.onSurfaceVariantSummary
+                                )
+                                Text(
+                                    text = getModuleCount().toString(),
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
                 }
             }
-            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            when {
-                ksuVersion != null -> {
-                    val safeMode = when {
-                        Natives.isSafeMode -> " [${stringResource(id = R.string.safe_mode)}]"
-                        else -> ""
-                    }
 
-                    val workingMode = when (lkmMode) {
-                        null -> ""
-                        true -> " <LKM>"
-                        else -> " <GKI>"
-                    }
-
-                    val workingText =
-                        "${stringResource(id = R.string.home_working)}$workingMode$safeMode"
-
-                    Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
-                    Column(Modifier.padding(start = 20.dp)) {
-                        Text(
-                            text = workingText,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.home_working_version, ksuVersion),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(
-                                R.string.home_superuser_count, getSuperuserCount()
-                            ), style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.home_module_count, getModuleCount()),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+            kernelVersion.isGKI() -> {
+                Card(
+                    onClick = {
+                        if (kernelVersion.isGKI()) onClickInstall()
+                    },
+                    showIndication = true,
+                    pressFeedbackType = PressFeedbackType.Sink
+                ) {
+                    BasicComponent(
+                        title = stringResource(R.string.home_not_installed),
+                        summary = stringResource(R.string.home_click_to_install),
+                        leftAction = {
+                            Icon(
+                                Icons.Rounded.ErrorOutline,
+                                stringResource(R.string.home_not_installed),
+                                modifier = Modifier
+                                    .padding(end = 16.dp),
+                                tint = colorScheme.onBackground,
+                            )
+                        }
+                    )
                 }
+            }
 
-                kernelVersion.isGKI() -> {
-                    Icon(Icons.Outlined.Warning, stringResource(R.string.home_not_installed))
-                    Column(Modifier.padding(start = 20.dp)) {
-                        Text(
-                            text = stringResource(R.string.home_not_installed),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.home_click_to_install),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-
-                else -> {
-                    Icon(Icons.Outlined.Block, stringResource(R.string.home_unsupported))
-                    Column(Modifier.padding(start = 20.dp)) {
-                        Text(
-                            text = stringResource(R.string.home_unsupported),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.home_unsupported_reason),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+            else -> {
+                Card(
+                    onClick = {
+                        if (kernelVersion.isGKI()) onClickInstall()
+                    },
+                    showIndication = true,
+                    pressFeedbackType = PressFeedbackType.Sink
+                ) {
+                    BasicComponent(
+                        title = stringResource(R.string.home_unsupported),
+                        summary = stringResource(R.string.home_unsupported_reason),
+                        leftAction = {
+                            Icon(
+                                Icons.Rounded.ErrorOutline,
+                                stringResource(R.string.home_unsupported),
+                                modifier = Modifier
+                                    .padding(end = 16.dp),
+                                tint = colorScheme.onBackground,
+                            )
+                        }
+                    )
                 }
             }
         }
@@ -319,21 +577,29 @@ private fun StatusCard(
 
 @Composable
 fun WarningCard(
-    message: String, color: Color = MaterialTheme.colorScheme.error, onClick: (() -> Unit)? = null
+    message: String,
+    color: Color = if (isSystemInDarkTheme()) Color(0XFF310808) else Color(0xFFF8E2E2),
+    onClick: (() -> Unit)? = null
 ) {
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = color
-        )
+    Card(
+        onClick = {
+            onClick?.invoke()
+        },
+        colors = CardDefaults.defaultColors(
+            color = color
+        ),
+        showIndication = onClick != null,
+        pressFeedbackType = PressFeedbackType.Tilt
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(onClick?.let { Modifier.clickable { it() } } ?: Modifier)
-                .padding(24.dp)
+                .padding(16.dp)
         ) {
             Text(
-                text = message, style = MaterialTheme.typography.bodyMedium
+                text = message,
+                color = Color(0xFFF72727),
+                fontSize = 14.sp
             )
         }
     }
@@ -344,26 +610,25 @@ fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
     val url = stringResource(R.string.home_learn_kernelsu_url)
 
-    ElevatedCard {
-
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+    ) {
+        BasicComponent(
+            title = stringResource(R.string.home_learn_kernelsu),
+            summary = stringResource(R.string.home_click_to_learn_kernelsu),
+            rightActions = {
+                Icon(
+                    modifier = Modifier.size(28.dp),
+                    imageVector = Icons.Rounded.Link,
+                    tint = colorScheme.onSurface,
+                    contentDescription = null
+                )
+            },
+            onClick = {
                 uriHandler.openUri(url)
             }
-            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text(
-                    text = stringResource(R.string.home_learn_kernelsu),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_click_to_learn_kernelsu),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
+        )
     }
 }
 
@@ -371,63 +636,76 @@ fun LearnMoreCard() {
 fun DonateCard() {
     val uriHandler = LocalUriHandler.current
 
-    ElevatedCard {
-
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+    ) {
+        BasicComponent(
+            title = stringResource(R.string.home_support_title),
+            summary = stringResource(R.string.home_support_content),
+            rightActions = {
+                Icon(
+                    modifier = Modifier.size(28.dp),
+                    imageVector = Icons.Rounded.Link,
+                    tint = colorScheme.onSurface,
+                    contentDescription = null
+                )
+            },
+            onClick = {
                 uriHandler.openUri("https://patreon.com/weishu")
-            }
-            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text(
-                    text = stringResource(R.string.home_support_title),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_support_content),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
+            },
+            insideMargin = PaddingValues(18.dp)
+        )
     }
 }
 
 @Composable
 private fun InfoCard() {
-    val context = LocalContext.current
-
-    ElevatedCard {
+    @Composable
+    fun InfoText(
+        title: String,
+        content: String,
+        bottomPadding: Dp = 24.dp
+    ) {
+        Text(
+            text = title,
+            fontSize = MiuixTheme.textStyles.headline1.fontSize,
+            fontWeight = FontWeight.Medium,
+            color = colorScheme.onSurface
+        )
+        Text(
+            text = content,
+            fontSize = MiuixTheme.textStyles.body2.fontSize,
+            color = colorScheme.onSurfaceVariantSummary,
+            modifier = Modifier.padding(top = 2.dp, bottom = bottomPadding)
+        )
+    }
+    Card {
+        val context = LocalContext.current
+        val uname = Os.uname()
+        val managerVersion = getManagerVersion(context)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 16.dp)
+                .padding(16.dp)
         ) {
-            val contents = StringBuilder()
-            val uname = Os.uname()
-
-            @Composable
-            fun InfoCardItem(label: String, content: String) {
-                contents.appendLine(label).appendLine(content).appendLine()
-                Text(text = label, style = MaterialTheme.typography.bodyLarge)
-                Text(text = content, style = MaterialTheme.typography.bodyMedium)
-            }
-
-            InfoCardItem(stringResource(R.string.home_kernel), uname.release)
-
-            Spacer(Modifier.height(16.dp))
-            val managerVersion = getManagerVersion(context)
-            InfoCardItem(
-                stringResource(R.string.home_manager_version),
-                "${managerVersion.first} (${managerVersion.second})"
+            InfoText(
+                title = stringResource(R.string.home_kernel),
+                content = uname.release
             )
-
-            Spacer(Modifier.height(16.dp))
-            InfoCardItem(stringResource(R.string.home_fingerprint), Build.FINGERPRINT)
-
-            Spacer(Modifier.height(16.dp))
-            InfoCardItem(stringResource(R.string.home_selinux_status), getSELinuxStatus())
+            InfoText(
+                title = stringResource(R.string.home_manager_version),
+                content = "${managerVersion.first} (${managerVersion.second})"
+            )
+            InfoText(
+                title = stringResource(R.string.home_fingerprint),
+                content = Build.FINGERPRINT
+            )
+            InfoText(
+                title = stringResource(R.string.home_selinux_status),
+                content = getSELinuxStatus(),
+                bottomPadding = 0.dp
+            )
         }
     }
 }
@@ -436,27 +714,4 @@ fun getManagerVersion(context: Context): Pair<String, Long> {
     val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)!!
     val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
     return Pair(packageInfo.versionName!!, versionCode)
-}
-
-@Preview
-@Composable
-private fun StatusCardPreview() {
-    Column {
-        StatusCard(KernelVersion(5, 10, 101), 1, null)
-        StatusCard(KernelVersion(5, 10, 101), 20000, true)
-        StatusCard(KernelVersion(5, 10, 101), null, true)
-        StatusCard(KernelVersion(4, 10, 101), null, false)
-    }
-}
-
-@Preview
-@Composable
-private fun WarningCardPreview() {
-    Column {
-        WarningCard(message = "Warning message")
-        WarningCard(
-            message = "Warning message ",
-            MaterialTheme.colorScheme.outlineVariant,
-            onClick = {})
-    }
 }
