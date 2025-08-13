@@ -1,0 +1,86 @@
+From acb31159fa5b4a4eb9197624e15fbf6e51802b8c Mon Sep 17 00:00:00 2001
+From: Fede2782 <78815152+Fede2782@users.noreply.github.com>
+Date: Wed, 23 Jul 2025 18:35:13 +0200
+Subject: [PATCH] add min_kdp symbols
+
+This adds symbols provided by min_kdp which are required for bluetooth driver
+---
+ android/abi_gki_aarch64.stg | 41 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/android/abi_gki_aarch64.stg b/android/abi_gki_aarch64.stg
+index 78f10f7d9bec..445947cb14b9 100644
+--- a/android/abi_gki_aarch64.stg
++++ b/android/abi_gki_aarch64.stg
+@@ -316418,6 +316418,12 @@ function {
+   parameter_id: 0x3c0604da
+   parameter_id: 0x7584e7da
+ }
++function {
++  id: 0x1e5195df
++  return_type_id: 0x48b5725f
++  parameter_id: 0x3d551c03
++  parameter_id: 0x6720d32f
++}
+ function {
+   id: 0x1e571002
+   return_type_id: 0x48b5725f
+@@ -352019,6 +352025,11 @@ function {
+   return_type_id: 0x4585663f
+   parameter_id: 0x3e6396e0
+ }
++function {
++  id: 0xc18e39fb
++  return_type_id: 0x4585663f
++  parameter_id: 0x3d551c03
++}
+ function {
+   id: 0xc18f1240
+   return_type_id: 0x4585663f
+@@ -403638,6 +403649,33 @@ elf_symbol {
+   type_id: 0xc59b3a62
+   full_name: "lookup_user_key"
+ }
++elf_symbol {
++  id: 0xb0801f6e
++  name: "kdp_set_cred_non_rcu"
++  is_defined: true
++  symbol_type: FUNCTION
++  crc: 0x738bae5e
++  type_id: 0x1e5195df
++  full_name: "kdp_set_cred_non_rcu"
++}
++elf_symbol {
++  id: 0x3037c5bc
++  name: "kdp_usecount_dec_and_test"
++  is_defined: true
++  symbol_type: FUNCTION
++  crc: 0xda582aa5
++  type_id: 0xc18e39fb
++  full_name: "kdp_usecount_dec_and_test"
++}
++elf_symbol {
++  id: 0x8334a496
++  name: "kdp_usecount_inc"
++  is_defined: true
++  symbol_type: FUNCTION
++  crc: 0xfb342499
++  type_id: 0x1fcd1693
++  full_name: "kdp_usecount_inc"
++}
+ elf_symbol {
+   id: 0x493ce9fc
+   name: "loops_per_jiffy"
+@@ -441632,6 +441670,9 @@ interface {
+   symbol_id: 0x81dadb36
+   symbol_id: 0x9bfc3a5e
+   symbol_id: 0xc750a072
++  symbol_id: 0xb0801f6e
++  symbol_id: 0x3037c5bc
++  symbol_id: 0x8334a496
+   symbol_id: 0x132eb5f1
+   symbol_id: 0xbccf7511
+   symbol_id: 0xc29558ef
+-- 
+2.48.1
+
