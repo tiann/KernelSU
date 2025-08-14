@@ -6,11 +6,11 @@
 
 一套基於 Android 裝置核心的 Root 解決方案。
 
-[![最新版本](https://img.shields.io/github/v/release/tiann/KernelSU?label=%e7%99%bc%e8%a1%8c%e7%89%88%e6%9c%ac&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
-[![Weblate](https://img.shields.io/badge/%e6%9c%ac%e5%9c%9f%e5%8c%96%e7%bf%bb%e8%ad%af-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
-[![頻道](https://img.shields.io/badge/%e8%bf%bd%e8%b9%a4-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
-[![授權條款：《GPL v2》](https://img.shields.io/badge/%e6%8e%88%e6%ac%8a%e6%a2%9d%e6%ac%be-%E3%80%8AGPL%20v2%E3%80%8B-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![GitHub 授權條款](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## 特色功能
 
@@ -51,7 +51,7 @@
 
 ## 致謝名單
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU 的靈感來源。
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU 的靈感來源。
 - [Magisk](https://github.com/topjohnwu/Magisk)：強而有力的 Root 工具。
-- [genuine](https://github.com/brevent/genuine/)：用於確效 Apk v2 簽章。
-- [Diamorphine](https://github.com/m0nad/Diamorphine): 用於增進 Rootkit 技巧。
+- [genuine](https://github.com/brevent/genuine/)：用於確效 APK v2 簽章。
+- [Diamorphine](https://github.com/m0nad/Diamorphine)：用於增進 Rootkit 技巧。
