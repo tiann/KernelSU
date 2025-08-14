@@ -9,7 +9,7 @@
     <string name="failed_to_update_app_profile">Không thể cập nhật Hồ sơ ứng dụng cho %s</string>
     <string name="settings_umount_modules_default">Umount modules</string>
     <string name="settings_umount_modules_default_summary">Giá trị mặc định chung cho \"Umount modules\" trong Hồ sơ ứng dụng. Khi bật, mọi thay đổi từ module sẽ bị loại bỏ khỏi hệ thống đối với các ứng dụng chưa được gán hồ sơ riêng</string>
-    <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU khôi phục bất kỳ tệp đã sửa đổi bởi các module cho ứng dụng này</string>
+    <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU khôi phục mọi tệp đã sửa đổi bởi các module cho ứng dụng này</string>
     <string name="module_update">Cập nhật</string>
     <string name="module_downloading">Đang tải xuống module: %s</string>
     <string name="module_start_downloading">Bắt đầu tải xuống: %s</string>
@@ -97,7 +97,7 @@
     <string name="settings_profile_template">Mẫu Hồ sơ ứng dụng</string>
     <string name="app_profile_template_description">Mô tả</string>
     <string name="app_profile_template_save">Lưu</string>
-    <string name="settings_profile_template_summary">Quản lý mẫu Hồ sơ Ứng dụng và trực tuyến</string>
+    <string name="settings_profile_template_summary">Quản lý mẫu Hồ sơ ứng dụng cục bộ và trực tuyến</string>
     <string name="app_profile_template_delete">Xóa</string>
     <string name="app_profile_template_import_empty">Bảng nhớ tạm đang trống!</string>
     <string name="app_profile_template_view">Xem mẫu</string>
@@ -115,20 +115,20 @@
     <string name="select_kmi">Chọn KMI</string>
     <string name="install_next">Kế tiếp</string>
     <string name="direct_install">Cài đặt trực tiếp (Khuyến nghị)</string>
-    <string name="select_file">Chọn một tệp</string>
+    <string name="select_file">Chọn tệp</string>
     <string name="settings_uninstall">Gỡ cài đặt</string>
     <string name="settings_uninstall_temporary">Gỡ cài đặt tạm thời</string>
     <string name="settings_uninstall_permanent">Gỡ cài đặt vĩnh viễn</string>
-    <string name="settings_restore_stock_image">Khôi phục hình ảnh gốc</string>
+    <string name="settings_restore_stock_image">Khôi phục image gốc</string>
     <string name="settings_uninstall_permanent_message">Gỡ hoàn toàn KernelSU khỏi thiết bị, bao gồm cả quyền root và tất cả module đã cài</string>
-    <string name="settings_restore_stock_image_message">Khôi phục hình ảnh gốc nhà máy (Nếu bạn đã sao lưu trước đó), thường thực hiện trước khi cập nhật OTA; còn nếu muốn gỡ cài đặt KernelSU thì hãy chọn “Gỡ cài đặt vĩnh viễn”</string>
+    <string name="settings_restore_stock_image_message">Khôi phục image gốc nhà máy (Nếu bạn đã sao lưu trước đó), thường thực hiện trước khi cập nhật OTA; còn nếu muốn gỡ cài đặt KernelSU thì hãy chọn “Gỡ cài đặt vĩnh viễn”</string>
     <string name="flashing">Flashing</string>
     <string name="flash_success">Flash thành công</string>
     <string name="flash_failed">Flash thất bại</string>
     <string name="selected_lkm">Đã chọn LKM: %s</string>
-    <string name="select_file_tip">Nên sử dụng hình ảnh phân vùng %1$s</string>
-    <string name="shrink_sparse_image">Giảm kích thước hình ảnh sparse</string>
-    <string name="shrink_sparse_image_message">Thay đổi kích thước hình ảnh sparse chứa module về đúng kích thước thực của nó. Lưu ý điều này có thể khiến module hoạt động không ổn định, vui lòng chỉ sử dụng khi cần thiết (Chẳng hạn như khi sao lưu)</string>
+    <string name="select_file_tip">Nên sử dụng image phân vùng %1$s</string>
+    <string name="shrink_sparse_image">Giảm kích thước sparse image</string>
+    <string name="shrink_sparse_image_message">Thay đổi kích thước sparse image chứa module về đúng kích thước thực của nó. Lưu ý điều này có thể khiến module hoạt động không ổn định, vui lòng chỉ sử dụng khi cần thiết (Chẳng hạn như khi sao lưu)</string>
     <string name="save_log">Lưu nhật ký</string>
     <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
     <string name="module_install_prompt_with_name">Các module sau sẽ được cài đặt: %1$s</string>
@@ -137,6 +137,6 @@
     <string name="su_not_allowed">Không thể cấp quyền Superuser cho %s</string>
     <string name="action">Khởi chạy</string>
     <string name="log_saved">Đã lưu nhật ký</string>
-    <string name="settings_disable_su_summary">Tạm thời ngăn các ứng dụng mới sử dụng quyền root qua lệnh su (Các tiến trình đã được cấp quyền root sẽ không bị ảnh hưởng)</string>
+    <string name="settings_disable_su_summary">Tạm thời ngăn các ứng dụng mới sử dụng quyền root qua lệnh SU (Các tiến trình đã được cấp quyền root trước đó sẽ không bị ảnh hưởng)</string>
     <string name="settings_disable_su">Vô hiệu hoá lệnh SU</string>
 </resources>
