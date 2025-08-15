@@ -10,7 +10,7 @@
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
-    <string name="home_kernel">Ядро</string>
+    <string name="home_kernel">Версия ядра</string>
     <string name="home_manager_version">Версия менеджера</string>
     <string name="home_fingerprint">Подпись</string>
     <string name="home_selinux_status">Состояние SELinux</string>
@@ -106,7 +106,7 @@
     <string name="app_profile_template_delete">Удалить</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="app_profile_template_view">Просмотр шаблона</string>
-    <string name="settings_check_update">Проверка обновлений</string>
+    <string name="settings_check_update">Проверять наличие обновлений</string>
     <string name="settings_check_update_summary">Автоматическая проверка обновлений при открытии приложения</string>
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="open">Открыть</string>
@@ -140,7 +140,7 @@
     <string name="module_sort_action_first">Сортировать (Сначала с действием)</string>
     <string name="module_sort_enabled_first">Сортировать (Сначала включённые)</string>
     <string name="settings_disable_su">Отключить su совместимость</string>
-    <string name="settings_disable_su_summary">Временно отключить возможность получения root привилегий любым приложениям с помощью команды su (существующие root процессы не будут затронуты).</string>
+    <string name="settings_disable_su_summary">Временно отключить возможность получения root привилегий любым приложениям с помощью команды su (Существующие root процессы не будут затронуты).</string>
     <string name="module_install_prompt_with_name">Будут установлены следующие модули: %1$s</string>
     <string name="confirm">Подтвердить</string>
     <string name="su_not_allowed">Не удалось предоставить права Суперпользователя к %s</string>
