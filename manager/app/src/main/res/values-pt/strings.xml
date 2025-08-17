@@ -45,7 +45,7 @@
     <string name="show_system_apps">Mostrar aplicativos do sistema</string>
     <string name="home_click_to_learn_kernelsu">Aprenda a instalar o KernelSU e usar os módulos</string>
     <string name="home_support_content">O KernelSU é, e sempre será, gratuito e de código aberto. No entanto, você pode nos mostrar que se importa fazendo uma doação.</string>
-    <string name="about_source_code">Veja o código-fonte em %1$s<br/>Junte-se ao nosso canal %2$s</string>
+    <string name="about_source_code">Veja o código-fonte em %1$s<br></br>Junte-se ao nosso canal %2$s</string>
     <string name="profile_namespace_individual">Individual</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_inherited">Herdado</string>
