@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Дізнайтеся, як інсталювати KernelSU і використовувати модулі</string>
     <string name="home_support_title">Підтримати нас</string>
-    <string name="home_support_content">KernelSU є і завжди буде безкоштовним програмним забезпеченням з відкритим вихідним кодом. Однак ви можете показати нам, що вам небайдужа наша допомога, зробивши пожертву</string>
+    <string name="home_support_content">KernelSU є і завжди буде безкоштовним програмним забезпеченням з відкритим вихідним кодом. Однак ви можете показати нам, що вам небайдужа наша допомога, зробивши пожертву.</string>
     <string name="about_source_code"><![CDATA[Переглянути вихідний код на %1$s<br/>Приєднуйтесь до нашого каналу %2$s]]></string>
     <string name="profile">Профіль додатка</string>
     <string name="profile_default">Типовий</string>
@@ -67,8 +67,8 @@
     <string name="profile_umount_modules">Розмонтувати модулі</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
     <string name="settings_umount_modules_default">Розмонтувати модулі за замовчуванням</string>
-    <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю</string>
-    <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU відновити будь-які змінені файли модулями для цієї програми</string>
+    <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
+    <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU відновити будь-які змінені файли модулями для цієї програми.</string>
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
     <string name="module_update">Оновити</string>
@@ -77,7 +77,7 @@
     <string name="launch_app">Запустити</string>
     <string name="force_stop_app">Примусова зупинка</string>
     <string name="restart_app">Перезапустити</string>
-    <string name="new_version_available">Доступна нова версія %s, натисніть, щоб оновити</string>
+    <string name="new_version_available">Доступна нова версія %s, натисніть, щоб оновити.</string>
     <string name="failed_to_update_sepolicy">Не вдалося оновити правила SELinux для %s</string>
     <string name="module_changelog">Журнал змін</string>
     <string name="require_kernel_version">Поточна версія KernelSU %d занадто низька для належної роботи менеджера. Будь ласка, оновіть його до версії %d або вище!</string>
@@ -108,7 +108,7 @@
     <string name="install_next">Далі</string>
     <string name="settings_check_update">Перевірити наявність оновлень</string>
     <string name="settings_check_update_summary">Автоматична перевірка оновлень під час відкриття програми</string>
-    <string name="enable_web_debugging_summary">Можна використовувати для налагодження веб-інтерфейсу. Вмикайте лише за потреби</string>
+    <string name="enable_web_debugging_summary">Можна використовувати для налагодження веб-інтерфейсу. Вмикайте лише за потреби.</string>
     <string name="direct_install">Пряме встановлення (рекомендовано)</string>
     <string name="select_file">Виберіть файл</string>
     <string name="install_inactive_slot">Встановити в неактивний слот (після OTA)</string>
@@ -119,18 +119,18 @@
     <string name="grant_root_failed">Не вдалося отримати root!</string>
     <string name="open">Відкрити</string>
     <string name="shrink_sparse_image">Мінімізувати розріджений образ</string>
-    <string name="shrink_sparse_image_message">Змініть розмір розрідженого зображення, де розташований модуль, до його фактичного розміру. Зверніть увагу, що це може призвести до неправильної роботи модуля, тому використовуйте його лише за необхідності (наприклад, для резервного копіювання)</string>
+    <string name="shrink_sparse_image_message">Змініть розмір розрідженого зображення, де розташований модуль, до його фактичного розміру. Зверніть увагу, що це може призвести до неправильної роботи модуля, тому використовуйте його лише за необхідності (наприклад, для резервного копіювання).</string>
     <string name="settings_uninstall_temporary">Тимчасово видалити</string>
     <string name="settings_uninstall_permanent">Видалити назавжди</string>
     <string name="settings_restore_stock_image">Відновити стокове зображення</string>
-    <string name="settings_uninstall_temporary_message">Тимчасово видалити KernelSU, відновити початковий стан після наступного перезавантаження</string>
+    <string name="settings_uninstall_temporary_message">Тимчасово видалити KernelSU, відновити початковий стан після наступного перезавантаження.</string>
     <string name="settings_uninstall">Видалити</string>
     <string name="flashing">Прошивка</string>
     <string name="flash_success">Прошивку виконано</string>
     <string name="flash_failed">Прошивка не виконана</string>
     <string name="selected_lkm">Вибраний ЛКМ: %s</string>
-    <string name="settings_uninstall_permanent_message">Повне та остаточне видалення KernelSU (Root та всіх модулів)</string>
-    <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо є резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU, використовуйте \"Назавжди видалити\"</string>
+    <string name="settings_uninstall_permanent_message">Повне та остаточне видалення KernelSU (root та всіх модулів).</string>
+    <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо є резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU, використовуйте \"Назавжди видалити\".</string>
     <string name="save_log">Зберегти Журнали</string>
     <string name="module_install_prompt_with_name">Будуть встановлені такі модулі: %1$s</string>
     <string name="module_sort_action_first">Сортувати (спочатку за дією)</string>
@@ -140,5 +140,5 @@
     <string name="action">Дія</string>
     <string name="log_saved">Журнали збережено</string>
     <string name="settings_disable_su">Вимкнути сумісність із su</string>
-    <string name="settings_disable_su_summary">Тимчасово вимкніть можливість будь-якої програми отримувати root-права за допомогою команди ⁠su (існуючі root-процеси залишаться в силі)</string>
+    <string name="settings_disable_su_summary">Тимчасово вимкніть можливість будь-якої програми отримувати root-права за допомогою команди ⁠su (існуючі root-процеси залишаться в силі).</string>
 </resources>
