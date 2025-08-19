@@ -123,13 +123,13 @@
     <string name="select_file_tip">Inirerekomenda ang %1$s partition image</string>
     <string name="select_kmi">Pumili ng KMI</string>
     <string name="shrink_sparse_image">Paliitin ang sparse image</string>
-    <string name="shrink_sparse_image_message">Baguhin ang laki ng sparse image kung saan matatagpuan ang module sa aktwal na laki nito. Tandaan na ito ay maaaring maging sanhi ng hindi normal na paggana ng module, kaya mangyaring gamitin lamang kung kinakailangan (Gaya ng para sa backup).</string>
+    <string name="shrink_sparse_image_message">Baguhin ang laki ng sparse image kung saan matatagpuan ang module sa aktwal na laki nito. Tandaan na ito ay maaaring maging sanhi ng hindi normal na paggana ng module, kaya mangyaring gamitin lamang kung kinakailangan (gaya ng para sa backup).</string>
     <string name="settings_uninstall">I-uninstall</string>
     <string name="settings_uninstall_temporary">Pansamantalang i-uninstall</string>
     <string name="settings_uninstall_permanent">Permanenteng i-uninstall</string>
     <string name="settings_restore_stock_image">Ibalik ang stock image</string>
     <string name="settings_uninstall_temporary_message">Pansamantalang i-uninstall ang KernelSU, ibabalik sa orihinal na kalagayan pagkatapos ng susunod na reboot.</string>
-    <string name="settings_uninstall_permanent_message">Ina-uninstall ang KernelSU (Root at lahat ng mga module) nang tuluyan at permanente.</string>
+    <string name="settings_uninstall_permanent_message">Ina-uninstall ang KernelSU (root at lahat ng mga module) nang tuluyan at permanente.</string>
     <string name="settings_restore_stock_image_message">Ibalik ang stock factory image (kung may umiiral na backup), kadalasan na ginagamit bago ng OTA; kung kailangan mong i-uninstall ang KernelSU, mangyaring gamitin ang \"Permanenteng i-uninstall\".</string>
     <string name="flashing">Nagfa-flash</string>
     <string name="flash_success">Matagumpay ang pag-flash</string>
@@ -137,5 +137,5 @@
     <string name="selected_lkm">Piniling LKM: %s</string>
     <string name="log_saved">Nai-save ang mga log</string>
     <string name="settings_disable_su">I-disable ang su compatibility</string>
-    <string name="settings_disable_su_summary">Pansamantalang i-disable ang kakayahan ng anumang app na makakuha ng pribilehiyong root sa pamamagitan ng su command (Hindi maaapektuhan ang mga umiiral na root process).</string>
+    <string name="settings_disable_su_summary">Pansamantalang i-disable ang kakayahan ng anumang app na makakuha ng pribilehiyong root sa pamamagitan ng su command (hindi maaapektuhan ang mga umiiral na root process).</string>
 </resources>
