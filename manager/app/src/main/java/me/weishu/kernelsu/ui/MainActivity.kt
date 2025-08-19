@@ -3,6 +3,8 @@ package me.weishu.kernelsu.ui
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -116,6 +118,7 @@ val LocalHandlePageChange = compositionLocalOf<(Int) -> Unit> { error("No handle
 @Composable
 @Destination<RootGraph>(start = true)
 fun MainScreen(navController: DestinationsNavigator) {
+    val activity = LocalActivity.current
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
     val hazeState = remember { HazeState() }
@@ -126,6 +129,16 @@ fun MainScreen(navController: DestinationsNavigator) {
     val handlePageChange: (Int) -> Unit = remember(pagerState, coroutineScope) {
         { page ->
             coroutineScope.launch { pagerState.animateScrollToPage(page) }
+        }
+    }
+
+    BackHandler {
+        if (pagerState.currentPage != 0) {
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(0)
+            }
+        } else {
+            activity?.finishAndRemoveTask()
         }
     }
 
