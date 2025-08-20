@@ -14,6 +14,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,7 +31,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
@@ -329,51 +330,25 @@ private fun TopBar(
                         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true
 
                     ListPopupColumn {
-                        RebootDropdownItem(
-                            id = R.string.reboot,
-                            showTopPopup = showTopPopup,
-                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
-                            index = 0
+                        val rebootOptions = mutableListOf(
+                            Pair(R.string.reboot, ""),
+                            Pair(R.string.reboot_recovery, "recovery"),
+                            Pair(R.string.reboot_bootloader, "bootloader"),
+                            Pair(R.string.reboot_download, "download"),
+                            Pair(R.string.reboot_edl, "edl")
                         )
-
-
                         if (isRebootingUserspaceSupported) {
+                            rebootOptions.add(1, Pair(R.string.reboot_userspace, "userspace"))
+                        }
+                        rebootOptions.forEachIndexed { idx, (id, reason) ->
                             RebootDropdownItem(
-                                id = R.string.reboot_userspace,
-                                reason = "userspace",
+                                id = id,
+                                reason = reason,
                                 showTopPopup = showTopPopup,
-                                optionSize = 5,
-                                index = 1
+                                optionSize = rebootOptions.size,
+                                index = idx
                             )
                         }
-                        RebootDropdownItem(
-                            id = R.string.reboot_recovery,
-                            reason = "recovery",
-                            showTopPopup = showTopPopup,
-                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
-                            index = if (isRebootingUserspaceSupported) 2 else 1
-                        )
-                        RebootDropdownItem(
-                            id = R.string.reboot_bootloader,
-                            reason = "bootloader",
-                            showTopPopup = showTopPopup,
-                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
-                            index = if (isRebootingUserspaceSupported) 3 else 2
-                        )
-                        RebootDropdownItem(
-                            id = R.string.reboot_download,
-                            reason = "download",
-                            showTopPopup = showTopPopup,
-                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
-                            index = if (isRebootingUserspaceSupported) 4 else 3
-                        )
-                        RebootDropdownItem(
-                            id = R.string.reboot_edl,
-                            reason = "edl",
-                            showTopPopup = showTopPopup,
-                            optionSize = if (isRebootingUserspaceSupported) 6 else 5,
-                            index = if (isRebootingUserspaceSupported) 5 else 4
-                        )
                     }
                 }
             }
@@ -407,19 +382,19 @@ private fun StatusCard(
                     else -> " <GKI>"
                 }
 
-                "${stringResource(id = R.string.home_working)}$workingMode$safeMode"
+                val workingText = "${stringResource(id = R.string.home_working)}$workingMode$safeMode"
 
                 Row(
                     modifier = Modifier
-                        .height(180.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Card(
                         modifier = Modifier
-                            .padding(end = 12.dp)
-                            .weight(1f),
+                            .weight(1f)
+                            .fillMaxHeight(),
                         colors = CardDefaults.defaultColors(
                             color = if (isSystemInDarkTheme()) Color(0xFF1A3825) else Color(0xFFDFFAE4)
                         ),
@@ -452,13 +427,14 @@ private fun StatusCard(
                             ) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = stringResource(R.string.home_working) + workingMode,
+                                    text = workingText,
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.SemiBold,
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
-                                    stringResource(R.string.home_working_version, ksuVersion),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = stringResource(R.string.home_working_version, ksuVersion),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                 )
@@ -467,8 +443,8 @@ private fun StatusCard(
                     }
                     Column(
                         modifier = Modifier
-                            .wrapContentHeight()
                             .weight(1f)
+                            .fillMaxHeight()
                     ) {
                         Card(
                             modifier = Modifier
@@ -479,18 +455,23 @@ private fun StatusCard(
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.Start
+                            ) {
                                 Text(
+                                    modifier = Modifier.fillMaxWidth(),
                                     text = stringResource(R.string.superuser),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 15.sp,
-                                    color = colorScheme.onSurfaceVariantSummary
+                                    color = colorScheme.onSurfaceVariantSummary,
                                 )
                                 Text(
+                                    modifier = Modifier.fillMaxWidth(),
                                     text = getSuperuserCount().toString(),
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = colorScheme.onSurface
+                                    color = colorScheme.onSurface,
                                 )
                             }
                         }
@@ -504,18 +485,23 @@ private fun StatusCard(
                             showIndication = true,
                             pressFeedbackType = PressFeedbackType.Tilt
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.Start
+                            ) {
                                 Text(
+                                    modifier = Modifier.fillMaxWidth(),
                                     text = stringResource(R.string.module),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 15.sp,
-                                    color = colorScheme.onSurfaceVariantSummary
+                                    color = colorScheme.onSurfaceVariantSummary,
                                 )
                                 Text(
+                                    modifier = Modifier.fillMaxWidth(),
                                     text = getModuleCount().toString(),
                                     fontSize = 26.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = colorScheme.onSurface
+                                    color = colorScheme.onSurface,
                                 )
                             }
                         }
