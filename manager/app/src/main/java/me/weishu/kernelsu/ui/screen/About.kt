@@ -50,7 +50,7 @@ import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -110,7 +110,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .size(80.dp)
-                            .clip(SmoothRoundedCornerShape(16.dp))
+                            .clip(G2RoundedCornerShape(16.dp))
                             .background(Color.White)
                     ) {
                         Image(

@@ -21,7 +21,7 @@ import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun AppIconImage(
@@ -50,7 +50,7 @@ fun AppIconImage(
         }
     } ?: Box(
         modifier = modifier
-            .clip(SmoothRoundedCornerShape(12.dp))
+            .clip(G2RoundedCornerShape(12.dp))
             .background(colorScheme.secondaryContainer),
         contentAlignment = Alignment.Center
     ) {}
