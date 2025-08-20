@@ -1,3 +1,4 @@
+![1000020484](https://github.com/user-attachments/assets/8fc9b907-318e-429a-b3e0-ee70755c3d5c)
 # What is KernelSU?
 
 KernelSU is a root solution for Android GKI devices, it works in kernel mode and grants root permission to userspace apps directly in kernel space.
