@@ -7,8 +7,11 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -697,42 +700,46 @@ fun ModuleItem(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (module.hasActionScript) {
-                IconButton(
-                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                    minHeight = 35.dp,
-                    minWidth = 35.dp,
-                    enabled = !module.remove && module.enabled,
-                    onClick = {
-                        navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
-                            launchSingleTop = true
-                        }
-                        viewModel.markNeedRefresh()
-                    },
-                ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Rounded.PlayArrow,
-                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                        contentDescription = stringResource(R.string.action)
-                    )
+            AnimatedVisibility(
+                visible = module.enabled && !module.remove,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                if (module.hasActionScript) {
+                    IconButton(
+                        backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                        minHeight = 35.dp,
+                        minWidth = 35.dp,
+                        onClick = {
+                            navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
+                                launchSingleTop = true
+                            }
+                            viewModel.markNeedRefresh()
+                        },
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Rounded.PlayArrow,
+                            tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                            contentDescription = stringResource(R.string.action)
+                        )
+                    }
                 }
-            }
 
-            if (module.hasWebUi) {
-                IconButton(
-                    backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                    enabled = !module.remove && module.enabled,
-                    minHeight = 35.dp,
-                    minWidth = 35.dp,
-                    onClick = { onClick(module) },
-                ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Rounded.Code,
-                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                        contentDescription = stringResource(R.string.open)
-                    )
+                if (module.hasWebUi) {
+                    IconButton(
+                        backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                        minHeight = 35.dp,
+                        minWidth = 35.dp,
+                        onClick = { onClick(module) },
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Rounded.Code,
+                            tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                            contentDescription = stringResource(R.string.open)
+                        )
+                    }
                 }
             }
 
