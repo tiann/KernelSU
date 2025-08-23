@@ -8,6 +8,8 @@
 #define PER_USER_RANGE 100000
 #define FIRST_APPLICATION_UID 10000
 #define LAST_APPLICATION_UID 19999
+#define FIRST_ISOLATED_UID 99000
+#define LAST_ISOLATED_UID 99999
 
 void ksu_allowlist_init(void);
 
@@ -39,5 +41,11 @@ static inline bool is_appuid(uid_t uid)
 {
     uid_t appid = uid % PER_USER_RANGE;
     return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
+}
+
+static inline bool is_isolated_process(uid_t uid)
+{
+    uid_t appid = uid % PER_USER_RANGE;
+    return appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID;
 }
 #endif
