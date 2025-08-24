@@ -52,7 +52,7 @@
     <string name="home_click_to_learn_kernelsu">Naučite kako da instalirate KernelSU i da koristite module</string>
     <string name="home_support_title">Podržite Nas</string>
     <string name="home_support_content">KernelSU je, i uvijek če biti, besplatan, i otvorenog izvora. Možete nam međutim pokazati da vas je briga s time da napravite donaciju.</string>
-    <string name="about_source_code">Pogledajte izvornu kodu na %1$s<br/>Pridružite nam se na %2$s kanalu</string>
+    <string name="about_source_code">Pogledajte izvornu kodu na %1$s<br></br>Pridružite nam se na %2$s kanalu</string>
     <string name="profile_default">Zadano</string>
     <string name="profile_template">Šablon</string>
     <string name="profile_custom">Prilagođeno</string>

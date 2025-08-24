@@ -10,7 +10,7 @@
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
-    <string name="home_kernel">Ядро</string>
+    <string name="home_kernel">Версия ядра</string>
     <string name="home_manager_version">Версия менеджера</string>
     <string name="home_fingerprint">Подпись</string>
     <string name="home_selinux_status">Состояние SELinux</string>
@@ -106,7 +106,7 @@
     <string name="app_profile_template_delete">Удалить</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="app_profile_template_view">Просмотр шаблона</string>
-    <string name="settings_check_update">Проверка обновлений</string>
+    <string name="settings_check_update">Проверять наличие обновлений</string>
     <string name="settings_check_update_summary">Автоматическая проверка обновлений при открытии приложения</string>
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="open">Открыть</string>
@@ -124,7 +124,7 @@
     <string name="shrink_sparse_image">Минимизировать разреженный образ</string>
     <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования).</string>
     <string name="settings_uninstall_temporary">Удалить на время</string>
-    <string name="settings_uninstall_permanent_message">Удалить KernelSU (Root и все модули) полностью.</string>
+    <string name="settings_uninstall_permanent_message">Удалить KernelSU (root и все модули) полностью.</string>
     <string name="settings_uninstall_permanent">Удалить полностью</string>
     <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки.</string>
     <string name="settings_uninstall">Удалить</string>

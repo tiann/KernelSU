@@ -10,7 +10,7 @@
     <string name="home_module_count">Moduły: %d</string>
     <string name="home_unsupported">Nieobsługiwany</string>
     <string name="home_unsupported_reason">KernelSU obsługuje obecnie tylko jądra GKI</string>
-    <string name="home_kernel">Jądro</string>
+    <string name="home_kernel">Wersja jądra</string>
     <string name="home_manager_version">Wersja menedżera</string>
     <string name="home_fingerprint">Odcisk</string>
     <string name="home_selinux_status">Status SELinux</string>
@@ -51,7 +51,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Dowiedz się jak zainstalować KernelSU i jak korzystać z modułów</string>
     <string name="home_support_title">Wesprzyj nas</string>
-    <string name="home_support_content">KernelSU jest i zawsze będzie darmowy oraz otwarty. Niemniej jednak możesz nam pokazać, że Ci zależy, wysyłając darowiznę.</string>
+    <string name="home_support_content">KernelSU jest i zawsze będzie darmowy oraz otwarty. Niemniej jednak możesz nam pokazać, że Ci zależy, wysyłając darowiznę</string>
     <string name="about_source_code"><![CDATA[Przejrzyj kod źródłowy na %1$s<br/>Dołącz do kanału %2$s]]></string>
     <string name="profile" translatable="false">Profil aplikacji</string>
     <string name="profile_default">Domyślny</string>
@@ -68,14 +68,14 @@
     <string name="profile_umount_modules">Odmontuj moduły</string>
     <string name="failed_to_update_app_profile">Nie udało się zaktualizować profilu aplikacji dla %s</string>
     <string name="settings_umount_modules_default">Domyślnie odmontuj moduły</string>
-    <string name="settings_umount_modules_default_summary">Globalna wartość domyślna opcji \"Odmontuj moduły\" w profilu aplikacji. Jeśli jest włączona, wycofuje wszystkie modyfikacje dokonane przez moduły dla aplikacji, które nie mają ustawionego profilu.</string>
-    <string name="profile_umount_modules_summary">Włączenie tej opcji umożliwi KernelSU przywrócenie wszelkich zmodyfikowanych plików przez moduły dla tej aplikacji.</string>
+    <string name="settings_umount_modules_default_summary">Globalna wartość domyślna opcji \"Odmontuj moduły\" w profilu aplikacji. Jeśli jest włączona, wycofuje wszystkie modyfikacje dokonane przez moduły dla aplikacji, które nie mają ustawionego profilu</string>
+    <string name="profile_umount_modules_summary">Włączenie tej opcji umożliwi KernelSU przywrócenie wszelkich zmodyfikowanych plików przez moduły dla tej aplikacji</string>
     <string name="profile_selinux_domain">Domena</string>
     <string name="profile_selinux_rules">Reguły</string>
     <string name="module_update">Zaktualizuj</string>
     <string name="module_downloading">Pobieranie modułu: %s</string>
     <string name="module_start_downloading">Rozpocznij pobieranie: %s</string>
-    <string name="new_version_available">Nowa wersja %s jest dostępna. Kliknij, aby zaktualizować.</string>
+    <string name="new_version_available">Nowa wersja %s jest dostępna. Kliknij, aby zaktualizować</string>
     <string name="launch_app">Uruchom</string>
     <string name="force_stop_app">Wymuś zatrzymanie</string>
     <string name="restart_app">Restartuj</string>
@@ -83,7 +83,7 @@
     <string name="require_kernel_version">Obecna wersja KernelSU %d jest zbyt stara, aby menedżer działał poprawnie. Prosimy o aktualizację do wersji %d lub nowszej!</string>
     <string name="module_changelog">Dziennik zmian</string>
     <string name="enable_web_debugging">Włącz debugowanie WebView</string>
-    <string name="enable_web_debugging_summary">Może być użyte do debugowania WebUI. Włącz tylko w razie potrzeby.</string>
+    <string name="enable_web_debugging_summary">Może być użyte do debugowania WebUI. Włącz tylko w razie potrzeby</string>
     <string name="select_file_tip">Obraz partycji %1$s jest zalecany</string>
     <string name="select_kmi">Wybierz KMI</string>
     <string name="install_next">Dalej</string>
@@ -120,14 +120,14 @@
     <string name="settings_check_update">Wyszukaj aktualizacje</string>
     <string name="settings_check_update_summary">Wyszukuj aktualizacje automatycznie przy otwieraniu aplikacji</string>
     <string name="shrink_sparse_image">Minimalizuj rozrzedzony (sparse) obraz</string>
-    <string name="shrink_sparse_image_message">Zmienia rozmiar obrazu rozrzedzonego(sparse), w którym znajduje się moduł, do jego rzeczywistego rozmiaru. Należy pamiętać, że może to spowodować nieprawidłowe działanie modułu, więc należy go używać tylko wtedy, gdy jest to konieczne (np. do tworzenia kopii zapasowych).</string>
+    <string name="shrink_sparse_image_message">Zmienia rozmiar obrazu rozrzedzonego(sparse), w którym znajduje się moduł, do jego rzeczywistego rozmiaru. Należy pamiętać, że może to spowodować nieprawidłowe działanie modułu, więc należy go używać tylko wtedy, gdy jest to konieczne (np. do tworzenia kopii zapasowych)</string>
     <string name="settings_uninstall_permanent">Odinstaluj zupełnie</string>
     <string name="settings_restore_stock_image">Przywróć obraz fabryczny</string>
     <string name="settings_uninstall_temporary">Odinstaluj tymczasowo</string>
     <string name="settings_uninstall">Odinstaluj</string>
-    <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj KernelSU, przywróć do oryginalnego stanu po następnym ponownym uruchomieniu.</string>
-    <string name="settings_uninstall_permanent_message">Całkowite i trwałe odinstalowanie KernelSU (Root i wszystkich modułów).</string>
-    <string name="settings_restore_stock_image_message">Przywróć obraz fabryczny (jeśli istnieje kopia zapasowa), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU, użyj opcji \"Odinstaluj całkowicie\".</string>
+    <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj KernelSU, przywróć do oryginalnego stanu po następnym ponownym uruchomieniu</string>
+    <string name="settings_uninstall_permanent_message">Całkowite i trwałe odinstalowanie KernelSU (root i wszystkich modułów)</string>
+    <string name="settings_restore_stock_image_message">Przywróć obraz fabryczny (jeśli istnieje kopia zapasowa), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU, użyj opcji \"Odinstaluj całkowicie\"</string>
     <string name="flashing">Flashowanie</string>
     <string name="flash_success">Flashowanie ukończone pomyślnie</string>
     <string name="flash_failed">Flashowanie nieudane</string>
@@ -138,7 +138,7 @@
     <string name="module_sort_action_first">Sortuj (najpierw działania)</string>
     <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
     <string name="confirm">Potwierdź</string>
-    <string name="settings_disable_su_summary">Tymczasowo wyłącz możliwość uzyskania uprawnień roota przez dowolną aplikację za pomocą polecenia su (nie wpłynie to na istniejące procesy roota).</string>
+    <string name="settings_disable_su_summary">Tymczasowo wyłącz możliwość uzyskania uprawnień roota przez dowolną aplikację za pomocą polecenia su (nie wpłynie to na istniejące procesy roota)</string>
     <string name="module_install_prompt_with_name">Zainstalowane zostaną następujące moduły: %1$s</string>
     <string name="settings_disable_su">Wyłącz zgodność z su</string>
     <string name="su_not_allowed">Nie można przyznać dostępu superużytkownika do %s</string>
