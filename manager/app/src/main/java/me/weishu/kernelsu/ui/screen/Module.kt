@@ -695,50 +695,50 @@ fun ModuleItem(
             color = colorScheme.outline.copy(alpha = 0.5f)
         )
 
-        Row(
-            modifier = Modifier,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row {
             AnimatedVisibility(
                 visible = module.enabled && !module.remove,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                if (module.hasActionScript) {
-                    IconButton(
-                        backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                        minHeight = 35.dp,
-                        minWidth = 35.dp,
-                        onClick = {
-                            navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
-                                launchSingleTop = true
-                            }
-                            viewModel.markNeedRefresh()
-                        },
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Rounded.PlayArrow,
-                            tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                            contentDescription = stringResource(R.string.action)
-                        )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (module.hasActionScript) {
+                        IconButton(
+                            backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                            minHeight = 35.dp,
+                            minWidth = 35.dp,
+                            onClick = {
+                                navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
+                                    launchSingleTop = true
+                                }
+                                viewModel.markNeedRefresh()
+                            },
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Rounded.PlayArrow,
+                                tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                                contentDescription = stringResource(R.string.action)
+                            )
+                        }
                     }
-                }
 
-                if (module.hasWebUi) {
-                    IconButton(
-                        backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
-                        minHeight = 35.dp,
-                        minWidth = 35.dp,
-                        onClick = { onClick(module) },
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Rounded.Code,
-                            tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
-                            contentDescription = stringResource(R.string.open)
-                        )
+                    if (module.hasWebUi) {
+                        IconButton(
+                            backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                            minHeight = 35.dp,
+                            minWidth = 35.dp,
+                            onClick = { onClick(module) },
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Rounded.Code,
+                                tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                                contentDescription = stringResource(R.string.open)
+                            )
+                        }
                     }
                 }
             }
@@ -747,6 +747,7 @@ fun ModuleItem(
 
             if (updateUrl.isNotEmpty()) {
                 IconButton(
+                    modifier = Modifier.padding(end = 16.dp),
                     backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
                     enabled = !module.remove,
                     minHeight = 35.dp,
@@ -754,13 +755,7 @@ fun ModuleItem(
                     onClick = { onUpdate(module) },
                 ) {
                     Row(
-                        modifier = Modifier.then(
-                            if (updateUrl.isNotEmpty()) {
-                                Modifier.padding(horizontal = 10.dp)
-                            } else {
-                                Modifier
-                            }
-                        ),
+                        modifier = Modifier.padding(horizontal = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
@@ -771,10 +766,11 @@ fun ModuleItem(
                             contentDescription = stringResource(R.string.module_update),
                         )
                         Text(
+                            modifier = Modifier.padding(end = 3.dp),
                             text = stringResource(R.string.module_update),
                             color = Color(0xFF0D84FF),
                             fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp
+                            fontSize = 15.sp
                         )
                     }
                 }
