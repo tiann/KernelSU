@@ -121,4 +121,9 @@
     <string name="shrink_sparse_image_message">將模組所在的稀疏影像調整為實際大小。 請注意，這可能會導致模組工作異常，因此請僅在必要時使用（例如備份）</string>
     <string name="settings_uninstall">解除安裝</string>
     <string name="save_log">保存日志</string>
+    <string name="processing">處理中…</string>
+    <string name="refresh_pulling">下拉刷新</string>
+    <string name="refresh_release">鬆開刷新</string>
+    <string name="refresh_refresh">正在刷新…</string>
+    <string name="refresh_complete">刷新成功</string>
 </resources>

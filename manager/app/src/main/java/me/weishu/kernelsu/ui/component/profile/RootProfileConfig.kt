@@ -1,62 +1,46 @@
 package me.weishu.kernelsu.ui.component.profile
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.core.text.isDigitsOnly
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.input.InputDialog
-import com.maxkeppeler.sheets.input.models.InputHeader
-import com.maxkeppeler.sheets.input.models.InputSelection
-import com.maxkeppeler.sheets.input.models.InputTextField
-import com.maxkeppeler.sheets.input.models.InputTextFieldType
-import com.maxkeppeler.sheets.input.models.ValidationResult
-import com.maxkeppeler.sheets.list.ListDialog
-import com.maxkeppeler.sheets.list.models.ListOption
-import com.maxkeppeler.sheets.list.models.ListSelection
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
-import me.weishu.kernelsu.ui.component.rememberCustomDialog
+import me.weishu.kernelsu.ui.component.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.extra.CheckboxLocation
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.SuperCheckbox
+import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootProfileConfig(
     modifier: Modifier = Modifier,
@@ -64,94 +48,49 @@ fun RootProfileConfig(
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+    ) {
         if (!fixedName) {
-            OutlinedTextField(
-                label = { Text(stringResource(R.string.profile_name)) },
+            TextField(
+                label = stringResource(R.string.profile_name),
                 value = profile.name,
                 onValueChange = { onProfileChange(profile.copy(name = it)) }
             )
         }
 
-        /* 
-        var expanded by remember { mutableStateOf(false) }
-        val currentNamespace = when (profile.namespace) {
-            Natives.Profile.Namespace.INHERITED.ordinal -> stringResource(R.string.profile_namespace_inherited)
-            Natives.Profile.Namespace.GLOBAL.ordinal -> stringResource(R.string.profile_namespace_global)
-            Natives.Profile.Namespace.INDIVIDUAL.ordinal -> stringResource(R.string.profile_namespace_individual)
-            else -> stringResource(R.string.profile_namespace_inherited)
-        }
-        ListItem(headlineContent = {
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth(),
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.profile_namespace)) },
-                    value = currentNamespace,
-                    onValueChange = {},
-                    trailingIcon = {
-                        if (expanded) Icon(Icons.Filled.ArrowDropUp, null)
-                        else Icon(Icons.Filled.ArrowDropDown, null)
-                    },
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.profile_namespace_inherited)) },
-                        onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.INHERITED.ordinal))
-                            expanded = false
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.profile_namespace_global)) },
-                        onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.GLOBAL.ordinal))
-                            expanded = false
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.profile_namespace_individual)) },
-                        onClick = {
-                            onProfileChange(profile.copy(namespace = Natives.Profile.Namespace.INDIVIDUAL.ordinal))
-                            expanded = false
-                        },
-                    )
-                }
-            }
-        })
-        */
-
-        UidPanel(uid = profile.uid, label = "uid", onUidChange = {
+        SuperEditArrow(
+            title = "UID",
+            defaultValue = profile.uid,
+        ) {
             onProfileChange(
                 profile.copy(
                     uid = it,
                     rootUseDefault = false
                 )
             )
-        })
 
-        UidPanel(uid = profile.gid, label = "gid", onUidChange = {
+        }
+
+        SuperEditArrow(
+            title = "GID",
+            defaultValue = profile.gid,
+        ) {
             onProfileChange(
                 profile.copy(
                     gid = it,
                     rootUseDefault = false
                 )
             )
-        })
+
+        }
 
         val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
             e.mapNotNull { g ->
                 Groups.entries.find { it.gid == g }
             }
         }
+
         GroupsPanel(selectedGroups) {
             onProfileChange(
                 profile.copy(
@@ -183,15 +122,15 @@ fun RootProfileConfig(
                 )
             )
         })
-
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>) -> Unit) {
-    val selectGroupsDialog = rememberCustomDialog { dismiss: () -> Unit ->
-        val groups = Groups.entries.toTypedArray().sortedWith(
+    val showDialog = remember { mutableStateOf(false) }
+
+    val groups = remember {
+        Groups.entries.toTypedArray().sortedWith(
             compareBy<Groups> { if (selected.contains(it)) 0 else 1 }
                 .then(compareBy {
                     when (it) {
@@ -202,286 +141,257 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                     }
                 })
                 .then(compareBy { it.name })
-
-        )
-        val options = groups.map { value ->
-            ListOption(
-                titleText = value.display,
-                subtitleText = value.desc,
-                selected = selected.contains(value),
-            )
-        }
-
-        val selection = HashSet(selected)
-        ListDialog(
-            state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                closeSelection(selection)
-            }, onCloseRequest = {
-                dismiss()
-            }),
-            header = Header.Default(
-                title = stringResource(R.string.profile_groups),
-            ),
-            selection = ListSelection.Multiple(
-                showCheckBoxes = true,
-                options = options,
-                maxChoices = 32, // Kernel only supports 32 groups at most
-            ) { indecies, _ ->
-                // Handle selection
-                selection.clear()
-                indecies.forEach { index ->
-                    val group = groups[index]
-                    selection.add(group)
-                }
-            }
         )
     }
 
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+    val currentSelection = remember { mutableStateOf(selected.toSet()) }
+
+    SuperDialog(
+        show = showDialog,
+        title = stringResource(R.string.profile_groups),
+        summary = "${currentSelection.value.size} / 32",
+        insideMargin = DpSize(0.dp, 24.dp),
+        onDismissRequest = { showDialog.value = false }
     ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    selectGroupsDialog.show()
-                }
-                .padding(16.dp)
-        ) {
-            Text(stringResource(R.string.profile_groups))
-            FlowRow {
-                selected.forEach { group ->
-                    AssistChip(
-                        modifier = Modifier.padding(3.dp),
-                        onClick = { /*TODO*/ },
-                        label = { Text(group.display) })
+        Column(modifier = Modifier.heightIn(max = 500.dp)) {
+            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                items(groups) { group ->
+                    SuperCheckbox(
+                        title = group.display,
+                        summary = group.desc,
+                        insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                        checkboxLocation = CheckboxLocation.Right,
+                        checked = currentSelection.value.contains(group),
+                        holdDownState = currentSelection.value.contains(group),
+                        onCheckedChange = { isChecked ->
+                            val newSelection = currentSelection.value.toMutableSet()
+                            if (isChecked) {
+                                if (newSelection.size < 32) newSelection.add(group)
+                            } else {
+                                newSelection.remove(group)
+                            }
+                            currentSelection.value = newSelection
+                        }
+                    )
                 }
             }
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(
+                    onClick = {
+                        currentSelection.value = selected.toSet()
+                        showDialog.value = false
+                    },
+                    text = stringResource(android.R.string.cancel),
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(20.dp))
+                TextButton(
+                    onClick = {
+                        closeSelection(currentSelection.value)
+                        showDialog.value = false
+                    },
+                    text = stringResource(R.string.confirm),
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary()
+                )
+            }
         }
-
     }
+
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
+    }
+    SuperArrow(
+        title = stringResource(R.string.profile_groups),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        },
+    )
+
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CapsPanel(
     selected: Collection<Capabilities>,
     closeSelection: (selection: Set<Capabilities>) -> Unit
 ) {
-    val selectCapabilitiesDialog = rememberCustomDialog { dismiss ->
-        val caps = Capabilities.entries.toTypedArray().sortedWith(
+    val showDialog = remember { mutableStateOf(false) }
+
+    val caps = remember {
+        Capabilities.entries.toTypedArray().sortedWith(
             compareBy<Capabilities> { if (selected.contains(it)) 0 else 1 }
                 .then(compareBy { it.name })
         )
-        val options = caps.map { value ->
-            ListOption(
-                titleText = value.display,
-                subtitleText = value.desc,
-                selected = selected.contains(value),
-            )
-        }
-
-        val selection = HashSet(selected)
-        ListDialog(
-            state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                closeSelection(selection)
-            }, onCloseRequest = {
-                dismiss()
-            }),
-            header = Header.Default(
-                title = stringResource(R.string.profile_capabilities),
-            ),
-            selection = ListSelection.Multiple(
-                showCheckBoxes = true,
-                options = options
-            ) { indecies, _ ->
-                // Handle selection
-                selection.clear()
-                indecies.forEach { index ->
-                    val group = caps[index]
-                    selection.add(group)
-                }
-            }
-        )
     }
 
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
+    val currentSelection = remember { mutableStateOf(selected.toSet()) }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    selectCapabilitiesDialog.show()
+    SuperDialog(
+        show = showDialog,
+        title = stringResource(R.string.profile_capabilities),
+        insideMargin = DpSize(0.dp, 24.dp),
+        onDismissRequest = { showDialog.value = false },
+        content = {
+            Column(modifier = Modifier.heightIn(max = 500.dp)) {
+                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                    items(caps) { cap ->
+                        SuperCheckbox(
+                            title = cap.display,
+                            summary = cap.desc,
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.Right,
+                            checked = currentSelection.value.contains(cap),
+                            holdDownState = currentSelection.value.contains(cap),
+                            onCheckedChange = { isChecked ->
+                                val newSelection = currentSelection.value.toMutableSet()
+                                if (isChecked) {
+                                    newSelection.add(cap)
+                                } else {
+                                    newSelection.remove(cap)
+                                }
+                                currentSelection.value = newSelection
+                            }
+                        )
+                    }
                 }
-                .padding(16.dp)
-        ) {
-            Text(stringResource(R.string.profile_capabilities))
-            FlowRow {
-                selected.forEach { group ->
-                    AssistChip(
-                        modifier = Modifier.padding(3.dp),
-                        onClick = { /*TODO*/ },
-                        label = { Text(group.display) })
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                            currentSelection.value = selected.toSet()
+                        },
+                        text = stringResource(android.R.string.cancel),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    TextButton(
+                        onClick = {
+                            closeSelection(currentSelection.value)
+                            showDialog.value = false
+                        },
+                        text = stringResource(R.string.confirm),
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
                 }
             }
         }
+    )
 
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
     }
+    SuperArrow(
+        title = stringResource(R.string.profile_capabilities),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        }
+    )
+
 }
 
-@Composable
-private fun UidPanel(uid: Int, label: String, onUidChange: (Int) -> Unit) {
-
-    ListItem(headlineContent = {
-        var isError by remember {
-            mutableStateOf(false)
-        }
-        var lastValidUid by remember {
-            mutableIntStateOf(uid)
-        }
-        val keyboardController = LocalSoftwareKeyboardController.current
-
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(label) },
-            value = uid.toString(),
-            isError = isError,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(onDone = {
-                keyboardController?.hide()
-            }),
-            onValueChange = {
-                if (it.isEmpty()) {
-                    onUidChange(0)
-                    return@OutlinedTextField
-                }
-                val valid = isTextValidUid(it)
-
-                val targetUid = if (valid) it.toInt() else lastValidUid
-                if (valid) {
-                    lastValidUid = it.toInt()
-                }
-
-                onUidChange(targetUid)
-
-                isError = !valid
-            }
-        )
-    })
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SELinuxPanel(
     profile: Natives.Profile,
     onSELinuxChange: (domain: String, rules: String) -> Unit
 ) {
-    val editSELinuxDialog = rememberCustomDialog { dismiss ->
-        var domain by remember { mutableStateOf(profile.context) }
-        var rules by remember { mutableStateOf(profile.rules) }
+    val showDialog = remember { mutableStateOf(false) }
 
-        val inputOptions = listOf(
-            InputTextField(
-                text = domain,
-                header = InputHeader(
-                    title = stringResource(id = R.string.profile_selinux_domain),
-                ),
-                type = InputTextFieldType.OUTLINED,
-                required = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Ascii,
-                    imeAction = ImeAction.Next
-                ),
-                resultListener = {
-                    domain = it ?: ""
-                },
-                validationListener = { value ->
-                    // value can be a-zA-Z0-9_
-                    val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
-                    if (value?.matches(regex) == true) ValidationResult.Valid
-                    else ValidationResult.Invalid("Domain must be in the format of \"user:role:type:level\"")
-                }
-            ),
-            InputTextField(
-                text = rules,
-                header = InputHeader(
-                    title = stringResource(id = R.string.profile_selinux_rules),
-                ),
-                type = InputTextFieldType.OUTLINED,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Ascii,
-                ),
-                singleLine = false,
-                resultListener = {
-                    rules = it ?: ""
-                },
-                validationListener = { value ->
-                    if (isSepolicyValid(value)) ValidationResult.Valid
-                    else ValidationResult.Invalid("SELinux rules is invalid!")
-                }
-            )
-        )
+    var domain by remember { mutableStateOf(profile.context) }
+    var rules by remember { mutableStateOf(profile.rules) }
 
-        InputDialog(
-            state = rememberUseCaseState(visible = true,
-                onFinishedRequest = {
-                    onSELinuxChange(domain, rules)
-                },
-                onCloseRequest = {
-                    dismiss()
-                }),
-            header = Header.Default(
-                title = stringResource(R.string.profile_selinux_context),
-            ),
-            selection = InputSelection(
-                input = inputOptions,
-                onPositiveClick = { result ->
-                    // Handle selection
-                },
-            )
-        )
+    val isDomainValid = remember(domain) {
+        val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
+        domain.matches(regex)
+    }
+    val isRulesValid = remember(rules) { isSepolicyValid(rules) }
+
+    SuperDialog(
+        show = showDialog,
+        title = stringResource(R.string.profile_selinux_context),
+        onDismissRequest = { showDialog.value = false }
+    ) {
+        Column(modifier = Modifier.heightIn(max = 500.dp)) {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
+                TextField(
+                    value = domain,
+                    onValueChange = { domain = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    label = stringResource(id = R.string.profile_selinux_domain),
+                    backgroundColor = colorScheme.surfaceContainer,
+                    borderColor = if (isDomainValid) {
+                        colorScheme.primary
+                    } else {
+                        Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Ascii,
+                        imeAction = ImeAction.Next
+                    ),
+                    singleLine = true
+                )
+                TextField(
+                    value = rules,
+                    onValueChange = { rules = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    label = stringResource(id = R.string.profile_selinux_rules),
+                    backgroundColor = colorScheme.surfaceContainer,
+                    borderColor = if (isRulesValid) {
+                        colorScheme.primary
+                    } else {
+                        Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Ascii,
+                    ),
+                    singleLine = false
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(
+                    onClick = { showDialog.value = false },
+                    text = stringResource(android.R.string.cancel),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(20.dp))
+                TextButton(
+                    onClick = {
+                        onSELinuxChange(domain, rules)
+                        showDialog.value = false
+                    },
+                    text = stringResource(R.string.confirm),
+                    enabled = isDomainValid && isRulesValid,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary()
+                )
+            }
+        }
     }
 
-    ListItem(headlineContent = {
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    editSELinuxDialog.show()
-                },
-            enabled = false,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            label = { Text(text = stringResource(R.string.profile_selinux_context)) },
-            value = profile.context,
-            onValueChange = { }
-        )
-    })
-}
-
-@Preview
-@Composable
-private fun RootProfileConfigPreview() {
-    var profile by remember { mutableStateOf(Natives.Profile("")) }
-    RootProfileConfig(fixedName = true, profile = profile) {
-        profile = it
-    }
-}
-
-private fun isTextValidUid(text: String): Boolean {
-    return text.isNotEmpty() && text.isDigitsOnly() && text.toInt() >= 0 && text.toInt() <= Int.MAX_VALUE
+    SuperArrow(
+        title = stringResource(R.string.profile_selinux_context),
+        summary = profile.context,
+        onClick = { showDialog.value = true }
+    )
 }
