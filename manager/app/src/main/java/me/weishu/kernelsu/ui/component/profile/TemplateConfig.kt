@@ -36,9 +36,6 @@ fun TemplateConfig(
     onProfileChange: (Natives.Profile) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var template by rememberSaveable {
-        mutableStateOf(profile.rootTemplate ?: "")
-    }
     val profileTemplates = listAppProfileTemplates()
     val noTemplates = profileTemplates.isEmpty()
 
@@ -56,6 +53,8 @@ fun TemplateConfig(
             onClick = onManageTemplate,
         )
     } else {
+        var template by rememberSaveable { mutableStateOf(profile.rootTemplate ?: profileTemplates[0]) }
+
         Column {
             SuperDropdown(
                 title = stringResource(R.string.profile_template),
