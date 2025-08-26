@@ -256,7 +256,6 @@ private fun AppProfileInner(
             Column(
                 modifier = Modifier.padding(bottom = 12.dp)
             ) {
-                //SmallTitle(text = stringResource(R.string.profile))
                 if (current) {
                     val initialMode = if (profile.rootUseDefault) {
                         Mode.Default
