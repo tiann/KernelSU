@@ -6,14 +6,14 @@ KernelSU is a kernel-based root solution for Android devices that provides kerne
 
 **Repository Size:** ~50MB with comprehensive multi-language documentation  
 **Primary Languages:** C (kernel), Rust (userspace daemon), Kotlin (Android app)  
-**Target Architectures:** arm64-v8a, x86_64, riscv64  
+**Target Architectures:** arm64-v8a (major), x86_64  
 **Supported Platforms:** Android, WSA, ChromeOS, container-based Android
 
 ## High-Level Architecture
 
 The project consists of three main components:
 1. **Kernel Module** (`kernel/`): C code that hooks into the Linux kernel to provide root access
-2. **Userspace Daemon** (`userspace/ksud/`): Rust daemon managing modules, policies, and system integration  
+2. **Userspace CLI Tools** (`userspace/ksud/`): Rust cli tool managing modules, policies, and system integration  
 3. **Manager App** (`manager/`): Android application providing user interface for root management
 
 ## Build System & Commands
