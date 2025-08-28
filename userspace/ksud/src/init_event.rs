@@ -2,9 +2,8 @@ use anyhow::{Context, Result, bail};
 use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
-use crate::module::prune_modules;
 use crate::{
-    assets, defs, ksucalls, mount, restorecon,
+    assets, defs, ksucalls, modsys, mount, restorecon,
     utils::{self, ensure_clean_dir},
 };
 
@@ -113,135 +112,43 @@ pub fn on_post_data_fs() -> Result<()> {
 
     let safe_mode = crate::utils::is_safe_mode();
 
-    if safe_mode {
-        // we should still mount modules.img to `/data/adb/modules` in safe mode
-        // becuase we may need to operate the module dir in safe mode
-        warn!("safe mode, skip common post-fs-data.d scripts");
-    } else {
-        // Then exec common post-fs-data scripts
-        if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
-            warn!("exec common post-fs-data scripts failed: {e}");
-        }
-    }
-
-    let module_update_img = defs::MODULE_UPDATE_IMG;
-    let module_img = defs::MODULE_IMG;
-    let module_dir = defs::MODULE_DIR;
-    let module_update_flag = Path::new(defs::WORKING_DIR).join(defs::UPDATE_FILE_NAME);
-
-    // modules.img is the default image
-    let mut target_update_img = &module_img;
-
-    // we should clean the module mount point if it exists
-    ensure_clean_dir(module_dir)?;
-
+    // Extract assets before delegating to modsys
     assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
 
-    if Path::new(module_update_img).exists() {
-        if module_update_flag.exists() {
-            // if modules_update.img exists, and the the flag indicate this is an update
-            // this make sure that if the update failed, we will fallback to the old image
-            // if we boot succeed, we will rename the modules_update.img to modules.img #on_boot_complete
-            target_update_img = &module_update_img;
-            // And we should delete the flag immediately
-            std::fs::remove_file(module_update_flag)?;
-        } else {
-            // if modules_update.img exists, but the flag not exist, we should delete it
-            std::fs::remove_file(module_update_img)?;
-        }
+    // Initialize modsys
+    modsys::init()?;
+    
+    // Create metamodule safety flag
+    create_metamodule_safety_flag()?;
+
+    // Delegate to modsys for module-related operations
+    if let Err(e) = modsys::stage("post-fs-data") {
+        warn!("modsys post-fs-data stage failed: {e}");
     }
 
-    if !Path::new(target_update_img).exists() {
-        return Ok(());
-    }
-
-    // we should always mount the module.img to module dir
-    // becuase we may need to operate the module dir in safe mode
-    info!("mount module image: {target_update_img} to {module_dir}");
-    mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
-        .with_context(|| "mount module image failed".to_string())?;
-
-    // tell kernel that we've mount the module, so that it can do some optimization
-    ksucalls::report_module_mounted();
-
-    // if we are in safe mode, we should disable all modules
-    if safe_mode {
-        warn!("safe mode, skip post-fs-data scripts and disable all modules!");
-        if let Err(e) = crate::module::disable_all_modules() {
-            warn!("disable all modules failed: {e}");
-        }
-        return Ok(());
-    }
-
-    if let Err(e) = prune_modules() {
-        warn!("prune modules failed: {e}");
-    }
-
+    // ksud retains: props, sepolicy, restorecon
     if let Err(e) = restorecon::restorecon() {
         warn!("restorecon failed: {e}");
-    }
-
-    // load sepolicy.rule
-    if crate::module::load_sepolicy_rule().is_err() {
-        warn!("load sepolicy.rule failed");
     }
 
     if let Err(e) = crate::profile::apply_sepolies() {
         warn!("apply root profile sepolicy failed: {e}");
     }
 
-    // mount temp dir
-    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
-        warn!("do temp dir mount failed: {e}");
-    }
-
-    // exec modules post-fs-data scripts
-    // TODO: Add timeout
-    if let Err(e) = crate::module::exec_stage_script("post-fs-data", true) {
-        warn!("exec post-fs-data scripts failed: {e}");
-    }
-
-    // load system.prop
-    if let Err(e) = crate::module::load_system_prop() {
-        warn!("load system.prop failed: {e}");
-    }
-
-    // mount module systemlessly by overlay
-    if let Err(e) = mount_modules_systemlessly(module_dir) {
-        warn!("do systemless mount failed: {e}");
-    }
-
-    run_stage("post-mount", true);
-
     std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
 
     Ok(())
 }
 
-fn run_stage(stage: &str, block: bool) {
-    utils::umask(0);
-
-    if utils::has_magisk() {
-        warn!("Magisk detected, skip {stage}");
-        return;
-    }
-
-    if crate::utils::is_safe_mode() {
-        warn!("safe mode, skip {stage} scripts");
-        return;
-    }
-
-    if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), block) {
-        warn!("Failed to exec common {stage} scripts: {e}");
-    }
-    if let Err(e) = crate::module::exec_stage_script(stage, block) {
-        warn!("Failed to exec {stage} scripts: {e}");
-    }
-}
+// run_stage function removed - functionality delegated to modsys
 
 pub fn on_services() -> Result<()> {
     info!("on_services triggered!");
-    run_stage("service", false);
+    
+    // Delegate to modsys
+    if let Err(e) = modsys::stage("service") {
+        warn!("modsys service stage failed: {e}");
+    }
 
     Ok(())
 }
@@ -249,21 +156,47 @@ pub fn on_services() -> Result<()> {
 pub fn on_boot_completed() -> Result<()> {
     ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
-    let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
-    let module_img = Path::new(defs::MODULE_IMG);
-    if module_update_img.exists() {
-        // this is a update and we successfully booted
-        if std::fs::rename(module_update_img, module_img).is_err() {
-            warn!("Failed to rename images, copy it now.",);
-            utils::copy_sparse_file(module_update_img, module_img, false)
-                .with_context(|| "Failed to copy images")?;
-            std::fs::remove_file(module_update_img).with_context(|| "Failed to remove image!")?;
-        }
+    
+    // Clear metamodule safety flag if system boots successfully  
+    clear_metamodule_safety_flag()?;
+    
+    // Delegate to modsys for boot-completed stage
+    if let Err(e) = modsys::stage("boot-completed") {
+        warn!("modsys boot-completed stage failed: {e}");
     }
 
-    run_stage("boot-completed", false);
-
     Ok(())
+}
+
+/// New metamodule safety mode implementation
+/// Create a flag during post-fs-data, clear it on boot-completed
+/// If the flag still exists on next boot, disable module system
+const METAMODULE_SAFETY_FLAG: &str = "/data/adb/ksu/.metamodule_booting";
+
+fn create_metamodule_safety_flag() -> Result<()> {
+    use std::fs::File;
+    
+    if let Err(e) = File::create(METAMODULE_SAFETY_FLAG) {
+        warn!("Failed to create metamodule safety flag: {e}");
+    } else {
+        info!("Created metamodule safety flag");
+    }
+    Ok(())
+}
+
+fn clear_metamodule_safety_flag() -> Result<()> {
+    if std::path::Path::new(METAMODULE_SAFETY_FLAG).exists() {
+        if let Err(e) = std::fs::remove_file(METAMODULE_SAFETY_FLAG) {
+            warn!("Failed to clear metamodule safety flag: {e}");
+        } else {
+            info!("Cleared metamodule safety flag - boot successful");
+        }
+    }
+    Ok(())
+}
+
+pub fn check_metamodule_safety() -> bool {
+    std::path::Path::new(METAMODULE_SAFETY_FLAG).exists()
 }
 
 #[cfg(unix)]

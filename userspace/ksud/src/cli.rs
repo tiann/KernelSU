@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, modsys, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -306,14 +306,18 @@ pub fn run() -> Result<()> {
             {
                 utils::switch_mnt_ns(1)?;
             }
+            // Initialize modsys if needed
+            modsys::init()?;
+            
+            // Forward all module commands to the selected modsys implementation
             match command {
-                Module::Install { zip } => module::install_module(&zip),
-                Module::Uninstall { id } => module::uninstall_module(&id),
-                Module::Enable { id } => module::enable_module(&id),
-                Module::Disable { id } => module::disable_module(&id),
-                Module::Action { id } => module::run_action(&id),
-                Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_ksu_images(),
+                Module::Install { zip } => modsys::install_module(&zip),
+                Module::Uninstall { id } => modsys::uninstall_module(&id),
+                Module::Enable { id } => modsys::enable_module(&id),
+                Module::Disable { id } => modsys::disable_module(&id),
+                Module::Action { id } => modsys::run_action(&id),
+                Module::List => modsys::list_modules(),
+                Module::Shrink => modsys::shrink_images(),
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
@@ -347,7 +351,10 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
-            Debug::Mount => init_event::mount_modules_systemlessly(defs::MODULE_DIR),
+            Debug::Mount => {
+                modsys::init()?;
+                modsys::mount_systemless()
+            },
             Debug::Xcp {
                 src,
                 dst,
