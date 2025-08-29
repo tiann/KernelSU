@@ -22,6 +22,7 @@ import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
+@Suppress("unused")
 class WebViewInterface(
     val context: Context,
     private val webView: WebView,
@@ -133,7 +134,7 @@ class WebViewInterface(
 
         completableFuture.thenAccept { result ->
             val emitExitCode =
-                "javascript: (function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
+                $$"javascript: (function() { try { $${callbackFunc}.emit('exit', $${result.code}); } catch(e) { console.error(`emitExit error: ${e}`); } })();"
             webView.post {
                 webView.loadUrl(emitExitCode)
             }
@@ -179,7 +180,7 @@ class WebViewInterface(
     @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
-        var currentModuleInfo = JSONObject()
+        val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
         val moduleId = File(modDir).getName()
         for (i in 0 until moduleInfos.length()) {
@@ -189,7 +190,7 @@ class WebViewInterface(
                 continue
             }
 
-            var keys = currentInfo.keys()
+            val keys = currentInfo.keys()
             for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }

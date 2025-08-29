@@ -11,6 +11,7 @@ import android.os.Environment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 
@@ -42,14 +43,14 @@ fun download(
                     onDownloading()
                     return
                 } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                    onDownloaded(Uri.parse(localUri))
+                    onDownloaded(localUri.toUri())
                     return
                 }
             }
         }
     }
 
-    val request = DownloadManager.Request(Uri.parse(url))
+    val request = DownloadManager.Request(url.toUri())
         .setDestinationInExternalPublicDir(
             Environment.DIRECTORY_DOWNLOADS,
             fileName
@@ -124,7 +125,7 @@ fun DownloadListener(context: Context, onDownloaded: (Uri) -> Unit) {
                             val uri = cursor.getString(
                                 cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
                             )
-                            onDownloaded(Uri.parse(uri))
+                            onDownloaded(uri.toUri())
                         }
                     }
                 }

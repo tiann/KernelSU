@@ -49,7 +49,7 @@ fun ChooseKmiDialog(
                 textAlign = TextAlign.Center,
                 color = colorScheme.onSurface
             )
-            options.forEachIndexed { index, type ->
+            options.forEach { type ->
                 SuperArrow(
                     title = type,
                     onClick = {

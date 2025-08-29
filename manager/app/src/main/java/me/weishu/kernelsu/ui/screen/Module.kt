@@ -275,10 +275,10 @@ fun ModulePager(
                     val uris = mutableListOf<Uri>()
                     if (clipData != null) {
                         for (i in 0 until clipData.itemCount) {
-                            clipData.getItemAt(i)?.uri?.let { it -> uris.add(it) }
+                            clipData.getItemAt(i)?.uri?.let { uri -> uris.add(uri) }
                         }
                     } else {
-                        data.data?.let { it -> uris.add(it) }
+                        data.data?.let { uri -> uris.add(uri) }
                     }
 
                     if (uris.size == 1) {

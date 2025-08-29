@@ -39,7 +39,6 @@ public class KsuService extends RootService {
         UserManager um = (UserManager) getSystemService(Context.USER_SERVICE);
         List<UserHandle> userProfiles = um.getUserProfiles();
         for (UserHandle userProfile : userProfiles) {
-            int userId = userProfile.hashCode();
             result.add(userProfile.hashCode());
         }
         return result;
