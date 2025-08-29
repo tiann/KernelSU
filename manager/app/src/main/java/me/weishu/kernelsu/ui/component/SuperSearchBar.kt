@@ -105,7 +105,7 @@ class SearchStatus(val label: String) {
     fun TopAppBarAnim(
         modifier: Modifier = Modifier,
         visible: Boolean = shouldCollapsed(),
-        content: @Composable() () -> Unit
+        content: @Composable () -> Unit
     ) {
         val topAppBarAlpha = animateFloatAsState(
             if (visible) 1f else 0f,

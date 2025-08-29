@@ -46,10 +46,10 @@ class FilterNumber(
                     if (tempText != "-" && tempText.isNotEmpty()) {
                         try {
                             val tempValue = tempText.toInt()
-                            if (tempValue > maxValue || tempValue < minValue) {
+                            if (tempValue !in minValue..maxValue) {
                                 newString.deleteCharAt(newString.lastIndex)
                             }
-                        } catch (e: NumberFormatException) {
+                        } catch (_: NumberFormatException) {
                             // 超出int范围
                             newString.deleteCharAt(newString.lastIndex)
                         }

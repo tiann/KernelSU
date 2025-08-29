@@ -329,9 +329,9 @@ private fun AppProfileInner(
 }
 
 private enum class Mode() {
-    Default(),
-    Template(),
-    Custom();
+    Default,
+    Template,
+    Custom;
 }
 
 @Composable

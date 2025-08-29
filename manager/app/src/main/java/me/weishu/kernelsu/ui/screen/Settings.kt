@@ -137,7 +137,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             )
                         },
                         checked = checkUpdate,
-                        onCheckedChange = { it ->
+                        onCheckedChange = {
                             prefs.edit { putBoolean("check_update", it) }
                             checkUpdate = it
                         }
@@ -191,7 +191,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 )
                             },
                             checked = umountChecked,
-                            onCheckedChange = { it ->
+                            onCheckedChange = {
                                 if (Natives.setDefaultUmountModules(it)) {
                                     umountChecked = it
                                 }
@@ -241,7 +241,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 )
                             },
                             checked = enableWebDebugging,
-                            onCheckedChange = { it ->
+                            onCheckedChange = {
                                 prefs.edit { putBoolean("enable_web_debugging", it) }
                                 enableWebDebugging = it
                             }

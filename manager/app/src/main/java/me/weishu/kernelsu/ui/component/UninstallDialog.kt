@@ -81,7 +81,7 @@ fun UninstallDialog(
                 textAlign = TextAlign.Center,
                 color = MiuixTheme.colorScheme.onSurface
             )
-            options.forEachIndexed { index, type ->
+            options.forEach { type ->
                 SuperArrow(
                     onClick = {
                         showDialog.value = false
