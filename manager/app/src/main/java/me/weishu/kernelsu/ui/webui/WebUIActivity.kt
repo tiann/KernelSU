@@ -21,6 +21,7 @@ import java.io.File
 @SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : ComponentActivity() {
     private val rootShell by lazy { createRootShell(true) }
+    private var webView = null as WebView?
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -65,6 +66,8 @@ class WebUIActivity : ComponentActivity() {
         }
 
         val webView = WebView(this).apply {
+            webView = this
+
             ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
                 val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
                 view.updateLayoutParams<MarginLayoutParams> {
@@ -87,7 +90,12 @@ class WebUIActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         rootShell.runCatching { close() }
+        webView = webView?.apply {
+            stopLoading()
+            removeAllViews()
+            destroy()
+        }
+        super.onDestroy()
     }
 }
