@@ -18,10 +18,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.UninstallType
-import me.weishu.kernelsu.ui.screen.UninstallType.NONE
-import me.weishu.kernelsu.ui.screen.UninstallType.PERMANENT
-import me.weishu.kernelsu.ui.screen.UninstallType.RESTORE_STOCK_IMAGE
-import me.weishu.kernelsu.ui.screen.UninstallType.TEMPORARY
+import me.weishu.kernelsu.ui.screen.UninstallType.*
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
