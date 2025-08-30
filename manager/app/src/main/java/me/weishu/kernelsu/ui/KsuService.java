@@ -8,17 +8,14 @@ import android.os.IBinder;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
 import com.topjohnwu.superuser.ipc.RootService;
+import me.weishu.kernelsu.IKsuInterface;
+import rikka.parcelablelist.ParcelableListSlice;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import me.weishu.kernelsu.IKsuInterface;
-import rikka.parcelablelist.ParcelableListSlice;
 
 /**
  * @author weishu

@@ -2,11 +2,7 @@ package me.weishu.kernelsu.ui.viewmodel
 
 import android.os.SystemClock
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +16,7 @@ import me.weishu.kernelsu.ui.util.overlayFsAvailable
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
-import java.util.Locale
+import java.util.*
 
 class ModuleViewModel : ViewModel() {
 
