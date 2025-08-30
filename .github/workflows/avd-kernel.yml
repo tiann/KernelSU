@@ -49,7 +49,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: KernelSU
           fetch-depth: 0
