@@ -257,12 +257,14 @@ fun ModulePager(
                 val moduleInstall = stringResource(id = R.string.module_install)
                 val confirmTitle = stringResource(R.string.module)
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
-                val confirmDialog = rememberConfirmDialog(onConfirm = {
-                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
-                        launchSingleTop = true
+                val confirmDialog = rememberConfirmDialog(
+                    onConfirm = {
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
+                            launchSingleTop = true
+                        }
+                        viewModel.markNeedRefresh()
                     }
-                    viewModel.markNeedRefresh()
-                })
+                )
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
                 ) {

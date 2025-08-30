@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,6 +45,9 @@ fun UninstallDialog(
     val showTodo = {
         Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
     }
+    val showConfirmDialog = remember(showDialog.value) { mutableStateOf(false) }
+    val runType = remember(showDialog.value) { mutableStateOf<UninstallType?>(null) }
+
     val run = { type: UninstallType ->
         when (type) {
             PERMANENT -> navigator.navigate(FlashScreenDestination(FlashIt.FlashUninstall)) {
@@ -84,11 +89,10 @@ fun UninstallDialog(
             options.forEachIndexed { index, type ->
                 SuperArrow(
                     onClick = {
-                        showDialog.value = false
-                        run(type)
+                        showConfirmDialog.value = true
+                        runType.value = type
                     },
                     title = stringResource(type.title),
-                    summary = if (type.message != 0) stringResource(type.message) else null,
                     leftAction = {
                         Icon(
                             imageVector = type.icon,
@@ -112,4 +116,25 @@ fun UninstallDialog(
             )
         }
     )
+    val confirmDialog = rememberConfirmDialog(
+        onConfirm = {
+            showConfirmDialog.value = false
+            showDialog.value = false
+            runType.value?.let { type ->
+                run(type)
+            }
+        },
+        onDismiss = {
+            showConfirmDialog.value = false
+        }
+    )
+    val dialogTitle = runType.value?.let { type ->
+        options.find { it == type }?.let { stringResource(it.title) }
+    } ?: ""
+    val dialogContent = runType.value?.let { type ->
+        options.find { it == type }?.let { stringResource(it.message) }
+    }
+    if (showConfirmDialog.value) {
+        confirmDialog.showConfirm(title = dialogTitle, content = dialogContent)
+    }
 }
