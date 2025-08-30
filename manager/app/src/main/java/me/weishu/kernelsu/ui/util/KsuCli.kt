@@ -109,10 +109,8 @@ fun listModules(): String {
 }
 
 fun getModuleCount(): Int {
-    val result = listModules()
     return runCatching {
-        val array = JSONArray(result)
-        array.length()
+        JSONArray(listModules()).length()
     }.getOrDefault(0)
 }
 
