@@ -29,7 +29,6 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
-import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.BottomBar
 import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
@@ -51,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val isManager = Natives.becomeManager(ksuApp.packageName)
+        val isManager = Natives.becomeManager(packageName)
         if (isManager) install()
 
         setContent {
