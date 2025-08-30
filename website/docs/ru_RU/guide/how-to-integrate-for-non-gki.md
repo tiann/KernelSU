@@ -37,7 +37,7 @@ CONFIG_KPROBE_EVENTS=y
 
 :::tip Как проверить, не сломан ли kprobe？
 
-закомментируйте `ksu_enable_sucompat()` и `ksu_enable_ksud()` в файле `KernelSU/kernel/ksu.c`, если устройство загружается нормально, то может быть нарушена работа kprobe.
+закомментируйте `ksu_sucompat_init()` и `ksu_ksud_init()` в файле `KernelSU/kernel/ksu.c`, если устройство загружается нормально, то может быть нарушена работа kprobe.
 :::
 
 ## Ручная модификация исходного кода ядра {#modify-kernel-source-code}
