@@ -6,7 +6,7 @@
 
 Una solución root basada en el kernel para dispositivos Android.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localización-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Seguir-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/Licencia-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -16,6 +16,7 @@ Una solución root basada en el kernel para dispositivos Android.
 
 1. Binario `su` basado en el kernel y gestión de acceso root.
 2. Sistema de módulos basado en [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+3. [App profile](https://kernelsu.org/guide/app-profile.html): Encierra el poder root en una jaula.
 
 ## Estado de compatibilidad
 
@@ -50,7 +51,7 @@ Para obtener información sobre cómo informar vulnerabilidades de seguridad en 
 
 ## Créditos
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): la idea de KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): la poderosa herramienta root.
-- [genuine](https://github.com/brevent/genuine/): validación de firma apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): algunas habilidades de rootkit.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): La idea de KernelSU.
+- [Magisk](https://github.com/topjohnwu/Magisk): La poderosa herramienta root.
+- [genuine](https://github.com/brevent/genuine/): Validación de firma APK v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Algunas habilidades de rootkit.

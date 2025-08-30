@@ -6,11 +6,11 @@
 
 Una soluzione per il root basata sul kernel per i dispositivi Android. 
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
-[![Canale Telegraml](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
-[![Licenza componenti kernel: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![Licenza elementi non kern](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
+[![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
 ## Funzionalità
 
@@ -24,7 +24,7 @@ KernelSU supporta ufficialmente i dispositivi Android GKI 2.0 (kernel 5.10 o sup
 
 Questo implica che WSA, ChromeOS e tutti le varianti di Android basate su container e virtualizzazione sono supportate.
 
-Allo stato attuale solo le architetture a 64-bit ARM (arm64-v8a) e x86 (x86_64) sono supportate.
+Allo stato attuale solo le architetture a `arm64-v8a` e `x86_64` sono supportate.
 
 ## Utilizzo
 
@@ -34,8 +34,7 @@ Allo stato attuale solo le architetture a 64-bit ARM (arm64-v8a) e x86 (x86_64) 
 
 ## Traduzioni
 
-Per aiutare a tradurre KernelSU o migliorare le traduzioni esistenti, si è pregati di utilizzare 
-To help translate KernelSU or improve existing translations, please use [Weblate](https://hosted.weblate.org/engage/kernelsu/). Le richieste di pull delle traduzioni del manager non saranno più accettate perché sarebbero in conflitto con Weblate.
+Per aiutare a tradurre KernelSU o migliorare le traduzioni esistenti, si è pregati di utilizzare [Weblate](https://hosted.weblate.org/engage/kernelsu/). Le richieste di pull delle traduzioni del manager non saranno più accettate perché sarebbero in conflitto con Weblate.
 
 ## Discussione
 
@@ -52,7 +51,7 @@ Per informazioni riguardo la segnalazione di vulnerabilità di sicurezza per Ker
 
 ## Riconoscimenti e attribuzioni
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): l'idea alla base di KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): la potente utilità per il root.
-- [genuine](https://github.com/brevent/genuine/): verifica della firma apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): alcune capacità di rootkit.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): L'idea alla base di KernelSU.
+- [Magisk](https://github.com/topjohnwu/Magisk): La potente utilità per il root.
+- [genuine](https://github.com/brevent/genuine/): Verifica della firma APK v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Alcune capacità di rootkit.

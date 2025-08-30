@@ -1,10 +1,10 @@
-# Perfil do Aplicativo
+# Perfil do app
 
-O Perfil do Aplicativo é um mecanismo fornecido pelo KernelSU para personalizar a configuração de vários apps.
+O Perfil do app é um mecanismo fornecido pelo KernelSU para personalizar a configuração de vários apps.
 
-Para apps com privilégios root (ou seja, capazes de usar `su`), o Perfil do Aplicativo também pode ser chamado de Perfil root. Ele permite a customização das regras `uid`, `gid`, `grupos`, `capacidades` e `SELinux` do comando `su`, restringindo assim os privilégios do usuário root. Por exemplo, ele pode conceder permissões de rede apenas para apps de firewall enquanto nega permissões de acesso a arquivos, ou pode conceder permissões de shell em vez de acesso root completo para apps congelados: **mantendo o poder confinado com o princípio do menor privilégio.**
+Para apps com privilégios root (ou seja, capazes de usar `su`), o Perfil do app também pode ser chamado de Perfil root. Ele permite a customização das regras `uid`, `gid`, `grupos`, `capacidades` e `SELinux` do comando `su`, restringindo assim os privilégios do usuário root. Por exemplo, ele pode conceder permissões de rede apenas para apps de firewall enquanto nega permissões de acesso a arquivos, ou pode conceder permissões de shell em vez de acesso root completo para apps congelados: **mantendo o poder confinado com o princípio do menor privilégio.**
 
-Para apps comuns sem privilégios root, o Perfil do Aplicativo pode controlar o comportamento do kernel e do sistema de módulos em relação a esses apps. Por exemplo, pode determinar se as modificações resultantes dos módulos devem ser abordadas. O kernel e o sistema de módulos podem tomar decisões com base nesta configuração, como realizar operações semelhantes a "ocultar".
+Para apps comuns sem privilégios root, o Perfil do app pode controlar o comportamento do kernel e do sistema de módulos em relação a esses apps. Por exemplo, pode determinar se as modificações resultantes dos módulos devem ser abordadas. O kernel e o sistema de módulos podem tomar decisões com base nesta configuração, como realizar operações semelhantes a "ocultar".
 
 ## Perfil root
 
@@ -34,7 +34,7 @@ Aqui, o UID é `2000` e o GID (ID do grupo primário) também é `2000`. Além d
 O Perfil root do KernelSU permite personalizar o UID, GID e grupos para o processo root após a execução de `su`. Por exemplo, o Perfil root de um app root pode definir seu UID como `2000`, o que significa que, ao usar `su`, as permissões reais do app estão no nível do ADB shell. Além disso, o grupo `inet` pode ser removido, evitando que o comando `su` tenha acesso à rede.
 
 ::: tip OBSERVAÇÃO
-O Perfil do Aplicativo controla apenas as permissões do processo root após usar `su` e não afeta as permissões do próprio app. Se um app solicitou permissão para acessar a rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
+O Perfil do app controla apenas as permissões do processo root após usar `su` e não afeta as permissões do próprio app. Se um app solicitou permissão para acessar a rede, ele ainda poderá acessar a rede mesmo sem usar `su`. Remover o grupo `inet` de `su` apenas impede que `su` acesse a rede.
 :::
 
 O Perfil root é aplicado no kernel e não depende do comportamento voluntário de apps root, ao contrário da troca de usuários ou grupos por meio de `su`. A concessão da permissão `su` depende inteiramente do usuário e não do desenvolvedor.
@@ -93,7 +93,7 @@ Se a configuração do Perfil root não estiver definida corretamente, poderá o
 
 Por exemplo, se você conceder permissão root a um usuário ADB shell (que é um caso comum) e, em seguida, conceder permissão root a um app normal, mas configurar seu Perfil root com o UID 2000 (o UID do usuário ADB shell), o app pode obter acesso root completo ao executar o comando `su` duas vezes:
 
-1. A primeira execução de `su` será sujeita ao Perfil do Aplicativo, e mudará para o UID `2000` (ADB shell) em vez de `0` (root).
+1. A primeira execução de `su` será sujeita ao Perfil do app, e mudará para o UID `2000` (ADB shell) em vez de `0` (root).
 2. A segunda execução de `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (ADB shell) na configuração, o app obterá privilégios root completo.
 
 ::: warning OBSERVAÇÃO
@@ -110,8 +110,8 @@ O KernelSU fornece um mecanismo sem sistema para modificar partições do sistem
 
 Além disso, a interface de configurações do gerenciador do KernelSU oferece a opção "Desmontar módulos por padrão". Por padrão, essa opção está **ativada**, o que significa que o KernelSU ou alguns módulos descarregarão módulos para este app, a menos que configurações adicionais sejam aplicadas. Se você não preferir esta configuração ou se ela afetar determinados apps, você terá as seguintes opções:
 
-1. Manter a opção "Desmontar módulos por padrão" ativada e desative individualmente a opção "Desmontar módulos" no Perfil do Aplicativo para apps que exigem o carregamento do módulo (agindo como uma "lista de permissões").
-2. Desativar a opção "Desmontar módulos por padrão" e ativar individualmente a opção "Desmontar módulos" no Perfil do Aplicativo para apps que exigem o descarregamento do módulo (agindo como uma "lista negra").
+1. Manter a opção "Desmontar módulos por padrão" ativada e desative individualmente a opção "Desmontar módulos" no Perfil do app para apps que exigem o carregamento do módulo (agindo como uma "lista de permissões").
+2. Desativar a opção "Desmontar módulos por padrão" e ativar individualmente a opção "Desmontar módulos" no Perfil do app para apps que exigem o descarregamento do módulo (agindo como uma "lista negra").
 
 ::: info INFORMAÇÕES
 Em dispositivos que utilizam a versão do kernel 5.10 ou superior, o kernel realiza qualquer ação adicional do descarregamento de módulos. No entanto, para dispositivos que executam versões do kernel abaixo de 5.10, essa opção é apenas uma opção de configuração e o próprio KernelSU não executa nenhuma ação. Se você quiser usar a opção "Desmontar módulos" em versões do kernel anteriores a 5.10, é necessário portar a função `path_umount` em `fs/namespace.c`. Você pode obter mais informações no final da página [Integração para dispositivos não-GKI](https://kernelsu.org/pt_BR/guide/how-to-integrate-for-non-gki.html). Alguns módulos, como ZygiskNext, também podem usar essa opção para determinar se o descarregamento do módulo é necessário.
