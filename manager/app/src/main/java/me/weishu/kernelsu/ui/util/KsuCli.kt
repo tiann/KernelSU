@@ -58,11 +58,16 @@ fun Uri.getFileName(context: Context): String? {
 
 fun createRootShellBuilder(globalMnt: Boolean = false): Shell.Builder {
     return Shell.Builder.create().run {
-        if (globalMnt) {
-            setCommands(ksuDaemonPath, "debug", "su", "-g")
-        } else {
-            setCommands(ksuDaemonPath, "debug", "su")
+        val cmd = buildString {
+            append("$ksuDaemonPath debug su")
+            if (globalMnt) append(" -g")
+            append(" || ")
+            append("su")
+            if (globalMnt) append(" --mount-master")
+            append(" || ")
+            append("sh")
         }
+        setCommands("sh", "-c", cmd)
     }
 }
 
@@ -70,18 +75,10 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
     return runCatching {
         createRootShellBuilder(globalMnt).build()
     }.getOrElse { e ->
-        Log.w(TAG, "ksu failed: ", e)
-        Shell.Builder.create().run {
-            runCatching {
-                if (globalMnt) {
-                    setFlags(Shell.FLAG_MOUNT_MASTER)
-                }
-                build()
-            }.getOrElse { e ->
-                Log.e(TAG, "su failed: ", e)
-                build("sh")
-            }
-        }
+        Log.w(TAG, "su failed: ", e)
+        Shell.Builder.create().apply {
+            if (globalMnt) setFlags(Shell.FLAG_MOUNT_MASTER)
+        }.build()
     }
 }
 
