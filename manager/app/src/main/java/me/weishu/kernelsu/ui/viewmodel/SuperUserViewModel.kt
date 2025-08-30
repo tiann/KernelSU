@@ -24,7 +24,6 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.KsuService
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
-import me.weishu.kernelsu.ui.util.KsuCli
 import java.text.Collator
 import java.util.Locale
 import kotlin.coroutines.resume
@@ -102,14 +101,12 @@ class SuperUserViewModel : ViewModel() {
             updateSearchText(text)
         } else {
             _searchResults.value = result
-
         }
         _searchStatus.value.resultStatus = if (result.isEmpty()) {
             SearchStatus.ResultStatus.EMPTY
         } else {
             SearchStatus.ResultStatus.SHOW
         }
-
     }
 
     private suspend inline fun connectKsuService(
@@ -132,8 +129,7 @@ class SuperUserViewModel : ViewModel() {
             Shell.EXECUTOR,
             connection,
         )
-        val shell = KsuCli.SHELL
-        task?.let { it1 -> shell.execTask(it1) }
+        task?.let { it1 -> Shell.getShell().execTask(it1) }
     }
 
     private fun stopKsuService() {
