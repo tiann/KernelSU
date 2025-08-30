@@ -420,6 +420,7 @@ private fun ConfirmDialog(
         show = showDialog,
         title = visuals.title,
         onDismissRequest = {
+            dismiss()
             showDialog.value = false
         },
         content = {
