@@ -2,10 +2,12 @@ package me.weishu.kernelsu
 
 import android.app.Application
 import android.system.Os
+import com.topjohnwu.superuser.Shell
+import me.weishu.kernelsu.ui.util.createRootShellBuilder
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
-import java.util.Locale
+import java.util.*
 
 lateinit var ksuApp: KernelSUApplication
 
@@ -16,6 +18,8 @@ class KernelSUApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ksuApp = this
+        Shell.setDefaultBuilder(createRootShellBuilder(true))
+        Shell.enableVerboseLogging = BuildConfig.DEBUG
 
         val webroot = File(dataDir, "webroot")
         if (!webroot.exists()) {
