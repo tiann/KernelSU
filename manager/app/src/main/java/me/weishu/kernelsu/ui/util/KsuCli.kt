@@ -337,9 +337,9 @@ fun overlayFsAvailable(): Boolean {
 }
 
 fun hasMagisk(): Boolean {
-    val result = Shell.cmd("which magisk").exec()
-    Log.i(TAG, "has magisk: ${result.isSuccess}")
-    return result.isSuccess
+    val result = ShellUtils.fastCmdResult("which magisk")
+    Log.i(TAG, "has magisk: $result")
+    return result
 }
 
 fun isSepolicyValid(rules: String?): Boolean {
