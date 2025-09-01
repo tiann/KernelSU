@@ -40,7 +40,7 @@ If you find that KPROBES is still not enabled, you can try enabling `CONFIG_MODU
 However, if you encounter a bootloop after integrating KernelSU, this may indicate that the **kprobe is broken in your kernel**, which means that you should fix the kprobe bug or use another way.
 
 ::: tip HOW TO CHECK IF KPROBE IS BROKEN？
-Comment out `ksu_enable_sucompat()` and `ksu_enable_ksud()` in `KernelSU/kernel/ksu.c`, if the device boots normally, then kprobe may be broken.
+Comment out `ksu_sucompat_init()` and `ksu_ksud_init()` in `KernelSU/kernel/ksu.c`, if the device boots normally, then kprobe may be broken.
 :::
 
 ::: info HOW TO GET MODULE UMOUNT FEATURE WORKING ON PRE-GKI?
