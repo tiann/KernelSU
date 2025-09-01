@@ -8,7 +8,11 @@
 #include "ksu.h"
 
 #define LOG_TAG "KernelSU"
+#ifdef NDEBUG
+#define LOGD(...) (void)0
+#else
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#endif
 
 extern "C"
 JNIEXPORT jboolean JNICALL

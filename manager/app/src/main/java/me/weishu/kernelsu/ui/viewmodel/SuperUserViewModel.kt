@@ -86,7 +86,7 @@ class SuperUserViewModel : ViewModel() {
             return
         }
 
-        val result = withContext(Dispatchers.Default) {
+        val result = withContext(Dispatchers.IO) {
             _searchStatus.value.resultStatus = SearchStatus.ResultStatus.LOAD
             _appList.value.filter {
                 it.label.contains(_searchStatus.value.searchText, true) || it.packageName.contains(

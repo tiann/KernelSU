@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -95,7 +97,8 @@ fun SuperUserPager(
     val scrollBehavior = MiuixScrollBehavior()
     val listState = rememberLazyListState()
     val searchStatus by viewModel.searchStatus
-    LaunchedEffect(key1 = navigator) {
+
+    LaunchedEffect(navigator) {
         if (viewModel.appList.value.isEmpty() || viewModel.searchResults.value.isEmpty()) {
             viewModel.fetchAppList()
         }
@@ -191,7 +194,8 @@ fun SuperUserPager(
                     }
                 }
                 item {
-                    Spacer(Modifier.height(bottomInnerPadding))
+                    val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+                    Spacer(Modifier.height(maxOf(bottomInnerPadding, imeBottomPadding)))
                 }
             }
         },

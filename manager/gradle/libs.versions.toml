@@ -1,9 +1,9 @@
 [versions]
-agp = "8.12.1"
+agp = "8.12.2"
 kotlin = "2.2.10"
 ksp = "2.2.10-2.0.2"
-compose-bom = "2025.08.00"
-lifecycle = "2.9.2"
+compose-bom = "2025.08.01"
+lifecycle = "2.9.3"
 navigation = "2.9.3"
 activity-compose = "1.10.1"
 kotlinx-coroutines = "1.10.2"
