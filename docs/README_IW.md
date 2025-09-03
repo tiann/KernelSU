@@ -6,7 +6,7 @@
 
 פתרון לניהול root מבוסס על Kernel עבור מכשירי Android.
 
-[![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
 [![Channel](https://img.shields.io/badge/Follow-Telegram-blue.svg?logo=telegram)](https://t.me/KernelSU)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
@@ -47,7 +47,7 @@ KernelSU תומך במכשירי Android GKI 2.0 (kernel 5.10+) באופן רש�
 
 ## קרדיטים
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): הרעיון של KernelSU.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): הרעיון של KernelSU.
 - [Magisk](https://github.com/topjohnwu/Magisk): הכלי הסופר חזק לניהול root.
-- [genuine](https://github.com/brevent/genuine/): אימות חתימת apk v2.
+- [genuine](https://github.com/brevent/genuine/): אימות חתימת APK v2.
 - [Diamorphine](https://github.com/m0nad/Diamorphine): כמה יכולות רוט.
