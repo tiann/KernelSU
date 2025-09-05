@@ -37,7 +37,7 @@ fun BottomBar(
 
     if (!fullFeatured) return
 
-    val item = BottomBarDestination.entries.mapIndexed { index, destination ->
+    val item = BottomBarDestination.entries.map { destination ->
         NavigationItem(
             label = stringResource(destination.label),
             icon = destination.icon,
