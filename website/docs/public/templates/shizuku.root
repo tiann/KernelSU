@@ -2,7 +2,7 @@
     "id":"shizuku.root",
     "name":"Shizuku Service",
     "author":"Rem01Gaming & JohnRTitor",
-    "description":"Only essential permissions to start Shizuku service.",
+    "description":"Only essential permissions to start Shizuku service. Shizuku modules are not guaranteed to work.",
     "uid":0,
     "gid":0,
     "groups":[
