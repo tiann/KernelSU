@@ -51,8 +51,8 @@ jobs:
       matrix:
         include:
           - version: "6.6"
-            sub_level: 57
-            os_patch_level: 2024-12
+            sub_level: 92
+            os_patch_level: 2025-07
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android15-${{ matrix.version }}
