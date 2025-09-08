@@ -41,7 +41,7 @@ CONFIG_KPROBE_EVENTS=y
 
 :::tip 如何验证是否是 kprobe 的问题？
 
-注释掉 `KernelSU/kernel/ksu.c` 中 `ksu_enable_sucompat()` 和 `ksu_enable_ksud()`，如果正常开机，那么就是 kprobe 的问题；或者你可以手动尝试使用 kprobe 功能，如果不正常，手机会直接重启。
+注释掉 `KernelSU/kernel/ksu.c` 中 `ksu_sucompat_init()` 和 `ksu_ksud_init()`，如果正常开机，那么就是 kprobe 的问题；或者你可以手动尝试使用 kprobe 功能，如果不正常，手机会直接重启。
 :::
 
 ## 手动修改内核源码 {#modify-kernel-source-code}

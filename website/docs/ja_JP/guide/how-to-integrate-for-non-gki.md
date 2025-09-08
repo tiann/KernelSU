@@ -36,7 +36,7 @@ KPROBES がまだ有効化されていない場合は、CONFIG_MODULES を有効
 
 :::tip kprobe が破損しているかどうかを確認する方法は？
 
-`KernelSU/kernel/ksu.c` にある `ksu_enable_sucompat()` と `ksu_enable_ksud()` をコメントアウトし、デバイスが正常にブートするか試してください。もし正常にブートするならば、kprobe が破損している可能性があります。
+`KernelSU/kernel/ksu.c` にある `ksu_sucompat_init()` と `ksu_ksud_init()` をコメントアウトし、デバイスが正常にブートするか試してください。もし正常にブートするならば、kprobe が破損している可能性があります。
 
 ## カーネルソースを手動で変更する
 

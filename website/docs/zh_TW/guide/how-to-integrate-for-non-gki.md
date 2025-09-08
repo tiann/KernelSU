@@ -41,7 +41,7 @@ CONFIG_KPROBE_EVENTS=y
 
 :::tip 如何檢查 kprobe 是否損毀？
 
-將 `KernelSU/kernel/ksu.c` 中的 `ksu_enable_sucompat()` 和 `ksu_enable_ksud()` 註解掉，如果正常開機，即 kprobe 已損毀；或者您可以手動嘗試使用 kprobe 功能，如果不正常，手機會直接重新啟動。
+將 `KernelSU/kernel/ksu.c` 中的 `ksu_sucompat_init()` 和 `ksu_ksud_init()` 註解掉，如果正常開機，即 kprobe 已損毀；或者您可以手動嘗試使用 kprobe 功能，如果不正常，手機會直接重新啟動。
 :::
 
 :::info 如何為非 GKI 核心啟用卸載模組功能
