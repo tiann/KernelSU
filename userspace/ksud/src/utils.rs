@@ -1,8 +1,8 @@
-use anyhow::{Context, Error, Ok, Result, bail};
+use anyhow::{Context, Error, Ok, Result};
 use std::{
-    fs::{File, OpenOptions, create_dir_all, remove_file, write},
+    fs::{File, OpenOptions, remove_file, write},
     io::{
-        ErrorKind::{AlreadyExists, NotFound},
+        ErrorKind::{NotFound},
         Write,
     },
     path::Path,
@@ -22,45 +22,22 @@ use std::io::{Read, Seek, SeekFrom};
 use jwalk::WalkDir;
 use std::path::PathBuf;
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use rustix::{
-    process,
-    thread::{LinkNameSpaceType, move_into_link_name_space},
-};
+// no top-level rustix imports required; use fully qualified paths
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
-    let path = dir.as_ref();
-    log::debug!("ensure_clean_dir: {}", path.display());
-    if path.exists() {
-        log::debug!("ensure_clean_dir: {} exists, remove it", path.display());
-        std::fs::remove_dir_all(path)?;
-    }
-    Ok(std::fs::create_dir_all(path)?)
+    ksu_core::utils::ensure_clean_dir(dir).map_err(Error::from)
 }
 
 pub fn ensure_file_exists<T: AsRef<Path>>(file: T) -> Result<()> {
-    match File::options().write(true).create_new(true).open(&file) {
-        std::result::Result::Ok(_) => Ok(()),
-        Err(err) => {
-            if err.kind() == AlreadyExists && file.as_ref().is_file() {
-                Ok(())
-            } else {
-                Err(Error::from(err))
-                    .with_context(|| format!("{} is not a regular file", file.as_ref().display()))
-            }
-        }
-    }
+    ksu_core::utils::ensure_file_exists(file)
+        .map_err(Error::from)
+        .with_context(|| "ensure_file_exists failed")
 }
 
 pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
-    let result = create_dir_all(&dir).map_err(Error::from);
-    if dir.as_ref().is_dir() {
-        result
-    } else if result.is_ok() {
-        bail!("{} is not a regular directory", dir.as_ref().display())
-    } else {
-        result
-    }
+    ksu_core::utils::ensure_dir_exists(dir)
+        .map_err(Error::from)
+        .with_context(|| "ensure_dir_exists failed")
 }
 
 pub fn ensure_binary<T: AsRef<Path>>(
@@ -92,15 +69,7 @@ pub fn ensure_binary<T: AsRef<Path>>(
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn getprop(prop: &str) -> Option<String> {
-    android_properties::getprop(prop).value()
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn getprop(_prop: &str) -> Option<String> {
-    unimplemented!()
-}
+pub fn getprop(prop: &str) -> Option<String> { ksu_core::props::getprop(prop) }
 
 pub fn is_safe_mode() -> bool {
     let safemode = getprop("persist.sys.safemode")
@@ -128,59 +97,20 @@ pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
-    use rustix::{
-        fd::AsFd,
-        fs::{Mode, OFlags, open},
-    };
-    let path = format!("/proc/{pid}/ns/mnt");
-    let fd = open(path, OFlags::RDONLY, Mode::from_raw_mode(0))?;
-    let current_dir = std::env::current_dir();
-    move_into_link_name_space(fd.as_fd(), Some(LinkNameSpaceType::Mount))?;
-    if let std::result::Result::Ok(current_dir) = current_dir {
-        let _ = std::env::set_current_dir(current_dir);
-    }
-    Ok(())
+    ksu_core::sys::switch_mnt_ns(pid).map_err(|e| Error::msg(format!("{e}")))
 }
 
-fn switch_cgroup(grp: &str, pid: u32) {
-    let path = Path::new(grp).join("cgroup.procs");
-    if !path.exists() {
-        return;
-    }
-
-    let fp = OpenOptions::new().append(true).open(path);
-    if let std::result::Result::Ok(mut fp) = fp {
-        let _ = writeln!(fp, "{pid}");
-    }
-}
-
-pub fn switch_cgroups() {
-    let pid = std::process::id();
-    switch_cgroup("/acct", pid);
-    switch_cgroup("/dev/cg2_bpf", pid);
-    switch_cgroup("/sys/fs/cgroup", pid);
-
-    if getprop("ro.config.per_app_memcg")
-        .filter(|prop| prop == "false")
-        .is_none()
-    {
-        switch_cgroup("/dev/memcg/apps", pid);
-    }
-}
+pub fn switch_cgroups() { ksu_core::sys::switch_cgroups() }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn umask(mask: u32) {
-    process::umask(rustix::fs::Mode::from_raw_mode(mask));
-}
+pub fn umask(mask: u32) { ksu_core::sys::umask(mask) }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn umask(_mask: u32) {
     unimplemented!("umask is not supported on this platform")
 }
 
-pub fn has_magisk() -> bool {
-    which::which("magisk").is_ok()
-}
+pub fn has_magisk() -> bool { ksu_core::utils::has_magisk() }
 
 #[cfg(target_os = "android")]
 fn link_ksud_to_bin() -> Result<()> {
@@ -223,7 +153,12 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     println!("- Removing directories..");
     std::fs::remove_dir_all(defs::WORKING_DIR).ok();
     std::fs::remove_file(defs::DAEMON_PATH).ok();
-    crate::mount::umount_dir(defs::MODULE_DIR).ok();
+    // 卸载模块目录（若存在挂载）
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    {
+        use rustix::mount::{unmount, UnmountFlags};
+        let _ = unmount(defs::MODULE_DIR, UnmountFlags::DETACH);
+    }
     std::fs::remove_dir_all(defs::MODULE_DIR).ok();
     std::fs::remove_dir_all(defs::MODULE_UPDATE_TMP_DIR).ok();
     println!("- Restore boot image..");
@@ -345,7 +280,7 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
             std::os::unix::fs::symlink(target, &dest_path).context("Failed to create symlink")?;
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_dir() {
-            create_dir_all(&dest_path)?;
+            std::fs::create_dir_all(&dest_path)?;
             let metadata = std::fs::metadata(&source_path).context("Failed to read metadata")?;
             std::fs::set_permissions(&dest_path, metadata.permissions())
                 .with_context(|| format!("Failed to set permissions for {dest_path:?}"))?;

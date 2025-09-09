@@ -57,12 +57,32 @@ pub enum Commands {
     /// Check if this modsys implementation is supported
     #[command(long_flag = "supported")]
     Supported,
+
+    /// Debug utilities
+    Debug {
+        #[command(subcommand)]
+        command: Debug,
+    },
 }
 
 #[derive(Subcommand, Debug)]
 pub enum MountCommand {
     /// Mount modules systemlessly
     Systemless,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Debug {
+    /// Copy sparse file efficiently (debug)
+    Xcp {
+        /// source file
+        src: String,
+        /// destination file
+        dst: String,
+        /// punch hole when possible
+        #[arg(short, long, default_value = "false")]
+        punch_hole: bool,
+    },
 }
 
 pub fn run(command: Commands) -> Result<()> {
@@ -79,5 +99,10 @@ pub fn run(command: Commands) -> Result<()> {
             MountCommand::Systemless => mount::mount_modules_systemlessly(),
         },
         Commands::Supported => supported::check_supported(),
+        Commands::Debug { command } => match command {
+            Debug::Xcp { src, dst, punch_hole } => {
+                crate::utils::copy_sparse_file(src, dst, punch_hole)
+            }
+        },
     }
 }

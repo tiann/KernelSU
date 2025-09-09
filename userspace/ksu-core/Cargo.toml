@@ -1,0 +1,24 @@
+[package]
+name = "ksu-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+const_format = "0.2"
+zip = { version = "3", default-features = false, features = [
+    "deflate",
+    "deflate64",
+    "time",
+    "lzma",
+    "xz",
+] }
+which = "7"
+
+[target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
+rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
+    "all-apis",
+]} 
+android-properties = { version = "0.2", features = ["bionic-deprecated"] }

@@ -676,3 +676,21 @@ pub fn shrink_ksu_images() -> Result<()> {
     }
     Ok(())
 }
+
+pub fn disable_all_modules() -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+        let module_prop = path.join("module.prop");
+        if !module_prop.exists() {
+            continue;
+        }
+        let disable_marker = path.join(defs::DISABLE_FILE_NAME);
+        ensure_file_exists(&disable_marker).ok();
+    }
+    Ok(())
+}

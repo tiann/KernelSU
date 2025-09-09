@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ksu-core = { path = "../ksu-core" }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"

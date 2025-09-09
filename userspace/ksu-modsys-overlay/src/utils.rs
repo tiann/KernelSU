@@ -1,11 +1,8 @@
 // Utility functions migrated from ksud
-use anyhow::{Context, Error, Ok, Result, bail};
+use anyhow::{Context, Error, Ok, Result};
 use std::{
-    fs::{File, OpenOptions, create_dir_all},
-    io::{
-        ErrorKind::AlreadyExists,
-        Write,
-    },
+    fs::{File, OpenOptions},
+    io::Write,
     path::Path,
 };
 
@@ -20,120 +17,47 @@ use jwalk::WalkDir;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::unix::fs::PermissionsExt;
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use rustix::{
-    process,
-    thread::{LinkNameSpaceType, move_into_link_name_space},
-};
+// no top-level rustix imports required; use fully qualified paths where needed
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
-    let path = dir.as_ref();
-    log::debug!("ensure_clean_dir: {}", path.display());
-    if path.exists() {
-        log::debug!("ensure_clean_dir: {} exists, remove it", path.display());
-        std::fs::remove_dir_all(path)?;
-    }
-    Ok(std::fs::create_dir_all(path)?)
+    ksu_core::utils::ensure_clean_dir(dir).map_err(Error::from)
 }
 
 pub fn ensure_file_exists<T: AsRef<Path>>(file: T) -> Result<()> {
-    match File::options().write(true).create_new(true).open(&file) {
-        std::result::Result::Ok(_) => Ok(()),
-        Err(err) => {
-            if err.kind() == AlreadyExists && file.as_ref().is_file() {
-                Ok(())
-            } else {
-                Err(Error::from(err))
-                    .with_context(|| format!("{} is not a regular file", file.as_ref().display()))
-            }
-        }
-    }
+    ksu_core::utils::ensure_file_exists(file)
+        .map_err(Error::from)
+        .with_context(|| "ensure_file_exists failed")
 }
 
 pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
-    let result = create_dir_all(&dir).map_err(Error::from);
-    if dir.as_ref().is_dir() {
-        result
-    } else if result.is_ok() {
-        bail!("{} is not a regular directory", dir.as_ref().display())
-    } else {
-        result
-    }
+    ksu_core::utils::ensure_dir_exists(dir)
+        .map_err(Error::from)
+        .with_context(|| "ensure_dir_exists failed")
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn getprop(prop: &str) -> Option<String> {
-    android_properties::getprop(prop).value()
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn getprop(_prop: &str) -> Option<String> {
-    unimplemented!()
-}
+pub fn getprop(prop: &str) -> Option<String> { ksu_core::props::getprop(prop) }
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
-    let mut zip = zip::ZipArchive::new(std::fs::File::open(zip_path)?)?;
-    let total: u64 = (0..zip.len())
-        .map(|i| zip.by_index(i).unwrap().size())
-        .sum();
-    Ok(total)
+    ksu_core::utils::get_zip_uncompressed_size(zip_path)
+        .map_err(|e| Error::msg(format!("{e}")))
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
-    use rustix::{
-        fd::AsFd,
-        fs::{Mode, OFlags, open},
-    };
-    let path = format!("/proc/{pid}/ns/mnt");
-    let fd = open(path, OFlags::RDONLY, Mode::from_raw_mode(0))?;
-    let current_dir = std::env::current_dir();
-    move_into_link_name_space(fd.as_fd(), Some(LinkNameSpaceType::Mount))?;
-    if let std::result::Result::Ok(current_dir) = current_dir {
-        let _ = std::env::set_current_dir(current_dir);
-    }
-    Ok(())
+    ksu_core::sys::switch_mnt_ns(pid).map_err(|e| Error::msg(format!("{e}")))
 }
 
-fn switch_cgroup(grp: &str, pid: u32) {
-    let path = Path::new(grp).join("cgroup.procs");
-    if !path.exists() {
-        return;
-    }
-
-    let fp = OpenOptions::new().append(true).open(path);
-    if let std::result::Result::Ok(mut fp) = fp {
-        let _ = writeln!(fp, "{pid}");
-    }
-}
-
-pub fn switch_cgroups() {
-    let pid = std::process::id();
-    switch_cgroup("/acct", pid);
-    switch_cgroup("/dev/cg2_bpf", pid);
-    switch_cgroup("/sys/fs/cgroup", pid);
-
-    if getprop("ro.config.per_app_memcg")
-        .filter(|prop| prop == "false")
-        .is_none()
-    {
-        switch_cgroup("/dev/memcg/apps", pid);
-    }
-}
+pub fn switch_cgroups() { ksu_core::sys::switch_cgroups() }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn umask(mask: u32) {
-    process::umask(rustix::fs::Mode::from_raw_mode(mask));
-}
+pub fn umask(mask: u32) { ksu_core::sys::umask(mask) }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn umask(_mask: u32) {
     unimplemented!("umask is not supported on this platform")
 }
 
-pub fn has_magisk() -> bool {
-    which::which("magisk").is_ok()
-}
+pub fn has_magisk() -> bool { ksu_core::utils::has_magisk() }
 
 // TODO: use libxcp to improve the speed if cross's MSRV is 1.70
 pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(
@@ -242,7 +166,7 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
             std::os::unix::fs::symlink(target, &dest_path).context("Failed to create symlink")?;
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_dir() {
-            create_dir_all(&dest_path)?;
+            std::fs::create_dir_all(&dest_path)?;
             let metadata = std::fs::metadata(&source_path).context("Failed to read metadata")?;
             std::fs::set_permissions(&dest_path, metadata.permissions())
                 .with_context(|| format!("Failed to set permissions for {dest_path:?}"))?;
@@ -287,6 +211,13 @@ pub fn copy_module_files(_source: impl AsRef<Path>, _destination: impl AsRef<Pat
 
 /// Check if system is in safe mode
 pub fn is_safe_mode() -> bool {
+    // 优先询问内核侧的安全模式
+    let kernel_safe = crate::ksucalls::check_kernel_safemode();
+    if kernel_safe {
+        log::info!("kernel safemode: true");
+        return true;
+    }
+    // 退回到属性判断
     let safemode = getprop("persist.sys.safemode")
         .filter(|prop| prop == "1")
         .is_some()
@@ -305,3 +236,7 @@ pub fn ensure_boot_completed() -> Result<()> {
     }
     Ok(())
 }
+
+// 元模块安全机制标志：在 ksud 的 post-fs-data 创建、boot-completed 清理
+// 留存表示上次启动未完成，下一次应降级运行模块系统
+pub fn check_metamodule_safety() -> bool { ksu_core::safety::exists() }

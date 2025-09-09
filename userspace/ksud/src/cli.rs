@@ -161,16 +161,7 @@ enum Debug {
 
     Mount,
 
-    /// Copy sparse file
-    Xcp {
-        /// source file
-        src: String,
-        /// destination file
-        dst: String,
-        /// punch hole
-        #[arg(short, long, default_value = "false")]
-        punch_hole: bool,
-    },
+    // Xcp moved to ksu-modsys-overlay
 
     /// For testing
     Test,
@@ -355,14 +346,7 @@ pub fn run() -> Result<()> {
                 modsys::init()?;
                 modsys::mount_systemless()
             },
-            Debug::Xcp {
-                src,
-                dst,
-                punch_hole,
-            } => {
-                utils::copy_sparse_file(src, dst, punch_hole)?;
-                Ok(())
-            }
+            // Xcp handled in ksu-modsys-overlay
             Debug::Test => assets::ensure_binaries(false),
         },
 

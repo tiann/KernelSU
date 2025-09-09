@@ -8,7 +8,6 @@ mod defs;
 mod init_event;
 mod ksucalls;
 mod module;
-mod mount;
 mod profile;
 mod restorecon;
 mod sepolicy;

@@ -6,6 +6,7 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ksu-core = { path = "../ksu-core" }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"

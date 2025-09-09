@@ -20,9 +20,8 @@ pub fn run_stage(stage: &str) -> Result<()> {
 
 fn run_post_fs_data() -> Result<()> {
     info!("Running post-fs-data stage");
-    
-    // TODO: Report post-fs-data to kernel - this will be handled by ksud
-    // ksucalls::report_post_fs_data();
+
+    // 事件上报由 ksud 负责，这里不再上报 post-fs-data
 
     utils::umask(0);
 
@@ -33,8 +32,9 @@ fn run_post_fs_data() -> Result<()> {
     }
 
     let safe_mode = utils::is_safe_mode();
+    let metamodule_safety = utils::check_metamodule_safety();
 
-    if safe_mode {
+    if safe_mode || metamodule_safety {
         // we should still mount modules.img to `/data/adb/modules` in safe mode
         // because we may need to operate the module dir in safe mode
         warn!("safe mode, skip common post-fs-data.d scripts");
@@ -83,16 +83,15 @@ fn run_post_fs_data() -> Result<()> {
     mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
         .with_context(|| "mount module image failed".to_string())?;
 
-    // TODO: tell kernel that we've mount the module, so that it can do some optimization
-    // ksucalls::report_module_mounted();
+    // 上报模块镜像已挂载（仅此事件由 modsys 上报）
+    crate::ksucalls::report_module_mounted();
 
     // if we are in safe mode, we should disable all modules
-    if safe_mode {
-        warn!("safe mode, skip post-fs-data scripts and disable all modules!");
-        // TODO: Implement disable_all_modules
-        // if let Err(e) = crate::module::disable_all_modules() {
-        //     warn!("disable all modules failed: {e}");
-        // }
+    if safe_mode || metamodule_safety {
+        warn!("safe mode/metamodule safety, skip post-fs-data scripts and disable all modules!");
+        if let Err(e) = crate::module::disable_all_modules() {
+            warn!("disable all modules failed: {e}");
+        }
         return Ok(());
     }
 
@@ -153,9 +152,7 @@ fn run_service() -> Result<()> {
 
 fn run_boot_completed() -> Result<()> {
     info!("Running boot-completed stage");
-    
-    // TODO: Report boot complete to kernel - this will be handled by ksud
-    // ksucalls::report_boot_complete();
+    // 事件上报由 ksud 负责，这里不再上报 boot-completed
     
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);

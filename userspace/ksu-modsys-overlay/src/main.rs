@@ -3,6 +3,7 @@ use clap::Parser;
 
 mod cli;
 mod defs;
+mod ksucalls;
 mod module;
 mod mount;
 mod stage;
@@ -23,6 +24,12 @@ struct Args {
 }
 
 fn main() -> Result<()> {
+    // 确保在 Android 的 mount namespace 中执行（独立于 ksud）
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    if let Err(e) = utils::switch_mnt_ns(1) {
+        log::warn!("switch mnt ns failed: {e:#}");
+    }
+
     #[cfg(target_os = "android")]
     android_logger::init_once(
         Config::default()
