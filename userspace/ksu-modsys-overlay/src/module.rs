@@ -303,7 +303,7 @@ fn _install_module(zip: &str) -> Result<()> {
     ensure_boot_completed()?;
 
     // print banner
-    println!(include_str!("../assets/banner"));
+    println!("{}", ksu_core::banner::BANNER);
 
     // TODO: ensure binaries are available - this will be handled by ksud
     

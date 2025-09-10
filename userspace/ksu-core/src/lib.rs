@@ -8,3 +8,4 @@ pub mod safety;
 pub mod ksucalls;
 pub mod restorecon;
 pub mod sepolicy;
+pub mod banner;
