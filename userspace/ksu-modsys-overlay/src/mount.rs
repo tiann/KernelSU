@@ -1,4 +1,4 @@
-// Mount logic migrated from ksud
+// Mount logic
 use anyhow::{Result, bail, anyhow};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]

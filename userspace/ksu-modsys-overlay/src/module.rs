@@ -1,4 +1,4 @@
-// Module management logic migrated from ksud
+// Module management logic
 use crate::utils::*;
 use crate::defs;
 
@@ -44,7 +44,7 @@ fn exec_install_script(module_file: &str) -> Result<()> {
             "PATH",
             format!(
                 "{}:{}",
-                env_var("PATH").unwrap(),
+                env_var("PATH").unwrap_or_default(),
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         )
@@ -140,7 +140,7 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         };
     }
     command = command
-        .current_dir(path.as_ref().parent().unwrap())
+        .current_dir(path.as_ref().parent().unwrap_or_else(|| std::path::Path::new("/")))
         .arg("sh")
         .arg(path.as_ref())
         .env("ASH_STANDALONE", "1")
@@ -152,7 +152,7 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
             "PATH",
             format!(
                 "{}:{}",
-                env_var("PATH").unwrap(),
+                env_var("PATH").unwrap_or_default(),
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         );
@@ -293,7 +293,7 @@ fn create_module_image(image: &str, image_size: u64) -> Result<()> {
     ensure!(
         result.status.success(),
         "Failed to format ext4 image: {}",
-        String::from_utf8(result.stderr).unwrap()
+        String::from_utf8_lossy(&result.stderr)
     );
     check_image(image)?;
     Ok(())

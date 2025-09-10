@@ -52,25 +52,7 @@ pub fn ensure_binary<T: AsRef<Path>>(
     Ok(())
 }
 
-pub fn getprop(prop: &str) -> Option<String> { ksu_core::props::getprop(prop) }
-
-pub fn is_safe_mode() -> bool {
-    let safemode = getprop("persist.sys.safemode")
-        .filter(|prop| prop == "1")
-        .is_some()
-        || getprop("ro.sys.safemode")
-            .filter(|prop| prop == "1")
-            .is_some();
-    log::info!("safemode: {safemode}");
-    if safemode {
-        return true;
-    }
-    let safemode = ksu_core::ksucalls::check_kernel_safemode();
-    log::info!("kernel_safemode: {safemode}");
-    safemode
-}
-
-// Removed unused: get_zip_uncompressed_size (use ksu_core or overlay utils if needed)
+// getprop and is_safe_mode are provided by ksu-core
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
@@ -83,9 +65,7 @@ pub fn switch_cgroups() { ksu_core::sys::switch_cgroups() }
 pub fn umask(mask: u32) { ksu_core::sys::umask(mask) }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn umask(_mask: u32) {
-    unimplemented!("umask is not supported on this platform")
-}
+pub fn umask(_mask: u32) { unimplemented!("umask is not supported on this platform") }
 
 pub fn has_magisk() -> bool { ksu_core::utils::has_magisk() }
 
@@ -150,6 +130,4 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-// Removed unused: copy_sparse_file (overlay provides its own implementation)
-
-// Removed unused: copy_module_files and copy_xattrs (overlay has its own logic)
+// copy_sparse_file and copy_module_files helpers live in overlay implementation

@@ -146,10 +146,8 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
         .context("Failed to execute magiskboot command")?;
 
     if !status.success() {
-        bail!(
-            "magiskboot unpack failed with status: {:?}",
-            status.code().unwrap()
-        );
+        let code = status.code().unwrap_or(-1);
+        bail!("magiskboot unpack failed with status: {:?}", code);
     }
 
     parse_kmi_from_kernel(&image_path, workdir)
@@ -312,7 +310,7 @@ pub fn restore(
         new_boot = Some(workdir.join("new-boot.img"));
     }
 
-    let new_boot = new_boot.unwrap();
+    let new_boot = new_boot.ok_or_else(|| anyhow::anyhow!("new-boot.img not produced"))?;
 
     if image.is_some() {
         // if image is specified, write to output file
@@ -407,16 +405,10 @@ fn do_patch(
             Err(e) => {
                 println!("- {e}");
                 if let Some(image_path) = &image {
-                    println!(
-                        "- Trying to auto detect KMI version for {}",
-                        image_path.to_str().unwrap()
-                    );
+                    println!("- Trying to auto detect KMI version for {}", image_path.display());
                     parse_kmi_from_boot(&magiskboot, image_path, tmpdir.path())?
                 } else if let Some(kernel_path) = &kernel {
-                    println!(
-                        "- Trying to auto detect KMI version for {}",
-                        kernel_path.to_str().unwrap()
-                    );
+                    println!("- Trying to auto detect KMI version for {}", kernel_path.display());
                     parse_kmi_from_kernel(kernel_path, tmpdir.path())?
                 } else {
                     "".to_string()
@@ -670,7 +662,7 @@ fn find_boot_image(
             bail!("Please specify a boot image");
         }
         let mut slot_suffix =
-            utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
+            ksu_core::props::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
 
         if !slot_suffix.is_empty() && ota {
             if slot_suffix == "_a" {

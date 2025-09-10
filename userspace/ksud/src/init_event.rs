@@ -21,7 +21,7 @@ pub fn on_post_data_fs() -> Result<()> {
         return Ok(());
     }
 
-    let _safe_mode = crate::utils::is_safe_mode();
+    let _safe_mode = ksu_core::safety::is_safe_mode();
 
     // Extract assets before delegating to modsys
     assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;

@@ -29,7 +29,11 @@ pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<(), IoError> {
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64, Box<dyn std::error::Error>> {
     let mut zip = zip::ZipArchive::new(std::fs::File::open(zip_path)?)?;
-    let total: u64 = (0..zip.len()).map(|i| zip.by_index(i).unwrap().size()).sum();
+    let mut total: u64 = 0;
+    for i in 0..zip.len() {
+        let f = zip.by_index(i)?;
+        total += f.size();
+    }
     Ok(total)
 }
 

@@ -1,4 +1,4 @@
-// Utility functions migrated from ksud
+// Utility functions
 use anyhow::{Context, Error, Ok, Result};
 use std::{
     fs::{File, OpenOptions},
@@ -34,8 +34,6 @@ pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
         .map_err(Error::from)
         .with_context(|| "ensure_dir_exists failed")
 }
-
-pub fn getprop(prop: &str) -> Option<String> { ksu_core::props::getprop(prop) }
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
     ksu_core::utils::get_zip_uncompressed_size(zip_path)
@@ -209,29 +207,12 @@ pub fn copy_module_files(_source: impl AsRef<Path>, _destination: impl AsRef<Pat
     unimplemented!()
 }
 
-/// Check if system is in safe mode
-pub fn is_safe_mode() -> bool {
-    // 优先询问内核侧的安全模式
-    let kernel_safe = ksu_core::ksucalls::check_kernel_safemode();
-    if kernel_safe {
-        log::info!("kernel safemode: true");
-        return true;
-    }
-    // 退回到属性判断
-    let safemode = getprop("persist.sys.safemode")
-        .filter(|prop| prop == "1")
-        .is_some()
-        || getprop("ro.sys.safemode")
-            .filter(|prop| prop == "1")
-            .is_some();
-    log::info!("safemode: {safemode}");
-    safemode
-}
+// is_safe_mode is provided by ksu-core::safety
 
 /// Ensure boot completed before module operations
 pub fn ensure_boot_completed() -> Result<()> {
     // ensure getprop sys.boot_completed == 1
-    if getprop("sys.boot_completed").as_deref() != Some("1") {
+    if ksu_core::props::getprop("sys.boot_completed").as_deref() != Some("1") {
         anyhow::bail!("Android is Booting!");
     }
     Ok(())

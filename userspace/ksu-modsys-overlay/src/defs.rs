@@ -12,16 +12,16 @@ pub use ksu_core::defs::{
     KSU_OVERLAY_SOURCE,
     BUSYBOX_PATH,
     RESETPROP_PATH,
+    // also re-export module-related defaults
+    TEMP_DIR,
+    MODULE_WEB_DIR,
+    MODULE_ACTION_SH,
+    DISABLE_FILE_NAME,
+    UPDATE_FILE_NAME,
+    REMOVE_FILE_NAME,
+    SKIP_MOUNT_FILE_NAME,
 };
 
-pub const TEMP_DIR: &str = "/debug_ramdisk";
-pub const MODULE_WEB_DIR: &str = "webroot";
-pub const MODULE_ACTION_SH: &str = "action.sh";
-pub const DISABLE_FILE_NAME: &str = "disable";
-pub const UPDATE_FILE_NAME: &str = "update";
-pub const REMOVE_FILE_NAME: &str = "remove";
-pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
-
-// Version strings presented by ksud; keep simple fallbacks for overlay builds
-pub const VERSION_CODE: &str = "10940";
-pub const VERSION_NAME: &str = "v0.9.5";
+// Version strings written by build.rs into OUT_DIR
+pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
+pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));

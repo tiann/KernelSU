@@ -31,7 +31,7 @@ fn run_post_fs_data() -> Result<()> {
         return Ok(());
     }
 
-    let safe_mode = utils::is_safe_mode();
+    let safe_mode = ksu_core::safety::is_safe_mode();
     let metamodule_safety = utils::check_metamodule_safety();
 
     if safe_mode || metamodule_safety {
@@ -175,7 +175,7 @@ fn run_stage_scripts(stage: &str, block: bool) {
         return;
     }
 
-    if utils::is_safe_mode() {
+    if ksu_core::safety::is_safe_mode() {
         warn!("safe mode, skip {stage} scripts");
         return;
     }
