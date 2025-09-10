@@ -81,7 +81,7 @@ fn execute_modsys_command(args: &[String]) -> Result<ExitStatus> {
     
     let status = Command::new(&binary_path)
         .args(args)
-        .env("KSU_KERNEL_VER_CODE", crate::ksucalls::get_version().to_string())
+        .env("KSU_KERNEL_VER_CODE", ksu_core::ksucalls::get_version().to_string())
         .env("KSU_VER", defs::VERSION_NAME)
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .status()
@@ -157,10 +157,7 @@ pub fn mount_systemless() -> Result<()> {
 }
 
 /// Run raw modsys command (for advanced usage)
-pub fn run_raw(args: &[String]) -> Result<()> {
-    check_supported()?;
-    run_modsys_command(args)
-}
+// pub fn run_raw removed: avoid exposing raw passthrough in release builds
 
 /// Initialize the modsys system - create default selection if not exists
 pub fn init() -> Result<()> {

@@ -222,6 +222,22 @@ pub fn load_system_prop() -> Result<()> {
     Ok(())
 }
 
+pub fn load_sepolicy_rule() -> Result<()> {
+    foreach_active_module(|module| {
+        let rule = module.join("sepolicy.rule");
+        if !rule.exists() {
+            return Ok(());
+        }
+        info!("apply {} sepolicy.rule", module.display());
+        if let Err(e) = ksu_core::sepolicy::apply_file(&rule) {
+            warn!("apply sepolicy.rule failed: {e}");
+        }
+        Ok(())
+    })?;
+
+    Ok(())
+}
+
 pub fn prune_modules() -> Result<()> {
     foreach_module(false, |module| {
         remove_file(module.join(defs::UPDATE_FILE_NAME)).ok();

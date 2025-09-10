@@ -2,12 +2,12 @@ use anyhow::{Context, Result};
 use log::{info, warn};
 use std::path::Path;
 
-use crate::{ assets, defs, ksucalls, modsys, restorecon, utils };
+use crate::{ assets, defs, modsys, utils };
 
 // 通过 modsys 执行挂载逻辑，ksud 无需再保留重复实现
 
 pub fn on_post_data_fs() -> Result<()> {
-    ksucalls::report_post_fs_data();
+    ksu_core::ksucalls::report_post_fs_data();
 
     utils::umask(0);
 
@@ -41,11 +41,6 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("modsys post-fs-data stage failed: {e}");
     }
 
-    // ksud retains: props, sepolicy, restorecon
-    if let Err(e) = restorecon::restorecon() {
-        warn!("restorecon failed: {e}");
-    }
-
     if let Err(e) = crate::profile::apply_sepolies() {
         warn!("apply root profile sepolicy failed: {e}");
     }
@@ -69,7 +64,7 @@ pub fn on_services() -> Result<()> {
 }
 
 pub fn on_boot_completed() -> Result<()> {
-    ksucalls::report_boot_complete();
+    ksu_core::ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
     
     // Clear metamodule safety flag if system boots successfully

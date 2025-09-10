@@ -1,18 +1,18 @@
-// Re-export constants from ksud for consistency
-use const_format::concatcp;
-
-pub const ADB_DIR: &str = "/data/adb/";
-pub const WORKING_DIR: &str = concatcp!(ADB_DIR, "ksu/");
-pub const BINARY_DIR: &str = concatcp!(WORKING_DIR, "bin/");
-pub const LOG_DIR: &str = concatcp!(WORKING_DIR, "log/");
-
-pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
-pub const MODULE_IMG: &str = concatcp!(WORKING_DIR, "modules.img");
-pub const MODULE_UPDATE_IMG: &str = concatcp!(WORKING_DIR, "modules_update.img");
-pub const MODULE_UPDATE_TMP_IMG: &str = concatcp!(WORKING_DIR, "update_tmp.img");
-pub const MODULE_UPDATE_TMP_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
-
-pub const SYSTEM_RW_DIR: &str = concatcp!(MODULE_DIR, ".rw/");
+// Reuse core defaults to avoid duplication
+pub use ksu_core::defs::{
+    ADB_DIR,
+    WORKING_DIR,
+    BINARY_DIR,
+    MODULE_DIR,
+    MODULE_IMG,
+    MODULE_UPDATE_IMG,
+    MODULE_UPDATE_TMP_IMG,
+    MODULE_UPDATE_TMP_DIR,
+    SYSTEM_RW_DIR,
+    KSU_OVERLAY_SOURCE,
+    BUSYBOX_PATH,
+    RESETPROP_PATH,
+};
 
 pub const TEMP_DIR: &str = "/debug_ramdisk";
 pub const MODULE_WEB_DIR: &str = "webroot";
@@ -22,13 +22,6 @@ pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
 pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
 
-pub const KSU_OVERLAY_SOURCE: &str = "KSU";
-
-// Asset paths - these will be provided by ksud
-pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
-pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
-pub const MAGISKBOOT_PATH: &str = concatcp!(BINARY_DIR, "magiskboot");
-
-// KernelSU call placeholders - will be provided via environment or IPC
+// Version strings presented by ksud; keep simple fallbacks for overlay builds
 pub const VERSION_CODE: &str = "10940";
 pub const VERSION_NAME: &str = "v0.9.5";

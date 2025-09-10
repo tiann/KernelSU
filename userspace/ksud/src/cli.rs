@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, modsys, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, modsys, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -314,9 +314,9 @@ pub fn run() -> Result<()> {
         Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
-            Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
-            Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
-            Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
+            Sepolicy::Patch { sepolicy } => ksu_core::sepolicy::live_patch(&sepolicy),
+            Sepolicy::Apply { file } => ksu_core::sepolicy::apply_file(file),
+            Sepolicy::Check { sepolicy } => ksu_core::sepolicy::check_rule(&sepolicy),
         },
         Commands::Services => init_event::on_services(),
         Commands::Profile { command } => match command {
@@ -338,7 +338,7 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Version => {
-                println!("Kernel Version: {}", ksucalls::get_version());
+                println!("Kernel Version: {}", ksu_core::ksucalls::get_version());
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),

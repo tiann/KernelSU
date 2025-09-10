@@ -8,6 +8,7 @@ path = "src/lib.rs"
 
 [dependencies]
 const_format = "0.2"
+log = "0.4"
 zip = { version = "3", default-features = false, features = [
     "deflate",
     "deflate64",
@@ -16,9 +17,14 @@ zip = { version = "3", default-features = false, features = [
     "xz",
 ] }
 which = "7"
+anyhow = "1"
+nom = "8"
+derive-new = "0.7"
+jwalk = "0.8"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
     "all-apis",
 ]} 
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
+extattr = "1"

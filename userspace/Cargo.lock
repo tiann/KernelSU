@@ -835,7 +835,13 @@ name = "ksu-core"
 version = "0.1.0"
 dependencies = [
  "android-properties",
+ "anyhow",
  "const_format",
+ "derive-new",
+ "extattr",
+ "jwalk",
+ "log",
+ "nom",
  "rustix 0.38.34",
  "which",
  "zip",

@@ -1,5 +1,6 @@
 use crate::utils::ensure_dir_exists;
-use crate::{defs, sepolicy};
+use crate::defs;
+use ksu_core::sepolicy;
 use anyhow::{Context, Result};
 use std::path::Path;
 

@@ -7,14 +7,16 @@ use std::process::Stdio;
 
 use anyhow::Context;
 use anyhow::Result;
+#[cfg(target_os = "android")]
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
 use regex_lite::Regex;
 use which::which;
 
-use crate::defs;
+#[cfg(target_os = "android")]
 use crate::defs::BACKUP_FILENAME;
+#[cfg(target_os = "android")]
 use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
 use crate::{assets, utils};
 
@@ -251,6 +253,7 @@ pub fn restore(
     ensure!(is_kernelsu_patched, "boot image is not patched by KernelSU");
 
     let mut new_boot = None;
+    #[allow(unused_mut)]
     let mut from_backup = false;
 
     #[cfg(target_os = "android")]
@@ -483,14 +486,18 @@ fn do_patch(
     println!("- Adding KernelSU LKM");
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workdir, ramdisk)?;
 
-    let mut need_backup = false;
     if !is_kernelsu_patched {
         // kernelsu.ko is not exist, backup init if necessary
         let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init");
         if status.is_ok() {
             do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init init.real")?;
         }
-        need_backup = flash;
+        #[cfg(target_os = "android")]
+        if flash {
+            if let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
+                println!("- Backup stock image failed: {e}");
+            }
+        }
     }
 
     do_cpio_cmd(&magiskboot, workdir, ramdisk, "add 0755 init init")?;
@@ -501,12 +508,7 @@ fn do_patch(
         "add 0755 kernelsu.ko kernelsu.ko",
     )?;
 
-    #[cfg(target_os = "android")]
-    if need_backup {
-        if let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
-            println!("- Backup stock image failed: {e}");
-        }
-    }
+    
 
     println!("- Repacking boot image");
     // magiskboot repack boot.img

@@ -212,7 +212,7 @@ pub fn copy_module_files(_source: impl AsRef<Path>, _destination: impl AsRef<Pat
 /// Check if system is in safe mode
 pub fn is_safe_mode() -> bool {
     // 优先询问内核侧的安全模式
-    let kernel_safe = crate::ksucalls::check_kernel_safemode();
+    let kernel_safe = ksu_core::ksucalls::check_kernel_safemode();
     if kernel_safe {
         log::info!("kernel safemode: true");
         return true;

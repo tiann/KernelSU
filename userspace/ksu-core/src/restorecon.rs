@@ -37,21 +37,17 @@ pub fn lgetfilecon<P: AsRef<Path>>(path: P) -> Result<String> {
     Ok(con.to_string())
 }
 
+#[allow(dead_code)]
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn setsyscon<P: AsRef<Path>>(path: P) -> Result<()> {
-    lsetfilecon(path, SYSTEM_CON)
-}
+pub fn setsyscon<P: AsRef<Path>>(path: P) -> Result<()> { lsetfilecon(path, SYSTEM_CON) }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn setsyscon<P: AsRef<Path>>(path: P) -> Result<()> {
-    unimplemented!()
-}
+pub fn setsyscon<P: AsRef<Path>>(path: P) -> Result<()> { unimplemented!() }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn lgetfilecon<P: AsRef<Path>>(path: P) -> Result<String> {
-    unimplemented!()
-}
+pub fn lgetfilecon<P: AsRef<Path>>(path: P) -> Result<String> { unimplemented!() }
 
+#[allow(dead_code)]
 pub fn restore_syscon<P: AsRef<Path>>(dir: P) -> Result<()> {
     for dir_entry in WalkDir::new(dir).parallelism(Serial) {
         if let Some(path) = dir_entry.ok().map(|dir_entry| dir_entry.path()) {
@@ -79,3 +75,4 @@ pub fn restorecon() -> Result<()> {
     restore_syscon_if_unlabeled(defs::MODULE_DIR)?;
     Ok(())
 }
+

@@ -84,7 +84,7 @@ fn run_post_fs_data() -> Result<()> {
         .with_context(|| "mount module image failed".to_string())?;
 
     // 上报模块镜像已挂载（仅此事件由 modsys 上报）
-    crate::ksucalls::report_module_mounted();
+    ksu_core::ksucalls::report_module_mounted();
 
     // if we are in safe mode, we should disable all modules
     if safe_mode || metamodule_safety {
@@ -99,20 +99,15 @@ fn run_post_fs_data() -> Result<()> {
         warn!("prune modules failed: {e}");
     }
 
-    // TODO: restorecon will be handled by ksud
-    // if let Err(e) = restorecon::restorecon() {
-    //     warn!("restorecon failed: {e}");
-    // }
+    // Restore SELinux contexts for daemon and module dir
+    if let Err(e) = ksu_core::restorecon::restorecon() {
+        warn!("restorecon failed: {e}");
+    }
 
-    // TODO: load sepolicy.rule - will be handled by ksud
-    // if crate::module::load_sepolicy_rule().is_err() {
-    //     warn!("load sepolicy.rule failed");
-    // }
-
-    // TODO: apply root profile sepolicy - will be handled by ksud
-    // if let Err(e) = crate::profile::apply_sepolies() {
-    //     warn!("apply root profile sepolicy failed: {e}");
-    // }
+    // load sepolicy.rule for active modules
+    if let Err(e) = crate::module::load_sepolicy_rule() {
+        warn!("load sepolicy.rule failed: {e}");
+    }
 
     // mount temp dir
     if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {

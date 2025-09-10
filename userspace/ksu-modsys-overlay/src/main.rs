@@ -3,7 +3,6 @@ use clap::Parser;
 
 mod cli;
 mod defs;
-mod ksucalls;
 mod module;
 mod mount;
 mod stage;
