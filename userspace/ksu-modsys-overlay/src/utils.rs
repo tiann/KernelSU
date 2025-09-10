@@ -36,8 +36,7 @@ pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
 }
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
-    ksu_core::utils::get_zip_uncompressed_size(zip_path)
-        .map_err(|e| Error::msg(format!("{e}")))
+    ksu_core::utils::get_zip_uncompressed_size(zip_path).map_err(|e| Error::msg(format!("{e}")))
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -45,17 +44,23 @@ pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     ksu_core::sys::switch_mnt_ns(pid).map_err(|e| Error::msg(format!("{e}")))
 }
 
-pub fn switch_cgroups() { ksu_core::sys::switch_cgroups() }
+pub fn switch_cgroups() {
+    ksu_core::sys::switch_cgroups()
+}
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn umask(mask: u32) { ksu_core::sys::umask(mask) }
+pub fn umask(mask: u32) {
+    ksu_core::sys::umask(mask)
+}
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn umask(_mask: u32) {
     unimplemented!("umask is not supported on this platform")
 }
 
-pub fn has_magisk() -> bool { ksu_core::utils::has_magisk() }
+pub fn has_magisk() -> bool {
+    ksu_core::utils::has_magisk()
+}
 
 // TODO: use libxcp to improve the speed if cross's MSRV is 1.70
 pub fn copy_sparse_file<P: AsRef<Path>, Q: AsRef<Path>>(
@@ -220,4 +225,6 @@ pub fn ensure_boot_completed() -> Result<()> {
 
 // 元模块安全机制标志：在 ksud 的 post-fs-data 创建、boot-completed 清理
 // 留存表示上次启动未完成，下一次应降级运行模块系统
-pub fn check_metamodule_safety() -> bool { ksu_core::safety::exists() }
+pub fn check_metamodule_safety() -> bool {
+    ksu_core::safety::exists()
+}

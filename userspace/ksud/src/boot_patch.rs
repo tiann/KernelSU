@@ -1,17 +1,17 @@
-#[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::process::Stdio;
-
 use anyhow::Context;
 use anyhow::Result;
 #[cfg(target_os = "android")]
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
+use ksu_core::defs;
 use regex_lite::Regex;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Command;
+use std::process::Stdio;
 use which::which;
 
 #[cfg(target_os = "android")]
@@ -405,10 +405,16 @@ fn do_patch(
             Err(e) => {
                 println!("- {e}");
                 if let Some(image_path) = &image {
-                    println!("- Trying to auto detect KMI version for {}", image_path.display());
+                    println!(
+                        "- Trying to auto detect KMI version for {}",
+                        image_path.display()
+                    );
                     parse_kmi_from_boot(&magiskboot, image_path, tmpdir.path())?
                 } else if let Some(kernel_path) = &kernel {
-                    println!("- Trying to auto detect KMI version for {}", kernel_path.display());
+                    println!(
+                        "- Trying to auto detect KMI version for {}",
+                        kernel_path.display()
+                    );
                     parse_kmi_from_kernel(kernel_path, tmpdir.path())?
                 } else {
                     "".to_string()
@@ -499,8 +505,6 @@ fn do_patch(
         ramdisk,
         "add 0755 kernelsu.ko kernelsu.ko",
     )?;
-
-    
 
     println!("- Repacking boot image");
     // magiskboot repack boot.img

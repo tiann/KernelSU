@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use log::{info, warn};
 use std::path::Path;
 
-use crate::{ assets, defs, modsys, utils };
+use crate::{assets, defs, modsys, utils};
 
 // 通过 modsys 执行挂载逻辑，ksud 无需再保留重复实现
 
@@ -28,7 +28,7 @@ pub fn on_post_data_fs() -> Result<()> {
 
     // Initialize modsys
     modsys::init()?;
-    
+
     // Create metamodule safety flag (core API)
     if let Err(e) = ksu_core::safety::create() {
         warn!("Failed to create metamodule safety flag: {e}");
@@ -54,7 +54,7 @@ pub fn on_post_data_fs() -> Result<()> {
 
 pub fn on_services() -> Result<()> {
     info!("on_services triggered!");
-    
+
     // Delegate to modsys
     if let Err(e) = modsys::stage("service") {
         warn!("modsys service stage failed: {e}");
@@ -66,14 +66,14 @@ pub fn on_services() -> Result<()> {
 pub fn on_boot_completed() -> Result<()> {
     ksu_core::ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
-    
+
     // Clear metamodule safety flag if system boots successfully
     if let Err(e) = ksu_core::safety::clear() {
         warn!("Failed to clear metamodule safety flag: {e}");
     } else {
         info!("Cleared metamodule safety flag - boot successful");
     }
-    
+
     // Delegate to modsys for boot-completed stage
     if let Err(e) = modsys::stage("boot-completed") {
         warn!("modsys boot-completed stage failed: {e}");

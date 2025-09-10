@@ -59,15 +59,23 @@ pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     ksu_core::sys::switch_mnt_ns(pid).map_err(|e| Error::msg(format!("{e}")))
 }
 
-pub fn switch_cgroups() { ksu_core::sys::switch_cgroups() }
+pub fn switch_cgroups() {
+    ksu_core::sys::switch_cgroups()
+}
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn umask(mask: u32) { ksu_core::sys::umask(mask) }
+pub fn umask(mask: u32) {
+    ksu_core::sys::umask(mask)
+}
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn umask(_mask: u32) { unimplemented!("umask is not supported on this platform") }
+pub fn umask(_mask: u32) {
+    unimplemented!("umask is not supported on this platform")
+}
 
-pub fn has_magisk() -> bool { ksu_core::utils::has_magisk() }
+pub fn has_magisk() -> bool {
+    ksu_core::utils::has_magisk()
+}
 
 #[cfg(target_os = "android")]
 fn link_ksud_to_bin() -> Result<()> {
@@ -113,7 +121,7 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     // 卸载模块目录（若存在挂载）
     #[cfg(any(target_os = "linux", target_os = "android"))]
     {
-        use rustix::mount::{unmount, UnmountFlags};
+        use rustix::mount::{UnmountFlags, unmount};
         let _ = unmount(defs::MODULE_DIR, UnmountFlags::DETACH);
     }
     std::fs::remove_dir_all(defs::MODULE_DIR).ok();

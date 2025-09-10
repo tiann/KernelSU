@@ -8,7 +8,7 @@ pub fn switch_mnt_ns(pid: i32) -> Result<(), Box<dyn core::error::Error>> {
     use rustix::{
         fd::AsFd,
         fs::{Mode, OFlags, open},
-        thread::{move_into_link_name_space, LinkNameSpaceType},
+        thread::{LinkNameSpaceType, move_into_link_name_space},
     };
     let path = format!("/proc/{pid}/ns/mnt");
     let fd = open(path, OFlags::RDONLY, Mode::from_raw_mode(0))?;
@@ -25,9 +25,9 @@ pub fn switch_mnt_ns(_pid: i32) -> Result<(), Box<dyn core::error::Error>> {
     Ok(())
 }
 
-use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::Path;
 
 fn switch_cgroup(grp: &str, pid: u32) {
     let path = Path::new(grp).join("cgroup.procs");

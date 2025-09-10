@@ -100,9 +100,11 @@ pub fn run(command: Commands) -> Result<()> {
         },
         Commands::Supported => supported::check_supported(),
         Commands::Debug { command } => match command {
-            Debug::Xcp { src, dst, punch_hole } => {
-                crate::utils::copy_sparse_file(src, dst, punch_hole)
-            }
+            Debug::Xcp {
+                src,
+                dst,
+                punch_hole,
+            } => crate::utils::copy_sparse_file(src, dst, punch_hole),
         },
     }
 }

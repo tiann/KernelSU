@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use serde_json::json;
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -8,18 +8,22 @@ fn check_loop() -> Result<()> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn check_loop() -> Result<()> { Ok(()) }
+fn check_loop() -> Result<()> {
+    Ok(())
+}
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn check_fsopen_overlay() -> Result<()> {
-    use rustix::mount::{fsopen, FsOpenFlags};
-    let _ = fsopen("overlay", FsOpenFlags::FSOPEN_CLOEXEC)
-        .context("fsopen overlay not supported")?;
+    use rustix::mount::{FsOpenFlags, fsopen};
+    let _ =
+        fsopen("overlay", FsOpenFlags::FSOPEN_CLOEXEC).context("fsopen overlay not supported")?;
     Ok(())
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn check_fsopen_overlay() -> Result<()> { Ok(()) }
+fn check_fsopen_overlay() -> Result<()> {
+    Ok(())
+}
 
 /// Check if this modsys implementation is supported
 pub fn check_supported() -> Result<()> {
@@ -36,5 +40,9 @@ pub fn check_supported() -> Result<()> {
 
     let response = json!({ "code": code, "msg": msg });
     println!("{}", response);
-    if code == 0 { Ok(()) } else { anyhow::bail!(response.to_string()) }
+    if code == 0 {
+        Ok(())
+    } else {
+        anyhow::bail!(response.to_string())
+    }
 }

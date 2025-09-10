@@ -4,4 +4,6 @@ pub fn getprop(prop: &str) -> Option<String> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn getprop(_prop: &str) -> Option<String> { None }
+pub fn getprop(_prop: &str) -> Option<String> {
+    None
+}

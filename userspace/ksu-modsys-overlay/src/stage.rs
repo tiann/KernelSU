@@ -139,19 +139,19 @@ fn run_post_fs_data() -> Result<()> {
 
 fn run_service() -> Result<()> {
     info!("Running service stage");
-    
+
     run_stage_scripts("service", false);
-    
+
     Ok(())
 }
 
 fn run_boot_completed() -> Result<()> {
     info!("Running boot-completed stage");
     // 事件上报由 ksud 负责，这里不再上报 boot-completed
-    
+
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);
-    
+
     if module_update_img.exists() {
         // this is a update and we successfully booted
         if std::fs::rename(module_update_img, module_img).is_err() {

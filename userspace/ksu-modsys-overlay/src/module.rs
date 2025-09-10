@@ -1,6 +1,6 @@
 // Module management logic
-use crate::utils::*;
 use crate::defs;
+use crate::utils::*;
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
 use const_format::concatcp;
@@ -140,7 +140,11 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         };
     }
     command = command
-        .current_dir(path.as_ref().parent().unwrap_or_else(|| std::path::Path::new("/")))
+        .current_dir(
+            path.as_ref()
+                .parent()
+                .unwrap_or_else(|| std::path::Path::new("/")),
+        )
         .arg("sh")
         .arg(path.as_ref())
         .env("ASH_STANDALONE", "1")
@@ -306,7 +310,7 @@ fn _install_module(zip: &str) -> Result<()> {
     println!("{}", ksu_core::banner::BANNER);
 
     // TODO: ensure binaries are available - this will be handled by ksud
-    
+
     // first check if workding dir is usable
     ensure_dir_exists(defs::WORKING_DIR).with_context(|| "Failed to create working dir")?;
     ensure_dir_exists(defs::BINARY_DIR).with_context(|| "Failed to create bin dir")?;
@@ -421,7 +425,8 @@ fn _install_module(zip: &str) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    let _dontdrop = crate::mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
+    let _dontdrop =
+        crate::mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
 
     info!("mounted {tmp_module_img} to {module_update_tmp_dir}");
 
@@ -505,7 +510,8 @@ where
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    let _dontdrop = crate::mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
+    let _dontdrop =
+        crate::mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
 
     // call the operation func
     let result = func(id, update_dir);

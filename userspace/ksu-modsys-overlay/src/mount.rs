@@ -1,5 +1,5 @@
 // Mount logic
-use anyhow::{Result, bail, anyhow};
+use anyhow::{Result, anyhow, bail};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
@@ -10,9 +10,9 @@ use crate::defs;
 use log::{info, warn};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
+use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
-use std::collections::HashMap;
 
 pub struct AutoMountExt4 {
     target: String,
@@ -306,7 +306,7 @@ fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
 
 pub fn mount_modules_systemlessly() -> Result<()> {
     let module_dir = defs::MODULE_DIR;
-    
+
     // construct overlay mount params
     let dir = std::fs::read_dir(module_dir);
     let dir = match dir {

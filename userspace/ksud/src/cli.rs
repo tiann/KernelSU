@@ -162,7 +162,6 @@ enum Debug {
     Mount,
 
     // Xcp moved to ksu-modsys-overlay
-
     /// For testing
     Test,
 }
@@ -299,7 +298,7 @@ pub fn run() -> Result<()> {
             }
             // Initialize modsys if needed
             modsys::init()?;
-            
+
             // Forward all module commands to the selected modsys implementation
             match command {
                 Module::Install { zip } => modsys::install_module(&zip),
@@ -345,7 +344,7 @@ pub fn run() -> Result<()> {
             Debug::Mount => {
                 modsys::init()?;
                 modsys::mount_systemless()
-            },
+            }
             // Xcp handled in ksu-modsys-overlay
             Debug::Test => assets::ensure_binaries(false),
         },

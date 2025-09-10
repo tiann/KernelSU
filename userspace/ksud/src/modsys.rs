@@ -1,12 +1,12 @@
 // Module System Interface - provides transparent forwarding to selected modsys implementation
 use anyhow::{Context, Result, bail};
-use log::{info, warn, debug};
+use log::{debug, info, warn};
+use serde_json::Value;
 use std::{
     fs,
     path::Path,
     process::{Command, ExitStatus},
 };
-use serde_json::Value;
 
 use crate::defs;
 
@@ -26,7 +26,10 @@ fn get_selected_modsys() -> String {
             }
         }
         Err(_) => {
-            debug!("modsys.selected not found, using default: {}", DEFAULT_MODSYS);
+            debug!(
+                "modsys.selected not found, using default: {}",
+                DEFAULT_MODSYS
+            );
             DEFAULT_MODSYS.to_string()
         }
     }
@@ -36,18 +39,18 @@ fn get_selected_modsys() -> String {
 fn get_modsys_binary_path() -> Result<String> {
     let selected = get_selected_modsys();
     let binary_path = format!("{}/{}", MODSYS_BINARY_DIR, selected);
-    
+
     if !Path::new(&binary_path).exists() {
         bail!("Selected modsys binary not found: {}", binary_path);
     }
-    
+
     Ok(binary_path)
 }
 
 /// Check if the selected modsys implementation is supported
 pub fn check_supported() -> Result<()> {
     let binary_path = get_modsys_binary_path()?;
-    
+
     let output = Command::new(&binary_path)
         .arg("--supported")
         .output()
@@ -59,8 +62,8 @@ pub fn check_supported() -> Result<()> {
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let response: Value = serde_json::from_str(&stdout)
-        .with_context(|| "Failed to parse modsys response")?;
+    let response: Value =
+        serde_json::from_str(&stdout).with_context(|| "Failed to parse modsys response")?;
 
     let code = response["code"].as_i64().unwrap_or(-1);
     let msg = response["msg"].as_str().unwrap_or("Unknown");
@@ -76,12 +79,15 @@ pub fn check_supported() -> Result<()> {
 /// Execute a modsys command and return the exit status
 fn execute_modsys_command(args: &[String]) -> Result<ExitStatus> {
     let binary_path = get_modsys_binary_path()?;
-    
+
     debug!("Executing modsys command: {} {:?}", binary_path, args);
-    
+
     let status = Command::new(&binary_path)
         .args(args)
-        .env("KSU_KERNEL_VER_CODE", ksu_core::ksucalls::get_version().to_string())
+        .env(
+            "KSU_KERNEL_VER_CODE",
+            ksu_core::ksucalls::get_version().to_string(),
+        )
         .env("KSU_VER", defs::VERSION_NAME)
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .status()
@@ -93,12 +99,12 @@ fn execute_modsys_command(args: &[String]) -> Result<ExitStatus> {
 /// Execute a modsys command and ensure it succeeds
 fn run_modsys_command(args: &[String]) -> Result<()> {
     let status = execute_modsys_command(args)?;
-    
+
     if !status.success() {
         let args_str = args.join(" ");
         bail!("Modsys command failed: {}", args_str);
     }
-    
+
     Ok(())
 }
 
