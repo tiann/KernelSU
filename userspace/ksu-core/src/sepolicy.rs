@@ -530,7 +530,7 @@ impl<'a> TryFrom<&'a TypeTransition<'a>> for Vec<AtomicStatement> {
             sepol2: perm.target.try_into()?,
             sepol3: perm.class.try_into()?,
             sepol4: perm.default_type.try_into()?,
-            sepol5: PolicyObject::None,
+            sepol5: perm.object_name.try_into()?,
             sepol6: PolicyObject::None,
             sepol7: PolicyObject::None,
         }])
