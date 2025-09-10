@@ -354,6 +354,7 @@ impl TryFrom<&str> for PolicyObject {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 #[derive(Debug, new)]
 struct AtomicStatement {
     cmd: u32,

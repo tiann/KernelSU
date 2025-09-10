@@ -33,7 +33,7 @@ pub fn create() -> Result<()> {
 
 pub fn clear() -> Result<()> {
     if Path::new(METAMODULE_SAFETY_FLAG).exists() {
-        let _ = fs::remove_file(METAMODULE_SAFETY_FLAG)?;
+        fs::remove_file(METAMODULE_SAFETY_FLAG)?;
     }
     Ok(())
 }

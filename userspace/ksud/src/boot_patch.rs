@@ -120,7 +120,9 @@ fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
     let re =
         Regex::new(r"(?:.* )?(\d+\.\d+)(?:\S+)?(android\d+)").context("Failed to compile regex")?;
     for s in printable_strings {
-        if let Some(caps) = re.captures(s) {
+        if let Some(caps) = re.captures(s)
+            && (caps.get(1), caps.get(2)) != (None, None)
+        {
             if let (Some(kernel_version), Some(android_version)) = (caps.get(1), caps.get(2)) {
                 let kmi = format!("{}-{}", android_version.as_str(), kernel_version.as_str());
                 return Ok(kmi);
@@ -491,10 +493,8 @@ fn do_patch(
             do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init init.real")?;
         }
         #[cfg(target_os = "android")]
-        if flash {
-            if let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
-                println!("- Backup stock image failed: {e}");
-            }
+        if flash && let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
+            println!("- Backup stock image failed: {e}");
         }
     }
 

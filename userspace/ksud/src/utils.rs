@@ -39,11 +39,11 @@ pub fn ensure_binary<T: AsRef<Path>>(
         )
     })?)?;
 
-    if let Err(e) = remove_file(path.as_ref()) {
-        if e.kind() != NotFound {
-            return Err(Error::from(e))
-                .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
-        }
+    if let Err(e) = remove_file(path.as_ref())
+        && e.kind() != NotFound
+    {
+        return Err(Error::from(e))
+            .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
     }
 
     write(&path, contents)?;
@@ -118,7 +118,7 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     println!("- Removing directories..");
     std::fs::remove_dir_all(defs::WORKING_DIR).ok();
     std::fs::remove_file(defs::DAEMON_PATH).ok();
-    // 卸载模块目录（若存在挂载）
+    // Unmount module directory if mounted
     #[cfg(any(target_os = "linux", target_os = "android"))]
     {
         use rustix::mount::{UnmountFlags, unmount};

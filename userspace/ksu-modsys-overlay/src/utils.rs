@@ -223,8 +223,8 @@ pub fn ensure_boot_completed() -> Result<()> {
     Ok(())
 }
 
-// 元模块安全机制标志：在 ksud 的 post-fs-data 创建、boot-completed 清理
-// 留存表示上次启动未完成，下一次应降级运行模块系统
+// Metamodule safety flag: created in ksud post-fs-data, cleared at boot-completed
+// Presence indicates last boot did not finish; next boot should downgrade module system
 pub fn check_metamodule_safety() -> bool {
     ksu_core::safety::exists()
 }

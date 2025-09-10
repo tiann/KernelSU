@@ -162,9 +162,6 @@ pub fn mount_systemless() -> Result<()> {
     run_modsys_command(&["mount".to_string(), "systemless".to_string()])
 }
 
-/// Run raw modsys command (for advanced usage)
-// pub fn run_raw removed: avoid exposing raw passthrough in release builds
-
 /// Initialize the modsys system - create default selection if not exists
 pub fn init() -> Result<()> {
     // Create modsys directories if they don't exist

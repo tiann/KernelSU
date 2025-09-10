@@ -21,8 +21,6 @@ pub fn run_stage(stage: &str) -> Result<()> {
 fn run_post_fs_data() -> Result<()> {
     info!("Running post-fs-data stage");
 
-    // 事件上报由 ksud 负责，这里不再上报 post-fs-data
-
     utils::umask(0);
 
     // Check for Magisk
@@ -56,9 +54,6 @@ fn run_post_fs_data() -> Result<()> {
     // we should clean the module mount point if it exists
     utils::ensure_clean_dir(module_dir)?;
 
-    // TODO: Ensure binaries - this will be handled by ksud
-    // assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
-
     if Path::new(module_update_img).exists() {
         if module_update_flag.exists() {
             // if modules_update.img exists, and the the flag indicate this is an update
@@ -83,7 +78,7 @@ fn run_post_fs_data() -> Result<()> {
     mount::AutoMountExt4::try_new(target_update_img, module_dir, false)
         .with_context(|| "mount module image failed".to_string())?;
 
-    // 上报模块镜像已挂载（仅此事件由 modsys 上报）
+    // Report module image mounted (only this event is reported by modsys)
     ksu_core::ksucalls::report_module_mounted();
 
     // if we are in safe mode, we should disable all modules
@@ -147,7 +142,7 @@ fn run_service() -> Result<()> {
 
 fn run_boot_completed() -> Result<()> {
     info!("Running boot-completed stage");
-    // 事件上报由 ksud 负责，这里不再上报 boot-completed
+    // Event reporting is handled by ksud; do not report boot-completed here
 
     let module_update_img = Path::new(defs::MODULE_UPDATE_IMG);
     let module_img = Path::new(defs::MODULE_IMG);

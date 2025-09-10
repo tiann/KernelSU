@@ -8,7 +8,10 @@ use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 
+use ksu_core::restorecon::{restore_syscon, setsyscon};
 use std::fs::OpenOptions;
+#[cfg(unix)]
+use std::os::unix::{fs::MetadataExt, prelude::PermissionsExt, process::CommandExt};
 use std::{
     collections::HashMap,
     env::var as env_var,
@@ -19,9 +22,6 @@ use std::{
     str::FromStr,
 };
 use zip_extensions::zip_extract_file_to_memory;
-
-#[cfg(unix)]
-use std::os::unix::{fs::MetadataExt, prelude::PermissionsExt, process::CommandExt};
 
 const INSTALLER_CONTENT: &str = include_str!("../assets/installer.sh");
 const INSTALL_MODULE_SCRIPT: &str = concatcp!(
@@ -253,10 +253,10 @@ pub fn prune_modules() -> Result<()> {
         info!("remove module: {}", module.display());
 
         let uninstaller = module.join("uninstall.sh");
-        if uninstaller.exists() {
-            if let Err(e) = exec_script(uninstaller, true) {
-                warn!("Failed to exec uninstaller: {e}");
-            }
+        if uninstaller.exists()
+            && let Err(e) = exec_script(uninstaller, true)
+        {
+            warn!("Failed to exec uninstaller: {e}");
         }
 
         if let Err(e) = remove_dir_all(module) {
@@ -308,8 +308,6 @@ fn _install_module(zip: &str) -> Result<()> {
 
     // print banner
     println!("{}", ksu_core::banner::BANNER);
-
-    // TODO: ensure binaries are available - this will be handled by ksud
 
     // first check if workding dir is usable
     ensure_dir_exists(defs::WORKING_DIR).with_context(|| "Failed to create working dir")?;
@@ -430,8 +428,7 @@ fn _install_module(zip: &str) -> Result<()> {
 
     info!("mounted {tmp_module_img} to {module_update_tmp_dir}");
 
-    // TODO: Set selinux context - will be handled by ksud
-    // setsyscon(module_update_tmp_dir)?;
+    setsyscon(module_update_tmp_dir)?;
 
     let module_dir = format!("{module_update_tmp_dir}/{module_id}");
     ensure_clean_dir(&module_dir)?;
@@ -447,7 +444,7 @@ fn _install_module(zip: &str) -> Result<()> {
     if module_system_dir.exists() {
         #[cfg(unix)]
         set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
-        // TODO: restore_syscon(&module_system_dir)?; - will be handled by ksud
+        restore_syscon(&module_system_dir)?;
     }
 
     exec_install_script(zip)?;

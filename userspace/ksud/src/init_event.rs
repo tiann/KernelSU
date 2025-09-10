@@ -4,8 +4,6 @@ use std::path::Path;
 
 use crate::{assets, defs, modsys, utils};
 
-// 通过 modsys 执行挂载逻辑，ksud 无需再保留重复实现
-
 pub fn on_post_data_fs() -> Result<()> {
     ksu_core::ksucalls::report_post_fs_data();
 
@@ -83,7 +81,6 @@ pub fn on_boot_completed() -> Result<()> {
 }
 
 /// New metamodule safety mode implementation - moved to ksu-core::safety
-
 #[cfg(unix)]
 fn catch_bootlog(logname: &str, command: Vec<&str>) -> Result<()> {
     use std::os::unix::process::CommandExt;
