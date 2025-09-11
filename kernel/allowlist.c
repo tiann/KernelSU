@@ -16,6 +16,7 @@
 #include "kernel_compat.h"
 #include "allowlist.h"
 #include "manager.h"
+#include "throne_tracker.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 3 // u32
@@ -127,6 +128,7 @@ bool ksu_get_app_profile(struct app_profile *profile)
 	struct list_head *pos = NULL;
 	bool found = false;
 
+	mutex_lock(&allowlist_mutex);
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		bool uid_match = profile->current_uid == p->profile.current_uid;
@@ -138,7 +140,19 @@ bool ksu_get_app_profile(struct app_profile *profile)
 		}
 	}
 
+	if (!found && profile->key[0] != '\0') {
+		uid_t uid;
+		if (get_uid_from_data_dir(profile->key, &uid)) {
+			profile->current_uid = uid;
+			if (ksu_is_allow_uid(uid)) {
+				profile->allow_su = true;
+				found = true;
+			}
+		}
+	}
+
 exit:
+	mutex_unlock(&allowlist_mutex);
 	return found;
 }
 
@@ -183,6 +197,17 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
 		return false;
 	}
 
+	mutex_lock(&allowlist_mutex);
+
+	if (profile->current_uid == 0 && profile->key[0] != '\0') {
+		uid_t uid;
+		if (get_uid_from_data_dir(profile->key, &uid)) {
+			profile->current_uid = uid;
+			pr_info("Retrieved UID %d for package %s from user data directory\n", 
+				uid, profile->key);
+		}
+	}
+
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		// both uid and package must match, otherwise it will break multiple package with different user id
@@ -199,7 +224,8 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
 	p = (struct perm_data *)kmalloc(sizeof(struct perm_data), GFP_KERNEL);
 	if (!p) {
 		pr_err("ksu_set_app_profile alloc failed\n");
-		return false;
+		result = false;
+		goto out_unlock;
 	}
 
 	memcpy(&p->profile, profile, sizeof(*profile));
@@ -230,7 +256,8 @@ out:
 			if (allow_list_pointer >= ARRAY_SIZE(allow_list_arr)) {
 				pr_err("too many apps registered\n");
 				WARN_ON(1);
-				return false;
+				result = false;
+				goto out_unlock;
 			}
 			allow_list_arr[allow_list_pointer++] = profile->current_uid;
 		} else {
@@ -252,7 +279,10 @@ out:
 		       sizeof(default_root_profile));
 	}
 
-	if (persist)
+out_unlock:
+	mutex_unlock(&allowlist_mutex);
+
+	if (persist && result)
 		persistent_allow_list();
 
 	return result;
@@ -319,14 +349,17 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 
+	mutex_lock(&allowlist_mutex);
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		if (uid == p->profile.current_uid && p->profile.allow_su) {
 			if (!p->profile.rp_config.use_default) {
+				mutex_unlock(&allowlist_mutex);
 				return &p->profile.rp_config.profile;
 			}
 		}
 	}
+	mutex_unlock(&allowlist_mutex);
 
 	// use default profile
 	return &default_root_profile;
@@ -337,6 +370,8 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
 	struct perm_data *p = NULL;
 	struct list_head *pos = NULL;
 	int i = 0;
+	
+	mutex_lock(&allowlist_mutex);
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		// pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
@@ -345,6 +380,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
 		}
 	}
 	*length = i;
+	mutex_unlock(&allowlist_mutex);
 
 	return true;
 }
@@ -377,6 +413,7 @@ void do_save_allow_list(struct work_struct *work)
 		goto exit;
 	}
 
+	mutex_lock(&allowlist_mutex);
 	list_for_each (pos, &allow_list) {
 		p = list_entry(pos, struct perm_data, list);
 		pr_info("save allow list, name: %s uid :%d, allow: %d\n",
@@ -386,6 +423,7 @@ void do_save_allow_list(struct work_struct *work)
 		ksu_kernel_write_compat(fp, &p->profile, sizeof(p->profile),
 					&off);
 	}
+	mutex_unlock(&allowlist_mutex);
 
 exit:
 	filp_close(fp, 0);
@@ -398,6 +436,7 @@ void do_load_allow_list(struct work_struct *work)
 	struct file *fp = NULL;
 	u32 magic;
 	u32 version;
+	bool fallback_to_user_data = false;
 
 #ifdef CONFIG_KSU_DEBUG
 	// always allow adb shell by default
@@ -408,7 +447,8 @@ void do_load_allow_list(struct work_struct *work)
 	fp = ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
-		return;
+		fallback_to_user_data = true;
+		goto fallback;
 	}
 
 	// verify magic
@@ -416,12 +456,14 @@ void do_load_allow_list(struct work_struct *work)
 		    sizeof(magic) ||
 	    magic != FILE_MAGIC) {
 		pr_err("allowlist file invalid: %d!\n", magic);
+		fallback_to_user_data = true;
 		goto exit;
 	}
 
 	if (ksu_kernel_read_compat(fp, &version, sizeof(version), &off) !=
 	    sizeof(version)) {
 		pr_err("allowlist read version: %d failed\n", version);
+		fallback_to_user_data = true;
 		goto exit;
 	}
 
@@ -437,15 +479,37 @@ void do_load_allow_list(struct work_struct *work)
 			pr_info("load_allow_list read err: %zd\n", ret);
 			break;
 		}
+		
+		if (profile.current_uid == 0 && profile.key[0] != '\0') {
+			uid_t uid;
+			if (get_uid_from_data_dir(profile.key, &uid)) {
+				if (uid != profile.current_uid) {
+					pr_info("Updated UID for %s: %d -> %d\n", 
+						profile.key, profile.current_uid, uid);
+					profile.current_uid = uid;
+				}
+			}
+		}
 
 		pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n",
 			profile.key, profile.current_uid, profile.allow_su);
 		ksu_set_app_profile(&profile, false);
 	}
 
+	goto show_list;
+
+fallback:
+	if (fallback_to_user_data) {
+		pr_info("Fallback: scanning user data directory for UID information\n");
+		rescan_allowlist_from_user_data();
+	}
+
 exit:
+	if (fp && !IS_ERR(fp))
+		filp_close(fp, 0);
+
+show_list:
 	ksu_show_allow_list();
-	filp_close(fp, 0);
 }
 
 void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data)
@@ -461,21 +525,56 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 		char *package = np->profile.key;
 		// we use this uid for special cases, don't prune it!
 		bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID;
-		if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
+		
+		bool uid_valid_in_packages = is_uid_valid ? is_uid_valid(uid, package, data) : true;
+		bool uid_valid_in_userdata = false;
+		
+		if (!is_preserved_uid && package[0] != '\0') {
+			uid_t current_uid;
+			if (get_uid_from_data_dir(package, &current_uid)) {
+				uid_valid_in_userdata = true;
+				if (current_uid != uid) {
+					pr_info("UID changed for package %s: %d -> %d\n", 
+						package, uid, current_uid);
+					np->profile.current_uid = current_uid;
+					
+					if (uid <= BITMAP_UID_MAX) {
+						allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
+					} else {
+						remove_uid_from_arr(uid);
+					}
+					
+					uid = current_uid;
+					if (uid <= BITMAP_UID_MAX) {
+						if (np->profile.allow_su)
+							allow_list_bitmap[uid / BITS_PER_BYTE] |= 1 << (uid % BITS_PER_BYTE);
+					} else {
+						if (np->profile.allow_su) {
+							if (allow_list_pointer < ARRAY_SIZE(allow_list_arr)) {
+								allow_list_arr[allow_list_pointer++] = uid;
+							}
+						}
+					}
+					modified = true;
+				}
+			}
+		}
+		
+		if (!is_preserved_uid && !uid_valid_in_packages && !uid_valid_in_userdata) {
 			modified = true;
-			pr_info("prune uid: %d, package: %s\n", uid, package);
+			pr_info("prune uid: %d, package: %s (not found in packages list and user data)\n", uid, package);
 			list_del(&np->list);
 			if (likely(uid <= BITMAP_UID_MAX)) {
 				allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
 			}
 			remove_uid_from_arr(uid);
-			smp_mb();
 			kfree(np);
 		}
 	}
 	mutex_unlock(&allowlist_mutex);
 
 	if (modified) {
+		smp_mb();
 		persistent_allow_list();
 	}
 }

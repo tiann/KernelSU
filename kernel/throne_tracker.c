@@ -5,6 +5,8 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#include <linux/stat.h>
+#include <linux/namei.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -16,11 +18,27 @@
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
+#define USER_DATA_PATH "/data/user_de/0"
+#define USER_DATA_PATH_LEN 256
+
+static bool is_uid_exist(uid_t uid, char *package, void *data);
+void search_manager(const char *path, int depth, struct list_head *uid_data);
 
 struct uid_data {
 	struct list_head list;
 	u32 uid;
 	char package[KSU_MAX_PACKAGE_NAME];
+};
+
+struct uid_scan_stats {
+	size_t total_found;
+	size_t errors_encountered;
+};
+
+struct user_data_context {
+	struct dir_context ctx;
+	struct list_head *uid_list;
+	struct uid_scan_stats *stats;
 };
 
 static int get_pkg_from_apk_path(char *pkg, const char *path)
@@ -92,6 +110,236 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 	}
 }
 
+// https://docs.kernel.org/filesystems/porting.html
+// filldir_t (readdir callbacks) calling conventions have changed. Instead of returning 0 or -E... it returns bool now. false means "no more" (as -E... used to) and true - "keep going" (as 0 in old calling conventions). Rationale: callers never looked at specific -E... values anyway. -> iterate_shared() instances require no changes at all, all filldir_t ones in the tree converted.
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
+#define FILLDIR_RETURN_TYPE bool
+#define FILLDIR_ACTOR_CONTINUE true
+#define FILLDIR_ACTOR_STOP false
+#else
+#define FILLDIR_RETURN_TYPE int
+#define FILLDIR_ACTOR_CONTINUE 0
+#define FILLDIR_ACTOR_STOP -EINVAL
+#endif
+
+FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
+				     int namelen, loff_t off, u64 ino,
+				     unsigned int d_type)
+{
+	struct user_data_context *my_ctx = 
+		container_of(ctx, struct user_data_context, ctx);
+	
+	if (!my_ctx || !my_ctx->uid_list) {
+		return FILLDIR_ACTOR_STOP;
+	}
+
+	if (!strncmp(name, "..", namelen) || !strncmp(name, ".", namelen))
+		return FILLDIR_ACTOR_CONTINUE;
+
+	if (d_type != DT_DIR)
+		return FILLDIR_ACTOR_CONTINUE;
+
+	if (namelen >= KSU_MAX_PACKAGE_NAME) {
+		pr_warn("Package name too long: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	char package_path[USER_DATA_PATH_LEN];
+	if (snprintf(package_path, sizeof(package_path), "%s/%.*s", 
+		     USER_DATA_PATH, namelen, name) >= sizeof(package_path)) {
+		pr_err("Path too long for package: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	struct path path;
+	int err = kern_path(package_path, LOOKUP_FOLLOW, &path);
+	if (err) {
+		pr_debug("Package path lookup failed: %s (err: %d)\n", package_path, err);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	struct kstat stat;
+	err = vfs_getattr(&path, &stat, STATX_UID, AT_STATX_SYNC_AS_STAT);
+	path_put(&path);
+	
+	if (err) {
+		pr_debug("Failed to get attributes for: %s (err: %d)\n", package_path, err);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	uid_t uid = from_kuid(&init_user_ns, stat.uid);
+	if (uid == (uid_t)-1) {
+		pr_warn("Invalid UID for package: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+	if (!data) {
+		pr_err("Failed to allocate memory for package: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	data->uid = uid;
+	strncpy(data->package, name, min(namelen, KSU_MAX_PACKAGE_NAME - 1));
+	data->package[min(namelen, KSU_MAX_PACKAGE_NAME - 1)] = '\0';
+	
+	list_add_tail(&data->list, my_ctx->uid_list);
+	
+	if (my_ctx->stats)
+		my_ctx->stats->total_found++;
+	
+	pr_debug("Found package: %s, uid: %u\n", data->package, data->uid);
+	
+	return FILLDIR_ACTOR_CONTINUE;
+}
+
+int scan_user_data_for_uids(struct list_head *uid_list)
+{
+	struct file *dir_file;
+	struct uid_scan_stats stats = {0};
+	int ret = 0;
+	
+	if (!uid_list) {
+		return -EINVAL;
+	}
+
+	dir_file = ksu_filp_open_compat(USER_DATA_PATH, O_RDONLY, 0);
+	if (IS_ERR(dir_file)) {
+		pr_err("Failed to open %s: %ld\n", USER_DATA_PATH, PTR_ERR(dir_file));
+		return PTR_ERR(dir_file);
+	}
+
+	struct user_data_context ctx = {
+		.ctx.actor = user_data_actor,
+		.uid_list = uid_list,
+		.stats = &stats
+	};
+
+	ret = iterate_dir(dir_file, &ctx.ctx);
+	filp_close(dir_file, NULL);
+
+	if (stats.errors_encountered > 0) {
+		pr_warn("Encountered %zu errors while scanning user data directory\n", 
+			stats.errors_encountered);
+	}
+
+	pr_info("Scanned user data directory, found %zu packages with %zu errors\n", 
+		stats.total_found, stats.errors_encountered);
+
+	return ret;
+}
+
+bool get_uid_from_data_dir(const char *package_name, uid_t *uid)
+{
+	char package_path[USER_DATA_PATH_LEN];
+	struct path path;
+	struct kstat stat;
+	int err;
+
+	if (!package_name || !uid) {
+		return false;
+	}
+
+	if (snprintf(package_path, sizeof(package_path), "%s/%s", 
+		     USER_DATA_PATH, package_name) >= sizeof(package_path)) {
+		pr_err("Package path too long: %s\n", package_name);
+		return false;
+	}
+
+	err = kern_path(package_path, LOOKUP_FOLLOW, &path);
+	if (err) {
+		pr_debug("Package directory not found: %s (err: %d)\n", package_path, err);
+		return false;
+	}
+
+	err = vfs_getattr(&path, &stat, STATX_UID, AT_STATX_SYNC_AS_STAT);
+	path_put(&path);
+	
+	if (err) {
+		pr_warn("Failed to get stat for: %s (err: %d)\n", package_path, err);
+		return false;
+	}
+
+	*uid = from_kuid(&init_user_ns, stat.uid);
+	if (*uid == (uid_t)-1) {
+		pr_warn("Invalid UID for package: %s\n", package_name);
+		return false;
+	}
+
+	pr_debug("Package %s has UID: %u\n", package_name, *uid);
+	return true;
+}
+
+void rescan_allowlist_from_user_data(void)
+{
+	struct list_head uid_list;
+	INIT_LIST_HEAD(&uid_list);
+
+	int ret = scan_user_data_for_uids(&uid_list);
+	if (ret < 0) {
+		pr_err("Failed to scan user data for UIDs: %d\n", ret);
+		return;
+	}
+
+	bool manager_exist = false;
+	bool dynamic_manager_exist = false;
+	struct uid_data *np;
+	size_t uid_count = list_count_nodes(&uid_list);
+
+	pr_info("Rescanning allowlist with %zu packages\n", uid_count);
+
+	list_for_each_entry(np, &uid_list, list) {
+		int manager_uid = ksu_get_manager_uid() % 100000;
+		if (np->uid == manager_uid) {
+			manager_exist = true;
+			break;
+		}
+	}
+
+	if (!dynamic_manager_exist && ksu_is_dynamic_manager_enabled()) {
+		list_for_each_entry(np, &uid_list, list) {
+			if (ksu_is_any_manager(np->uid) && np->uid != ksu_get_manager_uid()) {
+				dynamic_manager_exist = true;
+				break;
+			}
+		}
+	}
+
+	if (!manager_exist) {
+		if (ksu_is_manager_uid_valid()) {
+			pr_info("Manager is uninstalled, invalidate it!\n");
+			ksu_invalidate_manager_uid();
+		}
+		pr_info("Searching manager in /data/app...\n");
+		search_manager("/data/app", 2, &uid_list);
+		pr_info("Search manager finished\n");
+	} else if (!dynamic_manager_exist && ksu_is_dynamic_manager_enabled()) {
+		pr_info("Dynamic sign enabled, searching manager...\n");
+		search_manager("/data/app", 2, &uid_list);
+		pr_info("Search dynamic sign manager finished\n");
+	}
+
+	ksu_prune_allowlist(is_uid_exist, &uid_list);
+
+	struct uid_data *n;
+	list_for_each_entry_safe(np, n, &uid_list, list) {
+		list_del(&np->list);
+		kfree(np);
+	}
+}
+
 #define DATA_PATH_LEN 384 // 384 is enough for /data/app/<package>/base.apk
 
 struct data_path {
@@ -116,17 +364,6 @@ struct my_dir_context {
 	int depth;
 	int *stop;
 };
-// https://docs.kernel.org/filesystems/porting.html
-// filldir_t (readdir callbacks) calling conventions have changed. Instead of returning 0 or -E... it returns bool now. false means "no more" (as -E... used to) and true - "keep going" (as 0 in old calling conventions). Rationale: callers never looked at specific -E... values anyway. -> iterate_shared() instances require no changes at all, all filldir_t ones in the tree converted.
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
-#define FILLDIR_RETURN_TYPE bool
-#define FILLDIR_ACTOR_CONTINUE true
-#define FILLDIR_ACTOR_STOP false
-#else
-#define FILLDIR_RETURN_TYPE int
-#define FILLDIR_ACTOR_CONTINUE 0
-#define FILLDIR_ACTOR_STOP -EINVAL
-#endif
 
 FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 			     int namelen, loff_t off, u64 ino,
@@ -214,6 +451,9 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 	struct list_head data_path_list;
 	INIT_LIST_HEAD(&data_path_list);
 	unsigned long data_app_magic = 0;
+	size_t uid_count = list_count_nodes(uid_data);
+	
+	pr_debug("Starting manager search in %s with %zu UIDs\n", path, uid_count);
 	
 	// Initialize APK cache list
 	struct apk_path_hash *pos, *n;
@@ -301,60 +541,77 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 
 void track_throne()
 {
-	struct file *fp =
-		ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
-	if (IS_ERR(fp)) {
-		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
-		       __func__, PTR_ERR(fp));
-		return;
-	}
-
 	struct list_head uid_list;
 	INIT_LIST_HEAD(&uid_list);
 
-	char chr = 0;
-	loff_t pos = 0;
-	loff_t line_start = 0;
-	char buf[KSU_MAX_PACKAGE_NAME];
-	for (;;) {
-		ssize_t count =
-			ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
-		if (count != sizeof(chr))
-			break;
-		if (chr != '\n')
-			continue;
-
-		count = ksu_kernel_read_compat(fp, buf, sizeof(buf),
-					       &line_start);
-
-		struct uid_data *data =
-			kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
-		if (!data) {
-			filp_close(fp, 0);
+	pr_info("Starting UID scan from user data directory\n");
+	int ret = scan_user_data_for_uids(&uid_list);
+	size_t uid_count;
+	
+	if (ret < 0) {
+		pr_warn("Failed to scan user data directory (%d), falling back to packages.list\n", ret);
+		
+		// fallback to packages.list method
+		struct file *fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+		if (IS_ERR(fp)) {
+			pr_err("Both user data scan and packages.list failed: %ld\n", PTR_ERR(fp));
 			goto out;
 		}
 
-		char *tmp = buf;
-		const char *delim = " ";
-		char *package = strsep(&tmp, delim);
-		char *uid = strsep(&tmp, delim);
-		if (!uid || !package) {
-			pr_err("update_uid: package or uid is NULL!\n");
-			break;
-		}
+		char chr = 0;
+		loff_t pos = 0;
+		loff_t line_start = 0;
+		char buf[KSU_MAX_PACKAGE_NAME];
+		size_t fallback_count = 0;
+		
+		for (;;) {
+			ssize_t count =
+				ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
+			if (count != sizeof(chr))
+				break;
+			if (chr != '\n')
+				continue;
 
-		u32 res;
-		if (kstrtou32(uid, 10, &res)) {
-			pr_err("update_uid: uid parse err\n");
-			break;
+			count = ksu_kernel_read_compat(fp, buf, sizeof(buf),
+						       &line_start);
+
+			struct uid_data *data =
+				kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+			if (!data) {
+				filp_close(fp, 0);
+				goto out;
+			}
+
+			char *tmp = buf;
+			const char *delim = " ";
+			char *package = strsep(&tmp, delim);
+			char *uid = strsep(&tmp, delim);
+			if (!uid || !package) {
+				pr_err("update_uid: package or uid is NULL!\n");
+				kfree(data);
+				break;
+			}
+
+			u32 res;
+			if (kstrtou32(uid, 10, &res)) {
+				pr_err("update_uid: uid parse err\n");
+				kfree(data);
+				break;
+			}
+			data->uid = res;
+			strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
+			list_add_tail(&data->list, &uid_list);
+			fallback_count++;
+			
+			// reset line start
+			line_start = pos;
 		}
-		data->uid = res;
-		strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
-		list_add_tail(&data->list, &uid_list);
-		// reset line start
-		line_start = pos;
+		filp_close(fp, 0);
+		pr_info("Loaded %zu packages from packages.list fallback\n", fallback_count);
+	} else {
+		uid_count = list_count_nodes(&uid_list);
+		pr_info("Successfully loaded %zu packages from user data directory\n", uid_count);
 	}
-	filp_close(fp, 0);
 
 	// now update uid list
 	struct uid_data *np;

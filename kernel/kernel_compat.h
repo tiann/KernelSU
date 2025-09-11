@@ -5,6 +5,30 @@
 #include <linux/version.h>
 #include "ss/policydb.h"
 #include "linux/key.h"
+#include <linux/list.h>
+
+/**
+ * list_count_nodes - count the number of nodes in a list
+ * the head of the list
+ * 
+ * Returns the number of nodes in the list
+ */
+#ifndef list_count_nodes
+static inline size_t list_count_nodes(struct list_head *head)
+{
+	struct list_head *pos;
+	size_t count = 0;
+	
+	if (!head)
+		return 0;
+		
+	list_for_each(pos, head) {
+		count++;
+	}
+	
+	return count;
+}
+#endif
 
 /*
  * Adapt to Huawei HISI kernel without affecting other kernels ,
