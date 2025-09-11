@@ -203,25 +203,48 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 		return 0;
 	}
 
+	char old_path[128];
+	char new_path[128];
+	char *old_buf = dentry_path_raw(old_dentry, old_path, sizeof(old_path));
+	char *new_buf = dentry_path_raw(new_dentry, new_path, sizeof(new_path));
+
+	if (IS_ERR(old_buf) || IS_ERR(new_buf)) {
+		return 0;
+	}
+
 	// /data/system/packages.list.tmp -> /data/system/packages.list
-	if (strcmp(new_dentry->d_iname, "packages.list")) {
+	if (strcmp(new_dentry->d_iname, "packages.list") == 0) {
+		if (strstr(new_buf, "/system/packages.list")) {
+			pr_info("renameat: %s -> %s, new path: %s\n", 
+				old_dentry->d_iname, new_dentry->d_iname, new_buf);
+			track_throne();
+			return 0;
+		}
+	}
+
+	if (strstr(old_buf, ".allowlist") || strstr(new_buf, ".allowlist")) {
+		pr_info("allowlist renameat: %s -> %s\n", old_buf, new_buf);
+		
+		if (strstr(new_buf, ".allowlist") && !strstr(new_buf, ".tmp")) {
+			pr_info("allowlist file finalized: %s\n", new_buf);
+			
+			schedule_timeout_uninterruptible(msecs_to_jiffies(100));
+			
+			if (!ksu_load_allow_list()) {
+				pr_warn("Failed to reload allowlist after rename\n");
+				rescan_allowlist_from_user_data();
+			}
+		}
 		return 0;
 	}
 
-	char path[128];
-	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
-	if (IS_ERR(buf)) {
-		pr_err("dentry_path_raw failed.\n");
+	if (strstr(new_buf, "/data/system/") && 
+	    (strstr(new_buf, "packages") || strstr(new_buf, "users"))) {
+		pr_info("System file renamed: %s -> %s\n", old_buf, new_buf);
+		
+		rescan_allowlist_from_user_data();
 		return 0;
 	}
-
-	if (!strstr(buf, "/system/packages.list")) {
-		return 0;
-	}
-	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
-		new_dentry->d_iname, buf);
-
-	track_throne();
 
 	return 0;
 }
