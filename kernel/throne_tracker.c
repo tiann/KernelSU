@@ -5,6 +5,8 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#include <linux/stat.h>
+#include <linux/namei.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -16,6 +18,8 @@
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
+#define USER_DATA_PATH "/data/user_de/0"
+#define USER_DATA_PATH_LEN 256
 
 struct uid_data {
 	struct list_head list;
@@ -127,6 +131,136 @@ struct my_dir_context {
 #define FILLDIR_ACTOR_CONTINUE 0
 #define FILLDIR_ACTOR_STOP -EINVAL
 #endif
+
+struct uid_scan_stats {
+	size_t total_found;
+	size_t errors_encountered;
+};
+
+struct user_data_context {
+	struct dir_context ctx;
+	struct list_head *uid_list;
+	struct uid_scan_stats *stats;
+};
+
+FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
+				     int namelen, loff_t off, u64 ino,
+				     unsigned int d_type)
+{
+	struct user_data_context *my_ctx = 
+		container_of(ctx, struct user_data_context, ctx);
+	
+	if (!my_ctx || !my_ctx->uid_list) {
+		return FILLDIR_ACTOR_STOP;
+	}
+
+	if (!strncmp(name, "..", namelen) || !strncmp(name, ".", namelen))
+		return FILLDIR_ACTOR_CONTINUE;
+
+	if (d_type != DT_DIR)
+		return FILLDIR_ACTOR_CONTINUE;
+
+	if (namelen >= KSU_MAX_PACKAGE_NAME) {
+		pr_warn("Package name too long: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	char package_path[USER_DATA_PATH_LEN];
+	if (snprintf(package_path, sizeof(package_path), "%s/%.*s", 
+		     USER_DATA_PATH, namelen, name) >= sizeof(package_path)) {
+		pr_err("Path too long for package: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	struct path path;
+	int err = kern_path(package_path, LOOKUP_FOLLOW, &path);
+	if (err) {
+		pr_debug("Package path lookup failed: %s (err: %d)\n", package_path, err);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	struct kstat stat;
+	err = vfs_getattr(&path, &stat, STATX_UID, AT_STATX_SYNC_AS_STAT);
+	path_put(&path);
+	
+	if (err) {
+		pr_debug("Failed to get attributes for: %s (err: %d)\n", package_path, err);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	uid_t uid = from_kuid(&init_user_ns, stat.uid);
+	if (uid == (uid_t)-1) {
+		pr_warn("Invalid UID for package: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+	if (!data) {
+		pr_err("Failed to allocate memory for package: %.*s\n", namelen, name);
+		if (my_ctx->stats)
+			my_ctx->stats->errors_encountered++;
+		return FILLDIR_ACTOR_CONTINUE;
+	}
+
+	data->uid = uid;
+	strncpy(data->package, name, min(namelen, KSU_MAX_PACKAGE_NAME - 1));
+	data->package[min(namelen, KSU_MAX_PACKAGE_NAME - 1)] = '\0';
+	
+	list_add_tail(&data->list, my_ctx->uid_list);
+	
+	if (my_ctx->stats)
+		my_ctx->stats->total_found++;
+	
+	pr_info("UserDE UID: Found package: %s, uid: %u\n", data->package, data->uid);
+	
+	return FILLDIR_ACTOR_CONTINUE;
+}
+
+int scan_user_data_for_uids(struct list_head *uid_list)
+{
+	struct file *dir_file;
+	struct uid_scan_stats stats = {0};
+	int ret = 0;
+	
+	if (!uid_list) {
+		return -EINVAL;
+	}
+
+	dir_file = ksu_filp_open_compat(USER_DATA_PATH, O_RDONLY, 0);
+	if (IS_ERR(dir_file)) {
+		pr_err("UserDE UID: Failed to open %s: %ld\n", USER_DATA_PATH, PTR_ERR(dir_file));
+		return PTR_ERR(dir_file);
+	}
+
+	struct user_data_context ctx = {
+		.ctx.actor = user_data_actor,
+		.uid_list = uid_list,
+		.stats = &stats
+	};
+
+	ret = iterate_dir(dir_file, &ctx.ctx);
+	filp_close(dir_file, NULL);
+
+	if (stats.errors_encountered > 0) {
+		pr_warn("Encountered %zu errors while scanning user data directory\n", 
+			stats.errors_encountered);
+	}
+
+	pr_info("UserDE UID: Scanned user data directory, found %zu packages with %zu errors\n", 
+		stats.total_found, stats.errors_encountered);
+
+	return ret;
+}
 
 FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 			     int namelen, loff_t off, u64 ino,
@@ -301,60 +435,77 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 
 void track_throne()
 {
-	struct file *fp =
-		ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
-	if (IS_ERR(fp)) {
-		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
-		       __func__, PTR_ERR(fp));
-		return;
-	}
-
 	struct list_head uid_list;
 	INIT_LIST_HEAD(&uid_list);
 
-	char chr = 0;
-	loff_t pos = 0;
-	loff_t line_start = 0;
-	char buf[KSU_MAX_PACKAGE_NAME];
-	for (;;) {
-		ssize_t count =
-			ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
-		if (count != sizeof(chr))
-			break;
-		if (chr != '\n')
-			continue;
-
-		count = ksu_kernel_read_compat(fp, buf, sizeof(buf),
-					       &line_start);
-
-		struct uid_data *data =
-			kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
-		if (!data) {
-			filp_close(fp, 0);
+	pr_info("Starting UID scan from user data directory\n");
+	int ret = scan_user_data_for_uids(&uid_list);
+	size_t uid_count;
+	
+	if (ret < 0) {
+		pr_warn("Failed to scan user data directory (%d), falling back to packages.list\n", ret);
+		
+		// fallback to packages.list method
+		struct file *fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
+		if (IS_ERR(fp)) {
+			pr_err("Both user data scan and packages.list failed: %ld\n", PTR_ERR(fp));
 			goto out;
 		}
 
-		char *tmp = buf;
-		const char *delim = " ";
-		char *package = strsep(&tmp, delim);
-		char *uid = strsep(&tmp, delim);
-		if (!uid || !package) {
-			pr_err("update_uid: package or uid is NULL!\n");
-			break;
-		}
+		char chr = 0;
+		loff_t pos = 0;
+		loff_t line_start = 0;
+		char buf[KSU_MAX_PACKAGE_NAME];
+		size_t fallback_count = 0;
+		
+		for (;;) {
+			ssize_t count =
+				ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
+			if (count != sizeof(chr))
+				break;
+			if (chr != '\n')
+				continue;
 
-		u32 res;
-		if (kstrtou32(uid, 10, &res)) {
-			pr_err("update_uid: uid parse err\n");
-			break;
+			count = ksu_kernel_read_compat(fp, buf, sizeof(buf),
+						       &line_start);
+
+			struct uid_data *data =
+				kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+			if (!data) {
+				filp_close(fp, 0);
+				goto out;
+			}
+
+			char *tmp = buf;
+			const char *delim = " ";
+			char *package = strsep(&tmp, delim);
+			char *uid = strsep(&tmp, delim);
+			if (!uid || !package) {
+				pr_err("update_uid: package or uid is NULL!\n");
+				kfree(data);
+				break;
+			}
+
+			u32 res;
+			if (kstrtou32(uid, 10, &res)) {
+				pr_err("update_uid: uid parse err\n");
+				kfree(data);
+				break;
+			}
+			data->uid = res;
+			strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
+			list_add_tail(&data->list, &uid_list);
+			fallback_count++;
+			
+			// reset line start
+			line_start = pos;
 		}
-		data->uid = res;
-		strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
-		list_add_tail(&data->list, &uid_list);
-		// reset line start
-		line_start = pos;
+		filp_close(fp, 0);
+		pr_info("Loaded %zu packages from packages.list fallback\n", fallback_count);
+	} else {
+		uid_count = list_count_nodes(&uid_list);
+		pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", uid_count);
 	}
-	filp_close(fp, 0);
 
 	// now update uid list
 	struct uid_data *np;
