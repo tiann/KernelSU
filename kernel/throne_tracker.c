@@ -213,8 +213,9 @@ FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
 	}
 
 	data->uid = uid;
-	strncpy(data->package, name, min(namelen, KSU_MAX_PACKAGE_NAME - 1));
-	data->package[min(namelen, KSU_MAX_PACKAGE_NAME - 1)] = '\0';
+	size_t copy_len = min(namelen, KSU_MAX_PACKAGE_NAME - 1);
+	strncpy(data->package, name, copy_len);
+	data->package[copy_len] = '\0';
 	
 	list_add_tail(&data->list, my_ctx->uid_list);
 	
@@ -503,8 +504,7 @@ void track_throne()
 		filp_close(fp, 0);
 		pr_info("Loaded %zu packages from packages.list fallback\n", fallback_count);
 	} else {
-		uid_count = list_count_nodes(&uid_list);
-		pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", uid_count);
+		pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", list_count_nodes(&uid_list));
 	}
 
 	// now update uid list
