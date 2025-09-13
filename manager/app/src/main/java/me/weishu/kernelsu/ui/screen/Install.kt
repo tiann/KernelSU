@@ -259,8 +259,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         onConfirm = {
             selectedOption = InstallMethod.DirectInstallToInactiveSlot
             onSelected(InstallMethod.DirectInstallToInactiveSlot)
-        },
-        onDismiss = null
+        }
     )
     val dialogTitle = stringResource(id = android.R.string.dialog_alert_title)
     val dialogContent = stringResource(id = R.string.install_inactive_slot_warning)
