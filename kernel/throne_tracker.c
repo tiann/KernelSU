@@ -18,8 +18,8 @@
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
 #define USER_DATA_BASE_PATH "/data/user_de"
-#define USER_DATA_LEGACY_BASE_PATH "/data/user"
-#define USER_DATA_PATH_LEN 256 // 256 is enough for /data/user_de/{userid}/<package>
+#define MAX_SUPPORTED_USERS 32 // Supports up to 32 users
+#define USER_DATA_PATH_LEN 384 // 384 is enough for /data/user_de/{userid}/<package>
 #define MAX_ANDROID_USER_ID 999
 #define MIN_ANDROID_USER_ID 0
 
@@ -99,7 +99,7 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 	list_for_each_entry (np, list, list) {
 		if (strncmp(np->package, pkg, KSU_MAX_PACKAGE_NAME) == 0) {
 			pr_info("Crowning manager: %s(uid=%d)\n", pkg, np->uid);
-			ksu_set_manager_uid(np->uid);
+				ksu_set_manager_uid(np->uid);
 			break;
 		}
 	}
@@ -154,45 +154,43 @@ struct user_data_context {
 // Retrieve a list of all active Android user IDs in the system
 static int get_active_user_ids(uid_t *user_ids, size_t max_users, size_t *found_users)
 {
-	struct file *dir_file;
-	struct dir_context ctx __maybe_unused = {0};
-	int ret = 0;
-	size_t count = 0;
-	
-	*found_users = 0;
-	
-	dir_file = ksu_filp_open_compat(USER_DATA_BASE_PATH, O_RDONLY, 0);
-	if (IS_ERR(dir_file)) {
-		pr_warn("Failed to open %s: %ld, trying legacy path\n", 
-			USER_DATA_BASE_PATH, PTR_ERR(dir_file));
-		
-		// Try the legacy path
-		dir_file = ksu_filp_open_compat(USER_DATA_LEGACY_BASE_PATH, O_RDONLY, 0);
-		if (IS_ERR(dir_file)) {
-			pr_err("Failed to open both user data paths: %ld\n", PTR_ERR(dir_file));
-			return PTR_ERR(dir_file);
-		}
-	}
+    struct file *dir_file;
+    int ret = 0;
+    size_t count = 0;
 
-	struct path path;
-	for (uid_t user_id = MIN_ANDROID_USER_ID; user_id <= MAX_ANDROID_USER_ID && count < max_users; user_id++) {
-		char user_path[USER_DATA_PATH_LEN];
-		
-		snprintf(user_path, sizeof(user_path), "%s/%u", USER_DATA_BASE_PATH, user_id);
-		
-		if (!kern_path(user_path, 0, &path)) {
-			user_ids[count++] = user_id;
-			path_put(&path);
-		}
-	}
-	
-	filp_close(dir_file, NULL);
-	*found_users = count;
-	if (count > 0) {
-		pr_info("UserDE UID: Found %zu active users\n", count);
-	}
-	
-	return ret;
+    const char *opened_base = NULL;
+
+    *found_users = 0;
+
+    dir_file = ksu_filp_open_compat(USER_DATA_BASE_PATH, O_RDONLY, 0);
+    if (IS_ERR(dir_file)) {
+        pr_err("Failed to open user data path %s: %ld\n",
+		       USER_DATA_BASE_PATH, PTR_ERR(dir_file));
+        return PTR_ERR(dir_file);
+    }
+    opened_base = USER_DATA_BASE_PATH;
+
+    for (uid_t user_id = MIN_ANDROID_USER_ID;
+         user_id <= MAX_ANDROID_USER_ID && count < max_users;
+         user_id++) {
+
+        char user_path[USER_DATA_PATH_LEN];
+        struct path path;
+
+        snprintf(user_path, sizeof(user_path), "%s/%u", opened_base, user_id);
+
+        if (!kern_path(user_path, 0, &path)) {
+            user_ids[count++] = user_id;
+            path_put(&path);
+        }
+    }
+
+    filp_close(dir_file, NULL);
+    *found_users = count;
+    if (count > 0)
+        pr_info("UserDE UID: Found %zu active users\n", count);
+
+    return ret;
 }
 
 FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
@@ -253,7 +251,7 @@ FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
 		return FILLDIR_ACTOR_CONTINUE;
 	}
 
-	struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+	struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_KERNEL);
 	if (!data) {
 		pr_err("Failed to allocate memory for package: %.*s (user %u)\n", namelen, name, scan_ctx->user_id);
 		scan_ctx->errors_count++;
@@ -261,7 +259,7 @@ FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
 	}
 
 	data->uid = uid;
-	size_t copy_len = min(namelen, KSU_MAX_PACKAGE_NAME - 1);
+	size_t copy_len = min_t(size_t, namelen, KSU_MAX_PACKAGE_NAME - 1);
 	strncpy(data->package, name, copy_len);
 	data->package[copy_len] = '\0';
 	
@@ -320,7 +318,7 @@ static int scan_user_data_for_user(uid_t user_id, struct list_head *uid_list,
 
 int scan_user_data_for_uids(struct list_head *uid_list)
 {
-	uid_t user_ids[32]; // Supports up to 32 users
+	uid_t user_ids[MAX_SUPPORTED_USERS];
 	size_t active_users = 0;
 	size_t total_packages = 0;
 	size_t total_errors = 0;
@@ -387,11 +385,11 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		return FILLDIR_ACTOR_CONTINUE; // Skip "." and ".."
 
 	if (d_type == DT_DIR && namelen >= 8 && !strncmp(name, "vmdl", 4) &&
-	    !strncmp(name + namelen - 4, ".tmp", 4)) {
-		pr_info("Skipping directory: %.*s\n", namelen, name);
-		return FILLDIR_ACTOR_CONTINUE; // Skip staging package
-	}
-
+ 	    !strncmp(name + namelen - 4, ".tmp", 4)) {
+ 		pr_info("Skipping directory: %.*s\n", namelen, name);
+ 		return FILLDIR_ACTOR_CONTINUE; // Skip staging package
+ 	}
+	
 	if (snprintf(dirpath, DATA_PATH_LEN, "%s/%.*s", my_ctx->parent_dir,
 		     namelen, name) >= DATA_PATH_LEN) {
 		pr_err("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen,
@@ -436,9 +434,9 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 				}
 			} else {
 				struct apk_path_hash *apk_data = kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
-				apk_data->hash = hash;
-				apk_data->exists = true;
-				list_add_tail(&apk_data->list, &apk_path_hash_list);
+					apk_data->hash = hash;
+					apk_data->exists = true;
+					list_add_tail(&apk_data->list, &apk_path_hash_list);
 			}
 		}
 	}
@@ -575,7 +573,7 @@ void track_throne()
 		search_manager("/data/app", 2, &uid_list);
 		pr_info("Search manager finished\n");
 	}
-
+	
 prune:
 	// then prune the allowlist
 	ksu_prune_allowlist(is_uid_exist, &uid_list);
