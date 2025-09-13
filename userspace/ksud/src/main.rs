@@ -5,12 +5,8 @@ mod cli;
 mod debug;
 mod defs;
 mod init_event;
-mod ksucalls;
-mod module;
-mod mount;
+mod modsys;
 mod profile;
-mod restorecon;
-mod sepolicy;
 mod su;
 mod utils;
 

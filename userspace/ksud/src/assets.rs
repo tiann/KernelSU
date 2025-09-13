@@ -4,9 +4,7 @@ use rust_embed::RustEmbed;
 use std::path::Path;
 
 use crate::{defs::BINARY_DIR, utils};
-
-pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
-pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
+// Paths centralized in ksu-core::defs; keep BOOTCTL here if needed later
 pub const BOOTCTL_PATH: &str = concatcp!(BINARY_DIR, "bootctl");
 
 #[cfg(all(target_arch = "x86_64", target_os = "android"))]

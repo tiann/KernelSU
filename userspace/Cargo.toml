@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "ksu-core",
+    "ksud",
+    "ksu-modsys-overlay",
+]
+resolver = "3"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1

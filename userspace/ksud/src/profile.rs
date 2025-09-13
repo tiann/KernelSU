@@ -1,6 +1,7 @@
+use crate::defs;
 use crate::utils::ensure_dir_exists;
-use crate::{defs, sepolicy};
 use anyhow::{Context, Result};
+use ksu_core::sepolicy;
 use std::path::Path;
 
 pub fn set_sepolicy(pkg: String, policy: String) -> Result<()> {

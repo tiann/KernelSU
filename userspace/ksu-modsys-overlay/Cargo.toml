@@ -1,9 +1,7 @@
 [package]
-name = "ksud"
+name = "ksu-modsys-overlay"
 version = "0.1.0"
 edition = "2024"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 ksu-core = { path = "../ksu-core" }
@@ -12,7 +10,7 @@ clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
 zip = { version = "3",  features = [
     "deflate",
-    "deflate64",
+    "deflate64", 
     "time",
     "lzma",
     "xz",
@@ -36,7 +34,7 @@ nom = "8"
 derive-new = "0.7"
 rust-embed = { version = "8", features = [
     "debug-embed",
-    "compression", # must clean build after updating binaries
+    "compression",
 ] }
 which = "7"
 getopts = "0.2"
@@ -52,7 +50,6 @@ fs4 = "0.13"
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
     "all-apis",
 ] }
-# some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 procfs = "0.17"
 loopdev = { git = "https://github.com/Kernel-SU/loopdev" }

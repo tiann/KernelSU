@@ -1,4 +1,6 @@
-use anyhow::{Context, Ok, Result, ensure};
+#[cfg(target_os = "android")]
+use anyhow::Context;
+use anyhow::{Ok, Result, ensure};
 use std::{
     path::{Path, PathBuf},
     process::Command,
