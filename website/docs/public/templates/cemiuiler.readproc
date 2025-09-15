@@ -2,7 +2,7 @@
     "id":"cemiuiler.readproc",
     "name":"Cemiuiler",
     "author":"refined-fish",
-    "description":"Grant Cemiuiler the minimum permissions to work properly-to restart the application.",
+    "description":"Grant Cemiuiler the minimum permissions to work properly-to restart the app.",
     "namespace":"INHERITED",
     "uid":10000,
     "gid":10000,
