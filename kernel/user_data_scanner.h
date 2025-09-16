@@ -11,6 +11,7 @@
 #define MAX_SUPPORTED_USERS 32 // Supports up to 32 users
 #define SMALL_BUFFER_SIZE 64
 #define SCHEDULE_INTERVAL 100
+#define MAX_CONCURRENT_WORKERS 8
 
 // https://docs.kernel.org/filesystems/porting.html
 // filldir_t (readdir callbacks) calling conventions have changed. Instead of returning 0 or -E... it returns bool now. false means "no more" (as -E... used to) and true - "keep going" (as 0 in old calling conventions). Rationale: callers never looked at specific -E... values anyway. -> iterate_shared() instances require no changes at all, all filldir_t ones in the tree converted.
@@ -70,6 +71,17 @@ struct user_id_ctx {
 	size_t processed_count;
 };
 
+struct scan_work_item {
+	struct work_struct work;
+	uid_t user_id;
+	struct list_head *uid_list;
+	struct mutex *uid_list_mutex;
+	atomic_t *total_pkg_count;
+	atomic_t *total_error_count;
+	struct completion *work_completion;
+	atomic_t *remaining_workers;
+};
+
 int scan_user_data_for_uids(struct list_head *uid_list, bool scan_all_users);
 FILLDIR_RETURN_TYPE scan_user_packages(struct dir_context *ctx, const char *name,
 				       int namelen, loff_t off, u64 ino, unsigned int d_type);
@@ -79,8 +91,6 @@ static int process_deferred_paths(struct list_head *deferred_paths, struct list_
 static int scan_primary_user_apps(struct list_head *uid_list, size_t *pkg_count, 
 				   size_t *error_count, struct work_buffers *work_buf);
 static int get_all_active_users(struct work_buffers *work_buf, size_t *found_count);
-static int scan_secondary_users_apps(struct list_head *uid_list, struct work_buffers *work_buf, 
-				      size_t user_count, size_t *total_pkg_count, 
-				      size_t *total_error_count);
+static void scan_user_worker(struct work_struct *work);
 
 #endif /* _KSU_USER_DATA_SCANNER_H_ */
