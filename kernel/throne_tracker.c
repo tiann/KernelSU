@@ -7,6 +7,7 @@
 #include <linux/version.h>
 #include <linux/stat.h>
 #include <linux/namei.h>
+#include <linux/delay.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
@@ -24,6 +25,7 @@ static bool scan_all_users __read_mostly = false; // Whether to scan all users' 
 #define MAX_SUPPORTED_USERS 32 // Supports up to 32 users
 #define DATA_PATH_LEN 384 // 384 is enough for /data/app/<package>/base.apk and /data/user_de/{userid}/<package>
 #define SMALL_BUFFER_SIZE 64
+#define SCHEDULE_INTERVAL 100
 
 // Global work buffer to avoid stack allocation
 struct work_buffers {
@@ -52,6 +54,7 @@ struct user_scan_ctx {
 	size_t pkg_count;
 	size_t error_count;
 	struct work_buffers *work_buf; // Passing the work buffer
+	size_t processed_count;
 };
 
 struct user_dir_ctx {
@@ -64,6 +67,7 @@ struct user_id_ctx {
 	uid_t *user_ids;
 	size_t count;
 	size_t max_count;
+	size_t processed_count;
 };
 
 struct data_path {
@@ -88,6 +92,7 @@ struct my_dir_context {
 	int depth;
 	int *stop;
 	struct work_buffers *work_buf; // Passing the work buffer
+	size_t processed_count;
 };
 // https://docs.kernel.org/filesystems/porting.html
 // filldir_t (readdir callbacks) calling conventions have changed. Instead of returning 0 or -E... it returns bool now. false means "no more" (as -E... used to) and true - "keep going" (as 0 in old calling conventions). Rationale: callers never looked at specific -E... values anyway. -> iterate_shared() instances require no changes at all, all filldir_t ones in the tree converted.
@@ -219,6 +224,11 @@ FILLDIR_RETURN_TYPE collect_user_ids(struct dir_context *ctx, const char *name,
 {
 	struct user_id_ctx *uctx = container_of(ctx, struct user_id_ctx, ctx);
 
+	uctx->processed_count++;
+	if (uctx->processed_count % SCHEDULE_INTERVAL == 0) {
+		cond_resched();
+	}
+
 	if (d_type != DT_DIR || namelen <= 0)
 		return FILLDIR_ACTOR_CONTINUE;
 	if (name[0] == '.' && (namelen == 1 || (namelen == 2 && name[1] == '.')))
@@ -256,7 +266,8 @@ static int get_all_active_users(struct work_buffers *work_buf, size_t *found_cou
 		.ctx.actor = collect_user_ids,
 		.user_ids = work_buf->user_ids_buffer,
 		.count = 0,
-		.max_count = MAX_SUPPORTED_USERS
+		.max_count = MAX_SUPPORTED_USERS,
+		.processed_count = 0
 	};
 
 	ret = iterate_dir(dir_file, &uctx.ctx);
@@ -283,6 +294,12 @@ FILLDIR_RETURN_TYPE scan_user_packages(struct dir_context *ctx, const char *name
 
 	if (!scan_ctx || !scan_ctx->uid_list)
 		return FILLDIR_ACTOR_STOP;
+
+	scan_ctx->processed_count++;
+	if (scan_ctx->processed_count % SCHEDULE_INTERVAL == 0) {
+		cond_resched();
+	}
+
 	if (d_type != DT_DIR || namelen <= 0)
 		return FILLDIR_ACTOR_CONTINUE;
 	if (name[0] == '.' && (namelen == 1 || (namelen == 2 && name[1] == '.')))
@@ -343,8 +360,9 @@ FILLDIR_RETURN_TYPE scan_user_packages(struct dir_context *ctx, const char *name
 
 	list_add_tail(&uid_entry->list, scan_ctx->uid_list);
 	scan_ctx->pkg_count++;
-
-	pr_debug("Package: %s, UID: %u, User: %u\n", uid_entry->package, uid, scan_ctx->user_id);
+#ifdef CONFIG_KSU_DEBUG
+	pr_info("Package: %s, UID: %u, User: %u\n", uid_entry->package, uid, scan_ctx->user_id);
+#endif
 	return FILLDIR_ACTOR_CONTINUE;
 }
 
@@ -377,7 +395,8 @@ static int scan_secondary_users_apps(struct list_head *uid_list,
 			.user_id = work_buf->user_ids_buffer[i],
 			.pkg_count = 0,
 			.error_count = 0,
-			.work_buf = work_buf
+			.work_buf = work_buf,
+			.processed_count = 0
 		};
 
 		struct user_dir_ctx uctx = {
@@ -394,7 +413,9 @@ static int scan_secondary_users_apps(struct list_head *uid_list,
 		if (scan_ctx.pkg_count > 0 || scan_ctx.error_count > 0)
 			pr_info("User %u: %zu packages, %zu errors\n",
 				work_buf->user_ids_buffer[i], scan_ctx.pkg_count, scan_ctx.error_count);
-			}
+
+		cond_resched();
+	}
 
 	return ret;
 }
@@ -460,6 +481,12 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		pr_err("Invalid context\n");
 		return FILLDIR_ACTOR_STOP;
 	}
+
+	my_ctx->processed_count++;
+	if (my_ctx->processed_count % SCHEDULE_INTERVAL == 0) {
+		cond_resched();
+	}
+
 	if (my_ctx->stop && *my_ctx->stop) {
 		pr_info("Stop searching\n");
 		return FILLDIR_ACTOR_STOP;
@@ -483,7 +510,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 	if (d_type == DT_DIR && my_ctx->depth > 0 &&
 	    (my_ctx->stop && !*my_ctx->stop)) {
-		struct data_path *data = kmalloc(sizeof(struct data_path), GFP_ATOMIC);
+		struct data_path *data = kmalloc(sizeof(struct data_path), GFP_KERNEL);
 
 		if (!data) {
 			pr_err("Failed to allocate memory for %s\n", work_buf->path_buffer);
@@ -517,7 +544,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 					kfree(pos);
 				}
 			} else {
-				struct apk_path_hash *apk_data = kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
+				struct apk_path_hash *apk_data = kmalloc(sizeof(struct apk_path_hash), GFP_KERNEL);
 				apk_data->hash = hash;
 				apk_data->exists = true;
 				list_add_tail(&apk_data->list, &apk_path_hash_list);
@@ -564,7 +591,8 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 						      .private_data = uid_data,
 						      .depth = pos->depth,
 						      .stop = &stop,
-							  .work_buf = work_buf };
+							  .work_buf = work_buf,
+							  .processed_count = 0 };
 			struct file *file;
 
 			if (!stop) {
@@ -594,12 +622,15 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 				
 				iterate_dir(file, &ctx.ctx);
 				filp_close(file, NULL);
+				cond_resched();
 			}
 skip_iterate:
 			list_del(&pos->list);
 			if (pos != &data)
 				kfree(pos);
 		}
+
+		cond_resched();
 	}
 
 	// Remove stale cached APK entries
