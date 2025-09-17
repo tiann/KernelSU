@@ -3,7 +3,6 @@ kernelsu-objs += allowlist.o
 kernelsu-objs += apk_sign.o
 kernelsu-objs += sucompat.o
 kernelsu-objs += throne_tracker.o
-kernelsu-objs += user_data_scanner.o
 kernelsu-objs += core_hook.o
 kernelsu-objs += ksud.o
 kernelsu-objs += embed_ksud.o
