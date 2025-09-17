@@ -8,9 +8,6 @@
 #include <linux/stat.h>
 #include <linux/namei.h>
 #include <linux/sched.h>
-#include <linux/mount.h>
-#include <linux/magic.h>
-#include <linux/jiffies.h>
 
 #include "klog.h"
 #include "ksu.h"
@@ -19,103 +16,10 @@
 
 static bool scan_all_users __read_mostly = false; // Whether to scan all users' data directories
 
-#define KERN_PATH_TIMEOUT_MS 100
-#define MAX_FUSE_CHECK_RETRIES 3
-
 struct work_buffers *get_work_buffer(void)
 {
 	static struct work_buffers global_buffer;
 	return &global_buffer;
-}
-
-// Check the file system type
-static bool is_dangerous_fs_magic(unsigned long magic)
-{
-	switch (magic) {
-	case 0x65735546:
-	case 0x794c7630:
-	case 0x01021994:
-		return true;
-	default:
-		return false;
-	}
-}
-
-static bool is_path_for_kern_path(const char *path, struct super_block *expected_sb)
-{
-	if (fatal_signal_pending(current)) {
-		pr_warn("Fatal signal pending, skip path: %s\n", path);
-		return false;
-	}
-
-	if (need_resched()) {
-		cond_resched();
-		if (fatal_signal_pending(current))
-			return false;
-	}
-
-	if (expected_sb && is_dangerous_fs_magic(expected_sb->s_magic)) {
-		pr_info("Skipping dangerous filesystem (magic=0x%lx): %s\n", 
-			expected_sb->s_magic, path);
-		return false;
-	}
-
-	if (!path || strlen(path) == 0 || strlen(path) >= PATH_MAX) {
-		return false;
-	}
-
-	if (strstr(path, ".tmp") || strstr(path, ".removing") || strstr(path, ".unmounting")) {
-		pr_debug("Path appears to be in transition state: %s\n", path);
-		return false;
-	}
-
-	return true;
-}
-
-static int kern_path_with_timeout(const char *path, unsigned int flags, struct path *result)
-{
-	unsigned long start_time = jiffies;
-	unsigned long timeout = start_time + msecs_to_jiffies(KERN_PATH_TIMEOUT_MS);
-	int retries = 0;
-	int err;
-
-	do {
-		if (time_after(jiffies, timeout)) {
-			pr_warn("kern_path timeout for: %s\n", path);
-			return -ETIMEDOUT;
-		}
-
-		if (fatal_signal_pending(current)) {
-			pr_warn("Fatal signal during kern_path: %s\n", path);
-			return -EINTR;
-		}
-
-		err = kern_path(path, flags, result);
-		
-		if (err == 0) {
-			return 0;
-		}
-
-		if (err == -ENOENT || err == -ENOTDIR || err == -EACCES) {
-			return err;
-		}
-
-		if (err == -EBUSY || err == -EAGAIN) {
-			retries++;
-			if (retries >= MAX_FUSE_CHECK_RETRIES) {
-				pr_warn("Max retries reached for: %s (err=%d)\n", path, err);
-				return err;
-			}
-			
-			usleep_range(1000, 2000);
-			continue;
-		}
-
-		return err;
-
-	} while (retries < MAX_FUSE_CHECK_RETRIES);
-
-	return err;
 }
 
 FILLDIR_RETURN_TYPE scan_user_packages(struct dir_context *ctx, const char *name,
@@ -130,10 +34,6 @@ FILLDIR_RETURN_TYPE scan_user_packages(struct dir_context *ctx, const char *name
 	scan_ctx->processed_count++;
 	if (scan_ctx->processed_count % SCHEDULE_INTERVAL == 0) {
 		cond_resched();
-		if (fatal_signal_pending(current)) {
-			pr_info("Fatal signal received, stopping scan\n");
-			return FILLDIR_ACTOR_STOP;
-		}
 	}
 
 	if (d_type != DT_DIR || namelen <= 0)
@@ -179,37 +79,14 @@ static int process_deferred_paths(struct list_head *deferred_paths, struct list_
 {
 	struct deferred_path_info *path_info, *n;
 	int success_count = 0;
-	int skip_count = 0;
 
 	list_for_each_entry_safe(path_info, n, deferred_paths, list) {
-		if (!is_path_for_kern_path(path_info->path, NULL)) {
-			pr_debug("Skipping unsafe path: %s\n", path_info->path);
-			skip_count++;
-			list_del(&path_info->list);
-			kfree(path_info);
-			continue;
-		}
-
-		// Retrieve path information
 		struct path path;
-		int err = kern_path_with_timeout(path_info->path, LOOKUP_FOLLOW, &path);
+		int err = kern_path(path_info->path, LOOKUP_FOLLOW, &path);
 		if (err) {
-			if (err != -ENOENT) {
-				pr_debug("Path lookup failed: %s (%d)\n", path_info->path, err);
-			}
+			pr_debug("Path lookup failed: %s (%d)\n", path_info->path, err);
 			list_del(&path_info->list);
 			kfree(path_info);
-			continue;
-		}
-
-		// Check the file system type
-		if (is_dangerous_fs_magic(path.mnt->mnt_sb->s_magic)) {
-			pr_info("Skipping path on dangerous filesystem: %s (magic=0x%lx)\n", 
-				path_info->path, path.mnt->mnt_sb->s_magic);
-			path_put(&path);
-			list_del(&path_info->list);
-			kfree(path_info);
-			skip_count++;
 			continue;
 		}
 
@@ -259,15 +136,7 @@ static int process_deferred_paths(struct list_head *deferred_paths, struct list_
 		
 		if (success_count % 10 == 0) {
 			cond_resched();
-			if (fatal_signal_pending(current)) {
-				pr_info("Fatal signal received, stopping path processing\n");
-				break;
-			}
 		}
-	}
-
-	if (skip_count > 0) {
-		pr_info("Skipped %d potentially dangerous paths for safety\n", skip_count);
 	}
 
 	return success_count;
@@ -290,14 +159,6 @@ static int scan_primary_user_apps(struct list_head *uid_list,
 	if (IS_ERR(dir_file)) {
 		pr_err("Cannot open primary user path: %s (%ld)\n", PRIMARY_USER_PATH, PTR_ERR(dir_file));
 		return PTR_ERR(dir_file);
-	}
-
-	// Check the file system type
-	if (is_dangerous_fs_magic(dir_file->f_inode->i_sb->s_magic)) {
-		pr_err("Primary user path is on dangerous filesystem (magic=0x%lx), aborting\n",
-		       dir_file->f_inode->i_sb->s_magic);
-		filp_close(dir_file, NULL);
-		return -EOPNOTSUPP;
 	}
 
 	struct user_scan_ctx scan_ctx = {
@@ -336,8 +197,6 @@ FILLDIR_RETURN_TYPE collect_user_ids(struct dir_context *ctx, const char *name,
 	uctx->processed_count++;
 	if (uctx->processed_count % SCHEDULE_INTERVAL == 0) {
 		cond_resched();
-		if (fatal_signal_pending(current))
-			return FILLDIR_ACTOR_STOP;
 	}
 
 	if (d_type != DT_DIR || namelen <= 0)
@@ -372,14 +231,6 @@ static int get_all_active_users(struct work_buffers *work_buf, size_t *found_cou
 		return PTR_ERR(dir_file);
 	}
 
-	// Check the file system type of the base path
-	if (is_dangerous_fs_magic(dir_file->f_inode->i_sb->s_magic)) {
-		pr_err("User data base path is on dangerous filesystem (magic=0x%lx), aborting\n",
-		       dir_file->f_inode->i_sb->s_magic);
-		filp_close(dir_file, NULL);
-		return -EOPNOTSUPP;
-	}
-
 	struct user_id_ctx uctx = {
 		.ctx.actor = collect_user_ids,
 		.user_ids = work_buf->user_ids_buffer,
@@ -411,11 +262,6 @@ static int scan_secondary_users_apps(struct list_head *uid_list,
 	*total_pkg_count = *total_error_count = 0;
 
 	for (size_t i = 0; i < user_count; i++) {
-		if (fatal_signal_pending(current)) {
-			pr_info("Fatal signal received, stopping secondary user scan\n");
-			break;
-		}
-
 		// Skip the main user since it was already scanned in the first step
 		if (work_buf->user_ids_buffer[i] == 0)
 			continue;
@@ -431,14 +277,6 @@ static int scan_secondary_users_apps(struct list_head *uid_list,
 		if (IS_ERR(dir_file)) {
 			pr_debug("Cannot open user path: %s (%ld)\n", work_buf->path_buffer, PTR_ERR(dir_file));
 			(*total_error_count)++;
-			continue;
-		}
-
-		// Check the file system type of the user directory
-		if (is_dangerous_fs_magic(dir_file->f_inode->i_sb->s_magic)) {
-			pr_info("User path %s is on dangerous filesystem (magic=0x%lx), skipping\n",
-				work_buf->path_buffer, dir_file->f_inode->i_sb->s_magic);
-			filp_close(dir_file, NULL);
 			continue;
 		}
 
