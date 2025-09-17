@@ -20,6 +20,8 @@ uid_t ksu_manager_uid = KSU_INVALID_UID;
 #define USER_DATA_BASE_PATH "/data/user_de"
 #define MAX_SUPPORTED_USERS 32 // Supports up to 32 users
 #define USER_DATA_PATH_LEN 384 // 384 is enough for /data/user_de/{userid}/<package>
+#define MAX_ANDROID_USER_ID 999
+#define MIN_ANDROID_USER_ID 0
 
 struct uid_data {
 	struct list_head list;
@@ -149,74 +151,44 @@ struct user_data_context {
 	struct user_scan_context *scan_ctx;
 };
 
-struct user_de_context {
-    struct dir_context ctx;
-    uid_t *user_ids;
-    size_t count;
-    size_t max_users;
-};
-
-// Actor function to collect user IDs from /data/user_de
-FILLDIR_RETURN_TYPE user_de_actor(struct dir_context *ctx, const char *name,
-                                  int namelen, loff_t off, u64 ino,
-                                  unsigned int d_type)
-{
-    struct user_de_context *data = container_of(ctx, struct user_de_context, ctx);
-
-    if (d_type != DT_DIR)
-        return FILLDIR_ACTOR_CONTINUE;
-
-    if (strncmp(name, ".", namelen) == 0 || strncmp(name, "..", namelen) == 0)
-        return FILLDIR_ACTOR_CONTINUE;
-
-    uid_t uid = 0;
-    for (int i = 0; i < namelen; i++) {
-        if (name[i] < '0' || name[i] > '9')
-            return FILLDIR_ACTOR_CONTINUE;
-        uid = uid * 10 + (name[i] - '0');
-    }
-
-    if (data->count >= data->max_users)
-        return FILLDIR_ACTOR_STOP;
-
-    data->user_ids[data->count++] = uid;
-    return FILLDIR_ACTOR_CONTINUE;
-}
-
 // Retrieve a list of all active Android user IDs in the system
 static int get_active_user_ids(uid_t *user_ids, size_t max_users, size_t *found_users)
 {
     struct file *dir_file;
     int ret = 0;
+    size_t count = 0;
+
+    const char *opened_base = NULL;
 
     *found_users = 0;
 
     dir_file = ksu_filp_open_compat(USER_DATA_BASE_PATH, O_RDONLY, 0);
     if (IS_ERR(dir_file)) {
         pr_err("Failed to open user data path %s: %ld\n",
-               USER_DATA_BASE_PATH, PTR_ERR(dir_file));
+		       USER_DATA_BASE_PATH, PTR_ERR(dir_file));
         return PTR_ERR(dir_file);
     }
+    opened_base = USER_DATA_BASE_PATH;
 
-    struct {
-        struct dir_context ctx;
-        uid_t *user_ids;
-        size_t count;
-        size_t max_users;
-    } ctx = {
-        .ctx.actor = user_de_actor,
-        .user_ids = user_ids,
-        .count = 0,
-        .max_users = max_users
-    };
+    for (uid_t user_id = MIN_ANDROID_USER_ID;
+         user_id <= MAX_ANDROID_USER_ID && count < max_users;
+         user_id++) {
 
-    ret = iterate_dir(dir_file, &ctx.ctx);
+        char user_path[USER_DATA_PATH_LEN];
+        struct path path;
+
+        snprintf(user_path, sizeof(user_path), "%s/%u", opened_base, user_id);
+
+        if (!kern_path(user_path, 0, &path)) {
+            user_ids[count++] = user_id;
+            path_put(&path);
+        }
+    }
+
     filp_close(dir_file, NULL);
-
-    *found_users = ctx.count;
-
-    if (ctx.count > 0)
-        pr_info("UserDE UID: Found %zu active users\n", ctx.count);
+    *found_users = count;
+    if (count > 0)
+        pr_info("UserDE UID: Found %zu active users\n", count);
 
     return ret;
 }
