@@ -203,25 +203,18 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 		return 0;
 	}
 
-	// /data/system/packages.list.tmp -> /data/system/packages.list
-	if (strcmp(new_dentry->d_iname, "packages.list")) {
+	//  It still monitors changes to certain system files to trigger scans, but does not rely on packages.list.
+	if (strstr(new_dentry->d_iname, "packages") &&
+		strstr(new_dentry->d_iname, "list")) {
+		char path[128];
+		char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
+		if (!IS_ERR(buf) && strstr(buf, "/system/")) {
+			pr_info("System package change detected: %s -> %s, triggering user scan\n", 
+				old_dentry->d_iname, new_dentry->d_iname);
+			track_throne();
+		}
 		return 0;
 	}
-
-	char path[128];
-	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
-	if (IS_ERR(buf)) {
-		pr_err("dentry_path_raw failed.\n");
-		return 0;
-	}
-
-	if (!strstr(buf, "/system/packages.list")) {
-		return 0;
-	}
-	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
-		new_dentry->d_iname, buf);
-
-	track_throne();
 
 	return 0;
 }
