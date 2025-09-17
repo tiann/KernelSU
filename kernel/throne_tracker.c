@@ -441,6 +441,7 @@ void track_throne()
 
 	pr_info("Starting UID scan from user data directory\n");
 	int ret = scan_user_data_for_uids(&uid_list);
+	size_t uid_count;
 	
 	if (ret < 0) {
 		pr_warn("Failed to scan user data directory (%d), falling back to packages.list\n", ret);
