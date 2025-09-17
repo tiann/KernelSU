@@ -11,10 +11,6 @@
 #include <linux/mount.h>
 #include <linux/magic.h>
 #include <linux/jiffies.h>
-#include <linux/workqueue.h>
-#include <linux/completion.h>
-#include <linux/atomic.h>
-#include <linux/mutex.h>
 
 #include "klog.h"
 #include "ksu.h"
@@ -25,8 +21,6 @@ static bool scan_all_users __read_mostly = false; // Whether to scan all users' 
 
 #define KERN_PATH_TIMEOUT_MS 100
 #define MAX_FUSE_CHECK_RETRIES 3
-
-static struct workqueue_struct *scan_workqueue;
 
 struct work_buffers *get_work_buffer(void)
 {
@@ -179,6 +173,7 @@ FILLDIR_RETURN_TYPE scan_user_packages(struct dir_context *ctx, const char *name
 
 	return FILLDIR_ACTOR_CONTINUE;
 }
+
 
 static int process_deferred_paths(struct list_head *deferred_paths, struct list_head *uid_list)
 {
@@ -408,125 +403,75 @@ static int get_all_active_users(struct work_buffers *work_buf, size_t *found_cou
 	return ret;
 }
 
-static void scan_user_worker(struct work_struct *work)
-{
-	struct scan_work_item *item = container_of(work, struct scan_work_item, work);
-	char path_buffer[DATA_PATH_LEN];
-	struct file *dir_file;
-	struct list_head deferred_paths;
-	int processed = 0;
-	
-	INIT_LIST_HEAD(&deferred_paths);
-	
-	snprintf(path_buffer, sizeof(path_buffer), "%s/%u", USER_DATA_BASE_PATH, item->user_id);
-	
-	dir_file = ksu_filp_open_compat(path_buffer, O_RDONLY, 0);
-	if (IS_ERR(dir_file)) {
-		pr_debug("Cannot open user path: %s (%ld)\n", path_buffer, PTR_ERR(dir_file));
-		atomic_inc(item->total_error_count);
-		goto done;
-	}
-
-	// Check the file system type of the user directory
-	if (is_dangerous_fs_magic(dir_file->f_inode->i_sb->s_magic)) {
-		pr_info("User path %s is on dangerous filesystem (magic=0x%lx), skipping\n",
-			path_buffer, dir_file->f_inode->i_sb->s_magic);
-		filp_close(dir_file, NULL);
-		goto done;
-	}
-
-	struct user_scan_ctx scan_ctx = {
-		.deferred_paths = &deferred_paths,
-		.user_id = item->user_id,
-		.pkg_count = 0,
-		.error_count = 0,
-		.work_buf = NULL,
-		.processed_count = 0
-	};
-
-	struct user_dir_ctx uctx = {
-		.ctx.actor = scan_user_packages,
-		.scan_ctx = &scan_ctx
-	};
-
-	iterate_dir(dir_file, &uctx.ctx);
-	filp_close(dir_file, NULL);
-
-	mutex_lock(item->uid_list_mutex);
-	processed = process_deferred_paths(&deferred_paths, item->uid_list);
-	mutex_unlock(item->uid_list_mutex);
-	
-	atomic_add(processed, item->total_pkg_count);
-	atomic_add(scan_ctx.error_count, item->total_error_count);
-
-	if (processed > 0 || scan_ctx.error_count > 0) {
-		pr_info("User %u: %d packages, %zu errors\n", item->user_id, processed, scan_ctx.error_count);
-	}
-
-done:
-	if (atomic_dec_and_test(item->remaining_workers)) {
-		complete(item->work_completion);
-	}
-	kfree(item);
-}
-
 static int scan_secondary_users_apps(struct list_head *uid_list, 
-					   struct work_buffers *work_buf, size_t user_count,
-					   size_t *total_pkg_count, size_t *total_error_count)
+				     struct work_buffers *work_buf, size_t user_count,
+				     size_t *total_pkg_count, size_t *total_error_count)
 {
-	DECLARE_COMPLETION(work_completion);
-	DEFINE_MUTEX(uid_list_mutex);
-	atomic_t atomic_pkg_count = ATOMIC_INIT(0);
-	atomic_t atomic_error_count = ATOMIC_INIT(0);
-	atomic_t remaining_workers = ATOMIC_INIT(0);
-	int submitted_workers = 0;
-
-	if (!scan_workqueue) {
-		scan_workqueue = create_workqueue("ksu_scan");
-		if (!scan_workqueue) {
-			pr_err("Failed to create workqueue\n");
-			return -ENOMEM;
-		}
-	}
+	int ret = 0;
+	*total_pkg_count = *total_error_count = 0;
 
 	for (size_t i = 0; i < user_count; i++) {
+		if (fatal_signal_pending(current)) {
+			pr_info("Fatal signal received, stopping secondary user scan\n");
+			break;
+		}
+
 		// Skip the main user since it was already scanned in the first step
 		if (work_buf->user_ids_buffer[i] == 0)
 			continue;
 
-		struct scan_work_item *work_item = kzalloc(sizeof(struct scan_work_item), GFP_KERNEL);
-		if (!work_item) {
-			pr_err("Failed to allocate work item for user %u\n", work_buf->user_ids_buffer[i]);
+		struct file *dir_file;
+		struct list_head deferred_paths;
+		INIT_LIST_HEAD(&deferred_paths);
+		
+		snprintf(work_buf->path_buffer, sizeof(work_buf->path_buffer), 
+			"%s/%u", USER_DATA_BASE_PATH, work_buf->user_ids_buffer[i]);
+
+		dir_file = ksu_filp_open_compat(work_buf->path_buffer, O_RDONLY, 0);
+		if (IS_ERR(dir_file)) {
+			pr_debug("Cannot open user path: %s (%ld)\n", work_buf->path_buffer, PTR_ERR(dir_file));
+			(*total_error_count)++;
 			continue;
 		}
 
-		INIT_WORK(&work_item->work, scan_user_worker);
-		work_item->user_id = work_buf->user_ids_buffer[i];
-		work_item->uid_list = uid_list;
-		work_item->uid_list_mutex = &uid_list_mutex;
-		work_item->total_pkg_count = &atomic_pkg_count;
-		work_item->total_error_count = &atomic_error_count;
-		work_item->work_completion = &work_completion;
-		work_item->remaining_workers = &remaining_workers;
-
-		atomic_inc(&remaining_workers);
-		if (queue_work(scan_workqueue, &work_item->work)) {
-			submitted_workers++;
-		} else {
-			atomic_dec(&remaining_workers);
-			kfree(work_item);
+		// Check the file system type of the user directory
+		if (is_dangerous_fs_magic(dir_file->f_inode->i_sb->s_magic)) {
+			pr_info("User path %s is on dangerous filesystem (magic=0x%lx), skipping\n",
+				work_buf->path_buffer, dir_file->f_inode->i_sb->s_magic);
+			filp_close(dir_file, NULL);
+			continue;
 		}
+
+		struct user_scan_ctx scan_ctx = {
+			.deferred_paths = &deferred_paths,
+			.user_id = work_buf->user_ids_buffer[i],
+			.pkg_count = 0,
+			.error_count = 0,
+			.work_buf = work_buf,
+			.processed_count = 0
+		};
+
+		struct user_dir_ctx uctx = {
+			.ctx.actor = scan_user_packages,
+			.scan_ctx = &scan_ctx
+		};
+
+		ret = iterate_dir(dir_file, &uctx.ctx);
+		filp_close(dir_file, NULL);
+
+		int processed = process_deferred_paths(&deferred_paths, uid_list);
+		
+		*total_pkg_count += processed;
+		*total_error_count += scan_ctx.error_count;
+
+		if (processed > 0 || scan_ctx.error_count > 0)
+			pr_info("User %u: %d packages, %zu errors\n",
+				work_buf->user_ids_buffer[i], processed, scan_ctx.error_count);
+
+		cond_resched();
 	}
 
-	if (submitted_workers > 0) {
-		pr_info("Submitted %d concurrent scan workers\n", submitted_workers);
-		wait_for_completion(&work_completion);
-	}
-
-	*total_pkg_count = atomic_read(&atomic_pkg_count);
-	*total_error_count = atomic_read(&atomic_error_count);
-	
-	return 0;
+	return ret;
 }
 
 int scan_user_data_for_uids(struct list_head *uid_list, bool scan_all_users)
@@ -565,7 +510,7 @@ int scan_user_data_for_uids(struct list_head *uid_list, bool scan_all_users)
 
 	size_t secondary_pkg_count, secondary_error_count;
 	ret = scan_secondary_users_apps(uid_list, work_buf, active_users,
-					     &secondary_pkg_count, &secondary_error_count);
+					&secondary_pkg_count, &secondary_error_count);
 
 	size_t total_packages = primary_pkg_count + secondary_pkg_count;
 	size_t total_errors = primary_error_count + secondary_error_count;
