@@ -59,8 +59,14 @@ loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = { version = "0.15", default-features = false }
 
-[profile.release]
+[profile.dev]
+overflow-checks = false
+opt-level = 3
 strip = true
-opt-level = "z"
-lto = true
+
+[profile.release]
+overflow-checks = false
 codegen-units = 1
+lto = "fat"
+opt-level = 3
+strip = true
