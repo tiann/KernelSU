@@ -438,9 +438,13 @@ void track_throne()
 	struct list_head uid_list;
 	INIT_LIST_HEAD(&uid_list);
 
-	scan_user_data_for_uids(&uid_list);
-	
-	pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", list_count_nodes(&uid_list));
+	int ret = scan_user_data_for_uids(&uid_list);
+		
+	if (ret < 0) {
+		goto out;
+	} else {
+		pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", list_count_nodes(&uid_list));
+	}
 
 	// now update uid list
 	struct uid_data *np;
