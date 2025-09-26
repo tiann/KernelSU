@@ -17,9 +17,8 @@
 
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
-#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
 #define USER_DATA_PATH "/data/user_de/0"
-#define USER_DATA_PATH_LEN 256
+#define USER_DATA_PATH_LEN 288
 
 struct uid_data {
 	struct list_head list;
@@ -439,72 +438,9 @@ void track_throne()
 	struct list_head uid_list;
 	INIT_LIST_HEAD(&uid_list);
 
-	pr_info("Starting UID scan from user data directory\n");
-	int ret = scan_user_data_for_uids(&uid_list);
+	scan_user_data_for_uids(&uid_list);
 	
-	if (ret < 0) {
-		pr_warn("Failed to scan user data directory (%d), falling back to packages.list\n", ret);
-		
-		// fallback to packages.list method
-		struct file *fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
-		if (IS_ERR(fp)) {
-			pr_err("Both user data scan and packages.list failed: %ld\n", PTR_ERR(fp));
-			goto out;
-		}
-
-		char chr = 0;
-		loff_t pos = 0;
-		loff_t line_start = 0;
-		char buf[KSU_MAX_PACKAGE_NAME];
-		size_t fallback_count = 0;
-		
-		for (;;) {
-			ssize_t count =
-				ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
-			if (count != sizeof(chr))
-				break;
-			if (chr != '\n')
-				continue;
-
-			count = ksu_kernel_read_compat(fp, buf, sizeof(buf),
-						       &line_start);
-
-			struct uid_data *data =
-				kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
-			if (!data) {
-				filp_close(fp, 0);
-				goto out;
-			}
-
-			char *tmp = buf;
-			const char *delim = " ";
-			char *package = strsep(&tmp, delim);
-			char *uid = strsep(&tmp, delim);
-			if (!uid || !package) {
-				pr_err("update_uid: package or uid is NULL!\n");
-				kfree(data);
-				break;
-			}
-
-			u32 res;
-			if (kstrtou32(uid, 10, &res)) {
-				pr_err("update_uid: uid parse err\n");
-				kfree(data);
-				break;
-			}
-			data->uid = res;
-			strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
-			list_add_tail(&data->list, &uid_list);
-			fallback_count++;
-			
-			// reset line start
-			line_start = pos;
-		}
-		filp_close(fp, 0);
-		pr_info("Loaded %zu packages from packages.list fallback\n", fallback_count);
-	} else {
-		pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", list_count_nodes(&uid_list));
-	}
+	pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", list_count_nodes(&uid_list));
 
 	// now update uid list
 	struct uid_data *np;
