@@ -166,27 +166,33 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 
 int ksu_handle_devpts(struct inode *inode)
 {
-	if (!current->mm) {
-		return 0;
-	}
+    struct inode *in;
+    struct inode_security_struct *sec;
 
-	uid_t uid = current_uid().val;
-	if (uid % 100000 < 10000) {
-		// not untrusted_app, ignore it
-		return 0;
+    if (!current->mm)
+        return 0;
+
+    uid_t uid = current_uid().val;
+    if (uid % 100000 < 10000) {
+		// not untrusted_app
+        return 0;
 	}
 
 	if (!ksu_is_allow_uid(uid))
 		return 0;
 
-	if (ksu_devpts_sid) {
-		struct inode_security_struct *sec = selinux_inode(inode);
-		if (sec) {
-			sec->sid = ksu_devpts_sid;
-		}
-	}
+    in = igrab(inode);
+    if (!in)
+        return 0;
 
-	return 0;
+    inode_lock(in);
+    sec = selinux_inode(in);
+    if (sec && ksu_devpts_sid)
+        WRITE_ONCE(sec->sid, ksu_devpts_sid);
+    inode_unlock(in);
+
+    iput(in);
+    return 0;
 }
 
 #ifdef CONFIG_KPROBES
