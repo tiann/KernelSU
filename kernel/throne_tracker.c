@@ -220,13 +220,14 @@ FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
 	
 	if (my_ctx->stats)
 		my_ctx->stats->total_found++;
-	
+#ifdef CONFIG_KSU_DEBUG
 	pr_info("UserDE UID: Found package: %s, uid: %u\n", data->package, data->uid);
+#endif
 	
 	return FILLDIR_ACTOR_CONTINUE;
 }
 
-int scan_user_data_for_uids(struct list_head *uid_list)
+static int scan_user_data_for_uids(struct list_head *uid_list)
 {
 	struct file *dir_file;
 	struct uid_scan_stats stats = {0};
@@ -238,7 +239,7 @@ int scan_user_data_for_uids(struct list_head *uid_list)
 
 	dir_file = ksu_filp_open_compat(USER_DATA_PATH, O_RDONLY, 0);
 	if (IS_ERR(dir_file)) {
-		pr_err("UserDE UID: Failed to open %s: %ld\n", USER_DATA_PATH, PTR_ERR(dir_file));
+		pr_err("UserDE UID: Failed to open %s, err: (%ld)\n", USER_DATA_PATH, PTR_ERR(dir_file));
 		return PTR_ERR(dir_file);
 	}
 
@@ -256,8 +257,8 @@ int scan_user_data_for_uids(struct list_head *uid_list)
 			stats.errors_encountered);
 	}
 
-	pr_info("UserDE UID: Scanned user data directory, found %zu packages with %zu errors\n", 
-		stats.total_found, stats.errors_encountered);
+	pr_info("UserDE UID: Scanned %s directory with %zu errors\n", 
+		USER_DATA_PATH, stats.errors_encountered);
 
 	return ret;
 }
@@ -436,14 +437,19 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 void track_throne()
 {
 	struct list_head uid_list;
+	int ret;
+	
+	// init uid list head
 	INIT_LIST_HEAD(&uid_list);
 
-	int ret = scan_user_data_for_uids(&uid_list);
+	pr_info("Scanning %s directory..\n", USER_DATA_PATH);
+	ret = scan_user_data_for_uids(&uid_list);
 		
 	if (ret < 0) {
+		pr_err("Failed to scan %s directory, err: %d\n", USER_DATA_PATH, ret);
 		goto out;
 	} else {
-		pr_info("UserDE UID: Successfully loaded %zu packages from user data directory\n", list_count_nodes(&uid_list));
+		pr_info("Scanned %zu packages from user data directory\n", list_count_nodes(&uid_list));
 	}
 
 	// now update uid list
