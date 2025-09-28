@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,7 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.FlowColumn
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,7 +32,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,7 +82,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
-import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -94,8 +95,6 @@ fun SuperUserPager(
 ) {
     val viewModel = viewModel<SuperUserViewModel>()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = MiuixScrollBehavior()
-    val listState = rememberLazyListState()
     val searchStatus by viewModel.searchStatus
 
     LaunchedEffect(navigator) {
@@ -108,9 +107,11 @@ fun SuperUserPager(
         viewModel.updateSearchText(searchStatus.searchText)
     }
 
-    val dynamicTopPadding by animateDpAsState(
-        targetValue = 12.dp * (1f - scrollBehavior.state.collapsedFraction)
-    )
+    val scrollBehavior = MiuixScrollBehavior()
+    val listState = rememberLazyListState()
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
 
     Scaffold(
         topBar = {
@@ -129,23 +130,12 @@ fun SuperUserPager(
                         ) {
                             ListPopupColumn {
                                 DropdownItem(
-                                    text = stringResource(R.string.refresh),
-                                    optionSize = 2,
-                                    onSelectedIndexChange = {
-                                        scope.launch {
-                                            viewModel.fetchAppList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                                DropdownItem(
                                     text = if (viewModel.showSystemApps) {
                                         stringResource(R.string.hide_system_apps)
                                     } else {
                                         stringResource(R.string.show_system_apps)
                                     },
-                                    optionSize = 2,
+                                    optionSize = 1,
                                     onSelectedIndexChange = {
                                         scope.launch {
                                             viewModel.showSystemApps = !viewModel.showSystemApps
@@ -153,7 +143,7 @@ fun SuperUserPager(
                                         }
                                         showTopPopup.value = false
                                     },
-                                    index = 1
+                                    index = 0
                                 )
                             }
                         }
@@ -166,7 +156,7 @@ fun SuperUserPager(
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Useful.ImmersionMore,
-                                tint = colorScheme.onSurface,
+                                tint = MiuixTheme.colorScheme.onSurface,
                                 contentDescription = stringResource(id = R.string.settings)
                             )
                         }
@@ -225,36 +215,36 @@ fun SuperUserPager(
                 stringResource(R.string.refresh_refresh),
                 stringResource(R.string.refresh_complete),
             )
-            PullToRefresh(
-                isRefreshing = isRefreshing,
-                pullToRefreshState = pullToRefreshState,
-                onRefresh = { isRefreshing = true },
-                refreshTexts = refreshTexts,
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                    start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateEndPadding(layoutDirection)
-                ),
-            ) {
-                if (viewModel.appList.value.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                                start = innerPadding.calculateStartPadding(layoutDirection),
-                                end = innerPadding.calculateEndPadding(layoutDirection),
-                                bottom = bottomInnerPadding
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (viewModel.isRefreshing) "Loading..." else "Empty",
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray,
-                        )
-                    }
-                } else {
+            if (viewModel.appList.value.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = innerPadding.calculateTopPadding(),
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection),
+                            bottom = bottomInnerPadding
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (viewModel.isRefreshing) "Loading..." else "Empty",
+                        textAlign = TextAlign.Center,
+                        color = Color.Gray,
+                    )
+                }
+            } else {
+                PullToRefresh(
+                    isRefreshing = isRefreshing,
+                    pullToRefreshState = pullToRefreshState,
+                    onRefresh = { isRefreshing = true },
+                    refreshTexts = refreshTexts,
+                    contentPadding = PaddingValues(
+                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection)
+                    ),
+                ) {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
@@ -289,15 +279,26 @@ fun SuperUserPager(
 @Composable
 private fun AppItem(
     app: SuperUserViewModel.AppInfo,
-    onClickListener: () -> Unit,
+    onClickListener: () -> Unit
 ) {
+    val colorScheme = MiuixTheme.colorScheme
+    val tags = remember(app.uid, app.allowSu, app.hasCustomProfile, colorScheme) {
+        buildList {
+            if (app.allowSu) {
+                add(StatusMeta("ROOT", colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer))
+            } else if (Natives.uidShouldUmount(app.uid)) {
+                add(StatusMeta("UMOUNT", colorScheme.secondaryContainer, colorScheme.onSecondaryContainer))
+            }
+            if (app.hasCustomProfile) {
+                add(StatusMeta("CUSTOM", colorScheme.primaryContainer, colorScheme.onPrimaryContainer))
+            }
+        }
+    }
     Card(
         modifier = Modifier
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 12.dp, vertical = 0.dp)
             .padding(bottom = 12.dp),
-        onClick = {
-            onClickListener()
-        },
+        onClick = onClickListener,
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
     ) {
@@ -314,43 +315,26 @@ private fun AppItem(
                 )
             },
             rightActions = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FlowColumn(
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
-                        itemHorizontalAlignment = Alignment.End
+                        horizontalAlignment = Alignment.End
                     ) {
-                        if (app.allowSu) {
+                        tags.forEach { meta ->
                             StatusTag(
-                                label = "ROOT",
-                                backgroundColor = colorScheme.tertiaryContainer,
-                                contentColor = colorScheme.onTertiaryContainer
-                            )
-                        } else {
-                            if (Natives.uidShouldUmount(app.uid)) {
-                                StatusTag(
-                                    label = "UMOUNT",
-                                    backgroundColor = colorScheme.secondaryContainer,
-                                    contentColor = colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
-                        if (app.hasCustomProfile) {
-                            StatusTag(
-                                label = "CUSTOM",
-                                backgroundColor = colorScheme.primaryContainer,
-                                contentColor = colorScheme.onPrimaryContainer
+                                label = meta.label,
+                                backgroundColor = meta.bg,
+                                contentColor = meta.fg
                             )
                         }
                     }
                     Image(
                         modifier = Modifier
                             .padding(start = 8.dp)
-                            .size(10.dp, 16.dp),
+                            .size(width = 10.dp, height = 16.dp),
                         imageVector = MiuixIcons.Basic.ArrowRight,
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorScheme.onSurfaceVariantActions),
+                        colorFilter = ColorFilter.tint(MiuixTheme.colorScheme.onSurfaceVariantActions),
                     )
                 }
             }
@@ -359,7 +343,11 @@ private fun AppItem(
 }
 
 @Composable
-private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color) {
+private fun StatusTag(
+    label: String,
+    backgroundColor: Color,
+    contentColor: Color
+) {
     Box(
         modifier = Modifier
             .background(
@@ -376,3 +364,10 @@ private fun StatusTag(label: String, backgroundColor: Color, contentColor: Color
         )
     }
 }
+
+@Immutable
+private data class StatusMeta(
+    val label: String,
+    val bg: Color,
+    val fg: Color
+)
