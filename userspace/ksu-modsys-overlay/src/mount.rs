@@ -1,14 +1,16 @@
-use anyhow::{Ok, Result, anyhow, bail};
+// Mount logic
+use anyhow::{Result, anyhow, bail};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{fd::AsFd, fs::CWD, mount::*};
 
-use crate::defs::KSU_OVERLAY_SOURCE;
+use crate::defs;
 use log::{info, warn};
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use procfs::process::Process;
+use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -122,7 +124,7 @@ pub fn mount_overlayfs(
             fsconfig_set_string(fs, "upperdir", upperdir)?;
             fsconfig_set_string(fs, "workdir", workdir)?;
         }
-        fsconfig_set_string(fs, "source", KSU_OVERLAY_SOURCE)?;
+        fsconfig_set_string(fs, "source", defs::KSU_OVERLAY_SOURCE)?;
         fsconfig_create(fs)?;
         let mount = fsmount(fs, FsMountFlags::FSMOUNT_CLOEXEC, MountAttrFlags::empty())?;
         move_mount(
@@ -141,7 +143,7 @@ pub fn mount_overlayfs(
             data = format!("{data},upperdir={upperdir},workdir={workdir}");
         }
         mount(
-            KSU_OVERLAY_SOURCE,
+            defs::KSU_OVERLAY_SOURCE,
             dest.as_ref(),
             "overlay",
             MountFlags::empty(),
@@ -156,7 +158,7 @@ pub fn mount_tmpfs(dest: impl AsRef<Path>) -> Result<()> {
     info!("mount tmpfs on {}", dest.as_ref().display());
     let fs = fsopen("tmpfs", FsOpenFlags::FSOPEN_CLOEXEC)?;
     let fs = fs.as_fd();
-    fsconfig_set_string(fs, "source", KSU_OVERLAY_SOURCE)?;
+    fsconfig_set_string(fs, "source", defs::KSU_OVERLAY_SOURCE)?;
     fsconfig_create(fs)?;
     let mount = fsmount(fs, FsMountFlags::FSMOUNT_CLOEXEC, MountAttrFlags::empty())?;
     move_mount(
@@ -274,6 +276,97 @@ pub fn mount_overlay(
             bail!(e);
         }
     }
+    Ok(())
+}
+
+fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
+    if lowerdir.is_empty() {
+        warn!("partition: {partition_name} lowerdir is empty");
+        return Ok(());
+    }
+
+    let partition = format!("/{partition_name}");
+
+    // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
+    if Path::new(&partition).read_link().is_ok() {
+        warn!("partition: {partition} is a symlink");
+        return Ok(());
+    }
+
+    let mut workdir = None;
+    let mut upperdir = None;
+    let system_rw_dir = Path::new(defs::SYSTEM_RW_DIR);
+    if system_rw_dir.exists() {
+        workdir = Some(system_rw_dir.join(partition_name).join("workdir"));
+        upperdir = Some(system_rw_dir.join(partition_name).join("upperdir"));
+    }
+
+    mount_overlay(&partition, lowerdir, workdir, upperdir)
+}
+
+pub fn mount_modules_systemlessly() -> Result<()> {
+    let module_dir = defs::MODULE_DIR;
+
+    // construct overlay mount params
+    let dir = std::fs::read_dir(module_dir);
+    let dir = match dir {
+        Ok(dir) => dir,
+        Err(_) => bail!("open {} failed", defs::MODULE_DIR),
+    };
+
+    let mut system_lowerdir: Vec<String> = Vec::new();
+
+    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
+    let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
+    for ele in &partition {
+        partition_lowerdir.insert((*ele).to_string(), Vec::new());
+    }
+
+    for entry in dir.flatten() {
+        let module = entry.path();
+        if !module.is_dir() {
+            continue;
+        }
+        let disabled = module.join(defs::DISABLE_FILE_NAME).exists();
+        if disabled {
+            info!("module: {} is disabled, ignore!", module.display());
+            continue;
+        }
+        let skip_mount = module.join(defs::SKIP_MOUNT_FILE_NAME).exists();
+        if skip_mount {
+            info!("module: {} skip_mount exist, skip!", module.display());
+            continue;
+        }
+
+        let module_system = Path::new(&module).join("system");
+        if module_system.is_dir() {
+            system_lowerdir.push(format!("{}", module_system.display()));
+        }
+
+        for part in &partition {
+            // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
+            // otherwise it must be a symlink and we don't need to overlay!
+            let part_path = Path::new(&module).join(part);
+            if part_path.is_dir() {
+                if let Some(v) = partition_lowerdir.get_mut(*part) {
+                    v.push(format!("{}", part_path.display()));
+                }
+            }
+        }
+    }
+
+    // mount /system first
+    if let Err(e) = mount_partition("system", &system_lowerdir) {
+        warn!("mount system failed: {e:#}");
+    }
+
+    // mount other partitions
+    for (k, v) in partition_lowerdir {
+        if let Err(e) = mount_partition(&k, &v) {
+            warn!("mount {k} failed: {e:#}");
+        }
+    }
+
     Ok(())
 }
 

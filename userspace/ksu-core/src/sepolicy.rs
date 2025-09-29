@@ -19,7 +19,7 @@ fn parse_single_word(input: &str) -> IResult<&str, &str> {
     take_while1(is_sepolicy_char).parse(input)
 }
 
-fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject> {
+fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, (_, words, _)) = (
         tag("{"),
         take_while_m_n(1, 100, |c: char| is_sepolicy_char(c) || c.is_whitespace()),
@@ -29,25 +29,22 @@ fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject> {
     Ok((input, words.split_whitespace().collect()))
 }
 
-fn parse_single_obj(input: &str) -> IResult<&str, SeObject> {
+fn parse_single_obj(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, word) = take_while1(is_sepolicy_char).parse(input)?;
     Ok((input, vec![word]))
 }
 
-fn parse_star(input: &str) -> IResult<&str, SeObject> {
+fn parse_star(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, _) = tag("*").parse(input)?;
     Ok((input, vec!["*"]))
 }
 
-// 1. a single sepolicy word
-// 2. { obj1 obj2 obj3 ...}
-// 3. *
-fn parse_seobj(input: &str) -> IResult<&str, SeObject> {
+fn parse_seobj(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, strs) = alt((parse_single_obj, parse_bracket_objs, parse_star)).parse(input)?;
     Ok((input, strs))
 }
 
-fn parse_seobj_no_star(input: &str) -> IResult<&str, SeObject> {
+fn parse_seobj_no_star(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, strs) = alt((parse_single_obj, parse_bracket_objs)).parse(input)?;
     Ok((input, strs))
 }
@@ -127,38 +124,14 @@ struct GenFsCon<'a> {
 
 #[derive(Debug)]
 enum PolicyStatement<'a> {
-    // "allow *source_type *target_type *class *perm_set"
-    // "deny *source_type *target_type *class *perm_set"
-    // "auditallow *source_type *target_type *class *perm_set"
-    // "dontaudit *source_type *target_type *class *perm_set"
     NormalPerm(NormalPerm<'a>),
-
-    // "allowxperm *source_type *target_type *class operation xperm_set"
-    // "auditallowxperm *source_type *target_type *class operation xperm_set"
-    // "dontauditxperm *source_type *target_type *class operation xperm_set"
     XPerm(XPerm<'a>),
-
-    // "permissive ^type"
-    // "enforce ^type"
     TypeState(TypeState<'a>),
-
-    // "type type_name ^(attribute)"
     Type(Type<'a>),
-
-    // "typeattribute ^type ^attribute"
     TypeAttr(TypeAttr<'a>),
-
-    // "attribute ^attribute"
     Attr(Attr<'a>),
-
-    // "type_transition source_type target_type class default_type (object_name)"
     TypeTransition(TypeTransition<'a>),
-
-    // "type_change source_type target_type class default_type"
-    // "type_member source_type target_type class default_type"
     TypeChange(TypeChange<'a>),
-
-    // "genfscon fs_name partial_path fs_context"
     GenFsCon(GenFsCon<'a>),
 }
 
@@ -171,7 +144,6 @@ impl<'a> SeObjectParser<'a> for NormalPerm<'a> {
             tag("dontaudit"),
         ))
         .parse(input)?;
-
         let (input, _) = space0(input)?;
         let (input, source) = parse_seobj(input)?;
         let (input, _) = space0(input)?;
@@ -192,7 +164,6 @@ impl<'a> SeObjectParser<'a> for XPerm<'a> {
             tag("dontauditxperm"),
         ))
         .parse(input)?;
-
         let (input, _) = space0(input)?;
         let (input, source) = parse_seobj(input)?;
         let (input, _) = space0(input)?;
@@ -203,7 +174,6 @@ impl<'a> SeObjectParser<'a> for XPerm<'a> {
         let (input, operation) = parse_single_word(input)?;
         let (input, _) = space0(input)?;
         let (input, perm_set) = parse_single_word(input)?;
-
         Ok((
             input,
             XPerm::new(op, source, target, class, operation, perm_set),
@@ -214,10 +184,8 @@ impl<'a> SeObjectParser<'a> for XPerm<'a> {
 impl<'a> SeObjectParser<'a> for TypeState<'a> {
     fn parse(input: &'a str) -> IResult<&'a str, Self> {
         let (input, op) = alt((tag("permissive"), tag("enforce"))).parse(input)?;
-
         let (input, _) = space1(input)?;
         let (input, stype) = parse_seobj_no_star(input)?;
-
         Ok((input, TypeState::new(op, stype)))
     }
 }
@@ -227,14 +195,11 @@ impl<'a> SeObjectParser<'a> for Type<'a> {
         let (input, _) = tag("type")(input)?;
         let (input, _) = space1(input)?;
         let (input, name) = parse_single_word(input)?;
-
         if input.is_empty() {
-            return Ok((input, Type::new(name, vec!["domain"]))); // default to domain
+            return Ok((input, Type::new(name, vec!["domain"])));
         }
-
         let (input, _) = space1(input)?;
         let (input, attrs) = parse_seobj_no_star(input)?;
-
         Ok((input, Type::new(name, attrs)))
     }
 }
@@ -245,9 +210,8 @@ impl<'a> SeObjectParser<'a> for TypeAttr<'a> {
         let (input, _) = space1(input)?;
         let (input, stype) = parse_seobj_no_star(input)?;
         let (input, _) = space1(input)?;
-        let (input, attr) = parse_seobj_no_star(input)?;
-
-        Ok((input, TypeAttr::new(stype, attr)))
+        let (input, sattr) = parse_seobj_no_star(input)?;
+        Ok((input, TypeAttr::new(stype, sattr)))
     }
 }
 
@@ -255,15 +219,14 @@ impl<'a> SeObjectParser<'a> for Attr<'a> {
     fn parse(input: &'a str) -> IResult<&'a str, Self> {
         let (input, _) = tag("attribute")(input)?;
         let (input, _) = space1(input)?;
-        let (input, attr) = parse_single_word(input)?;
-
-        Ok((input, Attr::new(attr)))
+        let (input, name) = parse_single_word(input)?;
+        Ok((input, Attr::new(name)))
     }
 }
 
 impl<'a> SeObjectParser<'a> for TypeTransition<'a> {
     fn parse(input: &'a str) -> IResult<&'a str, Self> {
-        let (input, _) = alt((tag("type_transition"), tag("name_transition"))).parse(input)?;
+        let (input, _) = tag("type_transition")(input)?;
         let (input, _) = space1(input)?;
         let (input, source) = parse_single_word(input)?;
         let (input, _) = space1(input)?;
@@ -272,17 +235,14 @@ impl<'a> SeObjectParser<'a> for TypeTransition<'a> {
         let (input, class) = parse_single_word(input)?;
         let (input, _) = space1(input)?;
         let (input, default) = parse_single_word(input)?;
-
         if input.is_empty() {
             return Ok((
                 input,
                 TypeTransition::new(source, target, class, default, None),
             ));
         }
-
         let (input, _) = space1(input)?;
         let (input, object) = parse_single_word(input)?;
-
         Ok((
             input,
             TypeTransition::new(source, target, class, default, Some(object)),
@@ -301,7 +261,6 @@ impl<'a> SeObjectParser<'a> for TypeChange<'a> {
         let (input, class) = parse_single_word(input)?;
         let (input, _) = space1(input)?;
         let (input, default) = parse_single_word(input)?;
-
         Ok((input, TypeChange::new(op, source, target, class, default)))
     }
 }
@@ -349,7 +308,6 @@ where
     'b: 'a,
 {
     let mut statements = vec![];
-
     for line in input.split(['\n', ';']) {
         let trimmed_line = line.trim();
         if trimmed_line.is_empty() || trimmed_line.starts_with('#') {
@@ -365,7 +323,6 @@ where
 }
 
 const SEPOLICY_MAX_LEN: usize = 128;
-
 const CMD_NORMAL_PERM: u32 = 1;
 const CMD_XPERM: u32 = 2;
 const CMD_TYPE_STATE: u32 = 3;
@@ -378,7 +335,7 @@ const CMD_GENFSCON: u32 = 9;
 
 #[derive(Debug, Default)]
 enum PolicyObject {
-    All, // for "*", stand for all objects, and is NULL in ffi
+    All,
     One([u8; SEPOLICY_MAX_LEN]),
     #[default]
     None,
@@ -397,10 +354,6 @@ impl TryFrom<&str> for PolicyObject {
     }
 }
 
-/// atomic statement, such as: allow domain1 domain2:file1 read;
-/// normal statement would be expand to atomic statement, for example:
-/// allow domain1 domain2:file1 { read write }; would be expand to two atomic statement
-/// allow domain1 domain2:file1 read;allow domain1 domain2:file1 write;
 #[allow(clippy::too_many_arguments)]
 #[derive(Debug, new)]
 struct AtomicStatement {
@@ -532,12 +485,12 @@ impl<'a> TryFrom<&'a TypeAttr<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a TypeAttr<'a>) -> Result<Self> {
         let mut result = vec![];
         for &t in &perm.stype {
-            for &attr in &perm.sattr {
+            for &a in &perm.sattr {
                 result.push(AtomicStatement {
                     cmd: CMD_TYPE_ATTR,
                     subcmd: 0,
                     sepol1: t.try_into()?,
-                    sepol2: attr.try_into()?,
+                    sepol2: a.try_into()?,
                     sepol3: PolicyObject::None,
                     sepol4: PolicyObject::None,
                     sepol5: PolicyObject::None,
@@ -552,57 +505,44 @@ impl<'a> TryFrom<&'a TypeAttr<'a>> for Vec<AtomicStatement> {
 
 impl<'a> TryFrom<&'a Attr<'a>> for Vec<AtomicStatement> {
     type Error = anyhow::Error;
-    fn try_from(perm: &'a Attr<'a>) -> Result<Self> {
-        let result = vec![AtomicStatement {
+    fn try_from(attr: &'a Attr<'a>) -> Result<Self> {
+        Ok(vec![AtomicStatement {
             cmd: CMD_ATTR,
             subcmd: 0,
-            sepol1: perm.name.try_into()?,
+            sepol1: attr.name.try_into()?,
             sepol2: PolicyObject::None,
             sepol3: PolicyObject::None,
             sepol4: PolicyObject::None,
             sepol5: PolicyObject::None,
             sepol6: PolicyObject::None,
             sepol7: PolicyObject::None,
-        }];
-        Ok(result)
+        }])
     }
 }
 
 impl<'a> TryFrom<&'a TypeTransition<'a>> for Vec<AtomicStatement> {
     type Error = anyhow::Error;
     fn try_from(perm: &'a TypeTransition<'a>) -> Result<Self> {
-        let mut result = vec![];
-        let obj = match perm.object_name {
-            Some(obj) => obj.try_into()?,
-            None => PolicyObject::None,
-        };
-        result.push(AtomicStatement {
+        Ok(vec![AtomicStatement {
             cmd: CMD_TYPE_TRANSITION,
             subcmd: 0,
             sepol1: perm.source.try_into()?,
             sepol2: perm.target.try_into()?,
             sepol3: perm.class.try_into()?,
             sepol4: perm.default_type.try_into()?,
-            sepol5: obj,
+            sepol5: perm.object_name.try_into()?,
             sepol6: PolicyObject::None,
             sepol7: PolicyObject::None,
-        });
-        Ok(result)
+        }])
     }
 }
 
 impl<'a> TryFrom<&'a TypeChange<'a>> for Vec<AtomicStatement> {
     type Error = anyhow::Error;
     fn try_from(perm: &'a TypeChange<'a>) -> Result<Self> {
-        let mut result = vec![];
-        let subcmd = match perm.op {
-            "type_change" => 1,
-            "type_member" => 2,
-            _ => 0,
-        };
-        result.push(AtomicStatement {
+        Ok(vec![AtomicStatement {
             cmd: CMD_TYPE_CHANGE,
-            subcmd,
+            subcmd: 0,
             sepol1: perm.source.try_into()?,
             sepol2: perm.target.try_into()?,
             sepol3: perm.class.try_into()?,
@@ -610,15 +550,14 @@ impl<'a> TryFrom<&'a TypeChange<'a>> for Vec<AtomicStatement> {
             sepol5: PolicyObject::None,
             sepol6: PolicyObject::None,
             sepol7: PolicyObject::None,
-        });
-        Ok(result)
+        }])
     }
 }
 
 impl<'a> TryFrom<&'a GenFsCon<'a>> for Vec<AtomicStatement> {
     type Error = anyhow::Error;
     fn try_from(perm: &'a GenFsCon<'a>) -> Result<Self> {
-        let result = vec![AtomicStatement {
+        Ok(vec![AtomicStatement {
             cmd: CMD_GENFSCON,
             subcmd: 0,
             sepol1: perm.fs_name.try_into()?,
@@ -628,8 +567,7 @@ impl<'a> TryFrom<&'a GenFsCon<'a>> for Vec<AtomicStatement> {
             sepol5: PolicyObject::None,
             sepol6: PolicyObject::None,
             sepol7: PolicyObject::None,
-        }];
-        Ok(result)
+        }])
     }
 }
 
@@ -649,10 +587,6 @@ impl<'a> TryFrom<&'a PolicyStatement<'a>> for Vec<AtomicStatement> {
         }
     }
 }
-
-////////////////////////////////////////////////////////////////
-///  for C FFI to call kernel interface
-///////////////////////////////////////////////////////////////
 
 #[derive(Debug)]
 #[repr(C)]
@@ -694,7 +628,6 @@ impl From<AtomicStatement> for FfiPolicy {
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Result<()> {
     let policies: Vec<AtomicStatement> = statement.try_into()?;
-
     for policy in policies {
         if !rustix::process::ksu_set_policy(&FfiPolicy::from(policy)) {
             log::warn!("apply rule: {statement:?} failed.");
@@ -703,7 +636,6 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
             }
         }
     }
-
     Ok(())
 }
 

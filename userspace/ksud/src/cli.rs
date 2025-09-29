@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, modsys, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -161,17 +161,7 @@ enum Debug {
 
     Mount,
 
-    /// Copy sparse file
-    Xcp {
-        /// source file
-        src: String,
-        /// destination file
-        dst: String,
-        /// punch hole
-        #[arg(short, long, default_value = "false")]
-        punch_hole: bool,
-    },
-
+    // Xcp moved to ksu-modsys-overlay
     /// For testing
     Test,
 }
@@ -306,22 +296,26 @@ pub fn run() -> Result<()> {
             {
                 utils::switch_mnt_ns(1)?;
             }
+            // Initialize modsys if needed
+            modsys::init()?;
+
+            // Forward all module commands to the selected modsys implementation
             match command {
-                Module::Install { zip } => module::install_module(&zip),
-                Module::Uninstall { id } => module::uninstall_module(&id),
-                Module::Enable { id } => module::enable_module(&id),
-                Module::Disable { id } => module::disable_module(&id),
-                Module::Action { id } => module::run_action(&id),
-                Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_ksu_images(),
+                Module::Install { zip } => modsys::install_module(&zip),
+                Module::Uninstall { id } => modsys::uninstall_module(&id),
+                Module::Enable { id } => modsys::enable_module(&id),
+                Module::Disable { id } => modsys::disable_module(&id),
+                Module::Action { id } => modsys::run_action(&id),
+                Module::List => modsys::list_modules(),
+                Module::Shrink => modsys::shrink_images(),
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
-            Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
-            Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
-            Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
+            Sepolicy::Patch { sepolicy } => ksu_core::sepolicy::live_patch(&sepolicy),
+            Sepolicy::Apply { file } => ksu_core::sepolicy::apply_file(file),
+            Sepolicy::Check { sepolicy } => ksu_core::sepolicy::check_rule(&sepolicy),
         },
         Commands::Services => init_event::on_services(),
         Commands::Profile { command } => match command {
@@ -343,19 +337,15 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Version => {
-                println!("Kernel Version: {}", ksucalls::get_version());
+                println!("Kernel Version: {}", ksu_core::ksucalls::get_version());
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
-            Debug::Mount => init_event::mount_modules_systemlessly(defs::MODULE_DIR),
-            Debug::Xcp {
-                src,
-                dst,
-                punch_hole,
-            } => {
-                utils::copy_sparse_file(src, dst, punch_hole)?;
-                Ok(())
+            Debug::Mount => {
+                modsys::init()?;
+                modsys::mount_systemless()
             }
+            // Xcp handled in ksu-modsys-overlay
             Debug::Test => assets::ensure_binaries(false),
         },
 

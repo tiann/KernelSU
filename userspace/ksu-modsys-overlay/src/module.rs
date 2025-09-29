@@ -1,10 +1,6 @@
-#[allow(clippy::wildcard_imports)]
+// Module management logic
+use crate::defs;
 use crate::utils::*;
-use crate::{
-    assets, defs, ksucalls, mount,
-    restorecon::{restore_syscon, setsyscon},
-    sepolicy, utils,
-};
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
 use const_format::concatcp;
@@ -12,7 +8,10 @@ use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 
+use ksu_core::restorecon::{restore_syscon, setsyscon};
 use std::fs::OpenOptions;
+#[cfg(unix)]
+use std::os::unix::{fs::MetadataExt, prelude::PermissionsExt, process::CommandExt};
 use std::{
     collections::HashMap,
     env::var as env_var,
@@ -24,10 +23,7 @@ use std::{
 };
 use zip_extensions::zip_extract_file_to_memory;
 
-#[cfg(unix)]
-use std::os::unix::{fs::MetadataExt, prelude::PermissionsExt, process::CommandExt};
-
-const INSTALLER_CONTENT: &str = include_str!("./installer.sh");
+const INSTALLER_CONTENT: &str = include_str!("../assets/installer.sh");
 const INSTALL_MODULE_SCRIPT: &str = concatcp!(
     INSTALLER_CONTENT,
     "\n",
@@ -41,19 +37,19 @@ fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
         .with_context(|| format!("realpath: {module_file} failed"))?;
 
-    let result = Command::new(assets::BUSYBOX_PATH)
+    let result = Command::new(defs::BUSYBOX_PATH)
         .args(["sh", "-c", INSTALL_MODULE_SCRIPT])
         .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
             format!(
                 "{}:{}",
-                env_var("PATH").unwrap(),
+                env_var("PATH").unwrap_or_default(),
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         )
         .env("KSU", "true")
-        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
+        .env("KSU_KERNEL_VER_CODE", get_kernel_version().to_string())
         .env("KSU_VER", defs::VERSION_NAME)
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("OUTFD", "1")
@@ -63,16 +59,13 @@ fn exec_install_script(module_file: &str) -> Result<()> {
     Ok(())
 }
 
-// becuase we use something like A-B update
-// we need to update the module state after the boot_completed
-// if someone(such as the module) install a module before the boot_completed
-// then it may cause some problems, just forbid it
-fn ensure_boot_completed() -> Result<()> {
-    // ensure getprop sys.boot_completed == 1
-    if getprop("sys.boot_completed").as_deref() != Some("1") {
-        bail!("Android is Booting!");
-    }
-    Ok(())
+// Placeholder for kernel version - will be provided by ksud
+fn get_kernel_version() -> u32 {
+    // This should be provided by ksud via environment or IPC
+    env_var("KSU_KERNEL_VER_CODE")
+        .unwrap_or_default()
+        .parse()
+        .unwrap_or(10940)
 }
 
 fn mark_update() -> Result<()> {
@@ -127,40 +120,14 @@ fn check_image(img: &str) -> Result<()> {
         .status()
         .with_context(|| format!("Failed to exec e2fsck {img}"))?;
     let code = result.code();
-    // 0 or 1 is ok
-    // 0: no error
-    // 1: file system errors corrected
-    // https://man7.org/linux/man-pages/man8/e2fsck.8.html
-    // ensure!(
-    //     code == Some(0) || code == Some(1),
-    //     "Failed to check image, e2fsck exit code: {}",
-    //     code.unwrap_or(-1)
-    // );
     info!("e2fsck exit code: {}", code.unwrap_or(-1));
-    Ok(())
-}
-
-pub fn load_sepolicy_rule() -> Result<()> {
-    foreach_active_module(|path| {
-        let rule_file = path.join("sepolicy.rule");
-        if !rule_file.exists() {
-            return Ok(());
-        }
-        info!("load policy: {}", &rule_file.display());
-
-        if sepolicy::apply_file(&rule_file).is_err() {
-            warn!("Failed to load sepolicy.rule for {}", &rule_file.display());
-        }
-        Ok(())
-    })?;
-
     Ok(())
 }
 
 fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
-    let mut command = &mut Command::new(assets::BUSYBOX_PATH);
+    let mut command = &mut Command::new(defs::BUSYBOX_PATH);
     #[cfg(unix)]
     {
         command = command.process_group(0);
@@ -173,19 +140,23 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         };
     }
     command = command
-        .current_dir(path.as_ref().parent().unwrap())
+        .current_dir(
+            path.as_ref()
+                .parent()
+                .unwrap_or_else(|| std::path::Path::new("/")),
+        )
         .arg("sh")
         .arg(path.as_ref())
         .env("ASH_STANDALONE", "1")
         .env("KSU", "true")
-        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
+        .env("KSU_KERNEL_VER_CODE", get_kernel_version().to_string())
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("KSU_VER", defs::VERSION_NAME)
         .env(
             "PATH",
             format!(
                 "{}:{}",
-                env_var("PATH").unwrap(),
+                env_var("PATH").unwrap_or_default(),
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         );
@@ -242,13 +213,29 @@ pub fn load_system_prop() -> Result<()> {
         info!("load {} system.prop", module.display());
 
         // resetprop -n --file system.prop
-        Command::new(assets::RESETPROP_PATH)
+        Command::new(defs::RESETPROP_PATH)
             .arg("-n")
             .arg("--file")
             .arg(&system_prop)
             .status()
             .with_context(|| format!("Failed to exec {}", system_prop.display()))?;
 
+        Ok(())
+    })?;
+
+    Ok(())
+}
+
+pub fn load_sepolicy_rule() -> Result<()> {
+    foreach_active_module(|module| {
+        let rule = module.join("sepolicy.rule");
+        if !rule.exists() {
+            return Ok(());
+        }
+        info!("apply {} sepolicy.rule", module.display());
+        if let Err(e) = ksu_core::sepolicy::apply_file(&rule) {
+            warn!("apply sepolicy.rule failed: {e}");
+        }
         Ok(())
     })?;
 
@@ -310,7 +297,7 @@ fn create_module_image(image: &str, image_size: u64) -> Result<()> {
     ensure!(
         result.status.success(),
         "Failed to format ext4 image: {}",
-        String::from_utf8(result.stderr).unwrap()
+        String::from_utf8_lossy(&result.stderr)
     );
     check_image(image)?;
     Ok(())
@@ -320,9 +307,7 @@ fn _install_module(zip: &str) -> Result<()> {
     ensure_boot_completed()?;
 
     // print banner
-    println!(include_str!("banner"));
-
-    assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
+    println!("{}", ksu_core::banner::BANNER);
 
     // first check if workding dir is usable
     ensure_dir_exists(defs::WORKING_DIR).with_context(|| "Failed to create working dir")?;
@@ -385,7 +370,7 @@ fn _install_module(zip: &str) -> Result<()> {
     } else if modules_update_img_exist {
         // modules_update.img exists, we should use it as tmp img
         info!("Using existing modules_update.img as tmp image");
-        utils::copy_sparse_file(modules_update_img, tmp_module_img, true).with_context(|| {
+        copy_sparse_file(modules_update_img, tmp_module_img, true).with_context(|| {
             format!(
                 "Failed to copy {} to {}",
                 modules_update_img.display(),
@@ -405,12 +390,12 @@ fn _install_module(zip: &str) -> Result<()> {
             println!("- Legacy image, migrating to new format, please be patient...");
             create_module_image(tmp_module_img, sparse_image_size)?;
             let _dontdrop =
-                mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)
+                crate::mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)
                     .with_context(|| format!("Failed to mount {tmp_module_img}"))?;
-            utils::copy_module_files(defs::MODULE_DIR, module_update_tmp_dir)
+            copy_module_files(defs::MODULE_DIR, module_update_tmp_dir)
                 .with_context(|| "Failed to migrate module files".to_string())?;
         } else {
-            utils::copy_sparse_file(modules_img, tmp_module_img, true)
+            copy_sparse_file(modules_img, tmp_module_img, true)
                 .with_context(|| "Failed to copy module image".to_string())?;
 
             if std::fs::metadata(tmp_module_img)?.len() < sparse_image_size {
@@ -438,7 +423,8 @@ fn _install_module(zip: &str) -> Result<()> {
     // mount the modules_update.img to mountpoint
     println!("- Mounting image");
 
-    let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
+    let _dontdrop =
+        crate::mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
 
     info!("mounted {tmp_module_img} to {module_update_tmp_dir}");
 
@@ -467,7 +453,7 @@ fn _install_module(zip: &str) -> Result<()> {
     // all done, rename the tmp image to modules_update.img
     if std::fs::rename(tmp_module_img, defs::MODULE_UPDATE_IMG).is_err() {
         warn!("Rename image failed, try copy it.");
-        utils::copy_sparse_file(tmp_module_img, defs::MODULE_UPDATE_IMG, true)
+        copy_sparse_file(tmp_module_img, defs::MODULE_UPDATE_IMG, true)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(tmp_module_img);
     }
@@ -484,7 +470,7 @@ pub fn install_module(zip: &str) -> Result<()> {
     if let Err(ref e) = result {
         // error happened, do some cleanup!
         let _ = std::fs::remove_file(defs::MODULE_UPDATE_TMP_IMG);
-        let _ = mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
+        let _ = crate::mount::umount_dir(defs::MODULE_UPDATE_TMP_DIR);
         println!("- Error: {e}");
     }
     result
@@ -507,28 +493,29 @@ where
             modules_update_img.display(),
             modules_update_tmp_img.display()
         );
-        utils::copy_sparse_file(modules_update_img, modules_update_tmp_img, true)?;
+        copy_sparse_file(modules_update_img, modules_update_tmp_img, true)?;
     } else {
         info!(
             "copy {} to {}",
             modules_img.display(),
             modules_update_tmp_img.display()
         );
-        utils::copy_sparse_file(modules_img, modules_update_tmp_img, true)?;
+        copy_sparse_file(modules_img, modules_update_tmp_img, true)?;
     }
 
     // ensure modules_update dir exist
     ensure_clean_dir(update_dir)?;
 
     // mount the modules_update img
-    let _dontdrop = mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
+    let _dontdrop =
+        crate::mount::AutoMountExt4::try_new(defs::MODULE_UPDATE_TMP_IMG, update_dir, true)?;
 
     // call the operation func
     let result = func(id, update_dir);
 
     if let Err(e) = std::fs::rename(modules_update_tmp_img, defs::MODULE_UPDATE_IMG) {
         warn!("Rename image failed: {e}, try copy it.");
-        utils::copy_sparse_file(modules_update_tmp_img, defs::MODULE_UPDATE_IMG, true)
+        copy_sparse_file(modules_update_tmp_img, defs::MODULE_UPDATE_IMG, true)
             .with_context(|| "Failed to copy image.".to_string())?;
         let _ = std::fs::remove_file(modules_update_tmp_img);
     }
@@ -621,28 +608,6 @@ pub fn disable_module(id: &str) -> Result<()> {
     })
 }
 
-pub fn disable_all_modules() -> Result<()> {
-    mark_all_modules(defs::DISABLE_FILE_NAME)
-}
-
-pub fn uninstall_all_modules() -> Result<()> {
-    mark_all_modules(defs::REMOVE_FILE_NAME)
-}
-
-fn mark_all_modules(flag_file: &str) -> Result<()> {
-    // we assume the module dir is already mounted
-    let dir = std::fs::read_dir(defs::MODULE_DIR)?;
-    for entry in dir.flatten() {
-        let path = entry.path();
-        let flag = path.join(flag_file);
-        if let Err(e) = ensure_file_exists(flag) {
-            warn!("Failed to mark module: {}: {}", path.display(), e);
-        }
-    }
-
-    Ok(())
-}
-
 fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
     // first check enabled modules
     let dir = std::fs::read_dir(path);
@@ -727,6 +692,24 @@ pub fn shrink_ksu_images() -> Result<()> {
     shrink_image(defs::MODULE_IMG)?;
     if Path::new(defs::MODULE_UPDATE_IMG).exists() {
         shrink_image(defs::MODULE_UPDATE_IMG)?;
+    }
+    Ok(())
+}
+
+pub fn disable_all_modules() -> Result<()> {
+    let modules_dir = Path::new(defs::MODULE_DIR);
+    let dir = std::fs::read_dir(modules_dir)?;
+    for entry in dir.flatten() {
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+        let module_prop = path.join("module.prop");
+        if !module_prop.exists() {
+            continue;
+        }
+        let disable_marker = path.join(defs::DISABLE_FILE_NAME);
+        ensure_file_exists(&disable_marker).ok();
     }
     Ok(())
 }
