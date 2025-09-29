@@ -2,15 +2,20 @@ package me.weishu.kernelsu.ui.viewmodel
 
 import android.os.SystemClock
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
@@ -29,6 +34,7 @@ class ModuleViewModel : ViewModel() {
         private var modules by mutableStateOf<List<ModuleInfo>>(emptyList())
     }
 
+    @Immutable
     class ModuleInfo(
         val id: String,
         val name: String,
@@ -44,6 +50,30 @@ class ModuleViewModel : ViewModel() {
         val hasActionScript: Boolean,
     )
 
+    @Immutable
+    data class ModuleUpdateInfo(
+        val downloadUrl: String,
+        val version: String,
+        val changelog: String
+    ) {
+        companion object {
+            val Empty = ModuleUpdateInfo("", "", "")
+        }
+    }
+
+    private data class ModuleUpdateSignature(
+        val updateJson: String,
+        val versionCode: Int,
+        val enabled: Boolean,
+        val update: Boolean,
+        val remove: Boolean
+    )
+
+    private data class ModuleUpdateCache(
+        val signature: ModuleUpdateSignature,
+        val info: ModuleUpdateInfo
+    )
+
     var isRefreshing by mutableStateOf(false)
         private set
 
@@ -52,6 +82,12 @@ class ModuleViewModel : ViewModel() {
 
     var sortEnabledFirst by mutableStateOf(false)
     var sortActionFirst by mutableStateOf(false)
+
+    private val updateInfoMutex = Mutex()
+    private var updateInfoCache: MutableMap<String, ModuleUpdateCache> = mutableMapOf()
+    private val updateInfoInFlight = mutableSetOf<String>()
+    private val _updateInfo = mutableStateMapOf<String, ModuleUpdateInfo>()
+    val updateInfo: SnapshotStateMap<String, ModuleUpdateInfo> = _updateInfo
 
     private val _searchStatus = mutableStateOf(SearchStatus(""))
     val searchStatus: State<SearchStatus> = _searchStatus
@@ -150,6 +186,7 @@ class ModuleViewModel : ViewModel() {
                             obj.optBoolean("action")
                         )
                     }.toList()
+                syncModuleUpdateInfo(modules)
                 isNeedRefresh = false
             }.onFailure { e ->
                 Log.e(TAG, "fetchModuleList: ", e)
@@ -170,10 +207,74 @@ class ModuleViewModel : ViewModel() {
         return version.replace(Regex("[^a-zA-Z0-9.\\-_]"), "_")
     }
 
-    fun checkUpdate(m: ModuleInfo): Triple<String, String, String> {
-        val empty = Triple("", "", "")
+    private fun ModuleInfo.toSignature(): ModuleUpdateSignature {
+        return ModuleUpdateSignature(
+            updateJson = updateJson,
+            versionCode = versionCode,
+            enabled = enabled,
+            update = update,
+            remove = remove
+        )
+    }
+
+    fun ensureModuleUpdateInfo(modules: List<ModuleInfo>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            syncModuleUpdateInfo(modules)
+        }
+    }
+
+    private suspend fun syncModuleUpdateInfo(modules: List<ModuleInfo>) {
+        val modulesToFetch = mutableListOf<Triple<String, ModuleInfo, ModuleUpdateSignature>>()
+        val removedIds = mutableSetOf<String>()
+
+        updateInfoMutex.withLock {
+            val ids = modules.map { it.id }.toSet()
+            updateInfoCache.keys.filter { it !in ids }.forEach { removedId ->
+                removedIds += removedId
+                updateInfoCache.remove(removedId)
+                updateInfoInFlight.remove(removedId)
+            }
+
+            modules.forEach { module ->
+                val signature = module.toSignature()
+                val cached = updateInfoCache[module.id]
+                if ((cached == null || cached.signature != signature) && updateInfoInFlight.add(module.id)) {
+                    modulesToFetch += Triple(module.id, module, signature)
+                }
+            }
+        }
+
+        val fetchedEntries = modulesToFetch.map { (id, module, signature) ->
+            id to ModuleUpdateCache(signature, checkUpdate(module))
+        }
+
+        val changedEntries = mutableListOf<Pair<String, ModuleUpdateInfo>>()
+        updateInfoMutex.withLock {
+            fetchedEntries.forEach { (id, entry) ->
+                val existing = updateInfoCache[id]
+                if (existing == null || existing.signature != entry.signature || existing.info != entry.info) {
+                    updateInfoCache[id] = entry
+                    changedEntries += id to entry.info
+                }
+                updateInfoInFlight.remove(id)
+            }
+        }
+
+        if (removedIds.isEmpty() && changedEntries.isEmpty()) {
+            return
+        }
+
+        withContext(Dispatchers.Main) {
+            removedIds.forEach { _updateInfo.remove(it) }
+            changedEntries.forEach { (id, info) ->
+                _updateInfo[id] = info
+            }
+        }
+    }
+
+    fun checkUpdate(m: ModuleInfo): ModuleUpdateInfo {
         if (m.updateJson.isEmpty() || m.remove || m.update || !m.enabled) {
-            return empty
+            return ModuleUpdateInfo.Empty
         }
         // download updateJson
         val result = kotlin.runCatching {
@@ -192,12 +293,12 @@ class ModuleViewModel : ViewModel() {
         Log.i(TAG, "checkUpdate result: $result")
 
         if (result.isEmpty()) {
-            return empty
+            return ModuleUpdateInfo.Empty
         }
 
         val updateJson = kotlin.runCatching {
             JSONObject(result)
-        }.getOrNull() ?: return empty
+        }.getOrNull() ?: return ModuleUpdateInfo.Empty
 
         var version = updateJson.optString("version", "")
         version = sanitizeVersionString(version)
@@ -205,9 +306,9 @@ class ModuleViewModel : ViewModel() {
         val zipUrl = updateJson.optString("zipUrl", "")
         val changelog = updateJson.optString("changelog", "")
         if (versionCode <= m.versionCode || zipUrl.isEmpty()) {
-            return empty
+            return ModuleUpdateInfo.Empty
         }
 
-        return Triple(zipUrl, version, changelog)
+        return ModuleUpdateInfo(zipUrl, version, changelog)
     }
 }

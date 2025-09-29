@@ -10,8 +10,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -48,12 +50,13 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -79,6 +82,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -129,12 +133,13 @@ fun ModulePager(
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleViewModel>()
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val loadingDialog = rememberLoadingDialog()
-    val confirmDialog = rememberConfirmDialog()
     val searchStatus by viewModel.searchStatus
+
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+    val modules = viewModel.moduleList
 
     LaunchedEffect(navigator) {
         if (viewModel.moduleList.isEmpty() || viewModel.searchResults.value.isEmpty() || viewModel.isNeedRefresh) {
@@ -144,13 +149,23 @@ fun ModulePager(
         }
     }
 
-    LaunchedEffect(searchStatus.searchText, viewModel.moduleList) {
+    LaunchedEffect(searchStatus.searchText) {
         viewModel.updateSearchText(searchStatus.searchText)
+    }
+
+    LaunchedEffect(modules) {
+        viewModel.ensureModuleUpdateInfo(modules)
+        if (searchStatus.searchText.isNotEmpty()) {
+            viewModel.updateSearchText(searchStatus.searchText)
+        }
     }
 
     val webUILauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { viewModel.fetchModuleList() }
+
+    val loadingDialog = rememberLoadingDialog()
+    val confirmDialog = rememberConfirmDialog()
 
     val isSafeMode = Natives.isSafeMode
     val hasMagisk = hasMagisk()
@@ -160,9 +175,9 @@ fun ModulePager(
     val listState = rememberLazyListState()
     var fabVisible by remember { mutableStateOf(true) }
     var scrollDistance by remember { mutableFloatStateOf(0f) }
-    val dynamicTopPadding by animateDpAsState(
-        targetValue = 12.dp * (1f - scrollBehavior.state.collapsedFraction)
-    )
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
 
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -394,7 +409,6 @@ fun ModulePager(
                                 tint = colorScheme.onSurface,
                                 contentDescription = stringResource(id = R.string.settings)
                             )
-
                         }
                     },
                     scrollBehavior = scrollBehavior
@@ -478,52 +492,82 @@ fun ModulePager(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
-                items(viewModel.searchResults.value, key = { it.id }) { module ->
+                val updateInfoMap = viewModel.updateInfo
+                items(
+                    viewModel.searchResults.value,
+                    key = { it.id },
+                    contentType = { "module" }
+                ) { module ->
                     AnimatedVisibility(
                         visible = viewModel.searchResults.value.isNotEmpty(),
-                        enter = fadeIn() + androidx.compose.animation.expandVertically(),
-                        exit = fadeOut() + androidx.compose.animation.shrinkVertically()
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
                     ) {
-                        val scope = rememberCoroutineScope()
-                        val updatedModule by produceState(initialValue = Triple("", "", "")) {
-                            scope.launch(Dispatchers.IO) {
-                                value = viewModel.checkUpdate(module)
+                        val itemScope = rememberCoroutineScope()
+                        val currentModuleState = rememberUpdatedState(module)
+                        val moduleUpdateInfo = updateInfoMap[module.id]
+                            ?: ModuleViewModel.ModuleUpdateInfo.Empty
+
+                        val onUninstallClick = remember(module.id, itemScope, ::onModuleUninstall) {
+                            {
+                                itemScope.launch {
+                                    onModuleUninstall(currentModuleState.value)
+                                }
+                                Unit
+                            }
+                        }
+                        val onToggleClick = remember(module.id, itemScope, ::onModuleToggle) {
+                            { _: Boolean ->
+                                itemScope.launch {
+                                    onModuleToggle(currentModuleState.value)
+                                }
+                                Unit
+                            }
+                        }
+                        val onUpdateClick = remember(module.id, moduleUpdateInfo, itemScope, ::onModuleUpdate, context, navigator) {
+                            {
+                                itemScope.launch {
+                                    onModuleUpdate(
+                                        currentModuleState.value,
+                                        moduleUpdateInfo.changelog,
+                                        moduleUpdateInfo.downloadUrl,
+                                        "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
+                                        context
+                                    ) { uri ->
+                                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                }
+                                Unit
+                            }
+                        }
+                        val onExecuteActionClick = remember(module.id, navigator, viewModel) {
+                            {
+                                navigator.navigate(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
+                                    launchSingleTop = true
+                                }
+                                viewModel.markNeedRefresh()
+                            }
+                        }
+                        val onOpenWebUiClick = remember(module.id) {
+                            {
+                                onModuleClick(
+                                    currentModuleState.value.id,
+                                    currentModuleState.value.name,
+                                    currentModuleState.value.hasWebUi
+                                )
                             }
                         }
 
                         ModuleItem(
-                            navigator = navigator,
                             module = module,
-                            updateUrl = updatedModule.first,
-                            onUninstall = {
-                                scope.launch {
-                                    onModuleUninstall(module)
-                                }
-                            },
-                            onCheckChanged = {
-                                scope.launch {
-                                    onModuleToggle(module)
-                                }
-                            },
-                            onUpdate = {
-                                scope.launch {
-                                    onModuleUpdate(
-                                        module,
-                                        updatedModule.third,
-                                        updatedModule.first,
-                                        "${module.name}-${updatedModule.second}.zip",
-                                        context,
-                                        onInstallModule = { uri ->
-                                            navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-                                                launchSingleTop = true
-                                            }
-                                        }
-                                    )
-                                }
-                            },
-                            onClick = {
-                                onModuleClick(it.id, it.name, it.hasWebUi)
-                            }
+                            updateUrl = moduleUpdateInfo.downloadUrl,
+                            onUninstall = onUninstallClick,
+                            onCheckChanged = onToggleClick,
+                            onUpdate = onUpdateClick,
+                            onExecuteAction = onExecuteActionClick,
+                            onOpenWebUi = onOpenWebUiClick
                         )
                     }
                 }
@@ -557,7 +601,7 @@ fun ModulePager(
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding(),
                         start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection)
                     ),
                 ) { boxHeight ->
                     ModuleList(
@@ -567,8 +611,10 @@ fun ModulePager(
                             .height(getWindowSize().height.dp)
                             .scrollEndHaptic()
                             .overScrollVertical()
-                            .nestedScroll(nestedScrollConnection)
-                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            .nestedScroll(nestedScrollConnection),
+                        scope = scope,
+                        modules = modules,
                         onInstallModule = {
                             navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
                                 launchSingleTop = true
@@ -578,27 +624,21 @@ fun ModulePager(
                             onModuleClick(id, name, hasWebUi)
                         },
                         onModuleUninstall = { module ->
-                            scope.launch {
-                                onModuleUninstall(module)
-                            }
+                            onModuleUninstall(module)
                         },
                         onModuleToggle = { module ->
-                            scope.launch {
-                                onModuleToggle(module)
-                            }
+                            onModuleToggle(module)
                         },
                         onModuleUpdate = { module, changelogUrl, downloadUrl, fileName ->
-                            scope.launch {
-                                onModuleUpdate(
-                                    module,
-                                    changelogUrl,
-                                    downloadUrl,
-                                    fileName,
-                                    context
-                                ) { uri ->
-                                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-                                        launchSingleTop = true
-                                    }
+                            onModuleUpdate(
+                                module,
+                                changelogUrl,
+                                downloadUrl,
+                                fileName,
+                                context
+                            ) { uri ->
+                                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
+                                    launchSingleTop = true
                                 }
                             }
                         },
@@ -618,6 +658,8 @@ private fun ModuleList(
     navigator: DestinationsNavigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
+    scope: CoroutineScope,
+    modules: List<ModuleViewModel.ModuleInfo>,
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     onModuleUninstall: suspend (ModuleViewModel.ModuleInfo) -> Unit,
@@ -628,8 +670,19 @@ private fun ModuleList(
     bottomInnerPadding: Dp,
     boxHeight: MutableState<Dp>
 ) {
+    val layoutDirection = LocalLayoutDirection.current
+    val updateInfoMap = viewModel.updateInfo
+
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
+    val refreshTexts = remember {
+        listOf(
+            context.getString(R.string.refresh_pulling),
+            context.getString(R.string.refresh_release),
+            context.getString(R.string.refresh_refresh),
+            context.getString(R.string.refresh_complete),
+        )
+    }
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
             delay(350)
@@ -637,100 +690,133 @@ private fun ModuleList(
             isRefreshing = false
         }
     }
-    val refreshTexts = listOf(
-        stringResource(R.string.refresh_pulling),
-        stringResource(R.string.refresh_release),
-        stringResource(R.string.refresh_refresh),
-        stringResource(R.string.refresh_complete),
-    )
-    val layoutDirection = LocalLayoutDirection.current
-    PullToRefresh(
-        isRefreshing = isRefreshing,
-        pullToRefreshState = pullToRefreshState,
-        onRefresh = { isRefreshing = true },
-        refreshTexts = refreshTexts,
-        contentPadding = PaddingValues(
-            top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-            start = innerPadding.calculateStartPadding(layoutDirection),
-            end = innerPadding.calculateEndPadding(layoutDirection)
-        ),
-    ) {
-        val layoutDirection = LocalLayoutDirection.current
 
-        LazyColumn(
-            modifier = modifier.height(getWindowSize().height.dp),
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                start = innerPadding.calculateStartPadding(layoutDirection),
-                end = innerPadding.calculateEndPadding(layoutDirection)
-            ),
-            overscrollEffect = null,
-        ) {
-            when {
-                !viewModel.isOverlayAvailable -> {
-                    item {
-                        Box(
-                            modifier = Modifier.fillParentMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                stringResource(R.string.module_overlay_fs_not_available),
-                                textAlign = TextAlign.Center
-                            )
+    when {
+        !viewModel.isOverlayAvailable -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = innerPadding.calculateTopPadding(),
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection),
+                        bottom = bottomInnerPadding
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    stringResource(R.string.module_overlay_fs_not_available),
+                    textAlign = TextAlign.Center,
+                    color = Color.Gray,
+                )
+            }
+        }
+
+        modules.isEmpty() -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = innerPadding.calculateTopPadding(),
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection),
+                        bottom = bottomInnerPadding
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    stringResource(R.string.module_empty),
+                    textAlign = TextAlign.Center,
+                    color = Color.Gray,
+                )
+            }
+        }
+
+        else -> {
+            PullToRefresh(
+                isRefreshing = isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = { if (!isRefreshing) isRefreshing = true },
+                refreshTexts = refreshTexts,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection),
+                ),
+            ) {
+                LazyColumn(
+                    modifier = modifier.height(getWindowSize().height.dp),
+                    contentPadding = PaddingValues(
+                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection),
+                    ),
+                    overscrollEffect = null,
+                ) {
+                    items(
+                        items = modules,
+                        key = { it.id },
+                        contentType = { "module" }
+                    ) { module ->
+                        val currentModuleState = rememberUpdatedState(module)
+                        val moduleUpdateInfo = updateInfoMap[module.id]
+                            ?: ModuleViewModel.ModuleUpdateInfo.Empty
+
+                        val onUninstallClick = remember(module.id, scope, onModuleUninstall) {
+                            {
+                                scope.launch {
+                                    onModuleUninstall(currentModuleState.value)
+                                }
+                                Unit
+                            }
                         }
-                    }
-                }
-
-                viewModel.moduleList.isEmpty() -> {
-                    item {
-                        Box(
-                            modifier = Modifier.fillParentMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                stringResource(R.string.module_empty),
-                                textAlign = TextAlign.Center
-                            )
+                        val onToggleClick = remember(module.id, scope, onModuleToggle) {
+                            { _: Boolean ->
+                                scope.launch {
+                                    onModuleToggle(currentModuleState.value)
+                                }
+                                Unit
+                            }
                         }
-                    }
-                }
-
-                else -> {
-                    items(viewModel.moduleList) { module ->
-                        val scope = rememberCoroutineScope()
-                        val updatedModule by produceState(initialValue = Triple("", "", "")) {
-                            scope.launch(Dispatchers.IO) {
-                                value = viewModel.checkUpdate(module)
+                        val onUpdateClick = remember(module.id, moduleUpdateInfo, scope, onModuleUpdate) {
+                            {
+                                scope.launch {
+                                    onModuleUpdate(
+                                        currentModuleState.value,
+                                        moduleUpdateInfo.changelog,
+                                        moduleUpdateInfo.downloadUrl,
+                                        "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
+                                    )
+                                }
+                                Unit
+                            }
+                        }
+                        val onExecuteActionClick = remember(module.id, navigator, viewModel) {
+                            {
+                                navigator.navigate(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
+                                    launchSingleTop = true
+                                }
+                                viewModel.markNeedRefresh()
+                            }
+                        }
+                        val onOpenWebUiClick = remember(module.id, onClickModule) {
+                            {
+                                onClickModule(
+                                    currentModuleState.value.id,
+                                    currentModuleState.value.name,
+                                    currentModuleState.value.hasWebUi
+                                )
                             }
                         }
 
                         ModuleItem(
-                            navigator = navigator,
                             module = module,
-                            updateUrl = updatedModule.first,
-                            onUninstall = {
-                                scope.launch {
-                                    onModuleUninstall(module)
-                                }
-                            },
-                            onCheckChanged = {
-                                scope.launch {
-                                    onModuleToggle(module)
-                                }
-                            },
-                            onUpdate = {
-                                scope.launch {
-                                    onModuleUpdate(
-                                        module,
-                                        updatedModule.third,
-                                        updatedModule.first,
-                                        "${module.name}-${updatedModule.second}.zip"
-                                    )
-                                }
-                            },
-                            onClick = {
-                                onClickModule(it.id, it.name, it.hasWebUi)
-                            }
+                            updateUrl = moduleUpdateInfo.downloadUrl,
+                            onUninstall = onUninstallClick,
+                            onCheckChanged = onToggleClick,
+                            onUpdate = onUpdateClick,
+                            onExecuteAction = onExecuteActionClick,
+                            onOpenWebUi = onOpenWebUiClick
                         )
                     }
                     item {
@@ -739,35 +825,40 @@ private fun ModuleList(
                 }
             }
         }
-
-        DownloadListener(context, onInstallModule)
-
     }
+    DownloadListener(context, onInstallModule)
 }
 
 @Composable
 fun ModuleItem(
-    navigator: DestinationsNavigator,
     module: ModuleViewModel.ModuleInfo,
     updateUrl: String,
-    onUninstall: (ModuleViewModel.ModuleInfo) -> Unit,
+    onUninstall: () -> Unit,
     onCheckChanged: (Boolean) -> Unit,
-    onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
-    onClick: (ModuleViewModel.ModuleInfo) -> Unit
+    onUpdate: () -> Unit,
+    onExecuteAction: () -> Unit,
+    onOpenWebUi: () -> Unit
 ) {
-    val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
-    val viewModel = viewModel<ModuleViewModel>()
+    val isDark = isSystemInDarkTheme()
+    val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }
+    val textDecoration by remember(module.remove) {
+        mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
+    }
+    val secondaryContainer = colorScheme.secondaryContainer
+    val onSurface = colorScheme.onSurface
+    val actionIconTint = remember(isDark) {
+        onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
+    }
+    val updateBg = remember(isDark) { Color(if (isDark) 0xFF25354E else 0xFFEAF2FF) }
+    val updateTint = remember { Color(0xFF0D84FF) }
 
     Card(
         modifier = Modifier
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 12.dp, vertical = 0.dp)
             .padding(bottom = 12.dp),
         insideMargin = PaddingValues(16.dp)
     ) {
-        Row(
-            modifier = Modifier,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -781,45 +872,47 @@ fun ModuleItem(
                     fontSize = 17.sp,
                     fontWeight = FontWeight(550),
                     color = colorScheme.onSurface,
-                    textDecoration = textDecoration,
+                    textDecoration = textDecoration
                 )
-
                 Text(
                     text = "$moduleVersion: ${module.version}",
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 1.dp),
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
-                    textDecoration = textDecoration,
+                    textDecoration = textDecoration
                 )
-
                 Text(
                     text = "$moduleAuthor: ${module.author}",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
-                    textDecoration = textDecoration,
+                    textDecoration = textDecoration
                 )
             }
             Switch(
                 enabled = !module.update,
                 checked = module.enabled,
-                onCheckedChange = onCheckChanged
+                onCheckedChange = {
+                    if (it != module.enabled) onCheckChanged(it)
+                }
             )
         }
 
-        Text(
-            text = module.description,
-            fontSize = 14.5.sp,
-            color = colorScheme.onSurfaceVariantSummary,
-            modifier = Modifier.padding(top = 2.dp),
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 4,
-            textDecoration = textDecoration
-        )
+        if (module.description.isNotBlank()) {
+            Text(
+                text = module.description,
+                fontSize = 14.5.sp,
+                color = colorScheme.onSurfaceVariantSummary,
+                modifier = Modifier.padding(top = 2.dp),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 4,
+                textDecoration = textDecoration
+            )
+        }
 
         HorizontalDivider(
-            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+            modifier = Modifier.padding(vertical = 10.dp),
             thickness = 0.5.dp,
             color = colorScheme.outline.copy(alpha = 0.5f)
         )
@@ -828,43 +921,35 @@ fun ModuleItem(
             AnimatedVisibility(
                 visible = module.enabled && !module.remove,
                 enter = fadeIn(),
-                exit = fadeOut(),
+                exit = fadeOut()
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (module.hasActionScript) {
                         IconButton(
-                            backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                            backgroundColor = secondaryContainer.copy(alpha = 0.8f),
                             minHeight = 35.dp,
                             minWidth = 35.dp,
-                            onClick = {
-                                navigator.navigate(ExecuteModuleActionScreenDestination(module.id)) {
-                                    launchSingleTop = true
-                                }
-                                viewModel.markNeedRefresh()
-                            },
+                            onClick = onExecuteAction,
                         ) {
                             Icon(
                                 modifier = Modifier.size(20.dp),
                                 imageVector = Icons.Rounded.PlayArrow,
-                                tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                                tint = actionIconTint,
                                 contentDescription = stringResource(R.string.action)
                             )
                         }
                     }
-
                     if (module.hasWebUi) {
                         IconButton(
-                            backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                            backgroundColor = secondaryContainer.copy(alpha = 0.8f),
                             minHeight = 35.dp,
                             minWidth = 35.dp,
-                            onClick = { onClick(module) },
+                            onClick = onOpenWebUi,
                         ) {
                             Icon(
                                 modifier = Modifier.size(20.dp),
                                 imageVector = Icons.Rounded.Code,
-                                tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                                tint = actionIconTint,
                                 contentDescription = stringResource(R.string.open)
                             )
                         }
@@ -872,16 +957,16 @@ fun ModuleItem(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f, true))
+            Spacer(Modifier.weight(1f))
 
-            if (updateUrl.isNotEmpty()) {
+            if (hasUpdate) {
                 IconButton(
                     modifier = Modifier.padding(end = 16.dp),
-                    backgroundColor = Color(if (isSystemInDarkTheme()) 0xFF25354E else 0xFFEAF2FF),
+                    backgroundColor = updateBg,
                     enabled = !module.remove,
                     minHeight = 35.dp,
                     minWidth = 35.dp,
-                    onClick = { onUpdate(module) },
+                    onClick = onUpdate,
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp),
@@ -891,13 +976,13 @@ fun ModuleItem(
                         Icon(
                             modifier = Modifier.size(20.dp),
                             imageVector = Icons.Rounded.Download,
-                            tint = Color(0xFF0D84FF),
+                            tint = updateTint,
                             contentDescription = stringResource(R.string.module_update),
                         )
                         Text(
                             modifier = Modifier.padding(end = 3.dp),
                             text = stringResource(R.string.module_update),
-                            color = Color(0xFF0D84FF),
+                            color = updateTint,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp
                         )
@@ -909,32 +994,25 @@ fun ModuleItem(
                 enabled = !module.remove,
                 minHeight = 35.dp,
                 minWidth = 35.dp,
-                onClick = { onUninstall(module) },
-                backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                onClick = onUninstall,
+                backgroundColor = secondaryContainer.copy(alpha = 0.8f),
             ) {
                 Row(
-                    modifier = Modifier.then(
-                        if (updateUrl.isEmpty()) {
-                            Modifier.padding(horizontal = 10.dp)
-                        } else {
-                            Modifier
-                        }
-                    ),
+                    modifier = if (!hasUpdate) Modifier.padding(horizontal = 10.dp) else Modifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(
-                        modifier = Modifier
-                            .size(20.dp),
+                        modifier = Modifier.size(20.dp),
                         imageVector = Icons.Outlined.Delete,
-                        tint = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                        tint = actionIconTint,
                         contentDescription = null
                     )
-                    if (updateUrl.isEmpty()) {
+                    if (!hasUpdate) {
                         Text(
                             modifier = Modifier.padding(end = 3.dp),
                             text = stringResource(R.string.uninstall),
-                            color = colorScheme.onSurface.copy(alpha = if (isSystemInDarkTheme()) 0.7f else 0.9f),
+                            color = actionIconTint,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp
                         )
