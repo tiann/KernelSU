@@ -12,6 +12,7 @@ compose-destination = "2.2.0"
 markdown = "4.6.2"
 webkit = "1.14.0"
 parcelablelist = "2.0.1"
+libcxx = "28.1.13356709"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
@@ -63,8 +64,8 @@ compose-destinations-ksp = { group = "io.github.raamcosta.compose-destinations",
 
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
 
-lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "28.1.13356709" }
+lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "libcxx" }
 
-miuix = { module = "top.yukonga.miuix.kmp:miuix", version.ref = "miuix" }
+miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" }
 
-haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+haze = { module = "dev.chrisbanes.haze:haze-android", version.ref = "haze" }

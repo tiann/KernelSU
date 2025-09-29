@@ -13,6 +13,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -217,13 +220,7 @@ class ModuleViewModel : ViewModel() {
         )
     }
 
-    fun ensureModuleUpdateInfo(modules: List<ModuleInfo>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            syncModuleUpdateInfo(modules)
-        }
-    }
-
-    private suspend fun syncModuleUpdateInfo(modules: List<ModuleInfo>) {
+    suspend fun syncModuleUpdateInfo(modules: List<ModuleInfo>) {
         val modulesToFetch = mutableListOf<Triple<String, ModuleInfo, ModuleUpdateSignature>>()
         val removedIds = mutableSetOf<String>()
 
@@ -244,8 +241,12 @@ class ModuleViewModel : ViewModel() {
             }
         }
 
-        val fetchedEntries = modulesToFetch.map { (id, module, signature) ->
-            id to ModuleUpdateCache(signature, checkUpdate(module))
+        val fetchedEntries = coroutineScope {
+            modulesToFetch.map { (id, module, signature) ->
+                async(Dispatchers.IO) {
+                    id to ModuleUpdateCache(signature, checkUpdate(module))
+                }
+            }.awaitAll()
         }
 
         val changedEntries = mutableListOf<Pair<String, ModuleUpdateInfo>>()

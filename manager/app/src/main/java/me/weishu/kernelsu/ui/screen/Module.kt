@@ -10,9 +10,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -154,7 +156,7 @@ fun ModulePager(
     }
 
     LaunchedEffect(modules) {
-        viewModel.ensureModuleUpdateInfo(modules)
+        viewModel.syncModuleUpdateInfo(modules)
         if (searchStatus.searchText.isNotEmpty()) {
             viewModel.updateSearchText(searchStatus.searchText)
         }
@@ -505,8 +507,7 @@ fun ModulePager(
                     ) {
                         val itemScope = rememberCoroutineScope()
                         val currentModuleState = rememberUpdatedState(module)
-                        val moduleUpdateInfo = updateInfoMap[module.id]
-                            ?: ModuleViewModel.ModuleUpdateInfo.Empty
+                        val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
 
                         val onUninstallClick = remember(module.id, itemScope, ::onModuleUninstall) {
                             {
@@ -759,8 +760,7 @@ private fun ModuleList(
                         contentType = { "module" }
                     ) { module ->
                         val currentModuleState = rememberUpdatedState(module)
-                        val moduleUpdateInfo = updateInfoMap[module.id]
-                            ?: ModuleViewModel.ModuleUpdateInfo.Empty
+                        val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
 
                         val onUninstallClick = remember(module.id, scope, onModuleUninstall) {
                             {
@@ -959,7 +959,11 @@ fun ModuleItem(
 
             Spacer(Modifier.weight(1f))
 
-            if (hasUpdate) {
+            AnimatedVisibility(
+                visible = hasUpdate,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 IconButton(
                     modifier = Modifier.padding(end = 16.dp),
                     backgroundColor = updateBg,
@@ -997,10 +1001,13 @@ fun ModuleItem(
                 onClick = onUninstall,
                 backgroundColor = secondaryContainer.copy(alpha = 0.8f),
             ) {
+                val animatedPadding by animateDpAsState(
+                    targetValue = if (!hasUpdate) 10.dp else 0.dp,
+                    animationSpec = tween(durationMillis = 300)
+                )
                 Row(
-                    modifier = if (!hasUpdate) Modifier.padding(horizontal = 10.dp) else Modifier,
+                    modifier = Modifier.padding(horizontal = animatedPadding),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
@@ -1008,9 +1015,13 @@ fun ModuleItem(
                         tint = actionIconTint,
                         contentDescription = null
                     )
-                    if (!hasUpdate) {
+                    AnimatedVisibility(
+                        visible = !hasUpdate,
+                        enter = expandHorizontally(),
+                        exit = shrinkHorizontally()
+                    ) {
                         Text(
-                            modifier = Modifier.padding(end = 3.dp),
+                            modifier = Modifier.padding(start = 4.dp, end = 3.dp),
                             text = stringResource(R.string.uninstall),
                             color = actionIconTint,
                             fontWeight = FontWeight.Medium,
