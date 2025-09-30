@@ -7,6 +7,7 @@ import android.text.Layout
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.ViewGroup
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
@@ -482,7 +484,8 @@ private fun MarkdownContent(content: String) {
 
     AndroidView(
         factory = { context ->
-            TextView(context).apply {
+            val scrollView = ScrollView(context)
+            val textView = TextView(context).apply {
                 movementMethod = LinkMovementMethod.getInstance()
                 setSpannableFactory(NoCopySpannableFactory.getInstance())
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -493,13 +496,17 @@ private fun MarkdownContent(content: String) {
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 )
             }
+            scrollView.addView(textView)
+            scrollView
         },
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .clipToBounds(),
         update = {
-            Markwon.create(it.context).setMarkdown(it, content)
-            it.setTextColor(contentColor)
+            val textView = it.getChildAt(0) as TextView
+            Markwon.create(textView.context).setMarkdown(textView, content)
+            textView.setTextColor(contentColor)
         }
     )
 }
