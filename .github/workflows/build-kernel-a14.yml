@@ -1,5 +1,6 @@
 name: Build Kernel - Android 14
 on:
+  workflow_dispatch:
   push:
     branches: ["main", "ci", "checkci"]
     paths:
