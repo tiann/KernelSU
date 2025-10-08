@@ -1,7 +1,7 @@
 [versions]
 agp = "8.13.0"
 kotlin = "2.2.20"
-ksp = "2.2.20-2.0.3"
+ksp = "2.2.20-2.0.4"
 compose-bom = "2025.09.01"
 lifecycle = "2.9.4"
 navigation = "2.9.5"
@@ -16,7 +16,7 @@ libcxx = "28.1.13356709"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
-miuix = "0.5.1"
+miuix = "0.5.2"
 haze = "1.6.10"
 
 [plugins]
