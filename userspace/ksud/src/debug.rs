@@ -1,8 +1,9 @@
-use anyhow::{Context, Ok, Result, ensure};
 use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+
+use anyhow::{Context, Ok, Result, ensure};
 
 const KERNEL_PARAM_PATH: &str = "/sys/module/kernelsu";
 
