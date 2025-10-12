@@ -1,16 +1,15 @@
-use anyhow::{Ok, Result, anyhow, bail};
+use std::path::{Path, PathBuf};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use anyhow::Context;
+use anyhow::{Ok, Result, anyhow, bail};
+use log::{info, warn};
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use procfs::process::Process;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{fd::AsFd, fs::CWD, mount::*};
 
 use crate::defs::KSU_OVERLAY_SOURCE;
-use log::{info, warn};
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use procfs::process::Process;
-use std::path::Path;
-use std::path::PathBuf;
 
 pub struct AutoMountExt4 {
     target: String,

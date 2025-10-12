@@ -1,10 +1,12 @@
-use anyhow::{Context, Result, bail};
-use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
-use crate::module::prune_modules;
+use anyhow::{Context, Result, bail};
+use log::{info, warn};
+
 use crate::{
-    assets, defs, ksucalls, mount, restorecon,
+    assets, defs, ksucalls,
+    module::prune_modules,
+    mount, restorecon,
     utils::{self, ensure_clean_dir},
 };
 

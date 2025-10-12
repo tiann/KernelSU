@@ -1,5 +1,6 @@
-use anyhow::{Result, ensure};
 use std::io::{Read, Seek, SeekFrom};
+
+use anyhow::{Result, ensure};
 
 pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
     let mut buffer = [0u8; 0x10];

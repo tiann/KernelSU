@@ -1,7 +1,8 @@
+use std::path::Path;
+
 use anyhow::Result;
 use const_format::concatcp;
 use rust_embed::RustEmbed;
-use std::path::Path;
 
 use crate::{defs::BINARY_DIR, utils};
 
