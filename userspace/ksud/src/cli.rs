@@ -1,9 +1,9 @@
-use anyhow::{Ok, Result};
-use clap::Parser;
 use std::path::PathBuf;
 
 #[cfg(target_os = "android")]
 use android_logger::Config;
+use anyhow::{Ok, Result};
+use clap::Parser;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
