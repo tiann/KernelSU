@@ -149,7 +149,7 @@ fn switch_cgroup(grp: &str, pid: u32) {
 
     let fp = OpenOptions::new().append(true).open(path);
     if let std::result::Result::Ok(mut fp) = fp {
-        let _ = writeln!(fp, "{pid}");
+        let _ = write!(fp, "{pid}");
     }
 }
 
