@@ -9,7 +9,7 @@ edition = "2024"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "3",  features = [
+zip = { version = "6",  features = [
     "deflate",
     "deflate64",
     "time",
@@ -37,7 +37,7 @@ rust-embed = { version = "8", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "7"
+which = "8"
 getopts = "0.2"
 sha256 = "1"
 sha1 = "0.10"
@@ -53,7 +53,7 @@ rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", fea
 ] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
-procfs = "0.17"
+procfs = "0.18"
 loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
