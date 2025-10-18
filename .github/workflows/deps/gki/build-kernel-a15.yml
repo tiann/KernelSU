@@ -3,8 +3,8 @@ on:
   # push:
   #   branches: ["main", "ci", "checkci"]
   #   paths:
-  #     - ".github/workflows/build-kernel-a15.yml"
-  #     - ".github/workflows/gki-kernel.yml"
+  #     - ".github/workflows/deps/gki/build-kernel-a15.yml"
+  #     - ".github/workflows/deps/gki/gki-kernel.yml"
   #     - ".github/scripts/build_a13.sh"
   #     - "kernel/**"
   workflow_call:
@@ -50,7 +50,7 @@ jobs:
           - version: "6.6"
             sub_level: 87
             os_patch_level: 2025-05
-    uses: ./.github/workflows/gki-kernel.yml
+    uses: ./.github/workflows/deps/gki/gki-kernel.yml
     secrets: inherit
     with:
       version: android15-${{ matrix.version }}
