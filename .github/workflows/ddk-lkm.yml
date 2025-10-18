@@ -39,7 +39,7 @@ jobs:
         mkdir -p /github/workspace/out
         
         # Copy with KMI-specific naming
-        OUTPUT_NAME="kernelsu-${{ inputs.kmi }}.ko"
+        OUTPUT_NAME="${{ inputs.kmi }}_kernelsu.ko"
         cp kernelsu.ko "/github/workspace/out/$OUTPUT_NAME"
         
         echo "Copied to: /github/workspace/out/$OUTPUT_NAME"
@@ -51,5 +51,5 @@ jobs:
     - name: Upload kernelsu.ko artifact
       uses: actions/upload-artifact@v4
       with:
-        name: kernelsu-${{ inputs.kmi }}.ko
-        path: /github/workspace/out/kernelsu-${{ inputs.kmi }}.ko
+        name: ${{ inputs.kmi }}-lkm
+        path: /github/workspace/out/${{ inputs.kmi }}_kernelsu.ko
