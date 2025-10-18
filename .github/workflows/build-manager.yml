@@ -5,6 +5,7 @@ on:
     branches: [ "main", "ci" ]
     paths:
       - '.github/workflows/build-manager.yml'
+      - '.github/workflows/build-lkm.yml'
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/ksud/**'
