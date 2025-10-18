@@ -1,4 +1,4 @@
-name: GKI Kernel Build
+name: GKI Kernel Build For AVD
 
 on:
   workflow_call:

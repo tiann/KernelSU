@@ -1,0 +1,55 @@
+name: Build KernelSU Kernel Module
+
+on:
+  workflow_call:
+    inputs:
+      kmi:
+        description: 'KMI version'
+        required: true
+        type: string
+      ddk_release:
+        description: 'DDK release version'
+        required: false
+        default: '20251016'
+        type: string
+
+jobs:
+  build-kernelsu-ko:
+    name: Build kernelsu.ko for ${{ inputs.kmi }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ylarod/ddk:${{ inputs.kmi }}-${{ inputs.ddk_release }}
+      options: --privileged
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Build kernelsu.ko
+      run: |
+        cd kernel
+
+        echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
+
+        CONFIG_KSU=m make
+        
+        echo "=== Build completed ==="
+
+        # Create output directory in GitHub workspace
+        mkdir -p /github/workspace/out
+        
+        # Copy with KMI-specific naming
+        OUTPUT_NAME="${{ inputs.kmi }}_kernelsu.ko"
+        cp kernelsu.ko "/github/workspace/out/$OUTPUT_NAME"
+        
+        echo "Copied to: /github/workspace/out/$OUTPUT_NAME"
+        ls -la "/github/workspace/out/$OUTPUT_NAME"
+        echo "Size: $(du -h "/github/workspace/out/$OUTPUT_NAME" | cut -f1)"
+        llvm-strip -d "/github/workspace/out/$OUTPUT_NAME"
+        echo "Size after stripping: $(du -h "/github/workspace/out/$OUTPUT_NAME" | cut -f1)"
+
+    - name: Upload kernelsu.ko artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.kmi }}-lkm
+        path: /github/workspace/out/${{ inputs.kmi }}_kernelsu.ko

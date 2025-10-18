@@ -1,0 +1,35 @@
+{
+    "files.exclude": {
+        "**/*.o.cmd": true,
+        "**/*.ko.cmd": true,
+        "**/*.mod.cmd": true,
+        "**/*.cmd": true,
+        "**/*.order": true,
+        "**/*.symvers": true,
+        "**/*.o": true,
+        "**/*.mod": true,
+        "**/android-wuwa.mod.c": true,
+        "**/android-wuwa.lds": true,
+        "**/.*.*.cmd": true,
+        "**/.*.d": true,
+        "**/.*.S": true
+    },
+    "[c]": {
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.rulers": [80,100]
+    },
+    "files.associations": {
+        "*.h": "c",
+        "ratio": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "random": "cpp"
+    },
+    "editor.indentSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "clangd.path": "/opt/ddk/clang/clang-r450784e/bin/clangd"
+}
