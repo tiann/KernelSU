@@ -1,12 +1,12 @@
 name: Build Kernel - Android 13
 on:
-  push:
-    branches: ["main", "ci", "checkci"]
-    paths:
-      - ".github/workflows/build-kernel-a13.yml"
-      - ".github/workflows/gki-kernel.yml"
-      - ".github/scripts/build_a13.sh"
-      - "kernel/**"
+  # push:
+  #   branches: ["main", "ci", "checkci"]
+  #   paths:
+  #     - ".github/workflows/build-kernel-a13.yml"
+  #     - ".github/workflows/gki-kernel.yml"
+  #     - ".github/scripts/build_a13.sh"
+  #     - "kernel/**"
   workflow_call:
 jobs:
   build-kernel:
