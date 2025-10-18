@@ -11,6 +11,7 @@ on:
       - ".github/workflows/build-lkm.yml"
       - "kernel/**"
   workflow_call:
+  workflow_dispatch:
 jobs:
   build-lkm:
     strategy:
