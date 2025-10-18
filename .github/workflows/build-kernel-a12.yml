@@ -8,6 +8,12 @@ on:
   #     - ".github/scripts/build_a12.sh"
   #     - "kernel/**"
   workflow_call:
+    inputs:
+      debug:
+        description: 'Build debug kernel'
+        required: false
+        type: boolean
+        default: false
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
@@ -32,6 +38,7 @@ jobs:
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: "5.10"
+      debug: ${{ inputs.debug || false }}
   
   upload-artifacts:
     needs: build-kernel

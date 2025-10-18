@@ -1,6 +1,12 @@
 name: Build Android GKI Image
 on:
   workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Build debug kernel'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-a12-kernel:
