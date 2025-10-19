@@ -1,20 +1,18 @@
-use anyhow::{Ok, Result};
-use getopts::Options;
-use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
-use std::path::PathBuf;
-use std::{ffi::CStr, process::Command};
+use std::{env, ffi::CStr, path::PathBuf, process::Command};
 
-use crate::{
-    defs,
-    utils::{self, umask},
-};
-
+use anyhow::{Ok, Result};
+use getopts::Options;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process::getuid,
     thread::{Gid, Uid, set_thread_res_gid, set_thread_res_uid},
+};
+
+use crate::{
+    defs,
+    utils::{self, umask},
 };
 
 #[cfg(any(target_os = "linux", target_os = "android"))]

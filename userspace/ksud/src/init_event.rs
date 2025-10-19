@@ -1,10 +1,12 @@
-use anyhow::{Context, Result, bail};
-use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
-use crate::module::prune_modules;
+use anyhow::{Context, Result, bail};
+use log::{info, warn};
+
 use crate::{
-    assets, defs, ksucalls, mount, restorecon,
+    assets, defs, ksucalls,
+    module::prune_modules,
+    mount, restorecon,
     utils::{self, ensure_clean_dir},
 };
 
@@ -73,10 +75,10 @@ pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
             // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
             // otherwise it must be a symlink and we don't need to overlay!
             let part_path = Path::new(&module).join(part);
-            if part_path.is_dir() {
-                if let Some(v) = partition_lowerdir.get_mut(*part) {
-                    v.push(format!("{}", part_path.display()));
-                }
+            if part_path.is_dir()
+                && let Some(v) = partition_lowerdir.get_mut(*part)
+            {
+                v.push(format!("{}", part_path.display()));
             }
         }
     }
