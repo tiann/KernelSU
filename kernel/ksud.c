@@ -73,7 +73,7 @@ static const char KERNEL_SU_RC[] =
 	"\n"
 
 	"on property:sys.boot_completed=1\n"
-	"    setenv KSUD_DAEMON_TOKEN __KSU_DAEMON_TOKEN_PLACEHOLDER__\n"
+	"    setenv KSUD_DAEMON_TOKEN %s\n"
 	"    exec u:r:su:s0 root -- " KSUD_PATH " daemon\n"
 	"\n"
 
@@ -398,18 +398,8 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	// Prepare RC content with token replacement
 	char rc_with_token[sizeof(KERNEL_SU_RC) + 64];
 	const char *token = ksu_get_daemon_token();
-	const char *placeholder = "__KSU_DAEMON_TOKEN_PLACEHOLDER__";
-	const char *token_pos = strstr(KERNEL_SU_RC, placeholder);
 
-	if (token_pos) {
-		size_t prefix_len = token_pos - KERNEL_SU_RC;
-		memcpy(rc_with_token, KERNEL_SU_RC, prefix_len);
-		memcpy(rc_with_token + prefix_len, token, 64);
-		strcpy(rc_with_token + prefix_len + 64, token_pos + strlen(placeholder));
-	} else {
-		pr_err("Token placeholder not found in RC!\n");
-		strcpy(rc_with_token, KERNEL_SU_RC);
-	}
+	snprintf(rc_with_token, sizeof(rc_with_token), KERNEL_SU_RC, token);
 
 	size_t rc_count = strlen(rc_with_token);
 
