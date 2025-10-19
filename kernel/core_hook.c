@@ -119,7 +119,7 @@ static void disable_seccomp()
 	LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	current_thread_info()->syscall_work &= ~SYSCALL_WORK_SECCOMP;
 #else
-	current_thread_info()->flags &= ~(TIF_SECCOMP | _TIF_SECCOMP);
+	current_thread_info()->flags &= ~_TIF_SECCOMP;
 #endif
 
 #ifdef CONFIG_SECCOMP
