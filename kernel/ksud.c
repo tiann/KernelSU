@@ -9,6 +9,7 @@
 #include <linux/input-event-codes.h>
 #include <linux/kprobes.h>
 #include <linux/printk.h>
+#include <linux/random.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/workqueue.h>
@@ -17,8 +18,38 @@
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
+#include "manager.h"
 #include "kernel_compat.h"
 #include "selinux/selinux.h"
+
+// Daemon token implementation
+pid_t ksu_daemon_pid = KSU_INVALID_PID;
+char ksu_daemon_token[65] = {0};
+
+void ksu_generate_daemon_token(void)
+{
+	unsigned char random_bytes[32];
+	get_random_bytes(random_bytes, 32);
+	bin2hex(ksu_daemon_token, random_bytes, 32);
+	ksu_daemon_token[64] = '\0';
+	pr_info("KernelSU daemon token generated\n");
+}
+
+const char* ksu_get_daemon_token(void)
+{
+	return ksu_daemon_token;
+}
+
+bool ksu_verify_daemon_token(const char *token)
+{
+	if (!token || strlen(token) != 64) {
+		return false;
+	}
+	return strncmp(ksu_daemon_token, token, 64) == 0;
+}
+
+// Manager UID implementation
+uid_t ksu_manager_uid = KSU_INVALID_UID;
 
 static const char KERNEL_SU_RC[] =
 	"\n"
@@ -39,6 +70,11 @@ static const char KERNEL_SU_RC[] =
 
 	"on property:sys.boot_completed=1\n"
 	"    exec u:r:su:s0 root -- " KSUD_PATH " boot-completed\n"
+	"\n"
+
+	"on property:sys.boot_completed=1\n"
+	"    setenv KSUD_DAEMON_TOKEN __KSU_DAEMON_TOKEN_PLACEHOLDER__\n"
+	"    exec u:r:su:s0 root -- " KSUD_PATH " daemon\n"
 	"\n"
 
 	"\n";
@@ -359,7 +395,23 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	buf = *buf_ptr;
 	count = *count_ptr;
 
-	size_t rc_count = strlen(KERNEL_SU_RC);
+	// Prepare RC content with token replacement
+	char rc_with_token[sizeof(KERNEL_SU_RC) + 64];
+	const char *token = ksu_get_daemon_token();
+	const char *placeholder = "__KSU_DAEMON_TOKEN_PLACEHOLDER__";
+	const char *token_pos = strstr(KERNEL_SU_RC, placeholder);
+
+	if (token_pos) {
+		size_t prefix_len = token_pos - KERNEL_SU_RC;
+		memcpy(rc_with_token, KERNEL_SU_RC, prefix_len);
+		memcpy(rc_with_token + prefix_len, token, 64);
+		strcpy(rc_with_token + prefix_len + 64, token_pos + strlen(placeholder));
+	} else {
+		pr_err("Token placeholder not found in RC!\n");
+		strcpy(rc_with_token, KERNEL_SU_RC);
+	}
+
+	size_t rc_count = strlen(rc_with_token);
 
 	pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
 		current->comm, count, rc_count);
@@ -369,7 +421,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 		return 0;
 	}
 
-	size_t ret = copy_to_user(buf, KERNEL_SU_RC, rc_count);
+	size_t ret = copy_to_user(buf, rc_with_token, rc_count);
 	if (ret) {
 		pr_err("copy ksud.rc failed: %zu\n", ret);
 		return 0;
