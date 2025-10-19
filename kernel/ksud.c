@@ -41,6 +41,14 @@ static const char KERNEL_SU_RC[] =
 	"    exec u:r:su:s0 root -- " KSUD_PATH " boot-completed\n"
 	"\n"
 
+<<<<<<< HEAD
+=======
+	"on property:sys.boot_completed=1\n"
+	"    setenv KSUD_DAEMON_TOKEN %s\n"
+	"    exec u:r:su:s0 root -- " KSUD_PATH " daemon\n"
+	"\n"
+
+>>>>>>> ae581795 (use snprintf)
 	"\n";
 
 static void stop_vfs_read_hook();
