@@ -1,20 +1,19 @@
 name: Build Kernel - Android 12
 on:
-  push:
-    branches: ["main", "ci", "checkci"]
-    paths:
-      - ".github/workflows/build-kernel-a12.yml"
-      - ".github/workflows/gki-kernel.yml"
-      - ".github/scripts/build_a12.sh"
-      - "kernel/**"
-  pull_request:
-    branches: ["main"]
-    paths:
-      - ".github/workflows/build-kernel-a12.yml"
-      - ".github/workflows/gki-kernel.yml"
-      - ".github/scripts/build-a12.sh"
-      - "kernel/**"
+  # push:
+  #   branches: ["main", "ci", "checkci"]
+  #   paths:
+  #     - ".github/workflows/deps/gki/build-kernel-a12.yml"
+  #     - ".github/workflows/deps/gki/gki-kernel.yml"
+  #     - ".github/scripts/build_a12.sh"
+  #     - "kernel/**"
   workflow_call:
+    inputs:
+      debug:
+        description: 'Build debug kernel'
+        required: false
+        type: boolean
+        default: false
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
@@ -31,7 +30,7 @@ jobs:
             os_patch_level: 2025-02
           - sub_level: 236
             os_patch_level: 2025-05
-    uses: ./.github/workflows/gki-kernel.yml
+    uses: ./.github/workflows/deps/gki/gki-kernel.yml
     secrets: inherit
     with:
       version: android12-5.10
@@ -39,6 +38,7 @@ jobs:
       tag: android12-5.10-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
       patch_path: "5.10"
+      debug: ${{ inputs.debug || false }}
   
   upload-artifacts:
     needs: build-kernel
@@ -110,13 +110,3 @@ jobs:
         with:
           name: boot-images-android12
           path: Image-android12*/*.img.gz
-
-  check-build-kernel:
-    if: (github.event_name == 'pull_request' && !github.event.pull_request.draft) || github.ref == 'refs/heads/checkci'
-    uses: ./.github/workflows/gki-kernel.yml
-    with:
-      version: android12-5.10
-      version_name: android12-5.10.223
-      tag: android12-5.10-2024-11
-      os_patch_level: 2024-11
-      patch_path: "5.10"
