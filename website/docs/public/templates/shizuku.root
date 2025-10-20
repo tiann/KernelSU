@@ -2,7 +2,7 @@
     "id":"shizuku.root",
     "name":"Shizuku Service",
     "author":"Rem01Gaming & JohnRTitor",
-    "description":"Only essential permissions to start Shizuku service. Shizuku modules are not guaranteed to work.",
+    "description":"Only essential permissions to start Shizuku service. Shizuku modules aren't guaranteed to work.",
     "uid":0,
     "gid":0,
     "groups":[
@@ -29,7 +29,7 @@
         },
         "pt_BR": {
             "name": "Shizuku",
-            "description": "Apenas permissões essenciais para iniciar o serviço Shizuku."
+            "description": "Apenas permissões essenciais para iniciar o serviço Shizuku. Não há garantia de que os módulos Shizuku funcionem."
         },
         "ja": {
             "name": "Shizuku",
