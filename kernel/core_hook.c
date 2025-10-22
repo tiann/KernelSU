@@ -258,11 +258,6 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
 {
-	// this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
-	if (!ksu_module_mounted) {
-		return 0;
-	}
-
 	if (!new || !old) {
 		return 0;
 	}
@@ -282,6 +277,14 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 	if (ksu_is_allow_uid(new_uid.val)) {
 		// pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
+        spin_lock_irq(&current->sighand->siglock);
+        disable_seccomp();
+        spin_unlock_irq(&current->sighand->siglock);
+		return 0;
+	}
+
+    // this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
+	if (!ksu_module_mounted) {
 		return 0;
 	}
 
