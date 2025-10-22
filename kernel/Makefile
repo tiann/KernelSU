@@ -2,6 +2,7 @@ kernelsu-objs := ksu.o
 kernelsu-objs += allowlist.o
 kernelsu-objs += sucompat.o
 kernelsu-objs += core_hook.o
+kernelsu-objs += supercalls.o
 kernelsu-objs += ksud.o
 kernelsu-objs += embed_ksud.o
 kernelsu-objs += kernel_compat.o
