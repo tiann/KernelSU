@@ -5,6 +5,7 @@ on:
     branches: [ "main", "ci" ]
     paths:
       - '.github/workflows/build-manager.yml'
+      - '.github/workflows/build-lkm.yml'
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/ksud/**'
@@ -38,7 +39,7 @@ jobs:
             os: ubuntu-latest
           - target: x86_64-unknown-linux-musl # x86 Linux
             os: ubuntu-latest
-    uses: ./.github/workflows/ksud.yml
+    uses: ./.github/workflows/deps/ksud.yml
     with:
       target: ${{ matrix.target }}
       os: ${{ matrix.os }}

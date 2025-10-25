@@ -4,14 +4,14 @@ on:
     branches: ["main", "ci", "checkci"]
     paths:
       - ".github/workflows/build-kernel-avd.yml"
-      - ".github/workflows/avd-kernel.yml"
+      - ".github/workflows/deps/other/avd-kernel.yml"
       - ".github/workflows/manifests/*xml"
       - "kernel/**"
   pull_request:
     branches: ["main"]
     paths:
       - ".github/workflows/build-kernel-avd.yml"
-      - ".github/workflows/avd-kernel.yml"
+      - ".github/workflows/deps/other/avd-kernel.yml"
       - ".github/workflows/manifests/*.xml"
       - "kernel/**"
   workflow_call:
@@ -19,7 +19,7 @@ on:
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
-    uses: ./.github/workflows/avd-kernel.yml
+    uses: ./.github/workflows/deps/other/avd-kernel.yml
     secrets: inherit
     strategy:
       matrix:
