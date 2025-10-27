@@ -1,11 +1,11 @@
-name: Build Kernel - Android 12
+name: Build Kernel - Android 13
 on:
   # push:
   #   branches: ["main", "ci", "checkci"]
   #   paths:
-  #     - ".github/workflows/deps/gki/build-kernel-a12.yml"
+  #     - ".github/workflows/deps/gki/build-kernel-a13.yml"
   #     - ".github/workflows/deps/gki/gki-kernel.yml"
-  #     - ".github/scripts/build_a12.sh"
+  #     - ".github/scripts/build_a13.sh"
   #     - "kernel/**"
   workflow_call:
     inputs:
@@ -20,24 +20,59 @@ jobs:
     strategy:
       matrix:
         include:
-          - sub_level: 209
+          - version: "5.10"
+            sub_level: 209
             os_patch_level: 2024-05
-          - sub_level: 218
+          - version: "5.10"
+            sub_level: 210
+            os_patch_level: 2024-06
+          - version: "5.10"
+            sub_level: 214
+            os_patch_level: 2024-07
+          - version: "5.10"
+            sub_level: 218
             os_patch_level: 2024-08
-          - sub_level: 226
+          - version: "5.10"
+            sub_level: 223
             os_patch_level: 2024-11
-          - sub_level: 233
-            os_patch_level: 2025-02
-          - sub_level: 236
-            os_patch_level: 2025-05
-    uses: ./.github/workflows/deps/gki/gki-kernel.yml
+          - version: "5.10"
+            sub_level: 228
+            os_patch_level: 2025-01
+          - version: "5.10"
+            sub_level: 234
+            os_patch_level: 2025-03
+          - version: "5.15"
+            sub_level: 148
+            os_patch_level: 2024-05
+          - version: "5.15"
+            sub_level: 149
+            os_patch_level: 2024-07
+          - version: "5.15"
+            sub_level: 151
+            os_patch_level: 2024-08
+          - version: "5.15"
+            sub_level: 153
+            os_patch_level: 2024-09
+          - version: "5.15"
+            sub_level: 167
+            os_patch_level: 2024-11
+          - version: "5.15"
+            sub_level: 178
+            os_patch_level: 2024-11
+          - version: "5.15"
+            sub_level: 170
+            os_patch_level: 2025-01
+          - version: "5.15"
+            sub_level: 178
+            os_patch_level: 2025-03
+    uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
-      version: android12-5.10
-      version_name: android12-5.10.${{ matrix.sub_level }}
-      tag: android12-5.10-${{ matrix.os_patch_level }}
+      version: android13-${{ matrix.version }}
+      version_name: android13-${{ matrix.version }}.${{ matrix.sub_level }}
+      tag: android13-${{ matrix.version }}-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
-      patch_path: "5.10"
+      patch_path: ${{ matrix.version }}
       debug: ${{ inputs.debug || false }}
   
   upload-artifacts:
@@ -100,7 +135,7 @@ jobs:
           export VERSION=$(($(git rev-list --count HEAD) + 10200))
           echo "VERSION: $VERSION"
           cd -
-          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a12.sh
+          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
 
       - name: Display structure of boot files
         run: ls -R
@@ -108,5 +143,5 @@ jobs:
       - name: Upload images artifact
         uses: actions/upload-artifact@v4
         with:
-          name: boot-images-android12
-          path: Image-android12*/*.img.gz
+          name: boot-images-android13
+          path: Image-android13*/*.img.gz

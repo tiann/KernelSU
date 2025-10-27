@@ -1,11 +1,11 @@
-name: Build Kernel - Android 15
+name: Build Kernel - Android 12
 on:
   # push:
   #   branches: ["main", "ci", "checkci"]
   #   paths:
-  #     - ".github/workflows/deps/gki/build-kernel-a15.yml"
+  #     - ".github/workflows/deps/gki/build-kernel-a12.yml"
   #     - ".github/workflows/deps/gki/gki-kernel.yml"
-  #     - ".github/scripts/build_a13.sh"
+  #     - ".github/scripts/build_a12.sh"
   #     - "kernel/**"
   workflow_call:
     inputs:
@@ -20,44 +20,24 @@ jobs:
     strategy:
       matrix:
         include:
-          - version: "6.6"
-            sub_level: 30
+          - sub_level: 209
+            os_patch_level: 2024-05
+          - sub_level: 218
             os_patch_level: 2024-08
-          - version: "6.6"
-            sub_level: 46
-            os_patch_level: 2024-09
-          - version: "6.6"
-            sub_level: 50
-            os_patch_level: 2024-10
-          - version: "6.6"
-            sub_level: 56
+          - sub_level: 226
             os_patch_level: 2024-11
-          - version: "6.6"
-            sub_level: 57
-            os_patch_level: 2024-12
-          - version: "6.6"
-            sub_level: 58
-            os_patch_level: 2025-01
-          - version: "6.6"
-            sub_level: 66
+          - sub_level: 233
             os_patch_level: 2025-02
-          - version: "6.6"
-            sub_level: 77
-            os_patch_level: 2025-03
-          - version: "6.6"
-            sub_level: 82
-            os_patch_level: 2025-04
-          - version: "6.6"
-            sub_level: 87
+          - sub_level: 236
             os_patch_level: 2025-05
-    uses: ./.github/workflows/deps/gki/gki-kernel.yml
+    uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
-      version: android15-${{ matrix.version }}
-      version_name: android15-${{ matrix.version }}.${{ matrix.sub_level }}
-      tag: android15-${{ matrix.version }}-${{ matrix.os_patch_level }}
+      version: android12-5.10
+      version_name: android12-5.10.${{ matrix.sub_level }}
+      tag: android12-5.10-${{ matrix.os_patch_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
-      patch_path: ${{ matrix.version }}
+      patch_path: "5.10"
       debug: ${{ inputs.debug || false }}
   
   upload-artifacts:
@@ -120,7 +100,7 @@ jobs:
           export VERSION=$(($(git rev-list --count HEAD) + 10200))
           echo "VERSION: $VERSION"
           cd -
-          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a13.sh
+          bash $GITHUB_WORKSPACE/KernelSU/.github/scripts/build_a12.sh
 
       - name: Display structure of boot files
         run: ls -R
@@ -128,5 +108,5 @@ jobs:
       - name: Upload images artifact
         uses: actions/upload-artifact@v4
         with:
-          name: boot-images-android15
-          path: Image-android15*/*.img.gz
+          name: boot-images-android12
+          path: Image-android12*/*.img.gz

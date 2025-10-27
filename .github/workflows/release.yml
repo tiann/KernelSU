@@ -21,9 +21,7 @@ jobs:
   release:
     needs:
       - build-manager
-      - build-a12-kernel
-      - build-a13-kernel
-      - build-a14-kernel
+      - build-gki-image
       - build-wsa-kernel
       - build-arcvm-kernel
     runs-on: ubuntu-latest

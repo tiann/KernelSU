@@ -77,7 +77,7 @@ jobs:
           - version: "6.1"
             sub_level: 134
             os_patch_level: 2025-05
-    uses: ./.github/workflows/deps/gki/gki-kernel.yml
+    uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
       version: android14-${{ matrix.version }}
