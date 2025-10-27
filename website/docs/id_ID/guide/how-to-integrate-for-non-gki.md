@@ -216,7 +216,7 @@ index 2ff887661237..e758d7db7663 100644
  		return -EINVAL;
 ```
 
-To enable KernelSU's builtin SafeMode, You should also modify `input_handle_event` in `drivers/input/input.c`:
+Untuk mengaktifkan KernelSU yang dibangun dalam SafeMode, Anda juga harus memodifikasi `input_handle_event` di `drivers/input/input.c`:
 
 :::tip
 Fitur ini sangat direkomendasikan, serta sangat membantu untuk memulihkan pada saat bootloop!
