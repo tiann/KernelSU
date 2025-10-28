@@ -69,7 +69,7 @@ static inline bool is_unsupported_uid(uid_t uid)
 	return appid > LAST_APPLICATION_UID;
 }
 
-static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
+static struct group_info root_groups = { .usage = { ATOMIC_INIT(2) } };
 
 static void setup_groups(struct root_profile *profile, struct cred *cred)
 {
@@ -721,8 +721,8 @@ static struct security_hook_list ksu_hooks[] = {
 
 void __init ksu_lsm_hook_init(void)
 {
-	security_add_hooks(ksu_hooks, ARRAY_SIZE(ksu_hooks), "ksu");
-}
+	security_add_hooks(ksu_hooks, ARRAY_SIZE(ksu_hooks), lsm_id ksu);
+
 
 #else
 static int override_security_head(void *head, const void *new_head, size_t len)
