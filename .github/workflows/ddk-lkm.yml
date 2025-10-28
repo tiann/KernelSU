@@ -27,6 +27,8 @@ jobs:
 
     - name: Build kernelsu.ko
       run: |
+        git config --global --add safe.directory /__w/KernelSU/KernelSU
+
         cd kernel
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
