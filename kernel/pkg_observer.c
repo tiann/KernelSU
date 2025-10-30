@@ -107,7 +107,11 @@ int ksu_observer_init(void)
 {
 	int ret = 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)
 	g = fsnotify_alloc_group(&ksu_ops, 0);
+#else
+	g = fsnotify_alloc_group(&ksu_ops);
+#endif
 	if (IS_ERR(g))
 		return PTR_ERR(g);
 
