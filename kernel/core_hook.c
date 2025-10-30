@@ -183,8 +183,8 @@ void nuke_ext4_sysfs(void)
 		return;
 	}
 
-	struct super_block* sb = path.dentry->d_inode->i_sb;
-	const char* name = sb->s_type->name;
+	struct super_block *sb = path.dentry->d_inode->i_sb;
+	const char *name = sb->s_type->name;
 	if (strcmp(name, "ext4") != 0) {
 		pr_info("nuke but module aren't mounted\n");
 		path_put(&path);
@@ -276,15 +276,15 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	if (ksu_is_allow_uid(new_uid.val)) {
-		// pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
-        spin_lock_irq(&current->sighand->siglock);
-        disable_seccomp();
-        spin_unlock_irq(&current->sighand->siglock);
+	if (ksu_get_manager_uid() == new_uid.val) {
+		pr_info("install fd for: %d\n", new_uid.val);
+		spin_lock_irq(&current->sighand->siglock);
+		ksu_install_fd();
+		spin_unlock_irq(&current->sighand->siglock);
 		return 0;
 	}
 
-    // this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
+	// this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
 	if (!ksu_module_mounted) {
 		return 0;
 	}
@@ -332,11 +332,17 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int magic1 = (int)PT_REGS_PARM1(real_regs);
 	int magic2 = (int)PT_REGS_PARM2(real_regs);
+	unsigned long arg4;
 
 	// Check if this is a request to install KSU fd
 	if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
 		int fd = ksu_install_fd();
 		pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+
+		arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+		if (copy_to_user((int *)arg4, &fd, sizeof(fd))) {
+			pr_err("install ksu fd reply err\n");
+		}
 	}
 
 	return 0;
@@ -348,7 +354,8 @@ static struct kprobe reboot_kp = {
 };
 
 // 2. security_task_fix_setuid hook for handling setuid
-static int security_task_fix_setuid_handler_pre(struct kprobe *p, struct pt_regs *regs)
+static int security_task_fix_setuid_handler_pre(struct kprobe *p,
+						struct pt_regs *regs)
 {
 	struct cred *new = (struct cred *)PT_REGS_PARM1(regs);
 	const struct cred *old = (const struct cred *)PT_REGS_PARM2(regs);

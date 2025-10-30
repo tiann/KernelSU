@@ -48,19 +48,7 @@ bool perm_check_all(void)
 	return true; // No permission check
 }
 
-// 1. BECOME_MANAGER - Verify manager identity
-int do_become_manager(void __user *arg)
-{
-	if (!ksu_is_manager_uid_valid() ||
-	    ksu_get_manager_uid() != current_uid().val) {
-		return -EPERM;
-	}
-
-	return 0;
-}
-
-// 3. GRANT_ROOT - Escalate to root privileges
-int do_grant_root(void __user *arg)
+static int do_grant_root(void __user *arg)
 {
 	// Check if current UID is allowed
 	bool is_allowed = is_manager() || ksu_is_allow_uid(current_uid().val);
@@ -75,17 +63,17 @@ int do_grant_root(void __user *arg)
 	return 0;
 }
 
-// 4. GET_VERSION - Get KernelSU version
-int do_get_version(void __user *arg)
+static int do_get_info(void __user *arg)
 {
-	struct ksu_get_version_cmd cmd;
-
-	cmd.version = KERNEL_SU_VERSION;
-	cmd.version_flags = 0;
+	struct ksu_get_info_cmd cmd = {.version = KERNEL_SU_VERSION, .flags = 0};
 
 #ifdef MODULE
-	cmd.version_flags |= 0x1;
+	cmd.flags |= 0x1;
 #endif
+
+	if (is_manager()) {
+		cmd.flags |= 0x2;
+	}
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_version: copy_to_user failed\n");
@@ -95,8 +83,7 @@ int do_get_version(void __user *arg)
 	return 0;
 }
 
-// 5. REPORT_EVENT - Report system events
-int do_report_event(void __user *arg)
+static int do_report_event(void __user *arg)
 {
 	struct ksu_report_event_cmd cmd;
 
@@ -135,8 +122,7 @@ int do_report_event(void __user *arg)
 	return 0;
 }
 
-// 6. SET_SEPOLICY - Set SELinux policy
-int do_set_sepolicy(void __user *arg)
+static int do_set_sepolicy(void __user *arg)
 {
 	struct ksu_set_sepolicy_cmd cmd;
 
@@ -144,11 +130,10 @@ int do_set_sepolicy(void __user *arg)
 		return -EFAULT;
 	}
 
-	return handle_sepolicy(cmd.cmd, cmd.arg);
+	return handle_sepolicy(cmd.cmd, (void __user *)cmd.arg);
 }
 
-// 7. CHECK_SAFEMODE - Check if in safe mode
-int do_check_safemode(void __user *arg)
+static int do_check_safemode(void __user *arg)
 {
 	struct ksu_check_safemode_cmd cmd;
 
@@ -166,8 +151,7 @@ int do_check_safemode(void __user *arg)
 	return 0;
 }
 
-// 8. GET_ALLOW_LIST - Get allowed UIDs
-int do_get_allow_list(void __user *arg)
+static int do_get_allow_list(void __user *arg)
 {
 	struct ksu_get_allow_list_cmd cmd;
 
@@ -189,8 +173,7 @@ int do_get_allow_list(void __user *arg)
 	return 0;
 }
 
-// 9. GET_DENY_LIST - Get denied UIDs
-int do_get_deny_list(void __user *arg)
+static int do_get_deny_list(void __user *arg)
 {
 	struct ksu_get_allow_list_cmd cmd;
 
@@ -212,8 +195,7 @@ int do_get_deny_list(void __user *arg)
 	return 0;
 }
 
-// 10. UID_GRANTED_ROOT - Check if UID has root
-int do_uid_granted_root(void __user *arg)
+static int do_uid_granted_root(void __user *arg)
 {
 	struct ksu_uid_granted_root_cmd cmd;
 
@@ -231,8 +213,7 @@ int do_uid_granted_root(void __user *arg)
 	return 0;
 }
 
-// 11. UID_SHOULD_UMOUNT - Check if UID should umount
-int do_uid_should_umount(void __user *arg)
+static int do_uid_should_umount(void __user *arg)
 {
 	struct ksu_uid_should_umount_cmd cmd;
 
@@ -250,8 +231,7 @@ int do_uid_should_umount(void __user *arg)
 	return 0;
 }
 
-// 12. GET_MANAGER_UID - Get manager UID
-int do_get_manager_uid(void __user *arg)
+static int do_get_manager_uid(void __user *arg)
 {
 	struct ksu_get_manager_uid_cmd cmd;
 
@@ -265,24 +245,7 @@ int do_get_manager_uid(void __user *arg)
 	return 0;
 }
 
-// 13. SET_MANAGER_UID - Set manager UID
-int do_set_manager_uid(void __user *arg)
-{
-	struct ksu_set_manager_uid_cmd cmd;
-
-	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-		pr_err("set_manager_uid: copy_from_user failed\n");
-		return -EFAULT;
-	}
-
-	ksu_set_manager_uid(cmd.uid);
-	pr_info("manager uid set to %d\n", cmd.uid);
-
-	return 0;
-}
-
-// 14. GET_APP_PROFILE - Get app profile
-int do_get_app_profile(void __user *arg)
+static int do_get_app_profile(void __user *arg)
 {
 	struct ksu_get_app_profile_cmd cmd;
 
@@ -303,8 +266,7 @@ int do_get_app_profile(void __user *arg)
 	return 0;
 }
 
-// 15. SET_APP_PROFILE - Set app profile
-int do_set_app_profile(void __user *arg)
+static int do_set_app_profile(void __user *arg)
 {
 	struct ksu_set_app_profile_cmd cmd;
 
@@ -320,8 +282,7 @@ int do_set_app_profile(void __user *arg)
 	return 0;
 }
 
-// 16. IS_SU_ENABLED - Check if su compat is enabled
-int do_is_su_enabled(void __user *arg)
+static int do_is_su_enabled(void __user *arg)
 {
 	struct ksu_is_su_enabled_cmd cmd;
 
@@ -335,8 +296,7 @@ int do_is_su_enabled(void __user *arg)
 	return 0;
 }
 
-// 17. ENABLE_SU - Enable/disable su compat
-int do_enable_su(void __user *arg)
+static int do_enable_su(void __user *arg)
 {
 	struct ksu_enable_su_cmd cmd;
 
@@ -363,9 +323,8 @@ int do_enable_su(void __user *arg)
 
 // IOCTL handlers mapping table
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
-	{ .cmd = KSU_IOCTL_BECOME_MANAGER, .handler = do_become_manager, .perm_check = perm_check_manager },
 	{ .cmd = KSU_IOCTL_GRANT_ROOT, .handler = do_grant_root, .perm_check = perm_check_basic },
-	{ .cmd = KSU_IOCTL_GET_VERSION, .handler = do_get_version, .perm_check = perm_check_all },
+	{ .cmd = KSU_IOCTL_GET_INFO, .handler = do_get_info, .perm_check = perm_check_all },
 	{ .cmd = KSU_IOCTL_REPORT_EVENT, .handler = do_report_event, .perm_check = perm_check_root },
 	{ .cmd = KSU_IOCTL_SET_SEPOLICY, .handler = do_set_sepolicy, .perm_check = perm_check_root },
 	{ .cmd = KSU_IOCTL_CHECK_SAFEMODE, .handler = do_check_safemode, .perm_check = perm_check_all },
