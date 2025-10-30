@@ -187,44 +187,6 @@ void escape_to_root(void)
 	setup_selinux(profile->selinux_domain);
 }
 
-int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
-{
-	if (!current->mm) {
-		// skip kernel threads
-		return 0;
-	}
-
-	if (current_uid().val != 1000) {
-		// skip non system uid
-		return 0;
-	}
-
-	if (!old_dentry || !new_dentry) {
-		return 0;
-	}
-
-	// /data/system/packages.list.tmp -> /data/system/packages.list
-	if (strcmp(new_dentry->d_iname, "packages.list")) {
-		return 0;
-	}
-
-	char path[128];
-	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
-	if (IS_ERR(buf)) {
-		pr_err("dentry_path_raw failed.\n");
-		return 0;
-	}
-
-	if (!strstr(buf, "/system/packages.list")) {
-		return 0;
-	}
-	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
-		new_dentry->d_iname, buf);
-
-	track_throne();
-
-	return 0;
-}
 
 static void nuke_ext4_sysfs() {
 	struct path path;
@@ -650,26 +612,6 @@ static struct kprobe prctl_kp = {
 	.pre_handler = handler_pre,
 };
 
-static int renameat_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
-	// https://elixir.bootlin.com/linux/v5.12-rc1/source/include/linux/fs.h
-	struct renamedata *rd = PT_REGS_PARM1(regs);
-	struct dentry *old_entry = rd->old_dentry;
-	struct dentry *new_entry = rd->new_dentry;
-#else
-	struct dentry *old_entry = (struct dentry *)PT_REGS_PARM2(regs);
-	struct dentry *new_entry = (struct dentry *)PT_REGS_CCALL_PARM4(regs);
-#endif
-
-	return ksu_handle_rename(old_entry, new_entry);
-}
-
-static struct kprobe renameat_kp = {
-	.symbol_name = "vfs_rename",
-	.pre_handler = renameat_handler_pre,
-};
-
 __maybe_unused int ksu_kprobe_init(void)
 {
 	int rc = 0;
@@ -680,16 +622,12 @@ __maybe_unused int ksu_kprobe_init(void)
 		return rc;
 	}
 
-	rc = register_kprobe(&renameat_kp);
-	pr_info("renameat kp: %d\n", rc);
-
 	return rc;
 }
 
 __maybe_unused int ksu_kprobe_exit(void)
 {
 	unregister_kprobe(&prctl_kp);
-	unregister_kprobe(&renameat_kp);
 	return 0;
 }
 
@@ -698,12 +636,6 @@ static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 {
 	ksu_handle_prctl(option, arg2, arg3, arg4, arg5);
 	return -ENOSYS;
-}
-
-static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
-			    struct inode *new_inode, struct dentry *new_dentry)
-{
-	return ksu_handle_rename(old_dentry, new_dentry);
 }
 
 static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
@@ -715,7 +647,6 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 #ifndef MODULE
 static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
-	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
 };
 
@@ -858,25 +789,6 @@ void __init ksu_lsm_hook_init(void)
 		pr_warn("Failed to find task_prctl!\n");
 	}
 
-	int inode_killpriv_index = -1;
-	void *cap_killpriv = GET_SYMBOL_ADDR(cap_inode_killpriv);
-	find_head_addr(cap_killpriv, &inode_killpriv_index);
-	if (inode_killpriv_index < 0) {
-		pr_warn("Failed to find inode_rename, use kprobe instead!\n");
-		register_kprobe(&renameat_kp);
-	} else {
-		int inode_rename_index = inode_killpriv_index +
-					 &security_hook_heads.inode_rename -
-					 &security_hook_heads.inode_killpriv;
-		struct hlist_head *head_start =
-			(struct hlist_head *)&security_hook_heads;
-		void *inode_rename_head = head_start + inode_rename_index;
-		if (inode_rename_head != &security_hook_heads.inode_rename) {
-			pr_warn("inode_rename's address has shifted!\n");
-		}
-		KSU_LSM_HOOK_HACK_INIT(inode_rename_head, inode_rename,
-				       ksu_inode_rename);
-	}
 	void *cap_setuid = GET_SYMBOL_ADDR(cap_task_fix_setuid);
 	void *setuid_head = find_head_addr(cap_setuid, NULL);
 	if (setuid_head) {
