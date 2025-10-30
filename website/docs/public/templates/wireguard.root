@@ -15,4 +15,10 @@
     ],
     "context":"u:r:su:s0",
     "namespace":"INHERITED",
+    "locales": {
+        "pt_BR": {
+            "name": "Função do módulo kernel Wireguard",
+            "description": "Permissões essenciais para um backend funcional do módulo do kernel do Wireguard. A instalação opcional das ferramentas da linha de comando do Wireguard requer DAC_OVERRIDE para gravar binários em /system/bin. Como é opcional para a operação, DAC_OVERRIDE não é concedido aqui, mas você pode conceder o recurso temporariamente e revogá-lo após o app instalar os binários da linha de comando."
+        }
+    }
 }

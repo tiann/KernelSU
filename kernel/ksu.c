@@ -78,6 +78,8 @@ void kernelsu_exit(void)
 
 	ksu_throne_tracker_exit();
 
+	ksu_observer_exit();
+
 	destroy_workqueue(ksu_workqueue);
 
 #ifdef CONFIG_KPROBES
