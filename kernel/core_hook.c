@@ -29,6 +29,7 @@
 #include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
+#include "throne_tracker.h"
 #include "kernel_compat.h"
 #include "supercalls.h"
 
