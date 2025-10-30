@@ -362,7 +362,6 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	count = *count_ptr;
 
 	size_t rc_count = strlen(KERNEL_SU_RC);
-	size_t rc_count = strlen(KERNEL_SU_RC);
 
 	pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
 		current->comm, count, rc_count);
@@ -372,7 +371,6 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 		return 0;
 	}
 
-	size_t ret = copy_to_user(buf, KERNEL_SU_RC, rc_count);
 	size_t ret = copy_to_user(buf, KERNEL_SU_RC, rc_count);
 	if (ret) {
 		pr_err("copy ksud.rc failed: %zu\n", ret);
