@@ -1,3 +1,4 @@
+use std::fs;
 use std::os::unix::io::RawFd;
 use std::sync::OnceLock;
 
@@ -6,21 +7,13 @@ const EVENT_POST_FS_DATA: u32 = 1;
 const EVENT_BOOT_COMPLETED: u32 = 2;
 const EVENT_MODULE_MOUNTED: u32 = 3;
 
-// IOCTL command definitions
-const KSU_IOCTL_GRANT_ROOT: u64 = 0x4B01; // _IO('K', 1)
-const KSU_IOCTL_GET_INFO: u64 = 0x804B02; // _IOR('K', 2, struct ksu_get_info_cmd)
-const KSU_IOCTL_REPORT_EVENT: u64 = 0x404B03; // _IOW('K', 3, struct ksu_report_event_cmd)
-const KSU_IOCTL_SET_SEPOLICY: u64 = 0xC04B04; // _IOWR('K', 4, struct ksu_set_sepolicy_cmd)
-const KSU_IOCTL_CHECK_SAFEMODE: u64 = 0x804B05; // _IOR('K', 5, struct ksu_check_safemode_cmd)
-const KSU_IOCTL_GET_ALLOW_LIST: u64 = 0xC04B06; // _IOWR('K', 6, struct ksu_get_allow_list_cmd)
-const KSU_IOCTL_GET_DENY_LIST: u64 = 0xC04B07; // _IOWR('K', 7, struct ksu_get_allow_list_cmd)
-const KSU_IOCTL_UID_GRANTED_ROOT: u64 = 0xC04B08; // _IOWR('K', 8, struct ksu_uid_granted_root_cmd)
-const KSU_IOCTL_UID_SHOULD_UMOUNT: u64 = 0xC04B09; // _IOWR('K', 9, struct ksu_uid_should_umount_cmd)
-const KSU_IOCTL_GET_MANAGER_UID: u64 = 0x804B0A; // _IOR('K', 10, struct ksu_get_manager_uid_cmd)
-const KSU_IOCTL_GET_APP_PROFILE: u64 = 0xC04B0B; // _IOWR('K', 11, struct ksu_get_app_profile_cmd)
-const KSU_IOCTL_SET_APP_PROFILE: u64 = 0x404B0C; // _IOW('K', 12, struct ksu_set_app_profile_cmd)
-const KSU_IOCTL_IS_SU_ENABLED: u64 = 0x804B0D; // _IOR('K', 13, struct ksu_is_su_enabled_cmd)
-const KSU_IOCTL_ENABLE_SU: u64 = 0x404B0E; // _IOW('K', 14, struct ksu_enable_su_cmd)
+const KSU_IOCTL_GRANT_ROOT: u32 = 0x4B01; // _IO('K', 1)
+const KSU_IOCTL_GET_INFO: u32 = 0x80084b02; // _IOR('K', 2, struct ksu_get_info_cmd)
+const KSU_IOCTL_REPORT_EVENT: u32 = 0x40044b03; // _IOW('K', 3, struct ksu_report_event_cmd)
+const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0104b04; // _IOWR('K', 4, struct ksu_set_sepolicy_cmd)
+const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80014b05; // _IOR('K', 5, struct ksu_check_safemode_cmd)
+const KSU_IOCTL_GET_ALLOW_LIST: u32 = 0xc2084b06; // _IOWR('K', 6, struct ksu_get_allow_list_cmd)
+const KSU_IOCTL_GET_DENY_LIST: u32 = 0xc2084b07; // _IOWR('K', 7, struct ksu_get_allow_list_cmd)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -54,22 +47,52 @@ static INFO_CACHE: OnceLock<GetInfoCmd> = OnceLock::new();
 const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
 const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
 
-fn get_driver_fd() -> i32 {
-    let mut fd = -1;
-    unsafe {
-        libc::syscall(libc::SYS_reboot, KSU_INSTALL_MAGIC1, KSU_INSTALL_MAGIC2, 0, &mut fd);
-    };
-    fd
+fn scan_driver_fd() -> Option<RawFd> {
+    let fd_dir = fs::read_dir("/proc/self/fd").ok()?;
+
+    for entry in fd_dir.flatten() {
+        if let Ok(fd_num) = entry.file_name().to_string_lossy().parse::<i32>() {
+            let link_path = format!("/proc/self/fd/{}", fd_num);
+            if let Ok(target) = fs::read_link(&link_path) {
+                let target_str = target.to_string_lossy();
+                if target_str.contains("[ksu_driver]") {
+                    return Some(fd_num);
+                }
+            }
+        }
+    }
+
+    None
 }
+
+// Get cached driver fd
+fn init_driver_fd() -> Option<RawFd> {
+    let is_root = rustix::process::getuid().is_root();
+    if is_root {
+        let mut fd = -1;
+        unsafe {
+            libc::syscall(
+                libc::SYS_reboot,
+                KSU_INSTALL_MAGIC1,
+                KSU_INSTALL_MAGIC2,
+                0,
+                &mut fd,
+            );
+        };
+        if fd >= 0 { Some(fd) } else { None }
+    } else {
+        scan_driver_fd()
+    }
+}
+
 // ioctl wrapper using libc
 #[cfg(any(target_os = "linux", target_os = "android"))]
-fn ksuctl<T>(request: u64, arg: *mut T) -> std::io::Result<i32> {
+fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
     use std::io;
 
-    let fd = *DRIVER_FD.get_or_init(get_driver_fd);
-
+    let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     unsafe {
-        let ret = libc::ioctl(fd, request as libc::c_ulong, arg);
+        let ret = libc::ioctl(fd as libc::c_int, request as libc::c_int, arg);
         if ret < 0 {
             Err(io::Error::last_os_error())
         } else {
