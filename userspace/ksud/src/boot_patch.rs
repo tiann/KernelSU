@@ -119,10 +119,11 @@ fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
         Regex::new(r"(?:.* )?(\d+\.\d+)(?:\S+)?(android\d+)").context("Failed to compile regex")?;
     for s in printable_strings {
         if let Some(caps) = re.captures(s)
-            && let (Some(kernel_version), Some(android_version)) = (caps.get(1), caps.get(2)) {
-                let kmi = format!("{}-{}", android_version.as_str(), kernel_version.as_str());
-                return Ok(kmi);
-            }
+            && let (Some(kernel_version), Some(android_version)) = (caps.get(1), caps.get(2))
+        {
+            let kmi = format!("{}-{}", android_version.as_str(), kernel_version.as_str());
+            return Ok(kmi);
+        }
     }
     println!("- Failed to get KMI version");
     bail!("Try to choose LKM manually")
@@ -501,10 +502,9 @@ fn do_patch(
     )?;
 
     #[cfg(target_os = "android")]
-    if need_backup
-        && let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
-            println!("- Backup stock image failed: {e}");
-        }
+    if need_backup && let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
+        println!("- Backup stock image failed: {e}");
+    }
 
     println!("- Repacking boot image");
     // magiskboot repack boot.img

@@ -74,9 +74,10 @@ pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
             // otherwise it must be a symlink and we don't need to overlay!
             let part_path = Path::new(&module).join(part);
             if part_path.is_dir()
-                && let Some(v) = partition_lowerdir.get_mut(*part) {
-                    v.push(format!("{}", part_path.display()));
-                }
+                && let Some(v) = partition_lowerdir.get_mut(*part)
+            {
+                v.push(format!("{}", part_path.display()));
+            }
         }
     }
 

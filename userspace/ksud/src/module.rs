@@ -267,9 +267,10 @@ pub fn prune_modules() -> Result<()> {
 
         let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists()
-            && let Err(e) = exec_script(uninstaller, true) {
-                warn!("Failed to exec uninstaller: {e}");
-            }
+            && let Err(e) = exec_script(uninstaller, true)
+        {
+            warn!("Failed to exec uninstaller: {e}");
+        }
 
         if let Err(e) = remove_dir_all(module) {
             warn!("Failed to remove {}: {}", module.display(), e);

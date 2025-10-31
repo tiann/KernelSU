@@ -65,9 +65,10 @@ fn restore_syscon_if_unlabeled<P: AsRef<Path>>(dir: P) -> Result<()> {
     for dir_entry in WalkDir::new(dir).parallelism(Serial) {
         if let Some(path) = dir_entry.ok().map(|dir_entry| dir_entry.path())
             && let anyhow::Result::Ok(con) = lgetfilecon(&path)
-                && (con == UNLABEL_CON || con.is_empty()) {
-                    lsetfilecon(&path, SYSTEM_CON)?;
-                }
+            && (con == UNLABEL_CON || con.is_empty())
+        {
+            lsetfilecon(&path, SYSTEM_CON)?;
+        }
     }
     Ok(())
 }
