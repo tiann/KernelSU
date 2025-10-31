@@ -696,7 +696,12 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
     let policies: Vec<AtomicStatement> = statement.try_into()?;
 
     for policy in policies {
-        if !rustix::process::ksu_set_policy(&FfiPolicy::from(policy)) {
+        let ffi_policy = FfiPolicy::from(policy);
+        let cmd = crate::ksucalls::SetSepolicyCmd {
+            cmd: 0,
+            arg: &ffi_policy as *const _ as u64,
+        };
+        if crate::ksucalls::set_sepolicy(&cmd).is_err() {
             log::warn!("apply rule: {statement:?} failed.");
             if strict {
                 return Err(anyhow::anyhow!("apply rule {:?} failed.", statement));
