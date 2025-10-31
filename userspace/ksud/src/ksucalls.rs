@@ -12,8 +12,6 @@ const KSU_IOCTL_GET_INFO: u32 = 0x80084b02; // _IOR('K', 2, struct ksu_get_info_
 const KSU_IOCTL_REPORT_EVENT: u32 = 0x40044b03; // _IOW('K', 3, struct ksu_report_event_cmd)
 const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0104b04; // _IOWR('K', 4, struct ksu_set_sepolicy_cmd)
 const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80014b05; // _IOR('K', 5, struct ksu_check_safemode_cmd)
-const KSU_IOCTL_GET_ALLOW_LIST: u32 = 0xc2084b06; // _IOWR('K', 6, struct ksu_get_allow_list_cmd)
-const KSU_IOCTL_GET_DENY_LIST: u32 = 0xc2084b07; // _IOWR('K', 7, struct ksu_get_allow_list_cmd)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -170,10 +168,6 @@ pub fn check_kernel_safemode() -> bool {
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
 pub fn check_kernel_safemode() -> bool {
     false
-}
-
-pub fn is_safe_mode() -> bool {
-    check_kernel_safemode()
 }
 
 pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
