@@ -1,4 +1,5 @@
 use std::fs;
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::unix::io::RawFd;
 use std::sync::OnceLock;
 
@@ -39,7 +40,9 @@ struct CheckSafemodeCmd {
 }
 
 // Global driver fd cache
+#[cfg(any(target_os = "linux", target_os = "android"))]
 static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
+#[cfg(any(target_os = "linux", target_os = "android"))]
 static INFO_CACHE: OnceLock<GetInfoCmd> = OnceLock::new();
 
 const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
