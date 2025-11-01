@@ -100,7 +100,7 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn ksuctl<T>(_request: u64, _arg: *mut T) -> std::io::Result<i32> {
+fn ksuctl<T>(_request: u32, _arg: *mut T) -> std::io::Result<i32> {
     Err(std::io::Error::from_raw_os_error(libc::ENOSYS))
 }
 
