@@ -1,26 +1,20 @@
-use anyhow::{Context, Error, Ok, Result, bail};
 use std::{
-    fs::{File, OpenOptions, create_dir_all, remove_file, write},
+    fs::{File, OpenOptions, Permissions, create_dir_all, remove_file, set_permissions, write},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
-        Write,
+        Read, Seek, SeekFrom, Write,
     },
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
 };
-
-use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
-#[allow(unused_imports)]
-use std::fs::{Permissions, set_permissions};
 #[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
 
+use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
+
+use anyhow::{Context, Error, Ok, Result, bail};
 use hole_punch::*;
-use std::io::{Read, Seek, SeekFrom};
-
 use jwalk::WalkDir;
-use std::path::PathBuf;
-
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process,

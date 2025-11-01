@@ -1,22 +1,19 @@
 #[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Command;
-use std::process::Stdio;
+use std::{
+    os::unix::fs::PermissionsExt,
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
+};
 
-use anyhow::Context;
-use anyhow::Result;
-use anyhow::anyhow;
-use anyhow::bail;
-use anyhow::ensure;
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use regex_lite::Regex;
 use which::which;
 
-use crate::defs;
-use crate::defs::BACKUP_FILENAME;
-use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
-use crate::{assets, utils};
+use crate::{
+    assets,
+    defs::{self, BACKUP_FILENAME, KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX},
+    utils,
+};
 
 #[cfg(target_os = "android")]
 fn ensure_gki_kernel() -> Result<()> {
