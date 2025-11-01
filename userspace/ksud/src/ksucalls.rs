@@ -48,6 +48,7 @@ static INFO_CACHE: OnceLock<GetInfoCmd> = OnceLock::new();
 const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
 const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn scan_driver_fd() -> Option<RawFd> {
     let fd_dir = fs::read_dir("/proc/self/fd").ok()?;
 
@@ -67,6 +68,7 @@ fn scan_driver_fd() -> Option<RawFd> {
 }
 
 // Get cached driver fd
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn init_driver_fd() -> Option<RawFd> {
     let fd = scan_driver_fd();
     if fd.is_none() {
