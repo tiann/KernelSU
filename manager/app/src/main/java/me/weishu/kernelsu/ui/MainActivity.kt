@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val isManager = Natives.becomeManager(ksuApp.packageName)
+        val isManager = Natives.isManager
         if (isManager) install()
 
         setContent {
