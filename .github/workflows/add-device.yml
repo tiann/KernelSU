@@ -11,7 +11,7 @@ jobs:
     env:
       ISSUE_CONTENT: ${{ github.event.issue.body }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Parse issue body
         id: handle-add-device
         run: |
