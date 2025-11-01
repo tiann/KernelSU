@@ -33,8 +33,6 @@ object Natives {
         System.loadLibrary("kernelsu")
     }
 
-    // become root manager, return true if success.
-    external fun becomeManager(pkg: String?): Boolean
     val version: Int
         external get
 
@@ -46,6 +44,9 @@ object Natives {
         external get
 
     val isLkmMode: Boolean
+        external get
+
+    val isManager: Boolean
         external get
 
     external fun uidShouldUmount(uid: Int): Boolean
