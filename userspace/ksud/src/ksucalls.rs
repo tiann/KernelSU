@@ -64,6 +64,7 @@ fn scan_driver_fd() -> Option<RawFd> {
 }
 
 // Get cached driver fd
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn init_driver_fd() -> Option<RawFd> {
     let is_root = rustix::process::getuid().is_root();
     if is_root {
@@ -81,6 +82,11 @@ fn init_driver_fd() -> Option<RawFd> {
     } else {
         scan_driver_fd()
     }
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+fn init_driver_fd() -> Option<RawFd> {
+    None
 }
 
 // ioctl wrapper using libc
