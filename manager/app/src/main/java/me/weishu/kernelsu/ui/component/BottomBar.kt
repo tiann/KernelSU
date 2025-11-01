@@ -29,7 +29,7 @@ fun BottomBar(
     hazeState: HazeState,
     hazeStyle: HazeStyle
 ) {
-    val isManager = Natives.becomeManager(ksuApp.packageName)
+    val isManager = Natives.isManager
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
     val page = LocalPagerState.current.targetPage

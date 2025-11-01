@@ -15,15 +15,6 @@
 #endif
 
 extern "C"
-JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_becomeManager(JNIEnv *env, jobject, jstring pkg) {
-    auto cpkg = env->GetStringUTFChars(pkg, nullptr);
-    auto result = become_manager(cpkg);
-    env->ReleaseStringUTFChars(pkg, cpkg);
-    return result;
-}
-
-extern "C"
 JNIEXPORT jint JNICALL
 Java_me_weishu_kernelsu_Natives_getVersion(JNIEnv *env, jobject) {
     return get_version();
@@ -32,13 +23,11 @@ Java_me_weishu_kernelsu_Natives_getVersion(JNIEnv *env, jobject) {
 extern "C"
 JNIEXPORT jintArray JNICALL
 Java_me_weishu_kernelsu_Natives_getAllowList(JNIEnv *env, jobject) {
-    int uids[1024];
-    int size = 0;
-    bool result = get_allow_list(uids, &size);
-    LOGD("getAllowList: %d, size: %d", result, size);
+    struct ksu_get_allow_list_cmd cmd = {};
+    bool result = get_allow_list(&cmd);
     if (result) {
-        auto array = env->NewIntArray(size);
-        env->SetIntArrayRegion(array, 0, size, uids);
+        auto array = env->NewIntArray(cmd.count);
+        env->SetIntArrayRegion(array, 0, cmd.count, reinterpret_cast<const jint *>(cmd.uids));
         return array;
     }
     return env->NewIntArray(0);
@@ -54,6 +43,12 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_isLkmMode(JNIEnv *env, jclass clazz) {
     return is_lkm_mode();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isManager(JNIEnv *env, jclass clazz) {
+    return is_manager();
 }
 
 static void fillIntArray(JNIEnv *env, jobject list, int *data, int count) {
@@ -131,7 +126,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     strcpy(profile.key, key);
     profile.current_uid = uid;
 
-    bool useDefaultProfile = !get_app_profile(key, &profile);
+    bool useDefaultProfile = get_app_profile(&profile) != 0;
 
     auto cls = env->FindClass("me/weishu/kernelsu/Natives$Profile");
     auto constructor = env->GetMethodID(cls, "<init>", "()V");
