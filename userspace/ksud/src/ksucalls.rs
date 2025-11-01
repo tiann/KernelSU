@@ -90,7 +90,10 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
 
     let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     unsafe {
-        let ret = libc::ioctl(fd as libc::c_int, request as libc::c_int, arg);
+        #[cfg(any(target_os = "android"))]
+        let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);
+        #[cfg(not(any(target_os = "android")))]
+        let ret = libc::ioctl(fd as libc::c_int, request as u64, arg);
         if ret < 0 {
             Err(io::Error::last_os_error())
         } else {
