@@ -1,6 +1,5 @@
 use std::fs;
-#[cfg(any(target_os = "linux", target_os = "android"))]
-use std::os::unix::io::RawFd;
+use std::os::fd::RawFd;
 use std::sync::OnceLock;
 
 // Event constants
