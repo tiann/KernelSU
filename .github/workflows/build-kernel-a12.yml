@@ -53,9 +53,9 @@ jobs:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: KernelSU
           fetch-depth: 0
@@ -106,7 +106,7 @@ jobs:
         run: ls -R
 
       - name: Upload images artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: boot-images-android12
           path: Image-android12*/*.img.gz

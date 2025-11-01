@@ -56,7 +56,7 @@ jobs:
           sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
 
       - name: Checkout KernelSU
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: KernelSU
           fetch-depth: 0
@@ -121,7 +121,7 @@ jobs:
           echo "file_path=${PWD}/arch/${ARCH}/boot/${KERNEL_IMAGE_NAME}" >> $GITHUB_ENV
 
       - name: Upload kernel-ARCVM-${{ matrix.arch }}-${{ env.version }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: kernel-ARCVM-${{ matrix.arch }}-${{ env.version }}
           path: "${{ env.file_path }}"
