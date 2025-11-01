@@ -1,6 +1,6 @@
 use std::fs;
 #[cfg(any(target_os = "linux", target_os = "android"))]
-use std::os::unix::io::RawFd;
+use std::os::fd::RawFd;
 use std::sync::OnceLock;
 
 // Event constants
@@ -70,8 +70,8 @@ fn scan_driver_fd() -> Option<RawFd> {
 // Get cached driver fd
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn init_driver_fd() -> Option<RawFd> {
-    let is_root = rustix::process::getuid().is_root();
-    if is_root {
+    let fd = scan_driver_fd();
+    if fd.is_none() {
         let mut fd = -1;
         unsafe {
             libc::syscall(
@@ -84,13 +84,8 @@ fn init_driver_fd() -> Option<RawFd> {
         };
         if fd >= 0 { Some(fd) } else { None }
     } else {
-        scan_driver_fd()
+        fd
     }
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn init_driver_fd() -> Option<RawFd> {
-    None
 }
 
 // ioctl wrapper using libc
@@ -100,9 +95,9 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
 
     let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     unsafe {
-        #[cfg(target_os = "android")]
+        #[cfg(not(target_env = "gnu"))]
         let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);
-        #[cfg(not(target_os = "android"))]
+        #[cfg(target_env = "gnu")]
         let ret = libc::ioctl(fd as libc::c_int, request as u64, arg);
         if ret < 0 {
             Err(io::Error::last_os_error())
@@ -118,6 +113,7 @@ fn ksuctl<T>(_request: u32, _arg: *mut T) -> std::io::Result<i32> {
 }
 
 // API implementations
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn get_info() -> GetInfoCmd {
     *INFO_CACHE.get_or_init(|| {
         let mut cmd = GetInfoCmd {
