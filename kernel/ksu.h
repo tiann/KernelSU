@@ -36,67 +36,67 @@
 #define KSU_SELINUX_DOMAIN 64
 
 struct root_profile {
-	int32_t uid;
-	int32_t gid;
+    int32_t uid;
+    int32_t gid;
 
-	int32_t groups_count;
-	int32_t groups[KSU_MAX_GROUPS];
+    int32_t groups_count;
+    int32_t groups[KSU_MAX_GROUPS];
 
-	// kernel_cap_t is u32[2] for capabilities v3
-	struct {
-		u64 effective;
-		u64 permitted;
-		u64 inheritable;
-	} capabilities;
+    // kernel_cap_t is u32[2] for capabilities v3
+    struct {
+        u64 effective;
+        u64 permitted;
+        u64 inheritable;
+    } capabilities;
 
-	char selinux_domain[KSU_SELINUX_DOMAIN];
+    char selinux_domain[KSU_SELINUX_DOMAIN];
 
-	int32_t namespaces;
+    int32_t namespaces;
 };
 
 struct non_root_profile {
-	bool umount_modules;
+    bool umount_modules;
 };
 
 struct app_profile {
-	// It may be utilized for backward compatibility, although we have never explicitly made any promises regarding this.
-	u32 version;
+    // It may be utilized for backward compatibility, although we have never explicitly made any promises regarding this.
+    u32 version;
 
-	// this is usually the package of the app, but can be other value for special apps
-	char key[KSU_MAX_PACKAGE_NAME];
-	int32_t current_uid;
-	bool allow_su;
+    // this is usually the package of the app, but can be other value for special apps
+    char key[KSU_MAX_PACKAGE_NAME];
+    int32_t current_uid;
+    bool allow_su;
 
-	union {
-		struct {
-			bool use_default;
-			char template_name[KSU_MAX_PACKAGE_NAME];
+    union {
+        struct {
+            bool use_default;
+            char template_name[KSU_MAX_PACKAGE_NAME];
 
-			struct root_profile profile;
-		} rp_config;
+            struct root_profile profile;
+        } rp_config;
 
-		struct {
-			bool use_default;
+        struct {
+            bool use_default;
 
-			struct non_root_profile profile;
-		} nrp_config;
-	};
+            struct non_root_profile profile;
+        } nrp_config;
+    };
 };
 
 bool ksu_queue_work(struct work_struct *work);
 
 static inline int startswith(char *s, char *prefix)
 {
-	return strncmp(s, prefix, strlen(prefix));
+    return strncmp(s, prefix, strlen(prefix));
 }
 
 static inline int endswith(const char *s, const char *t)
 {
-	size_t slen = strlen(s);
-	size_t tlen = strlen(t);
-	if (tlen > slen)
-		return 1;
-	return strcmp(s + slen - tlen, t);
+    size_t slen = strlen(s);
+    size_t tlen = strlen(t);
+    if (tlen > slen)
+        return 1;
+    return strcmp(s + slen - tlen, t);
 }
 
 #endif

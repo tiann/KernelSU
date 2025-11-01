@@ -12,61 +12,61 @@
 // Command structures for ioctl
 
 struct ksu_become_daemon_cmd {
-	__u8 token[65]; // Input: daemon token (null-terminated)
+    __u8 token[65]; // Input: daemon token (null-terminated)
 };
 
 struct ksu_get_info_cmd {
-	__u32 version; // Output: KERNEL_SU_VERSION
-	__u32 flags; // Output: flags (bit 0: MODULE mode)
+    __u32 version; // Output: KERNEL_SU_VERSION
+    __u32 flags; // Output: flags (bit 0: MODULE mode)
 };
 
 struct ksu_report_event_cmd {
-	__u32 event; // Input: EVENT_POST_FS_DATA, EVENT_BOOT_COMPLETED, etc.
+    __u32 event; // Input: EVENT_POST_FS_DATA, EVENT_BOOT_COMPLETED, etc.
 };
 
 struct ksu_set_sepolicy_cmd {
-	__u64 cmd; // Input: sepolicy command
-	__aligned_u64 arg; // Input: sepolicy argument pointer
+    __u64 cmd; // Input: sepolicy command
+    __aligned_u64 arg; // Input: sepolicy argument pointer
 };
 
 struct ksu_check_safemode_cmd {
-	__u8 in_safe_mode; // Output: true if in safe mode, false otherwise
+    __u8 in_safe_mode; // Output: true if in safe mode, false otherwise
 };
 
 struct ksu_get_allow_list_cmd {
-	__u32 uids[128]; // Output: array of allowed/denied UIDs
-	__u32 count; // Output: number of UIDs in array
-	__u8 allow; // Input: true for allow list, false for deny list
+    __u32 uids[128]; // Output: array of allowed/denied UIDs
+    __u32 count; // Output: number of UIDs in array
+    __u8 allow; // Input: true for allow list, false for deny list
 };
 
 struct ksu_uid_granted_root_cmd {
-	__u32 uid; // Input: target UID to check
-	__u8 granted; // Output: true if granted, false otherwise
+    __u32 uid; // Input: target UID to check
+    __u8 granted; // Output: true if granted, false otherwise
 };
 
 struct ksu_uid_should_umount_cmd {
-	__u32 uid; // Input: target UID to check
-	__u8 should_umount; // Output: true if should umount, false otherwise
+    __u32 uid; // Input: target UID to check
+    __u8 should_umount; // Output: true if should umount, false otherwise
 };
 
 struct ksu_get_manager_uid_cmd {
-	__u32 uid; // Output: manager UID
+    __u32 uid; // Output: manager UID
 };
 
 struct ksu_get_app_profile_cmd {
-	struct app_profile profile; // Input/Output: app profile structure
+    struct app_profile profile; // Input/Output: app profile structure
 };
 
 struct ksu_set_app_profile_cmd {
-	struct app_profile profile; // Input: app profile structure
+    struct app_profile profile; // Input: app profile structure
 };
 
 struct ksu_is_su_enabled_cmd {
-	__u8 enabled; // Output: true if su compat enabled
+    __u8 enabled; // Output: true if su compat enabled
 };
 
 struct ksu_enable_su_cmd {
-	__u8 enable; // Input: true to enable, false to disable
+    __u8 enable; // Input: true to enable, false to disable
 };
 
 // IOCTL command definitions
@@ -99,9 +99,9 @@ bool perm_check_all(void);
 
 // IOCTL command mapping
 struct ksu_ioctl_cmd_map {
-	unsigned int cmd;
-	ksu_ioctl_handler_t handler;
-	ksu_perm_check_t perm_check; // Permission check function
+    unsigned int cmd;
+    ksu_ioctl_handler_t handler;
+    ksu_perm_check_t perm_check; // Permission check function
 };
 
 // Install KSU fd to current process
