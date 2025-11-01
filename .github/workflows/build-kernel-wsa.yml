@@ -1,17 +1,5 @@
 name: Build Kernel - WSA
 on:
-  push:
-    branches: ["main", "ci", "checkci"]
-    paths:
-      - ".github/workflows/build-kernel-wsa.yml"
-      - ".github/workflows/wsa-kernel.yml"
-      - "kernel/**"
-  pull_request:
-    branches: ["main"]
-    paths:
-      - ".github/workflows/build-kernel-wsa.yml"
-      - ".github/workflows/wsa-kernel.yml"
-      - "kernel/**"
   workflow_call:
   workflow_dispatch:
 
