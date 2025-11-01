@@ -21,9 +21,6 @@ jobs:
       matrix:
         include:
           - version: "6.6"
-            sub_level: 30
-            os_patch_level: 2024-08
-          - version: "6.6"
             sub_level: 46
             os_patch_level: 2024-09
           - version: "6.6"
@@ -50,6 +47,18 @@ jobs:
           - version: "6.6"
             sub_level: 87
             os_patch_level: 2025-05
+          - version: "6.6"
+            sub_level: 89
+            os_patch_level: 2025-06
+          - version: "6.6"
+            sub_level: 92
+            os_patch_level: 2025-07
+          - version: "6.6"
+            sub_level: 98
+            os_patch_level: 2025-09
+          - version: "6.6"
+            sub_level: 102
+            os_patch_level: 2025-10
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
