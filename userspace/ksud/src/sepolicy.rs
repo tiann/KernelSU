@@ -19,7 +19,7 @@ fn parse_single_word(input: &str) -> IResult<&str, &str> {
     take_while1(is_sepolicy_char).parse(input)
 }
 
-fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject> {
+fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, (_, words, _)) = (
         tag("{"),
         take_while_m_n(1, 100, |c: char| is_sepolicy_char(c) || c.is_whitespace()),
@@ -29,12 +29,12 @@ fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject> {
     Ok((input, words.split_whitespace().collect()))
 }
 
-fn parse_single_obj(input: &str) -> IResult<&str, SeObject> {
+fn parse_single_obj(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, word) = take_while1(is_sepolicy_char).parse(input)?;
     Ok((input, vec![word]))
 }
 
-fn parse_star(input: &str) -> IResult<&str, SeObject> {
+fn parse_star(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, _) = tag("*").parse(input)?;
     Ok((input, vec!["*"]))
 }
@@ -42,12 +42,12 @@ fn parse_star(input: &str) -> IResult<&str, SeObject> {
 // 1. a single sepolicy word
 // 2. { obj1 obj2 obj3 ...}
 // 3. *
-fn parse_seobj(input: &str) -> IResult<&str, SeObject> {
+fn parse_seobj(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, strs) = alt((parse_single_obj, parse_bracket_objs, parse_star)).parse(input)?;
     Ok((input, strs))
 }
 
-fn parse_seobj_no_star(input: &str) -> IResult<&str, SeObject> {
+fn parse_seobj_no_star(input: &str) -> IResult<&str, SeObject<'_>> {
     let (input, strs) = alt((parse_single_obj, parse_bracket_objs)).parse(input)?;
     Ok((input, strs))
 }
@@ -696,7 +696,12 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
     let policies: Vec<AtomicStatement> = statement.try_into()?;
 
     for policy in policies {
-        if !rustix::process::ksu_set_policy(&FfiPolicy::from(policy)) {
+        let ffi_policy = FfiPolicy::from(policy);
+        let cmd = crate::ksucalls::SetSepolicyCmd {
+            cmd: 0,
+            arg: &ffi_policy as *const _ as u64,
+        };
+        if crate::ksucalls::set_sepolicy(&cmd).is_err() {
             log::warn!("apply rule: {statement:?} failed.");
             if strict {
                 return Err(anyhow::anyhow!("apply rule {:?} failed.", statement));

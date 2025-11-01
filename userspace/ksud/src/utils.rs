@@ -78,11 +78,11 @@ pub fn ensure_binary<T: AsRef<Path>>(
         )
     })?)?;
 
-    if let Err(e) = remove_file(path.as_ref()) {
-        if e.kind() != NotFound {
-            return Err(Error::from(e))
-                .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
-        }
+    if let Err(e) = remove_file(path.as_ref())
+        && e.kind() != NotFound
+    {
+        return Err(Error::from(e))
+            .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
     }
 
     write(&path, contents)?;

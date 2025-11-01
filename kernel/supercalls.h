@@ -1,86 +1,15 @@
-//
-// Created by weishu on 2022/12/9.
-//
+#ifndef __KSU_H_SUPERCALLS
+#define __KSU_H_SUPERCALLS
 
-#ifndef KERNELSU_KSU_H
-#define KERNELSU_KSU_H
+#include <linux/types.h>
+#include <linux/ioctl.h>
+#include "ksu.h"
 
-#include <linux/capability.h>
-#include <sys/ioctl.h>
+// Magic numbers for reboot hook to install fd
+#define KSU_INSTALL_MAGIC1 0xDEADBEEF
+#define KSU_INSTALL_MAGIC2 0xCAFEBABE
 
-uint32_t get_version();
-
-bool uid_should_umount(int uid);
-
-bool is_safe_mode();
-
-bool is_lkm_mode();
-
-bool is_manager();
-
-#define KSU_APP_PROFILE_VER 2
-#define KSU_MAX_PACKAGE_NAME 256
-// NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
-#define KSU_MAX_GROUPS 32
-#define KSU_SELINUX_DOMAIN 64
-
-using p_key_t = char[KSU_MAX_PACKAGE_NAME];
-
-struct root_profile {
-    int32_t uid;
-    int32_t gid;
-
-    int32_t groups_count;
-    int32_t groups[KSU_MAX_GROUPS];
-
-    // kernel_cap_t is u32[2] for capabilities v3
-    struct {
-        uint64_t effective;
-        uint64_t permitted;
-        uint64_t inheritable;
-    } capabilities;
-
-    char selinux_domain[KSU_SELINUX_DOMAIN];
-
-    int32_t namespaces;
-};
-
-struct non_root_profile {
-    bool umount_modules;
-};
-
-struct app_profile {
-    // It may be utilized for backward compatibility, although we have never explicitly made any promises regarding this.
-    uint32_t version;
-
-    // this is usually the package of the app, but can be other value for special apps
-    char key[KSU_MAX_PACKAGE_NAME];
-    int32_t current_uid;
-    bool allow_su;
-
-    union {
-        struct {
-            bool use_default;
-            char template_name[KSU_MAX_PACKAGE_NAME];
-
-            struct root_profile profile;
-        } rp_config;
-
-        struct {
-            bool use_default;
-
-            struct non_root_profile profile;
-        } nrp_config;
-    };
-};
-
-bool set_app_profile(const app_profile *profile);
-
-int get_app_profile(app_profile *profile);
-
-bool set_su_enabled(bool enabled);
-
-bool is_su_enabled();
+// Command structures for ioctl
 
 struct ksu_become_daemon_cmd {
     __u8 token[65]; // Input: daemon token (null-terminated)
@@ -124,10 +53,6 @@ struct ksu_get_manager_uid_cmd {
     __u32 uid; // Output: manager UID
 };
 
-struct ksu_set_manager_uid_cmd {
-    __u32 uid; // Input: new manager UID
-};
-
 struct ksu_get_app_profile_cmd {
     struct app_profile profile; // Input/Output: app profile structure
 };
@@ -160,6 +85,26 @@ struct ksu_enable_su_cmd {
 #define KSU_IOCTL_IS_SU_ENABLED _IOR('K', 13, struct ksu_is_su_enabled_cmd)
 #define KSU_IOCTL_ENABLE_SU _IOW('K', 14, struct ksu_enable_su_cmd)
 
-bool get_allow_list(struct ksu_get_allow_list_cmd*);
+// IOCTL handler types
+typedef int (*ksu_ioctl_handler_t)(void __user *arg);
+typedef bool (*ksu_perm_check_t)(void);
 
-#endif //KERNELSU_KSU_H
+// Permission check functions
+bool perm_check_manager(void);
+bool perm_check_root(void);
+bool perm_check_daemon(void);
+bool perm_check_daemon_or_manager(void);
+bool perm_check_basic(void);
+bool perm_check_all(void);
+
+// IOCTL command mapping
+struct ksu_ioctl_cmd_map {
+    unsigned int cmd;
+    ksu_ioctl_handler_t handler;
+    ksu_perm_check_t perm_check; // Permission check function
+};
+
+// Install KSU fd to current process
+int ksu_install_fd(void);
+
+#endif // __KSU_H_SUPERCALLS

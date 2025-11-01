@@ -149,7 +149,7 @@ fun HomePager(
         ) {
             item {
                 val coroutineScope = rememberCoroutineScope()
-                val isManager = Natives.becomeManager(ksuApp.packageName)
+                val isManager = Natives.isManager
                 val ksuVersion = if (isManager) Natives.version else null
                 val lkmMode = ksuVersion?.let {
                     if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
