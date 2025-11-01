@@ -152,7 +152,7 @@ fun HomePager(
                 val isManager = Natives.isManager
                 val ksuVersion = if (isManager) Natives.version else null
                 val lkmMode = ksuVersion?.let {
-                    if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
+                    if (kernelVersion.isGKI()) Natives.isLkmMode else null
                 }
 
                 Column(
