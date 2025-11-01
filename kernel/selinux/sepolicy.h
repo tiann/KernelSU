@@ -15,32 +15,32 @@ bool ksu_exists(struct policydb *db, const char *type);
 
 // Access vector rules
 bool ksu_allow(struct policydb *db, const char *src, const char *tgt,
-	       const char *cls, const char *perm);
+           const char *cls, const char *perm);
 bool ksu_deny(struct policydb *db, const char *src, const char *tgt,
-	      const char *cls, const char *perm);
+          const char *cls, const char *perm);
 bool ksu_auditallow(struct policydb *db, const char *src, const char *tgt,
-		    const char *cls, const char *perm);
+            const char *cls, const char *perm);
 bool ksu_dontaudit(struct policydb *db, const char *src, const char *tgt,
-		   const char *cls, const char *perm);
+           const char *cls, const char *perm);
 
 // Extended permissions access vector rules
 bool ksu_allowxperm(struct policydb *db, const char *src, const char *tgt,
-		    const char *cls, const char *range);
+            const char *cls, const char *range);
 bool ksu_auditallowxperm(struct policydb *db, const char *src, const char *tgt,
-			 const char *cls, const char *range);
+             const char *cls, const char *range);
 bool ksu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
-			const char *cls, const char *range);
+            const char *cls, const char *range);
 
 // Type rules
 bool ksu_type_transition(struct policydb *db, const char *src, const char *tgt,
-			 const char *cls, const char *def, const char *obj);
+             const char *cls, const char *def, const char *obj);
 bool ksu_type_change(struct policydb *db, const char *src, const char *tgt,
-		     const char *cls, const char *def);
+             const char *cls, const char *def);
 bool ksu_type_member(struct policydb *db, const char *src, const char *tgt,
-		     const char *cls, const char *def);
+             const char *cls, const char *def);
 
 // File system labeling
 bool ksu_genfscon(struct policydb *db, const char *fs_name, const char *path,
-		  const char *ctx);
+          const char *ctx);
 
 #endif
