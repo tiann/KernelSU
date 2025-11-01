@@ -70,8 +70,8 @@ fn scan_driver_fd() -> Option<RawFd> {
 // Get cached driver fd
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn init_driver_fd() -> Option<RawFd> {
-    let is_root = rustix::process::getuid().is_root();
-    if is_root {
+    let fd = scan_driver_fd();
+    if fd.is_none() {
         let mut fd = -1;
         unsafe {
             libc::syscall(
@@ -84,7 +84,7 @@ fn init_driver_fd() -> Option<RawFd> {
         };
         if fd >= 0 { Some(fd) } else { None }
     } else {
-        scan_driver_fd()
+        fd
     }
 }
 
