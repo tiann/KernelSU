@@ -334,7 +334,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     return 0;
 }
 
-static int ksu_task_fix_setuid_hook(struct cred *new, const struct cred *old, int flags)
+static int __nocfi ksu_task_fix_setuid_hook(struct cred *new, const struct cred *old, int flags)
 {
     ksu_handle_setuid(new, old);
 
