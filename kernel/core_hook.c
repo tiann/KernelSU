@@ -1,3 +1,5 @@
+#include <linux/seccomp.h>
+#include <linux/bpf.h>
 #include <linux/capability.h>
 #include <linux/cred.h>
 #include <linux/dcache.h>
@@ -280,6 +282,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		pr_info("install fd for: %d\n", new_uid.val);
 		spin_lock_irq(&current->sighand->siglock);
 		ksu_install_fd();
+        ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
 		spin_unlock_irq(&current->sighand->siglock);
 		return 0;
 	}
