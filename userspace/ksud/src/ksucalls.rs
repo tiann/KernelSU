@@ -110,6 +110,7 @@ fn ksuctl<T>(_request: u32, _arg: *mut T) -> std::io::Result<i32> {
 }
 
 // API implementations
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn get_info() -> GetInfoCmd {
     *INFO_CACHE.get_or_init(|| {
         let mut cmd = GetInfoCmd {
