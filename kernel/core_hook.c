@@ -1,6 +1,3 @@
-#include "asm-generic/set_memory.h"
-#include "asm/page-def.h"
-#include "asm/patching.h"
 #include <linux/seccomp.h>
 #include <linux/bpf.h>
 #include <linux/capability.h>
