@@ -136,6 +136,8 @@
     <string name="log_saved">日志已保存</string>
     <string name="settings_disable_su">关闭 su 兼容</string>
     <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）</string>
+    <string name="settings_disable_kernel_umount">关闭内核 umount</string>
+    <string name="settings_disable_kernel_umount_summary">临时关闭 KernelSU 控制的内核级 umount 行为。</string>
     <string name="module_install_prompt_with_name">将安装以下模块：%1$s</string>
     <string name="confirm">确认</string>
     <string name="processing">处理中…</string>

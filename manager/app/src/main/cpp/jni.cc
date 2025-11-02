@@ -1,6 +1,7 @@
 #include <jni.h>
 
 #include <sys/prctl.h>
+#include <linux/capability.h>
 
 #include <android/log.h>
 #include <cstring>
@@ -170,7 +171,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         env->SetBooleanField(obj, rootUseDefaultField, (jboolean) profile.rp_config.use_default);
         if (strlen(profile.rp_config.template_name) > 0) {
             env->SetObjectField(obj, rootTemplateField,
-                                env->NewStringUTF(profile.rp_config.template_name));
+                    env->NewStringUTF(profile.rp_config.template_name));
         }
 
         env->SetIntField(obj, uidField, profile.rp_config.profile.uid);
@@ -192,12 +193,12 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
         }
 
         env->SetObjectField(obj, domainField,
-                            env->NewStringUTF(profile.rp_config.profile.selinux_domain));
+                env->NewStringUTF(profile.rp_config.profile.selinux_domain));
         env->SetIntField(obj, namespacesField, profile.rp_config.profile.namespaces);
         env->SetBooleanField(obj, allowSuField, profile.allow_su);
     } else {
         env->SetBooleanField(obj, nonRootUseDefaultField,
-                             (jboolean) profile.nrp_config.use_default);
+                (jboolean) profile.nrp_config.use_default);
         env->SetBooleanField(obj, umountModulesField, profile.nrp_config.profile.umount_modules);
     }
 
@@ -304,4 +305,16 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_setSuEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
     return set_su_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isKernelUmountEnabled(JNIEnv *env, jobject thiz) {
+    return is_kernel_umount_enabled();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_setKernelUmountEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
+    return set_kernel_umount_enabled(enabled);
 }
