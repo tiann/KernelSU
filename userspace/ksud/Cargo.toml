@@ -60,7 +60,6 @@ loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 android_logger = { version = "0.15", default-features = false }
 
 [profile.dev]
-overflow-checks = false
 opt-level = 3
 strip = true
 
