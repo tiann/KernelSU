@@ -61,12 +61,15 @@ struct ksu_set_app_profile_cmd {
     struct app_profile profile; // Input: app profile structure
 };
 
-struct ksu_is_su_enabled_cmd {
-    __u8 enabled; // Output: true if su compat enabled
+struct ksu_get_feature_cmd {
+    __u32 feature_id; // Input: feature ID (enum ksu_feature_id)
+    __u32 value; // Output: feature value/state
+    __u8 supported; // Output: true if feature is supported, false otherwise
 };
 
-struct ksu_enable_su_cmd {
-    __u8 enable; // Input: true to enable, false to disable
+struct ksu_set_feature_cmd {
+    __u32 feature_id; // Input: feature ID (enum ksu_feature_id)
+    __u32 value; // Input: feature value/state to set
 };
 
 // IOCTL command definitions
@@ -82,8 +85,8 @@ struct ksu_enable_su_cmd {
 #define KSU_IOCTL_GET_MANAGER_UID _IOR('K', 10, struct ksu_get_manager_uid_cmd)
 #define KSU_IOCTL_GET_APP_PROFILE _IOWR('K', 11, struct ksu_get_app_profile_cmd)
 #define KSU_IOCTL_SET_APP_PROFILE _IOW('K', 12, struct ksu_set_app_profile_cmd)
-#define KSU_IOCTL_IS_SU_ENABLED _IOR('K', 13, struct ksu_is_su_enabled_cmd)
-#define KSU_IOCTL_ENABLE_SU _IOW('K', 14, struct ksu_enable_su_cmd)
+#define KSU_IOCTL_GET_FEATURE _IOWR('K', 13, struct ksu_get_feature_cmd)
+#define KSU_IOCTL_SET_FEATURE _IOW('K', 14, struct ksu_set_feature_cmd)
 
 // IOCTL handler types
 typedef int (*ksu_ioctl_handler_t)(void __user *arg);

@@ -28,6 +28,7 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "core_hook.h"
+#include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
@@ -48,8 +49,28 @@ struct ksu_umount_work {
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
-extern void ksu_sucompat_init();
-extern void ksu_sucompat_exit();
+static bool ksu_kernel_umount_enabled = true;
+
+static int kernel_umount_feature_get(u32 *value)
+{
+    *value = ksu_kernel_umount_enabled ? 1 : 0;
+    return 0;
+}
+
+static int kernel_umount_feature_set(u32 value)
+{
+    bool enable = value != 0;
+    ksu_kernel_umount_enabled = enable;
+    pr_info("kernel_umount: set to %d\n", enable);
+    return 0;
+}
+
+static const struct ksu_feature_handler kernel_umount_handler = {
+    .feature_id = KSU_FEATURE_KERNEL_UMOUNT,
+    .name = "kernel_umount",
+    .get_handler = kernel_umount_feature_get,
+    .set_handler = kernel_umount_feature_set,
+};
 
 static inline bool is_allow_su()
 {
@@ -326,6 +347,10 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
+    if (!ksu_kernel_umount_enabled) {
+        return 0;
+    }
+
     if (!ksu_uid_should_umount(new_uid.val)) {
         return 0;
     } else {
@@ -444,6 +469,10 @@ __maybe_unused int ksu_kprobe_exit(void)
 
 void __init ksu_core_init(void)
 {
+    if (ksu_register_feature_handler(&kernel_umount_handler)) {
+        pr_err("Failed to register kernel_umount feature handler\n");
+    }
+
     ksu_workqueue = alloc_workqueue("ksu_umount", WQ_UNBOUND, 0);
     if (!ksu_workqueue) {
         pr_err("Failed to create ksu workqueue\n");

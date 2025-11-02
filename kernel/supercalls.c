@@ -11,6 +11,7 @@
 #include <linux/version.h>
 
 #include "allowlist.h"
+#include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
@@ -24,8 +25,6 @@ extern bool ksu_module_mounted;
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 extern void ksu_sucompat_init(void);
 extern void ksu_sucompat_exit(void);
-
-static bool ksu_su_compat_enabled = true;
 
 // Permission check functions
 bool perm_check_manager(void)
@@ -282,41 +281,49 @@ static int do_set_app_profile(void __user *arg)
     return 0;
 }
 
-static int do_is_su_enabled(void __user *arg)
+static int do_get_feature(void __user *arg)
 {
-    struct ksu_is_su_enabled_cmd cmd;
+    struct ksu_get_feature_cmd cmd;
+    bool supported;
+    int ret;
 
-    cmd.enabled = ksu_su_compat_enabled;
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("get_feature: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    ret = ksu_get_feature(cmd.feature_id, &cmd.value, &supported);
+    cmd.supported = supported ? 1 : 0;
+
+    if (ret && supported) {
+        pr_err("get_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
+        return ret;
+    }
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("is_su_enabled: copy_to_user failed\n");
+        pr_err("get_feature: copy_to_user failed\n");
         return -EFAULT;
     }
 
     return 0;
 }
 
-static int do_enable_su(void __user *arg)
+static int do_set_feature(void __user *arg)
 {
-    struct ksu_enable_su_cmd cmd;
+    struct ksu_set_feature_cmd cmd;
+    int ret;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("enable_su: copy_from_user failed\n");
+        pr_err("set_feature: copy_from_user failed\n");
         return -EFAULT;
     }
 
-    if (cmd.enable == ksu_su_compat_enabled) {
-        pr_info("enable_su: no need to change\n");
-        return 0;
+    // 调用 feature 管理接口
+    ret = ksu_set_feature(cmd.feature_id, cmd.value);
+    if (ret) {
+        pr_err("set_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
+        return ret;
     }
-
-    if (cmd.enable) {
-        ksu_sucompat_init();
-    } else {
-        ksu_sucompat_exit();
-    }
-
-    ksu_su_compat_enabled = cmd.enable;
 
     return 0;
 }
@@ -335,8 +342,8 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GET_MANAGER_UID, .handler = do_get_manager_uid, .perm_check = perm_check_basic },
     { .cmd = KSU_IOCTL_GET_APP_PROFILE, .handler = do_get_app_profile, .perm_check = perm_check_manager },
     { .cmd = KSU_IOCTL_SET_APP_PROFILE, .handler = do_set_app_profile, .perm_check = perm_check_manager },
-    { .cmd = KSU_IOCTL_IS_SU_ENABLED, .handler = do_is_su_enabled, .perm_check = perm_check_manager },
-    { .cmd = KSU_IOCTL_ENABLE_SU, .handler = do_enable_su, .perm_check = perm_check_manager },
+    { .cmd = KSU_IOCTL_GET_FEATURE, .handler = do_get_feature, .perm_check = perm_check_manager },
+    { .cmd = KSU_IOCTL_SET_FEATURE, .handler = do_set_feature, .perm_check = perm_check_manager },
     { .cmd = 0, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 

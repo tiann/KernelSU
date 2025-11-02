@@ -7,6 +7,7 @@
 #include "allowlist.h"
 #include "arch.h"
 #include "core_hook.h"
+#include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "throne_tracker.h"
@@ -34,6 +35,8 @@ int __init kernelsu_init(void)
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("*************************************************************");
 #endif
+
+    ksu_feature_init();
 
     ksu_core_init();
 
@@ -74,6 +77,7 @@ void kernelsu_exit(void)
 #endif
 
     ksu_core_exit();
+    ksu_feature_exit();
 }
 
 module_init(kernelsu_init);
