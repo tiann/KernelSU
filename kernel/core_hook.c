@@ -422,9 +422,8 @@ static struct kprobe reboot_kp = {
 // 2. security_task_fix_setuid hook for handling setuid
 static int security_task_fix_setuid_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-    struct pt_regs *real_regs = PT_REAL_REGS(regs);
-    struct cred *new = (struct cred *)PT_REGS_PARM1(real_regs);
-    const struct cred *old = (const struct cred *)PT_REGS_PARM2(real_regs);
+    struct cred *new = (struct cred *)PT_REGS_PARM1(regs);
+    const struct cred *old = (const struct cred *)PT_REGS_PARM2(regs);
 
     ksu_handle_setuid(new, old);
 
