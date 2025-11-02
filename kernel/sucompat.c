@@ -45,7 +45,7 @@ static char __user *ksud_user_path(void)
     return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
+static int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
              int *__unused_flags)
 {
     const char su[] = SU_PATH;
@@ -66,7 +66,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
     return 0;
 }
 
-int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
+static int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
     // const char sh[] = SH_PATH;
     const char su[] = SU_PATH;
@@ -102,37 +102,6 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
         *filename_user = sh_user_path();
     }
 #endif
-
-    return 0;
-}
-
-// the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
-int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
-                 void *__never_use_argv, void *__never_use_envp,
-                 int *__never_use_flags)
-{
-    struct filename *filename;
-    const char sh[] = KSUD_PATH;
-    const char su[] = SU_PATH;
-
-    if (unlikely(!filename_ptr))
-        return 0;
-
-    filename = *filename_ptr;
-    if (IS_ERR(filename)) {
-        return 0;
-    }
-
-    if (likely(memcmp(filename->name, su, sizeof(su))))
-        return 0;
-
-    if (!ksu_is_allow_uid(current_uid().val))
-        return 0;
-
-    pr_info("do_execveat_common su found\n");
-    memcpy((void *)filename->name, sh, sizeof(sh));
-
-    escape_to_root();
 
     return 0;
 }
