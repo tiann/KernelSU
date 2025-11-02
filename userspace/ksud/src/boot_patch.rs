@@ -474,7 +474,8 @@ fn do_patch(
         ramdisk = workdir.join("vendor_ramdisk").join("ramdisk.cpio");
     }
     if !ramdisk.exists() {
-        bail!("No compatible ramdisk found.");
+        println!("- No ramdisk, create by default");
+        ramdisk = "ramdisk.cpio".into();
     }
     let ramdisk = ramdisk.as_path();
     let is_magisk_patched = is_magisk_patched(&magiskboot, workdir, ramdisk)?;
