@@ -62,14 +62,14 @@ struct ksu_set_app_profile_cmd {
 };
 
 struct ksu_get_feature_cmd {
-    __u32 feature_id; // Input: feature ID (enum ksu_feature_id)
-    __u32 value; // Output: feature value/state
+    __u64 feature_id; // Input: feature ID (enum ksu_feature_id)
+    __u64 value; // Output: feature value/state
     __u8 supported; // Output: true if feature is supported, false otherwise
 };
 
 struct ksu_set_feature_cmd {
-    __u32 feature_id; // Input: feature ID (enum ksu_feature_id)
-    __u32 value; // Input: feature value/state to set
+    __u64 feature_id; // Input: feature ID (enum ksu_feature_id)
+    __u64 value; // Input: feature value/state to set
 };
 
 // IOCTL command definitions

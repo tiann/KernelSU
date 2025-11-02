@@ -296,7 +296,7 @@ static int do_get_feature(void __user *arg)
     cmd.supported = supported ? 1 : 0;
 
     if (ret && supported) {
-        pr_err("get_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
+        pr_err("get_feature: failed for feature %llu: %d\n", cmd.feature_id, ret);
         return ret;
     }
 
@@ -318,10 +318,9 @@ static int do_set_feature(void __user *arg)
         return -EFAULT;
     }
 
-    // 调用 feature 管理接口
     ret = ksu_set_feature(cmd.feature_id, cmd.value);
     if (ret) {
-        pr_err("set_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
+        pr_err("set_feature: failed for feature %llu: %d\n", cmd.feature_id, ret);
         return ret;
     }
 
