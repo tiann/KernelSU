@@ -7,94 +7,132 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <utility>
+#include <android/log.h>
+#include <dirent.h>
+#include <stdlib.h>
 
+#include <unistd.h>
+#include <sys/syscall.h>
 #include "ksu.h"
 
-#define KERNEL_SU_OPTION 0xDEADBEEF
+static int fd = -1;
 
-#define CMD_GRANT_ROOT 0
-
-#define CMD_BECOME_MANAGER 1
-#define CMD_GET_VERSION 2
-#define CMD_ALLOW_SU 3
-#define CMD_DENY_SU 4
-#define CMD_GET_SU_LIST 5
-#define CMD_GET_DENY_LIST 6
-#define CMD_CHECK_SAFEMODE 9
-
-#define CMD_GET_APP_PROFILE 10
-#define CMD_SET_APP_PROFILE 11
-
-#define CMD_IS_UID_GRANTED_ROOT 12
-#define CMD_IS_UID_SHOULD_UMOUNT 13
-#define CMD_IS_SU_ENABLED 14
-#define CMD_ENABLE_SU 15
-
-static bool ksuctl(int cmd, void* arg1, void* arg2) {
-    int32_t result = 0;
-    prctl(KERNEL_SU_OPTION, cmd, arg1, arg2, &result);
-    return result == KERNEL_SU_OPTION;
-}
-
-bool become_manager(const char* pkg) {
-    char param[128];
-    uid_t uid = getuid();
-    uint32_t userId = uid / 100000;
-    if (userId == 0) {
-        sprintf(param, "/data/data/%s", pkg);
-    } else {
-        snprintf(param, sizeof(param), "/data/user/%d/%s", userId, pkg);
+static inline int scan_driver_fd() {
+    const char *kName = "[ksu_driver]";
+    DIR *dir = opendir("/proc/self/fd");
+    if (!dir) {
+        return -1;
     }
 
-    return ksuctl(CMD_BECOME_MANAGER, param, nullptr);
-}
+    int found = -1;
+    struct dirent *de;
+    char path[64];
+    char target[PATH_MAX];
 
-// cache the result to avoid unnecessary syscall
-static bool is_lkm = false;
+    while ((de = readdir(dir)) != NULL) {
+        if (de->d_name[0] == '.') {
+            continue;
+        }
 
-int get_version(void) {
-    int32_t version = -1;
-    int32_t flags = 0;
-    ksuctl(CMD_GET_VERSION, &version, &flags); 
-    if (!is_lkm && (flags & 0x1)) {
-        is_lkm = true;
+        char *endptr = NULL;
+        long fd_long = strtol(de->d_name, &endptr, 10);
+        if (!de->d_name[0] || *endptr != '\0' || fd_long < 0 || fd_long > INT_MAX) {
+            continue;
+        }
+
+        snprintf(path, sizeof(path), "/proc/self/fd/%s", de->d_name);
+        ssize_t n = readlink(path, target, sizeof(target) - 1);
+        if (n < 0) {
+            continue;
+        }
+        target[n] = '\0';
+
+        const char *base = strrchr(target, '/');
+        base = base ? base + 1 : target;
+
+        if (strstr(base, kName)) {
+            found = (int)fd_long;
+            break;
+        }
     }
-    return version;
+
+    closedir(dir);
+    return found;
 }
 
-bool get_allow_list(int *uids, int *size) {
-    return ksuctl(CMD_GET_SU_LIST, uids, size);
+template<typename... Args>
+static int ksuctl(unsigned long op, Args &&... args) {
+
+    if (fd < 0) {
+        fd = scan_driver_fd();
+    }
+
+    static_assert(sizeof...(Args) <= 1, "ioctl expects at most one extra argument");
+
+    return ioctl(fd, op, std::forward<Args>(args)...);
+}
+
+static struct ksu_get_info_cmd g_version {};
+
+struct ksu_get_info_cmd get_info() {
+    if (!g_version.version) {
+        ksuctl(KSU_IOCTL_GET_INFO, &g_version);
+    }
+    return g_version;
+}
+
+uint32_t get_version() {
+    auto info = get_info();
+    return info.version;
+}
+
+bool get_allow_list(struct ksu_get_allow_list_cmd *cmd) {
+    return ksuctl(KSU_IOCTL_GET_ALLOW_LIST, cmd) == 0;
 }
 
 bool is_safe_mode() {
-    return ksuctl(CMD_CHECK_SAFEMODE, nullptr, nullptr);
+    struct ksu_check_safemode_cmd cmd = {};
+    ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &cmd);
+    return cmd.in_safe_mode;
 }
 
 bool is_lkm_mode() {
-    // you should call get_version first!
-    return is_lkm;
+    auto info = get_info();
+    return (info.flags & 0x1) != 0;
+}
+
+bool is_manager() {
+    auto info = get_info();
+    return (info.flags & 0x2) != 0;
 }
 
 bool uid_should_umount(int uid) {
-    bool should;
-    return ksuctl(CMD_IS_UID_SHOULD_UMOUNT, reinterpret_cast<void*>(uid), &should) && should;
+    struct ksu_uid_should_umount_cmd cmd = {};
+    cmd.uid = uid;
+    ksuctl(KSU_IOCTL_UID_SHOULD_UMOUNT, &cmd);
+    return cmd.should_umount;
 }
 
 bool set_app_profile(const app_profile *profile) {
-    return ksuctl(CMD_SET_APP_PROFILE, (void*) profile, nullptr);
+    struct ksu_set_app_profile_cmd cmd = {};
+    cmd.profile = *profile;
+    return ksuctl(KSU_IOCTL_SET_APP_PROFILE, &cmd) == 0;
 }
 
-bool get_app_profile(p_key_t key, app_profile *profile) {
-    return ksuctl(CMD_GET_APP_PROFILE, (void*) profile, nullptr);
+int get_app_profile(app_profile *profile) {
+    struct ksu_get_app_profile_cmd cmd = {.profile = *profile};
+    int ret = ksuctl(KSU_IOCTL_GET_APP_PROFILE, &cmd);
+    *profile = cmd.profile;
+    return ret;
 }
 
 bool set_su_enabled(bool enabled) {
-    return ksuctl(CMD_ENABLE_SU, (void*) enabled, nullptr);
+    struct ksu_enable_su_cmd cmd = {.enable = enabled};
+    return ksuctl(KSU_IOCTL_ENABLE_SU, &cmd) == 0;
 }
 
 bool is_su_enabled() {
-    bool enabled = true;
-    // if ksuctl failed, we assume su is enabled, and it cannot be disabled.
-    ksuctl(CMD_IS_SU_ENABLED, &enabled, nullptr);
-    return enabled;
+    struct ksu_is_su_enabled_cmd cmd = {};
+    return ksuctl(KSU_IOCTL_IS_SU_ENABLED, &cmd) == 0 && cmd.enabled;
 }

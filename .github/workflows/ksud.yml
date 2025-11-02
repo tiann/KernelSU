@@ -21,12 +21,12 @@ jobs:
   build:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
     - name: Download artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
     
     - name: Prepare LKM fies
       if: ${{ inputs.pack_lkm }}
@@ -51,7 +51,7 @@ jobs:
       run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ksud-${{ inputs.target }}
         path: userspace/ksud/target/**/release/ksud*
