@@ -22,7 +22,6 @@
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
-#include <linux/lsm_hooks.h>
 
 #include "allowlist.h"
 #include "arch.h"
@@ -42,9 +41,6 @@ extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
 extern void ksu_sucompat_init();
 extern void ksu_sucompat_exit();
-
-static int (*original_cap_task_fix_setuid)(struct cred *new, const struct cred *old, int flags);
-static struct security_hook_list *ksu_hooked_security_hook;
 
 static inline bool is_allow_su()
 {
@@ -334,17 +330,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     return 0;
 }
 
-static int __nocfi ksu_task_fix_setuid_hook(struct cred *new, const struct cred *old, int flags)
-{
-    ksu_handle_setuid(new, old);
-
-    if (original_cap_task_fix_setuid) {
-        return original_cap_task_fix_setuid(new, old, flags);
-    }
-
-    return 0;
-}
-
 // Init functons - kprobe hooks
 
 // 1. Reboot hook for installing fd
@@ -374,6 +359,23 @@ static struct kprobe reboot_kp = {
     .pre_handler = reboot_handler_pre,
 };
 
+// 2. security_task_fix_setuid hook for handling setuid
+static int security_task_fix_setuid_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+    struct pt_regs *real_regs = PT_REAL_REGS(regs);
+    struct cred *new = (struct cred *)PT_REGS_PARM1(real_regs);
+    const struct cred *old = (const struct cred *)PT_REGS_PARM2(real_regs);
+
+    ksu_handle_setuid(new, old);
+
+    return 0;
+}
+
+static struct kprobe security_task_fix_setuid_kp = {
+    .symbol_name = "security_task_fix_setuid",
+    .pre_handler = security_task_fix_setuid_handler_pre,
+};
+
 __maybe_unused int ksu_kprobe_init(void)
 {
     int rc = 0;
@@ -386,79 +388,27 @@ __maybe_unused int ksu_kprobe_init(void)
     }
     pr_info("reboot kprobe registered successfully\n");
 
+    // Register security_task_fix_setuid kprobe
+    rc = register_kprobe(&security_task_fix_setuid_kp);
+    if (rc) {
+        pr_err("security_task_fix_setuid kprobe failed: %d\n", rc);
+        unregister_kprobe(&reboot_kp);
+        return rc;
+    }
+    pr_info("security_task_fix_setuid kprobe registered successfully\n");
+
     return 0;
-}
-
-#define GET_SYMBOL_ADDR(sym)                                                   \
-    ({                                                                         \
-        void *addr = kallsyms_lookup_name(#sym ".cfi_jt");                     \
-        if (!addr) {                                                           \
-            addr = kallsyms_lookup_name(#sym);                                 \
-        }                                                                      \
-        addr;                                                                  \
-    })
-
-
-void ksu_lsm_hook_init(void)
-{
-    void *cap_setuid = GET_SYMBOL_ADDR(cap_task_fix_setuid);
-    if (!cap_setuid) {
-        pr_err("Failed to find cap_task_fix_setuid symbol\n");
-        return;
-    }
-
-    struct security_hook_list *hp;
-    hlist_for_each_entry(hp, &security_hook_heads.task_fix_setuid, list) {
-        if (hp->hook.task_fix_setuid == cap_setuid) {
-            pr_info("Found original task_fix_setuid LSM hook, patching it\n");
-
-            original_cap_task_fix_setuid = cap_setuid;
-            ksu_hooked_security_hook = hp;
-
-            u64 page_addr = (u64)&hp->hook.task_fix_setuid & PAGE_MASK;
-            set_memory_rw(page_addr, 1);
-            hp->hook.task_fix_setuid = ksu_task_fix_setuid_hook;
-            set_memory_ro(page_addr, 1);
-
-            pr_info("LSM hook patched successfully\n");
-            break;
-        }
-    }
-
-    smp_mb();
-}
-
-void ksu_lsm_hook_exit(void)
-{
-    if (!ksu_hooked_security_hook || !original_cap_task_fix_setuid) {
-        pr_info("No LSM hook to restore\n");
-        return;
-    }
-
-    pr_info("Restoring original task_fix_setuid LSM hook\n");
-
-    u64 page_addr = (u64)&ksu_hooked_security_hook->hook.task_fix_setuid & PAGE_MASK;
-    set_memory_rw(page_addr, 1);
-    ksu_hooked_security_hook->hook.task_fix_setuid = original_cap_task_fix_setuid;
-    set_memory_ro(page_addr, 1);
-
-    smp_mb();
-
-    original_cap_task_fix_setuid = NULL;
-    ksu_hooked_security_hook = NULL;
-
-    pr_info("LSM hook restored successfully\n");
 }
 
 __maybe_unused int ksu_kprobe_exit(void)
 {
+    unregister_kprobe(&security_task_fix_setuid_kp);
     unregister_kprobe(&reboot_kp);
     return 0;
 }
 
 void __init ksu_core_init(void)
 {
-    ksu_lsm_hook_init();
 #ifdef CONFIG_KPROBES
     int rc = ksu_kprobe_init();
     if (rc) {
@@ -470,7 +420,6 @@ void __init ksu_core_init(void)
 void ksu_core_exit(void)
 {
     pr_info("ksu_core_exit\n");
-    ksu_lsm_hook_exit();
 #ifdef CONFIG_KPROBES
     ksu_kprobe_exit();
 #endif
