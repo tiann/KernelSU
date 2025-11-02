@@ -1,17 +1,14 @@
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 
-#include <linux/slab.h>
 #include <linux/mutex.h>
 
-static struct ksu_feature_handler *feature_handlers[KSU_FEATURE_MAX];
+static const struct ksu_feature_handler *feature_handlers[KSU_FEATURE_MAX];
 
 static DEFINE_MUTEX(feature_mutex);
 
 int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
 {
-    int ret = 0;
-
     if (!handler) {
         pr_err("feature: register handler is NULL\n");
         return -EINVAL;
@@ -34,21 +31,13 @@ int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
                 handler->feature_id);
     }
 
-    feature_handlers[handler->feature_id] = kmalloc(sizeof(struct ksu_feature_handler), GFP_KERNEL);
-    if (!feature_handlers[handler->feature_id]) {
-        pr_err("feature: failed to allocate handler for %u\n", handler->feature_id);
-        ret = -ENOMEM;
-        goto out;
-    }
-
-    memcpy(feature_handlers[handler->feature_id], handler, sizeof(struct ksu_feature_handler));
+    feature_handlers[handler->feature_id] = handler;
 
     pr_info("feature: registered handler for %s (id=%u)\n",
             handler->name ? handler->name : "unknown", handler->feature_id);
 
-out:
     mutex_unlock(&feature_mutex);
-    return ret;
+    return 0;
 }
 
 int ksu_unregister_feature_handler(u32 feature_id)
@@ -68,7 +57,6 @@ int ksu_unregister_feature_handler(u32 feature_id)
         goto out;
     }
 
-    kfree(feature_handlers[feature_id]);
     feature_handlers[feature_id] = NULL;
 
     pr_info("feature: unregistered handler for id=%u\n", feature_id);
@@ -81,7 +69,7 @@ out:
 int ksu_get_feature(u32 feature_id, u64 *value, bool *supported)
 {
     int ret = 0;
-    struct ksu_feature_handler *handler;
+    const struct ksu_feature_handler *handler;
 
     if (feature_id >= KSU_FEATURE_MAX) {
         pr_err("feature: invalid feature_id %u\n", feature_id);
@@ -125,7 +113,7 @@ out:
 int ksu_set_feature(u32 feature_id, u64 value)
 {
     int ret = 0;
-    struct ksu_feature_handler *handler;
+    const struct ksu_feature_handler *handler;
 
     if (feature_id >= KSU_FEATURE_MAX) {
         pr_err("feature: invalid feature_id %u\n", feature_id);
@@ -176,10 +164,7 @@ void ksu_feature_exit(void)
     mutex_lock(&feature_mutex);
 
     for (i = 0; i < KSU_FEATURE_MAX; i++) {
-        if (feature_handlers[i]) {
-            kfree(feature_handlers[i]);
-            feature_handlers[i] = NULL;
-        }
+        feature_handlers[i] = NULL;
     }
 
     mutex_unlock(&feature_mutex);
