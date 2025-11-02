@@ -23,6 +23,7 @@ extern void ksu_sucompat_init();
 extern void ksu_sucompat_exit();
 extern void ksu_ksud_init();
 extern void ksu_ksud_exit();
+extern void ksu_supercalls_init();
 
 int __init kernelsu_init(void)
 {
@@ -37,6 +38,8 @@ int __init kernelsu_init(void)
 #endif
 
     ksu_feature_init();
+
+    ksu_supercalls_init();
 
     ksu_core_init();
 
