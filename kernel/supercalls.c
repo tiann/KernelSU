@@ -73,6 +73,7 @@ static int do_get_info(void __user *arg)
     if (is_manager()) {
         cmd.flags |= 0x2;
     }
+    cmd.features = KSU_FEATURE_MAX;
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
         pr_err("get_version: copy_to_user failed\n");

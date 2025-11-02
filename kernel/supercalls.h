@@ -18,6 +18,7 @@ struct ksu_become_daemon_cmd {
 struct ksu_get_info_cmd {
     __u32 version; // Output: KERNEL_SU_VERSION
     __u32 flags; // Output: flags (bit 0: MODULE mode)
+    __u32 features; // Output: max feature ID supported
 };
 
 struct ksu_report_event_cmd {
