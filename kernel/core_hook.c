@@ -1,3 +1,4 @@
+#include "linux/slab.h"
 #include <linux/seccomp.h>
 #include <linux/bpf.h>
 #include <linux/capability.h>
@@ -39,6 +40,11 @@
 bool ksu_module_mounted = false;
 
 static struct workqueue_struct *ksu_workqueue;
+
+struct ksu_umount_work {
+    struct work_struct work;
+    struct mnt_namespace *mnt_ns;
+};
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
@@ -260,13 +266,22 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 
 static void do_umount_work(struct work_struct *work)
 {
+    struct ksu_umount_work *umount_work = container_of(work, struct ksu_umount_work, work);
+    struct mnt_namespace *old_mnt_ns = current->nsproxy->mnt_ns;
+
+    current->nsproxy->mnt_ns = umount_work->mnt_ns;
+
     try_umount("/odm", true, 0);
     try_umount("/system", true, 0);
     try_umount("/vendor", true, 0);
     try_umount("/product", true, 0);
     try_umount("/system_ext", true, 0);
     try_umount("/data/adb/modules", false, MNT_DETACH);
-    kfree(work);
+
+    current->nsproxy->mnt_ns = old_mnt_ns;
+    put_mnt_ns(umount_work->mnt_ns);
+
+    kfree(umount_work);
 }
 
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
@@ -334,14 +349,18 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
     // fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
     // filter the mountpoint whose target is `/data/adb`
-    struct work_struct *work = kmalloc(sizeof(struct work_struct), GFP_ATOMIC);
-    if (!work) {
-        pr_err("Failed to allocate work\n");
+    struct ksu_umount_work *umount_work = kmalloc(sizeof(struct ksu_umount_work), GFP_ATOMIC);
+    if (!umount_work) {
+        pr_err("Failed to allocate umount_work\n");
         return 0;
     }
 
-    INIT_WORK(work, do_umount_work);
-    queue_work(ksu_workqueue, work);
+    umount_work->mnt_ns = current->nsproxy->mnt_ns;
+    get_mnt_ns(umount_work->mnt_ns);
+
+    INIT_WORK(&umount_work->work, do_umount_work);
+
+    queue_work(ksu_workqueue, &umount_work->work);
 
     return 0;
 }
