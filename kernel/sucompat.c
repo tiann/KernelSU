@@ -27,13 +27,13 @@ void ksu_sucompat_disable();
 
 static bool ksu_su_compat_enabled = true;
 
-static int su_compat_feature_get(u32 *value)
+static int su_compat_feature_get(u64 *value)
 {
     *value = ksu_su_compat_enabled ? 1 : 0;
     return 0;
 }
 
-static int su_compat_feature_set(u32 value)
+static int su_compat_feature_set(u64 value)
 {
     bool enable = value != 0;
 

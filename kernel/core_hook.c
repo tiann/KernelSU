@@ -51,13 +51,13 @@ extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
 static bool ksu_kernel_umount_enabled = true;
 
-static int kernel_umount_feature_get(u32 *value)
+static int kernel_umount_feature_get(u64 *value)
 {
     *value = ksu_kernel_umount_enabled ? 1 : 0;
     return 0;
 }
 
-static int kernel_umount_feature_set(u32 value)
+static int kernel_umount_feature_set(u64 value)
 {
     bool enable = value != 0;
     ksu_kernel_umount_enabled = enable;
