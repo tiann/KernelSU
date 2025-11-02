@@ -13,6 +13,8 @@ const KSU_IOCTL_GET_INFO: u32 = 0x80084b02; // _IOR('K', 2, struct ksu_get_info_
 const KSU_IOCTL_REPORT_EVENT: u32 = 0x40044b03; // _IOW('K', 3, struct ksu_report_event_cmd)
 const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0104b04; // _IOWR('K', 4, struct ksu_set_sepolicy_cmd)
 const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80014b05; // _IOR('K', 5, struct ksu_check_safemode_cmd)
+const KSU_IOCTL_GET_FEATURE: u32 = 0xC0104B0D; // _IOWR('K', 13, struct ksu_get_feature_cmd)
+const KSU_IOCTL_SET_FEATURE: u32 = 0x40104B0E; // _IOW('K', 14, struct ksu_set_feature_cmd)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -37,6 +39,21 @@ pub struct SetSepolicyCmd {
 #[derive(Clone, Copy, Default)]
 struct CheckSafemodeCmd {
     in_safe_mode: u8,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct GetFeatureCmd {
+    feature_id: u32,
+    value: u64,
+    supported: u8,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct SetFeatureCmd {
+    feature_id: u32,
+    value: u64,
 }
 
 // Global driver fd cache
@@ -182,5 +199,24 @@ pub fn check_kernel_safemode() -> bool {
 pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
     let mut ioctl_cmd = *cmd;
     ksuctl(KSU_IOCTL_SET_SEPOLICY, &mut ioctl_cmd as *mut _)?;
+    Ok(())
+}
+
+/// Get feature value and support status from kernel
+/// Returns (value, supported)
+pub fn get_feature(feature_id: u32) -> std::io::Result<(u64, bool)> {
+    let mut cmd = GetFeatureCmd {
+        feature_id,
+        value: 0,
+        supported: 0,
+    };
+    ksuctl(KSU_IOCTL_GET_FEATURE, &mut cmd as *mut _)?;
+    Ok((cmd.value, cmd.supported != 0))
+}
+
+/// Set feature value in kernel
+pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
+    let mut cmd = SetFeatureCmd { feature_id, value };
+    ksuctl(KSU_IOCTL_SET_FEATURE, &mut cmd as *mut _)?;
     Ok(())
 }
