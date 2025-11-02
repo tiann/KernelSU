@@ -8,13 +8,13 @@ const EVENT_POST_FS_DATA: u32 = 1;
 const EVENT_BOOT_COMPLETED: u32 = 2;
 const EVENT_MODULE_MOUNTED: u32 = 3;
 
-const KSU_IOCTL_GRANT_ROOT: u32 = 0x4B01; // _IO('K', 1)
+const KSU_IOCTL_GRANT_ROOT: u32 = 0x00004b01; // _IO('K', 1)
 const KSU_IOCTL_GET_INFO: u32 = 0x80084b02; // _IOR('K', 2, struct ksu_get_info_cmd)
-const KSU_IOCTL_REPORT_EVENT: u32 = 0x40044b03; // _IOW('K', 3, struct ksu_report_event_cmd)
+const KSU_IOCTL_REPORT_EVENT: u32 = 0x40084b03; // _IOW('K', 3, struct ksu_report_event_cmd)
 const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0104b04; // _IOWR('K', 4, struct ksu_set_sepolicy_cmd)
 const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80014b05; // _IOR('K', 5, struct ksu_check_safemode_cmd)
-const KSU_IOCTL_GET_FEATURE: u32 = 0xC0104B0D; // _IOWR('K', 13, struct ksu_get_feature_cmd)
-const KSU_IOCTL_SET_FEATURE: u32 = 0x40104B0E; // _IOW('K', 14, struct ksu_set_feature_cmd)
+const KSU_IOCTL_GET_FEATURE: u32 = 0xc00c4b0d; // _IOWR('K', 13, struct ksu_get_feature_cmd)
+const KSU_IOCTL_SET_FEATURE: u32 = 0x40084b0e; // _IOW('K', 14, struct ksu_set_feature_cmd)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]

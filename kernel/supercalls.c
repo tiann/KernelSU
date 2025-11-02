@@ -353,7 +353,7 @@ void ksu_supercalls_init(void)
 
     pr_info("KernelSU IOCTL Commands:\n");
     for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
-        pr_info("  %-28s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
+        pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
     }
 }
 
