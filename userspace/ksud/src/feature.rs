@@ -252,10 +252,11 @@ pub fn save_config() -> Result<()> {
     for feature_id in all_features.iter() {
         let id = *feature_id as u32;
         if let Ok((value, supported)) = crate::ksucalls::get_feature(id)
-            && supported {
-                features.insert(id, value);
-                log::info!("Saved feature {} = {}", feature_id.name(), value);
-            }
+            && supported
+        {
+            features.insert(id, value);
+            log::info!("Saved feature {} = {}", feature_id.name(), value);
+        }
     }
 
     save_binary_config(&features)?;
