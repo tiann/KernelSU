@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include <unistd.h>
+#include <limits.h>
 #include <sys/syscall.h>
 #include "ksu.h"
 
@@ -128,11 +129,54 @@ int get_app_profile(app_profile *profile) {
 }
 
 bool set_su_enabled(bool enabled) {
-    struct ksu_enable_su_cmd cmd = {.enable = enabled};
-    return ksuctl(KSU_IOCTL_ENABLE_SU, &cmd) == 0;
+    struct ksu_set_feature_cmd cmd = {};
+    cmd.feature_id = KSU_FEATURE_SU_COMPAT;
+    cmd.value = enabled ? 1 : 0;
+    return ksuctl(KSU_IOCTL_SET_FEATURE, &cmd) == 0;
 }
 
 bool is_su_enabled() {
-    struct ksu_is_su_enabled_cmd cmd = {};
-    return ksuctl(KSU_IOCTL_IS_SU_ENABLED, &cmd) == 0 && cmd.enabled;
+    struct ksu_get_feature_cmd cmd = {};
+    cmd.feature_id = KSU_FEATURE_SU_COMPAT;
+    if (ksuctl(KSU_IOCTL_GET_FEATURE, &cmd) != 0) {
+        return false;
+    }
+    if (!cmd.supported) {
+        return false;
+    }
+    return cmd.value != 0;
+}
+
+static inline bool get_feature(uint32_t feature_id, uint64_t *out_value, bool *out_supported) {
+    struct ksu_get_feature_cmd cmd = {};
+    cmd.feature_id = feature_id;
+    if (ksuctl(KSU_IOCTL_GET_FEATURE, &cmd) != 0) {
+        return false;
+    }
+    if (out_value) *out_value = cmd.value;
+    if (out_supported) *out_supported = cmd.supported;
+    return true;
+}
+
+static inline bool set_feature(uint32_t feature_id, uint64_t value) {
+    struct ksu_set_feature_cmd cmd = {};
+    cmd.feature_id = feature_id;
+    cmd.value = value;
+    return ksuctl(KSU_IOCTL_SET_FEATURE, &cmd) == 0;
+}
+
+bool set_kernel_umount_enabled(bool enabled) {
+    return set_feature(KSU_FEATURE_KERNEL_UMOUNT, enabled ? 1 : 0);
+}
+
+bool is_kernel_umount_enabled() {
+    uint64_t value = 0;
+    bool supported = false;
+    if (!get_feature(KSU_FEATURE_KERNEL_UMOUNT, &value, &supported)) {
+        return false;
+    }
+    if (!supported) {
+        return false;
+    }
+    return value != 0;
 }

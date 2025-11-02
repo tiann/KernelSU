@@ -220,6 +220,29 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     }
                                 }
                             )
+
+                            var isKernelUmountDisabled by rememberSaveable {
+                                mutableStateOf(!Natives.isKernelUmountEnabled())
+                            }
+                            SuperSwitch(
+                                title = stringResource(id = R.string.settings_disable_kernel_umount),
+                                summary = stringResource(id = R.string.settings_disable_kernel_umount_summary),
+                                leftAction = {
+                                    Icon(
+                                        Icons.Rounded.FolderDelete,
+                                        modifier = Modifier.padding(end = 16.dp),
+                                        contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                checked = isKernelUmountDisabled,
+                                onCheckedChange = { checked: Boolean ->
+                                    val shouldEnable = !checked
+                                    if (Natives.setKernelUmountEnabled(shouldEnable)) {
+                                        isKernelUmountDisabled = !shouldEnable
+                                    }
+                                }
+                            )
                         }
 
 

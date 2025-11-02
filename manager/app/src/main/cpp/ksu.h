@@ -5,7 +5,7 @@
 #ifndef KERNELSU_KSU_H
 #define KERNELSU_KSU_H
 
-#include <linux/capability.h>
+#include <stdint.h>
 #include <sys/ioctl.h>
 
 uint32_t get_version();
@@ -78,54 +78,69 @@ bool set_app_profile(const app_profile *profile);
 
 int get_app_profile(app_profile *profile);
 
-bool set_su_enabled(bool enabled);
+// Feature IDs
+enum ksu_feature_id {
+    KSU_FEATURE_SU_COMPAT = 0,
+    KSU_FEATURE_KERNEL_UMOUNT = 1,
+};
 
-bool is_su_enabled();
+// Generic feature API
+struct ksu_get_feature_cmd {
+    uint32_t feature_id; // Input: feature ID
+    uint64_t value;      // Output: feature value/state
+    uint8_t supported;   // Output: whether the feature is supported
+};
+
+struct ksu_set_feature_cmd {
+    uint32_t feature_id; // Input: feature ID
+    uint64_t value;      // Input: feature value/state to set
+};
 
 struct ksu_become_daemon_cmd {
-    __u8 token[65]; // Input: daemon token (null-terminated)
+    uint8_t token[65]; // Input: daemon token (null-terminated)
 };
 
 struct ksu_get_info_cmd {
-    __u32 version; // Output: KERNEL_SU_VERSION
-    __u32 flags; // Output: flags (bit 0: MODULE mode)
+    uint32_t version; // Output: KERNEL_SU_VERSION
+    uint32_t flags;   // Output: flags (bit 0: MODULE mode)
+    uint32_t features; // Output: max feature ID supported (KSU_FEATURE_MAX)
 };
 
 struct ksu_report_event_cmd {
-    __u32 event; // Input: EVENT_POST_FS_DATA, EVENT_BOOT_COMPLETED, etc.
+    uint32_t event; // Input: EVENT_POST_FS_DATA, EVENT_BOOT_COMPLETED, etc.
 };
 
 struct ksu_set_sepolicy_cmd {
-    __u64 cmd; // Input: sepolicy command
-    __aligned_u64 arg; // Input: sepolicy argument pointer
+    uint64_t cmd; // Input: sepolicy command
+    uint64_t arg; // Input: sepolicy argument pointer
 };
 
 struct ksu_check_safemode_cmd {
-    __u8 in_safe_mode; // Output: true if in safe mode, false otherwise
+    uint8_t in_safe_mode; // Output: true if in safe mode, false otherwise
 };
 
 struct ksu_get_allow_list_cmd {
-    __u32 uids[128]; // Output: array of allowed/denied UIDs
-    __u32 count; // Output: number of UIDs in array
-    __u8 allow; // Input: true for allow list, false for deny list
+    uint32_t uids[128]; // Output: array of allowed/denied UIDs
+    uint32_t count; // Output: number of UIDs in array
+    uint8_t allow; // Input: true for allow list, false for deny list
 };
 
 struct ksu_uid_granted_root_cmd {
-    __u32 uid; // Input: target UID to check
-    __u8 granted; // Output: true if granted, false otherwise
+    uint32_t uid; // Input: target UID to check
+    uint8_t granted; // Output: true if granted, false otherwise
 };
 
 struct ksu_uid_should_umount_cmd {
-    __u32 uid; // Input: target UID to check
-    __u8 should_umount; // Output: true if should umount, false otherwise
+    uint32_t uid; // Input: target UID to check
+    uint8_t should_umount; // Output: true if should umount, false otherwise
 };
 
 struct ksu_get_manager_uid_cmd {
-    __u32 uid; // Output: manager UID
+    uint32_t uid; // Output: manager UID
 };
 
 struct ksu_set_manager_uid_cmd {
-    __u32 uid; // Input: new manager UID
+    uint32_t uid; // Input: new manager UID
 };
 
 struct ksu_get_app_profile_cmd {
@@ -136,13 +151,13 @@ struct ksu_set_app_profile_cmd {
     struct app_profile profile; // Input: app profile structure
 };
 
-struct ksu_is_su_enabled_cmd {
-    __u8 enabled; // Output: true if su compat enabled
-};
+// Su compat
+bool set_su_enabled(bool enabled);
+bool is_su_enabled();
 
-struct ksu_enable_su_cmd {
-    __u8 enable; // Input: true to enable, false to disable
-};
+// Kernel umount
+bool set_kernel_umount_enabled(bool enabled);
+bool is_kernel_umount_enabled();
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IO('K', 1)
@@ -157,8 +172,8 @@ struct ksu_enable_su_cmd {
 #define KSU_IOCTL_GET_MANAGER_UID _IOR('K', 10, struct ksu_get_manager_uid_cmd)
 #define KSU_IOCTL_GET_APP_PROFILE _IOWR('K', 11, struct ksu_get_app_profile_cmd)
 #define KSU_IOCTL_SET_APP_PROFILE _IOW('K', 12, struct ksu_set_app_profile_cmd)
-#define KSU_IOCTL_IS_SU_ENABLED _IOR('K', 13, struct ksu_is_su_enabled_cmd)
-#define KSU_IOCTL_ENABLE_SU _IOW('K', 14, struct ksu_enable_su_cmd)
+#define KSU_IOCTL_GET_FEATURE _IOWR('K', 13, struct ksu_get_feature_cmd)
+#define KSU_IOCTL_SET_FEATURE _IOW('K', 14, struct ksu_set_feature_cmd)
 
 bool get_allow_list(struct ksu_get_allow_list_cmd*);
 
