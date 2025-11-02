@@ -313,7 +313,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
     kuid_t new_uid = new->uid;
     kuid_t old_uid = old->uid;
-    pr_info("handle_setuid from %d to %d\n", old_uid.val, new_uid.val);
+    // pr_info("handle_setuid from %d to %d\n", old_uid.val, new_uid.val);
 
     if (0 != old_uid.val) {
         // old process is not root, ignore it.
@@ -321,7 +321,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     }
 
     if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
-        pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
+        // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
         return 0;
     }
 
