@@ -18,7 +18,12 @@
 extern "C"
 JNIEXPORT jint JNICALL
 Java_me_weishu_kernelsu_Natives_getVersion(JNIEnv *env, jobject) {
-    return get_version();
+    int version = get_version();
+    if (version == 0) {
+        // try legacy method
+        return legacy_get_version();
+    }
+    return version;
 }
 
 extern "C"
