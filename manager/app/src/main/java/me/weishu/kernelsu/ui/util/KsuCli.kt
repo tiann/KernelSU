@@ -13,6 +13,7 @@ import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.io.SuFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -334,6 +335,10 @@ fun isAbDevice(): Boolean {
 }
 
 fun isInitBoot(): Boolean {
+    val shell = getRootShell();
+    if (shell.isRoot) {
+        return SuFile("/dev/block/by-name/init_boot").exists() || SuFile("/dev/block/by-name/init_boot_a").exists()
+    }
     return !Os.uname().release.contains("android12-")
 }
 
