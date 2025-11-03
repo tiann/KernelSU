@@ -1,8 +1,11 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -35,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -61,6 +65,7 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
@@ -78,6 +83,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @Composable
 @Destination<RootGraph>
 fun InstallScreen(navigator: DestinationsNavigator) {
+    val context = LocalContext.current
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)
     }
@@ -123,7 +129,17 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
                 it.data?.data?.let { uri ->
-                    lkmSelection = LkmSelection.LkmUri(uri)
+                    val isKo = isKoFile(context, uri)
+                    if (isKo) {
+                        lkmSelection = LkmSelection.LkmUri(uri)
+                    } else {
+                        lkmSelection = LkmSelection.KmiNone
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.install_only_support_ko_file),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
@@ -140,7 +156,6 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         topBar = {
             TopBar(
                 onBack = dropUnlessResumed { navigator.popBackStack() },
-                onLkmUpload = onLkmUpload,
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -167,32 +182,43 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         installMethod = method
                     }
                 }
-                Column(
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(top = 12.dp),
                 ) {
-                    (lkmSelection as? LkmSelection.LkmUri)?.let {
-                        Text(
+                    SuperArrow(
+                        title = stringResource(id = R.string.install_upload_lkm_file),
+                        summary = (lkmSelection as? LkmSelection.LkmUri)?.let {
                             stringResource(
                                 id = R.string.selected_lkm,
                                 it.uri.lastPathSegment ?: "(file)"
                             )
-                        )
-                    }
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 12.dp),
-                        enabled = installMethod != null,
-                        colors = ButtonDefaults.buttonColorsPrimary(),
-                        onClick = { onClickNext() }
-                    ) {
-                        Text(
-                            stringResource(id = R.string.install_next),
-                            color = colorScheme.onPrimary,
-                            fontSize = MiuixTheme.textStyles.body1.fontSize
-                        )
-                    }
+                        },
+                        onClick = onLkmUpload,
+                        leftAction = {
+                            Icon(
+                                MiuixIcons.Useful.Move,
+                                tint = colorScheme.onSurface,
+                                modifier = Modifier.padding(end = 16.dp),
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    enabled = installMethod != null,
+                    colors = ButtonDefaults.buttonColorsPrimary(),
+                    onClick = { onClickNext() }
+                ) {
+                    Text(
+                        stringResource(id = R.string.install_next),
+                        color = colorScheme.onPrimary,
+                        fontSize = MiuixTheme.textStyles.body1.fontSize
+                    )
                 }
                 Spacer(
                     Modifier.height(
@@ -317,7 +343,6 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 @Composable
 private fun TopBar(
     onBack: () -> Unit = {},
-    onLkmUpload: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
 ) {
     TopAppBar(
@@ -334,18 +359,31 @@ private fun TopBar(
                 )
             }
         },
-        actions = {
-            IconButton(
-                modifier = Modifier.padding(end = 16.dp),
-                onClick = onLkmUpload
-            ) {
-                Icon(
-                    MiuixIcons.Useful.Move,
-                    tint = colorScheme.onSurface,
-                    contentDescription = null
-                )
-            }
-        },
         scrollBehavior = scrollBehavior
     )
+}
+
+private fun isKoFile(context: Context, uri: Uri): Boolean {
+    val seg = uri.lastPathSegment ?: ""
+    if (seg.endsWith(".ko", ignoreCase = true)) return true
+
+    return try {
+        context.contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx != -1 && cursor.moveToFirst()) {
+                val name = cursor.getString(idx)
+                name?.endsWith(".ko", ignoreCase = true) == true
+            } else {
+                false
+            }
+        } ?: false
+    } catch (_: Throwable) {
+        false
+    }
 }
