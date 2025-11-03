@@ -301,6 +301,12 @@ enum Feature {
     /// List all available features
     List,
 
+    /// Check feature status (supported/unsupported/managed)
+    Check {
+        /// Feature ID or name (su_compat, kernel_umount)
+        id: String,
+    },
+
     /// Load configuration from file and apply to kernel
     Load,
 
@@ -371,6 +377,7 @@ pub fn run() -> Result<()> {
             Feature::Get { id } => crate::feature::get_feature(id),
             Feature::Set { id, value } => crate::feature::set_feature(id, value),
             Feature::List => crate::feature::list_features(),
+            Feature::Check { id } => crate::feature::check_feature(id),
             Feature::Load => crate::feature::load_config_and_apply(),
             Feature::Save => crate::feature::save_config(),
         },

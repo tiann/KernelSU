@@ -209,6 +209,20 @@ pub fn list_features() -> Result<()> {
     println!("Available Features:");
     println!("{}", "=".repeat(80));
 
+    // Get managed features from modules
+    let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
+
+    // Build a reverse map: feature_name -> Vec<module_id>
+    let mut feature_to_modules: HashMap<String, Vec<String>> = HashMap::new();
+    for (module_id, feature_list) in managed_features_map.iter() {
+        for feature_name in feature_list {
+            feature_to_modules
+                .entry(feature_name.clone())
+                .or_insert_with(Vec::new)
+                .push(module_id.clone());
+        }
+    }
+
     let all_features = [FeatureId::SuCompat, FeatureId::KernelUmount];
 
     for feature_id in all_features.iter() {
@@ -223,8 +237,23 @@ pub fn list_features() -> Result<()> {
             "DISABLED".to_string()
         };
 
-        println!("[{}] {} (ID={})", status, feature_id.name(), id);
+        let managed_by = feature_to_modules.get(feature_id.name());
+        let managed_mark = if managed_by.is_some() {
+            " [MODULE_MANAGED]"
+        } else {
+            ""
+        };
+
+        println!("[{}] {} (ID={}){}", status, feature_id.name(), id, managed_mark);
         println!("    {}", feature_id.description());
+
+        if let Some(modules) = managed_by {
+            println!(
+                "    ⚠️  Managed by module(s): {} (forced to 0 on initialization)",
+                modules.join(", ")
+            );
+        }
+
         println!();
     }
 
@@ -267,17 +296,80 @@ pub fn save_config() -> Result<()> {
     Ok(())
 }
 
+pub fn check_feature(id: String) -> Result<()> {
+    let feature_id = parse_feature_id(&id)?;
+
+    // Check if this feature is managed by any module
+    let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
+    let is_managed = managed_features_map
+        .values()
+        .any(|features| features.iter().any(|f| f == feature_id.name()));
+
+    if is_managed {
+        println!("managed");
+        return Ok(());
+    }
+
+    // Check if the feature is supported by kernel
+    let (_value, supported) = crate::ksucalls::get_feature(feature_id as u32)
+        .with_context(|| format!("Failed to get feature {}", id))?;
+
+    if supported {
+        println!("supported");
+    } else {
+        println!("unsupported");
+    }
+
+    Ok(())
+}
+
 pub fn init_features() -> Result<()> {
     log::info!("Initializing features from config...");
 
-    let features = load_binary_config()?;
+    let mut features = load_binary_config()?;
+
+    // Get managed features from active modules
+    if let Ok(managed_features_map) = crate::module::get_managed_features() {
+        if !managed_features_map.is_empty() {
+            log::info!("Found {} modules managing features", managed_features_map.len());
+
+            // Force override managed features to 0
+            for (module_id, feature_list) in managed_features_map.iter() {
+                log::info!("Module '{}' manages {} feature(s)", module_id, feature_list.len());
+
+                for feature_name in feature_list {
+                    if let Ok(feature_id) = parse_feature_id(feature_name) {
+                        let feature_id_u32 = feature_id as u32;
+                        log::info!(
+                            "  - Force overriding managed feature '{}' to 0 (by module: {})",
+                            feature_name,
+                            module_id
+                        );
+                        features.insert(feature_id_u32, 0);
+                    } else {
+                        log::warn!(
+                            "  - Unknown managed feature '{}' from module '{}', ignoring",
+                            feature_name,
+                            module_id
+                        );
+                    }
+                }
+            }
+        }
+    } else {
+        log::warn!("Failed to get managed features from modules, continuing with normal initialization");
+    }
 
     if features.is_empty() {
-        log::info!("No feature config found, skipping initialization");
+        log::info!("No features to apply, skipping initialization");
         return Ok(());
     }
 
     apply_config(&features)?;
+
+    // Save the final configuration (including managed features forced to 0)
+    save_binary_config(&features)?;
+    log::info!("Saved final feature configuration to file");
 
     Ok(())
 }
