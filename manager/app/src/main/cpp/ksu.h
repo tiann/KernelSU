@@ -177,4 +177,6 @@ bool is_kernel_umount_enabled();
 
 bool get_allow_list(struct ksu_get_allow_list_cmd*);
 
+int legacy_get_version(void);
+
 #endif //KERNELSU_KSU_H
