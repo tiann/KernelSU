@@ -5,8 +5,9 @@
 #ifndef KERNELSU_KSU_H
 #define KERNELSU_KSU_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <sys/ioctl.h>
+#include <utility>
 
 uint32_t get_version();
 
@@ -153,10 +154,12 @@ struct ksu_set_app_profile_cmd {
 
 // Su compat
 bool set_su_enabled(bool enabled);
+
 bool is_su_enabled();
 
 // Kernel umount
 bool set_kernel_umount_enabled(bool enabled);
+
 bool is_kernel_umount_enabled();
 
 // IOCTL command definitions
@@ -175,8 +178,14 @@ bool is_kernel_umount_enabled();
 #define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
 #define KSU_IOCTL_SET_FEATURE _IOC(_IOC_WRITE, 'K', 14, 0)
 
-bool get_allow_list(struct ksu_get_allow_list_cmd*);
+bool get_allow_list(struct ksu_get_allow_list_cmd *);
 
-int legacy_get_version(void);
+inline std::pair<int, int> legacy_get_info() {
+    int32_t version = -1;
+    int32_t flags = 0;
+    int32_t result = 0;
+    prctl(0xDEADBEEF, 2, &version, &flags, &result);
+    return {version, flags};
+}
 
 #endif //KERNELSU_KSU_H
