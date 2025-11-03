@@ -117,6 +117,8 @@
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
     <string name="install_inactive_slot_warning">将在重启后强制切换到另一个槽位！\n注意只能在 OTA 更新完成后的重启之前使用。\n确认？</string>
     <string name="install_next">下一步</string>
+    <string name="install_upload_lkm_file">使用本地 LKM 文件</string>
+    <string name="install_only_support_ko_file">仅支持选择 .ko 文件</string>
     <string name="select_file_tip">建议选择 %1$s 分区镜像</string>
     <string name="select_kmi">选择 KMI</string>
     <string name="shrink_sparse_image">最小化稀疏文件</string>
@@ -131,7 +133,7 @@
     <string name="flashing">刷写中</string>
     <string name="flash_success">刷写完成</string>
     <string name="flash_failed">刷写失败</string>
-    <string name="selected_lkm">选择的 LKM：%s</string>
+    <string name="selected_lkm">已选择的 LKM：%s</string>
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
     <string name="settings_disable_su">关闭 su 兼容</string>
