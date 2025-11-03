@@ -250,7 +250,7 @@ api_level_arch_detect() {
 
 check_managed_features() {
   local PROP_FILE=$1
-  local MANAGED_FEATURES=$(grep_prop ksu_managed_features "$PROP_FILE")
+  local MANAGED_FEATURES=$(grep_prop managedFeatures "$PROP_FILE")
 
   [ -z "$MANAGED_FEATURES" ] && return 0
 

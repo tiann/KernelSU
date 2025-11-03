@@ -744,8 +744,8 @@ pub fn shrink_ksu_images() -> Result<()> {
 }
 
 /// Get all managed features from active modules
-/// Modules can specify ksu_managed_features in their module.prop
-/// Format: ksu_managed_features=feature1,feature2,feature3
+/// Modules can specify managedFeatures in their module.prop
+/// Format: managedFeatures=feature1,feature2,feature3
 /// Returns: HashMap<ModuleId, Vec<ManagedFeature>>
 pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
     let mut managed_features_map: HashMap<String, Vec<String>> = HashMap::new();
@@ -759,7 +759,7 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
             }
         };
 
-        if let Some(features_str) = prop_map.get("ksu_managed_features") {
+        if let Some(features_str) = prop_map.get("managedFeatures") {
             let module_id = prop_map
                 .get("id")
                 .map(|s| s.to_string())
