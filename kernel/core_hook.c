@@ -23,7 +23,6 @@
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
-#include <linux/workqueue.h>
 
 #include "allowlist.h"
 #include "arch.h"
@@ -39,13 +38,6 @@
 #include "supercalls.h"
 
 bool ksu_module_mounted = false;
-
-static struct workqueue_struct *ksu_workqueue;
-
-struct ksu_umount_work {
-    struct work_struct work;
-    struct mnt_namespace *mnt_ns;
-};
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
@@ -285,26 +277,6 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
     ksu_umount_mnt(&path, flags);
 }
 
-static void do_umount_work(struct work_struct *work)
-{
-    struct ksu_umount_work *umount_work = container_of(work, struct ksu_umount_work, work);
-    struct mnt_namespace *old_mnt_ns = current->nsproxy->mnt_ns;
-
-    current->nsproxy->mnt_ns = umount_work->mnt_ns;
-
-    try_umount("/odm", true, 0);
-    try_umount("/system", true, 0);
-    try_umount("/vendor", true, 0);
-    try_umount("/product", true, 0);
-    try_umount("/system_ext", true, 0);
-    try_umount("/data/adb/modules", false, MNT_DETACH);
-
-    // fixme: dec refcount
-    current->nsproxy->mnt_ns = old_mnt_ns;
-
-    kfree(umount_work);
-}
-
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
 {
     if (!new || !old) {
@@ -380,18 +352,12 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
     // fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
     // filter the mountpoint whose target is `/data/adb`
-    struct ksu_umount_work *umount_work = kmalloc(sizeof(struct ksu_umount_work), GFP_ATOMIC);
-    if (!umount_work) {
-        pr_err("Failed to allocate umount_work\n");
-        return 0;
-    }
-
-    // fixme: inc refcount
-    umount_work->mnt_ns = current->nsproxy->mnt_ns;
-
-    INIT_WORK(&umount_work->work, do_umount_work);
-
-    queue_work(ksu_workqueue, &umount_work->work);
+    try_umount("/odm", true, 0);
+    try_umount("/system", true, 0);
+    try_umount("/vendor", true, 0);
+    try_umount("/product", true, 0);
+    try_umount("/system_ext", true, 0);
+    try_umount("/data/adb/modules", false, MNT_DETACH);
 
     return 0;
 }
@@ -474,14 +440,6 @@ __maybe_unused int ksu_kprobe_exit(void)
 
 void __init ksu_core_init(void)
 {
-    if (ksu_register_feature_handler(&kernel_umount_handler)) {
-        pr_err("Failed to register kernel_umount feature handler\n");
-    }
-
-    ksu_workqueue = alloc_workqueue("ksu_umount", WQ_UNBOUND, 0);
-    if (!ksu_workqueue) {
-        pr_err("Failed to create ksu workqueue\n");
-    }
 #ifdef CONFIG_KPROBES
     int rc = ksu_kprobe_init();
     if (rc) {
@@ -496,8 +454,4 @@ void ksu_core_exit(void)
 #ifdef CONFIG_KPROBES
     ksu_kprobe_exit();
 #endif
-    if (ksu_workqueue) {
-        flush_workqueue(ksu_workqueue);
-        destroy_workqueue(ksu_workqueue);
-    }
 }
