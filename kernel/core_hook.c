@@ -325,6 +325,11 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
+    // if on private space, see if its possibly the manager
+    if (new_uid.val > 100000 && new_uid.val % 100000 == ksu_get_manager_uid()) {
+        ksu_set_manager_uid(new_uid.val);
+    }
+
     if (ksu_get_manager_uid() == new_uid.val) {
         pr_info("install fd for: %d\n", new_uid.val);
         ksu_install_fd();
