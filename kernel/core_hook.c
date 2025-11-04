@@ -484,4 +484,3 @@ void ksu_core_exit(void)
     ksu_kprobe_exit();
 #endif
 }
-
