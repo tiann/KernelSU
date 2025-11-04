@@ -218,7 +218,7 @@ pub fn list_features() -> Result<()> {
         for feature_name in feature_list {
             feature_to_modules
                 .entry(feature_name.clone())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(module_id.clone());
         }
     }
@@ -244,7 +244,13 @@ pub fn list_features() -> Result<()> {
             ""
         };
 
-        println!("[{}] {} (ID={}){}", status, feature_id.name(), id, managed_mark);
+        println!(
+            "[{}] {} (ID={}){}",
+            status,
+            feature_id.name(),
+            id,
+            managed_mark
+        );
         println!("    {}", feature_id.description());
 
         if let Some(modules) = managed_by {
@@ -331,11 +337,18 @@ pub fn init_features() -> Result<()> {
     // Get managed features from active modules
     if let Ok(managed_features_map) = crate::module::get_managed_features() {
         if !managed_features_map.is_empty() {
-            log::info!("Found {} modules managing features", managed_features_map.len());
+            log::info!(
+                "Found {} modules managing features",
+                managed_features_map.len()
+            );
 
             // Force override managed features to 0
             for (module_id, feature_list) in managed_features_map.iter() {
-                log::info!("Module '{}' manages {} feature(s)", module_id, feature_list.len());
+                log::info!(
+                    "Module '{}' manages {} feature(s)",
+                    module_id,
+                    feature_list.len()
+                );
 
                 for feature_name in feature_list {
                     if let Ok(feature_id) = parse_feature_id(feature_name) {
@@ -357,7 +370,9 @@ pub fn init_features() -> Result<()> {
             }
         }
     } else {
-        log::warn!("Failed to get managed features from modules, continuing with normal initialization");
+        log::warn!(
+            "Failed to get managed features from modules, continuing with normal initialization"
+        );
     }
 
     if features.is_empty() {
