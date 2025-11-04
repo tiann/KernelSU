@@ -646,7 +646,11 @@ fn mark_all_modules(flag_file: &str) -> Result<()> {
 /// Read module.prop from the given module path and return as a HashMap
 pub fn read_module_prop(module_path: &Path) -> Result<HashMap<String, String>> {
     let module_prop = module_path.join("module.prop");
-    ensure!(module_prop.exists(), "module.prop not found in {}", module_path.display());
+    ensure!(
+        module_prop.exists(),
+        "module.prop not found in {}",
+        module_path.display()
+    );
 
     let content = std::fs::read(&module_prop)
         .with_context(|| format!("Failed to read module.prop: {}", module_prop.display()))?;
@@ -754,7 +758,11 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
         let prop_map = match read_module_prop(module_path) {
             Ok(prop) => prop,
             Err(e) => {
-                warn!("Failed to read module.prop for {}: {}", module_path.display(), e);
+                warn!(
+                    "Failed to read module.prop for {}: {}",
+                    module_path.display(),
+                    e
+                );
                 return Ok(());
             }
         };
