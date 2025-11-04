@@ -23,7 +23,7 @@
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
-#include <linux/workqueue.h>
+#include <linux/task_work.h>
 
 #include "allowlist.h"
 #include "arch.h"
@@ -40,11 +40,8 @@
 
 bool ksu_module_mounted = false;
 
-static struct workqueue_struct *ksu_workqueue;
-
 struct ksu_umount_work {
-    struct work_struct work;
-    struct mnt_namespace *mnt_ns;
+    struct callback_head twork;
 };
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
@@ -285,22 +282,18 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
     ksu_umount_mnt(&path, flags);
 }
 
-static void do_umount_work(struct work_struct *work)
+static void do_umount_work(struct callback_head *work)
 {
-    struct ksu_umount_work *umount_work = container_of(work, struct ksu_umount_work, work);
-    struct mnt_namespace *old_mnt_ns = current->nsproxy->mnt_ns;
+    struct ksu_umount_work *umount_work = container_of(work, struct ksu_umount_work, twork);
 
-    current->nsproxy->mnt_ns = umount_work->mnt_ns;
-
+    // fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
+    // filter the mountpoint whose target is `/data/adb`
     try_umount("/odm", true, 0);
     try_umount("/system", true, 0);
     try_umount("/vendor", true, 0);
     try_umount("/product", true, 0);
     try_umount("/system_ext", true, 0);
     try_umount("/data/adb/modules", false, MNT_DETACH);
-
-    // fixme: dec refcount
-    current->nsproxy->mnt_ns = old_mnt_ns;
 
     kfree(umount_work);
 }
@@ -358,11 +351,10 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     }
 
     if (!ksu_uid_should_umount(new_uid.val)) {
-        return 0;
-    } else {
 #ifdef CONFIG_KSU_DEBUG
-        pr_info("uid: %d should not umount!\n", current_uid().val);
+        pr_info("uid: %d should not umount!\n", new_uid.val);
 #endif
+        return 0;
     }
 
     // check old process's selinux context, if it is not zygote, ignore it!
@@ -378,20 +370,19 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val, current->pid);
 #endif
 
-    // fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
-    // filter the mountpoint whose target is `/data/adb`
     struct ksu_umount_work *umount_work = kmalloc(sizeof(struct ksu_umount_work), GFP_ATOMIC);
     if (!umount_work) {
         pr_err("Failed to allocate umount_work\n");
         return 0;
     }
 
-    // fixme: inc refcount
-    umount_work->mnt_ns = current->nsproxy->mnt_ns;
+    init_task_work(&umount_work->twork, do_umount_work);
 
-    INIT_WORK(&umount_work->work, do_umount_work);
-
-    queue_work(ksu_workqueue, &umount_work->work);
+    if (task_work_add(current, &umount_work->twork, TWA_RESUME)) {
+        pr_err("Failed to add task_work\n");
+        kfree(umount_work);
+        return 0;
+    }
 
     return 0;
 }
@@ -478,10 +469,6 @@ void __init ksu_core_init(void)
         pr_err("Failed to register kernel_umount feature handler\n");
     }
 
-    ksu_workqueue = alloc_workqueue("ksu_umount", WQ_UNBOUND, 0);
-    if (!ksu_workqueue) {
-        pr_err("Failed to create ksu workqueue\n");
-    }
 #ifdef CONFIG_KPROBES
     int rc = ksu_kprobe_init();
     if (rc) {
@@ -496,8 +483,5 @@ void ksu_core_exit(void)
 #ifdef CONFIG_KPROBES
     ksu_kprobe_exit();
 #endif
-    if (ksu_workqueue) {
-        flush_workqueue(ksu_workqueue);
-        destroy_workqueue(ksu_workqueue);
-    }
 }
+
