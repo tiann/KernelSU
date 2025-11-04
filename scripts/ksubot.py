@@ -16,8 +16,10 @@ COMMIT_MESSAGE = os.environ.get("COMMIT_MESSAGE")
 RUN_URL = os.environ.get("RUN_URL")
 TITLE = os.environ.get("TITLE")
 VERSION = os.environ.get("VERSION")
+BRANCH = os.environ.get("BRANCH")
 MSG_TEMPLATE = """
 **{title}**
+Branch: {branch}
 #ci_{version}
 ```
 {commit_message}
@@ -30,6 +32,7 @@ MSG_TEMPLATE = """
 def get_caption():
     msg = MSG_TEMPLATE.format(
         title=TITLE,
+        branch=BRANCH,
         version=VERSION,
         commit_message=COMMIT_MESSAGE,
         commit_url=COMMIT_URL,
@@ -64,6 +67,9 @@ def check_environ():
         exit(1)
     if VERSION is None:
         print("[-] Invalid VERSION")
+        exit(1)
+    if BRANCH is None:
+        print("[-] Invalid BRANCH")
         exit(1)
     if MESSAGE_THREAD_ID is None:
         print("[-] Invaild MESSAGE_THREAD_ID")
