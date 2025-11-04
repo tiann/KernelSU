@@ -17,4 +17,4 @@ jobs:
     uses: ./.github/workflows/ddk-lkm.yml
     with:
       kmi: ${{ matrix.kmi }}
-      ddk_release: '20251016'
+      ddk_release: '20251104'
