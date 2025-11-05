@@ -48,7 +48,7 @@
     <string name="home_support_title">Podržite Nas</string>
     <string name="send_log">Pošaljite Izvještaj</string>
     <string name="home_learn_kernelsu">Naučite KernelSU</string>
-    <string name="about_source_code">Pogledajte izvornu kodu na %1$s<br></br>Pridružite nam se na %2$s kanalu</string>
+    <string name="about_source_code">Pogledajte izvornu kodu na %1$s<br/>Pridružite nam se na %2$s kanalu</string>
     <string name="profile_selinux_domain">Domena</string>
     <string name="profile_selinux_rules">Pravila</string>
     <string name="failed_to_update_sepolicy">Neuspješno ažuriranje SELinux pravila za: %s</string>
