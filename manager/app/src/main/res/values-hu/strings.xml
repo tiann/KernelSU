@@ -23,7 +23,7 @@
     <string name="home_learn_kernelsu">Tudjon meg többet a KernelSU-ról</string>
     <string name="home_click_to_learn_kernelsu">Ismerje meg a KernelSU telepítését és a modulok használatát</string>
     <string name="home_support_title">Támogasson minket</string>
-    <string name="about_source_code">Tekintse meg a forráskódot a %1$s-on<br/>Csatlakozzon a %2$s csatornánkhoz</string>
+    <string name="about_source_code">Tekintse meg a forráskódot a %1$s-on<br></br>Csatlakozzon a %2$s csatornánkhoz</string>
     <string name="profile_default">Alapértelmezett</string>
     <string name="profile_template">Sablon</string>
     <string name="profile_custom">Egyedi</string>

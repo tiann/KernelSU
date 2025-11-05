@@ -54,7 +54,7 @@
     <string name="profile_default">Defolt</string>
     <string name="profile_custom">Özəl</string>
     <string name="home_support_content">KernelSU pulsuz və açıq mənbəlidir,həmişə belə olacaqdır. Bununla belə, ianə etməklə bizə qayğı göstərdiyinizi göstərə bilərsiniz.</string>
-    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br/>Kanalımıza %2$s qoşulun</string>
+    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br></br>Kanalımıza %2$s qoşulun</string>
     <string name="profile_name">Profil adı</string>
     <string name="profile_capabilities">Bacarıqlar</string>
     <string name="profile_umount_modules">Modulları umount et</string>
@@ -84,4 +84,19 @@
     <string name="confirm">Təsdiq edin</string>
     <string name="module_sort_action_first">Sıralama (ilk hərəkət)</string>
     <string name="module_sort_enabled_first">Sıralama (Əvvəlcə aktivdir)</string>
+    <string name="module_changelog">Dəyişikliklər jurnalı</string>
+    <string name="settings_profile_template">Tətbiq Profil Şablonu</string>
+    <string name="settings_profile_template_summary">Tətbiq Profilinə aid yerli və onlayn şablonların idarə olunması</string>
+    <string name="app_profile_template_create">Şablon yarat</string>
+    <string name="app_profile_template_edit">Şablonu redaktə et</string>
+    <string name="app_profile_template_id">ID</string>
+    <string name="app_profile_template_id_invalid">Etibarsız şablon ID-si</string>
+    <string name="app_profile_template_name">Ad</string>
+    <string name="app_profile_template_description">Açıqlama</string>
+    <string name="su_not_allowed">%s üçün Superistifadəçi girişi vermək mümkün olmadı.</string>
+    <string name="app_profile_template_save">Yadda saxla</string>
+    <string name="app_profile_template_delete">Sil</string>
+    <string name="app_profile_template_view">Şablonu göstər</string>
+    <string name="app_profile_template_readonly">Yalnız oxu</string>
+    <string name="app_profile_template_id_exist">Şablon ID-si artıq mövcuddur!</string>
 </resources>

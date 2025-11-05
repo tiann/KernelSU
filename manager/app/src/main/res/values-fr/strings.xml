@@ -6,7 +6,7 @@
     <string name="home_superuser_count">Super-utilisateurs : %d</string>
     <string name="home_module_count">Modules : %d</string>
     <string name="home_unsupported_reason">KernelSU ne prend désormais en charge que les noyaux GKI</string>
-    <string name="home_kernel">Noyau</string>
+    <string name="home_kernel">Version du noyau</string>
     <string name="home_fingerprint">Empreinte digitale</string>
     <string name="home_selinux_status">Mode SELinux</string>
     <string name="selinux_status_disabled">Désactivé</string>
@@ -30,7 +30,7 @@
     <string name="install">Installer</string>
     <string name="settings">Paramètres</string>
     <string name="reboot_bootloader">Redémarrer en mode bootloader</string>
-    <string name="reboot_userspace">Redémarrage progressif</string>
+    <string name="reboot_userspace">Redémarrage logiciel</string>
     <string name="reboot_recovery">Redémarrer en mode de récupération</string>
     <string name="reboot_edl">Redémarrer en mode EDL</string>
     <string name="about">À propos</string>
@@ -73,7 +73,7 @@
     <string name="module_update">Mettre à jour</string>
     <string name="module_downloading">Téléchargement du module : %s</string>
     <string name="launch_app">Lancer</string>
-    <string name="new_version_available">La nouvelle version %s est disponible, appuyez ici pour mettre à jour.</string>
+    <string name="new_version_available">La nouvelle version %s est disponible, appuyez ici pour mettre à jour.</string>
     <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
@@ -103,7 +103,7 @@
     <string name="app_profile_template_import_empty">Le presse-papiers est vide !</string>
     <string name="app_profile_template_view">Voir le modèle</string>
     <string name="settings_check_update_summary">Vérifier automatiquement les mises à jour à l\'ouverture de l\'application</string>
-    <string name="settings_check_update">Vérifier les mises à jour</string>
+    <string name="settings_check_update">Rechercher des mises à jour</string>
     <string name="enable_web_debugging">Activer le débogage WebView</string>
     <string name="enable_web_debugging_summary">Peut être utilisé pour déboguer WebUI. Activez uniquement cette option si nécessaire.</string>
     <string name="grant_root_failed">Échec de l\'octroi des privilèges root !</string>
