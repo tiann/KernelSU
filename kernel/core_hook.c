@@ -1,4 +1,5 @@
 #include "linux/compiler.h"
+#include "linux/sched/signal.h"
 #include <linux/slab.h>
 #include <linux/task_work.h>
 #include <linux/thread_info.h>
@@ -147,6 +148,8 @@ static void disable_seccomp()
 void escape_to_root(void)
 {
     struct cred *cred;
+    struct task_struct *p = current;
+    struct task_struct *t;
 
     cred = prepare_creds();
     if (!cred) {
@@ -197,6 +200,10 @@ void escape_to_root(void)
     spin_unlock_irq(&current->sighand->siglock);
 
     setup_selinux(profile->selinux_domain);
+
+    for_each_thread(p, t){
+        set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+    }
 }
 
 void nuke_ext4_sysfs(void)
