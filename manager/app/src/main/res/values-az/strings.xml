@@ -54,7 +54,7 @@
     <string name="profile_default">Defolt</string>
     <string name="profile_custom">Özəl</string>
     <string name="home_support_content">KernelSU pulsuz və açıq mənbəlidir,həmişə belə olacaqdır. Bununla belə, ianə etməklə bizə qayğı göstərdiyinizi göstərə bilərsiniz.</string>
-    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br></br>Kanalımıza %2$s qoşulun</string>
+    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br/>Kanalımıza %2$s qoşulun</string>
     <string name="profile_name">Profil adı</string>
     <string name="profile_capabilities">Bacarıqlar</string>
     <string name="profile_umount_modules">Modulları umount et</string>
