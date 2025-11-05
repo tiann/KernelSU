@@ -59,7 +59,6 @@ bool ksu_input_hook __read_mostly = true;
 #endif
 
 u32 ksu_devpts_sid;
-
 void on_post_fs_data(void)
 {
     static bool done = false;

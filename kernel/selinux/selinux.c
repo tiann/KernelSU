@@ -1,4 +1,5 @@
 #include "selinux.h"
+#include "linux/sched.h"
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
@@ -84,18 +85,27 @@ static inline u32 current_sid(void)
 }
 #endif
 
-bool is_ksu_domain()
+bool is_task_ksu_domain(void *sec)
 {
     char *domain;
     u32 seclen;
     bool result;
-    int err = security_secid_to_secctx(current_sid(), &domain, &seclen);
+    struct task_security_struct *tsec = (struct task_security_struct *)sec;
+    if (!tsec) {
+        return false;
+    }
+    int err = security_secid_to_secctx(tsec->sid, &domain, &seclen);
     if (err) {
         return false;
     }
     result = strncmp(KERNEL_SU_DOMAIN, domain, seclen) == 0;
     security_release_secctx(domain, seclen);
     return result;
+}
+
+bool is_ksu_domain()
+{
+    return is_task_ksu_domain(current);
 }
 
 bool is_zygote(void *sec)
