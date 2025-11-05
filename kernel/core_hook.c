@@ -328,6 +328,12 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
+    if (new_uid.val == 2000) {
+        if (ksu_su_compat_enabled) {
+            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+        }
+    }
+
     if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
         // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
         return 0;
