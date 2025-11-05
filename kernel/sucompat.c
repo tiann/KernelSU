@@ -295,7 +295,7 @@ void ksu_mark_running_process()
         }
         int uid = task_uid(t).val;
         bool ksu_root_process =
-            uid == 0 && t->security && is_task_ksu_domain(t->security);
+            uid == 0 && is_task_ksu_domain(get_task_cred(t));
         if (ksu_root_process || ksu_is_allow_uid(uid)) {
             set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
             pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n",
