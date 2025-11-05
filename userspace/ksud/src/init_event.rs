@@ -73,10 +73,10 @@ pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
             // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
             // otherwise it must be a symlink and we don't need to overlay!
             let part_path = Path::new(&module).join(part);
-            if part_path.is_dir() {
-                if let Some(v) = partition_lowerdir.get_mut(*part) {
-                    v.push(format!("{}", part_path.display()));
-                }
+            if part_path.is_dir()
+                && let Some(v) = partition_lowerdir.get_mut(*part)
+            {
+                v.push(format!("{}", part_path.display()));
             }
         }
     }
@@ -190,9 +190,9 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("apply root profile sepolicy failed: {e}");
     }
 
-    // mount temp dir
-    if let Err(e) = mount::mount_tmpfs(defs::TEMP_DIR) {
-        warn!("do temp dir mount failed: {e}");
+    // load feature config
+    if let Err(e) = crate::feature::init_features() {
+        warn!("init features failed: {e}");
     }
 
     // exec modules post-fs-data scripts

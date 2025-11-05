@@ -44,13 +44,13 @@ jobs:
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
       - name: Checkout KernelSU
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: KernelSU
           fetch-depth: 0
 
       - name: Setup kernel source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: microsoft/WSA-Linux-Kernel
           ref: android-lts/latte-2/${{ inputs.version }}
@@ -100,7 +100,7 @@ jobs:
           echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP_FILE[${{ inputs.arch }}]}/boot/${FILE_NAME[${{ inputs.arch }}]}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ inputs.arch }}-${{ inputs.version }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: kernel-WSA-${{ inputs.arch }}-${{ inputs.version }}
           path: "${{ env.file_path }}"

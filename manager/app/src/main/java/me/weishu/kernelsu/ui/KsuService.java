@@ -29,15 +29,6 @@ public class KsuService extends RootService {
 
     private static final String TAG = "KsuService";
 
-    class Stub extends IKsuInterface.Stub {
-        @Override
-        public ParcelableListSlice<PackageInfo> getPackages(int flags) {
-            List<PackageInfo> list = getInstalledPackagesAll(flags);
-            Log.i(TAG, "getPackages: " + list.size());
-            return new ParcelableListSlice<>(list);
-        }
-    }
-
     @Override
     public IBinder onBind(@NonNull Intent intent) {
         return new Stub();
@@ -73,5 +64,14 @@ public class KsuService extends RootService {
         }
 
         return new ArrayList<>();
+    }
+
+    class Stub extends IKsuInterface.Stub {
+        @Override
+        public ParcelableListSlice<PackageInfo> getPackages(int flags) {
+            List<PackageInfo> list = getInstalledPackagesAll(flags);
+            Log.i(TAG, "getPackages: " + list.size());
+            return new ParcelableListSlice<>(list);
+        }
     }
 }

@@ -18,7 +18,7 @@
 #define __PT_SP_REG sp
 #define __PT_IP_REG pc
 
-#define PRCTL_SYMBOL "__arm64_sys_prctl"
+#define REBOOT_SYMBOL "__arm64_sys_reboot"
 #define SYS_READ_SYMBOL "__arm64_sys_read"
 #define SYS_NEWFSTATAT_SYMBOL "__arm64_sys_newfstatat"
 #define SYS_FACCESSAT_SYMBOL "__arm64_sys_faccessat"
@@ -39,7 +39,7 @@
 #define __PT_RC_REG ax
 #define __PT_SP_REG sp
 #define __PT_IP_REG ip
-#define PRCTL_SYMBOL "__x64_sys_prctl"
+#define REBOOT_SYMBOL "__x64_sys_reboot"
 #define SYS_READ_SYMBOL "__x64_sys_read"
 #define SYS_NEWFSTATAT_SYMBOL "__x64_sys_newfstatat"
 #define SYS_FACCESSAT_SYMBOL "__x64_sys_faccessat"

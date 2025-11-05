@@ -28,7 +28,6 @@ pub const MODULE_UPDATE_TMP_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
 
 pub const SYSTEM_RW_DIR: &str = concatcp!(MODULE_DIR, ".rw/");
 
-pub const TEMP_DIR: &str = "/debug_ramdisk";
 pub const MODULE_WEB_DIR: &str = "webroot";
 pub const MODULE_ACTION_SH: &str = "action.sh";
 pub const DISABLE_FILE_NAME: &str = "disable";

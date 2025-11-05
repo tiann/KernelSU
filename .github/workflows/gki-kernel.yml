@@ -82,7 +82,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: KernelSU
           fetch-depth: 0
@@ -242,7 +242,7 @@ jobs:
           fi
 
       - name: Upload Image and Image.gz
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ inputs.build_lkm == false }}
         with:
           name: Image-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
@@ -250,13 +250,13 @@ jobs:
 
       - name: Upload AnyKernel3
         if: ${{ inputs.build_lkm == false }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: AnyKernel3-${{ inputs.version_name }}_${{ inputs.os_patch_level }}
           path: ./AnyKernel3/*
 
       - name: Upload LKM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ inputs.build_lkm == true }}
         with:
           name: ${{ inputs.version }}-lkm

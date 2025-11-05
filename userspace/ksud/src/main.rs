@@ -4,6 +4,7 @@ mod boot_patch;
 mod cli;
 mod debug;
 mod defs;
+mod feature;
 mod init_event;
 mod ksucalls;
 mod module;
