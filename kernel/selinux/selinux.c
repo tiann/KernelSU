@@ -105,7 +105,7 @@ bool is_task_ksu_domain(void *sec)
 
 bool is_ksu_domain()
 {
-    return is_task_ksu_domain(current);
+    return is_task_ksu_domain(current->security);
 }
 
 bool is_zygote(void *sec)
