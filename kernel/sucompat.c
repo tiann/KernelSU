@@ -291,35 +291,26 @@ void mark_target_process()
     read_lock(&tasklist_lock);
     for_each_process_thread (p, t) {
         if (t->mm) { // only user processes
-            int uid = task_uid(t).val;
-            if (t->security) {
-                if (uid == 0 && !is_task_ksu_domain(t->security)) {
-                    continue; // skip non ksu domain root process
-                }
-            }
-            if (ksu_is_allow_uid(uid)) {
-                set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-                pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid,
-                        t->comm);
-            } else if (test_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT)) {
-                clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-                pr_info("sucompat: unmark process: pid:%d, uid: %d, comm:%s\n",
-                        t->pid, uid, t->comm);
-            }
+            continue;
+        }
+        int uid = task_uid(t).val;
+        if (uid == 0 && t->security && is_task_ksu_domain(t->security)) {
+            set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+            pr_info("sucompat: mark su process: pid:%d, uid: %d, comm:%s\n",
+                    t->pid, uid, t->comm);
+            continue; // skip non ksu domain root process
+        }
+        if (ksu_is_allow_uid(uid)) {
+            set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+            pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n",
+                    t->pid, uid, t->comm);
+        } else if (test_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT)) {
+            clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+            pr_info("sucompat: unmark process: pid:%d, uid: %d, comm:%s\n",
+                    t->pid, uid, t->comm);
         }
     }
     read_unlock(&tasklist_lock);
-}
-
-void unmark_all_process()
-{
-    struct task_struct *p, *t;
-    read_lock(&tasklist_lock);
-    for_each_process_thread (p, t) {
-        clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-    }
-    read_unlock(&tasklist_lock);
-    pr_info("sucompat: unmark all user process done!\n");
 }
 
 void ksu_sucompat_enable()
@@ -329,7 +320,6 @@ void ksu_sucompat_enable()
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
     // Register sys_enter tracepoint for syscall interception
     ret = register_trace_sys_enter(sucompat_sys_enter_handler, NULL);
-    unmark_all_process();
     mark_target_process();
     if (ret) {
         pr_err("sucompat: failed to register sys_enter tracepoint: %d\n", ret);
@@ -351,7 +341,6 @@ void ksu_sucompat_disable()
     // Unregister sys_enter tracepoint
     unregister_trace_sys_enter(sucompat_sys_enter_handler, NULL);
     tracepoint_synchronize_unregister();
-    unmark_all_process();
     pr_info("sucompat: sys_enter tracepoint unregistered\n");
 #endif
 
