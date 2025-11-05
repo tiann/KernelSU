@@ -31,7 +31,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_learn_kernelsu">Sužinokite apie KernelSU</string>
     <string name="home_click_to_learn_kernelsu">Sužinokite, kaip įdiegti KernelSU ir naudoti modulius</string>
-    <string name="about_source_code">Peržiūrėkite šaltinio kodą %1$s<br></br>Prisijunkite prie mūsų %2$s kanalo</string>
+    <string name="about_source_code">Peržiūrėkite šaltinio kodą %1$s<br/>Prisijunkite prie mūsų %2$s kanalo</string>
     <string name="profile_default">Numatytas</string>
     <string name="profile_template">Šablonas</string>
     <string name="profile_custom">Pasirinktinis</string>
