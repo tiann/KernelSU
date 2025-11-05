@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_support_title">Soutenez-nous</string>
     <string name="home_click_to_learn_kernelsu">Découvrez comment installer KernelSU et utiliser les modules</string>
-    <string name="home_support_content">KernelSU est, et restera toujours, gratuit et open source. Vous pouvez cependant nous témoigner de votre soutien en nous faisant un don.</string>
+    <string name="home_support_content">KernelSU est, et restera toujours, gratuit et open-source. Néanmoins, vous pouvez nous témoigner de votre soutien en nous faisant un don.</string>
     <string name="about_source_code"><![CDATA[Voir le code source à %1$s<br/>Rejoignez notre canal %2$s]]></string>
     <string name="profile_template">Modèle</string>
     <string name="profile_default">Par défaut</string>
@@ -73,7 +73,7 @@
     <string name="module_update">Mettre à jour</string>
     <string name="module_downloading">Téléchargement du module : %s</string>
     <string name="launch_app">Lancer</string>
-    <string name="new_version_available">La nouvelle version %s est disponible, appuyez ici pour mettre à jour.</string>
+    <string name="new_version_available">La nouvelle version %s est disponible, appuyez pour mettre à jour</string>
     <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
@@ -118,18 +118,18 @@
     <string name="select_file_tip">L\'image de la partition %1$s est recommandée</string>
     <string name="select_kmi">Sélectionner une KMI</string>
     <string name="shrink_sparse_image">Minimiser la taille de l\'image partiellement allouée</string>
-    <string name="shrink_sparse_image_message">Redimensionner à sa taille réelle l\'image partiellement allouée où se trouve le module. Notez que cela peut entraîner un dysfonctionnement du module ; utilisez donc cette fonctionnalité uniquement quand c\'est nécessaire (par exemple pour sauvegarder l\'appareil).</string>
+    <string name="shrink_sparse_image_message">Redimensionner à sa taille réelle l\'image partiellement allouée où se trouve le module. Notez que cela peut entraîner un dysfonctionnement du module ; utilisez donc cette fonctionnalité uniquement quand c\'est nécessaire (par exemple pour sauvegarder l\'appareil).</string>
     <string name="settings_uninstall">Désinstaller</string>
     <string name="settings_uninstall_temporary">Désinstaller temporairement</string>
     <string name="settings_uninstall_permanent">Désinstaller définitivement</string>
     <string name="settings_restore_stock_image">Restaurer l\'image d\'origine</string>
-    <string name="settings_restore_stock_image_message">Restaurer l\'image d\'origine d\'usine (s\'il en existe une sauvegarde). Utilisé généralement avant une mise à jour OTA ; si vous devez désinstaller KernelSU, utilisez plutôt l\'option \"Désinstaller définitivement\".</string>
+    <string name="settings_restore_stock_image_message">Restaurer l\'image d\'origine d\'usine (s\'il en existe une sauvegarde). Utilisé généralement avant une mise à jour OTA ; si vous devez désinstaller KernelSU, utilisez plutôt l\'option \"Désinstaller définitivement\".</string>
     <string name="flashing">Flash en cours</string>
     <string name="flash_success">Flash réussi</string>
     <string name="flash_failed">Échec du flash</string>
     <string name="selected_lkm">LKM sélectionné : %s</string>
-    <string name="settings_uninstall_permanent_message">Désinstallation complète et permanente de KernelSU (root et tous les modules).</string>
-    <string name="settings_uninstall_temporary_message">Désinstaller KernelSU temporairement et rétablir l\'état original au redémarrage suivant.</string>
+    <string name="settings_uninstall_permanent_message">Désinstallation complète et permanente de KernelSU (root et tous les modules)</string>
+    <string name="settings_uninstall_temporary_message">Désinstaller temporairement KernelSU et rétablir l\'état original au redémarrage suivant</string>
     <string name="save_log">Enregistrer les journaux</string>
     <string name="module_sort_action_first">Trier par action</string>
     <string name="module_sort_enabled_first">Trier par activé</string>
@@ -140,4 +140,13 @@
     <string name="module_install_prompt_with_name">Les modules suivants vont être installés : %1$s</string>
     <string name="su_not_allowed">Impossible d\'octroyer les autorisations superutilisateur à %s</string>
     <string name="confirm">Confirmer</string>
+    <string name="install_upload_lkm_file">Utiliser un fichier LKM local</string>
+    <string name="install_only_support_ko_file">Seuls les fichiers .ko sont pris en charge</string>
+    <string name="settings_disable_kernel_umount">Désactiver kernel umount</string>
+    <string name="settings_disable_kernel_umount_summary">Désactiver temporairement le comportement contrôlé par KernelSU de la fonction umount au niveau du noyau.</string>
+    <string name="processing">Traitement…</string>
+    <string name="refresh_pulling">Tirez pour actualiser</string>
+    <string name="refresh_release">Relâchez pour actualiser</string>
+    <string name="refresh_refresh">Actualisation…</string>
+    <string name="refresh_complete">Actualisé avec succès</string>
 </resources>
