@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -46,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -97,8 +100,12 @@ fun SuperUserPager(
     val scope = rememberCoroutineScope()
     val searchStatus by viewModel.searchStatus
 
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
     LaunchedEffect(navigator) {
         if (viewModel.appList.value.isEmpty() || viewModel.searchResults.value.isEmpty()) {
+            viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
             viewModel.fetchAppList()
         }
     }
@@ -137,8 +144,11 @@ fun SuperUserPager(
                                     },
                                     optionSize = 1,
                                     onSelectedIndexChange = {
+                                        viewModel.showSystemApps = !viewModel.showSystemApps
+                                        prefs.edit {
+                                            putBoolean("show_system_apps", viewModel.showSystemApps)
+                                        }
                                         scope.launch {
-                                            viewModel.showSystemApps = !viewModel.showSystemApps
                                             viewModel.fetchAppList()
                                         }
                                         showTopPopup.value = false
