@@ -118,12 +118,12 @@
     <string name="select_file_tip">L\'image de la partition %1$s est recommandée</string>
     <string name="select_kmi">Sélectionner une KMI</string>
     <string name="shrink_sparse_image">Minimiser la taille de l\'image partiellement allouée</string>
-    <string name="shrink_sparse_image_message">Redimensionner à sa taille réelle l\'image partiellement allouée où se trouve le module. Notez que cela peut entraîner un dysfonctionnement du module ; utilisez donc cette fonctionnalité uniquement quand c\'est nécessaire (par exemple pour sauvegarder l\'appareil).</string>
+    <string name="shrink_sparse_image_message">Redimensionner à sa taille réelle l\'image partiellement allouée où se trouve le module. Notez que cela peut entraîner un dysfonctionnement du module ; utilisez donc cette fonctionnalité uniquement quand c\'est nécessaire (par exemple pour sauvegarder l\'appareil).</string>
     <string name="settings_uninstall">Désinstaller</string>
     <string name="settings_uninstall_temporary">Désinstaller temporairement</string>
     <string name="settings_uninstall_permanent">Désinstaller définitivement</string>
     <string name="settings_restore_stock_image">Restaurer l\'image d\'origine</string>
-    <string name="settings_restore_stock_image_message">Restaurer l\'image d\'origine d\'usine (s\'il en existe une sauvegarde). Utilisé généralement avant une mise à jour OTA ; si vous devez désinstaller KernelSU, utilisez plutôt l\'option \"Désinstaller définitivement\".</string>
+    <string name="settings_restore_stock_image_message">Restaurer l\'image d\'origine d\'usine (s\'il en existe une sauvegarde). Utilisé généralement avant une mise à jour OTA ; si vous devez désinstaller KernelSU, utilisez plutôt l\'option \"Désinstaller définitivement\".</string>
     <string name="flashing">Flash en cours</string>
     <string name="flash_success">Flash réussi</string>
     <string name="flash_failed">Échec du flash</string>
