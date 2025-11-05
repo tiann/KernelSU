@@ -17,7 +17,7 @@ object Natives {
     // 10977: change groups_count and groups to avoid overflow write
     // 11071: Fix the issue of failing to set a custom SELinux type.
     // 12143: breaking: new supercall impl
-    const val MINIMAL_SUPPORTED_KERNEL = 12143
+    const val MINIMAL_SUPPORTED_KERNEL = 22000
 
     // 12040: Support disable sucompat mode
     const val MINIMAL_SUPPORTED_SU_COMPAT = 12040
