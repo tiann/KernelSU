@@ -107,9 +107,6 @@ static int do_report_event(void __user *arg)
         if (!boot_complete_lock) {
             boot_complete_lock = true;
             pr_info("boot_complete triggered\n");
-            extern void mark_target_process();
-            pr_info("sucompat: mark target processes after boot completed\n");
-            mark_target_process();
         }
         break;
     }

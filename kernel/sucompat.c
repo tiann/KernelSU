@@ -285,19 +285,21 @@ static void destroy_kprobe(struct kprobe **kp_ptr)
 static struct kprobe *pts_kp = NULL;
 #endif
 
-void mark_target_process()
+void ksu_mark_running_process()
 {
     struct task_struct *p, *t;
     read_lock(&tasklist_lock);
     for_each_process_thread (p, t) {
-        if (t->mm) { // only user processes
+        if (!t->mm) { // only user processes
             continue;
         }
         int uid = task_uid(t).val;
-        if (uid == 0 && t->security && is_task_ksu_domain(t->security)) {
-            set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-            pr_info("sucompat: mark su process: pid:%d, uid: %d, comm:%s\n",
-                    t->pid, uid, t->comm);
+        if (uid == 0) {
+            if (t->security && is_task_ksu_domain(t->security)) {
+                set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+                pr_info("sucompat: mark su process: pid:%d, uid: %d, comm:%s\n",
+                        t->pid, uid, t->comm);
+            }
             continue; // skip non ksu domain root process
         }
         if (ksu_is_allow_uid(uid)) {
@@ -320,7 +322,7 @@ void ksu_sucompat_enable()
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
     // Register sys_enter tracepoint for syscall interception
     ret = register_trace_sys_enter(sucompat_sys_enter_handler, NULL);
-    mark_target_process();
+    ksu_mark_running_process();
     if (ret) {
         pr_err("sucompat: failed to register sys_enter tracepoint: %d\n", ret);
     } else {

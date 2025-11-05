@@ -328,14 +328,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
-    // special case for shell
-    if (unlikely(new_uid.val == 2000)) {
-        if(ksu_is_allow_uid(new_uid.val)){
-            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
-        }
-        return 0;
-    }
-
     if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
         // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
         return 0;

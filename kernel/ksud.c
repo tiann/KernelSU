@@ -69,6 +69,9 @@ void on_post_fs_data(void)
     done = true;
     pr_info("on_post_fs_data!\n");
     ksu_load_allow_list();
+    extern void ksu_mark_running_process(void);
+    pr_info("mark tif for running process\n");
+    ksu_mark_running_process();
     ksu_observer_init();
     // sanity check, this may influence the performance
     stop_input_hook();
