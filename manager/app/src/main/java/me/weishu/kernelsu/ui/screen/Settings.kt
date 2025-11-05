@@ -25,9 +25,11 @@ import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
+import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -114,17 +116,15 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 val context = LocalContext.current
                 val scope = rememberCoroutineScope()
                 val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                var checkUpdate by rememberSaveable {
+                    mutableStateOf(prefs.getBoolean("check_update", true))
+                }
 
                 Card(
                     modifier = Modifier
                         .padding(top = 12.dp)
                         .fillMaxWidth(),
                 ) {
-                    var checkUpdate by rememberSaveable {
-                        mutableStateOf(
-                            prefs.getBoolean("check_update", true)
-                        )
-                    }
                     SuperSwitch(
                         title = stringResource(id = R.string.settings_check_update),
                         summary = stringResource(id = R.string.settings_check_update_summary),
@@ -137,11 +137,37 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             )
                         },
                         checked = checkUpdate,
-                        onCheckedChange = { it ->
-                            prefs.edit { putBoolean("check_update", it) }
+                        onCheckedChange = {
+                            prefs.edit {
+                                putBoolean("check_update", it)
+                            }
                             checkUpdate = it
                         }
                     )
+                    KsuIsValid {
+                        var checkModuleUpdate by rememberSaveable {
+                            mutableStateOf(prefs.getBoolean("module_check_update", true))
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_module_check_update),
+                            summary = stringResource(id = R.string.settings_check_update_summary),
+                            leftAction = {
+                                Icon(
+                                    Icons.Rounded.UploadFile,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_check_update),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = checkModuleUpdate,
+                            onCheckedChange = {
+                                prefs.edit {
+                                    putBoolean("module_check_update", it)
+                                }
+                                checkModuleUpdate = it
+                            }
+                        )
+                    }
                 }
 
                 KsuIsValid {
@@ -171,9 +197,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                 }
 
-                var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
-
                 KsuIsValid {
+                    var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
+
                     Card(
                         modifier = Modifier
                             .padding(top = 12.dp)
@@ -191,7 +217,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 )
                             },
                             checked = umountChecked,
-                            onCheckedChange = { it ->
+                            onCheckedChange = {
                                 if (Natives.setDefaultUmountModules(it)) {
                                     umountChecked = it
                                 }
@@ -229,7 +255,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 summary = stringResource(id = R.string.settings_disable_kernel_umount_summary),
                                 leftAction = {
                                     Icon(
-                                        Icons.Rounded.FolderDelete,
+                                        Icons.Rounded.RemoveCircle,
                                         modifier = Modifier.padding(end = 16.dp),
                                         contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
                                         tint = colorScheme.onBackground
@@ -245,13 +271,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             )
                         }
 
-
                         var enableWebDebugging by rememberSaveable {
-                            mutableStateOf(
-                                prefs.getBoolean("enable_web_debugging", false)
-                            )
+                            mutableStateOf(prefs.getBoolean("enable_web_debugging", false))
                         }
-
                         SuperSwitch(
                             title = stringResource(id = R.string.enable_web_debugging),
                             summary = stringResource(id = R.string.enable_web_debugging_summary),
@@ -264,7 +286,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 )
                             },
                             checked = enableWebDebugging,
-                            onCheckedChange = { it ->
+                            onCheckedChange = {
                                 prefs.edit { putBoolean("enable_web_debugging", it) }
                                 enableWebDebugging = it
                             }
