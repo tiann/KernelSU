@@ -291,9 +291,13 @@ private fun AppItem(
     app: SuperUserViewModel.AppInfo,
     onClickListener: () -> Unit
 ) {
+    val userId = app.uid / 100000
     val colorScheme = MiuixTheme.colorScheme
     val tags = remember(app.uid, app.allowSu, app.hasCustomProfile, colorScheme) {
         buildList {
+            if (userId != 0) {
+                add(StatusMeta("UID$userId", colorScheme.primary, colorScheme.onPrimary))
+            }
             if (app.allowSu) {
                 add(StatusMeta("ROOT", colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer))
             } else if (Natives.uidShouldUmount(app.uid)) {
