@@ -293,10 +293,6 @@ void mark_target_process()
         if (t->mm) { // only user processes
             int uid = task_uid(t).val;
             if (t->security) {
-                if (is_zygote(t->security)) {
-                    set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-                    continue; // always mark zygote
-                }
                 if (uid == 0 && !is_task_ksu_domain(t->security)) {
                     continue; // skip non ksu domain root process
                 }
@@ -305,9 +301,9 @@ void mark_target_process()
                 set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
                 pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid,
                         t->comm);
-            } else if (ksu_uid_should_umount(uid)) {
+            } else if (test_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT)) {
                 clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-                pr_info("sucompat: unmark process for umount: pid:%d, uid: %d, comm:%s\n",
+                pr_info("sucompat: unmark process: pid:%d, uid: %d, comm:%s\n",
                         t->pid, uid, t->comm);
             }
         }
@@ -320,11 +316,7 @@ void unmark_all_process()
     struct task_struct *p, *t;
     read_lock(&tasklist_lock);
     for_each_process_thread (p, t) {
-        if (t->mm) { // only user processes
-            clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-            // pr_info("unmark process: pid:%d, uid: %d, comm:%s\n", t->pid,
-            //         task_uid(t).val, t->comm);
-        }
+        clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
     }
     read_unlock(&tasklist_lock);
     pr_info("sucompat: unmark all user process done!\n");

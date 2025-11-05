@@ -363,10 +363,15 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
             current->seccomp.filter) {
             spin_lock_irq(&current->sighand->siglock);
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
-            if (ksu_su_compat_enabled) {
-                set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
-            }
             spin_unlock_irq(&current->sighand->siglock);
+        }
+        if (ksu_su_compat_enabled) {
+            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+        }
+    } else {
+        // Disable syscall tracepoint sucompat for non-allowed processes
+        if (ksu_su_compat_enabled) {
+            clear_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
         }
     }
 
@@ -382,8 +387,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     if (!ksu_uid_should_umount(new_uid.val)) {
         return 0;
     } else {
-        // Disable syscall tracepoint sucompat for umount processes
-        clear_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
 #ifdef CONFIG_KSU_DEBUG
         pr_info("uid: %d should not umount!\n", current_uid().val);
 #endif
