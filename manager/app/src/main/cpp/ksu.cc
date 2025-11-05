@@ -111,7 +111,7 @@ bool is_manager() {
     if (info.version > 0) {
         return (info.flags & 0x2) != 0;
     }
-    return legacy_get_info().first;
+    return legacy_get_info().first > 0;
 }
 
 bool uid_should_umount(int uid) {
