@@ -86,15 +86,28 @@ static inline u32 current_sid(void)
 
 bool is_ksu_domain()
 {
-    char *domain;
-    u32 seclen;
-    bool result;
-    int err = security_secid_to_secctx(current_sid(), &domain, &seclen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	struct lsm_context ctx;
+#else
+	char *domain;
+	u32 seclen;
+#endif
+	bool result;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	int err = security_secid_to_secctx(current_sid(), &ctx);
+#else
+	int err = security_secid_to_secctx(current_sid(), &domain, &seclen);
+#endif
     if (err) {
         return false;
     }
-    result = strncmp(KERNEL_SU_DOMAIN, domain, seclen) == 0;
-    security_release_secctx(domain, seclen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	result = strncmp(KERNEL_SU_DOMAIN, ctx.context, ctx.len) == 0;
+	security_release_secctx(&ctx);
+#else
+	result = strncmp(KERNEL_SU_DOMAIN, domain, seclen) == 0;
+	security_release_secctx(domain, seclen);
+#endif
     return result;
 }
 
@@ -104,15 +117,28 @@ bool is_zygote(void *sec)
     if (!tsec) {
         return false;
     }
-    char *domain;
-    u32 seclen;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	struct lsm_context ctx;
+#else
+	char *domain;
+	u32 seclen;
+#endif
     bool result;
-    int err = security_secid_to_secctx(tsec->sid, &domain, &seclen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	int err = security_secid_to_secctx(tsec->sid, &ctx);
+#else
+	int err = security_secid_to_secctx(tsec->sid, &domain, &seclen);
+#endif
     if (err) {
         return false;
     }
-    result = strncmp("u:r:zygote:s0", domain, seclen) == 0;
-    security_release_secctx(domain, seclen);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	result = strncmp("u:r:zygote:s0", ctx.context, ctx.len) == 0;
+	security_release_secctx(&ctx);
+#else
+	result = strncmp("u:r:zygote:s0", domain, seclen) == 0;
+	security_release_secctx(domain, seclen);
+#endif
     return result;
 }
 
