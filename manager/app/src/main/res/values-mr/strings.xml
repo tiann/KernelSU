@@ -57,7 +57,7 @@
     <string name="profile_template">साचा</string>
     <string name="profile_namespace_individual">वैयक्तिक</string>
     <string name="profile_capabilities">क्षमता</string>
-    <string name="about_source_code">%1$s वर स्रोत कोड पहा<br></br>आमच्या %2$s चॅनेलमध्ये सामील व्हा</string>
+    <string name="about_source_code">%1$s वर स्रोत कोड पहा<br/>आमच्या %2$s चॅनेलमध्ये सामील व्हा</string>
     <string name="profile_name">प्रोफाइल नाव</string>
     <string name="profile_namespace_inherited">इनहेरीटेड</string>
     <string name="profile_namespace_global">जागतिक</string>
