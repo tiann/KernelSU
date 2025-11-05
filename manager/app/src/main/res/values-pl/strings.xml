@@ -142,4 +142,13 @@
     <string name="module_install_prompt_with_name">Zainstalowane zostaną następujące moduły: %1$s</string>
     <string name="settings_disable_su">Wyłącz zgodność z su</string>
     <string name="su_not_allowed">Nie można przyznać dostępu superużytkownika do %s</string>
+    <string name="install_upload_lkm_file">Użyj lokalnego pliku LKM</string>
+    <string name="install_only_support_ko_file">Obsługiwane są wyłącznie pliki .ko</string>
+    <string name="settings_disable_kernel_umount">Wyłącz odmontowywanie jądra</string>
+    <string name="settings_disable_kernel_umount_summary">Tymczasowo wyłącz odmontowywanie z poziomu jądra, kontrolowane przez KernelSU.</string>
+    <string name="processing">Przetwarzanie…</string>
+    <string name="refresh_pulling">Przeciągnij w dół, aby odświeżyć</string>
+    <string name="refresh_release">Uwolnij, aby odświeżyć</string>
+    <string name="refresh_refresh">Odświeżanie…</string>
+    <string name="refresh_complete">Odświeżono pomyślnie</string>
 </resources>
