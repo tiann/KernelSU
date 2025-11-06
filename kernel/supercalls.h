@@ -104,4 +104,6 @@ struct ksu_ioctl_cmd_map {
 // Install KSU fd to current process
 int ksu_install_fd(void);
 
+void ksu_supercalls_init();
+
 #endif // __KSU_H_SUPERCALLS

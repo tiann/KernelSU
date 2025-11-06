@@ -4,6 +4,14 @@
 #include <linux/thread_info.h>
 #include <linux/version.h>
 
+extern bool ksu_su_compat_enabled;
+
+void ksu_sucompat_init(void);
+void ksu_sucompat_exit(void);
+
+void ksu_sucompat_enable(void);
+void ksu_sucompat_disable(void);
+
 void ksu_mark_running_process(void);
 
 static inline void ksu_set_task_tracepoint_flag(struct task_struct *t)

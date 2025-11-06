@@ -24,15 +24,12 @@
 #include "ksud.h"
 #include "kernel_compat.h"
 #include "sucompat.h"
+#include "core_hook.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
-extern void escape_to_root();
-void ksu_sucompat_enable();
-void ksu_sucompat_disable();
-
-bool ksu_su_compat_enabled = true;
+bool ksu_su_compat_enabled __read_mostly = true;
 
 static int su_compat_feature_get(u64 *value)
 {

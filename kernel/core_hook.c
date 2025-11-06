@@ -42,10 +42,7 @@
 #include "supercalls.h"
 #include "sucompat.h"
 
-bool ksu_module_mounted = false;
-extern bool ksu_su_compat_enabled;
-
-extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
+bool ksu_module_mounted __read_mostly = false;
 
 static bool ksu_kernel_umount_enabled = true;
 static bool ksu_enhanced_security_enabled = false;
