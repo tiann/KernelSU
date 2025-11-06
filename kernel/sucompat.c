@@ -30,6 +30,54 @@
 #define SH_PATH "/system/bin/sh"
 
 bool ksu_su_compat_enabled __read_mostly = true;
+extern void escape_to_root();
+void ksu_sucompat_enable();
+void ksu_sucompat_disable();
+
+void ksu_mark_running_process(void)
+{
+    struct task_struct *p, *t;
+    read_lock(&tasklist_lock);
+    for_each_process_thread (p, t) {
+        if (!t->mm) { // only user processes
+            continue;
+        }
+        int uid = task_uid(t).val;
+        bool ksu_root_process =
+            uid == 0 && is_task_ksu_domain(get_task_cred(t));
+        if (ksu_root_process || ksu_is_allow_uid(uid)) {
+            ksu_set_task_tracepoint_flag(t);
+            pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n",
+                    t->pid, uid, t->comm);
+        }
+    }
+    read_unlock(&tasklist_lock);
+}
+
+static void handle_process_mark(bool mark)
+{
+    struct task_struct *p, *t;
+    read_lock(&tasklist_lock);
+    for_each_process_thread(p, t) {
+        if (mark)
+            ksu_set_task_tracepoint_flag(t);
+        else
+            ksu_clear_task_tracepoint_flag(t);
+    }
+    read_unlock(&tasklist_lock);
+}
+
+static void mark_all_process(void)
+{
+    handle_process_mark(true);
+    pr_info("sucompat: mark all user process done!\n");
+}
+
+static void unmark_all_process(void)
+{
+    handle_process_mark(false);
+    pr_info("sucompat: unmark all user process done!\n");
+}
 
 static int su_compat_feature_get(u64 *value)
 {
@@ -283,56 +331,91 @@ static void destroy_kprobe(struct kprobe **kp_ptr)
 static struct kprobe *pts_kp = NULL;
 #endif
 
-void ksu_mark_running_process()
+#ifdef CONFIG_KRETPROBES
+
+static int tracepoint_reg_count = 0;
+
+static int syscall_regfunc_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
-    struct task_struct *p, *t;
-    read_lock(&tasklist_lock);
-    for_each_process_thread (p, t) {
-        if (!t->mm) { // only user processes
-            continue;
-        }
-        int uid = task_uid(t).val;
-        bool ksu_root_process =
-            uid == 0 && is_task_ksu_domain(get_task_cred(t));
-        if (ksu_root_process || ksu_is_allow_uid(uid)) {
-            ksu_set_task_tracepoint_flag(t);
-            pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n",
-                    t->pid, uid, t->comm);
-        }
+    if (tracepoint_reg_count < 1) {
+        // while install our tracepoint, mark our processes
+        unmark_all_process();
+        ksu_mark_running_process();
+    } else {
+        // while installing other tracepoint, mark all processes
+        mark_all_process();
     }
-    read_unlock(&tasklist_lock);
+    tracepoint_reg_count++;
+    return 0;
 }
 
-static void unmark_all_process()
+static int syscall_unregfunc_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
-    struct task_struct *p, *t;
-    read_lock(&tasklist_lock);
-    for_each_process_thread (p, t) {
-        ksu_clear_task_tracepoint_flag(t);
+    if (tracepoint_reg_count <= 1) {
+        // while uninstall our tracepoint, unmark all processes
+        unmark_all_process();
+    } else {
+        // while uninstalling other tracepoint, mark our processes
+        unmark_all_process();
+        ksu_mark_running_process();
     }
-    read_unlock(&tasklist_lock);
-    pr_info("sucompat: unmark all user process done!\n");
+    tracepoint_reg_count--;
+    return 0;
 }
+
+struct kretprobe syscall_regfunc_rp = {
+    .kp.symbol_name = "syscall_regfunc",
+    .handler = syscall_regfunc_handler,
+    .entry_handler = NULL,
+    .data_size = 0,
+    .maxactive = 0,
+};
+
+struct kretprobe syscall_unregfunc_rp = {
+    .kp.symbol_name = "syscall_unregfunc",
+    .handler = syscall_unregfunc_handler,
+    .entry_handler = NULL,
+    .data_size = 0,
+    .maxactive = 0,
+};
+#endif
 
 void ksu_sucompat_enable()
 {
     int ret;
     pr_info("sucompat: ksu_sucompat_enable called\n");
+#ifdef CONFIG_KPROBES
+    // Register kprobe for pts_unix98_lookup
+    pts_kp = init_kprobe("pts_unix98_lookup", pts_unix98_lookup_pre);
+#endif
+
+#ifdef CONFIG_KRETPROBES
+    ret = register_kretprobe(&syscall_regfunc_rp);
+    if (ret) {
+        pr_err("sucompat: failed to register syscall_regfunc kretprobe: %d\n", ret);
+    } else {
+        pr_info("sucompat: syscall_regfunc kretprobe registered\n");
+    }
+    ret = register_kretprobe(&syscall_unregfunc_rp);
+    if (ret) {
+        pr_err("sucompat: failed to register syscall_unregfunc kretprobe: %d\n", ret);
+    } else {
+        pr_info("sucompat: syscall_unregfunc kretprobe registered\n");
+    }
+#endif
+
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
     // Register sys_enter tracepoint for syscall interception
     ret = register_trace_sys_enter(sucompat_sys_enter_handler, NULL);
+#ifndef CONFIG_KRETPROBES
     unmark_all_process();
     ksu_mark_running_process();
+#endif
     if (ret) {
         pr_err("sucompat: failed to register sys_enter tracepoint: %d\n", ret);
     } else {
         pr_info("sucompat: sys_enter tracepoint registered\n");
     }
-#endif
-
-#ifdef CONFIG_KPROBES
-    // Register kprobe for pts_unix98_lookup
-    pts_kp = init_kprobe("pts_unix98_lookup", pts_unix98_lookup_pre);
 #endif
 }
 
@@ -344,6 +427,15 @@ void ksu_sucompat_disable()
     unregister_trace_sys_enter(sucompat_sys_enter_handler, NULL);
     tracepoint_synchronize_unregister();
     pr_info("sucompat: sys_enter tracepoint unregistered\n");
+#endif
+
+#ifdef CONFIG_KRETPROBES
+    // Unregister syscall_regfunc kretprobe
+    unregister_kretprobe(&syscall_regfunc_rp);
+    pr_info("sucompat: syscall_regfunc kretprobe unregistered\n");
+    // Unregister syscall_unregfunc kretprobe
+    unregister_kretprobe(&syscall_unregfunc_rp);
+    pr_info("sucompat: syscall_unregfunc kretprobe unregistered\n");
 #endif
 
 #ifdef CONFIG_KPROBES
