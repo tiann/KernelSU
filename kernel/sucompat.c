@@ -23,6 +23,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
 #include "kernel_compat.h"
+#include "sucompat.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -297,7 +298,7 @@ void ksu_mark_running_process()
         bool ksu_root_process =
             uid == 0 && is_task_ksu_domain(get_task_cred(t));
         if (ksu_root_process || ksu_is_allow_uid(uid)) {
-            set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+            ksu_set_task_tracepoint_flag(t);
             pr_info("sucompat: mark process: pid:%d, uid: %d, comm:%s\n",
                     t->pid, uid, t->comm);
         }
@@ -310,7 +311,7 @@ static void unmark_all_process()
     struct task_struct *p, *t;
     read_lock(&tasklist_lock);
     for_each_process_thread (p, t) {
-        clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+        ksu_clear_task_tracepoint_flag(t);
     }
     read_unlock(&tasklist_lock);
     pr_info("sucompat: unmark all user process done!\n");
