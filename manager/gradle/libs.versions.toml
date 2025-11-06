@@ -2,9 +2,9 @@
 agp = "8.13.0"
 kotlin = "2.2.21"
 ksp = "2.3.0"
-compose-bom = "2025.10.01"
+compose-bom = "2025.11.00"
 lifecycle = "2.9.4"
-navigation = "2.9.5"
+navigation = "2.9.6"
 activity-compose = "1.11.0"
 kotlinx-coroutines = "1.10.2"
 coil-compose = "2.7.0"
@@ -12,7 +12,7 @@ compose-destination = "2.3.0"
 markdown = "4.6.2"
 webkit = "1.14.0"
 parcelablelist = "2.0.1"
-libcxx = "28.1.13356709"
+ndk = "29.0.13599879-beta2"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
@@ -64,7 +64,7 @@ compose-destinations-ksp = { group = "io.github.raamcosta.compose-destinations",
 
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
 
-lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "libcxx" }
+lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 
 miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" }
 

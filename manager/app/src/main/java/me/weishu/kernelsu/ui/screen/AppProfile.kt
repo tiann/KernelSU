@@ -1,7 +1,9 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Security
@@ -31,10 +34,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -139,6 +144,14 @@ fun AppProfileScreen(
                                 .size(60.dp)
                         )
                     },
+                    appUid = appInfo.uid,
+                    appVersionName = appInfo.packageInfo.versionName ?: "",
+                    appVersionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        appInfo.packageInfo.longVersionCode
+                    } else {
+                        @Suppress("DEPRECATION")
+                        appInfo.packageInfo.versionCode.toLong()
+                    },
                     profile = profile,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
@@ -189,7 +202,10 @@ private fun AppProfileInner(
     modifier: Modifier = Modifier,
     packageName: String,
     appLabel: String,
-    appIcon: @Composable () -> Unit,
+    appIcon: @Composable (() -> Unit),
+    appUid: Int,
+    appVersionName: String,
+    appVersionCode: Long,
     profile: Natives.Profile,
     onViewTemplate: (id: String) -> Unit = {},
     onManageTemplate: () -> Unit = {},
@@ -206,30 +222,62 @@ private fun AppProfileInner(
                 .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
         ) {
-
             Row(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 appIcon()
                 Column(
-                    modifier = Modifier.padding(start = 16.dp),
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 8.dp)
+                        .weight(1f),
                 ) {
                     Text(
                         text = appLabel,
-                        fontSize = 17.5.sp,
                         color = colorScheme.onSurface,
-                        fontWeight = FontWeight(500)
+                        fontWeight = FontWeight(500),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .clipToBounds()
+                    )
+                    Text(
+                        text = "$appVersionName ($appVersionCode)",
+                        fontSize = 14.sp,
+                        color = colorScheme.onSurfaceVariantSummary,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .clipToBounds()
                     )
                     Text(
                         text = packageName,
-                        fontSize = 16.sp,
-                        color = colorScheme.onSurfaceVariantSummary
+                        fontSize = 14.sp,
+                        color = colorScheme.onSurfaceVariantSummary,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .clipToBounds()
+                    )
+                }
+                Column(
+                    modifier = Modifier,
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    StatusTag(
+                        label = appUid.toString(),
+                        backgroundColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
                     )
                 }
             }
         }
-
 
         Card(
             modifier = Modifier

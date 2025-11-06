@@ -145,6 +145,7 @@ fun ModulePager(
 
     LaunchedEffect(navigator) {
         if (viewModel.moduleList.isEmpty() || viewModel.searchResults.value.isEmpty() || viewModel.isNeedRefresh) {
+            viewModel.checkModuleUpdate = prefs.getBoolean("module_check_update",true)
             viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
             viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
             viewModel.fetchModuleList()
@@ -364,13 +365,9 @@ fun ModulePager(
                                     optionSize = 2,
                                     isSelected = viewModel.sortActionFirst,
                                     onSelectedIndexChange = {
-                                        viewModel.sortActionFirst =
-                                            !viewModel.sortActionFirst
+                                        viewModel.sortActionFirst = !viewModel.sortActionFirst
                                         prefs.edit {
-                                            putBoolean(
-                                                "module_sort_action_first",
-                                                viewModel.sortActionFirst
-                                            )
+                                            putBoolean("module_sort_action_first", viewModel.sortActionFirst)
                                         }
                                         scope.launch {
                                             viewModel.fetchModuleList()
@@ -384,13 +381,9 @@ fun ModulePager(
                                     optionSize = 2,
                                     isSelected = viewModel.sortEnabledFirst,
                                     onSelectedIndexChange = {
-                                        viewModel.sortEnabledFirst =
-                                            !viewModel.sortEnabledFirst
+                                        viewModel.sortEnabledFirst = !viewModel.sortEnabledFirst
                                         prefs.edit {
-                                            putBoolean(
-                                                "module_sort_enabled_first",
-                                                viewModel.sortEnabledFirst
-                                            )
+                                            putBoolean("module_sort_enabled_first", viewModel.sortEnabledFirst)
                                         }
                                         scope.launch {
                                             viewModel.fetchModuleList()
