@@ -17,14 +17,7 @@
 #include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
-
-// Forward declarations from core_hook.c
-extern void escape_to_root(void);
-extern void nuke_ext4_sysfs(void);
-extern bool ksu_module_mounted;
-extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
-extern void ksu_sucompat_init(void);
-extern void ksu_sucompat_exit(void);
+#include "core_hook.h"
 
 // Permission check functions
 bool only_manager(void)

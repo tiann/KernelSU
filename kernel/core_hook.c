@@ -1,5 +1,5 @@
-#include "linux/compiler.h"
-#include "linux/sched/signal.h"
+#include <linux/compiler.h>
+#include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/task_work.h>
 #include <linux/thread_info.h>
@@ -40,11 +40,9 @@
 #include "throne_tracker.h"
 #include "kernel_compat.h"
 #include "supercalls.h"
+#include "sucompat.h"
 
-bool ksu_module_mounted = false;
-extern bool ksu_su_compat_enabled;
-
-extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
+bool ksu_module_mounted __read_mostly = false;
 
 static bool ksu_kernel_umount_enabled = true;
 static bool ksu_enhanced_security_enabled = false;
@@ -223,8 +221,8 @@ void escape_to_root(void)
 
     setup_selinux(profile->selinux_domain);
 
-    for_each_thread(p, t){
-        set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+    for_each_thread (p, t) {
+        ksu_set_task_tracepoint_flag(t);
     }
 }
 
@@ -379,7 +377,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 
     if (new_uid.val == 2000) {
         if (ksu_su_compat_enabled) {
-            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+            ksu_set_task_tracepoint_flag(current);
         }
     }
 
@@ -399,7 +397,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
         if (ksu_su_compat_enabled) {
-            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+            ksu_set_task_tracepoint_flag(current);
         }
         spin_unlock_irq(&current->sighand->siglock);
         return 0;
@@ -413,12 +411,12 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
             spin_unlock_irq(&current->sighand->siglock);
         }
         if (ksu_su_compat_enabled) {
-            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+            ksu_set_task_tracepoint_flag(current);
         }
     } else {
         // Disable syscall tracepoint sucompat for non-allowed processes
         if (ksu_su_compat_enabled) {
-            clear_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+            ksu_clear_task_tracepoint_flag(current);
         }
     }
 
