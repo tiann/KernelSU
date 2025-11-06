@@ -77,7 +77,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="failed_to_update_sepolicy">נכשל עדכון כללי SELinux עבור: %s</string>
     <string name="reboot_bootloader">הפעלה מחדש לבוטלאודר</string>
-    <string name="about_source_code">ראה את קוד המקור ב%1$s<br></br>הצטרף אלינו %2$s בערוץ</string>
+    <string name="about_source_code">ראה את קוד המקור ב%1$s<br/>הצטרף אלינו %2$s בערוץ</string>
     <string name="home_manager_version">גרסת מנהל</string>
     <string name="new_version_available">גרסה חדשה עבור: %s זמינה, לחץ כדי לשדרג</string>
     <string name="save_log">שמור יומנים</string>

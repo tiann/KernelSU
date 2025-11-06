@@ -77,7 +77,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="failed_to_update_sepolicy">%s के लिए SELinux नियमों को अपटेड करने में विफल</string>
     <string name="reboot_bootloader">बुटलोडर में रिबूट करें</string>
-    <string name="about_source_code">%1$s पर स्रोत कोड देखें<br></br>हमारे %2$s चैनल से जुड़ें</string>
+    <string name="about_source_code">%1$s पर स्रोत कोड देखें<br/>हमारे %2$s चैनल से जुड़ें</string>
     <string name="home_manager_version">मैनेजर वर्जन</string>
     <string name="new_version_available">नया वर्जन: %s उपलब्ध है,अपग्रेड के लिए क्लिक करें</string>
     <string name="save_log">लॉग सहेजें</string>
