@@ -701,10 +701,10 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
             cmd: 0,
             arg: &ffi_policy as *const _ as u64,
         };
-        if crate::ksucalls::set_sepolicy(&cmd).is_err() {
-            log::warn!("apply rule: {statement:?} failed.");
+        if let Err(e) = crate::ksucalls::set_sepolicy(&cmd) {
+            log::warn!("apply rule {:?} failed: {}", statement, e);
             if strict {
-                return Err(anyhow::anyhow!("apply rule {:?} failed.", statement));
+                return Err(anyhow::anyhow!("apply rule {:?} failed: {}", statement, e));
             }
         }
     }
