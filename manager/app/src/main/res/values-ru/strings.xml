@@ -52,7 +52,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/ru_RU/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Узнайте, как установить KernelSU и использовать модули</string>
     <string name="home_support_title">Поддержите нас</string>
-    <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование</string>
+    <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s<br/>Присоединяйтесь к нашему %2$s каналу]]></string>
     <string name="profile" translatable="false">App Profile</string>
     <!--Don't translate this string!-->
@@ -70,14 +70,14 @@
     <string name="profile_umount_modules">Размонтировать модули</string>
     <string name="failed_to_update_app_profile">Не удалось обновить App Profile для %s</string>
     <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
-    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile</string>
-    <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые изменённые модулями файлы для данного приложения</string>
+    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
+    <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые изменённые модулями файлы для данного приложения.</string>
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
     <string name="module_update">Обновить</string>
     <string name="module_downloading">Скачивание модуля: %s</string>
     <string name="module_start_downloading">Начало скачивания: %s</string>
-    <string name="new_version_available">Новая версия: %s доступна, нажмите чтобы скачать</string>
+    <string name="new_version_available">Новая версия: %s доступна, нажмите чтобы скачать!</string>
     <string name="force_stop_app">Остановить принудительно</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
     <string name="launch_app">Запустить</string>
@@ -102,16 +102,16 @@
     <string name="settings_profile_template">Шаблон профиля приложения</string>
     <string name="app_profile_template_description">Описание</string>
     <string name="app_profile_template_save">Сохранить</string>
-    <string name="settings_profile_template_summary">Управление локальным и онлайн-шаблоном профиля приложения</string>
+    <string name="settings_profile_template_summary">Управление локальным и онлайн-шаблоном профиля приложения.</string>
     <string name="app_profile_template_delete">Удалить</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="app_profile_template_view">Просмотр шаблона</string>
     <string name="settings_check_update">Проверять наличие обновлений</string>
-    <string name="settings_check_update_summary">Автоматическая проверка обновлений при открытии приложения</string>
+    <string name="settings_check_update_summary">Автоматическая проверка обновлений при открытии приложения.</string>
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="open">Открыть</string>
-    <string name="enable_web_debugging">Включить отладку WebView</string>
-    <string name="enable_web_debugging_summary">Используется для отладки WebUI. Пожалуйста, включайте только при необходимости</string>
+    <string name="enable_web_debugging">Отладка WebView</string>
+    <string name="enable_web_debugging_summary">Используется для отладки WebUI. Пожалуйста, включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
     <string name="install_next">Далее</string>
@@ -122,14 +122,14 @@
     <string name="select_kmi">Выбрать KMI</string>
     <string name="select_file_tip">%1$s образ раздела рекомендуется</string>
     <string name="shrink_sparse_image">Минимизировать разреженный образ</string>
-    <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (Например, для резервного копирования)</string>
+    <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования).</string>
     <string name="settings_uninstall_temporary">Удалить на время</string>
-    <string name="settings_uninstall_permanent_message">Удалить KernelSU (root и все модули) полностью</string>
+    <string name="settings_uninstall_permanent_message">Удалить KernelSU (root и все модули) полностью.</string>
     <string name="settings_uninstall_permanent">Удалить полностью</string>
     <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки</string>
     <string name="settings_uninstall">Удалить</string>
     <string name="settings_restore_stock_image">Восстановить сток образ</string>
-    <string name="settings_restore_stock_image_message">Восстановить исходный заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить полностью»</string>
+    <string name="settings_restore_stock_image_message">Восстановить исходный заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить полностью».</string>
     <string name="flash_success">Установка выполнена</string>
     <string name="flashing">Установка</string>
     <string name="flash_failed">Установка не выполнена</string>
