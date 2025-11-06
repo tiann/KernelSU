@@ -1,4 +1,5 @@
 use std::fs;
+use std::os::fd::OwnedFd;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
@@ -15,6 +16,7 @@ const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0004b04; // _IOC(_IOC_READ|_IOC_WRITE, 'K
 const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80004b05; // _IOC(_IOC_READ, 'K', 5, 0)
 const KSU_IOCTL_GET_FEATURE: u32 = 0xc0004b0d; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
 const KSU_IOCTL_SET_FEATURE: u32 = 0x40004b0e; // _IOC(_IOC_WRITE, 'K', 14, 0)
+const KSU_IOCTL_GET_WRAPPER_FD: u32 = 0x00006f10; // _IOC(_IOC_NONE, 'K', 10000, 0)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -54,6 +56,13 @@ struct GetFeatureCmd {
 struct SetFeatureCmd {
     feature_id: u32,
     value: u64,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct GetWrapperFdCmd {
+    fd: i32,
+    flags: u32,
 }
 
 // Global driver fd cache
@@ -219,4 +228,10 @@ pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     let mut cmd = SetFeatureCmd { feature_id, value };
     ksuctl(KSU_IOCTL_SET_FEATURE, &mut cmd as *mut _)?;
     Ok(())
+}
+
+pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
+    let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
+    let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &mut cmd as *mut _)?;
+    Ok(result)
 }

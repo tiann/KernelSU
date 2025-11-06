@@ -5,6 +5,7 @@ on:
 jobs:
   build-lkm:
     strategy:
+      fail-fast: false
       matrix:
         kmi:
           - android12-5.10
