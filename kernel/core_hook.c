@@ -225,7 +225,7 @@ void escape_to_root(void)
         ksu_set_task_tracepoint_flag(t);
     }
 }
-
+extern void ext4_unregister_sysfs(struct super_block *sb);
 void nuke_ext4_sysfs(void)
 {
     struct path path;
@@ -276,7 +276,7 @@ static bool should_umount(struct path *path)
     }
     return false;
 }
-
+extern int path_umount(struct path *path, int flags);
 static void ksu_umount_mnt(struct path *path, int flags)
 {
     int err = path_umount(path, flags);
