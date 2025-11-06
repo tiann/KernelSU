@@ -1,3 +1,5 @@
+#include "linux/compiler.h"
+#include "linux/sched/signal.h"
 #include <linux/slab.h>
 #include <linux/task_work.h>
 #include <linux/thread_info.h>
@@ -40,6 +42,7 @@
 #include "supercalls.h"
 
 bool ksu_module_mounted = false;
+extern bool ksu_su_compat_enabled;
 
 extern int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
@@ -145,6 +148,8 @@ static void disable_seccomp()
 void escape_to_root(void)
 {
     struct cred *cred;
+    struct task_struct *p = current;
+    struct task_struct *t;
 
     cred = prepare_creds();
     if (!cred) {
@@ -195,6 +200,10 @@ void escape_to_root(void)
     spin_unlock_irq(&current->sighand->siglock);
 
     setup_selinux(profile->selinux_domain);
+
+    for_each_thread(p, t){
+        set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+    }
 }
 
 void nuke_ext4_sysfs(void)
@@ -326,6 +335,12 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
+    if (new_uid.val == 2000) {
+        if (ksu_su_compat_enabled) {
+            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+        }
+    }
+
     if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
         // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
         return 0;
@@ -341,6 +356,9 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
+        if (ksu_su_compat_enabled) {
+            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+        }
         spin_unlock_irq(&current->sighand->siglock);
         return 0;
     }
@@ -351,6 +369,14 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
             spin_lock_irq(&current->sighand->siglock);
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
             spin_unlock_irq(&current->sighand->siglock);
+        }
+        if (ksu_su_compat_enabled) {
+            set_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
+        }
+    } else {
+        // Disable syscall tracepoint sucompat for non-allowed processes
+        if (ksu_su_compat_enabled) {
+            clear_tsk_thread_flag(current, TIF_SYSCALL_TRACEPOINT);
         }
     }
 
@@ -374,7 +400,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     // check old process's selinux context, if it is not zygote, ignore it!
     // because some su apps may setuid to untrusted_app but they are in global mount namespace
     // when we umount for such process, that is a disaster!
-    bool is_zygote_child = is_zygote(old->security);
+    bool is_zygote_child = is_zygote(old);
     if (!is_zygote_child) {
         pr_info("handle umount ignore non zygote child: %d\n", current->pid);
         return 0;
