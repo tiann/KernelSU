@@ -46,7 +46,7 @@ impl FeatureId {
                 "Kernel Umount - controls whether kernel automatically unmounts modules when not needed"
             }
             FeatureId::EnhancedSecurity => {
-                "Enhanced Security - tighten security policies and reduce attack surface"
+                "Enhanced Security - disable non‑KSU root elevation and unauthorized UID downgrades"
             }
         }
     }

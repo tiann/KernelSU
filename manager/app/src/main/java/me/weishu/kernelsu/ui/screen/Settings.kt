@@ -55,9 +55,11 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.SendLogDialog
+import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.UninstallDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
+import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.shrinkModules
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -198,13 +200,181 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
 
                 KsuIsValid {
-                    var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
 
                     Card(
                         modifier = Modifier
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
+                        val esItems = listOf(
+                            stringResource(id = R.string.settings_mode_default),
+                            stringResource(id = R.string.settings_mode_temp_enable),
+                            stringResource(id = R.string.settings_mode_always_enable),
+                        )
+                        var enhancedSecurityMode by rememberSaveable {
+                            mutableStateOf(
+                                prefs.getInt(
+                                    "enhanced_security_mode",
+                                    if (Natives.isEnhancedSecurityEnabled()) 1 else 0
+                                )
+                            )
+                        }
+                        SuperDropdown(
+                            title = stringResource(id = R.string.settings_enable_enhanced_security),
+                            summary = stringResource(id = R.string.settings_enable_enhanced_security_summary),
+                            items = esItems,
+                            leftAction = {
+                                Icon(
+                                    Icons.Rounded.Fence,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_enable_enhanced_security),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            selectedIndex = enhancedSecurityMode,
+                            onSelectedIndexChange = { index ->
+                                when (index) {
+                                    // Default: disable and save to persist
+                                    0 -> if (Natives.setEnhancedSecurityEnabled(false)) {
+                                        execKsud("feature save", true)
+                                        prefs.edit { putInt("enhanced_security_mode", 0) }
+                                        enhancedSecurityMode = 0
+                                    }
+
+                                    // Temporarily enable: save disabled state first, then enable
+                                    1 -> if (Natives.setEnhancedSecurityEnabled(false)) {
+                                        execKsud("feature save", true)
+                                        if (Natives.setEnhancedSecurityEnabled(true)) {
+                                            prefs.edit { putInt("enhanced_security_mode", 1) }
+                                            enhancedSecurityMode = 1
+                                        }
+                                    }
+
+                                    // Permanently enable: enable and save
+                                    2 -> if (Natives.setEnhancedSecurityEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        prefs.edit { putInt("enhanced_security_mode", 2) }
+                                        enhancedSecurityMode = 2
+                                    }
+                                }
+                            }
+                        )
+
+                        val suItems = listOf(
+                            stringResource(id = R.string.settings_mode_default),
+                            stringResource(id = R.string.settings_mode_temp_disable),
+                            stringResource(id = R.string.settings_mode_always_disable),
+                        )
+                        var suCompatMode by rememberSaveable {
+                            mutableStateOf(
+                                prefs.getInt(
+                                    "su_compat_mode",
+                                    if (!Natives.isSuEnabled()) 1 else 0
+                                )
+                            )
+                        }
+                        SuperDropdown(
+                            title = stringResource(id = R.string.settings_disable_su),
+                            summary = stringResource(id = R.string.settings_disable_su_summary),
+                            items = suItems,
+                            leftAction = {
+                                Icon(
+                                    Icons.Rounded.RemoveModerator,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_disable_su),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            selectedIndex = suCompatMode,
+                            onSelectedIndexChange = { index ->
+                                when (index) {
+                                    // Default: enable and save to persist
+                                    0 -> if (Natives.setSuEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        prefs.edit { putInt("su_compat_mode", 0) }
+                                        suCompatMode = 0
+                                    }
+
+                                    // Temporarily disable: save enabled state first, then disable
+                                    1 -> if (Natives.setSuEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        if (Natives.setSuEnabled(false)) {
+                                            prefs.edit { putInt("su_compat_mode", 1) }
+                                            suCompatMode = 1
+                                        }
+                                    }
+
+                                    // Permanently disable: disable and save
+                                    2 -> if (Natives.setSuEnabled(false)) {
+                                        execKsud("feature save", true)
+                                        prefs.edit { putInt("su_compat_mode", 2) }
+                                        suCompatMode = 2
+                                    }
+                                }
+                            }
+                        )
+
+                        val umountItems = listOf(
+                            stringResource(id = R.string.settings_mode_default),
+                            stringResource(id = R.string.settings_mode_temp_disable),
+                            stringResource(id = R.string.settings_mode_always_disable),
+                        )
+                        var kernelUmountMode by rememberSaveable {
+                            mutableStateOf(
+                                prefs.getInt(
+                                    "kernel_umount_mode",
+                                    if (!Natives.isKernelUmountEnabled()) 1 else 0
+                                )
+                            )
+                        }
+                        SuperDropdown(
+                            title = stringResource(id = R.string.settings_disable_kernel_umount),
+                            summary = stringResource(id = R.string.settings_disable_kernel_umount_summary),
+                            items = umountItems,
+                            leftAction = {
+                                Icon(
+                                    Icons.Rounded.RemoveCircle,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            selectedIndex = kernelUmountMode,
+                            onSelectedIndexChange = { index ->
+                                when (index) {
+                                    // Default: enable and save to persist
+                                    0 -> if (Natives.setKernelUmountEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        prefs.edit { putInt("kernel_umount_mode", 0) }
+                                        kernelUmountMode = 0
+                                    }
+
+                                    // Temporarily disable: save enabled state first, then disable
+                                    1 -> if (Natives.setKernelUmountEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        if (Natives.setKernelUmountEnabled(false)) {
+                                            prefs.edit { putInt("kernel_umount_mode", 1) }
+                                            kernelUmountMode = 1
+                                        }
+                                    }
+
+                                    // Permanently disable: disable and save
+                                    2 -> if (Natives.setKernelUmountEnabled(false)) {
+                                        execKsud("feature save", true)
+                                        prefs.edit { putInt("kernel_umount_mode", 2) }
+                                        kernelUmountMode = 2
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_umount_modules_default),
                             summary = stringResource(id = R.string.settings_umount_modules_default_summary),
@@ -220,74 +390,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             onCheckedChange = {
                                 if (Natives.setDefaultUmountModules(it)) {
                                     umountChecked = it
-                                }
-                            }
-                        )
-
-                        var isEnhancedSecurityEnabled by rememberSaveable {
-                            mutableStateOf(Natives.isEnhancedSecurityEnabled())
-                        }
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_enhanced_security),
-                            summary = stringResource(id = R.string.settings_enable_enhanced_security_summary),
-                            leftAction = {
-                                Icon(
-                                    Icons.Rounded.Fence,
-                                    modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_enhanced_security),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = isEnhancedSecurityEnabled,
-                            onCheckedChange = { checked: Boolean ->
-                                if (Natives.setEnhancedSecurityEnabled(checked)) {
-                                    isEnhancedSecurityEnabled = checked
-                                }
-                            }
-                        )
-
-                        var isSuDisabled by rememberSaveable {
-                            mutableStateOf(!Natives.isSuEnabled())
-                        }
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_disable_su),
-                            summary = stringResource(id = R.string.settings_disable_su_summary),
-                            leftAction = {
-                                Icon(
-                                    Icons.Rounded.RemoveModerator,
-                                    modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_disable_su),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = isSuDisabled,
-                            onCheckedChange = { checked: Boolean ->
-                                val shouldEnable = !checked
-                                if (Natives.setSuEnabled(shouldEnable)) {
-                                    isSuDisabled = !shouldEnable
-                                }
-                            }
-                        )
-
-                        var isKernelUmountDisabled by rememberSaveable {
-                            mutableStateOf(!Natives.isKernelUmountEnabled())
-                        }
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_disable_kernel_umount),
-                            summary = stringResource(id = R.string.settings_disable_kernel_umount_summary),
-                            leftAction = {
-                                Icon(
-                                    Icons.Rounded.RemoveCircle,
-                                    modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = isKernelUmountDisabled,
-                            onCheckedChange = { checked: Boolean ->
-                                val shouldEnable = !checked
-                                if (Natives.setKernelUmountEnabled(shouldEnable)) {
-                                    isKernelUmountDisabled = !shouldEnable
                                 }
                             }
                         )
