@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
+import androidx.compose.material.icons.rounded.Beenhere
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DeveloperMode
+import androidx.compose.material.icons.rounded.EnhancedEncryption
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material.icons.rounded.RemoveCircle
@@ -206,7 +208,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
-                        val esItems = listOf(
+                        val modeItems = listOf(
                             stringResource(id = R.string.settings_mode_default),
                             stringResource(id = R.string.settings_mode_temp_enable),
                             stringResource(id = R.string.settings_mode_always_enable),
@@ -214,18 +216,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         var enhancedSecurityMode by rememberSaveable {
                             mutableStateOf(
                                 prefs.getInt(
-                                    "enhanced_security_mode",
-                                    if (Natives.isEnhancedSecurityEnabled()) 1 else 0
+                                    "enhanced_security_mode", if (Natives.isEnhancedSecurityEnabled()) 1 else 0
                                 )
                             )
                         }
                         SuperDropdown(
                             title = stringResource(id = R.string.settings_enable_enhanced_security),
                             summary = stringResource(id = R.string.settings_enable_enhanced_security_summary),
-                            items = esItems,
+                            items = modeItems,
                             leftAction = {
                                 Icon(
-                                    Icons.Rounded.Fence,
+                                    Icons.Rounded.EnhancedEncryption,
                                     modifier = Modifier.padding(end = 16.dp),
                                     contentDescription = stringResource(id = R.string.settings_enable_enhanced_security),
                                     tint = colorScheme.onBackground
@@ -260,23 +261,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             }
                         )
 
-                        val suItems = listOf(
-                            stringResource(id = R.string.settings_mode_default),
-                            stringResource(id = R.string.settings_mode_temp_disable),
-                            stringResource(id = R.string.settings_mode_always_disable),
-                        )
                         var suCompatMode by rememberSaveable {
                             mutableStateOf(
                                 prefs.getInt(
-                                    "su_compat_mode",
-                                    if (!Natives.isSuEnabled()) 1 else 0
+                                    "su_compat_mode", if (!Natives.isSuEnabled()) 1 else 0
                                 )
                             )
                         }
                         SuperDropdown(
                             title = stringResource(id = R.string.settings_disable_su),
                             summary = stringResource(id = R.string.settings_disable_su_summary),
-                            items = suItems,
+                            items = modeItems,
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.RemoveModerator,
@@ -314,23 +309,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             }
                         )
 
-                        val umountItems = listOf(
-                            stringResource(id = R.string.settings_mode_default),
-                            stringResource(id = R.string.settings_mode_temp_disable),
-                            stringResource(id = R.string.settings_mode_always_disable),
-                        )
                         var kernelUmountMode by rememberSaveable {
                             mutableStateOf(
                                 prefs.getInt(
-                                    "kernel_umount_mode",
-                                    if (!Natives.isKernelUmountEnabled()) 1 else 0
+                                    "kernel_umount_mode", if (!Natives.isKernelUmountEnabled()) 1 else 0
                                 )
                             )
                         }
                         SuperDropdown(
                             title = stringResource(id = R.string.settings_disable_kernel_umount),
                             summary = stringResource(id = R.string.settings_disable_kernel_umount_summary),
-                            items = umountItems,
+                            items = modeItems,
                             leftAction = {
                                 Icon(
                                     Icons.Rounded.RemoveCircle,
