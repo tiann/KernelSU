@@ -231,9 +231,9 @@ pub fn list_features() -> Result<()> {
     }
 
     let all_features = [
-        FeatureId::SuCompat, 
-        FeatureId::KernelUmount, 
-        FeatureId::EnhancedSecurity
+        FeatureId::SuCompat,
+        FeatureId::KernelUmount,
+        FeatureId::EnhancedSecurity,
     ];
 
     for feature_id in all_features.iter() {
@@ -294,9 +294,9 @@ pub fn save_config() -> Result<()> {
     let mut features = HashMap::new();
 
     let all_features = [
-        FeatureId::SuCompat, 
-        FeatureId::KernelUmount, 
-        FeatureId::EnhancedSecurity
+        FeatureId::SuCompat,
+        FeatureId::KernelUmount,
+        FeatureId::EnhancedSecurity,
     ];
 
     for feature_id in all_features.iter() {
