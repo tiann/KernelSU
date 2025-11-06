@@ -363,7 +363,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
-    if (ksu_is_allow_uid(new_uid.val)) {
+    if (ksu_is_allow_uid_for_current(new_uid.val)) {
         if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
             current->seccomp.filter) {
             spin_lock_irq(&current->sighand->siglock);
