@@ -90,7 +90,10 @@ static uint8_t allow_list_bitmap[PAGE_SIZE] __read_mostly __aligned(PAGE_SIZE);
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
-void save_allow_list(void);
+static struct work_struct ksu_save_work;
+static struct work_struct ksu_load_work;
+
+bool persistent_allow_list(void);
 
 void ksu_show_allow_list(void)
 {
@@ -250,7 +253,7 @@ out:
     }
 
     if (persist)
-        save_allow_list();
+        persistent_allow_list();
 
     return result;
 }
@@ -350,8 +353,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
     return true;
 }
 
-// make sure allow list works cross boot
-void save_allow_list(void)
+void do_save_allow_list(struct work_struct *work)
 {
     u32 magic = FILE_MAGIC;
     u32 version = FILE_FORMAT_VERSION;
@@ -393,7 +395,7 @@ exit:
     filp_close(fp, 0);
 }
 
-void ksu_load_allow_list()
+void do_load_allow_list(struct work_struct *work)
 {
     loff_t off = 0;
     ssize_t ret = 0;
@@ -478,8 +480,19 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
     mutex_unlock(&allowlist_mutex);
 
     if (modified) {
-        save_allow_list();
+        persistent_allow_list();
     }
+}
+
+// make sure allow list works cross boot
+bool persistent_allow_list(void)
+{
+    return ksu_queue_work(&ksu_save_work);
+}
+
+bool ksu_load_allow_list(void)
+{
+    return ksu_queue_work(&ksu_load_work);
 }
 
 void ksu_allowlist_init(void)
@@ -494,6 +507,9 @@ void ksu_allowlist_init(void)
 
     INIT_LIST_HEAD(&allow_list);
 
+    INIT_WORK(&ksu_save_work, do_save_allow_list);
+    INIT_WORK(&ksu_load_work, do_load_allow_list);
+
     init_default_profiles();
 }
 
@@ -502,7 +518,7 @@ void ksu_allowlist_exit(void)
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;
 
-    save_allow_list();
+    do_save_allow_list(NULL);
 
     // free allowlist
     mutex_lock(&allowlist_mutex);
