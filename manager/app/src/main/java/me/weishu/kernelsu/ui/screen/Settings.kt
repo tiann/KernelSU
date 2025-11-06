@@ -223,6 +223,29 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 }
                             }
                         )
+
+                        var isEnhancedSecurityEnabled by rememberSaveable {
+                            mutableStateOf(Natives.isEnhancedSecurityEnabled())
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_enable_enhanced_security),
+                            summary = stringResource(id = R.string.settings_enable_enhanced_security_summary),
+                            leftAction = {
+                                Icon(
+                                    Icons.Rounded.Fence,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_enable_enhanced_security),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = isEnhancedSecurityEnabled,
+                            onCheckedChange = { checked: Boolean ->
+                                if (Natives.setEnhancedSecurityEnabled(checked)) {
+                                    isEnhancedSecurityEnabled = checked
+                                }
+                            }
+                        )
+
                         var isSuDisabled by rememberSaveable {
                             mutableStateOf(!Natives.isSuEnabled())
                         }

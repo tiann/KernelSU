@@ -145,6 +145,8 @@
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_disable_kernel_umount">Disable kernel umount</string>
     <string name="settings_disable_kernel_umount_summary">Temporarily disable kernel-level umount behavior controlled by KernelSU.</string>
+    <string name="settings_enable_enhanced_security">Enable enhanced security</string>
+    <string name="settings_enable_enhanced_security_summary">Temporarily enable stricter security policies.</string>
     <string name="processing">Processing…</string>
     <string name="refresh_pulling">Pull down to refresh</string>
     <string name="refresh_release">Release to refresh</string>
