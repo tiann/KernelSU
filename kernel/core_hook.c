@@ -557,6 +557,9 @@ void __init ksu_core_init(void)
     if (ksu_register_feature_handler(&kernel_umount_handler)) {
         pr_err("Failed to register umount feature handler\n");
     }
+    if (ksu_register_feature_handler(&enhanced_security_handler)) {
+        pr_err("Failed to register enhanced security feature handler\n");
+    }
 }
 
 void ksu_core_exit(void)
@@ -566,4 +569,5 @@ void ksu_core_exit(void)
     ksu_kprobe_exit();
 #endif
     ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);
+    ksu_unregister_feature_handler(KSU_FEATURE_ENHANCED_SECURITY);
 }
