@@ -19,8 +19,6 @@ object Natives {
     // 12143: breaking: new supercall impl
     const val MINIMAL_SUPPORTED_KERNEL = 22000
 
-    // 12040: Support disable sucompat mode
-    const val MINIMAL_SUPPORTED_SU_COMPAT = 12040
     const val KERNEL_SU_DOMAIN = "u:r:su:s0"
 
     const val ROOT_UID = 0
