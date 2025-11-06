@@ -85,6 +85,7 @@ class ModuleViewModel : ViewModel() {
 
     var sortEnabledFirst by mutableStateOf(false)
     var sortActionFirst by mutableStateOf(false)
+    var checkModuleUpdate by mutableStateOf(true)
 
     private val updateInfoMutex = Mutex()
     private var updateInfoCache: MutableMap<String, ModuleUpdateCache> = mutableMapOf()
@@ -221,6 +222,8 @@ class ModuleViewModel : ViewModel() {
     }
 
     suspend fun syncModuleUpdateInfo(modules: List<ModuleInfo>) {
+        if (!checkModuleUpdate) return
+
         val modulesToFetch = mutableListOf<Triple<String, ModuleInfo, ModuleUpdateSignature>>()
         val removedIds = mutableSetOf<String>()
 

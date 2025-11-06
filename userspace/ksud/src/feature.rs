@@ -16,6 +16,7 @@ const FEATURE_VERSION: u32 = 1;
 pub enum FeatureId {
     SuCompat = 0,
     KernelUmount = 1,
+    EnhancedSecurity = 2,
 }
 
 impl FeatureId {
@@ -23,6 +24,7 @@ impl FeatureId {
         match id {
             0 => Some(FeatureId::SuCompat),
             1 => Some(FeatureId::KernelUmount),
+            2 => Some(FeatureId::EnhancedSecurity),
             _ => None,
         }
     }
@@ -31,6 +33,7 @@ impl FeatureId {
         match self {
             FeatureId::SuCompat => "su_compat",
             FeatureId::KernelUmount => "kernel_umount",
+            FeatureId::EnhancedSecurity => "enhanced_security",
         }
     }
 
@@ -42,6 +45,9 @@ impl FeatureId {
             FeatureId::KernelUmount => {
                 "Kernel Umount - controls whether kernel automatically unmounts modules when not needed"
             }
+            FeatureId::EnhancedSecurity => {
+                "Enhanced Security - disable non‑KSU root elevation and unauthorized UID downgrades"
+            }
         }
     }
 }
@@ -50,6 +56,7 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
     match name {
         "su_compat" | "0" => Ok(FeatureId::SuCompat),
         "kernel_umount" | "1" => Ok(FeatureId::KernelUmount),
+        "enhanced_security" | "2" => Ok(FeatureId::EnhancedSecurity),
         _ => bail!("Unknown feature: {}", name),
     }
 }
@@ -223,7 +230,11 @@ pub fn list_features() -> Result<()> {
         }
     }
 
-    let all_features = [FeatureId::SuCompat, FeatureId::KernelUmount];
+    let all_features = [
+        FeatureId::SuCompat,
+        FeatureId::KernelUmount,
+        FeatureId::EnhancedSecurity,
+    ];
 
     for feature_id in all_features.iter() {
         let id = *feature_id as u32;
@@ -282,7 +293,11 @@ pub fn load_config_and_apply() -> Result<()> {
 pub fn save_config() -> Result<()> {
     let mut features = HashMap::new();
 
-    let all_features = [FeatureId::SuCompat, FeatureId::KernelUmount];
+    let all_features = [
+        FeatureId::SuCompat,
+        FeatureId::KernelUmount,
+        FeatureId::EnhancedSecurity,
+    ];
 
     for feature_id in all_features.iter() {
         let id = *feature_id as u32;

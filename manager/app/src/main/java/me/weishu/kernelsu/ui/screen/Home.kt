@@ -66,7 +66,6 @@ import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
-import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -110,6 +109,10 @@ fun HomePager(
 ) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
+
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val checkUpdate = prefs.getBoolean("check_update", true)
 
     Scaffold(
         topBar = {
@@ -191,9 +194,6 @@ fun HomePager(
                         }
                     )
 
-                    val checkUpdate =
-                        LocalContext.current.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                            .getBoolean("check_update", true)
                     if (checkUpdate) {
                         UpdateCard()
                     }

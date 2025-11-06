@@ -173,7 +173,6 @@ class SuperUserViewModel : ViewModel() {
                 )
             }.filter { it.packageName != ksuApp.packageName }
 
-
             val comparator = compareBy<AppInfo> {
                 when {
                     it.allowSu -> 0

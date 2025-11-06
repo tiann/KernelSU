@@ -29,7 +29,9 @@ cmaker {
 val androidMinSdkVersion = 26
 val androidTargetSdkVersion = 36
 val androidCompileSdkVersion = 36
-val androidCompileNdkVersion = "28.0.13004108"
+val androidBuildToolsVersion = "36.1.0"
+val androidCompileNdkVersion by extra(libs.versions.ndk.get())
+val androidCmakeVersion by extra("3.28.0+")
 val androidSourceCompatibility = JavaVersion.VERSION_21
 val androidTargetCompatibility = JavaVersion.VERSION_21
 val managerVersionCode by extra(getVersionCode())
@@ -60,6 +62,7 @@ subprojects {
         extensions.configure(CommonExtension::class.java) {
             compileSdk = androidCompileSdkVersion
             ndkVersion = androidCompileNdkVersion
+            buildToolsVersion = androidBuildToolsVersion
 
             defaultConfig {
                 minSdk = androidMinSdkVersion
