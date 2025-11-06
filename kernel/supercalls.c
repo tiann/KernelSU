@@ -49,7 +49,7 @@ bool always_allow(void)
 
 bool allowed_for_su(void)
 {
-    bool is_allowed = is_manager() || ksu_is_allow_uid(current_uid().val);
+    bool is_allowed = is_manager() || ksu_is_allow_uid_for_current(current_uid().val);
     return is_allowed;
 }
 
@@ -204,7 +204,7 @@ static int do_uid_granted_root(void __user *arg)
         return -EFAULT;
     }
 
-    cmd.granted = ksu_is_allow_uid(cmd.uid);
+    cmd.granted = ksu_is_allow_uid_for_current(cmd.uid);
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
         pr_err("uid_granted_root: copy_to_user failed\n");

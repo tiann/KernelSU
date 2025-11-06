@@ -30,3 +30,8 @@ jobs:
     secrets: inherit
     with:
       debug: ${{ github.event.inputs.debug || false }}
+  build-a16-kernel:
+    uses: ./.github/workflows/build-kernel-a16.yml
+    secrets: inherit
+    with:
+      debug: ${{ github.event.inputs.debug || false }}
