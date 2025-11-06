@@ -357,7 +357,7 @@ private fun AppItem(
 }
 
 @Composable
-private fun StatusTag(
+fun StatusTag(
     label: String,
     backgroundColor: Color,
     contentColor: Color
@@ -374,7 +374,9 @@ private fun StatusTag(
             text = label,
             color = contentColor,
             fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }
