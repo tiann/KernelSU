@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Leer hoe KernelSU te installeren en modules te gebruiken</string>
     <string name="home_support_title">Ondersteun ons</string>
-    <string name="home_support_content">KernelSU is, en zal altijd, vrij en open source zijn. Je kan altijd je appreciatie tonen met een donatie.</string>
+    <string name="home_support_content">KernelSU is en blijft gratis en open source. U kunt ons echter laten zien dat u ons steunt door een donatie te doen.</string>
     <string name="about_source_code"><![CDATA[Bekijk source code op %1$s<br/>Vervoeg ons %2$s kanaal]]></string>
     <string name="profile" translatable="false">App profiel</string>
     <string name="profile_default">Standaard</string>
@@ -73,7 +73,7 @@
     <string name="profile_selinux_rules">Regels</string>
     <string name="module_update">Update</string>
     <string name="module_downloading">Downloaden van module: %s</string>
-    <string name="new_version_available">Nieuwe versie %s is beschikbaar,klik om te upgraden.</string>
+    <string name="new_version_available">Nieuwe versie %s is beschikbaar,klik om te upgraden!</string>
     <string name="launch_app">Start</string>
     <string name="force_stop_app">Forceer stop</string>
     <string name="restart_app">Herstart</string>
@@ -90,7 +90,7 @@
     <string name="app_profile_template_save">Redde</string>
     <string name="app_profile_template_view">Bekijken sjabloon</string>
     <string name="app_profile_template_description">Beschrijving</string>
-    <string name="settings_profile_template_summary">Beheer lokale en online sjabloon van app-profiel</string>
+    <string name="settings_profile_template_summary">Beheer lokale en online sjabloon van app-profiel.</string>
     <string name="app_profile_template_delete">Verwijderen</string>
     <string name="app_profile_template_readonly">Alleen lezen</string>
     <string name="app_profile_template_id_exist">Sjabloon ID bestaat al!</string>
@@ -102,12 +102,12 @@
     <string name="module_changelog_failed">Ophalen van wijzigingslogboek mislukt: %s</string>
     <string name="app_profile_export_to_clipboard">Exporteren naar klembord</string>
     <string name="settings_check_update">Controleer for updates</string>
-    <string name="enable_web_debugging">Schakel WebView-foutopsporing</string>
+    <string name="enable_web_debugging">WebView foutopsporing</string>
     <string name="enable_web_debugging_summary">Kan worden gebruikt om WebUI te debuggen. Schakel dit alleen in als dat nodig is.</string>
     <string name="app_profile_template_export_empty">Kan niet geen lokale sjabloon vinden om te exporteren!</string>
     <string name="app_profile_template_import_success">Succesvol geïmporteerd</string>
     <string name="open">Open</string>
-    <string name="settings_check_update_summary">Controleer automatisch op updates bij het openen van de app</string>
+    <string name="settings_check_update_summary">Controleer automatisch op updates bij het openen van de app.</string>
     <string name="direct_install">Directe installatie (aanbevolen)</string>
     <string name="select_file">Selecteer een bestand</string>
     <string name="grant_root_failed">Kan geen root verlenen!</string>
@@ -125,7 +125,7 @@
     <string name="settings_uninstall_permanent">Permanent verwijderen</string>
     <string name="settings_restore_stock_image">Herstel stockafbeelding</string>
     <string name="settings_uninstall_temporary_message">Verwijder KernelSU tijdelijk en herstel het naar de oorspronkelijke staat na de volgende herstart.</string>
-    <string name="settings_uninstall_permanent_message">Het verwijderen van KernelSU (Root en alle modules) volledig en permanent.</string>
+    <string name="settings_uninstall_permanent_message">Het verwijderen van KernelSU (root en alle modules) volledig en permanent.</string>
     <string name="settings_restore_stock_image_message">Herstel de standaard fabrieksimage (als er een back-up bestaat), die normaal gesproken vóór OTA wordt gebruikt. Als u KernelSU moet verwijderen, gebruikt u permanent verwijderen.</string>
     <string name="flashing">Knipperen</string>
     <string name="save_log">Logboeken Opslaan</string>
@@ -140,5 +140,10 @@
     <string name="su_not_allowed">Kan geen Superuser-toegang verlenen aan %s</string>
     <string name="settings_disable_su">su-compatibiliteit uitschakelen</string>
     <string name="confirm">Bevestigen</string>
-    <string name="settings_disable_su_summary">Schakel tijdelijk de mogelijkheid uit voor een app om rootrechten te verkrijgen via de opdracht ⁠su (Bestaande rootprocessen worden hierdoor niet beïnvloed).</string>
+    <string name="settings_disable_su_summary">Schakel de mogelijkheid van een app om rootrechten te verkrijgen via de opdracht ⁠su uit (bestaande rootprocessen worden hierdoor niet beïnvloed).</string>
+    <string name="settings_module_check_update">Controleer op module-updates</string>
+    <string name="install_upload_lkm_file">Gebruik lokaal LKM-bestand</string>
+    <string name="install_only_support_ko_file">Alleen .ko bestanden worden ondersteund</string>
+    <string name="settings_disable_kernel_umount">Kernel umount uitschakelen</string>
+    <string name="settings_disable_kernel_umount_summary">Schakel het umount-gedrag op kernelniveau uit dat wordt beheerd door KernelSU.</string>
 </resources>
