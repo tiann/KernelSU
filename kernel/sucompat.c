@@ -54,25 +54,28 @@ void ksu_mark_running_process(void)
     read_unlock(&tasklist_lock);
 }
 
-static void mark_all_process(void)
+static void handle_process_mark(bool mark)
 {
     struct task_struct *p, *t;
     read_lock(&tasklist_lock);
-    for_each_process_thread (p, t) {
-        ksu_set_task_tracepoint_flag(t);
+    for_each_process_thread(p, t) {
+        if (mark)
+            ksu_set_task_tracepoint_flag(t);
+        else
+            ksu_clear_task_tracepoint_flag(t);
     }
     read_unlock(&tasklist_lock);
-    pr_info("sucompat: unmark all user process done!\n");
+}
+
+static void mark_all_process(void)
+{
+    handle_process_mark(true);
+    pr_info("sucompat: mark all user process done!\n");
 }
 
 static void unmark_all_process(void)
 {
-    struct task_struct *p, *t;
-    read_lock(&tasklist_lock);
-    for_each_process_thread (p, t) {
-        ksu_clear_task_tracepoint_flag(t);
-    }
-    read_unlock(&tasklist_lock);
+    handle_process_mark(false);
     pr_info("sucompat: unmark all user process done!\n");
 }
 
