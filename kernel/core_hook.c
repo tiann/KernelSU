@@ -364,7 +364,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
             }
             // disallow appuid decrease to any other uid if it is allowed to su
             if (is_appuid(old_uid)) {
-                if (new_uid.val < old_uid.val && ksu_is_allow_uid_for_current(old_uid.val)) {
+                if (new_uid.val < old_uid.val && !ksu_is_allow_uid_for_current(old_uid.val)) {
                     pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
                         current->pid, current->comm, old_uid.val, new_uid.val);
                     send_sig(SIGKILL, current, 0);
