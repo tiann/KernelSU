@@ -1,4 +1,5 @@
 #include "linux/compiler.h"
+#include "linux/printk.h"
 #include "linux/sched.h"
 #include "selinux/selinux.h"
 #include <linux/dcache.h>
@@ -334,9 +335,11 @@ static struct kprobe *pts_kp = NULL;
 #ifdef CONFIG_KRETPROBES
 
 static int tracepoint_reg_count = 0;
+static DEFINE_MUTEX(tracepoint_reg_mutex);
 
 static int syscall_regfunc_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
+    mutex_lock(&tracepoint_reg_mutex);
     if (tracepoint_reg_count < 1) {
         // while install our tracepoint, mark our processes
         unmark_all_process();
@@ -346,11 +349,13 @@ static int syscall_regfunc_handler(struct kretprobe_instance *ri, struct pt_regs
         mark_all_process();
     }
     tracepoint_reg_count++;
+    mutex_unlock(&tracepoint_reg_mutex);
     return 0;
 }
 
 static int syscall_unregfunc_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
+    mutex_lock(&tracepoint_reg_mutex);
     if (tracepoint_reg_count <= 1) {
         // while uninstall our tracepoint, unmark all processes
         unmark_all_process();
@@ -360,6 +365,7 @@ static int syscall_unregfunc_handler(struct kretprobe_instance *ri, struct pt_re
         ksu_mark_running_process();
     }
     tracepoint_reg_count--;
+    mutex_unlock(&tracepoint_reg_mutex);
     return 0;
 }
 
