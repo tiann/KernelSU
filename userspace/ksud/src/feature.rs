@@ -230,7 +230,11 @@ pub fn list_features() -> Result<()> {
         }
     }
 
-    let all_features = [FeatureId::SuCompat, FeatureId::KernelUmount, FeatureId::EnhancedSecurity];
+    let all_features = [
+        FeatureId::SuCompat, 
+        FeatureId::KernelUmount, 
+        FeatureId::EnhancedSecurity
+    ];
 
     for feature_id in all_features.iter() {
         let id = *feature_id as u32;
@@ -289,7 +293,11 @@ pub fn load_config_and_apply() -> Result<()> {
 pub fn save_config() -> Result<()> {
     let mut features = HashMap::new();
 
-    let all_features = [FeatureId::SuCompat, FeatureId::KernelUmount, FeatureId::EnhancedSecurity];
+    let all_features = [
+        FeatureId::SuCompat, 
+        FeatureId::KernelUmount, 
+        FeatureId::EnhancedSecurity
+    ];
 
     for feature_id in all_features.iter() {
         let id = *feature_id as u32;
