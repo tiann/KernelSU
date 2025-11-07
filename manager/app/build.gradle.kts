@@ -131,4 +131,5 @@ dependencies {
 
     implementation(libs.miuix)
     implementation(libs.haze)
+    implementation(libs.capsule)
 }

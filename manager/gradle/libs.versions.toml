@@ -16,8 +16,9 @@ ndk = "29.0.13599879-beta2"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
-miuix = "0.5.2"
+miuix = "0.6.0"
 haze = "1.6.10"
+capsule = "2.1.1"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -69,3 +70,5 @@ lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" }
 
 haze = { module = "dev.chrisbanes.haze:haze-android", version.ref = "haze" }
+
+capsule = { module = "io.github.kyant0:capsule", version.ref = "capsule" }
