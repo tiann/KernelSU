@@ -334,6 +334,42 @@ static struct kprobe *pts_kp = NULL;
 
 #ifdef CONFIG_KRETPROBES
 
+static struct kretprobe *init_kretprobe(const char *name,
+                                        kretprobe_handler_t handler)
+{
+    struct kretprobe *rp = kzalloc(sizeof(struct kretprobe), GFP_KERNEL);
+    if (!rp)
+        return NULL;
+    rp->kp.symbol_name = name;
+    rp->handler = handler;
+    rp->data_size = 0;
+    rp->maxactive = 0;
+
+    int ret = register_kretprobe(rp);
+    pr_info("sucompat: register_%s kretprobe: %d\n", name, ret);
+    if (ret) {
+        kfree(rp);
+        return NULL;
+    }
+
+    return rp;
+}
+
+static void destroy_kretprobe(struct kretprobe **rp_ptr)
+{
+    struct kretprobe *rp = *rp_ptr;
+    if (!rp)
+        return;
+    unregister_kretprobe(rp);
+    synchronize_rcu();
+    kfree(rp);
+    *rp_ptr = NULL;
+}
+
+#endif
+
+#ifdef CONFIG_KRETPROBES
+
 static int tracepoint_reg_count = 0;
 static DEFINE_MUTEX(tracepoint_reg_mutex);
 
@@ -369,26 +405,8 @@ static int syscall_unregfunc_handler(struct kretprobe_instance *ri, struct pt_re
     return 0;
 }
 
-struct kretprobe syscall_regfunc_rp = {
-    .kp.symbol_name = "syscall_regfunc",
-    .handler = syscall_regfunc_handler,
-    .entry_handler = NULL,
-    .data_size = 0,
-    .maxactive = 0,
-};
-
-struct kretprobe syscall_unregfunc_rp = {
-    .kp.symbol_name = "syscall_unregfunc",
-    .handler = syscall_unregfunc_handler,
-    .entry_handler = NULL,
-    .data_size = 0,
-    .maxactive = 0,
-};
-#endif
-
-#ifdef CONFIG_KRETPROBES
-static bool kret_regfunc_registered = false;
-static bool kret_unregfunc_registered = false;
+static struct kretprobe *syscall_regfunc_rp = NULL;
+static struct kretprobe *syscall_unregfunc_rp = NULL;
 #endif
 
 void ksu_sucompat_enable()
@@ -401,22 +419,10 @@ void ksu_sucompat_enable()
 #endif
 
 #ifdef CONFIG_KRETPROBES
-    ret = register_kretprobe(&syscall_regfunc_rp);
-    if (ret) {
-        pr_err("sucompat: failed to register syscall_regfunc kretprobe: %d\n", ret);
-        kret_regfunc_registered = false;
-    } else {
-        pr_info("sucompat: syscall_regfunc kretprobe registered\n");
-        kret_regfunc_registered = true;
-    }
-    ret = register_kretprobe(&syscall_unregfunc_rp);
-    if (ret) {
-        pr_err("sucompat: failed to register syscall_unregfunc kretprobe: %d\n", ret);
-        kret_unregfunc_registered = false;
-    } else {
-        pr_info("sucompat: syscall_unregfunc kretprobe registered\n");
-        kret_unregfunc_registered = true;
-    }
+    // Register kretprobe for syscall_regfunc
+    syscall_regfunc_rp = init_kretprobe("syscall_regfunc", syscall_regfunc_handler);
+    // Register kretprobe for syscall_unregfunc
+    syscall_unregfunc_rp = init_kretprobe("syscall_unregfunc", syscall_unregfunc_handler);
 #endif
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
@@ -443,16 +449,8 @@ void ksu_sucompat_disable()
 #endif
 
 #ifdef CONFIG_KRETPROBES
-    if (kret_regfunc_registered) {
-        unregister_kretprobe(&syscall_regfunc_rp);
-        kret_regfunc_registered = false;
-        pr_info("sucompat: syscall_regfunc kretprobe unregistered\n");
-    }
-    if (kret_unregfunc_registered) {
-        unregister_kretprobe(&syscall_unregfunc_rp);
-        kret_unregfunc_registered = false;
-        pr_info("sucompat: syscall_unregfunc kretprobe unregistered\n");
-    }
+    destroy_kretprobe(&syscall_regfunc_rp);
+    destroy_kretprobe(&syscall_unregfunc_rp);
 #endif
 
 #ifdef CONFIG_KPROBES
