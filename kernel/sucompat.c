@@ -386,6 +386,11 @@ struct kretprobe syscall_unregfunc_rp = {
 };
 #endif
 
+#ifdef CONFIG_KRETPROBES
+static bool kret_regfunc_registered = false;
+static bool kret_unregfunc_registered = false;
+#endif
+
 void ksu_sucompat_enable()
 {
     int ret;
@@ -399,19 +404,22 @@ void ksu_sucompat_enable()
     ret = register_kretprobe(&syscall_regfunc_rp);
     if (ret) {
         pr_err("sucompat: failed to register syscall_regfunc kretprobe: %d\n", ret);
+        kret_regfunc_registered = false;
     } else {
         pr_info("sucompat: syscall_regfunc kretprobe registered\n");
+        kret_regfunc_registered = true;
     }
     ret = register_kretprobe(&syscall_unregfunc_rp);
     if (ret) {
         pr_err("sucompat: failed to register syscall_unregfunc kretprobe: %d\n", ret);
+        kret_unregfunc_registered = false;
     } else {
         pr_info("sucompat: syscall_unregfunc kretprobe registered\n");
+        kret_unregfunc_registered = true;
     }
 #endif
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
-    // Register sys_enter tracepoint for syscall interception
     ret = register_trace_sys_enter(sucompat_sys_enter_handler, NULL);
 #ifndef CONFIG_KRETPROBES
     unmark_all_process();
@@ -429,25 +437,25 @@ void ksu_sucompat_disable()
 {
     pr_info("sucompat: ksu_sucompat_disable called\n");
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
-    // Unregister sys_enter tracepoint
     unregister_trace_sys_enter(sucompat_sys_enter_handler, NULL);
     tracepoint_synchronize_unregister();
     pr_info("sucompat: sys_enter tracepoint unregistered\n");
 #endif
 
 #ifdef CONFIG_KRETPROBES
-    if (syscall_regfunc_rp.kp.addr) {
+    if (kret_regfunc_registered) {
         unregister_kretprobe(&syscall_regfunc_rp);
+        kret_regfunc_registered = false;
         pr_info("sucompat: syscall_regfunc kretprobe unregistered\n");
     }
-    if (syscall_unregfunc_rp.kp.addr) {
+    if (kret_unregfunc_registered) {
         unregister_kretprobe(&syscall_unregfunc_rp);
+        kret_unregfunc_registered = false;
         pr_info("sucompat: syscall_unregfunc kretprobe unregistered\n");
     }
 #endif
 
 #ifdef CONFIG_KPROBES
-    // Unregister pts_unix98_lookup kprobe
     destroy_kprobe(&pts_kp);
 #endif
 }
