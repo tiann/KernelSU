@@ -12,7 +12,11 @@ on:
   pull_request:
     branches: [ "main", "dev" ]
     paths:
+      - '.github/workflows/build-manager.yml'
+      - '.github/workflows/build-lkm.yml'
       - 'manager/**'
+      - 'kernel/**'
+      - 'userspace/ksud/**'
   workflow_call:
 
 jobs:
@@ -29,6 +33,16 @@ jobs:
             os: ubuntu-latest
           - target: x86_64-linux-android
             os: ubuntu-latest
+    uses: ./.github/workflows/ksud.yml
+    with:
+      target: ${{ matrix.target }}
+      os: ${{ matrix.os }}
+  
+  build-ksud-extra:
+    needs: build-lkm
+    strategy:
+      matrix:
+        include:
           - target: x86_64-pc-windows-gnu # windows pc
             os: ubuntu-latest
           - target: x86_64-apple-darwin # Intel mac
