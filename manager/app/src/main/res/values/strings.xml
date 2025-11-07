@@ -9,7 +9,7 @@
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Unsupported</string>
-    <string name="home_unsupported_reason">KernelSU only supports GKI kernels now</string>
+    <string name="home_unsupported_reason">KernelSU only supports GKI kernels now.</string>
     <string name="home_kernel">Kernel version</string>
     <string name="home_manager_version">Manager version</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -53,7 +53,7 @@
     <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
     <string name="home_learn_kernelsu">Learn KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">Learn how to install KernelSU and use modules</string>
+    <string name="home_click_to_learn_kernelsu">Learn how to install KernelSU and use modules.</string>
     <string name="home_support_title">Support Us</string>
     <string name="home_support_content">KernelSU is, and always will be, free, and open source. However, you can show us that you care by making a donation.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
@@ -72,7 +72,7 @@
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
     <string name="require_kernel_version">The current KernelSU version %d is too low for the manager to work properly. Please upgrade to version %d or higher!</string>
-    <string name="settings_umount_modules_default">Umount modules by default</string>
+    <string name="settings_umount_modules_default">Umount modules</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU to restore any modified files by the modules for this app.</string>
     <string name="profile_selinux_domain">Domain</string>
