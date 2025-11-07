@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
-import androidx.compose.material.icons.rounded.Beenhere
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.ContactPage
@@ -34,6 +33,7 @@ import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -214,10 +214,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             stringResource(id = R.string.settings_mode_always_enable),
                         )
                         var enhancedSecurityMode by rememberSaveable {
-                            mutableStateOf(
-                                prefs.getInt(
-                                    "enhanced_security_mode", if (Natives.isEnhancedSecurityEnabled()) 1 else 0
-                                )
+                            mutableIntStateOf(
+                                run {
+                                    val currentEnabled = Natives.isEnhancedSecurityEnabled()
+                                    val savedPersist = prefs.getInt("enhanced_security_mode", 0)
+                                    if (savedPersist == 2) 2 else if (currentEnabled) 1 else 0
+                                }
                             )
                         }
                         SuperDropdown(
@@ -246,7 +248,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     1 -> if (Natives.setEnhancedSecurityEnabled(false)) {
                                         execKsud("feature save", true)
                                         if (Natives.setEnhancedSecurityEnabled(true)) {
-                                            prefs.edit { putInt("enhanced_security_mode", 1) }
+                                            prefs.edit { putInt("enhanced_security_mode", 0) }
                                             enhancedSecurityMode = 1
                                         }
                                     }
@@ -262,10 +264,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         )
 
                         var suCompatMode by rememberSaveable {
-                            mutableStateOf(
-                                prefs.getInt(
-                                    "su_compat_mode", if (!Natives.isSuEnabled()) 1 else 0
-                                )
+                            mutableIntStateOf(
+                                run {
+                                    val currentEnabled = Natives.isSuEnabled()
+                                    val savedPersist = prefs.getInt("su_compat_mode", 0)
+                                    if (savedPersist == 2) 2 else if (!currentEnabled) 1 else 0
+                                }
                             )
                         }
                         SuperDropdown(
@@ -294,7 +298,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     1 -> if (Natives.setSuEnabled(true)) {
                                         execKsud("feature save", true)
                                         if (Natives.setSuEnabled(false)) {
-                                            prefs.edit { putInt("su_compat_mode", 1) }
+                                            prefs.edit { putInt("su_compat_mode", 0) }
                                             suCompatMode = 1
                                         }
                                     }
@@ -310,10 +314,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         )
 
                         var kernelUmountMode by rememberSaveable {
-                            mutableStateOf(
-                                prefs.getInt(
-                                    "kernel_umount_mode", if (!Natives.isKernelUmountEnabled()) 1 else 0
-                                )
+                            mutableIntStateOf(
+                                run {
+                                    val currentEnabled = Natives.isKernelUmountEnabled()
+                                    val savedPersist = prefs.getInt("kernel_umount_mode", 0)
+                                    if (savedPersist == 2) 2 else if (!currentEnabled) 1 else 0
+                                }
                             )
                         }
                         SuperDropdown(
@@ -342,7 +348,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     1 -> if (Natives.setKernelUmountEnabled(true)) {
                                         execKsud("feature save", true)
                                         if (Natives.setKernelUmountEnabled(false)) {
-                                            prefs.edit { putInt("kernel_umount_mode", 1) }
+                                            prefs.edit { putInt("kernel_umount_mode", 0) }
                                             kernelUmountMode = 1
                                         }
                                     }
