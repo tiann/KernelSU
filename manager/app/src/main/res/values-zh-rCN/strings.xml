@@ -76,7 +76,7 @@
     <string name="module_update">更新</string>
     <string name="module_downloading">正在下载模块：%s</string>
     <string name="module_start_downloading">开始下载：%s</string>
-    <string name="new_version_available">发现新版本：%s，点击升级。</string>
+    <string name="new_version_available">发现新版本：%s，点击升级！</string>
     <string name="launch_app">启动</string>
     <string name="force_stop_app">强制停止</string>
     <string name="restart_app">重新启动</string>
@@ -84,7 +84,7 @@
     <string name="su_not_allowed">无法授予 %s 超级用户权限</string>
     <string name="module_changelog">更新日志</string>
     <string name="settings_profile_template">App Profile 模版</string>
-    <string name="settings_profile_template_summary">管理本地和在线的 App Profile 模版</string>
+    <string name="settings_profile_template_summary">管理本地和在线的 App Profile 模版。</string>
     <string name="app_profile_template_create">创建模版</string>
     <string name="app_profile_template_edit">编辑模版</string>
     <string name="app_profile_template_id">模版 ID</string>
@@ -106,12 +106,12 @@
     <string name="app_profile_template_import_empty">剪切板为空！</string>
     <string name="module_changelog_failed">获取更新日志失败：%s</string>
     <string name="settings_check_update">检查更新</string>
-    <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版</string>
+    <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版。</string>
     <string name="settings_module_check_update">检查模块更新</string>
     <string name="grant_root_failed">获取 root 失败！</string>
     <string name="action">执行</string>
     <string name="open">打开</string>
-    <string name="enable_web_debugging">启用 WebView 调试</string>
+    <string name="enable_web_debugging">WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI 。请仅在需要时启用。</string>
     <string name="direct_install">直接安装（推荐）</string>
     <string name="select_file">选择一个文件</string>
