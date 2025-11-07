@@ -436,12 +436,14 @@ void ksu_sucompat_disable()
 #endif
 
 #ifdef CONFIG_KRETPROBES
-    // Unregister syscall_regfunc kretprobe
-    unregister_kretprobe(&syscall_regfunc_rp);
-    pr_info("sucompat: syscall_regfunc kretprobe unregistered\n");
-    // Unregister syscall_unregfunc kretprobe
-    unregister_kretprobe(&syscall_unregfunc_rp);
-    pr_info("sucompat: syscall_unregfunc kretprobe unregistered\n");
+    if (syscall_regfunc_rp.kp.addr) {
+        unregister_kretprobe(&syscall_regfunc_rp);
+        pr_info("sucompat: syscall_regfunc kretprobe unregistered\n");
+    }
+    if (syscall_unregfunc_rp.kp.addr) {
+        unregister_kretprobe(&syscall_unregfunc_rp);
+        pr_info("sucompat: syscall_unregfunc kretprobe unregistered\n");
+    }
 #endif
 
 #ifdef CONFIG_KPROBES
