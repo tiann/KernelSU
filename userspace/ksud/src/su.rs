@@ -1,16 +1,19 @@
-use anyhow::{Ok, Result};
+use crate::{
+    defs,
+    utils::{self, umask},
+};
+use anyhow::{Context, Ok, Result, bail};
 use getopts::Options;
+use libc::c_int;
+use log::{error, warn};
 use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::{ffi::CStr, process::Command};
 
-use crate::{
-    defs,
-    utils::{self, umask},
-};
-
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use crate::ksucalls::get_wrapped_fd;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process::getuid,
@@ -61,6 +64,29 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
         let uid = unsafe { Uid::from_raw(uid) };
         set_thread_res_gid(gid, gid, gid).ok();
         set_thread_res_uid(uid, uid, uid).ok();
+    }
+}
+
+#[cfg(target_os = "android")]
+fn wrap_tty(fd: c_int) {
+    let inner_fn = move || -> Result<()> {
+        if unsafe { libc::isatty(fd) != 1 } {
+            warn!("not a tty: {fd}");
+            return Ok(());
+        }
+        let new_fd = get_wrapped_fd(fd).context("get_wrapped_fd")?;
+        if unsafe { libc::dup2(new_fd, fd) } == -1 {
+            bail!("dup {new_fd} -> {fd} errno: {}", unsafe {
+                *libc::__errno()
+            });
+        } else {
+            unsafe { libc::close(new_fd) };
+            Ok(())
+        }
+    };
+
+    if let Err(e) = inner_fn() {
+        error!("wrap tty {fd}: {e:?}");
     }
 }
 
@@ -124,6 +150,7 @@ pub fn root_shell() -> Result<()> {
         "Specify a supplementary group. The first specified supplementary group is also used as a primary group if the option -g is not specified.",
         "GROUP",
     );
+    opts.optflag("W", "no-wrapper", "don't use ksu fd wrapper");
 
     // Replace -cn with -z, -mm with -M for supporting getopt_long
     let args = args
@@ -167,6 +194,7 @@ pub fn root_shell() -> Result<()> {
     let mut is_login = matches.opt_present("l");
     let preserve_env = matches.opt_present("p");
     let mount_master = matches.opt_present("M");
+    let use_fd_wrapper = !matches.opt_present("W");
 
     let groups = matches
         .opt_strs("G")
@@ -263,6 +291,13 @@ pub fn root_shell() -> Result<()> {
             #[cfg(any(target_os = "linux", target_os = "android"))]
             if mount_master {
                 let _ = utils::switch_mnt_ns(1);
+            }
+
+            #[cfg(target_os = "android")]
+            if use_fd_wrapper {
+                wrap_tty(0);
+                wrap_tty(1);
+                wrap_tty(2);
             }
 
             set_identity(uid, gid, &groups);
