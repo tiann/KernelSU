@@ -18,6 +18,8 @@
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "core_hook.h"
+#include "objsec.h"
+#include "file_wrapper.h"
 
 // Permission check functions
 bool only_manager(void)
@@ -322,6 +324,58 @@ static int do_set_feature(void __user *arg)
     return 0;
 }
 
+static int do_get_wrapper_fd(void __user *arg) {
+    if (!ksu_file_sid) {
+        return -1;
+    }
+
+    struct ksu_get_wrapper_fd_cmd cmd;
+    int ret;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("get_wrapper_fd: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    struct file* f = fget(cmd.fd);
+    if (!f) {
+        return -EBADF;
+    }
+
+    struct ksu_file_wrapper *data = ksu_create_file_wrapper(f);
+    if (data == NULL) {
+        ret = -ENOMEM;
+        goto put_orig_file;
+    }
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#define getfd_secure anon_inode_create_getfd
+#else
+#define getfd_secure anon_inode_getfd_secure
+#endif
+    ret = getfd_secure("[ksu_fdwrapper]", &data->ops, data, f->f_flags, NULL);
+    if (ret < 0) {
+        pr_err("ksu_fdwrapper: getfd failed: %d\n", ret);
+        goto put_wrapper_data;
+    }
+    struct file* pf = fget(ret);
+
+    struct inode* wrapper_inode = file_inode(pf);
+    struct inode_security_struct *sec = selinux_inode(wrapper_inode);
+    if (sec) {
+        sec->sid = ksu_file_sid;
+    }
+
+    fput(pf);
+    goto put_orig_file;
+put_wrapper_data:
+    ksu_delete_file_wrapper(data);
+put_orig_file:
+    fput(f);
+
+    return ret;
+}
+
 // IOCTL handlers mapping table
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GRANT_ROOT, .name = "GRANT_ROOT", .handler = do_grant_root, .perm_check = allowed_for_su },
@@ -338,6 +392,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_SET_APP_PROFILE, .name = "SET_APP_PROFILE", .handler = do_set_app_profile, .perm_check = only_manager },
     { .cmd = KSU_IOCTL_GET_FEATURE, .name = "GET_FEATURE", .handler = do_get_feature, .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_SET_FEATURE, .name = "SET_FEATURE", .handler = do_set_feature, .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_GET_WRAPPER_FD, .name = "GET_WRAPPER_FD", .handler = do_get_wrapper_fd, .perm_check = manager_or_root },
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
