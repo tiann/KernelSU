@@ -1,5 +1,4 @@
 use std::fs;
-use std::os::fd::OwnedFd;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
@@ -230,6 +229,7 @@ pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     Ok(())
 }
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
     let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
     let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &mut cmd as *mut _)?;
