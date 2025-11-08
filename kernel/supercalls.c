@@ -102,6 +102,7 @@ static int do_report_event(void __user *arg)
         if (!boot_complete_lock) {
             boot_complete_lock = true;
             pr_info("boot_complete triggered\n");
+            on_boot_completed();
         }
         break;
     }
