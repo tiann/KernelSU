@@ -4,6 +4,7 @@
 #include <linux/cred.h>
 #include <linux/err.h>
 #include <linux/file.h>
+#include <linux/seq_file.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
