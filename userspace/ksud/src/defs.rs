@@ -41,5 +41,3 @@ pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_N
 pub const KSU_BACKUP_DIR: &str = WORKING_DIR;
 pub const KSU_BACKUP_FILE_PREFIX: &str = "ksu_backup_";
 pub const BACKUP_FILENAME: &str = "stock_image.sha1";
-
-pub const NO_FD_WRAPPER_PATH: &str = concatcp!(WORKING_DIR, ".nofdwrapper");

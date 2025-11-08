@@ -16,7 +16,7 @@ const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0004b04; // _IOC(_IOC_READ|_IOC_WRITE, 'K
 const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80004b05; // _IOC(_IOC_READ, 'K', 5, 0)
 const KSU_IOCTL_GET_FEATURE: u32 = 0xc0004b0d; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
 const KSU_IOCTL_SET_FEATURE: u32 = 0x40004b0e; // _IOC(_IOC_WRITE, 'K', 14, 0)
-const KSU_IOCTL_GET_WRAPPER_FD: u32 = 0x00006f10; // _IOC(_IOC_NONE, 'K', 10000, 0)
+const KSU_IOCTL_PROXY_FILE: u32 = 0x00004b0f; // _IOC(_IOC_NONE, 'K', 15, 0)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -60,7 +60,7 @@ struct SetFeatureCmd {
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
-struct GetWrapperFdCmd {
+struct ProxyFileCmd {
     fd: i32,
     flags: u32,
 }
@@ -230,8 +230,8 @@ pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
-    let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
-    let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &mut cmd as *mut _)?;
+pub fn proxy_file(fd: RawFd) -> std::io::Result<RawFd> {
+    let mut cmd = ProxyFileCmd { fd, flags: 0 };
+    let result = ksuctl(KSU_IOCTL_PROXY_FILE, &mut cmd as *mut _)?;
     Ok(result)
 }

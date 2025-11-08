@@ -73,7 +73,7 @@ struct ksu_set_feature_cmd {
     __u64 value; // Input: feature value/state to set
 };
 
-struct ksu_get_wrapper_fd_cmd {
+struct ksu_proxy_file_cmd {
     __u32 fd;
     __u32 flags; // CLOEXEC
 };
@@ -93,7 +93,7 @@ struct ksu_get_wrapper_fd_cmd {
 #define KSU_IOCTL_SET_APP_PROFILE _IOC(_IOC_WRITE, 'K', 12, 0)
 #define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
 #define KSU_IOCTL_SET_FEATURE _IOC(_IOC_WRITE, 'K', 14, 0)
-#define KSU_IOCTL_GET_WRAPPER_FD _IOC(_IOC_NONE, 'K', 10000, 0)
+#define KSU_IOCTL_PROXY_FILE _IOC(_IOC_NONE, 'K', 15, 0)
 
 // IOCTL handler types
 typedef int (*ksu_ioctl_handler_t)(void __user *arg);
