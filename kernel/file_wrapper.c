@@ -10,14 +10,8 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
-#include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
-#include "ksu.h"
-#include "ksud.h"
-#include "manager.h"
 #include "selinux/selinux.h"
-#include "core_hook.h"
-#include "objsec.h"
 
 #include "file_wrapper.h"
 
