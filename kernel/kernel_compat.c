@@ -8,12 +8,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "kernel_compat.h"
 
-long ksu_strncpy_from_user_nofault(char *dst, const void __user *unsafe_addr,
-                   long count)
-{
-    return strncpy_from_user_nofault(dst, unsafe_addr, count);
-}
-
 struct action_cache {
     DECLARE_BITMAP(allow_native, SECCOMP_ARCH_NATIVE_NR);
 #ifdef SECCOMP_ARCH_COMPAT
