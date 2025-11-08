@@ -23,7 +23,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
 #include "selinux/selinux.h"
-#include "sucompat.h"
+#include "hook_manager.h"
 
 bool ksu_module_mounted __read_mostly = false;
 

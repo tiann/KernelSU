@@ -17,7 +17,6 @@
 #include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
-#include "core_hook.h"
 #include "objsec.h"
 #include "file_wrapper.h"
 

@@ -5,13 +5,10 @@
 #include <linux/workqueue.h>
 
 #include "allowlist.h"
-#include "arch.h"
-#include "core_hook.h"
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
-#include "ksu.h"
 #include "throne_tracker.h"
-#include "sucompat.h"
+#include "hook_manager.h"
 #include "ksud.h"
 #include "supercalls.h"
 
@@ -31,14 +28,13 @@ int __init kernelsu_init(void)
 
     ksu_supercalls_init();
 
-    ksu_core_init();
+    ksu_hook_manager_init();
 
     ksu_allowlist_init();
 
     ksu_throne_tracker_init();
 
 #ifdef CONFIG_KPROBES
-    ksu_sucompat_init();
     ksu_ksud_init();
 #else
     pr_alert("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html");
@@ -63,10 +59,9 @@ void kernelsu_exit(void)
 
 #ifdef CONFIG_KPROBES
     ksu_ksud_exit();
-    ksu_sucompat_exit();
 #endif
 
-    ksu_core_exit();
+    ksu_hook_manager_exit();
     ksu_feature_exit();
 }
 

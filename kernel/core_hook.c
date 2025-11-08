@@ -29,7 +29,6 @@
 #include <linux/version.h>
 
 #include "allowlist.h"
-#include "arch.h"
 #include "core_hook.h"
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
@@ -39,6 +38,7 @@
 #include "supercalls.h"
 #include "sucompat.h"
 #include "ksud.h"
+#include "hook_manager.h"
 
 static bool ksu_kernel_umount_enabled = true;
 static bool ksu_enhanced_security_enabled = false;
@@ -103,13 +103,13 @@ static inline bool is_unsupported_uid(uid_t uid)
 
 // ksu_handle_prctl removed - now using ioctl via reboot hook
 
-static bool is_appuid(kuid_t uid)
+static bool is_appuid(uid_t uid)
 {
 #define PER_USER_RANGE 100000
 #define FIRST_APPLICATION_UID 10000
 #define LAST_APPLICATION_UID 19999
 
-    uid_t appid = uid.val % PER_USER_RANGE;
+    uid_t appid = uid % PER_USER_RANGE;
     return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
 }
 
@@ -193,34 +193,30 @@ static void umount_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
-int ksu_handle_setuid(struct cred *new, const struct cred *old)
+int ksu_handle_setuid(uid_t ruid, uid_t euid, uid_t suid)
 {
     struct umount_tw *tw;
-    if (!new || !old) {
-        return 0;
-    }
+    uid_t new_uid = ruid;
+	uid_t old_uid = current_uid().val;
+    // pr_info("handle_setuid from %d to %d\n", old_uid, new_uid);
 
-    kuid_t new_uid = new->uid;
-    kuid_t old_uid = old->uid;
-    // pr_info("handle_setuid from %d to %d\n", old_uid.val, new_uid.val);
-
-    if (0 != old_uid.val) {
+    if (0 != old_uid) {
         // old process is not root, ignore it.
         if (ksu_enhanced_security_enabled) {
             // disallow any non-ksu domain escalation from non-root to root!
-            if (unlikely(new_uid.val) == 0) {
+            if (unlikely(new_uid) == 0) {
                 if (!is_ksu_domain()) {
                     pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                        current->pid, current->comm, old_uid.val, new_uid.val);
+                        current->pid, current->comm, old_uid, new_uid);
                     force_sig(SIGKILL);
                     return 0;
                 }
             }
             // disallow appuid decrease to any other uid if it is allowed to su
             if (is_appuid(old_uid)) {
-                if (new_uid.val < old_uid.val && !ksu_is_allow_uid_for_current(old_uid.val)) {
+                if (new_uid < old_uid && !ksu_is_allow_uid_for_current(old_uid)) {
                     pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                        current->pid, current->comm, old_uid.val, new_uid.val);
+                        current->pid, current->comm, old_uid, new_uid);
                     force_sig(SIGKILL);
                     return 0;
                 }
@@ -229,24 +225,24 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
-    if (new_uid.val == 2000) {
+    if (new_uid == 2000) {
         if (ksu_su_compat_enabled) {
             ksu_set_task_tracepoint_flag(current);
         }
     }
 
-    if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
-        // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
+    if (!is_appuid(new_uid) || is_unsupported_uid(new_uid)) {
+        // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
         return 0;
     }
 
     // if on private space, see if its possibly the manager
-    if (new_uid.val > 100000 && new_uid.val % 100000 == ksu_get_manager_uid()) {
-        ksu_set_manager_uid(new_uid.val);
+    if (new_uid > 100000 && new_uid % 100000 == ksu_get_manager_uid()) {
+        ksu_set_manager_uid(new_uid);
     }
 
-    if (ksu_get_manager_uid() == new_uid.val) {
-        pr_info("install fd for: %d\n", new_uid.val);
+    if (ksu_get_manager_uid() == new_uid) {
+        pr_info("install fd for: %d\n", new_uid);
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
@@ -257,7 +253,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
-    if (ksu_is_allow_uid_for_current(new_uid.val)) {
+    if (ksu_is_allow_uid_for_current(new_uid)) {
         if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
             current->seccomp.filter) {
             spin_lock_irq(&current->sighand->siglock);
@@ -283,7 +279,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
         return 0;
     }
 
-    if (!ksu_uid_should_umount(new_uid.val)) {
+    if (!ksu_uid_should_umount(new_uid)) {
         return 0;
     } else {
 #ifdef CONFIG_KSU_DEBUG
@@ -294,14 +290,14 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     // check old process's selinux context, if it is not zygote, ignore it!
     // because some su apps may setuid to untrusted_app but they are in global mount namespace
     // when we umount for such process, that is a disaster!
-    bool is_zygote_child = is_zygote(old);
+    bool is_zygote_child = is_zygote(get_current_cred());
     if (!is_zygote_child) {
         pr_info("handle umount ignore non zygote child: %d\n", current->pid);
         return 0;
     }
 #ifdef CONFIG_KSU_DEBUG
     // umount the target mnt
-    pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val, current->pid);
+    pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
 #endif
 
     tw = kmalloc(sizeof(*tw), GFP_ATOMIC);
@@ -323,91 +319,24 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
     return 0;
 }
 
-// Init functons - kprobe hooks
-
-// 1. Reboot hook for installing fd
-static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_handle_reboot(int magic1, int magic2, unsigned int cmd,
+		      void __user *arg)
 {
-    struct pt_regs *real_regs = PT_REAL_REGS(regs);
-    int magic1 = (int)PT_REGS_PARM1(real_regs);
-    int magic2 = (int)PT_REGS_PARM2(real_regs);
-    unsigned long arg4;
+	// Check if this is a request to install KSU fd
+	if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
+		int fd = ksu_install_fd();
+		pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
 
-    // Check if this is a request to install KSU fd
-    if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
-        int fd = ksu_install_fd();
-        pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+		if (arg && copy_to_user(arg, &fd, sizeof(fd))) {
+			pr_err("install ksu fd reply err\n");
+		}
+	}
 
-        arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
-        if (copy_to_user((int *)arg4, &fd, sizeof(fd))) {
-            pr_err("install ksu fd reply err\n");
-        }
-    }
-
-    return 0;
-}
-
-static struct kprobe reboot_kp = {
-    .symbol_name = REBOOT_SYMBOL,
-    .pre_handler = reboot_handler_pre,
-};
-
-// 2. cap_task_fix_setuid hook for handling setuid
-static int cap_task_fix_setuid_handler_pre(struct kprobe *p,
-                                           struct pt_regs *regs)
-{
-    struct cred *new = (struct cred *)PT_REGS_PARM1(regs);
-    const struct cred *old = (const struct cred *)PT_REGS_PARM2(regs);
-
-    ksu_handle_setuid(new, old);
-
-    return 0;
-}
-
-static struct kprobe cap_task_fix_setuid_kp = {
-    .symbol_name = "cap_task_fix_setuid",
-    .pre_handler = cap_task_fix_setuid_handler_pre,
-};
-
-__maybe_unused int ksu_kprobe_init(void)
-{
-    int rc = 0;
-
-    // Register reboot kprobe
-    rc = register_kprobe(&reboot_kp);
-    if (rc) {
-        pr_err("reboot kprobe failed: %d\n", rc);
-        return rc;
-    }
-    pr_info("reboot kprobe registered successfully\n");
-
-    // Register cap_task_fix_setuid kprobe
-    rc = register_kprobe(&cap_task_fix_setuid_kp);
-    if (rc) {
-        pr_err("cap_task_fix_setuid kprobe failed: %d\n", rc);
-        unregister_kprobe(&reboot_kp);
-        return rc;
-    }
-    pr_info("cap_task_fix_setuid kprobe registered successfully\n");
-
-    return 0;
-}
-
-__maybe_unused int ksu_kprobe_exit(void)
-{
-    unregister_kprobe(&cap_task_fix_setuid_kp);
-    unregister_kprobe(&reboot_kp);
-    return 0;
+	return 0;
 }
 
 void __init ksu_core_init(void)
 {
-#ifdef CONFIG_KPROBES
-    int rc = ksu_kprobe_init();
-    if (rc) {
-        pr_err("ksu_kprobe_init failed: %d\n", rc);
-    }
-#endif
     if (ksu_register_feature_handler(&kernel_umount_handler)) {
         pr_err("Failed to register umount feature handler\n");
     }
@@ -419,9 +348,6 @@ void __init ksu_core_init(void)
 void ksu_core_exit(void)
 {
     pr_info("ksu_core_exit\n");
-#ifdef CONFIG_KPROBES
-    ksu_kprobe_exit();
-#endif
     ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);
     ksu_unregister_feature_handler(KSU_FEATURE_ENHANCED_SECURITY);
 }
