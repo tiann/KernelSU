@@ -3,7 +3,7 @@
 
 #include "linux/types.h"
 #include "linux/version.h"
-#include "linux/sched.h"
+#include "linux/cred.h"
 
 void setup_selinux(const char *);
 

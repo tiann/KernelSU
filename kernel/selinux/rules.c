@@ -6,7 +6,7 @@
 #include "selinux.h"
 #include "sepolicy.h"
 #include "ss/services.h"
-#include "linux/lsm_audit.h"
+#include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "xfrm.h"
 
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS

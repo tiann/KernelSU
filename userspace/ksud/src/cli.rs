@@ -180,6 +180,39 @@ enum Debug {
 
     /// For testing
     Test,
+
+    /// Process mark management
+    Mark {
+        #[command(subcommand)]
+        command: MarkCommand,
+    },
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum MarkCommand {
+    /// Get mark status for a process (or all)
+    Get {
+        /// target pid (0 for total count)
+        #[arg(default_value = "0")]
+        pid: i32,
+    },
+
+    /// Mark a process
+    Mark {
+        /// target pid (0 for all processes)
+        #[arg(default_value = "0")]
+        pid: i32,
+    },
+
+    /// Unmark a process
+    Unmark {
+        /// target pid (0 for all processes)
+        #[arg(default_value = "0")]
+        pid: i32,
+    },
+
+    /// Refresh mark for all running processes
+    Refresh,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -404,6 +437,12 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Test => assets::ensure_binaries(false),
+            Debug::Mark { command } => match command {
+                MarkCommand::Get { pid } => debug::mark_get(pid),
+                MarkCommand::Mark { pid } => debug::mark_set(pid),
+                MarkCommand::Unmark { pid } => debug::mark_unset(pid),
+                MarkCommand::Refresh => debug::mark_refresh(),
+            },
         },
 
         Commands::BootPatch {

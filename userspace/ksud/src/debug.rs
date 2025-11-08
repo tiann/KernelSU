@@ -1,8 +1,10 @@
-use anyhow::{Context, Ok, Result, ensure};
+use anyhow::{Context, Ok, Result, bail, ensure};
 use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+
+use crate::ksucalls;
 
 const KERNEL_PARAM_PATH: &str = "/sys/module/kernelsu";
 
@@ -48,5 +50,45 @@ pub fn set_manager(pkg: &str) -> Result<()> {
     set_kernel_param(uid)?;
     // force-stop it
     let _ = Command::new("am").args(["force-stop", pkg]).status();
+    Ok(())
+}
+
+/// Get mark status for a process
+pub fn mark_get(pid: i32) -> Result<()> {
+    let result = ksucalls::mark_get(pid)?;
+    if pid == 0 {
+        bail!("Please specify a pid to get its mark status");
+    } else {
+        println!("Process {} mark status: {}", pid, if result != 0 { "marked" } else { "unmarked" });
+    }
+    Ok(())
+}
+
+/// Mark a process
+pub fn mark_set(pid: i32) -> Result<()> {
+    ksucalls::mark_set(pid)?;
+    if pid == 0 {
+        println!("All processes marked successfully");
+    } else {
+        println!("Process {} marked successfully", pid);
+    }
+    Ok(())
+}
+
+/// Unmark a process
+pub fn mark_unset(pid: i32) -> Result<()> {
+    ksucalls::mark_unset(pid)?;
+    if pid == 0 {
+        println!("All processes unmarked successfully");
+    } else {
+        println!("Process {} unmarked successfully", pid);
+    }
+    Ok(())
+}
+
+/// Refresh mark for all running processes
+pub fn mark_refresh() -> Result<()> {
+    ksucalls::mark_refresh()?;
+    println!("Refreshed mark for all running processes");
     Ok(())
 }
