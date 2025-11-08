@@ -156,6 +156,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         }
         ksu_set_task_tracepoint_flag(current);
     } else {
+        pr_info("clear tracepoint flag: %d\n", new_uid);
         ksu_clear_task_tracepoint_flag(current);
     }
 
