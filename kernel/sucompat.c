@@ -15,7 +15,7 @@
 #include "ksud.h"
 #include "sucompat.h"
 #include "app_profile.h"
-#include "hook_manager.h"
+#include "syscall_hook_manager.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"

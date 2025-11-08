@@ -11,7 +11,7 @@
 #include "app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
-#include "hook_manager.h"
+#include "syscall_hook_manager.h"
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
 

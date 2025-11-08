@@ -6,14 +6,15 @@
 #include <linux/tracepoint.h>
 #include <asm/syscall.h>
 #include <linux/ptrace.h>
+#include <linux/slab.h>
 #include <trace/events/syscalls.h>
 
 #include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
-#include "hook_manager.h"
+#include "syscall_hook_manager.h"
 #include "sucompat.h"
-#include "core_hook.h"
+#include "setuid_hook.h"
 #include "selinux/selinux.h"
 
 // Tracepoint 注册计数管理
@@ -202,7 +203,7 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 }
 #endif
 
-void ksu_hook_manager_init(void)
+void ksu_syscall_hook_manager_init(void)
 {
 	int ret;
 	pr_info("hook_manager: ksu_hook_manager_init called\n");
@@ -227,11 +228,11 @@ void ksu_hook_manager_init(void)
 	}
 #endif
 
-	ksu_core_init();
+	ksu_setuid_hook_init();
 	ksu_sucompat_init();
 }
 
-void ksu_hook_manager_exit(void)
+void ksu_syscall_hook_manager_exit(void)
 {
 	pr_info("hook_manager: ksu_hook_manager_exit called\n");
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
@@ -246,5 +247,5 @@ void ksu_hook_manager_exit(void)
 #endif
 
 	ksu_sucompat_exit();
-	ksu_core_exit();
+	ksu_setuid_hook_exit();
 }
