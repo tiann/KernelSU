@@ -83,8 +83,6 @@ struct app_profile {
     };
 };
 
-bool ksu_queue_work(struct work_struct *work);
-
 static inline int startswith(char *s, char *prefix)
 {
     return strncmp(s, prefix, strlen(prefix));

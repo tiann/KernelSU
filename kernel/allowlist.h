@@ -8,7 +8,7 @@ void ksu_allowlist_init(void);
 
 void ksu_allowlist_exit(void);
 
-bool ksu_load_allow_list(void);
+void ksu_load_allow_list(void);
 
 void ksu_show_allow_list(void);
 

@@ -90,10 +90,7 @@ static uint8_t allow_list_bitmap[PAGE_SIZE] __read_mostly __aligned(PAGE_SIZE);
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
-static struct work_struct ksu_save_work;
-static struct work_struct ksu_load_work;
-
-bool persistent_allow_list(void);
+void persistent_allow_list(void);
 
 void ksu_show_allow_list(void)
 {
@@ -353,7 +350,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
     return true;
 }
 
-void do_save_allow_list(struct work_struct *work)
+void persistent_allow_list()
 {
     u32 magic = FILE_MAGIC;
     u32 version = FILE_FORMAT_VERSION;
@@ -362,7 +359,7 @@ void do_save_allow_list(struct work_struct *work)
     loff_t off = 0;
 
     struct file *fp =
-        ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
         pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
         return;
@@ -395,7 +392,7 @@ exit:
     filp_close(fp, 0);
 }
 
-void do_load_allow_list(struct work_struct *work)
+void ksu_load_allow_list()
 {
     loff_t off = 0;
     ssize_t ret = 0;
@@ -409,7 +406,7 @@ void do_load_allow_list(struct work_struct *work)
 #endif
 
     // load allowlist now!
-    fp = ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
+    fp = filp_open(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
     if (IS_ERR(fp)) {
         pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
         return;
@@ -484,17 +481,6 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
     }
 }
 
-// make sure allow list works cross boot
-bool persistent_allow_list(void)
-{
-    return ksu_queue_work(&ksu_save_work);
-}
-
-bool ksu_load_allow_list(void)
-{
-    return ksu_queue_work(&ksu_load_work);
-}
-
 void ksu_allowlist_init(void)
 {
     int i;
@@ -507,9 +493,6 @@ void ksu_allowlist_init(void)
 
     INIT_LIST_HEAD(&allow_list);
 
-    INIT_WORK(&ksu_save_work, do_save_allow_list);
-    INIT_WORK(&ksu_load_work, do_load_allow_list);
-
     init_default_profiles();
 }
 
@@ -518,7 +501,7 @@ void ksu_allowlist_exit(void)
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;
 
-    do_save_allow_list(NULL);
+    persistent_allow_list();
 
     // free allowlist
     mutex_lock(&allowlist_mutex);
