@@ -89,7 +89,7 @@
     <string name="install_next">다음</string>
     <string name="settings_uninstall_permanent_message">완전하고 영구적으로 KernelSU(루트 권한 및 모든 모듈)를 제거합니다.</string>
     <string name="enable_web_debugging">WebView 디버깅</string>
-    <string name="require_kernel_version">현재 KernelSU %d 버전은 매니저가 정상 작동하기에 너무 낮습니다. 버전 %d 이상으로 업그레이드하세요!</string>
+    <string name="require_kernel_version">현재 KernelSU %d 버전은 매니저가 정상 작동하기에 너무 낮습니다. %d 버전 이상으로 업그레이드하세요!</string>
     <string name="shrink_sparse_image_message">모듈이 위치한 Sparse 이미지의 크기를 실제 크기로 조정합니다. 모듈이 비정상적으로 작동할 수 있으니, 필요한 경우에만 (예: 백업) 사용하세요.</string>
     <string name="action">액션</string>
     <string name="settings_uninstall_temporary">임시 제거</string>
@@ -118,7 +118,7 @@
     <string name="app_profile_template_sync">온라인 템플릿 동기화</string>
     <string name="app_profile_template_save_failed">템플릿 저장 실패</string>
     <string name="app_profile_template_import_empty">클립보드가 비어 있습니다!</string>
-    <string name="grant_root_failed">루트 권한 부여를 실패했습니다!</string>
+    <string name="grant_root_failed">루트 권한 부여 실패!</string>
     <string name="app_profile_template_create">템플릿 생성</string>
     <string name="app_profile_template_edit">템플릿 편집</string>
     <string name="app_profile_template_view">템플릿 보기</string>
