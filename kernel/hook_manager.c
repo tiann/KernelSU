@@ -199,16 +199,6 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 			ksu_handle_setresuid(ruid, euid, suid);
 			return;
 		}
-
-		// Handle reboot
-		if (id == __NR_reboot) {
-			int magic1 = (int)PT_REGS_PARM1(regs);
-			int magic2 = (int)PT_REGS_PARM2(regs);
-			unsigned int cmd = (unsigned int)PT_REGS_PARM3(regs);
-			void __user *arg = (void __user *)PT_REGS_SYSCALL_PARM4(regs);
-			ksu_handle_reboot(magic1, magic2, cmd, arg);
-			return;
-		}
 	}
 }
 #endif

@@ -20,8 +20,6 @@
 
 #define REBOOT_SYMBOL "__arm64_sys_reboot"
 #define SYS_READ_SYMBOL "__arm64_sys_read"
-#define SYS_NEWFSTATAT_SYMBOL "__arm64_sys_newfstatat"
-#define SYS_FACCESSAT_SYMBOL "__arm64_sys_faccessat"
 #define SYS_EXECVE_SYMBOL "__arm64_sys_execve"
 
 #elif defined(__x86_64__)
@@ -41,8 +39,6 @@
 #define __PT_IP_REG ip
 #define REBOOT_SYMBOL "__x64_sys_reboot"
 #define SYS_READ_SYMBOL "__x64_sys_read"
-#define SYS_NEWFSTATAT_SYMBOL "__x64_sys_newfstatat"
-#define SYS_FACCESSAT_SYMBOL "__x64_sys_faccessat"
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
 
 #else

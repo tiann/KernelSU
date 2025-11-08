@@ -28,6 +28,7 @@
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
+#include "arch.h"
 #include "allowlist.h"
 #include "core_hook.h"
 #include "feature.h"
@@ -319,24 +320,40 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     return 0;
 }
 
-int ksu_handle_reboot(int magic1, int magic2, unsigned int cmd,
-		      void __user *arg)
+static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	// Check if this is a request to install KSU fd
-	if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
-		int fd = ksu_install_fd();
-		pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+    struct pt_regs *real_regs = PT_REAL_REGS(regs);
+    int magic1 = (int)PT_REGS_PARM1(real_regs);
+    int magic2 = (int)PT_REGS_PARM2(real_regs);
+    unsigned long arg4;
 
-		if (arg && copy_to_user(arg, &fd, sizeof(fd))) {
-			pr_err("install ksu fd reply err\n");
-		}
-	}
+    // Check if this is a request to install KSU fd
+    if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
+        int fd = ksu_install_fd();
+        pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
 
-	return 0;
+        arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+        if (copy_to_user((int *)arg4, &fd, sizeof(fd))) {
+            pr_err("install ksu fd reply err\n");
+        }
+    }
+
+    return 0;
 }
 
-void __init ksu_core_init(void)
+static struct kprobe reboot_kp = {
+    .symbol_name = REBOOT_SYMBOL,
+    .pre_handler = reboot_handler_pre,
+};
+
+void ksu_core_init(void)
 {
+    int rc = register_kprobe(&reboot_kp);
+    if (rc) {
+        pr_err("reboot kprobe failed: %d\n", rc);
+    } else {
+        pr_info("reboot kprobe registered successfully\n");
+    }
     if (ksu_register_feature_handler(&kernel_umount_handler)) {
         pr_err("Failed to register umount feature handler\n");
     }
@@ -350,4 +367,5 @@ void ksu_core_exit(void)
     pr_info("ksu_core_exit\n");
     ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);
     ksu_unregister_feature_handler(KSU_FEATURE_ENHANCED_SECURITY);
+    unregister_kprobe(&reboot_kp);
 }
