@@ -16,7 +16,6 @@
 #include "syscall_hook_manager.h"
 #include "sucompat.h"
 #include "setuid_hook.h"
-#include "ksud.h"
 #include "selinux/selinux.h"
 
 // Tracepoint registration count management
@@ -64,8 +63,8 @@ void ksu_mark_running_process(void)
         bool is_zygote_process = is_zygote(cred);
         bool is_shell = uid == 2000;
         // before boot completed, we shall mark init for marking zygote
-        bool is_init = t->pid == 1; 
-		if (ksu_root_process || is_zygote_process  || is_shell || is_init 
+        bool is_init = t->pid == 1;
+		if (ksu_root_process || is_zygote_process  || is_shell || is_init
             || ksu_is_allow_uid(uid)) {
 			ksu_set_task_tracepoint_flag(t);
 			pr_info("hook_manager: mark process: pid:%d, uid: %d, comm:%s\n",
@@ -74,6 +73,59 @@ void ksu_mark_running_process(void)
         put_cred(cred);
 	}
 	read_unlock(&tasklist_lock);
+}
+
+// Get task mark status
+// Returns: 1 if marked, 0 if not marked, -ESRCH if task not found
+int ksu_get_task_mark(pid_t pid)
+{
+	struct task_struct *task;
+	int marked = -ESRCH;
+
+	rcu_read_lock();
+	task = find_task_by_vpid(pid);
+	if (task) {
+		get_task_struct(task);
+		rcu_read_unlock();
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+		marked = test_task_syscall_work(task, SYSCALL_TRACEPOINT) ? 1 : 0;
+#else
+		marked = test_tsk_thread_flag(task, TIF_SYSCALL_TRACEPOINT) ? 1 : 0;
+#endif
+		put_task_struct(task);
+	} else {
+		rcu_read_unlock();
+	}
+
+	return marked;
+}
+
+// Set task mark status
+// Returns: 0 on success, -ESRCH if task not found
+int ksu_set_task_mark(pid_t pid, bool mark)
+{
+	struct task_struct *task;
+	int ret = -ESRCH;
+
+	rcu_read_lock();
+	task = find_task_by_vpid(pid);
+	if (task) {
+		get_task_struct(task);
+		rcu_read_unlock();
+		if (mark) {
+			ksu_set_task_tracepoint_flag(task);
+			pr_info("hook_manager: marked task pid=%d comm=%s\n", pid, task->comm);
+		} else {
+			ksu_clear_task_tracepoint_flag(task);
+			pr_info("hook_manager: unmarked task pid=%d comm=%s\n", pid, task->comm);
+		}
+		put_task_struct(task);
+		ret = 0;
+	} else {
+		rcu_read_unlock();
+	}
+
+	return ret;
 }
 
 #ifdef CONFIG_KRETPROBES

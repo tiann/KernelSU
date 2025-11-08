@@ -16,6 +16,7 @@ const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80004b05; // _IOC(_IOC_READ, 'K', 5, 0)
 const KSU_IOCTL_GET_FEATURE: u32 = 0xc0004b0d; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
 const KSU_IOCTL_SET_FEATURE: u32 = 0x40004b0e; // _IOC(_IOC_WRITE, 'K', 14, 0)
 const KSU_IOCTL_GET_WRAPPER_FD: u32 = 0x40004b0f; // _IOC(_IOC_WRITE, 'K', 15, 0)
+const KSU_IOCTL_MANAGE_MARK: u32 = 0xc0004b10; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -63,6 +64,20 @@ struct GetWrapperFdCmd {
     fd: i32,
     flags: u32,
 }
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct ManageMarkCmd {
+    operation: u32,
+    pid: i32,
+    result: u32,
+}
+
+// Mark operation constants
+const KSU_MARK_GET: u32 = 1;
+const KSU_MARK_MARK: u32 = 2;
+const KSU_MARK_UNMARK: u32 = 3;
+const KSU_MARK_REFRESH: u32 = 4;
 
 // Global driver fd cache
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -234,4 +249,48 @@ pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
     let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
     let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &mut cmd as *mut _)?;
     Ok(result)
+}
+
+/// Get mark status for a process (pid=0 returns total marked count)
+pub fn mark_get(pid: i32) -> std::io::Result<u32> {
+    let mut cmd = ManageMarkCmd {
+        operation: KSU_MARK_GET,
+        pid,
+        result: 0,
+    };
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    Ok(cmd.result)
+}
+
+/// Mark a process (pid=0 marks all processes)
+pub fn mark_set(pid: i32) -> std::io::Result<()> {
+    let mut cmd = ManageMarkCmd {
+        operation: KSU_MARK_MARK,
+        pid,
+        result: 0,
+    };
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    Ok(())
+}
+
+/// Unmark a process (pid=0 unmarks all processes)
+pub fn mark_unset(pid: i32) -> std::io::Result<()> {
+    let mut cmd = ManageMarkCmd {
+        operation: KSU_MARK_UNMARK,
+        pid,
+        result: 0,
+    };
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    Ok(())
+}
+
+/// Refresh mark for all running processes
+pub fn mark_refresh() -> std::io::Result<()> {
+    let mut cmd = ManageMarkCmd {
+        operation: KSU_MARK_REFRESH,
+        pid: 0,
+        result: 0,
+    };
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    Ok(())
 }

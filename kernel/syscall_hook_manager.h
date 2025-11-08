@@ -14,6 +14,10 @@ void ksu_mark_all_process(void);
 void ksu_unmark_all_process(void);
 void ksu_mark_running_process(void);
 
+// Per-task mark operations
+int ksu_get_task_mark(pid_t pid);
+int ksu_set_task_mark(pid_t pid, bool mark);
+
 
 static inline void ksu_set_task_tracepoint_flag(struct task_struct *t)
 {
