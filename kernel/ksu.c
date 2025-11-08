@@ -62,6 +62,9 @@ void kernelsu_exit(void)
 #endif
 
     ksu_hook_manager_exit();
+
+    ksu_supercalls_exit();
+    
     ksu_feature_exit();
 }
 

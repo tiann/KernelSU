@@ -1,6 +1,5 @@
 #include "linux/compiler.h"
 #include "linux/printk.h"
-#include "selinux/selinux.h"
 #include <asm/current.h>
 #include <linux/cred.h>
 #include <linux/fs.h>

@@ -10,6 +10,7 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
+#include "arch.h"
 #include "allowlist.h"
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
@@ -394,6 +395,34 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
+
+static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+    struct pt_regs *real_regs = PT_REAL_REGS(regs);
+    int magic1 = (int)PT_REGS_PARM1(real_regs);
+    int magic2 = (int)PT_REGS_PARM2(real_regs);
+    unsigned long arg4;
+
+    // Check if this is a request to install KSU fd
+    if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
+        int fd = ksu_install_fd();
+        pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+
+        arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+        if (copy_to_user((int *)arg4, &fd, sizeof(fd))) {
+            pr_err("install ksu fd reply err\n");
+        }
+    }
+
+    return 0;
+}
+
+static struct kprobe reboot_kp = {
+    .symbol_name = REBOOT_SYMBOL,
+    .pre_handler = reboot_handler_pre,
+};
+
+
 void ksu_supercalls_init(void)
 {
     int i;
@@ -402,6 +431,17 @@ void ksu_supercalls_init(void)
     for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
         pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
     }
+
+    int rc = register_kprobe(&reboot_kp);
+    if (rc) {
+        pr_err("reboot kprobe failed: %d\n", rc);
+    } else {
+        pr_info("reboot kprobe registered successfully\n");
+    }
+}
+
+void ksu_supercalls_exit(void){
+    unregister_kprobe(&reboot_kp);
 }
 
 // IOCTL dispatcher
