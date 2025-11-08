@@ -414,11 +414,12 @@ void persistent_allow_list()
         kzalloc(sizeof(struct callback_head), GFP_KERNEL);
     if (!cb) {
         pr_err("save_allow_list alloc cb err\b");
-        return;
+        goto put_task;
     }
     cb->func = do_persistent_allow_list;
     task_work_add(tsk, cb, TWA_RESUME);
 
+put_task:
     put_task_struct(tsk);
 }
 
