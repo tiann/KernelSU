@@ -193,7 +193,7 @@ static void umount_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
-int ksu_handle_setuid(uid_t ruid, uid_t euid, uid_t suid)
+int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
     struct umount_tw *tw;
     uid_t new_uid = ruid;

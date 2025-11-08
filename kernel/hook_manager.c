@@ -1,6 +1,7 @@
 #include "linux/compiler.h"
 #include "linux/printk.h"
 #include "selinux/selinux.h"
+#include "linux/sched.h"
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/tracepoint.h>
@@ -14,6 +15,7 @@
 #include "hook_manager.h"
 #include "sucompat.h"
 #include "core_hook.h"
+#include "selinux/selinux.h"
 
 // Tracepoint 注册计数管理
 static int tracepoint_reg_count = 0;
@@ -54,9 +56,11 @@ void ksu_mark_running_process(void)
 			continue;
 		}
 		int uid = task_uid(t).val;
+        const struct cred *cred = get_task_cred(t);
 		bool ksu_root_process =
-			uid == 0 && is_task_ksu_domain(get_task_cred(t));
-		if (ksu_root_process || ksu_is_allow_uid(uid)) {
+			uid == 0 && is_task_ksu_domain(cred);
+        bool is_zygote_process = is_zygote(cred);
+		if (ksu_root_process || ksu_is_allow_uid(uid) || is_zygote_process) {
 			ksu_set_task_tracepoint_flag(t);
 			pr_info("hook_manager: mark process: pid:%d, uid: %d, comm:%s\n",
 					t->pid, uid, t->comm);
