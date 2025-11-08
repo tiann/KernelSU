@@ -155,7 +155,6 @@ static inline bool check_syscall_fastpath(int nr)
     case __NR_faccessat:
     case __NR_execve:
     case __NR_setresuid:
-    case __NR_reboot:
         return true;
     default:
         return false;
