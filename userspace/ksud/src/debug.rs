@@ -59,7 +59,11 @@ pub fn mark_get(pid: i32) -> Result<()> {
     if pid == 0 {
         bail!("Please specify a pid to get its mark status");
     } else {
-        println!("Process {} mark status: {}", pid, if result != 0 { "marked" } else { "unmarked" });
+        println!(
+            "Process {} mark status: {}",
+            pid,
+            if result != 0 { "marked" } else { "unmarked" }
+        );
     }
     Ok(())
 }
