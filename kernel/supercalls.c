@@ -53,7 +53,7 @@ static int do_grant_root(void __user *arg)
     // we already check uid above on allowed_for_su()
 
     pr_info("allow root for: %d\n", current_uid().val);
-    escape_to_root();
+    escape_with_root_profile();
 
     return 0;
 }
