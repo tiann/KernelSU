@@ -21,7 +21,6 @@
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
-#include "kernel_compat.h"
 #include "selinux/selinux.h"
 #include "sucompat.h"
 
