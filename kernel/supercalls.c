@@ -1,6 +1,5 @@
 #include "supercalls.h"
 
-#include "asm-generic/errno.h"
 #include <linux/anon_inodes.h>
 #include <linux/capability.h>
 #include <linux/cred.h>
