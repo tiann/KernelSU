@@ -34,11 +34,9 @@
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "ksud.h"
 #include "manager.h"
 #include "selinux/selinux.h"
-#include "throne_tracker.h"
-#include "kernel_compat.h"
+#include "seccomp_cache.h"
 #include "supercalls.h"
 #include "sucompat.h"
 

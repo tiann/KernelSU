@@ -11,7 +11,6 @@
 #include "ksu.h"
 #include "manager.h"
 #include "throne_tracker.h"
-#include "kernel_compat.h"
 
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 

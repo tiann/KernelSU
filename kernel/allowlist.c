@@ -13,7 +13,6 @@
 #include "ksu.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
-#include "kernel_compat.h"
 #include "allowlist.h"
 #include "manager.h"
 
