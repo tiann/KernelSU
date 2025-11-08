@@ -8,8 +8,4 @@ void ksu_core_exit(void);
 
 void escape_to_root(void);
 
-void nuke_ext4_sysfs(void);
-
-extern bool ksu_module_mounted;
-
 #endif

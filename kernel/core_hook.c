@@ -39,8 +39,7 @@
 #include "seccomp_cache.h"
 #include "supercalls.h"
 #include "sucompat.h"
-
-bool ksu_module_mounted __read_mostly = false;
+#include "ksud.h"
 
 static bool ksu_kernel_umount_enabled = true;
 static bool ksu_enhanced_security_enabled = false;
@@ -222,27 +221,6 @@ void escape_to_root(void)
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
     }
-}
-extern void ext4_unregister_sysfs(struct super_block *sb);
-void nuke_ext4_sysfs(void)
-{
-    struct path path;
-    int err = kern_path("/data/adb/modules", 0, &path);
-    if (err) {
-        pr_err("nuke path err: %d\n", err);
-        return;
-    }
-
-    struct super_block *sb = path.dentry->d_inode->i_sb;
-    const char *name = sb->s_type->name;
-    if (strcmp(name, "ext4") != 0) {
-        pr_info("nuke but module aren't mounted\n");
-        path_put(&path);
-        return;
-    }
-
-    ext4_unregister_sysfs(sb);
-    path_put(&path);
 }
 
 // ksu_handle_prctl removed - now using ioctl via reboot hook
