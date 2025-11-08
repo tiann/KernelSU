@@ -153,16 +153,14 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
     }
 
     if (!is_appuid(new_uid) || is_unsupported_uid(new_uid)) {
-        // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
+        pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
         return 0;
     }
 
     if (!ksu_uid_should_umount(new_uid)) {
         return 0;
     } else {
-#ifdef CONFIG_KSU_DEBUG
         pr_info("uid: %d should not umount!\n", current_uid().val);
-#endif
     }
 
     // check old process's selinux context, if it is not zygote, ignore it!
@@ -173,10 +171,8 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         pr_info("handle umount ignore non zygote child: %d\n", current->pid);
         return 0;
     }
-#ifdef CONFIG_KSU_DEBUG
     // umount the target mnt
     pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
-#endif
 
     tw = kmalloc(sizeof(*tw), GFP_ATOMIC);
     if (!tw)
