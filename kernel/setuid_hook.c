@@ -123,13 +123,12 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     }
 
     if (new_uid == 2000) {
-        if (ksu_su_compat_enabled) {
-            ksu_set_task_tracepoint_flag(current);
-        }
+        ksu_set_task_tracepoint_flag(current);
     }
 
     if (!is_appuid(new_uid) || is_unsupported_uid(new_uid)) {
-        // pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
+        pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
+        ksu_clear_task_tracepoint_flag(current);
         return 0;
     }
 
@@ -143,9 +142,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
-        if (ksu_su_compat_enabled) {
-            ksu_set_task_tracepoint_flag(current);
-        }
+        ksu_set_task_tracepoint_flag(current);
         spin_unlock_irq(&current->sighand->siglock);
         return 0;
     }
@@ -157,14 +154,9 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
             spin_unlock_irq(&current->sighand->siglock);
         }
-        if (ksu_su_compat_enabled) {
-            ksu_set_task_tracepoint_flag(current);
-        }
+        ksu_set_task_tracepoint_flag(current);
     } else {
-        // Disable syscall tracepoint sucompat for non-allowed processes
-        if (ksu_su_compat_enabled) {
-            ksu_clear_task_tracepoint_flag(current);
-        }
+        ksu_clear_task_tracepoint_flag(current);
     }
 
     // Handle kernel umount
