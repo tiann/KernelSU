@@ -7,6 +7,7 @@
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
+#include <linux/kprobes.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
