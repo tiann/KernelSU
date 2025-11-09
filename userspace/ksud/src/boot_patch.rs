@@ -669,7 +669,7 @@ fn find_boot_image(
         }
 
         let slot_suffix = get_slot_suffix(ota);
-        let boot_partition_name = choose_boot_partition(&kmi, is_replace_kernel, partition);
+        let boot_partition_name = choose_boot_partition(kmi, is_replace_kernel, partition);
         let boot_partition = format!("/dev/block/by-name/{boot_partition_name}{slot_suffix}");
 
         println!("- Bootdevice: {boot_partition}");
@@ -716,7 +716,7 @@ pub fn choose_boot_partition(
         return "vendor_boot".to_string();
     }
 
-    return "boot".to_string();
+    "boot".to_string()
 }
 
 #[cfg(not(target_os = "android"))]
