@@ -56,11 +56,12 @@ import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.LkmSelection
-import me.weishu.kernelsu.ui.util.availablePartitions
+import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
+import me.weishu.kernelsu.ui.util.getDefaultBootDevice
+import me.weishu.kernelsu.ui.util.getDefaultPartitionName
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
-import me.weishu.kernelsu.ui.util.isInitBoot
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -100,13 +101,12 @@ fun InstallScreen(navigator: DestinationsNavigator) {
     }
 
     var partitionSelectionIndex by remember { mutableIntStateOf(0) }
+    var partitionsState by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val onInstall = {
         installMethod?.let { method ->
             val isOta = method is InstallMethod.DirectInstallToInactiveSlot
-            val targetActiveSlot = !isOta
-            val partitions = availablePartitions(targetActiveSlot)
-            val partitionSelection = partitions.getOrNull(partitionSelectionIndex)
+            val partitionSelection = partitionsState.getOrNull(partitionSelectionIndex)
             val flashIt = FlashIt.FlashBoot(
                 boot = if (method is InstallMethod.SelectFile) method.uri else null,
                 lkm = lkmSelection,
@@ -207,12 +207,20 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                             .padding(top = 12.dp),
                     ) {
                         val isOta = installMethod is InstallMethod.DirectInstallToInactiveSlot
-                        val targetActiveSlot = !isOta
-                        val suffix = getSlotSuffix(targetActiveSlot)
-                        val partitions = availablePartitions(targetActiveSlot)
-                        val displayPartitions = partitions.mapIndexed { index, name ->
-                            if (index == 0) "$name (default)" else name
+                        val suffix = produceState(initialValue = "", isOta) {
+                            value = getSlotSuffix(isOta)
+                        }.value
+                        val partitions = produceState(initialValue = emptyList(), isOta) {
+                            value = getAvailablePartitions(isOta)
+                        }.value
+                        val defaultDevice = produceState(initialValue = "", isOta) {
+                            value = getDefaultBootDevice(isOta)
+                        }.value
+                        val displayPartitions = partitions.map { name ->
+                            val path = "/dev/block/by-name/${name}${suffix}"
+                            if (defaultDevice.isNotBlank() && defaultDevice == path) "$name (default)" else name
                         }
+                        partitionsState = partitions
                         if (partitionSelectionIndex >= partitions.size) partitionSelectionIndex = 0
                         SuperDropdown(
                             items = displayPartitions,
@@ -295,9 +303,14 @@ sealed class InstallMethod {
 @Composable
 private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val rootAvailable = rootAvailable()
-    val isAbDevice = isAbDevice()
+    val isAbDevice = produceState(initialValue = false) {
+        value = isAbDevice()
+    }.value
+    val defaultPartitionName = produceState(initialValue = "boot") {
+        value = getDefaultPartitionName(false)
+    }.value
     val selectFileTip = stringResource(
-        id = R.string.select_file_tip, if (isInitBoot()) "init_boot" else "boot"
+        id = R.string.select_file_tip, defaultPartitionName
     )
     val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
     if (rootAvailable) {
