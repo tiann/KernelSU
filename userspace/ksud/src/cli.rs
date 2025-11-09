@@ -460,7 +460,9 @@ pub fn run() -> Result<()> {
             magiskboot,
             kmi,
             partition,
-        } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi, partition),
+        } => crate::boot_patch::patch(
+            boot, kernel, module, init, ota, flash, out, magiskboot, kmi, partition,
+        ),
 
         Commands::BootInfo { command } => match command {
             BootInfo::CurrentKmi => {

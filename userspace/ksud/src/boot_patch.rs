@@ -351,7 +351,9 @@ pub fn patch(
     kmi: Option<String>,
     partition: Option<String>,
 ) -> Result<()> {
-    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot, kmi, partition);
+    let result = do_patch(
+        image, kernel, kmod, init, ota, flash, out, magiskboot, kmi, partition,
+    );
     if let Err(ref e) = result {
         println!("- Install Error: {e}");
     }
@@ -426,8 +428,14 @@ fn do_patch(
 
     let skip_init = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) =
-        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir, &partition)?;
+    let (bootimage, bootdevice) = find_boot_image(
+        &image,
+        skip_init,
+        ota,
+        is_replace_kernel,
+        workdir,
+        &partition,
+    )?;
 
     let bootimage = bootimage.as_path();
 
@@ -691,7 +699,10 @@ fn find_boot_image(
                 _ => "boot",
             };
             let override_path = format!("/dev/block/by-name/{name}{slot_suffix}");
-            ensure!(Path::new(&override_path).exists(), "partition {name} not found for slot {slot_suffix}");
+            ensure!(
+                Path::new(&override_path).exists(),
+                "partition {name} not found for slot {slot_suffix}"
+            );
             println!("- Target partition: {name}");
             println!("- Target slot: {slot_suffix}");
             override_path
