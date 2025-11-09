@@ -101,7 +101,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
                 return 0;
             }
         }
-        // disallow appuid decrease to any other uid if it is allowed to su
+        // disallow appuid decrease to any other uid if it is not allowed to su
         if (is_appuid(old_uid)) {
             if (euid < current_euid().val && !ksu_is_allow_uid_for_current(old_uid)) {
                 pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 

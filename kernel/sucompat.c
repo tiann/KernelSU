@@ -155,7 +155,7 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
 }
 
 
-// sucompat: permited process can execute 'su' to gain root access.
+// sucompat: permitted process can execute 'su' to gain root access.
 void ksu_sucompat_init()
 {
     if (ksu_register_feature_handler(&su_compat_handler)) {
