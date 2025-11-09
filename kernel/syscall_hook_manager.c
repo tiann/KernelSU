@@ -213,7 +213,7 @@ static inline bool check_syscall_fastpath(int nr)
     }
 }
 
-int ksu_handle_init_mark_tracker(int *fd, const char __user **filename_user,
+int ksu_handle_init_mark_tracker(const char __user **filename_user,
                                void *__never_use_argv, void *__never_use_envp,
                                int *__never_use_flags)
 {
@@ -263,11 +263,9 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 				const char __user **filename_user =
 					(const char __user **)&PT_REGS_PARM1(regs);
 				if (current->pid == 1) {
-					ksu_handle_init_mark_tracker(AT_FDCWD, filename_user, 
-                        NULL, NULL, NULL);
+					ksu_handle_init_mark_tracker(filename_user, NULL, NULL, NULL);
 				} else {
-                    ksu_handle_execve_sucompat(AT_FDCWD, filename_user, NULL, 
-                        NULL, NULL);
+                    ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
                 }
 				return;
 			}
@@ -300,7 +298,7 @@ void ksu_syscall_hook_manager_init(void)
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 	ret = register_trace_sys_enter(ksu_sys_enter_handler, NULL);
 #ifndef CONFIG_KRETPROBES
-	unmark_all_process();
+	ksu_unmark_all_process();
 	ksu_mark_running_process();
 #endif
 	if (ret) {

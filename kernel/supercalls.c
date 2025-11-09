@@ -327,7 +327,7 @@ static int do_set_feature(void __user *arg)
 
 static int do_get_wrapper_fd(void __user *arg) {
     if (!ksu_file_sid) {
-        return -1;
+        return -EINVAL;
     }
 
     struct ksu_get_wrapper_fd_cmd cmd;

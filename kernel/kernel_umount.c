@@ -122,23 +122,6 @@ static void umount_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
-static inline bool is_appuid(uid_t uid)
-{
-#define PER_USER_RANGE 100000
-#define FIRST_APPLICATION_UID 10000
-#define LAST_APPLICATION_UID 19999
-
-    uid_t appid = uid % PER_USER_RANGE;
-    return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
-}
-
-static inline bool is_unsupported_uid(uid_t uid)
-{
-#define LAST_APPLICATION_UID 19999
-    uid_t appid = uid % 100000;
-    return appid > LAST_APPLICATION_UID;
-}
-
 int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 {
     struct umount_tw *tw;
@@ -152,15 +135,8 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         return 0;
     }
 
-    if (!is_appuid(new_uid) || is_unsupported_uid(new_uid)) {
-        pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
-        return 0;
-    }
-
     if (!ksu_uid_should_umount(new_uid)) {
         return 0;
-    } else {
-        pr_info("uid: %d should not umount!\n", current_uid().val);
     }
 
     // check old process's selinux context, if it is not zygote, ignore it!
