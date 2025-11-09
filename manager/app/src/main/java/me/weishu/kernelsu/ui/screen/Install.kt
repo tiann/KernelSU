@@ -9,6 +9,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -30,6 +33,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -49,11 +53,14 @@ import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestin
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
+import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.LkmSelection
+import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
+import me.weishu.kernelsu.ui.util.getDefaultPartition
+import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
-import me.weishu.kernelsu.ui.util.isInitBoot
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -69,6 +76,7 @@ import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Edit
 import top.yukonga.miuix.kmp.icon.icons.useful.Move
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -92,12 +100,19 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         mutableStateOf<LkmSelection>(LkmSelection.KmiNone)
     }
 
+    var partitionSelectionIndex by remember { mutableIntStateOf(0) }
+    var partitionsState by remember { mutableStateOf<List<String>>(emptyList()) }
+    var hasCustomSelected by remember { mutableStateOf(false) }
+
     val onInstall = {
         installMethod?.let { method ->
+            val isOta = method is InstallMethod.DirectInstallToInactiveSlot
+            val partitionSelection = partitionsState.getOrNull(partitionSelectionIndex)
             val flashIt = FlashIt.FlashBoot(
                 boot = if (method is InstallMethod.SelectFile) method.uri else null,
                 lkm = lkmSelection,
-                ota = method is InstallMethod.DirectInstallToInactiveSlot
+                ota = isOta,
+                partition = partitionSelection
             )
             navigator.navigate(FlashScreenDestination(flashIt)) {
                 launchSingleTop = true
@@ -182,6 +197,51 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         installMethod = method
                     }
                 }
+                AnimatedVisibility(
+                    visible = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                    ) {
+                        val isOta = installMethod is InstallMethod.DirectInstallToInactiveSlot
+                        val suffix = produceState(initialValue = "", isOta) {
+                            value = getSlotSuffix(isOta)
+                        }.value
+                        val partitions = produceState(initialValue = emptyList()) {
+                            value = getAvailablePartitions()
+                        }.value
+                        val defaultPartition = produceState(initialValue = "") {
+                            value = getDefaultPartition()
+                        }.value
+                        partitionsState = partitions
+                        val displayPartitions = partitions.map { name ->
+                            if (defaultPartition == name) "$name (default)" else name
+                        }
+                        val defaultIndex = partitions.indexOf(defaultPartition).takeIf { it >= 0 } ?: 0
+                        if (!hasCustomSelected) partitionSelectionIndex = defaultIndex
+                        SuperDropdown(
+                            items = displayPartitions,
+                            selectedIndex = partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${suffix})",
+                            onSelectedIndexChange = { index ->
+                                hasCustomSelected = true
+                                partitionSelectionIndex = index
+                            },
+                            leftAction = {
+                                Icon(
+                                    MiuixIcons.Useful.Edit,
+                                    tint = colorScheme.onSurface,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
+                }
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -255,9 +315,14 @@ sealed class InstallMethod {
 @Composable
 private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val rootAvailable = rootAvailable()
-    val isAbDevice = isAbDevice()
+    val isAbDevice = produceState(initialValue = false) {
+        value = isAbDevice()
+    }.value
+    val defaultPartitionName = produceState(initialValue = "boot") {
+        value = getDefaultPartition()
+    }.value
     val selectFileTip = stringResource(
-        id = R.string.select_file_tip, if (isInitBoot()) "init_boot" else "boot"
+        id = R.string.select_file_tip, defaultPartitionName
     )
     val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
     if (rootAvailable) {

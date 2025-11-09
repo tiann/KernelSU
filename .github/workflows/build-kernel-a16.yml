@@ -14,10 +14,18 @@ on:
         required: false
         type: boolean
         default: false
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Build debug kernel'
+        required: false
+        type: boolean
+        default: false
 jobs:
   build-kernel:
     if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - version: "6.12"

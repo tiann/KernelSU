@@ -397,6 +397,7 @@ close_file:
     filp_close(fp, 0);
 unlock:
     mutex_unlock(&allowlist_mutex);
+    kfree(_cb);
 }
 
 void persistent_allow_list()
@@ -529,8 +530,6 @@ void ksu_allowlist_exit(void)
 {
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;
-
-    persistent_allow_list();
 
     // free allowlist
     mutex_lock(&allowlist_mutex);

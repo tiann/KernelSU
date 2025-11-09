@@ -102,6 +102,10 @@ enum Commands {
         /// KMI version, if specified, will use the specified KMI
         #[arg(long, default_value = None)]
         kmi: Option<String>,
+
+        /// target partition override (init_boot | boot | vendor_boot)
+        #[arg(long, default_value = None)]
+        partition: Option<String>,
     },
 
     /// Restore boot or init_boot images patched by KernelSU
@@ -137,7 +141,23 @@ enum BootInfo {
     CurrentKmi,
 
     /// show supported kmi versions
-    SupportedKmi,
+    SupportedKmis,
+
+    /// check if device is A/B capable
+    IsAbDevice,
+
+    /// show auto-selected boot partition name
+    DefaultPartition,
+
+    /// list available partitions for current or OTA toggled slot
+    AvailablePartitions,
+
+    /// show slot suffix for current or OTA toggled slot
+    SlotSuffix {
+        /// toggle to another slot
+        #[arg(short = 'u', long, default_value = "false")]
+        ota: bool,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -455,7 +475,10 @@ pub fn run() -> Result<()> {
             out,
             magiskboot,
             kmi,
-        } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi),
+            partition,
+        } => crate::boot_patch::patch(
+            boot, kernel, module, init, ota, flash, out, magiskboot, kmi, partition,
+        ),
 
         Commands::BootInfo { command } => match command {
             BootInfo::CurrentKmi => {
@@ -464,9 +487,32 @@ pub fn run() -> Result<()> {
                 // return here to avoid printing the error message
                 return Ok(());
             }
-            BootInfo::SupportedKmi => {
+            BootInfo::SupportedKmis => {
                 let kmi = crate::assets::list_supported_kmi()?;
                 kmi.iter().for_each(|kmi| println!("{kmi}"));
+                return Ok(());
+            }
+            BootInfo::IsAbDevice => {
+                let val = crate::utils::getprop("ro.build.ab_update")
+                    .unwrap_or_else(|| String::from("false"));
+                let is_ab = val.trim().to_lowercase() == "true";
+                println!("{}", if is_ab { "true" } else { "false" });
+                return Ok(());
+            }
+            BootInfo::DefaultPartition => {
+                let kmi = crate::boot_patch::get_current_kmi().unwrap_or_else(|_| String::from(""));
+                let name = crate::boot_patch::choose_boot_partition(&kmi, false, &None);
+                println!("{name}");
+                return Ok(());
+            }
+            BootInfo::SlotSuffix { ota } => {
+                let suffix = crate::boot_patch::get_slot_suffix(ota);
+                println!("{suffix}");
+                return Ok(());
+            }
+            BootInfo::AvailablePartitions => {
+                let parts = crate::boot_patch::list_available_partitions();
+                parts.iter().for_each(|p| println!("{p}"));
                 return Ok(());
             }
         },

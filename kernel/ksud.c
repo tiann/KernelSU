@@ -186,7 +186,6 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 
             if (fatal_signal_pending(current))
                 return -ERESTARTNOHAND;
-            cond_resched();
         }
     }
     return i;
