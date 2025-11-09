@@ -355,23 +355,9 @@ suspend fun isAbDevice(): Boolean = withContext(Dispatchers.IO) {
     ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim().toBoolean()
 }
 
-suspend fun getDefaultBootDevice(ota: Boolean): String = withContext(Dispatchers.IO) {
+suspend fun getDefaultPartition(): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
-    val cmd = if (ota) {
-        "boot-info default-device --ota"
-    } else {
-        "boot-info default-device"
-    }
-    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
-}
-
-suspend fun getDefaultPartitionName(ota: Boolean): String = withContext(Dispatchers.IO) {
-    val shell = getRootShell()
-    val cmd = if (ota) {
-        "boot-info default-partition --ota"
-    } else {
-        "boot-info default-partition"
-    }
+    val cmd = "boot-info default-partition"
     ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
 }
 
@@ -385,13 +371,9 @@ suspend fun getSlotSuffix(ota: Boolean): String = withContext(Dispatchers.IO) {
     ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
 }
 
-suspend fun getAvailablePartitions(ota: Boolean): List<String> = withContext(Dispatchers.IO) {
+suspend fun getAvailablePartitions(): List<String> = withContext(Dispatchers.IO) {
     val shell = getRootShell()
-    val cmd = if (ota) {
-        "boot-info available-partitions --ota"
-    } else {
-        "boot-info available-partitions"
-    }
+    val cmd = "boot-info available-partitions"
     val out = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
     out.filter { it.isNotBlank() }.map { it.trim() }
 }

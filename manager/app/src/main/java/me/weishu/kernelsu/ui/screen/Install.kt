@@ -58,8 +58,7 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
-import me.weishu.kernelsu.ui.util.getDefaultBootDevice
-import me.weishu.kernelsu.ui.util.getDefaultPartitionName
+import me.weishu.kernelsu.ui.util.getDefaultPartition
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -211,14 +210,13 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                             value = getSlotSuffix(isOta)
                         }.value
                         val partitions = produceState(initialValue = emptyList(), isOta) {
-                            value = getAvailablePartitions(isOta)
+                            value = getAvailablePartitions()
                         }.value
-                        val defaultDevice = produceState(initialValue = "", isOta) {
-                            value = getDefaultBootDevice(isOta)
+                        val defaultPartition = produceState(initialValue = "", isOta) {
+                            value = getDefaultPartition()
                         }.value
                         val displayPartitions = partitions.map { name ->
-                            val path = "/dev/block/by-name/${name}${suffix}"
-                            if (defaultDevice.isNotBlank() && defaultDevice == path) "$name (default)" else name
+                            if (defaultPartition == name) "$name (default)" else name
                         }
                         partitionsState = partitions
                         if (partitionSelectionIndex >= partitions.size) partitionSelectionIndex = 0
@@ -307,7 +305,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         value = isAbDevice()
     }.value
     val defaultPartitionName = produceState(initialValue = "boot") {
-        value = getDefaultPartitionName(false)
+        value = getDefaultPartition()
     }.value
     val selectFileTip = stringResource(
         id = R.string.select_file_tip, defaultPartitionName
