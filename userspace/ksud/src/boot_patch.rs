@@ -677,42 +677,8 @@ fn find_boot_image(
             println!("- Current OS is not android, refusing auto bootimage/bootdevice detection");
             bail!("Please specify a boot image");
         }
-        let mut slot_suffix =
-            utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
 
-        if !slot_suffix.is_empty() && ota {
-            if slot_suffix == "_a" {
-                slot_suffix = "_b".to_string()
-            } else {
-                slot_suffix = "_a".to_string()
-            }
-        };
-
-        let init_boot_exist =
-            Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
-        let vendor_boot_exist =
-            Path::new(&format!("/dev/block/by-name/vendor_boot{slot_suffix}")).exists();
-        let boot_partition = if let Some(part) = partition {
-            let name = match part.as_str() {
-                "init_boot" => "init_boot",
-                "vendor_boot" => "vendor_boot",
-                _ => "boot",
-            };
-            let override_path = format!("/dev/block/by-name/{name}{slot_suffix}");
-            ensure!(
-                Path::new(&override_path).exists(),
-                "partition {name} not found for slot {slot_suffix}"
-            );
-            println!("- Target partition: {name}");
-            println!("- Target slot: {slot_suffix}");
-            override_path
-        } else if !is_replace_kernel && init_boot_exist && !skip_init_boot {
-            format!("/dev/block/by-name/init_boot{slot_suffix}")
-        } else if !is_replace_kernel && vendor_boot_exist && !skip_init_boot {
-            format!("/dev/block/by-name/vendor_boot{slot_suffix}")
-        } else {
-            format!("/dev/block/by-name/boot{slot_suffix}")
-        };
+        let boot_partition = choose_boot_device(skip_init_boot, ota, is_replace_kernel, partition)?;
 
         println!("- Bootdevice: {boot_partition}");
         let tmp_boot_path = workdir.join("boot.img");
@@ -751,6 +717,8 @@ pub fn choose_boot_device(
             Path::new(&override_path).exists(),
             "partition {name} not found for slot {slot_suffix}"
         );
+        println!("- Target partition: {name}");
+        println!("- Target slot: {slot_suffix}");
         override_path
     } else if !is_replace_kernel && init_boot_exist && !skip_init_boot {
         format!("/dev/block/by-name/init_boot{slot_suffix}")
