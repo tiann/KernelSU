@@ -102,7 +102,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 
     var partitionSelectionIndex by remember { mutableIntStateOf(0) }
     var partitionsState by remember { mutableStateOf<List<String>>(emptyList()) }
-    var hasCustomSelected by rememberSaveable { mutableStateOf(false) }
+    var hasCustomSelected by remember { mutableStateOf(false) }
 
     val onInstall = {
         installMethod?.let { method ->
