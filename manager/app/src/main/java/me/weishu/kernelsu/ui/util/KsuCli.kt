@@ -315,7 +315,11 @@ fun installBoot(
     lkmFile?.delete()
 
     // if boot uri is empty, it is direct install, when success, we should show reboot button
-    return FlashResult(result, bootUri == null && result.isSuccess)
+    val showReboot = bootUri == null && result.isSuccess // we create a temporary val here, to avoid calc showReboot double
+    if (showReboot) { // because we decide do not update ksud when startActivity
+        install() // install ksud here
+    }
+    return FlashResult(result, showReboot)
 }
 
 fun reboot(reason: String = "") {
