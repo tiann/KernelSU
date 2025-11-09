@@ -224,7 +224,7 @@ pub fn restore(
 
     let skip_init = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir)?;
+    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir, &None)?;
 
     println!("- Unpacking boot image");
     let status = Command::new(&magiskboot)
@@ -349,8 +349,11 @@ pub fn patch(
     out: Option<PathBuf>,
     magiskboot: Option<PathBuf>,
     kmi: Option<String>,
+    partition: Option<String>,
 ) -> Result<()> {
-    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot, kmi);
+    let result = do_patch(
+        image, kernel, kmod, init, ota, flash, out, magiskboot, kmi, partition,
+    );
     if let Err(ref e) = result {
         println!("- Install Error: {e}");
     }
@@ -368,6 +371,7 @@ fn do_patch(
     out: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
     kmi: Option<String>,
+    partition: Option<String>,
 ) -> Result<()> {
     println!(include_str!("banner"));
 
@@ -422,10 +426,16 @@ fn do_patch(
         }
     };
 
-    let skip_init = kmi.starts_with("android12-");
+    let skip_init_boot = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) =
-        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir)?;
+    let (bootimage, bootdevice) = find_boot_image(
+        &image,
+        skip_init_boot,
+        ota,
+        is_replace_kernel,
+        workdir,
+        &partition,
+    )?;
 
     let bootimage = bootimage.as_path();
 
@@ -651,10 +661,11 @@ fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<P
 
 fn find_boot_image(
     image: &Option<PathBuf>,
-    skip_init: bool,
+    skip_init_boot: bool,
     ota: bool,
     is_replace_kernel: bool,
     workdir: &Path,
+    partition: &Option<String>,
 ) -> Result<(PathBuf, Option<String>)> {
     let bootimage;
     let mut bootdevice = None;
@@ -681,9 +692,23 @@ fn find_boot_image(
             Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
         let vendor_boot_exist =
             Path::new(&format!("/dev/block/by-name/vendor_boot{slot_suffix}")).exists();
-        let boot_partition = if !is_replace_kernel && init_boot_exist && !skip_init {
+        let boot_partition = if let Some(part) = partition {
+            let name = match part.as_str() {
+                "init_boot" => "init_boot",
+                "vendor_boot" => "vendor_boot",
+                _ => "boot",
+            };
+            let override_path = format!("/dev/block/by-name/{name}{slot_suffix}");
+            ensure!(
+                Path::new(&override_path).exists(),
+                "partition {name} not found for slot {slot_suffix}"
+            );
+            println!("- Target partition: {name}");
+            println!("- Target slot: {slot_suffix}");
+            override_path
+        } else if !is_replace_kernel && init_boot_exist && !skip_init_boot {
             format!("/dev/block/by-name/init_boot{slot_suffix}")
-        } else if !is_replace_kernel && vendor_boot_exist && !skip_init {
+        } else if !is_replace_kernel && vendor_boot_exist && !skip_init_boot {
             format!("/dev/block/by-name/vendor_boot{slot_suffix}")
         } else {
             format!("/dev/block/by-name/boot{slot_suffix}")
@@ -700,6 +725,126 @@ fn find_boot_image(
         bootdevice = Some(boot_partition);
     };
     Ok((bootimage, bootdevice))
+}
+
+#[cfg(target_os = "android")]
+pub fn choose_boot_device(
+    skip_init_boot: bool,
+    ota: bool,
+    is_replace_kernel: bool,
+    partition: &Option<String>,
+) -> Result<String> {
+    let slot_suffix = get_slot_suffix(ota);
+
+    let init_boot_exist = Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
+    let vendor_boot_exist =
+        Path::new(&format!("/dev/block/by-name/vendor_boot{slot_suffix}")).exists();
+
+    let boot_partition = if let Some(part) = partition {
+        let name = match part.as_str() {
+            "init_boot" => "init_boot",
+            "vendor_boot" => "vendor_boot",
+            _ => "boot",
+        };
+        let override_path = format!("/dev/block/by-name/{name}{slot_suffix}");
+        ensure!(
+            Path::new(&override_path).exists(),
+            "partition {name} not found for slot {slot_suffix}"
+        );
+        override_path
+    } else if !is_replace_kernel && init_boot_exist && !skip_init_boot {
+        format!("/dev/block/by-name/init_boot{slot_suffix}")
+    } else if !is_replace_kernel && vendor_boot_exist && !skip_init_boot {
+        format!("/dev/block/by-name/vendor_boot{slot_suffix}")
+    } else {
+        format!("/dev/block/by-name/boot{slot_suffix}")
+    };
+
+    Ok(boot_partition)
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn choose_boot_device(
+    _skip_init_boot: bool,
+    _ota: bool,
+    _is_replace_kernel: bool,
+    _partition: &Option<String>,
+) -> Result<String> {
+    bail!("Current OS is not android, refusing auto bootdevice detection")
+}
+
+#[cfg(target_os = "android")]
+pub fn get_slot_suffix(ota: bool) -> String {
+    let mut slot_suffix = utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
+    if !slot_suffix.is_empty() && ota {
+        if slot_suffix == "_a" {
+            slot_suffix = "_b".to_string()
+        } else {
+            slot_suffix = "_a".to_string()
+        }
+    }
+    slot_suffix
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn get_slot_suffix(_ota: bool) -> String {
+    String::new()
+}
+
+#[cfg(target_os = "android")]
+pub fn list_available_partitions(skip_init_boot: bool, ota: bool) -> Vec<String> {
+    let slot_suffix = get_slot_suffix(ota);
+
+    let init_boot_exist = Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
+    let vendor_boot_exist =
+        Path::new(&format!("/dev/block/by-name/vendor_boot{slot_suffix}")).exists();
+
+    let order: Vec<&str> = if !skip_init_boot && init_boot_exist {
+        vec!["init_boot", "boot", "vendor_boot"]
+    } else if !skip_init_boot && vendor_boot_exist {
+        vec!["vendor_boot", "boot", "init_boot"]
+    } else {
+        vec!["boot", "init_boot", "vendor_boot"]
+    };
+
+    // Filter by existence
+    order
+        .into_iter()
+        .filter(|name| Path::new(&format!("/dev/block/by-name/{}{}", name, slot_suffix)).exists())
+        .map(|s| s.to_string())
+        .collect()
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn list_available_partitions(_skip_init_boot: bool, _ota: bool) -> Vec<String> {
+    Vec::new()
+}
+
+#[cfg(target_os = "android")]
+pub fn get_default_partition_name(
+    skip_init_boot: bool,
+    ota: bool,
+    is_replace_kernel: bool,
+    partition: &Option<String>,
+) -> Result<String> {
+    let dev = choose_boot_device(skip_init_boot, ota, is_replace_kernel, partition)?;
+    if dev.contains("/init_boot") {
+        Ok("init_boot".to_string())
+    } else if dev.contains("/vendor_boot") {
+        Ok("vendor_boot".to_string())
+    } else {
+        Ok("boot".to_string())
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+pub fn get_default_partition_name(
+    _skip_init_boot: bool,
+    _ota: bool,
+    _is_replace_kernel: bool,
+    _partition: &Option<String>,
+) -> Result<String> {
+    bail!("Current OS is not android, refusing auto partition detection")
 }
 
 fn post_ota() -> Result<()> {

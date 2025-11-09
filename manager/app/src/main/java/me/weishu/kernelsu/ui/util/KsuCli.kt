@@ -8,12 +8,10 @@ import android.os.Environment
 import android.os.Parcelable
 import android.os.SystemClock
 import android.provider.OpenableColumns
-import android.system.Os
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
-import com.topjohnwu.superuser.io.SuFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -247,6 +245,7 @@ fun installBoot(
     bootUri: Uri?,
     lkm: LkmSelection,
     ota: Boolean,
+    partition: String?,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -305,6 +304,10 @@ fun installBoot(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     cmd += " -o $downloadsDir"
 
+    partition?.let { part ->
+        cmd += " --partition $part"
+    }
+
     val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
@@ -329,19 +332,6 @@ fun rootAvailable(): Boolean {
     return shell.isRoot
 }
 
-fun isAbDevice(): Boolean {
-    val shell = getRootShell()
-    return ShellUtils.fastCmd(shell, "getprop ro.build.ab_update").trim().toBoolean()
-}
-
-fun isInitBoot(): Boolean {
-    val shell = getRootShell();
-    if (shell.isRoot) {
-        return SuFile("/dev/block/by-name/init_boot").exists() || SuFile("/dev/block/by-name/init_boot_a").exists()
-    }
-    return !Os.uname().release.contains("android12-")
-}
-
 suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val cmd = "boot-info current-kmi"
@@ -351,6 +341,53 @@ suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {
 suspend fun getSupportedKmis(): List<String> = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val cmd = "boot-info supported-kmi"
+    val out = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
+    out.filter { it.isNotBlank() }.map { it.trim() }
+}
+
+suspend fun isAbDevice(): Boolean = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = "boot-info is-ab-device"
+    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim().toBoolean()
+}
+
+suspend fun getDefaultBootDevice(ota: Boolean): String = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = if (ota) {
+        "boot-info default-device --ota"
+    } else {
+        "boot-info default-device"
+    }
+    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
+}
+
+suspend fun getDefaultPartitionName(ota: Boolean): String = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = if (ota) {
+        "boot-info default-partition --ota"
+    } else {
+        "boot-info default-partition"
+    }
+    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
+}
+
+suspend fun getSlotSuffix(ota: Boolean): String = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = if (ota) {
+        "boot-info slot-suffix --ota"
+    } else {
+        "boot-info slot-suffix"
+    }
+    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
+}
+
+suspend fun getAvailablePartitions(ota: Boolean): List<String> = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val cmd = if (ota) {
+        "boot-info available-partitions --ota"
+    } else {
+        "boot-info available-partitions"
+    }
     val out = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
     out.filter { it.isNotBlank() }.map { it.trim() }
 }
@@ -429,7 +466,6 @@ fun forceStopApp(packageName: String) {
 }
 
 fun launchApp(packageName: String) {
-
     val shell = getRootShell()
     val result =
         shell.newJob()

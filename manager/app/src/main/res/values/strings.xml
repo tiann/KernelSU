@@ -122,6 +122,7 @@
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
     <string name="install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
     <string name="install_next">Next</string>
+    <string name="install_select_partition">Select partition</string>
     <string name="install_upload_lkm_file">Use local LKM file</string>
     <string name="install_only_support_ko_file">Only .ko files are supported</string>
     <string name="select_file_tip">%1$s partition image is recommended</string>
