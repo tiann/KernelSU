@@ -209,7 +209,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         val suffix = produceState(initialValue = "", isOta) {
                             value = getSlotSuffix(isOta)
                         }.value
-                        val partitions = produceState(initialValue = emptyList(), isOta) {
+                        val partitions = produceState(initialValue = emptyList()) {
                             value = getAvailablePartitions()
                         }.value
                         val defaultPartition = produceState(initialValue = "") {
