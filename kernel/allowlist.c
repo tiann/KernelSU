@@ -531,8 +531,6 @@ void ksu_allowlist_exit(void)
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;
 
-    persistent_allow_list();
-
     // free allowlist
     mutex_lock(&allowlist_mutex);
     list_for_each_entry_safe (np, n, &allow_list, list) {
