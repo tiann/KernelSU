@@ -212,7 +212,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         val partitions = produceState(initialValue = emptyList(), isOta) {
                             value = getAvailablePartitions()
                         }.value
-                        val defaultPartition = produceState(initialValue = "", isOta) {
+                        val defaultPartition = produceState(initialValue = "") {
                             value = getDefaultPartition()
                         }.value
                         val displayPartitions = partitions.map { name ->
