@@ -18,6 +18,7 @@ jobs:
   build-kernel:
     if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - version: "6.12"

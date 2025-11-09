@@ -155,9 +155,13 @@ jobs:
           KSU_ROOT=$GITHUB_WORKSPACE/KernelSU
           ABI_XML=$COMMON_ROOT/android/abi_gki_aarch64.xml
           SYMBOL_LIST=$COMMON_ROOT/android/abi_gki_aarch64
-          # python3 $KSU_ROOT/scripts/abi_gki_all.py $ABI_XML > $SYMBOL_LIST
-          echo "[+] Add KernelSU symbols"
-          cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
+          if [ -f $SYMBOL_LIST ] && [ -f $ABI_XML ]; then
+            # python3 $KSU_ROOT/scripts/abi_gki_all.py $ABI_XML > $SYMBOL_LIST
+            echo "[+] Add KernelSU symbols"
+            cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
+          else
+            echo "[+] No abi_gki_all.py found, skip adding symbols"
+          fi
 
       - name: Setup ccache
         if: inputs.use_cache == true
