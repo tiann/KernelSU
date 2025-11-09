@@ -722,7 +722,6 @@ pub fn choose_boot_partition(
 #[cfg(not(target_os = "android"))]
 pub fn choose_boot_partition(
     _kmi: &str,
-    _ota: bool,
     _is_replace_kernel: bool,
     _partition: &Option<String>,
 ) -> Result<String> {
