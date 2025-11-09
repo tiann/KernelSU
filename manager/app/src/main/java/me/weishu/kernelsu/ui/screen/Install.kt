@@ -101,6 +101,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 
     var partitionSelectionIndex by remember { mutableIntStateOf(0) }
     var partitionsState by remember { mutableStateOf<List<String>>(emptyList()) }
+    var hasCustomSelected by rememberSaveable { mutableStateOf(false) }
 
     val onInstall = {
         installMethod?.let { method ->
@@ -215,16 +216,20 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         val defaultPartition = produceState(initialValue = "") {
                             value = getDefaultPartition()
                         }.value
+                        partitionsState = partitions
                         val displayPartitions = partitions.map { name ->
                             if (defaultPartition == name) "$name (default)" else name
                         }
-                        partitionsState = partitions
-                        if (partitionSelectionIndex >= partitions.size) partitionSelectionIndex = 0
+                        val defaultIndex = partitions.indexOf(defaultPartition).takeIf { it >= 0 } ?: 0
+                        if (!hasCustomSelected) partitionSelectionIndex = defaultIndex
                         SuperDropdown(
                             items = displayPartitions,
                             selectedIndex = partitionSelectionIndex,
                             title = "${stringResource(R.string.install_select_partition)} (${suffix})",
-                            onSelectedIndexChange = { index -> partitionSelectionIndex = index }
+                            onSelectedIndexChange = { index ->
+                                hasCustomSelected = true
+                                partitionSelectionIndex = index
+                            }
                         )
                     }
                 }
