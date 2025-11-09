@@ -19,6 +19,7 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref != 'refs/heads/checkci'
     strategy:
       matrix:
+        fail-fast: false
         include:
           - version: "5.10"
             sub_level: 223
