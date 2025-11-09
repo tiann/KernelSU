@@ -238,7 +238,7 @@ fun FlashScreen(
 
 @Parcelize
 sealed class FlashIt : Parcelable {
-    data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean) :
+    data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean, val partition: String? = null) :
         FlashIt()
 
     data class FlashModules(val uris: List<Uri>) : FlashIt()
@@ -258,6 +258,7 @@ fun flashIt(
             flashIt.boot,
             flashIt.lkm,
             flashIt.ota,
+            flashIt.partition,
             onStdout,
             onStderr
         )

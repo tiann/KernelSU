@@ -39,6 +39,10 @@
 #include "syscall_hook_manager.h"
 #include "kernel_umount.h"
 
+#define PER_USER_RANGE 100000
+#define FIRST_APPLICATION_UID 10000
+#define LAST_APPLICATION_UID 19999
+
 static bool ksu_enhanced_security_enabled = false;
 
 static int enhanced_security_feature_get(u64 *value)
@@ -71,51 +75,39 @@ static inline bool is_allow_su()
     return ksu_is_allow_uid_for_current(current_uid().val);
 }
 
-static inline bool is_unsupported_uid(uid_t uid)
+static inline bool is_appuid(uid_t uid)
 {
-#define LAST_APPLICATION_UID 19999
-    uid_t appid = uid % 100000;
-    return appid > LAST_APPLICATION_UID;
-}
-
-// ksu_handle_prctl removed - now using ioctl via reboot hook
-
-static bool is_appuid(uid_t uid)
-{
-#define PER_USER_RANGE 100000
-#define FIRST_APPLICATION_UID 10000
-#define LAST_APPLICATION_UID 19999
-
     uid_t appid = uid % PER_USER_RANGE;
     return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
 }
 
 int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
+    // we rely on the fact that zygote always call setresuid(3) with same uids
     uid_t new_uid = ruid;
-	uid_t old_uid = current_uid().val;
-    pr_info("handle_setuid from %d to %d\n", old_uid, new_uid);
+    uid_t old_uid = current_uid().val;
 
-    if (0 != old_uid) {
-        // old process is not root, ignore it.
-        if (ksu_enhanced_security_enabled) {
-            // disallow any non-ksu domain escalation from non-root to root!
-            if (unlikely(new_uid) == 0) {
-                if (!is_ksu_domain()) {
-                    pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                        current->pid, current->comm, old_uid, new_uid);
-                    force_sig(SIGKILL);
-                    return 0;
-                }
+    pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
+
+    // if old process is root, ignore it.
+    if (old_uid != 0 && ksu_enhanced_security_enabled) {
+        // disallow any non-ksu domain escalation from non-root to root!
+        // euid is what we care about here as it controls permission
+        if (unlikely(euid == 0)) {
+            if (!is_ksu_domain()) {
+                pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
+                    current->pid, current->comm, old_uid, new_uid);
+                force_sig(SIGKILL);
+                return 0;
             }
-            // disallow appuid decrease to any other uid if it is allowed to su
-            if (is_appuid(old_uid)) {
-                if (new_uid < old_uid && !ksu_is_allow_uid_for_current(old_uid)) {
-                    pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                        current->pid, current->comm, old_uid, new_uid);
-                    force_sig(SIGKILL);
-                    return 0;
-                }
+        }
+        // disallow appuid decrease to any other uid if it is not allowed to su
+        if (is_appuid(old_uid)) {
+            if (euid < current_euid().val && !ksu_is_allow_uid_for_current(old_uid)) {
+                pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
+                    current->pid, current->comm, old_uid, new_uid);
+                force_sig(SIGKILL);
+                return 0;
             }
         }
         return 0;
@@ -125,14 +117,15 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         ksu_set_task_tracepoint_flag(current);
     }
 
-    if (!is_appuid(new_uid) || is_unsupported_uid(new_uid)) {
-        pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
+    // FIXME: isolated process which directly forks from zygote is not handled
+    if (!is_appuid(new_uid)) {
+        pr_info("handle setresuid ignore non application or isolated uid: %d\n", new_uid);
         ksu_clear_task_tracepoint_flag(current);
         return 0;
     }
 
     // if on private space, see if its possibly the manager
-    if (new_uid > 100000 && new_uid % 100000 == ksu_get_manager_uid()) {
+    if (new_uid > PER_USER_RANGE && new_uid % PER_USER_RANGE == ksu_get_manager_uid()) {
         ksu_set_manager_uid(new_uid);
     }
 

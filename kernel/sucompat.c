@@ -45,8 +45,8 @@ static const struct ksu_feature_handler su_compat_handler = {
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
 {
-    /* To avoid having to mmap a page in userspace, just write below the stack
-   * pointer. */
+    // To avoid having to mmap a page in userspace, just write below the stack
+    // pointer.
     char __user *p = (void __user *)current_user_stack_pointer() - len;
 
     return copy_to_user(p, d, len) ? NULL : p;
@@ -127,7 +127,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
     return 0;
 }
 
-int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
+int ksu_handle_execve_sucompat(const char __user **filename_user,
                                void *__never_use_argv, void *__never_use_envp,
                                int *__never_use_flags)
 {
@@ -155,7 +155,7 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 }
 
 
-// sucompat: permited process can execute 'su' to gain root access.
+// sucompat: permitted process can execute 'su' to gain root access.
 void ksu_sucompat_init()
 {
     if (ksu_register_feature_handler(&su_compat_handler)) {

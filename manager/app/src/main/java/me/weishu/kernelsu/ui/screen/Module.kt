@@ -93,6 +93,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.ConfirmResult
+import me.weishu.kernelsu.ui.component.DropdownImpl
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -121,7 +122,6 @@ import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import me.weishu.kernelsu.ui.component.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
