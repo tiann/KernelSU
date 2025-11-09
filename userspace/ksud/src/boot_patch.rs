@@ -224,7 +224,7 @@ pub fn restore(
 
     let skip_init = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir)?;
+    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir, &None)?;
 
     println!("- Unpacking boot image");
     let status = Command::new(&magiskboot)
@@ -349,8 +349,9 @@ pub fn patch(
     out: Option<PathBuf>,
     magiskboot: Option<PathBuf>,
     kmi: Option<String>,
+    partition: Option<String>,
 ) -> Result<()> {
-    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot, kmi);
+    let result = do_patch(image, kernel, kmod, init, ota, flash, out, magiskboot, kmi, partition);
     if let Err(ref e) = result {
         println!("- Install Error: {e}");
     }
@@ -368,6 +369,7 @@ fn do_patch(
     out: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
     kmi: Option<String>,
+    partition: Option<String>,
 ) -> Result<()> {
     println!(include_str!("banner"));
 
@@ -425,7 +427,7 @@ fn do_patch(
     let skip_init = kmi.starts_with("android12-");
 
     let (bootimage, bootdevice) =
-        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir)?;
+        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir, &partition)?;
 
     let bootimage = bootimage.as_path();
 
@@ -655,6 +657,7 @@ fn find_boot_image(
     ota: bool,
     is_replace_kernel: bool,
     workdir: &Path,
+    partition: &Option<String>,
 ) -> Result<(PathBuf, Option<String>)> {
     let bootimage;
     let mut bootdevice = None;
@@ -681,7 +684,18 @@ fn find_boot_image(
             Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
         let vendor_boot_exist =
             Path::new(&format!("/dev/block/by-name/vendor_boot{slot_suffix}")).exists();
-        let boot_partition = if !is_replace_kernel && init_boot_exist && !skip_init {
+        let boot_partition = if let Some(part) = partition {
+            let name = match part.as_str() {
+                "init_boot" => "init_boot",
+                "vendor_boot" => "vendor_boot",
+                _ => "boot",
+            };
+            let override_path = format!("/dev/block/by-name/{name}{slot_suffix}");
+            ensure!(Path::new(&override_path).exists(), "partition {name} not found for slot {slot_suffix}");
+            println!("- Target partition: {name}");
+            println!("- Target slot: {slot_suffix}");
+            override_path
+        } else if !is_replace_kernel && init_boot_exist && !skip_init {
             format!("/dev/block/by-name/init_boot{slot_suffix}")
         } else if !is_replace_kernel && vendor_boot_exist && !skip_init {
             format!("/dev/block/by-name/vendor_boot{slot_suffix}")

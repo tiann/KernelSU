@@ -9,6 +9,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -30,6 +33,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -49,9 +53,12 @@ import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestin
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
+import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.LkmSelection
+import me.weishu.kernelsu.ui.util.availablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
+import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.isInitBoot
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -92,12 +99,19 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         mutableStateOf<LkmSelection>(LkmSelection.KmiNone)
     }
 
+    var partitionSelectionIndex by remember { mutableIntStateOf(0) }
+
     val onInstall = {
         installMethod?.let { method ->
+            val isOta = method is InstallMethod.DirectInstallToInactiveSlot
+            val targetActiveSlot = !isOta
+            val partitions = availablePartitions(targetActiveSlot)
+            val partitionSelection = partitions.getOrNull(partitionSelectionIndex)
             val flashIt = FlashIt.FlashBoot(
                 boot = if (method is InstallMethod.SelectFile) method.uri else null,
                 lkm = lkmSelection,
-                ota = method is InstallMethod.DirectInstallToInactiveSlot
+                ota = isOta,
+                partition = partitionSelection
             )
             navigator.navigate(FlashScreenDestination(flashIt)) {
                 launchSingleTop = true
@@ -180,6 +194,32 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 ) {
                     SelectInstallMethod { method ->
                         installMethod = method
+                    }
+                }
+                AnimatedVisibility(
+                    visible = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                    ) {
+                        val isOta = installMethod is InstallMethod.DirectInstallToInactiveSlot
+                        val targetActiveSlot = !isOta
+                        val suffix = getSlotSuffix(targetActiveSlot)
+                        val partitions = availablePartitions(targetActiveSlot)
+                        val displayPartitions = partitions.mapIndexed { index, name ->
+                            if (index == 0) "$name (default)" else name
+                        }
+                        if (partitionSelectionIndex >= partitions.size) partitionSelectionIndex = 0
+                        SuperDropdown(
+                            items = displayPartitions,
+                            selectedIndex = partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${suffix})",
+                            onSelectedIndexChange = { index -> partitionSelectionIndex = index }
+                        )
                     }
                 }
                 Card(

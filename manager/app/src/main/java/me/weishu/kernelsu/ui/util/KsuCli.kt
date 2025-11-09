@@ -247,6 +247,7 @@ fun installBoot(
     bootUri: Uri?,
     lkm: LkmSelection,
     ota: Boolean,
+    partition: String?,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -305,6 +306,10 @@ fun installBoot(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     cmd += " -o $downloadsDir"
 
+    partition?.let { part ->
+        cmd += " --partition $part"
+    }
+
     val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
@@ -335,11 +340,39 @@ fun isAbDevice(): Boolean {
 }
 
 fun isInitBoot(): Boolean {
-    val shell = getRootShell();
+    val shell = getRootShell()
     if (shell.isRoot) {
         return SuFile("/dev/block/by-name/init_boot").exists() || SuFile("/dev/block/by-name/init_boot_a").exists()
     }
     return !Os.uname().release.contains("android12-")
+}
+
+fun getSlotSuffix(targetActiveSlot: Boolean): String {
+    val shell = getRootShell()
+    val ab = isAbDevice()
+    val current = ShellUtils.fastCmd(shell, "getprop ro.boot.slot_suffix").trim()
+    if (!ab || current.isBlank()) return ""
+    return if (targetActiveSlot) current else if (current == "_a") "_b" else "_a"
+}
+
+fun partitionExists(name: String, suffix: String): Boolean {
+    val path = "/dev/block/by-name/$name$suffix"
+    return SuFile(path).exists()
+}
+
+fun availablePartitions(targetActiveSlot: Boolean): List<String> {
+    val isInitBoot = isInitBoot()
+    val orderedCandidates = if (isInitBoot) {
+        listOf("init_boot", "boot", "vendor_boot")
+    } else {
+        listOf("boot", "init_boot", "vendor_boot")
+    }
+    val res = mutableListOf<String>()
+    val suffix = getSlotSuffix(targetActiveSlot)
+    for (name in orderedCandidates) {
+        if (partitionExists(name, suffix)) res.add(name)
+    }
+    return res
 }
 
 suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {
