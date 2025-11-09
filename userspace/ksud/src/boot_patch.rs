@@ -724,8 +724,8 @@ pub fn choose_boot_partition(
     _kmi: &str,
     _is_replace_kernel: bool,
     _partition: &Option<String>,
-) -> Result<String> {
-    bail!("Current OS is not android, refusing auto bootdevice detection")
+) -> String {
+    "boot".to_string()
 }
 
 #[cfg(target_os = "android")]
