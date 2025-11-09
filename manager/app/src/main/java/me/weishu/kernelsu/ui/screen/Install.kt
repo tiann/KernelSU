@@ -76,6 +76,7 @@ import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Edit
 import top.yukonga.miuix.kmp.icon.icons.useful.Move
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -229,6 +230,14 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                             onSelectedIndexChange = { index ->
                                 hasCustomSelected = true
                                 partitionSelectionIndex = index
+                            },
+                            leftAction = {
+                                Icon(
+                                    MiuixIcons.Useful.Edit,
+                                    tint = colorScheme.onSurface,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = null
+                                )
                             }
                         )
                     }
