@@ -4,10 +4,13 @@
 #include <linux/capability.h>
 #include <linux/cred.h>
 #include <linux/err.h>
+#include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/kprobes.h>
+#include <linux/syscalls.h>
+#include <linux/task_work.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
@@ -464,6 +467,28 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
+struct ksu_install_fd_tw {
+    struct callback_head cb;
+    int __user *outp;
+};
+
+static void ksu_install_fd_tw_func(struct callback_head *cb)
+{
+    struct ksu_install_fd_tw *tw = container_of(cb, struct ksu_install_fd_tw, cb);
+    int fd = ksu_install_fd();
+    pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+
+    if (copy_to_user(tw->outp, &fd, sizeof(fd))) {
+        pr_err("install ksu fd reply err\n");
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+        close_fd(fd);
+#else
+        ksys_close(fd);
+#endif
+    }
+
+    kfree(tw);
+}
 
 static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -474,12 +499,20 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
     // Check if this is a request to install KSU fd
     if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
-        int fd = ksu_install_fd();
-        pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+        struct ksu_install_fd_tw *tw;
 
         arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
-        if (copy_to_user((int *)arg4, &fd, sizeof(fd))) {
-            pr_err("install ksu fd reply err\n");
+
+        tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+        if (!tw)
+            return 0;
+
+        tw->outp = (int __user *)arg4;
+        tw->cb.func = ksu_install_fd_tw_func;
+
+        if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+            kfree(tw);
+            pr_warn("install fd add task_work failed\n");
         }
     }
 
