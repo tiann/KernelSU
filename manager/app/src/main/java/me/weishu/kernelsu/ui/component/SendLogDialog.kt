@@ -57,7 +57,9 @@ fun SendLogDialog(
                 }
             }
             loadingDialog.hide()
-            Toast.makeText(context, context.getString(R.string.log_saved), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, context.getString(R.string.log_saved), Toast.LENGTH_SHORT).show()
+            }
         }
     }
     SuperDialog(
