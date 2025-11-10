@@ -9,7 +9,7 @@
     <!--Don't translate this string!-->
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
-    <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра</string>
+    <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра.</string>
     <string name="home_kernel">Версия ядра</string>
     <string name="home_manager_version">Версия менеджера</string>
     <string name="home_fingerprint">Подпись</string>
@@ -50,7 +50,7 @@
     <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
     <string name="home_learn_kernelsu">Узнайте о KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/ru_RU/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">Узнайте, как установить KernelSU и использовать модули</string>
+    <string name="home_click_to_learn_kernelsu">Узнайте, как установить KernelSU и использовать модули.</string>
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_support_content">KernelSU был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s<br/>Присоединяйтесь к нашему %2$s каналу]]></string>
@@ -69,7 +69,7 @@
     <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Размонтировать модули</string>
     <string name="failed_to_update_app_profile">Не удалось обновить App Profile для %s</string>
-    <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
+    <string name="settings_umount_modules_default">Размонтировать модули</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые изменённые модулями файлы для данного приложения.</string>
     <string name="profile_selinux_domain">Домен</string>
@@ -158,5 +158,5 @@
     <string name="settings_mode_default">По умолчанию</string>
     <string name="settings_mode_temp_enable">Включить временно</string>
     <string name="settings_mode_always_enable">Включить постоянно</string>
-    <string name="settings_module_check_update">Проверить обновление модуля</string>
+    <string name="settings_module_check_update">Проверять обновления модулей</string>
 </resources>

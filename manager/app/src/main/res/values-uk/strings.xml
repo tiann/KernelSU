@@ -8,7 +8,7 @@
     <string name="home_superuser_count">Суперкористувачі: %d</string>
     <string name="home_module_count">Модулі: %d</string>
     <string name="home_unsupported">Не підтримується</string>
-    <string name="home_unsupported_reason">KernelSU підтримує лише GKI ядра на данний момент</string>
+    <string name="home_unsupported_reason">KernelSU зараз підтримує лише ядра GKI.</string>
     <string name="home_kernel">Версія ядра</string>
     <string name="home_manager_version">Версія менеджера</string>
     <string name="home_fingerprint">Відбиток</string>
@@ -48,7 +48,7 @@
     <string name="module_magisk_conflict">Модулі недоступні через конфлікт з Magisk!</string>
     <string name="home_learn_kernelsu">Дізнайтеся про KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">Дізнайтеся, як інсталювати KernelSU і використовувати модулі</string>
+    <string name="home_click_to_learn_kernelsu">Дізнайтеся, як інсталювати KernelSU і використовувати модулі.</string>
     <string name="home_support_title">Підтримати нас</string>
     <string name="home_support_content">KernelSU є і завжди буде безкоштовним програмним забезпеченням з відкритим вихідним кодом. Однак ви можете показати нам, що вам небайдужа наша допомога, зробивши пожертву.</string>
     <string name="about_source_code"><![CDATA[Переглянути вихідний код на %1$s<br/>Приєднуйтесь до нашого каналу %2$s]]></string>
@@ -66,7 +66,7 @@
     <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Розмонтувати модулі</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
-    <string name="settings_umount_modules_default">Розмонтувати модулі за замовчуванням</string>
+    <string name="settings_umount_modules_default">Розмонтування модулів</string>
     <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
     <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU відновити будь-які змінені файли модулями для цієї програми.</string>
     <string name="profile_selinux_domain">Домен</string>
@@ -77,7 +77,7 @@
     <string name="launch_app">Запустити</string>
     <string name="force_stop_app">Примусова зупинка</string>
     <string name="restart_app">Перезапустити</string>
-    <string name="new_version_available">Доступна нова версія %s, натисніть, щоб оновити.</string>
+    <string name="new_version_available">Доступна нова версія %s, натисніть, щоб оновити!</string>
     <string name="failed_to_update_sepolicy">Не вдалося оновити правила SELinux для %s</string>
     <string name="module_changelog">Журнал змін</string>
     <string name="require_kernel_version">Поточна версія KernelSU %d занадто низька для належної роботи менеджера. Будь ласка, оновіть його до версії %d або вище!</string>
@@ -99,15 +99,15 @@
     <string name="settings_profile_template">Шаблон профілю програми</string>
     <string name="app_profile_template_description">Опис</string>
     <string name="app_profile_template_save">Зберегти</string>
-    <string name="settings_profile_template_summary">Керувати локальними та мережевими шаблонами профілів додатків</string>
+    <string name="settings_profile_template_summary">Керувати локальними та мережевими шаблонами профілів додатків.</string>
     <string name="app_profile_template_delete">Видалити</string>
     <string name="app_profile_template_import_empty">Буфер обміну пустий!</string>
     <string name="app_profile_template_view">Переглянути шаблон</string>
-    <string name="enable_web_debugging">Увімкнути налагодження WebView</string>
+    <string name="enable_web_debugging">Налагодження WebView</string>
     <string name="select_kmi">Виберіть KMI</string>
     <string name="install_next">Далі</string>
     <string name="settings_check_update">Перевірити наявність оновлень</string>
-    <string name="settings_check_update_summary">Автоматична перевірка оновлень під час відкриття програми</string>
+    <string name="settings_check_update_summary">Автоматична перевірка оновлень під час відкриття програми.</string>
     <string name="enable_web_debugging_summary">Можна використовувати для налагодження веб-інтерфейсу. Вмикайте лише за потреби.</string>
     <string name="direct_install">Пряме встановлення (рекомендовано)</string>
     <string name="select_file">Виберіть файл</string>
@@ -140,5 +140,20 @@
     <string name="action">Дія</string>
     <string name="log_saved">Журнали збережено</string>
     <string name="settings_disable_su">Вимкнути сумісність із su</string>
-    <string name="settings_disable_su_summary">Тимчасово вимкніть можливість будь-якої програми отримувати root-права за допомогою команди ⁠su (існуючі root-процеси залишаться в силі).</string>
+    <string name="settings_disable_su_summary">Вимкніть можливість будь-якої програми отримувати root-права за допомогою команди ⁠su (існуючі root-процеси залишаться в силі).</string>
+    <string name="settings_module_check_update">Перевірити наявність оновлень модулів</string>
+    <string name="install_upload_lkm_file">Використовувати локальний LKM-файл</string>
+    <string name="install_only_support_ko_file">Підтримуються лише файли .ko</string>
+    <string name="settings_disable_kernel_umount">Вимкнути розмонтування ядра</string>
+    <string name="settings_disable_kernel_umount_summary">Вимкнути поведінку розмонтування на рівні ядра, контрольовану KernelSU.</string>
+    <string name="settings_enable_enhanced_security">Увімкнути посилену безпеку</string>
+    <string name="settings_enable_enhanced_security_summary">Увімкніть суворіші політики безпеки.</string>
+    <string name="settings_mode_default">За замовчуванням</string>
+    <string name="settings_mode_temp_enable">Тимчасово ввімкнути</string>
+    <string name="settings_mode_always_enable">Увімкнути назавжди</string>
+    <string name="processing">Обробка…</string>
+    <string name="refresh_pulling">Потягніть униз, щоб оновити</string>
+    <string name="refresh_release">Відпустіть для оновлення</string>
+    <string name="refresh_refresh">Оновлення…</string>
+    <string name="refresh_complete">Оновлено успішно</string>
 </resources>
