@@ -58,8 +58,7 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
-import me.weishu.kernelsu.ui.util.getDefaultBootDevice
-import me.weishu.kernelsu.ui.util.getDefaultPartitionName
+import me.weishu.kernelsu.ui.util.getDefaultPartition
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -77,6 +76,7 @@ import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Edit
 import top.yukonga.miuix.kmp.icon.icons.useful.Move
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -102,6 +102,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 
     var partitionSelectionIndex by remember { mutableIntStateOf(0) }
     var partitionsState by remember { mutableStateOf<List<String>>(emptyList()) }
+    var hasCustomSelected by remember { mutableStateOf(false) }
 
     val onInstall = {
         installMethod?.let { method ->
@@ -210,23 +211,34 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         val suffix = produceState(initialValue = "", isOta) {
                             value = getSlotSuffix(isOta)
                         }.value
-                        val partitions = produceState(initialValue = emptyList(), isOta) {
-                            value = getAvailablePartitions(isOta)
+                        val partitions = produceState(initialValue = emptyList()) {
+                            value = getAvailablePartitions()
                         }.value
-                        val defaultDevice = produceState(initialValue = "", isOta) {
-                            value = getDefaultBootDevice(isOta)
+                        val defaultPartition = produceState(initialValue = "") {
+                            value = getDefaultPartition()
                         }.value
-                        val displayPartitions = partitions.map { name ->
-                            val path = "/dev/block/by-name/${name}${suffix}"
-                            if (defaultDevice.isNotBlank() && defaultDevice == path) "$name (default)" else name
-                        }
                         partitionsState = partitions
-                        if (partitionSelectionIndex >= partitions.size) partitionSelectionIndex = 0
+                        val displayPartitions = partitions.map { name ->
+                            if (defaultPartition == name) "$name (default)" else name
+                        }
+                        val defaultIndex = partitions.indexOf(defaultPartition).takeIf { it >= 0 } ?: 0
+                        if (!hasCustomSelected) partitionSelectionIndex = defaultIndex
                         SuperDropdown(
                             items = displayPartitions,
                             selectedIndex = partitionSelectionIndex,
                             title = "${stringResource(R.string.install_select_partition)} (${suffix})",
-                            onSelectedIndexChange = { index -> partitionSelectionIndex = index }
+                            onSelectedIndexChange = { index ->
+                                hasCustomSelected = true
+                                partitionSelectionIndex = index
+                            },
+                            leftAction = {
+                                Icon(
+                                    MiuixIcons.Useful.Edit,
+                                    tint = colorScheme.onSurface,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = null
+                                )
+                            }
                         )
                     }
                 }
@@ -307,7 +319,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         value = isAbDevice()
     }.value
     val defaultPartitionName = produceState(initialValue = "boot") {
-        value = getDefaultPartitionName(false)
+        value = getDefaultPartition()
     }.value
     val selectFileTip = stringResource(
         id = R.string.select_file_tip, defaultPartitionName

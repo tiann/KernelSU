@@ -146,29 +146,11 @@ enum BootInfo {
     /// check if device is A/B capable
     IsAbDevice,
 
-    /// show auto-selected boot device path
-    DefaultDevice {
-        /// will use another slot when auto selecting
-        #[arg(short = 'u', long, default_value = "false")]
-        ota: bool,
-        /// target partition override (init_boot | boot | vendor_boot)
-        #[arg(long, default_value = None)]
-        partition: Option<String>,
-    },
-
     /// show auto-selected boot partition name
-    DefaultPartition {
-        /// will use another slot when auto selecting
-        #[arg(short = 'u', long, default_value = "false")]
-        ota: bool,
-    },
+    DefaultPartition,
 
     /// list available partitions for current or OTA toggled slot
-    AvailablePartitions {
-        /// toggle to another slot
-        #[arg(short = 'u', long, default_value = "false")]
-        ota: bool,
-    },
+    AvailablePartitions,
 
     /// show slot suffix for current or OTA toggled slot
     SlotSuffix {
@@ -517,18 +499,9 @@ pub fn run() -> Result<()> {
                 println!("{}", if is_ab { "true" } else { "false" });
                 return Ok(());
             }
-            BootInfo::DefaultDevice { ota, partition } => {
+            BootInfo::DefaultPartition => {
                 let kmi = crate::boot_patch::get_current_kmi().unwrap_or_else(|_| String::from(""));
-                let skip_init = kmi.starts_with("android12-");
-                let dev = crate::boot_patch::choose_boot_device(skip_init, ota, false, &partition)?;
-                println!("{dev}");
-                return Ok(());
-            }
-            BootInfo::DefaultPartition { ota } => {
-                let kmi = crate::boot_patch::get_current_kmi().unwrap_or_else(|_| String::from(""));
-                let skip_init = kmi.starts_with("android12-");
-                let name =
-                    crate::boot_patch::get_default_partition_name(skip_init, ota, false, &None)?;
+                let name = crate::boot_patch::choose_boot_partition(&kmi, false, &None);
                 println!("{name}");
                 return Ok(());
             }
@@ -537,10 +510,8 @@ pub fn run() -> Result<()> {
                 println!("{suffix}");
                 return Ok(());
             }
-            BootInfo::AvailablePartitions { ota } => {
-                let kmi = crate::boot_patch::get_current_kmi().unwrap_or_else(|_| String::from(""));
-                let skip_init = kmi.starts_with("android12-");
-                let parts = crate::boot_patch::list_available_partitions(skip_init, ota);
+            BootInfo::AvailablePartitions => {
+                let parts = crate::boot_patch::list_available_partitions();
                 parts.iter().for_each(|p| println!("{p}"));
                 return Ok(());
             }
