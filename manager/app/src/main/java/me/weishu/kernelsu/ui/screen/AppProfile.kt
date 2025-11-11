@@ -318,7 +318,12 @@ private fun AppProfileInner(
                     ProfileBox(mode, true) {
                         // template mode shouldn't change profile here!
                         if (it == Mode.Default || it == Mode.Custom) {
-                            onProfileChange(profile.copy(rootUseDefault = it == Mode.Default))
+                            onProfileChange(
+                                profile.copy(
+                                    rootUseDefault = it == Mode.Default,
+                                    rootTemplate = null
+                                )
+                            )
                         }
                         mode = it
                     }
