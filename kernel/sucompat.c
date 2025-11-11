@@ -134,6 +134,8 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
     const char su[] = SU_PATH;
     char path[sizeof(su) + 1];
 
+	pr_info("test 1\n");
+
     if (unlikely(!filename_user))
         return 0;
 
@@ -143,6 +145,8 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
     if (likely(memcmp(path, su, sizeof(su))))
         return 0;
 
+	pr_info("test 2\n");
+	
     if (!ksu_is_allow_uid_for_current(current_uid().val))
         return 0;
 
