@@ -39,10 +39,6 @@
 #include "syscall_hook_manager.h"
 #include "kernel_umount.h"
 
-#define PER_USER_RANGE 100000
-#define FIRST_APPLICATION_UID 10000
-#define LAST_APPLICATION_UID 19999
-
 static bool ksu_enhanced_security_enabled = false;
 
 static int enhanced_security_feature_get(u64 *value)
@@ -75,12 +71,6 @@ static inline bool is_allow_su()
     return ksu_is_allow_uid_for_current(current_uid().val);
 }
 
-static inline bool is_appuid(uid_t uid)
-{
-    uid_t appid = uid % PER_USER_RANGE;
-    return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
-}
-
 int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
     // we rely on the fact that zygote always call setresuid(3) with same uids
@@ -110,17 +100,6 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
                 return 0;
             }
         }
-        return 0;
-    }
-
-    if (new_uid == 2000) {
-        ksu_set_task_tracepoint_flag(current);
-    }
-
-    // FIXME: isolated process which directly forks from zygote is not handled
-    if (!is_appuid(new_uid)) {
-        pr_info("handle setresuid ignore non application or isolated uid: %d\n", new_uid);
-        ksu_clear_task_tracepoint_flag(current);
         return 0;
     }
 
