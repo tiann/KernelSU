@@ -113,12 +113,9 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         return 0;
     }
 
-    if (new_uid == 2000) {
-        ksu_set_task_tracepoint_flag(current);
-    }
-
+    // don't touch root and shell uid (for calling su with su)
     // FIXME: isolated process which directly forks from zygote is not handled
-    if (!is_appuid(new_uid)) {
+    if (!is_appuid(new_uid) && new_uid != 0 && new_uid != 2000) {
         pr_info("handle setresuid ignore non application or isolated uid: %d\n", new_uid);
         ksu_clear_task_tracepoint_flag(current);
         return 0;
@@ -149,6 +146,11 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         ksu_set_task_tracepoint_flag(current);
     } else {
         ksu_clear_task_tracepoint_flag(current);
+    }
+
+    // for init forks adbd
+    if (current->real_parent->pid == 1 && new_uid == 2000) {
+        ksu_set_task_tracepoint_flag(current);
     }
 
     // Handle kernel umount
