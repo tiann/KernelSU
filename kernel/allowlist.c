@@ -292,8 +292,10 @@ bool __ksu_is_allow_uid_for_current(uid_t uid)
 {
     if (unlikely(uid == 0)) {
         // already root, but only allow our domain.
+        pr_info("test 4!\n");
         return is_ksu_domain();
     }
+    pr_info("test 5!\n");
     return __ksu_is_allow_uid(uid);
 }
 
