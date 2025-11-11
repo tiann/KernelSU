@@ -135,6 +135,11 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         return 0;
     }
 
+    // FIXME: isolated process which directly forks from zygote is not handled
+    if (!is_appuid(new_uid)) {
+        return 0;
+    }
+
     if (!ksu_uid_should_umount(new_uid)) {
         return 0;
     }
