@@ -149,8 +149,14 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     }
 
     // for init forks adbd
-    if (current->real_parent->pid == 1 && new_uid == 2000) {
-        ksu_set_task_tracepoint_flag(current);
+    {
+        struct task_struct *parent;
+        rcu_read_lock();
+        parent = rcu_dereference(current->real_parent);
+        if (parent && parent->pid == 1 && new_uid == 2000) {
+            ksu_set_task_tracepoint_flag(current);
+        }
+        rcu_read_unlock();
     }
 
     // Handle kernel umount
