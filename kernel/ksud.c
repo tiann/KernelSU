@@ -119,7 +119,6 @@ void on_boot_completed(void){
     pr_info("on_boot_completed!\n");
     // remark process, we don't want to mark other init
     // forked process excepte zygote and adbd
-    ksu_unmark_all_process();
     ksu_mark_running_process();
 }
 
