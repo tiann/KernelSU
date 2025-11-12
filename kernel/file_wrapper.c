@@ -234,7 +234,7 @@ static long ksu_wrapper_fallocate(struct file *fp, int mode, loff_t offset, loff
 }
 
 static void ksu_wrapper_show_fdinfo(struct seq_file *m, struct file *f) {
-	struct ksu_file_wrapper* data = m->file->private_data;
+	struct ksu_file_wrapper* data = f->private_data;
 	struct file* orig = data->orig;
 	if (orig->f_op->show_fdinfo) {
 		orig->f_op->show_fdinfo(m, orig);
