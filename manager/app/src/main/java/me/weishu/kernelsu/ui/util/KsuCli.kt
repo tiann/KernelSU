@@ -8,6 +8,7 @@ import android.os.Environment
 import android.os.Parcelable
 import android.os.SystemClock
 import android.provider.OpenableColumns
+import android.system.Os
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
@@ -357,8 +358,12 @@ suspend fun isAbDevice(): Boolean = withContext(Dispatchers.IO) {
 
 suspend fun getDefaultPartition(): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
-    val cmd = "boot-info default-partition"
-    ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
+    if (shell.isRoot) {
+        val cmd = "boot-info default-partition"
+        ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
+    } else {
+        if (!Os.uname().release.contains("android12-")) "init_boot" else "boot"
+    }
 }
 
 suspend fun getSlotSuffix(ota: Boolean): String = withContext(Dispatchers.IO) {
