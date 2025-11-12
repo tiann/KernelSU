@@ -16,6 +16,7 @@
 #include "selinux/selinux.h"
 #include "allowlist.h"
 #include "manager.h"
+#include "syscall_hook_manager.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 3 // u32
@@ -393,6 +394,8 @@ static void do_persistent_allow_list(struct callback_head *_cb)
         kernel_write(fp, &p->profile, sizeof(p->profile), &off);
     }
 
+    // remark processes
+    ksu_mark_running_process();
 close_file:
     filp_close(fp, 0);
 unlock:
