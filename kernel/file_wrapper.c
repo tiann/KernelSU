@@ -241,27 +241,31 @@ static void ksu_wrapper_show_fdinfo(struct seq_file *m, struct file *f) {
 	}
 }
 
-static ssize_t ksu_wrapper_copy_file_range(struct file *f1, loff_t off1, struct file *f2,
-		loff_t off2, size_t sz, unsigned int flags) {
-	// TODO: determine which file to use
-	struct ksu_file_wrapper* data = f1->private_data;
+// https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/read_write.c;l=1593-1606;drc=398da7defe218d3e51b0f3bdff75147e28125b60
+static ssize_t ksu_wrapper_copy_file_range(struct file *file_in, loff_t pos_in, struct file *file_out,
+		loff_t pos_out, size_t len, unsigned int flags) {
+	struct ksu_file_wrapper* data = file_out->private_data;
 	struct file* orig = data->orig;
-	if (orig->f_op->copy_file_range) {
-		return orig->f_op->copy_file_range(orig, off1, f2, off2, sz, flags);
-	}
-	return -EINVAL;
+	return orig->f_op->copy_file_range(file_in, pos_in, orig, pos_out, len, flags);
 }
 
+// no REMAP_FILE_DEDUP: use file_in
+// https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/read_write.c;l=1598-1599;drc=398da7defe218d3e51b0f3bdff75147e28125b60
+// https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/remap_range.c;l=403-404;drc=398da7defe218d3e51b0f3bdff75147e28125b60
+// REMAP_FILE_DEDUP: use file_out
+// https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/remap_range.c;l=483-484;drc=398da7defe218d3e51b0f3bdff75147e28125b60
 static loff_t ksu_wrapper_remap_file_range(struct file *file_in, loff_t pos_in,
 				struct file *file_out, loff_t pos_out,
 				loff_t len, unsigned int remap_flags) {
-	// TODO: determine which file to use
-	struct ksu_file_wrapper* data = file_in->private_data;
-	struct file* orig = data->orig;
-	if (orig->f_op->remap_file_range) {
+	if (remap_flags & REMAP_FILE_DEDUP) {
+		struct ksu_file_wrapper* data = file_out->private_data;
+		struct file* orig = data->orig;
+		return orig->f_op->remap_file_range(file_in, pos_in, orig, pos_out, len, remap_flags);
+	} else {
+		struct ksu_file_wrapper* data = file_in->private_data;
+		struct file* orig = data->orig;
 		return orig->f_op->remap_file_range(orig, pos_in, file_out, pos_out, len, remap_flags);
 	}
-	return -EINVAL;
 }
 
 static int ksu_wrapper_fadvise(struct file *fp, loff_t off1, loff_t off2, int flags) {
