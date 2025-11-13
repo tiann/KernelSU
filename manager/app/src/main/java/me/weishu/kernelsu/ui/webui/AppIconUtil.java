@@ -5,14 +5,15 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import java.util.HashMap;
-import java.util.Map;
+import android.util.LruCache;
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel;
 
 public class AppIconUtil {
-    private static final Map<String, Bitmap> iconCache = new HashMap<>();
+    // Limit cache size to 200 icons
+    private static final int CACHE_SIZE = 200;
+    private static final LruCache<String, Bitmap> iconCache = new LruCache<>(CACHE_SIZE);
 
-    public static Bitmap loadAppIconSync(Context context, String packageName, int sizePx) {
+    public static synchronized Bitmap loadAppIconSync(Context context, String packageName, int sizePx) {
         Bitmap cached = iconCache.get(packageName);
         if (cached != null) return cached;
 
