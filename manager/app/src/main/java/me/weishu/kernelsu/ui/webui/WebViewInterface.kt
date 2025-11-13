@@ -17,6 +17,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
@@ -228,7 +229,6 @@ class WebViewInterface(
         return jsonArray.toString()
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
     @JavascriptInterface
     fun getPackagesInfo(packageNamesJson: String): String {
         val packageNames = JSONArray(packageNamesJson)
@@ -243,7 +243,7 @@ class WebViewInterface(
                 val obj = JSONObject()
                 obj.put("packageName", pkg.packageName)
                 obj.put("versionName", pkg.versionName ?: "")
-                obj.put("versionCode", pkg.longVersionCode)
+                obj.put("versionCode", PackageInfoCompat.getLongVersionCode(pkg))
                 obj.put("appLabel", appInfo.label)
                 obj.put("isSystem", if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL)
                 obj.put("uid", app?.uid ?: JSONObject.NULL)
