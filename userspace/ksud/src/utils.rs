@@ -219,9 +219,7 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     println!("- Removing directories..");
     std::fs::remove_dir_all(defs::WORKING_DIR).ok();
     std::fs::remove_file(defs::DAEMON_PATH).ok();
-    crate::mount::umount_dir(defs::MODULE_DIR).ok();
     std::fs::remove_dir_all(defs::MODULE_DIR).ok();
-    std::fs::remove_dir_all(defs::MODULE_UPDATE_TMP_DIR).ok();
     println!("- Restore boot image..");
     boot_patch::restore(None, magiskboot_path, true)?;
     println!("- Uninstall KernelSU manager..");

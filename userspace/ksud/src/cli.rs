@@ -288,9 +288,6 @@ enum Module {
 
     /// list all modules
     List,
-
-    /// Shrink module image size
-    Shrink,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -402,7 +399,6 @@ pub fn run() -> Result<()> {
                 Module::Disable { id } => module::disable_module(&id),
                 Module::Action { id } => module::run_action(&id),
                 Module::List => module::list_modules(),
-                Module::Shrink => module::shrink_ksu_images(),
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),

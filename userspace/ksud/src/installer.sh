@@ -368,7 +368,6 @@ install_module() {
   [ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
 
   local MODDIRNAME=modules
-  $BOOTMODE && MODDIRNAME=modules_update
   local MODULEROOT=$NVBASE/$MODDIRNAME
   MODID=`grep_prop id $TMPDIR/module.prop`
   MODNAME=`grep_prop name $TMPDIR/module.prop`
@@ -439,13 +438,6 @@ install_module() {
   handle_partition system_ext
   handle_partition product
   handle_partition odm
-
-  if $BOOTMODE; then
-    mktouch $NVBASE/modules/$MODID/update
-    rm -rf $NVBASE/modules/$MODID/remove 2>/dev/null
-    rm -rf $NVBASE/modules/$MODID/disable 2>/dev/null
-    cp -af $MODPATH/module.prop $NVBASE/modules/$MODID/module.prop
-  fi
 
   # Remove stuff that doesn't belong to modules and clean up any empty directories
   rm -rf \
