@@ -21,6 +21,7 @@ const KSU_IOCTL_GET_WRAPPER_FD: i32 = _IOW::<()>(K, 15);
 const KSU_IOCTL_MANAGE_MARK: i32 = _IOWR::<()>(K, 16);
 const KSU_IOCTL_NUKE_EXT4_SYSFS: i32 = _IOW::<()>(K, 17);
 const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
+const KSU_IOCTL_SET_INIT_PGRP: i32 = _IO(K, 19);
 
 // Keep in sync with kernel/supercalls.h.
 const KSU_GET_INFO_FLAG_LATE_LOAD: u32 = 1 << 2;
@@ -330,5 +331,11 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
         mode: KSU_UMOUNT_DEL,
     };
     ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
+    Ok(())
+}
+
+/// Set current process's pgrp to init (0)
+pub fn set_init_pgrp() -> std::io::Result<()> {
+    ksuctl(KSU_IOCTL_SET_INIT_PGRP, std::ptr::null_mut::<u8>())?;
     Ok(())
 }
