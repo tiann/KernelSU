@@ -245,7 +245,7 @@ class WebViewInterface(
                 obj.put("versionName", pkg.versionName ?: "")
                 obj.put("versionCode", pkg.longVersionCode)
                 obj.put("appLabel", appInfo.label)
-                obj.put("isSystem", app != null && (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
+                obj.put("isSystem", if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL)
                 obj.put("uid", app?.uid ?: JSONObject.NULL)
                 jsonArray.put(obj)
             } else {
