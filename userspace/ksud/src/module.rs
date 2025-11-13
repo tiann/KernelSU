@@ -315,15 +315,15 @@ fn _install_module(zip: &str) -> Result<()> {
         info!("Installing metamodule: {}", module_id);
 
         // Check if there's already a metamodule installed
-        if let Ok(Some(existing_metamodule)) = read_metamodule() {
-            if existing_metamodule != module_id {
-                bail!(
-                    "Cannot install metamodule '{}': another metamodule '{}' is already installed. \
-                    Please uninstall the existing metamodule first.",
-                    module_id,
-                    existing_metamodule
-                );
-            }
+        if let Ok(Some(existing_metamodule)) = read_metamodule()
+            && existing_metamodule != module_id
+        {
+            bail!(
+                "Cannot install metamodule '{}': another metamodule '{}' is already installed. \
+                Please uninstall the existing metamodule first.",
+                module_id,
+                existing_metamodule
+            );
         }
     }
 
@@ -417,10 +417,10 @@ pub fn run_action(id: &str) -> Result<()> {
 
 pub fn enable_module(id: &str) -> Result<()> {
     // Check if enabling the metamodule
-    if let Ok(Some(metamodule_id)) = read_metamodule() {
-        if metamodule_id == id {
-            info!("Enabling metamodule: {}", id);
-        }
+    if let Ok(Some(metamodule_id)) = read_metamodule()
+        && metamodule_id == id
+    {
+        info!("Enabling metamodule: {}", id);
     }
 
     let module_path = Path::new(defs::MODULE_DIR).join(id);
@@ -438,10 +438,10 @@ pub fn enable_module(id: &str) -> Result<()> {
 
 pub fn disable_module(id: &str) -> Result<()> {
     // Check if disabling the metamodule
-    if let Ok(Some(metamodule_id)) = read_metamodule() {
-        if metamodule_id == id {
-            warn!("Disabling metamodule: {}. Module mounting will not work until re-enabled.", id);
-        }
+    if let Ok(Some(metamodule_id)) = read_metamodule()
+        && metamodule_id == id
+    {
+        warn!("Disabling metamodule: {}. Module mounting will not work until re-enabled.", id);
     }
 
     let module_path = Path::new(defs::MODULE_DIR).join(id);
