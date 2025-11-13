@@ -1,7 +1,14 @@
 package me.weishu.kernelsu.ui.webui
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.util.Base64
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
@@ -9,6 +16,7 @@ import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
@@ -17,6 +25,7 @@ import com.topjohnwu.superuser.internal.UiThreadHandler
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.withNewRootShell
+import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -197,6 +206,144 @@ class WebViewInterface(
         }
         return currentModuleInfo.toString()
     }
+
+    @JavascriptInterface
+    fun listSystemPackages(): String {
+        val packageNames = SuperUserViewModel.apps
+            .filter { appInfo ->
+                appInfo.packageInfo.applicationInfo?.let { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 } ?: false
+            }
+            .map { it.packageName }
+            .sorted()
+        val jsonArray = JSONArray()
+        for (pkgName in packageNames) {
+            jsonArray.put(pkgName)
+        }
+        return jsonArray.toString()
+    }
+
+    @JavascriptInterface
+    fun listUserPackages(): String {
+        val packageNames = SuperUserViewModel.apps
+            .filter { appInfo ->
+                appInfo.packageInfo.applicationInfo?.let { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } ?: false
+            }
+            .map { it.packageName }
+            .sorted()
+        val jsonArray = JSONArray()
+        for (pkgName in packageNames) {
+            jsonArray.put(pkgName)
+        }
+        return jsonArray.toString()
+    }
+
+    @JavascriptInterface
+    fun listAllPackages(): String {
+        val packageNames = SuperUserViewModel.apps.map { it.packageName }.sorted()
+        val jsonArray = JSONArray()
+        for (pkgName in packageNames) {
+            jsonArray.put(pkgName)
+        }
+        return jsonArray.toString()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    @JavascriptInterface
+    fun getPackagesInfo(packageNamesJson: String): String {
+        val packageNames = JSONArray(packageNamesJson)
+        val jsonArray = JSONArray()
+        val appMap = SuperUserViewModel.apps.associateBy { it.packageName }
+        for (i in 0 until packageNames.length()) {
+            val pkgName = packageNames.getString(i)
+            val appInfo = appMap[pkgName]
+            if (appInfo != null) {
+                val pkg = appInfo.packageInfo
+                val app = pkg.applicationInfo
+                val obj = JSONObject()
+                obj.put("packageName", pkg.packageName)
+                obj.put("versionName", pkg.versionName ?: "")
+                obj.put("versionCode", pkg.longVersionCode)
+                obj.put("appLabel", appInfo.label)
+                obj.put("isSystem", app != null && (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
+                obj.put("uid", app?.uid ?: JSONObject.NULL)
+                jsonArray.put(obj)
+            } else {
+                val obj = JSONObject()
+                obj.put("packageName", pkgName)
+                obj.put("error", "Package not found or inaccessible")
+                jsonArray.put(obj)
+            }
+        }
+        return jsonArray.toString()
+    }
+
+    private val packageIconCache = HashMap<String, String>()
+
+    @JavascriptInterface
+    fun cacheAllPackageIcons(size: Int) {
+        val outputStream = java.io.ByteArrayOutputStream()
+        SuperUserViewModel.apps.forEach { appInfo ->
+            val pkgName = appInfo.packageName
+            if (packageIconCache.containsKey(pkgName)) return@forEach
+            try {
+                SuperUserViewModel.getAppIconDrawable(context, pkgName)?.let { drawable ->
+                    val bitmap = drawableToBitmap(drawable, size)
+                    outputStream.reset()
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                    val byteArray = outputStream.toByteArray()
+                    val iconBase64 = "data:image/png;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP)
+                    packageIconCache[pkgName] = iconBase64
+                } ?: run {
+                     packageIconCache[pkgName] = ""
+                }
+            } catch (_: Exception) {
+                packageIconCache[pkgName] = ""
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun getPackagesIcons(packageNamesJson: String, size: Int): String {
+        val packageNames = JSONArray(packageNamesJson)
+        val jsonArray = JSONArray()
+        val outputStream = java.io.ByteArrayOutputStream()
+        for (i in 0 until packageNames.length()) {
+            val pkgName = packageNames.getString(i)
+            val obj = JSONObject()
+            obj.put("packageName", pkgName)
+            var iconBase64 = packageIconCache[pkgName]
+            if (iconBase64 == null) {
+                try {
+                    SuperUserViewModel.getAppIconDrawable(context, pkgName)?.let { drawable ->
+                        val bitmap = drawableToBitmap(drawable, size)
+                        outputStream.reset()
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                        val byteArray = outputStream.toByteArray()
+                        iconBase64 = "data:image/png;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP)
+                    } ?: run {
+                        iconBase64 = ""
+                    }
+                } catch (_: Exception) {
+                    iconBase64 = ""
+                }
+                packageIconCache[pkgName] = iconBase64 ?: ""
+            }
+            obj.put("icon", iconBase64)
+            jsonArray.put(obj)
+        }
+        return jsonArray.toString()
+    }
+}
+
+fun drawableToBitmap(drawable: Drawable, size: Int): Bitmap {
+    if (drawable is BitmapDrawable && drawable.bitmap.width == size && drawable.bitmap.height == size) {
+        return drawable.bitmap
+    }
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    drawable.setBounds(0, 0, size, size)
+    drawable.draw(canvas)
+    return bitmap
 }
 
 fun hideSystemUI(window: Window) =
