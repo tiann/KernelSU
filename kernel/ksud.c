@@ -317,6 +317,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
         }
         rcu_read_unlock();
+        ksu_set_task_tracepoint_flag(current); // we are zygote!
 
         stop_execve_hook();
     }
