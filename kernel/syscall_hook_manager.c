@@ -19,8 +19,20 @@
 #include "selinux/selinux.h"
 
 // Tracepoint registration count management
+// == 1: just us
+// >  1: someone else is also using syscall tracepoint e.g. ftrace
 static int tracepoint_reg_count = 0;
 static DEFINE_SPINLOCK(tracepoint_reg_lock);
+
+void ksu_clear_task_tracepoint_flag_if_needed(struct task_struct *t)
+{
+	unsigned long flags;
+	spin_lock_irqsave(&tracepoint_reg_lock, flags);
+	if (tracepoint_reg_count <= 1) {
+		ksu_clear_task_tracepoint_flag(t);
+	}
+	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
+}
 
 // Process marking management
 static void handle_process_mark(bool mark)
@@ -48,7 +60,7 @@ void ksu_unmark_all_process(void)
 	pr_info("hook_manager: unmark all user process done!\n");
 }
 
-void ksu_mark_running_process(void)
+static void ksu_mark_running_process_locked()
 {
 	struct task_struct *p, *t;
 	read_lock(&tasklist_lock);
@@ -69,10 +81,26 @@ void ksu_mark_running_process(void)
 			ksu_set_task_tracepoint_flag(t);
 			pr_info("hook_manager: mark process: pid:%d, uid: %d, comm:%s\n",
 					t->pid, uid, t->comm);
+		} else {
+			ksu_clear_task_tracepoint_flag(t);
+			pr_info("hook_manager: unmark process: pid:%d, uid: %d, comm:%s\n",
+					t->pid, uid, t->comm);
 		}
         put_cred(cred);
 	}
 	read_unlock(&tasklist_lock);
+}
+
+void ksu_mark_running_process()
+{
+	unsigned long flags;
+	spin_lock_irqsave(&tracepoint_reg_lock, flags);
+	if (tracepoint_reg_count <= 1) {
+		ksu_mark_running_process_locked();
+	} else {
+		pr_info("hook_manager: not mark running process since syscall tracepoint is in use\n");
+	}
+	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 }
 
 // Get task mark status
@@ -168,10 +196,9 @@ static int syscall_regfunc_handler(struct kretprobe_instance *ri, struct pt_regs
 	spin_lock_irqsave(&tracepoint_reg_lock, flags);
 	if (tracepoint_reg_count < 1) {
 		// while install our tracepoint, mark our processes
-		ksu_unmark_all_process();
-		ksu_mark_running_process();
-	} else {
-		// while installing other tracepoint, mark all processes
+		ksu_mark_running_process_locked();
+	} else if (tracepoint_reg_count == 1) {
+		// while other tracepoint first added, mark all processes
 		ksu_mark_all_process();
 	}
 	tracepoint_reg_count++;
@@ -183,15 +210,14 @@ static int syscall_unregfunc_handler(struct kretprobe_instance *ri, struct pt_re
 {
 	unsigned long flags;
 	spin_lock_irqsave(&tracepoint_reg_lock, flags);
-	if (tracepoint_reg_count <= 1) {
-		// while uninstall our tracepoint, unmark all processes
-		ksu_unmark_all_process();
-	} else {
-		// while uninstalling other tracepoint, mark our processes
-		ksu_unmark_all_process();
-		ksu_mark_running_process();
-	}
 	tracepoint_reg_count--;
+	if (tracepoint_reg_count <= 0) {
+		// while no tracepoint left, unmark all processes
+		ksu_unmark_all_process();
+	} else if (tracepoint_reg_count == 1) {
+		// while just our tracepoint left, unmark disallowed processes
+		ksu_mark_running_process_locked();
+	}
 	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 	return 0;
 }
@@ -213,20 +239,19 @@ static inline bool check_syscall_fastpath(int nr)
     }
 }
 
-int ksu_handle_init_mark_tracker(const char __user **filename_user,
-                               void *__never_use_argv, void *__never_use_envp,
-                               int *__never_use_flags)
+// Unmark init's child that are not zygote or adbd
+int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
     char path[64];
 
     if (unlikely(!filename_user))
         return 0;
-    
+
     memset(path, 0, sizeof(path));
     strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-    if (likely(strstr(path, "adbd") == NULL)){
-        ksu_clear_task_tracepoint_flag(current);
+    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
+        ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
     return 0;
@@ -262,8 +287,8 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 			if (id == __NR_execve) {
 				const char __user **filename_user =
 					(const char __user **)&PT_REGS_PARM1(regs);
-				if (current->pid == 1) {
-					ksu_handle_init_mark_tracker(filename_user, NULL, NULL, NULL);
+				if (current->pid != 1 && is_init(get_current_cred())) {
+					ksu_handle_init_mark_tracker(filename_user);
 				} else {
                     ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
                 }
@@ -298,8 +323,7 @@ void ksu_syscall_hook_manager_init(void)
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 	ret = register_trace_sys_enter(ksu_sys_enter_handler, NULL);
 #ifndef CONFIG_KRETPROBES
-	ksu_unmark_all_process();
-	ksu_mark_running_process();
+	ksu_mark_running_process_locked();
 #endif
 	if (ret) {
 		pr_err("hook_manager: failed to register sys_enter tracepoint: %d\n", ret);
