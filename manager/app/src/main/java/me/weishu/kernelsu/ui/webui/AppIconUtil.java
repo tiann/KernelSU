@@ -19,6 +19,9 @@ public class AppIconUtil {
 
         try {
             Drawable drawable = SuperUserViewModel.getAppIconDrawable(context, packageName);
+            if (drawable == null) {
+                return null;
+            }
             Bitmap raw = drawableToBitmap(drawable, sizePx);
             Bitmap icon = Bitmap.createScaledBitmap(raw, sizePx, sizePx, true);
             if (raw != icon) raw.recycle();
