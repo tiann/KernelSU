@@ -32,6 +32,10 @@ pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
 pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
 
+// Metamodule support
+pub const METAMODULE_RECORD_FILE: &str = concatcp!(WORKING_DIR, "metamodule");
+pub const METAMODULE_MOUNT_SCRIPT: &str = "module-mount.sh";
+
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
 

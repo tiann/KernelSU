@@ -41,8 +41,28 @@ fn exec_install_script(module_file: &str) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
         .with_context(|| format!("realpath: {module_file} failed"))?;
 
+    // Check if there's a metamodule and use its installer.sh if available
+    let install_script = if let Ok(Some(metamodule_id)) = read_metamodule() {
+        let metamodule_installer = Path::new(defs::MODULE_DIR)
+            .join(&metamodule_id)
+            .join("installer.sh");
+
+        if metamodule_installer.exists() {
+            info!("Using installer from metamodule: {}", metamodule_id);
+            let metamodule_content = std::fs::read_to_string(&metamodule_installer)
+                .with_context(|| format!("Failed to read metamodule installer: {}", metamodule_id))?;
+            format!("{}\ninstall_module\nexit 0\n", metamodule_content)
+        } else {
+            info!("Metamodule {} has no installer.sh, using default", metamodule_id);
+            INSTALL_MODULE_SCRIPT.to_string()
+        }
+    } else {
+        info!("No metamodule found, using default installer");
+        INSTALL_MODULE_SCRIPT.to_string()
+    };
+
     let result = Command::new(assets::BUSYBOX_PATH)
-        .args(["sh", "-c", INSTALL_MODULE_SCRIPT])
+        .args(["sh", "-c", &install_script])
         .env("ASH_STANDALONE", "1")
         .env(
             "PATH",
@@ -289,6 +309,8 @@ pub fn prune_modules() -> Result<()> {
         info!("no remaining modules, deleting image files.");
         std::fs::remove_file(defs::MODULE_IMG).ok();
         std::fs::remove_file(defs::MODULE_UPDATE_IMG).ok();
+        // Also remove metamodule record file
+        std::fs::remove_file(defs::METAMODULE_RECORD_FILE).ok();
     }
 
     Ok(())
@@ -347,6 +369,29 @@ fn _install_module(zip: &str) -> Result<()> {
         bail!("module id not found in module.prop!");
     };
     let module_id = module_id.trim();
+
+    // Check if this module is a metamodule
+    let is_metamodule = module_prop
+        .get("metamodule")
+        .map(|s| s.trim().to_lowercase())
+        .map(|s| s == "true" || s == "1")
+        .unwrap_or(false);
+
+    if is_metamodule {
+        info!("Installing metamodule: {}", module_id);
+
+        // Check if there's already a metamodule installed
+        if let Ok(Some(existing_metamodule)) = read_metamodule() {
+            if existing_metamodule != module_id {
+                bail!(
+                    "Cannot install metamodule '{}': another metamodule '{}' is already installed. \
+                    Please uninstall the existing metamodule first.",
+                    module_id,
+                    existing_metamodule
+                );
+            }
+        }
+    }
 
     let modules_img = Path::new(defs::MODULE_IMG);
     let modules_update_img = Path::new(defs::MODULE_UPDATE_IMG);
@@ -539,7 +584,19 @@ where
 }
 
 pub fn uninstall_module(id: &str) -> Result<()> {
-    update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
+    // Check if the module being uninstalled is the current metamodule
+    let is_metamodule = if let Ok(Some(metamodule_id)) = read_metamodule() {
+        if metamodule_id == id {
+            info!("Uninstalling metamodule: {}", id);
+            true
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+
+    let result = update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         let dir = Path::new(update_dir);
         ensure!(dir.exists(), "No module installed");
 
@@ -580,7 +637,15 @@ pub fn uninstall_module(id: &str) -> Result<()> {
         let _ = mark_module_state(id, defs::REMOVE_FILE_NAME, true);
 
         Ok(())
-    })
+    });
+
+    // If uninstall succeeded and it was the metamodule, clean up the record file immediately
+    if result.is_ok() && is_metamodule {
+        info!("Cleaning up metamodule record file");
+        let _ = std::fs::remove_file(defs::METAMODULE_RECORD_FILE);
+    }
+
+    result
 }
 
 pub fn run_action(id: &str) -> Result<()> {
@@ -610,23 +675,50 @@ fn _enable_module(module_dir: &str, mid: &str, enable: bool) -> Result<()> {
 }
 
 pub fn enable_module(id: &str) -> Result<()> {
+    // Check if enabling the metamodule
+    if let Ok(Some(metamodule_id)) = read_metamodule() {
+        if metamodule_id == id {
+            info!("Enabling metamodule: {}", id);
+        }
+    }
+
     update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         _enable_module(update_dir, mid, true)
     })
 }
 
 pub fn disable_module(id: &str) -> Result<()> {
+    // Check if disabling the metamodule
+    if let Ok(Some(metamodule_id)) = read_metamodule() {
+        if metamodule_id == id {
+            warn!("Disabling metamodule: {}. Module mounting will not work until re-enabled.", id);
+        }
+    }
+
     update_module(defs::MODULE_UPDATE_TMP_DIR, id, |mid, update_dir| {
         _enable_module(update_dir, mid, false)
     })
 }
 
 pub fn disable_all_modules() -> Result<()> {
+    // Check if metamodule will be disabled
+    if let Ok(Some(metamodule_id)) = read_metamodule() {
+        warn!("Disabling all modules including metamodule: {}. Module mounting will not work.", metamodule_id);
+    }
     mark_all_modules(defs::DISABLE_FILE_NAME)
 }
 
 pub fn uninstall_all_modules() -> Result<()> {
-    mark_all_modules(defs::REMOVE_FILE_NAME)
+    info!("Uninstalling all modules");
+    let result = mark_all_modules(defs::REMOVE_FILE_NAME);
+
+    // Clean up metamodule record file if successful
+    if result.is_ok() {
+        info!("Cleaning up metamodule record file");
+        let _ = std::fs::remove_file(defs::METAMODULE_RECORD_FILE);
+    }
+
+    result
 }
 
 fn mark_all_modules(flag_file: &str) -> Result<()> {
@@ -793,4 +885,80 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
     })?;
 
     Ok(managed_features_map)
+}
+
+/// Scan all active modules and find the metamodule
+/// Only one metamodule is allowed in the system
+/// Returns: Option<String> - the metamodule ID if found
+pub fn find_metamodule() -> Result<Option<String>> {
+    let mut found_metamodule: Option<String> = None;
+
+    foreach_active_module(|module_path| {
+        let prop_map = match read_module_prop(module_path) {
+            Ok(prop) => prop,
+            Err(e) => {
+                warn!(
+                    "Failed to read module.prop for {}: {}",
+                    module_path.display(),
+                    e
+                );
+                return Ok(());
+            }
+        };
+
+        // Check if this module is a metamodule
+        if let Some(is_metamodule) = prop_map.get("metamodule") {
+            let is_metamodule = is_metamodule.trim().to_lowercase();
+            if is_metamodule == "true" || is_metamodule == "1" {
+                let module_id = prop_map
+                    .get("id")
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "unknown".to_string());
+
+                if found_metamodule.is_some() {
+                    warn!(
+                        "Multiple metamodules found! Previous: {:?}, Current: {}",
+                        found_metamodule, module_id
+                    );
+                    bail!("Only one metamodule is allowed in the system");
+                }
+
+                info!("Found metamodule: {}", module_id);
+                found_metamodule = Some(module_id);
+            }
+        }
+
+        Ok(())
+    })?;
+
+    // Write metamodule info to file
+    if let Some(ref metamodule_id) = found_metamodule {
+        std::fs::write(defs::METAMODULE_RECORD_FILE, metamodule_id)
+            .with_context(|| "Failed to write metamodule record file")?;
+        info!("Recorded metamodule: {}", metamodule_id);
+    } else {
+        // Remove metamodule file if no metamodule is found
+        let _ = std::fs::remove_file(defs::METAMODULE_RECORD_FILE);
+    }
+
+    Ok(found_metamodule)
+}
+
+/// Read recorded metamodule ID
+pub fn read_metamodule() -> Result<Option<String>> {
+    let metamodule_file = Path::new(defs::METAMODULE_RECORD_FILE);
+    if !metamodule_file.exists() {
+        return Ok(None);
+    }
+
+    let content = std::fs::read_to_string(metamodule_file)
+        .with_context(|| "Failed to read metamodule record file")?
+        .trim()
+        .to_string();
+
+    if content.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(content))
+    }
 }

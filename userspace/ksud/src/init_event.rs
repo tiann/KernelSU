@@ -1,6 +1,6 @@
 use anyhow::{Context, Result, bail};
 use log::{info, warn};
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, process::Command};
 
 use crate::module::prune_modules;
 use crate::utils::is_safe_mode;
@@ -8,6 +8,68 @@ use crate::{
     assets, defs, ksucalls, mount, restorecon,
     utils::{self, ensure_clean_dir},
 };
+
+/// Execute metamodule mount script
+fn execute_metamodule_mount(module_dir: &str) -> Result<()> {
+    // Find the active metamodule
+    let metamodule_id = crate::module::find_metamodule()?;
+
+    let Some(metamodule_id) = metamodule_id else {
+        info!("No metamodule found");
+        return Ok(());
+    };
+
+    info!("Found metamodule: {}", metamodule_id);
+
+    let metamodule_path = Path::new(module_dir).join(&metamodule_id);
+
+    // Check if metamodule is disabled
+    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
+        warn!("Metamodule {} is disabled, skipping mount", metamodule_id);
+        return Ok(());
+    }
+
+    let mount_script = metamodule_path.join(defs::METAMODULE_MOUNT_SCRIPT);
+    if !mount_script.exists() {
+        warn!(
+            "Metamodule {} does not have {} script",
+            metamodule_id,
+            defs::METAMODULE_MOUNT_SCRIPT
+        );
+        return Ok(());
+    }
+
+    info!("Executing mount script for metamodule {}", metamodule_id);
+
+    // Execute the mount script
+    let result = Command::new(assets::BUSYBOX_PATH)
+        .args(["sh", mount_script.to_str().unwrap()])
+        .env("ASH_STANDALONE", "1")
+        .env("KSU", "true")
+        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
+        .env("KSU_VER_CODE", defs::VERSION_CODE)
+        .env("KSU_VER", defs::VERSION_NAME)
+        .env("METAMODULE_ID", &metamodule_id)
+        .env("MODULE_DIR", module_dir)
+        .status();
+
+    match result {
+        Ok(status) if status.success() => {
+            info!("Metamodule {} mount script executed successfully", metamodule_id);
+        }
+        Ok(status) => {
+            warn!(
+                "Metamodule {} mount script failed with status: {:?}",
+                metamodule_id, status
+            );
+        }
+        Err(e) => {
+            warn!("Failed to execute metamodule {} mount script: {}", metamodule_id, e);
+        }
+    }
+
+    Ok(())
+}
 
 pub fn on_post_data_fs() -> Result<()> {
     ksucalls::report_post_fs_data();
@@ -119,6 +181,11 @@ pub fn on_post_data_fs() -> Result<()> {
     // load system.prop
     if let Err(e) = crate::module::load_system_prop() {
         warn!("load system.prop failed: {e}");
+    }
+
+    // execute metamodule mount script
+    if let Err(e) = execute_metamodule_mount(module_dir) {
+        warn!("execute metamodule mount failed: {e}");
     }
 
     run_stage("post-mount", true);
