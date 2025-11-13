@@ -239,6 +239,24 @@ static inline bool check_syscall_fastpath(int nr)
     }
 }
 
+// Unmark init's child that are not zygote or adbd
+int ksu_handle_init_mark_tracker(const char __user **filename_user)
+{
+    char path[64];
+
+    if (unlikely(!filename_user))
+        return 0;
+
+    memset(path, 0, sizeof(path));
+    strncpy_from_user_nofault(path, *filename_user, sizeof(path));
+
+    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
+        ksu_clear_task_tracepoint_flag_if_needed(current);
+    }
+
+    return 0;
+}
+
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 // Generic sys_enter handler that dispatches to specific handlers
 static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
@@ -269,7 +287,11 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 			if (id == __NR_execve) {
 				const char __user **filename_user =
 					(const char __user **)&PT_REGS_PARM1(regs);
-				ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
+				if (current->pid != 1 && is_init(get_current_cred())) {
+					ksu_handle_init_mark_tracker(filename_user);
+				} else {
+                    ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
+                }
 				return;
 			}
 		}
