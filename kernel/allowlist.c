@@ -16,6 +16,7 @@
 #include "selinux/selinux.h"
 #include "allowlist.h"
 #include "manager.h"
+#include "syscall_hook_manager.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 3 // u32
@@ -254,8 +255,11 @@ out:
                sizeof(default_root_profile));
     }
 
-    if (persist)
+    if (persist) {
         persistent_allow_list();
+        // FIXME: use a new flag
+        ksu_mark_running_process();
+    }
 
     return result;
 }
