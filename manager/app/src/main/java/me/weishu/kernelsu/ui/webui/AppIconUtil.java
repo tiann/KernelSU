@@ -21,6 +21,7 @@ public class AppIconUtil {
             Drawable drawable = SuperUserViewModel.getAppIconDrawable(context, packageName);
             Bitmap raw = drawableToBitmap(drawable, sizePx);
             Bitmap icon = Bitmap.createScaledBitmap(raw, sizePx, sizePx, true);
+            if (raw != icon) raw.recycle();
             iconCache.put(packageName, icon);
             return icon;
         } catch (Exception e) {
