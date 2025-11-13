@@ -98,7 +98,7 @@ static int do_report_event(void __user *arg)
         if (!post_fs_data_lock) {
             post_fs_data_lock = true;
             pr_info("post-fs-data triggered\n");
-            on_post_fs_data();
+            on_post_fs_data(false);
         }
         break;
     }

@@ -66,7 +66,7 @@ bool ksu_input_hook __read_mostly = true;
 #endif
 
 u32 ksu_file_sid;
-void on_post_fs_data(void)
+void on_post_fs_data(bool from_fallback_trigger)
 {
     static bool done = false;
     if (done) {
@@ -74,7 +74,7 @@ void on_post_fs_data(void)
         return;
     }
     done = true;
-    pr_info("on_post_fs_data!\n");
+    pr_info("on_post_fs_data! from_fallback_trigger: %d\n", from_fallback_trigger);
     ksu_load_allow_list();
     pr_info("mark tif for running process\n");
     ksu_mark_running_process();
@@ -84,6 +84,10 @@ void on_post_fs_data(void)
 
     ksu_file_sid = ksu_get_ksu_file_sid();
 	pr_info("ksu_file sid: %d\n", ksu_file_sid);
+    if (from_fallback_trigger) {
+        ksu_unmark_all_process();
+        ksu_mark_running_process();
+    }
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
@@ -193,7 +197,7 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 
 static void on_post_fs_data_cbfun(struct callback_head *cb)
 {
-    on_post_fs_data();
+    on_post_fs_data(true);
 }
 
 static struct callback_head on_post_fs_data_cb = { .func =

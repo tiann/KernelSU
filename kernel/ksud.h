@@ -8,7 +8,7 @@
 void ksu_ksud_init();
 void ksu_ksud_exit();
 
-void on_post_fs_data(void);
+void on_post_fs_data(bool from_fallback_trigger);
 void on_module_mounted(void);
 void on_boot_completed(void);
 
