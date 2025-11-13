@@ -693,10 +693,7 @@ pub fn choose_boot_partition(
 ) -> String {
     let slot_suffix = get_slot_suffix(false);
     let skip_init_boot = kmi.starts_with("android12-");
-
     let init_boot_exist = Path::new(&format!("/dev/block/by-name/init_boot{slot_suffix}")).exists();
-    let vendor_boot_exist =
-        Path::new(&format!("/dev/block/by-name/vendor_boot{slot_suffix}")).exists();
 
     // if specific partition is specified, use it
     if let Some(part) = partition {
