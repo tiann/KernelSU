@@ -185,8 +185,6 @@ enum Debug {
     /// Get kernel version
     Version,
 
-    Mount,
-
     /// Copy sparse file
     Xcp {
         /// source file
@@ -447,7 +445,6 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
-            Debug::Mount => init_event::mount_modules_systemlessly(defs::MODULE_DIR),
             Debug::Xcp {
                 src,
                 dst,

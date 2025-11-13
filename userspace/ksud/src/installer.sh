@@ -313,14 +313,6 @@ mark_remove() {
   chmod 644 $1
 }
 
-mark_replace() {
-  # REPLACE must be directory!!!
-  # https://docs.kernel.org/filesystems/overlayfs.html#whiteouts-and-opaque-directories
-  mkdir -p $1 2>/dev/null
-  setfattr -n trusted.overlay.opaque -v y $1
-  chmod 644 $1
-}
-
 request_size_check() {
   reqSizeM=`du -ms "$1" | cut -f1`
 }
@@ -338,8 +330,8 @@ is_legacy_script() {
 }
 
 handle_partition() {
-    # if /system/vendor is a symlink, we need to move it out of $MODPATH/system, otherwise it will be overlayed
-    # if /system/vendor is a normal directory, it is ok to overlay it and we don't need to overlay it separately.
+    # if /system/vendor is a symlink, we need to move it out of $MODPATH/system
+    # if /system/vendor is a normal directory, no special handling is needed.
     if [ ! -e $MODPATH/system/$1 ]; then
         # no partition found
         return;

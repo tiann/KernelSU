@@ -9,94 +9,6 @@ use crate::{
     utils::{self, ensure_clean_dir},
 };
 
-fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
-    if lowerdir.is_empty() {
-        warn!("partition: {partition_name} lowerdir is empty");
-        return Ok(());
-    }
-
-    let partition = format!("/{partition_name}");
-
-    // if /partition is a symlink and linked to /system/partition, then we don't need to overlay it separately
-    if Path::new(&partition).read_link().is_ok() {
-        warn!("partition: {partition} is a symlink");
-        return Ok(());
-    }
-
-    let mut workdir = None;
-    let mut upperdir = None;
-    let system_rw_dir = Path::new(defs::SYSTEM_RW_DIR);
-    if system_rw_dir.exists() {
-        workdir = Some(system_rw_dir.join(partition_name).join("workdir"));
-        upperdir = Some(system_rw_dir.join(partition_name).join("upperdir"));
-    }
-
-    mount::mount_overlay(&partition, lowerdir, workdir, upperdir)
-}
-
-pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
-    // construct overlay mount params
-    let dir = std::fs::read_dir(module_dir);
-    let Ok(dir) = dir else {
-        bail!("open {} failed", defs::MODULE_DIR);
-    };
-
-    let mut system_lowerdir: Vec<String> = Vec::new();
-
-    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
-    let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
-    for ele in &partition {
-        partition_lowerdir.insert((*ele).to_string(), Vec::new());
-    }
-
-    for entry in dir.flatten() {
-        let module = entry.path();
-        if !module.is_dir() {
-            continue;
-        }
-        let disabled = module.join(defs::DISABLE_FILE_NAME).exists();
-        if disabled {
-            info!("module: {} is disabled, ignore!", module.display());
-            continue;
-        }
-        let skip_mount = module.join(defs::SKIP_MOUNT_FILE_NAME).exists();
-        if skip_mount {
-            info!("module: {} skip_mount exist, skip!", module.display());
-            continue;
-        }
-
-        let module_system = Path::new(&module).join("system");
-        if module_system.is_dir() {
-            system_lowerdir.push(format!("{}", module_system.display()));
-        }
-
-        for part in &partition {
-            // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
-            // otherwise it must be a symlink and we don't need to overlay!
-            let part_path = Path::new(&module).join(part);
-            if part_path.is_dir()
-                && let Some(v) = partition_lowerdir.get_mut(*part)
-            {
-                v.push(format!("{}", part_path.display()));
-            }
-        }
-    }
-
-    // mount /system first
-    if let Err(e) = mount_partition("system", &system_lowerdir) {
-        warn!("mount system failed: {e:#}");
-    }
-
-    // mount other partitions
-    for (k, v) in partition_lowerdir {
-        if let Err(e) = mount_partition(&k, &v) {
-            warn!("mount {k} failed: {e:#}");
-        }
-    }
-
-    Ok(())
-}
-
 pub fn on_post_data_fs() -> Result<()> {
     ksucalls::report_post_fs_data();
 
@@ -207,11 +119,6 @@ pub fn on_post_data_fs() -> Result<()> {
     // load system.prop
     if let Err(e) = crate::module::load_system_prop() {
         warn!("load system.prop failed: {e}");
-    }
-
-    // mount module systemlessly by overlay
-    if let Err(e) = mount_modules_systemlessly(module_dir) {
-        warn!("do systemless mount failed: {e}");
     }
 
     run_stage("post-mount", true);
