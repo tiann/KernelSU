@@ -711,11 +711,6 @@ pub fn choose_boot_partition(
         return "init_boot".to_string();
     }
 
-    // if vendor_boot exists and not skipping it, use it
-    if !is_replace_kernel && vendor_boot_exist && !skip_init_boot {
-        return "vendor_boot".to_string();
-    }
-
     "boot".to_string()
 }
 
