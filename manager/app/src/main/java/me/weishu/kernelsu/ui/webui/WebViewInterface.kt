@@ -208,38 +208,19 @@ class WebViewInterface(
     }
 
     @JavascriptInterface
-    fun listSystemPackages(): String {
+    fun listPackages(type: String): String {
         val packageNames = SuperUserViewModel.apps
             .filter { appInfo ->
-                appInfo.packageInfo.applicationInfo?.let { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 } ?: false
+                val flags = appInfo.packageInfo.applicationInfo?.flags ?: 0
+                when (type.lowercase()) {
+                    "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    "user" -> (flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                    else -> true
+                }
             }
             .map { it.packageName }
             .sorted()
-        val jsonArray = JSONArray()
-        for (pkgName in packageNames) {
-            jsonArray.put(pkgName)
-        }
-        return jsonArray.toString()
-    }
 
-    @JavascriptInterface
-    fun listUserPackages(): String {
-        val packageNames = SuperUserViewModel.apps
-            .filter { appInfo ->
-                appInfo.packageInfo.applicationInfo?.let { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 } ?: false
-            }
-            .map { it.packageName }
-            .sorted()
-        val jsonArray = JSONArray()
-        for (pkgName in packageNames) {
-            jsonArray.put(pkgName)
-        }
-        return jsonArray.toString()
-    }
-
-    @JavascriptInterface
-    fun listAllPackages(): String {
-        val packageNames = SuperUserViewModel.apps.map { it.packageName }.sorted()
         val jsonArray = JSONArray()
         for (pkgName in packageNames) {
             jsonArray.put(pkgName)
