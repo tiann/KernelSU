@@ -22,7 +22,6 @@ pub const MODULE_WEB_DIR: &str = "webroot";
 pub const MODULE_ACTION_SH: &str = "action.sh";
 pub const DISABLE_FILE_NAME: &str = "disable";
 pub const REMOVE_FILE_NAME: &str = "remove";
-pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
 
 // Metamodule support
 pub const METAMODULE_RECORD_FILE: &str = concatcp!(WORKING_DIR, "metamodule");
