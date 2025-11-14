@@ -1,10 +1,12 @@
 package me.weishu.kernelsu.ui.viewmodel
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
+import android.graphics.drawable.Drawable
 import android.os.IBinder
 import android.os.Parcelable
 import android.os.SystemClock
@@ -34,7 +36,15 @@ class SuperUserViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "SuperUserViewModel"
-        private var apps by mutableStateOf<List<AppInfo>>(emptyList())
+        private val appsLock = Any()
+        var apps by mutableStateOf<List<AppInfo>>(emptyList())
+
+        @JvmStatic
+        fun getAppIconDrawable(context: Context, packageName: String): Drawable? {
+            val appList = synchronized(appsLock) { apps }
+            val appDetail = appList.find { it.packageName == packageName }
+            return appDetail?.packageInfo?.applicationInfo?.loadIcon(context.packageManager)
+        }
     }
 
 
@@ -162,7 +172,7 @@ class SuperUserViewModel : ViewModel() {
 
             val packages = allPackages.list
 
-            apps = packages.map {
+            val newApps = packages.map {
                 val appInfo = it.applicationInfo
                 val uid = appInfo!!.uid
                 val profile = Natives.getAppProfile(it.packageName, uid)
@@ -173,6 +183,10 @@ class SuperUserViewModel : ViewModel() {
                 )
             }.filter { it.packageName != ksuApp.packageName }
 
+            synchronized(appsLock) {
+                apps = newApps
+            }
+
             val comparator = compareBy<AppInfo> {
                 when {
                     it.allowSu -> 0
@@ -180,7 +194,7 @@ class SuperUserViewModel : ViewModel() {
                     else -> 2
                 }
             }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
-            _appList.value = apps.sortedWith(comparator).also {
+            _appList.value = newApps.sortedWith(comparator).also {
                 isRefreshing = false
             }.filter {
                 it.uid == 2000 // Always show shell
