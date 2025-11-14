@@ -117,3 +117,22 @@ export function toast(message) {
 export function moduleInfo() {
   return ksu.moduleInfo();
 }
+
+export function listPackages(type) {
+  try {
+    return JSON.parse(ksu.listPackages(type));
+  } catch (error) {
+    return [];
+  }
+}
+
+export function getPackagesInfo(packages) {
+  try {
+    if (typeof packages !== "string") {
+      packages = JSON.stringify(packages);
+    }
+    return JSON.parse(ksu.getPackagesInfo(packages));
+  } catch (error) {
+    return [];
+  }
+}
