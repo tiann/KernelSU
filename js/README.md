@@ -119,3 +119,47 @@ import { moduleInfo } from 'kernelsu';
 // print moduleId in console
 console.log(moduleInfo());
 ```
+
+### listPackages
+
+List installed packages.
+
+Returns an array of package names.
+
+- `type` `<string>` The type of packages to list: "user", "system", or "all".
+
+```javascript
+import { listPackages } from 'kernelsu';
+// list user packages
+const packages = listPackages("user");
+```
+
+- tips: when `listPackages` api is available, you can use ksu://icon/{packageName} to get app icon.
+
+``` javascript
+img.src = "ksu://icon/" + packageName;
+```
+
+### getPackagesInfo
+
+Get information for a list of packages.
+
+Returns an array of `PackagesInfo` objects.
+
+- `packages` `<string[]>` The list of package names.
+
+```javascript
+import { getPackagesInfo } from 'kernelsu';
+const packages = getPackagesInfo(['com.android.settings', 'com.android.shell']);
+```
+
+#### PackagesInfo
+
+An object contains:
+
+- `packageName` `<string>` Package name of the application.
+- `versionName` `<string>` Version of the application.
+- `versionCode` `<number>` Version code of the application.
+- `appLabel` `<string>` Display name of the application.
+- `isSystem` `<boolean>` Whether the application is a system app.
+- `uid` `<number>` UID of the application.
