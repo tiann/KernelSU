@@ -218,8 +218,6 @@ jobs:
           EOF
           fi
 
-          cat $FILE
-
           sed -i -E 's/\$\(CONFIG_ANDROID_BINDER_IPC_RUST\)/m/g' common/drivers/android/Makefile
 
       - name: Make working directory clean to avoid dirty
