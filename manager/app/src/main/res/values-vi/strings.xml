@@ -154,4 +154,5 @@
     <string name="refresh_release">Thả để làm mới</string>
     <string name="refresh_refresh">Đang làm mới…</string>
     <string name="refresh_complete">Đã làm mới thành công</string>
+    <string name="install_select_partition">Chọn phân vùng</string>
 </resources>
