@@ -134,7 +134,7 @@ import { listPackages } from 'kernelsu';
 const packages = listPackages("user");
 ```
 
-- tips: when `listPackages` api is available, you can ksu://icon/{packageName} to get app icon.
+- tips: when `listPackages` api is available, you can use ksu://icon/{packageName} to get app icon.
 
 ``` javascript
 img.src = "ksu://icon/" + packageName;
