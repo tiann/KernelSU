@@ -207,15 +207,14 @@ jobs:
           if [[ -f "$FILE" ]] && ! grep -q 'is_ashmem_file' "$FILE"; then
           cat >>"$FILE" <<'EOF'
 
-          EXPORT_SYMBOL_GPL(is_ashmem_file);
-          EXPORT_SYMBOL_GPL(ashmem_area_name);
-          EXPORT_SYMBOL_GPL(ashmem_area_size);
-          EXPORT_SYMBOL_GPL(ashmem_area_vmfile);
-
           bool is_ashmem_file(struct file *file) { return false; }
           int ashmem_area_name(struct file *file, char *name) { return 0; }
           long ashmem_area_size(struct file *file) { return 0; }
           struct file *ashmem_area_vmfile(struct file *file) { return NULL; }
+          EXPORT_SYMBOL_GPL(is_ashmem_file);
+          EXPORT_SYMBOL_GPL(ashmem_area_name);
+          EXPORT_SYMBOL_GPL(ashmem_area_size);
+          EXPORT_SYMBOL_GPL(ashmem_area_vmfile);
           EOF
           fi
 
