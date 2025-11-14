@@ -2,6 +2,13 @@ package me.weishu.kernelsu
 
 import android.app.Application
 import android.system.Os
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
@@ -9,13 +16,20 @@ import java.util.Locale
 
 lateinit var ksuApp: KernelSUApplication
 
-class KernelSUApplication : Application() {
+class KernelSUApplication : Application(), ViewModelStoreOwner {
 
     lateinit var okhttpClient: OkHttpClient
+    private val appViewModelStore by lazy { ViewModelStore() }
 
     override fun onCreate() {
         super.onCreate()
         ksuApp = this
+
+        // For faster response when first entering superuser or webui activity
+        val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
+        CoroutineScope(Dispatchers.Main).launch {
+            superUserViewModel.fetchAppList()
+        }
 
         val webroot = File(dataDir, "webroot")
         if (!webroot.exists()) {
@@ -35,4 +49,7 @@ class KernelSUApplication : Application() {
                     )
                 }.build()
     }
+
+    override val viewModelStore: ViewModelStore
+        get() = appViewModelStore
 }
