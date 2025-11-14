@@ -55,7 +55,10 @@ fn execute_metamodule_mount(module_dir: &str) -> Result<()> {
 
     match result {
         Ok(status) if status.success() => {
-            info!("Metamodule {} mount script executed successfully", metamodule_id);
+            info!(
+                "Metamodule {} mount script executed successfully",
+                metamodule_id
+            );
         }
         Ok(status) => {
             warn!(
@@ -64,7 +67,10 @@ fn execute_metamodule_mount(module_dir: &str) -> Result<()> {
             );
         }
         Err(e) => {
-            warn!("Failed to execute metamodule {} mount script: {}", metamodule_id, e);
+            warn!(
+                "Failed to execute metamodule {} mount script: {}",
+                metamodule_id, e
+            );
         }
     }
 

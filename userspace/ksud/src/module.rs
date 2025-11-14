@@ -48,11 +48,16 @@ fn exec_install_script(module_file: &str) -> Result<()> {
 
         if metamodule_installer.exists() {
             info!("Using installer from metamodule: {}", metamodule_id);
-            let metamodule_content = std::fs::read_to_string(&metamodule_installer)
-                .with_context(|| format!("Failed to read metamodule installer: {}", metamodule_id))?;
+            let metamodule_content =
+                std::fs::read_to_string(&metamodule_installer).with_context(|| {
+                    format!("Failed to read metamodule installer: {}", metamodule_id)
+                })?;
             format!("{}\ninstall_module\nexit 0\n", metamodule_content)
         } else {
-            info!("Metamodule {} has no installer.sh, using default", metamodule_id);
+            info!(
+                "Metamodule {} has no installer.sh, using default",
+                metamodule_id
+            );
             INSTALL_MODULE_SCRIPT.to_string()
         }
     } else {
@@ -119,7 +124,6 @@ fn foreach_module(active_only: bool, mut f: impl FnMut(&Path) -> Result<()>) -> 
 fn foreach_active_module(f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
     foreach_module(true, f)
 }
-
 
 pub fn load_sepolicy_rule() -> Result<()> {
     foreach_active_module(|path| {
@@ -428,8 +432,9 @@ pub fn enable_module(id: &str) -> Result<()> {
 
     let disable_path = module_path.join(defs::DISABLE_FILE_NAME);
     if disable_path.exists() {
-        std::fs::remove_file(&disable_path)
-            .with_context(|| format!("Failed to remove disable file: {}", disable_path.display()))?;
+        std::fs::remove_file(&disable_path).with_context(|| {
+            format!("Failed to remove disable file: {}", disable_path.display())
+        })?;
         info!("Module {} enabled", id);
     }
 
@@ -441,7 +446,10 @@ pub fn disable_module(id: &str) -> Result<()> {
     if let Ok(Some(metamodule_id)) = read_metamodule()
         && metamodule_id == id
     {
-        warn!("Disabling metamodule: {}. Module mounting will not work until re-enabled.", id);
+        warn!(
+            "Disabling metamodule: {}. Module mounting will not work until re-enabled.",
+            id
+        );
     }
 
     let module_path = Path::new(defs::MODULE_DIR).join(id);
@@ -458,7 +466,10 @@ pub fn disable_module(id: &str) -> Result<()> {
 pub fn disable_all_modules() -> Result<()> {
     // Check if metamodule will be disabled
     if let Ok(Some(metamodule_id)) = read_metamodule() {
-        warn!("Disabling all modules including metamodule: {}. Module mounting will not work.", metamodule_id);
+        warn!(
+            "Disabling all modules including metamodule: {}. Module mounting will not work.",
+            metamodule_id
+        );
     }
     mark_all_modules(defs::DISABLE_FILE_NAME)
 }
