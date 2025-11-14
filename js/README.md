@@ -144,7 +144,7 @@ img.src = "ksu://icon/" + packageName;
 
 Get information for a list of packages.
 
-Return an array of `PackagesInfo` objects.
+Returns an array of `PackagesInfo` objects.
 
 - `packages` `<string[]>` The list of package names.
 
