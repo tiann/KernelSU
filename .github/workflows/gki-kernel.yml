@@ -77,10 +77,10 @@ jobs:
         with:
           root-reserve-mb: 8192
           temp-reserve-mb: 2048
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
 
       - uses: actions/checkout@v5
         with:
@@ -199,6 +199,27 @@ jobs:
             sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
           fi
 
+      - name: Append ashmem exports if missing
+        if: startsWith(inputs.version, 'android16-6.12')
+        working-directory: android-kernel
+        run: |
+          FILE=common/drivers/staging/android/ashmem.c
+          if [[ -f "$FILE" ]] && ! grep -q 'is_ashmem_file' "$FILE"; then
+          cat >>"$FILE" <<'EOF'
+
+          bool is_ashmem_file(struct file *file) { return false; }
+          int ashmem_area_name(struct file *file, char *name) { return 0; }
+          long ashmem_area_size(struct file *file) { return 0; }
+          struct file *ashmem_area_vmfile(struct file *file) { return NULL; }
+          EXPORT_SYMBOL_GPL(is_ashmem_file);
+          EXPORT_SYMBOL_GPL(ashmem_area_name);
+          EXPORT_SYMBOL_GPL(ashmem_area_size);
+          EXPORT_SYMBOL_GPL(ashmem_area_vmfile);
+          EOF
+          fi
+
+          sed -i -E 's/\$\(CONFIG_ANDROID_BINDER_IPC_RUST\)/m/g' common/drivers/android/Makefile
+
       - name: Make working directory clean to avoid dirty
         working-directory: android-kernel
         run: |
@@ -206,7 +227,7 @@ jobs:
           if [ -f common/BUILD.bazel ]; then
             [ -f android/abi_gki_protected_exports_aarch64 ] || sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' common/BUILD.bazel
           fi
-          
+
           rm common/android/abi_gki_protected_exports_* || echo "No protected exports!"
           git config --global user.email "bot@kernelsu.org"
           git config --global user.name "KernelSUBot"
@@ -223,7 +244,11 @@ jobs:
           if [ -e build/build.sh ]; then
             LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh CC="/usr/bin/ccache clang"
           else
-            tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+            if [ "${{ inputs.version }}" == "android16-6.12" ]; then
+              tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --destdir=dist
+            else
+              tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+            fi
           fi
 
       - name: Prepare artifacts
@@ -234,7 +259,7 @@ jobs:
             OUTDIR=android-kernel/dist
           fi
           mkdir output
-          if [ "${{ inputs.build_lkm}}" = "true" ]; then 
+          if [ "${{ inputs.build_lkm}}" = "true" ]; then
             llvm-strip-15 -d $OUTDIR/kernelsu.ko
             mv $OUTDIR/kernelsu.ko ./output/${{ inputs.version }}_kernelsu.ko
           else
