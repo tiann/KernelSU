@@ -23,7 +23,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
 #include "selinux/selinux.h"
-#include "syscall_hook_manager.h"
 #include "throne_tracker.h"
 
 bool ksu_module_mounted __read_mostly = false;
@@ -77,8 +76,6 @@ void on_post_fs_data(void)
     done = true;
     pr_info("on_post_fs_data!\n");
     ksu_load_allow_list();
-    pr_info("mark tif for running process\n");
-    ksu_mark_running_process();
     ksu_observer_init();
     // sanity check, this may influence the performance
     stop_input_hook();
@@ -119,9 +116,6 @@ void on_boot_completed(void){
     ksu_boot_completed = true;
     pr_info("on_boot_completed!\n");
     track_throne(true);
-    // remark process, we don't want to mark other init
-    // forked process excepte zygote and adbd
-    ksu_mark_running_process();
 }
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
