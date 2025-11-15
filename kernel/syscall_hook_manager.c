@@ -239,7 +239,7 @@ static inline bool check_syscall_fastpath(int nr)
     }
 }
 
-// Unmark init's child that are not zygote or adbd
+// Unmark init's child that are not zygote, adbd or ksud
 int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
     char path[64];
@@ -250,7 +250,8 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
     memset(path, 0, sizeof(path));
     strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
+    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL && strstr(path, "/ksud") == NULL)) {
+		pr_info("hook_manager: unmark %d exec %s", current->pid, path);
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
