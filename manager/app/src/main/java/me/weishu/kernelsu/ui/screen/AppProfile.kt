@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -69,6 +70,7 @@ import me.weishu.kernelsu.ui.util.restartApp
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -116,6 +118,12 @@ fun AppProfileScreen(
     val primaryForIcon = remember(appInfo.uid, sameUidApps) {
         runCatching { me.weishu.kernelsu.ui.util.UidGroupUtils.pickPrimary(sameUidApps) }.getOrNull() ?: appInfo
     }
+    val sharedUserId = remember(appInfo.uid, sameUidApps, primaryForIcon) {
+        primaryForIcon.packageInfo.sharedUserId
+            ?: sameUidApps.firstOrNull { it.packageInfo.sharedUserId != null }?.packageInfo?.sharedUserId
+            ?: ""
+    }
+
     val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
     if (initialProfile.allowSu) {
         initialProfile.rules = getSepolicy(packageName)
@@ -155,11 +163,11 @@ fun AppProfileScreen(
                         AppIconImage(
                             packageInfo = iconApp.packageInfo,
                             label = iconApp.label,
-                            modifier = Modifier
-                                .size(60.dp)
+                            modifier = Modifier.size(56.dp)
                         )
                     },
                     appUid = appInfo.uid,
+                    sharedUserId = if (isUidGroup) sharedUserId else "",
                     appVersionName = if (isUidGroup) "" else (appInfo.packageInfo.versionName ?: ""),
                     appVersionCode = if (isUidGroup) 0L else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         appInfo.packageInfo.longVersionCode
@@ -220,6 +228,7 @@ private fun AppProfileInner(
     appLabel: String,
     appIcon: @Composable (() -> Unit),
     appUid: Int,
+    sharedUserId: String = "",
     appVersionName: String,
     appVersionCode: Long,
     profile: Natives.Profile,
@@ -247,7 +256,7 @@ private fun AppProfileInner(
                 appIcon()
                 Column(
                     modifier = Modifier
-                        .padding(start = 16.dp, end = 8.dp)
+                        .padding(start = 14.dp, end = 8.dp)
                         .weight(1f),
                 ) {
                     Text(
@@ -285,6 +294,19 @@ private fun AppProfileInner(
                                 .clipToBounds()
                         )
                     } else {
+                        if (sharedUserId.isNotEmpty()) {
+                            Text(
+                                text = sharedUserId,
+                                fontSize = 14.sp,
+                                color = colorScheme.onSurfaceVariantSummary,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Clip,
+                                modifier = Modifier
+                                    .horizontalScroll(rememberScrollState())
+                                    .clipToBounds()
+                            )
+                        }
                         Text(
                             text = stringResource(R.string.group_contains_apps, affectedApps.size),
                             fontSize = 14.sp,
@@ -434,44 +456,24 @@ private fun AppProfileInner(
                     .padding(horizontal = 12.dp)
                     .padding(bottom = 12.dp),
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                ) {
-                    affectedApps.forEach { app ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 6.dp)
-                        ) {
+                Spacer(Modifier.height(3.dp))
+                affectedApps.forEach { app ->
+                    BasicComponent(
+                        leftAction = {
                             AppIconImage(
                                 packageInfo = app.packageInfo,
                                 label = app.label,
-                                modifier = Modifier.size(36.dp)
-                            )
-                            Column(
                                 modifier = Modifier
-                                    .padding(start = 12.dp)
-                                    .weight(1f)
-                            ) {
-                                Text(
-                                    text = app.label,
-                                    color = colorScheme.onSurface,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Clip
-                                )
-                                Text(
-                                    text = app.packageName,
-                                    fontSize = 13.sp,
-                                    color = colorScheme.onSurfaceVariantSummary,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Clip
-                                )
-                            }
-                        }
-                    }
+                                    .padding(end = 14.dp)
+                                    .size(36.dp)
+                            )
+                        },
+                        title = app.label,
+                        summary = app.packageName,
+                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                    )
                 }
+                Spacer(Modifier.height(3.dp))
             }
         }
     }
