@@ -2,6 +2,7 @@
 
 #include <sys/prctl.h>
 #include <linux/capability.h>
+#include <pwd.h>
 
 #include <android/log.h>
 #include <cstring>
@@ -334,4 +335,14 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_setEnhancedSecurityEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
     return set_enhanced_security_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid) {
+    struct passwd *pw = getpwuid((uid_t) uid);
+    if (pw && pw->pw_name && pw->pw_name[0] != '\0') {
+        return env->NewStringUTF(pw->pw_name);
+    }
+    return nullptr;
 }

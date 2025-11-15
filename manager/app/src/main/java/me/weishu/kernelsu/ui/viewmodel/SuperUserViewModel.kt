@@ -197,8 +197,11 @@ class SuperUserViewModel : ViewModel() {
             _appList.value = newApps.sortedWith(comparator).also {
                 isRefreshing = false
             }.filter {
-                it.uid == 2000 // Always show shell
-                        || showSystemApps || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
+                it.uid == 2000
+                        || showSystemApps
+                        || it.allowSu
+                        || it.hasCustomProfile
+                        || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
             }
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
         }

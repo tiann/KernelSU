@@ -108,6 +108,7 @@
     <string name="app_profile_template_sync">Sync online templates</string>
     <string name="app_profile_template_save_failed">Failed to save template</string>
     <string name="app_profile_template_import_empty">Clipboard is empty!</string>
+    <string name="app_profile_affects_following_apps">Affects the following apps</string>
     <string name="module_changelog_failed">Fetch changelog failed: %s</string>
     <string name="settings_check_update">Check for updates</string>
     <string name="settings_check_update_summary">Automatically check for updates when opening the app.</string>
@@ -156,4 +157,6 @@
     <string name="refresh_release">Release to refresh</string>
     <string name="refresh_refresh">Refreshing…</string>
     <string name="refresh_complete">Refreshed successfully</string>
+    <string name="group_contains_apps">Contains %d apps</string>
+    <string name="affects_following_apps">Affects the following apps</string>
 </resources>
