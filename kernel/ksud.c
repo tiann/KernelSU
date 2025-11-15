@@ -24,6 +24,7 @@
 #include "ksud.h"
 #include "selinux/selinux.h"
 #include "syscall_hook_manager.h"
+#include "throne_tracker.h"
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
@@ -117,6 +118,7 @@ void on_module_mounted(void){
 void on_boot_completed(void){
     ksu_boot_completed = true;
     pr_info("on_boot_completed!\n");
+    track_throne(true);
     // remark process, we don't want to mark other init
     // forked process excepte zygote and adbd
     ksu_mark_running_process();

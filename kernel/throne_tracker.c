@@ -300,7 +300,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
     return exist;
 }
 
-void track_throne()
+void track_throne(bool prune_only)
 {
     struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
     if (IS_ERR(fp)) {
@@ -356,6 +356,9 @@ void track_throne()
     // now update uid list
     struct uid_data *np;
     struct uid_data *n;
+
+    if (prune_only)
+        goto prune;
 
     // first, check if manager_uid exist!
     bool manager_exist = false;
