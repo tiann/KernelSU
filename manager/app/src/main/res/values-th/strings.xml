@@ -156,4 +156,7 @@
     <string name="refresh_refresh">กำลังรีเฟรช…</string>
     <string name="refresh_complete">รีเฟรชสำเร็จ</string>
     <string name="install_select_partition">เลือกพาร์ทิชัน</string>
+    <string name="app_profile_affects_following_apps">ส่งผลต่อแอปดังต่อไปนี้</string>
+    <string name="group_contains_apps">มีแอป %d รายการ</string>
+    <string name="affects_following_apps">ส่งผลต่อแอปดังต่อไปนี้</string>
 </resources>
