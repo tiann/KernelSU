@@ -10,17 +10,23 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewAssetLoader
-import kotlinx.coroutines.launch
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -28,7 +34,6 @@ class WebUIActivity : ComponentActivity() {
     private lateinit var webviewInterface: WebViewInterface
 
     private var rootShell: Shell? = null
-    private val superUserViewModel: SuperUserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -40,10 +45,22 @@ class WebUIActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        lifecycleScope.launch {
-            superUserViewModel.fetchAppList()
+        setContent {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                InfiniteProgressIndicator()
+            }
         }
 
+        lifecycleScope.launch {
+            SuperUserViewModel.isAppListLoaded.first { it }
+            setupWebView()
+        }
+    }
+
+    private fun setupWebView() {
         val moduleId = intent.getStringExtra("id")!!
         val name = intent.getStringExtra("name")!!
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
