@@ -29,6 +29,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  */
 @Composable
 fun TemplateConfig(
+    modifier: Modifier = Modifier,
     profile: Natives.Profile,
     onViewTemplate: (id: String) -> Unit = {},
     onManageTemplate: () -> Unit = {},
@@ -40,6 +41,7 @@ fun TemplateConfig(
 
     if (noTemplates) {
         SuperArrow(
+            modifier = modifier,
             title = stringResource(R.string.app_profile_template_create),
             leftAction = {
                 Icon(
@@ -54,7 +56,7 @@ fun TemplateConfig(
     } else {
         var template by rememberSaveable { mutableStateOf(profile.rootTemplate ?: profileTemplates[0]) }
 
-        Column {
+        Column(modifier = modifier) {
             SuperDropdown(
                 title = stringResource(R.string.profile_template),
                 items = profileTemplates,

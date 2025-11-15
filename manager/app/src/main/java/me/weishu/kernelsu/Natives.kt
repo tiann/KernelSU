@@ -81,6 +81,11 @@ object Natives {
     external fun isEnhancedSecurityEnabled(): Boolean
     external fun setEnhancedSecurityEnabled(enabled: Boolean): Boolean
 
+    /**
+     * Get the user name for the uid.
+     */
+    external fun getUserName(uid: Int): String?
+
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
     private const val NOBODY_UID = 9999
 

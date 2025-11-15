@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -44,6 +45,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -57,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.capsule.ContinuousRoundedRectangle
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
@@ -67,6 +70,8 @@ import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
+import me.weishu.kernelsu.ui.util.UidGroupUtils
+import me.weishu.kernelsu.ui.util.UidGroupUtils.ownerNameForUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -176,19 +181,54 @@ fun SuperUserPager(
             }
         },
         popupHost = {
+            val allGroups = remember(viewModel.appList.value) { buildGroups(viewModel.appList.value) }
+            val matchedByUid = remember(viewModel.searchResults.value) {
+                viewModel.searchResults.value.groupBy { it.uid }
+            }
+            val searchGroups = remember(allGroups, matchedByUid) {
+                allGroups.filter { matchedByUid.containsKey(it.uid) }
+            }
+            val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
+            LaunchedEffect(matchedByUid) {
+                expandedSearchUids.value = searchGroups
+                    .filter { it.apps.size > 1 }
+                    .map { it.uid }
+                    .toSet()
+            }
             searchStatus.SearchPager(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
-                items(viewModel.searchResults.value, key = { it.packageName + it.uid }) { app ->
+                items(searchGroups, key = { it.uid }) { group ->
+                    val expanded = expandedSearchUids.value.contains(group.uid)
                     AnimatedVisibility(
-                        visible = viewModel.searchResults.value.isNotEmpty(),
+                        visible = searchGroups.isNotEmpty(),
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
-                        AppItem(app) {
-                            navigator.navigate(AppProfileScreenDestination(app)) {
-                                launchSingleTop = true
+                        Column {
+                            GroupItem(
+                                group = group,
+                                onToggleExpand = {
+                                    if (group.apps.size > 1) {
+                                        expandedSearchUids.value =
+                                            if (expanded) expandedSearchUids.value - group.uid else expandedSearchUids.value + group.uid
+                                    }
+                                },
+                            ) {
+                                navigator.navigate(AppProfileScreenDestination(group.primary)) {
+                                    launchSingleTop = true
+                                }
+                            }
+                            AnimatedVisibility(
+                                visible = expanded && group.apps.size > 1,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column {
+                                    val matchedApps = matchedByUid[group.uid] ?: emptyList()
+                                    matchedApps.forEach { app -> SimpleAppItem(app) }
+                                }
                             }
                         }
                     }
@@ -244,6 +284,8 @@ fun SuperUserPager(
                     )
                 }
             } else {
+                val groups = remember(viewModel.appList.value) { buildGroups(viewModel.appList.value) }
+                val expandedUids = remember { mutableStateOf(setOf<Int>()) }
                 PullToRefresh(
                     isRefreshing = isRefreshing,
                     pullToRefreshState = pullToRefreshState,
@@ -269,10 +311,30 @@ fun SuperUserPager(
                         ),
                         overscrollEffect = null,
                     ) {
-                        items(viewModel.appList.value, key = { it.packageName + it.uid }) { app ->
-                            AppItem(app) {
-                                navigator.navigate(AppProfileScreenDestination(app)) {
+                        items(groups, key = { it.uid }) { group ->
+                            val expanded = expandedUids.value.contains(group.uid)
+                            GroupItem(
+                                group = group,
+                                onToggleExpand = {
+                                    if (group.apps.size > 1) {
+                                        expandedUids.value =
+                                            if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
+                                    }
+                                }
+                            ) {
+                                navigator.navigate(AppProfileScreenDestination(group.primary)) {
                                     launchSingleTop = true
+                                }
+                            }
+                            AnimatedVisibility(
+                                visible = expanded && group.apps.size > 1,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column {
+                                    group.apps.forEach { app ->
+                                        SimpleAppItem(app)
+                                    }
                                 }
                             }
                         }
@@ -287,42 +349,134 @@ fun SuperUserPager(
 }
 
 @Composable
-private fun AppItem(
+private fun SimpleAppItem(
     app: SuperUserViewModel.AppInfo,
-    onClickListener: () -> Unit
 ) {
-    val userId = app.uid / 100000
+    Row {
+        Box(
+            modifier = Modifier
+                .padding(start = 12.dp, bottom = 12.dp)
+                .width(12.dp)
+                .height(48.dp)
+                .align(Alignment.CenterVertically)
+                .clip(ContinuousRoundedRectangle(16.dp))
+                .background(MiuixTheme.colorScheme.primaryContainer)
+        )
+        Card(
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 0.dp)
+                .padding(bottom = 12.dp),
+            onClick = {},
+            showIndication = false,
+        ) {
+            BasicComponent(
+                title = app.label,
+                summary = app.packageName,
+                leftAction = {
+                    AppIconImage(
+                        packageInfo = app.packageInfo,
+                        label = app.label,
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .size(48.dp)
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Immutable
+private data class GroupedApps(
+    val uid: Int,
+    val apps: List<SuperUserViewModel.AppInfo>,
+    val primary: SuperUserViewModel.AppInfo,
+    val anyAllowSu: Boolean,
+    val anyCustom: Boolean,
+)
+
+private fun buildGroups(apps: List<SuperUserViewModel.AppInfo>): List<GroupedApps> {
+    val comparator = compareBy<SuperUserViewModel.AppInfo> {
+        when {
+            it.allowSu -> 0
+            it.hasCustomProfile -> 1
+            else -> 2
+        }
+    }.thenBy { it.label.lowercase() }
+    val groups = apps.groupBy { it.uid }.map { (uid, list) ->
+        val sorted = list.sortedWith(comparator)
+        val primary = UidGroupUtils.pickPrimary(sorted)
+        GroupedApps(
+            uid = uid,
+            apps = sorted,
+            primary = primary,
+            anyAllowSu = sorted.any { it.allowSu },
+            anyCustom = sorted.any { it.hasCustomProfile },
+        )
+    }
+    return groups.sortedWith(Comparator { a, b ->
+        fun rank(g: GroupedApps): Int = when {
+            g.anyAllowSu -> 0
+            g.anyCustom -> 1
+            g.apps.size > 1 -> 2
+            Natives.uidShouldUmount(g.uid) -> 4
+            else -> 3
+        }
+
+        val ra = rank(a)
+        val rb = rank(b)
+        if (ra != rb) return@Comparator ra - rb
+        return@Comparator when (ra) {
+            2 -> a.uid.compareTo(b.uid)
+            else -> a.primary.label.lowercase().compareTo(b.primary.label.lowercase())
+        }
+    })
+}
+
+@Composable
+private fun GroupItem(
+    group: GroupedApps,
+    onToggleExpand: () -> Unit,
+    onClickPrimary: () -> Unit,
+) {
+    val userId = group.uid / 100000
     val colorScheme = MiuixTheme.colorScheme
-    val tags = remember(app.uid, app.allowSu, app.hasCustomProfile, colorScheme) {
+    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom, colorScheme) {
         buildList {
             if (userId != 0) {
                 add(StatusMeta("UID$userId", colorScheme.primary, colorScheme.onPrimary))
             }
-            if (app.allowSu) {
+            if (group.anyAllowSu) {
                 add(StatusMeta("ROOT", colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer))
-            } else if (Natives.uidShouldUmount(app.uid)) {
+            } else if (Natives.uidShouldUmount(group.uid)) {
                 add(StatusMeta("UMOUNT", colorScheme.secondaryContainer, colorScheme.onSecondaryContainer))
             }
-            if (app.hasCustomProfile) {
+            if (group.anyCustom) {
                 add(StatusMeta("CUSTOM", colorScheme.primaryContainer, colorScheme.onPrimaryContainer))
             }
         }
+    }
+    val summaryText = if (group.apps.size > 1) {
+        stringResource(R.string.group_contains_apps, group.apps.size)
+    } else {
+        group.primary.packageName
     }
     Card(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 0.dp)
             .padding(bottom = 12.dp),
-        onClick = onClickListener,
+        onClick = onClickPrimary,
+        onLongPress = if (group.apps.size > 1) onToggleExpand else null,
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
     ) {
         BasicComponent(
-            title = app.label,
-            summary = app.packageName,
+            title = if (group.apps.size > 1) "${ownerNameForUid(group.uid)} (${group.uid})" else group.primary.label,
+            summary = summaryText,
             leftAction = {
                 AppIconImage(
-                    packageInfo = app.packageInfo,
-                    label = app.label,
+                    packageInfo = group.primary.packageInfo,
+                    label = group.primary.label,
                     modifier = Modifier
                         .padding(end = 12.dp)
                         .size(48.dp)
