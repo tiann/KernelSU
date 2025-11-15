@@ -18,6 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.IKsuInterface
@@ -38,6 +40,9 @@ class SuperUserViewModel : ViewModel() {
         private const val TAG = "SuperUserViewModel"
         private val appsLock = Any()
         var apps by mutableStateOf<List<AppInfo>>(emptyList())
+        
+        private val _isAppListLoaded = MutableStateFlow(false)
+        val isAppListLoaded = _isAppListLoaded.asStateFlow()
 
         @JvmStatic
         fun getAppIconDrawable(context: Context, packageName: String): Drawable? {
@@ -185,6 +190,7 @@ class SuperUserViewModel : ViewModel() {
 
             synchronized(appsLock) {
                 apps = newApps
+                _isAppListLoaded.value = true
             }
 
             val comparator = compareBy<AppInfo> {
