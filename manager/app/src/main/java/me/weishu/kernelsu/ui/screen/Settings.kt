@@ -5,12 +5,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -43,9 +40,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
@@ -65,15 +62,11 @@ import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.shrinkModules
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperSwitch
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -85,14 +78,17 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @Composable
 @Destination<RootGraph>
-fun SettingScreen(navigator: DestinationsNavigator) {
+fun SettingPager(
+    navigator: DestinationsNavigator,
+    bottomInnerPadding: Dp
+) {
     val scrollBehavior = MiuixScrollBehavior()
 
     Scaffold(
         topBar = {
-            TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
-                scrollBehavior = scrollBehavior,
+            TopAppBar(
+                title = stringResource(R.string.settings),
+                scrollBehavior = scrollBehavior
             )
         },
         popupHost = { },
@@ -501,12 +497,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         }
                     )
                 }
-                Spacer(
-                    Modifier.height(
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
-                    )
-                )
+                Spacer(Modifier.height(bottomInnerPadding))
             }
         }
     }
@@ -531,25 +522,3 @@ enum class UninstallType(val icon: ImageVector, val title: Int, val message: Int
     NONE(Icons.Rounded.Adb, 0, 0)
 }
 
-@Composable
-private fun TopBar(
-    onBack: () -> Unit = {},
-    scrollBehavior: ScrollBehavior,
-) {
-    TopAppBar(
-        title = stringResource(R.string.settings),
-        navigationIcon = {
-            IconButton(
-                modifier = Modifier.padding(start = 16.dp),
-                onClick = onBack
-            ) {
-                Icon(
-                    imageVector = MiuixIcons.Useful.Back,
-                    contentDescription = null,
-                    tint = colorScheme.onBackground
-                )
-            }
-        },
-        scrollBehavior = scrollBehavior
-    )
-}

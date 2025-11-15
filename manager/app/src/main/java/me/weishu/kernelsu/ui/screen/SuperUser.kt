@@ -70,8 +70,8 @@ import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
-import me.weishu.kernelsu.ui.util.UidGroupUtils
-import me.weishu.kernelsu.ui.util.UidGroupUtils.ownerNameForUid
+import me.weishu.kernelsu.ui.util.ownerNameForUid
+import me.weishu.kernelsu.ui.util.pickPrimary
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -367,7 +367,7 @@ private fun SimpleAppItem(
             modifier = Modifier
                 .padding(start = 12.dp, bottom = 12.dp)
                 .width(12.dp)
-                .height(48.dp)
+                .height(32.dp)
                 .align(Alignment.CenterVertically)
                 .clip(ContinuousRoundedRectangle(16.dp))
                 .background(MiuixTheme.colorScheme.primaryContainer)
@@ -387,10 +387,11 @@ private fun SimpleAppItem(
                         packageInfo = app.packageInfo,
                         label = app.label,
                         modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(48.dp)
+                            .padding(end = 8.dp)
+                            .size(40.dp)
                     )
                 },
+                insideMargin = PaddingValues(horizontal = 8.dp)
             )
         }
     }
@@ -415,7 +416,7 @@ private fun buildGroups(apps: List<SuperUserViewModel.AppInfo>): List<GroupedApp
     }.thenBy { it.label.lowercase() }
     val groups = apps.groupBy { it.uid }.map { (uid, list) ->
         val sorted = list.sortedWith(comparator)
-        val primary = UidGroupUtils.pickPrimary(sorted)
+        val primary = pickPrimary(sorted)
         GroupedApps(
             uid = uid,
             apps = sorted,

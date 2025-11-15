@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable
 import android.os.IBinder
 import android.os.Parcelable
 import android.os.SystemClock
+import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -26,6 +27,7 @@ import me.weishu.kernelsu.IKsuInterface
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.KsuService
+import com.topjohnwu.superuser.ipc.RootService
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.KsuCli
@@ -142,7 +144,7 @@ class SuperUserViewModel : ViewModel() {
 
         val intent = Intent(ksuApp, KsuService::class.java)
 
-        val task = KsuService.bindOrTask(
+        val task = RootService.bindOrTask(
             intent,
             Shell.EXECUTOR,
             connection,
@@ -153,7 +155,7 @@ class SuperUserViewModel : ViewModel() {
 
     private fun stopKsuService() {
         val intent = Intent(ksuApp, KsuService::class.java)
-        KsuService.stop(intent)
+        RootService.stop(intent)
     }
 
     suspend fun fetchAppList() {
@@ -187,6 +189,10 @@ class SuperUserViewModel : ViewModel() {
                     profile = profile,
                 )
             }.filter { it.packageName != ksuApp.packageName }
+                .filter {
+                    val ai = it.packageInfo.applicationInfo!!
+                    if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
+                }
 
             synchronized(appsLock) {
                 apps = newApps
