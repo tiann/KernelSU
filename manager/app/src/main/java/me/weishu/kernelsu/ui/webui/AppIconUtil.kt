@@ -24,7 +24,6 @@ object AppIconUtil {
             val drawable = getAppIconDrawable(context, packageName) ?: return null
             val raw = drawableToBitmap(drawable, sizePx)
             val icon = raw.scale(sizePx, sizePx)
-            if (raw != icon) raw.recycle()
             iconCache.put(packageName, icon)
             return icon
         } catch (_: Exception) {
