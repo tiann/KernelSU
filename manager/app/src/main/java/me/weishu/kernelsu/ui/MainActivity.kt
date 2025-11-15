@@ -40,6 +40,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.component.BottomBar
 import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
+import me.weishu.kernelsu.ui.screen.SettingPager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.install
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
             KernelSUTheme {
                 val navController = rememberNavController()
 
-                Scaffold { innerPadding ->
+                Scaffold {
                     DestinationsNavHost(
                         modifier = Modifier,
                         navGraph = NavGraphs.root,
@@ -119,7 +120,7 @@ val LocalHandlePageChange = compositionLocalOf<(Int) -> Unit> { error("No handle
 fun MainScreen(navController: DestinationsNavigator) {
     val activity = LocalActivity.current
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 3 })
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = MiuixTheme.colorScheme.background,
@@ -160,6 +161,7 @@ fun MainScreen(navController: DestinationsNavigator) {
                     0 -> HomePager(pagerState, navController, innerPadding.calculateBottomPadding())
                     1 -> SuperUserPager(navController, innerPadding.calculateBottomPadding())
                     2 -> ModulePager(navController, innerPadding.calculateBottomPadding())
+                    3 -> SettingPager(navController, innerPadding.calculateBottomPadding())
                 }
             }
         }

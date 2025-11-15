@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -93,7 +92,6 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Reboot
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
-import top.yukonga.miuix.kmp.icon.icons.useful.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -118,14 +116,6 @@ fun HomePager(
         topBar = {
             TopBar(
                 kernelVersion = kernelVersion,
-                onSettingsClick = {
-                    navigator.navigate(SettingScreenDestination) {
-                        popUpTo(SettingScreenDestination) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                },
                 onInstallClick = {
                     navigator.navigate(InstallScreenDestination) {
                         popUpTo(InstallScreenDestination) {
@@ -272,23 +262,10 @@ fun RebootDropdownItem(
 private fun TopBar(
     kernelVersion: KernelVersion,
     onInstallClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     scrollBehavior: ScrollBehavior,
 ) {
     TopAppBar(
         title = stringResource(R.string.app_name),
-        navigationIcon = {
-            IconButton(
-                modifier = Modifier.padding(start = 16.dp),
-                onClick = onSettingsClick
-            ) {
-                Icon(
-                    imageVector = MiuixIcons.Useful.Settings,
-                    contentDescription = stringResource(id = R.string.settings),
-                    tint = colorScheme.onBackground
-                )
-            }
-        },
         actions = {
             if (kernelVersion.isGKI()) {
                 IconButton(

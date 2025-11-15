@@ -35,7 +35,6 @@ const val TAG = "TemplateViewModel"
 
 class TemplateViewModel : ViewModel() {
     companion object {
-
         private var templates by mutableStateOf<List<TemplateInfo>>(emptyList())
     }
 

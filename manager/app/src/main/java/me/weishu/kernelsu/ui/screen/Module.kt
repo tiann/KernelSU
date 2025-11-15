@@ -52,6 +52,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -171,8 +172,10 @@ fun ModulePager(
     val confirmDialog = rememberConfirmDialog()
 
     val isSafeMode = Natives.isSafeMode
-    val hasMagisk = hasMagisk()
-    val hideInstallButton = isSafeMode || hasMagisk
+    val magiskInstalled by produceState(initialValue = false) {
+        value = withContext(Dispatchers.IO) { hasMagisk() }
+    }
+    val hideInstallButton = isSafeMode || magiskInstalled
 
     val scrollBehavior = MiuixScrollBehavior()
     val listState = rememberLazyListState()
@@ -574,7 +577,7 @@ fun ModulePager(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         when {
-            hasMagisk -> {
+            magiskInstalled -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

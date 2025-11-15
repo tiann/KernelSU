@@ -62,10 +62,11 @@ import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
-import me.weishu.kernelsu.ui.util.UidGroupUtils.ownerNameForUid
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
+import me.weishu.kernelsu.ui.util.ownerNameForUid
+import me.weishu.kernelsu.ui.util.pickPrimary
 import me.weishu.kernelsu.ui.util.restartApp
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
@@ -116,7 +117,7 @@ fun AppProfileScreen(
     }
     val isUidGroup = sameUidApps.size > 1
     val primaryForIcon = remember(appInfo.uid, sameUidApps) {
-        runCatching { me.weishu.kernelsu.ui.util.UidGroupUtils.pickPrimary(sameUidApps) }.getOrNull() ?: appInfo
+        runCatching { pickPrimary(sameUidApps) }.getOrNull() ?: appInfo
     }
     val sharedUserId = remember(appInfo.uid, sameUidApps, primaryForIcon) {
         primaryForIcon.packageInfo.sharedUserId
