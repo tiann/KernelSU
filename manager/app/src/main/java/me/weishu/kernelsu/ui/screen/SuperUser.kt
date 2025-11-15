@@ -284,7 +284,8 @@ fun SuperUserPager(
                     )
                 }
             } else {
-                val groups = remember(viewModel.appList.value) { buildGroups(viewModel.appList.value) }
+                val allGroups = remember(SuperUserViewModel.apps) { buildGroups(SuperUserViewModel.apps) }
+                val visibleUidSet = remember(viewModel.appList.value) { viewModel.appList.value.map { it.uid }.toSet() }
                 val expandedUids = remember { mutableStateOf(setOf<Int>()) }
                 PullToRefresh(
                     isRefreshing = isRefreshing,
@@ -311,29 +312,38 @@ fun SuperUserPager(
                         ),
                         overscrollEffect = null,
                     ) {
-                        items(groups, key = { it.uid }) { group ->
+                        items(allGroups, key = { it.uid }) { group ->
                             val expanded = expandedUids.value.contains(group.uid)
-                            GroupItem(
-                                group = group,
-                                onToggleExpand = {
-                                    if (group.apps.size > 1) {
-                                        expandedUids.value =
-                                            if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
-                                    }
-                                }
-                            ) {
-                                navigator.navigate(AppProfileScreenDestination(group.primary)) {
-                                    launchSingleTop = true
-                                }
-                            }
+                            val isVisible = visibleUidSet.contains(group.uid)
                             AnimatedVisibility(
-                                visible = expanded && group.apps.size > 1,
+                                visible = isVisible,
                                 enter = expandVertically() + fadeIn(),
                                 exit = shrinkVertically() + fadeOut()
                             ) {
                                 Column {
-                                    group.apps.forEach { app ->
-                                        SimpleAppItem(app)
+                                    GroupItem(
+                                        group = group,
+                                        onToggleExpand = {
+                                            if (group.apps.size > 1) {
+                                                expandedUids.value =
+                                                    if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
+                                            }
+                                        }
+                                    ) {
+                                        navigator.navigate(AppProfileScreenDestination(group.primary)) {
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                    AnimatedVisibility(
+                                        visible = expanded && group.apps.size > 1,
+                                        enter = expandVertically() + fadeIn(),
+                                        exit = shrinkVertically() + fadeOut()
+                                    ) {
+                                        Column {
+                                            group.apps.forEach { app ->
+                                                SimpleAppItem(app)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -478,8 +488,8 @@ private fun GroupItem(
                     packageInfo = group.primary.packageInfo,
                     label = group.primary.label,
                     modifier = Modifier
-                        .padding(end = 12.dp)
-                        .size(48.dp)
+                        .padding(end = 14.dp)
+                        .size(40.dp)
                 )
             },
             rightActions = {
