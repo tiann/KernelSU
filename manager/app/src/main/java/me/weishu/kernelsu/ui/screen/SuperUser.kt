@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -8,9 +9,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,7 +36,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,7 +93,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -171,7 +174,7 @@ fun SuperUserPager(
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Useful.ImmersionMore,
-                                tint = MiuixTheme.colorScheme.onSurface,
+                                tint = colorScheme.onSurface,
                                 contentDescription = stringResource(id = R.string.settings)
                             )
                         }
@@ -370,14 +373,12 @@ private fun SimpleAppItem(
                 .height(32.dp)
                 .align(Alignment.CenterVertically)
                 .clip(ContinuousRoundedRectangle(16.dp))
-                .background(MiuixTheme.colorScheme.primaryContainer)
+                .background(colorScheme.primaryContainer)
         )
         Card(
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 0.dp)
                 .padding(bottom = 12.dp),
-            onClick = {},
-            showIndication = false,
         ) {
             BasicComponent(
                 title = app.label,
@@ -450,74 +451,99 @@ private fun GroupItem(
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
+    val isDark = isSystemInDarkTheme()
+    val colorScheme = colorScheme
+    val bg = remember { colorScheme.secondaryContainer.copy(alpha = 0.8f) }
+    val rootBg = remember { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
+    val unmountBg = remember(isDark) { if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f) }
+    val fg = remember { colorScheme.onSecondaryContainer }
+    val rootFg = remember { colorScheme.onTertiaryContainer.copy(alpha = 0.8f) }
+    val unmountFg = remember(isDark) { if (isDark) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f) }
     val userId = group.uid / 100000
-    val colorScheme = MiuixTheme.colorScheme
-    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom, colorScheme) {
+    val packageInfo = group.primary.packageInfo
+    val applicationInfo = packageInfo.applicationInfo
+    val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
+    val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
+            || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom) {
         buildList {
-            if (userId != 0) {
-                add(StatusMeta("UID$userId", colorScheme.primary, colorScheme.onPrimary))
-            }
-            if (group.anyAllowSu) {
-                add(StatusMeta("ROOT", colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer))
-            } else if (Natives.uidShouldUmount(group.uid)) {
-                add(StatusMeta("UMOUNT", colorScheme.secondaryContainer, colorScheme.onSecondaryContainer))
-            }
-            if (group.anyCustom) {
-                add(StatusMeta("CUSTOM", colorScheme.primaryContainer, colorScheme.onPrimaryContainer))
-            }
+            if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
+            if (Natives.uidShouldUmount(group.uid)) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
+            if (group.anyCustom) add(StatusMeta("CUSTOM", bg, fg))
+            if (userId != 0) add(StatusMeta("USER $userId", bg, fg))
+            if (isSystemApp) add(StatusMeta("SYSTEM", bg, fg))
+            if (hasSharedUserId) add(StatusMeta("SHARED UID", bg, fg))
         }
-    }
-    val summaryText = if (group.apps.size > 1) {
-        stringResource(R.string.group_contains_apps, group.apps.size)
-    } else {
-        group.primary.packageName
     }
     Card(
         modifier = Modifier
-            .padding(horizontal = 12.dp, vertical = 0.dp)
+            .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp),
         onClick = onClickPrimary,
         onLongPress = if (group.apps.size > 1) onToggleExpand else null,
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
+        insideMargin = PaddingValues(16.dp)
     ) {
-        BasicComponent(
-            title = if (group.apps.size > 1) "${ownerNameForUid(group.uid)} (${group.uid})" else group.primary.label,
-            summary = summaryText,
-            leftAction = {
-                AppIconImage(
-                    packageInfo = group.primary.packageInfo,
-                    label = group.primary.label,
-                    modifier = Modifier
-                        .padding(end = 14.dp)
-                        .size(40.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppIconImage(
+                packageInfo = group.primary.packageInfo,
+                label = group.primary.label,
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .size(54.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f),
+            ) {
+                Text(
+                    text = if (group.apps.size > 1) ownerNameForUid(group.uid) else group.primary.label,
+                    modifier = Modifier.basicMarquee(),
+                    fontWeight = FontWeight(550),
+                    color = colorScheme.onSurface,
+                    maxLines = 1,
+                    softWrap = false
                 )
-            },
-            rightActions = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        tags.forEach { meta ->
-                            StatusTag(
-                                label = meta.label,
-                                backgroundColor = meta.bg,
-                                contentColor = meta.fg
-                            )
-                        }
+                Text(
+                    text = if (group.apps.size > 1) {
+                        stringResource(R.string.group_contains_apps, group.apps.size)
+                    } else {
+                        group.primary.packageName
+                    },
+                    modifier = Modifier
+                        .basicMarquee(),
+                    fontSize = 12.sp,
+                    color = colorScheme.onSurfaceVariantSummary,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    softWrap = false
+                )
+                FlowRow(
+                    modifier = Modifier.padding(top = 3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    tags.forEach { tag ->
+                        StatusTag(
+                            label = tag.label,
+                            backgroundColor = tag.bg,
+                            contentColor = tag.fg
+                        )
                     }
-                    Image(
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .size(width = 10.dp, height = 16.dp),
-                        imageVector = MiuixIcons.Basic.ArrowRight,
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(MiuixTheme.colorScheme.onSurfaceVariantActions),
-                    )
                 }
             }
-        )
+            Image(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(width = 10.dp, height = 16.dp),
+                imageVector = MiuixIcons.Basic.ArrowRight,
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorScheme.onSurfaceVariantActions),
+            )
+        }
     }
 }
 
@@ -530,15 +556,15 @@ fun StatusTag(
     Box(
         modifier = Modifier
             .background(
-                color = backgroundColor.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(6.dp)
+                color = backgroundColor,
+                shape = ContinuousRoundedRectangle(6.dp)
             )
     ) {
         Text(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
             text = label,
             color = contentColor,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             softWrap = false
