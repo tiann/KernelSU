@@ -1,85 +1,13 @@
 use anyhow::{Context, Result};
 use log::{info, warn};
-use std::{path::Path, process::Command};
+use std::path::Path;
 
 use crate::module::prune_modules;
 use crate::utils::is_safe_mode;
 use crate::{
-    assets, defs, ksucalls, restorecon,
+    assets, defs, ksucalls, metamodule, restorecon,
     utils::{self},
 };
-
-/// Execute metamodule script for a specific stage
-fn exec_metamodule_script(stage: &str, block: bool) -> Result<()> {
-    let Some(metamodule_path) = crate::module::get_metamodule_path() else {
-        return Ok(());
-    };
-
-    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
-        info!("Metamodule is disabled, skipping {}.sh", stage);
-        return Ok(());
-    }
-
-    let script_path = metamodule_path.join(format!("{}.sh", stage));
-    if !script_path.exists() {
-        return Ok(());
-    }
-
-    info!("Executing metamodule {}.sh", stage);
-    crate::module::exec_script(&script_path, block)?;
-    info!("Metamodule {}.sh executed successfully", stage);
-    Ok(())
-}
-
-/// Execute metamodule mount script
-fn execute_metamodule_mount(module_dir: &str) -> Result<()> {
-    let Some(metamodule_path) = crate::module::get_metamodule_path() else {
-        info!("No metamodule found");
-        return Ok(());
-    };
-
-    // Check if metamodule is disabled
-    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
-        warn!("Metamodule is disabled, skipping mount");
-        return Ok(());
-    }
-
-    let mount_script = metamodule_path.join(defs::METAMODULE_MOUNT_SCRIPT);
-    if !mount_script.exists() {
-        warn!(
-            "Metamodule does not have {} script",
-            defs::METAMODULE_MOUNT_SCRIPT
-        );
-        return Ok(());
-    }
-
-    info!("Executing mount script for metamodule");
-
-    // Execute the mount script
-    let result = Command::new(assets::BUSYBOX_PATH)
-        .args(["sh", mount_script.to_str().unwrap()])
-        .env("ASH_STANDALONE", "1")
-        .env("KSU", "true")
-        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
-        .env("KSU_VER_CODE", defs::VERSION_CODE)
-        .env("KSU_VER", defs::VERSION_NAME)
-        .env("MODULE_DIR", module_dir)
-        .status();
-
-    match result {
-        Ok(status) if status.success() => {
-            info!("Metamodule mount script executed successfully");
-        }
-        Ok(status) => {
-            warn!("Metamodule mount script failed with status: {:?}", status);
-        }
-        Err(e) => {
-            warn!("Failed to execute metamodule mount script: {}", e);
-        }
-    }
-
-    Ok(())
-}
 
 pub fn on_post_data_fs() -> Result<()> {
     ksucalls::report_post_fs_data();
@@ -147,7 +75,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // execute metamodule post-fs-data script first (priority)
-    if let Err(e) = exec_metamodule_script("post-fs-data", true) {
+    if let Err(e) = metamodule::exec_stage_script("post-fs-data", true) {
         warn!("exec metamodule post-fs-data script failed: {e}");
     }
 
@@ -163,7 +91,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // execute metamodule mount script
-    if let Err(e) = execute_metamodule_mount(module_dir) {
+    if let Err(e) = metamodule::exec_mount_script(module_dir) {
         warn!("execute metamodule mount failed: {e}");
     }
 
@@ -192,7 +120,7 @@ fn run_stage(stage: &str, block: bool) {
     }
 
     // execute metamodule stage script first (priority)
-    if let Err(e) = exec_metamodule_script(stage, block) {
+    if let Err(e) = metamodule::exec_stage_script(stage, block) {
         warn!("Failed to exec metamodule {stage} script: {e}");
     }
 

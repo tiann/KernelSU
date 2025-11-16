@@ -7,6 +7,7 @@ mod defs;
 mod feature;
 mod init_event;
 mod ksucalls;
+mod metamodule;
 mod module;
 mod profile;
 mod restorecon;
