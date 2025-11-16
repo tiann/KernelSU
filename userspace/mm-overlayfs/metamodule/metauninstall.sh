@@ -7,9 +7,6 @@
 # Constants
 MNT_DIR="/data/adb/metamodule/mnt"
 
-# Get module ID from environment variable
-MODULE_ID="$MODULE_ID"
-
 if [ -z "$MODULE_ID" ]; then
     echo "! Error: MODULE_ID not provided"
     exit 1

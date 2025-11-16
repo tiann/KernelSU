@@ -41,11 +41,8 @@ fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {
         .with_context(|| format!("realpath: {module_file} failed"))?;
 
     // Get install script from metamodule module
-    let install_script = metamodule::get_install_script(
-        is_metamodule,
-        INSTALLER_CONTENT,
-        INSTALL_MODULE_SCRIPT,
-    )?;
+    let install_script =
+        metamodule::get_install_script(is_metamodule, INSTALLER_CONTENT, INSTALL_MODULE_SCRIPT)?;
 
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", "-c", &install_script])
@@ -78,7 +75,10 @@ fn ensure_boot_completed() -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn foreach_module(active_only: bool, mut f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
+pub(crate) fn foreach_module(
+    active_only: bool,
+    mut f: impl FnMut(&Path) -> Result<()>,
+) -> Result<()> {
     let modules_dir = Path::new(defs::MODULE_DIR);
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
@@ -231,12 +231,13 @@ pub fn prune_modules() -> Result<()> {
         info!("remove module: {}", module.display());
 
         // Execute metamodule's metauninstall.sh first
-        let module_id = module.file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let module_id = module.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         if let Err(e) = metamodule::exec_metauninstall_script(module_id) {
-            warn!("Failed to exec metamodule uninstall for {}: {}", module_id, e);
+            warn!(
+                "Failed to exec metamodule uninstall for {}: {}",
+                module_id, e
+            );
         }
 
         // Then execute module's own uninstall.sh
@@ -314,21 +315,22 @@ fn _install_module(zip: &str) -> Result<()> {
 
         // Check if there's already a metamodule installed
         if metamodule::has_metamodule()
-            && let Some(existing_path) = metamodule::get_metamodule_path() {
-                let existing_id = read_module_prop(&existing_path)
-                    .ok()
-                    .and_then(|m| m.get("id").cloned())
-                    .unwrap_or_else(|| "unknown".to_string());
+            && let Some(existing_path) = metamodule::get_metamodule_path()
+        {
+            let existing_id = read_module_prop(&existing_path)
+                .ok()
+                .and_then(|m| m.get("id").cloned())
+                .unwrap_or_else(|| "unknown".to_string());
 
-                if existing_id != module_id {
-                    bail!(
-                        "A metamodule is already installed: {}\n\
+            if existing_id != module_id {
+                bail!(
+                    "A metamodule is already installed: {}\n\
                          Please uninstall it first using: ksud module uninstall {}",
-                        existing_id,
-                        existing_id
-                    );
-                }
+                    existing_id,
+                    existing_id
+                );
             }
+        }
     }
 
     let zip_uncompressed_size = get_zip_uncompressed_size(zip)?;

@@ -20,23 +20,24 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
 
     // Check if symlink exists and resolve it
     if path.is_symlink()
-        && let Ok(target) = std::fs::read_link(path) {
-            // If target is relative, resolve it
-            let resolved = if target.is_absolute() {
-                target
-            } else {
-                path.parent()?.join(target)
-            };
+        && let Ok(target) = std::fs::read_link(path)
+    {
+        // If target is relative, resolve it
+        let resolved = if target.is_absolute() {
+            target
+        } else {
+            path.parent()?.join(target)
+        };
 
-            if resolved.exists() && resolved.is_dir() {
-                return Some(resolved);
-            } else {
-                warn!(
-                    "Metamodule symlink points to non-existent path: {:?}",
-                    resolved
-                );
-            }
+        if resolved.exists() && resolved.is_dir() {
+            return Some(resolved);
+        } else {
+            warn!(
+                "Metamodule symlink points to non-existent path: {:?}",
+                resolved
+            );
         }
+    }
 
     // Fallback: search for metamodule=1 in modules directory
     let mut result = None;
@@ -47,10 +48,10 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
                 .map(|s| s.trim().to_lowercase())
                 .map(|s| s == "true" || s == "1")
                 .unwrap_or(false)
-            {
-                info!("Found metamodule in modules directory: {:?}", module_path);
-                result = Some(module_path.to_path_buf());
-            }
+        {
+            info!("Found metamodule in modules directory: {:?}", module_path);
+            result = Some(module_path.to_path_buf());
+        }
         Ok(())
     });
 
