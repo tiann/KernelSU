@@ -1,7 +1,7 @@
 // Overlayfs mounting implementation
 // Migrated from ksud/src/mount.rs and ksud/src/init_event.rs
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use log::{info, warn};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -248,71 +248,129 @@ fn mount_partition(partition_name: &str, lowerdir: &Vec<String>) -> Result<()> {
     mount_overlay(&partition, lowerdir, workdir, upperdir)
 }
 
+/// Collect enabled module IDs from metadata directory
+///
+/// Reads module list and status from metadata directory, returns enabled module IDs
 #[cfg(any(target_os = "linux", target_os = "android"))]
-pub fn mount_modules_systemlessly(module_dir: &str) -> Result<()> {
-    // construct overlay mount params
-    let dir = std::fs::read_dir(module_dir);
-    let Ok(dir) = dir else {
-        bail!("open {} failed", module_dir);
-    };
+fn collect_enabled_modules(metadata_dir: &str) -> Result<Vec<String>> {
+    let dir = std::fs::read_dir(metadata_dir)
+        .with_context(|| format!("Failed to read metadata directory: {}", metadata_dir))?;
 
-    let mut system_lowerdir: Vec<String> = Vec::new();
-
-    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
-    let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
-    for ele in &partition {
-        partition_lowerdir.insert((*ele).to_string(), Vec::new());
-    }
+    let mut enabled = Vec::new();
 
     for entry in dir.flatten() {
-        let module = entry.path();
-        if !module.is_dir() {
-            continue;
-        }
-        let disabled = module.join(DISABLE_FILE_NAME).exists();
-        if disabled {
-            info!("module: {} is disabled, ignore!", module.display());
-            continue;
-        }
-        let skip_mount = module.join(SKIP_MOUNT_FILE_NAME).exists();
-        if skip_mount {
-            info!("module: {} skip_mount exist, skip!", module.display());
+        let path = entry.path();
+        if !path.is_dir() {
             continue;
         }
 
-        let module_system = Path::new(&module).join("system");
-        if module_system.is_dir() {
-            system_lowerdir.push(format!("{}", module_system.display()));
+        let module_id = match entry.file_name().to_str() {
+            Some(id) => id.to_string(),
+            None => continue,
+        };
+
+        // Check status markers
+        if path.join(DISABLE_FILE_NAME).exists() {
+            info!("Module {} is disabled, skipping", module_id);
+            continue;
         }
 
+        if path.join(SKIP_MOUNT_FILE_NAME).exists() {
+            info!("Module {} has skip_mount, skipping", module_id);
+            continue;
+        }
+
+        // Optional: verify module.prop exists
+        if !path.join("module.prop").exists() {
+            warn!("Module {} has no module.prop, skipping", module_id);
+            continue;
+        }
+
+        info!("Module {} enabled", module_id);
+        enabled.push(module_id);
+    }
+
+    Ok(enabled)
+}
+
+/// Dual-directory version of mount_modules_systemlessly
+///
+/// Parameters:
+/// - metadata_dir: Metadata directory, stores module.prop, disable, skip_mount, etc.
+/// - content_dir: Content directory, stores system/, vendor/ and other partition content (ext4 image mount point)
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub fn mount_modules_systemlessly(metadata_dir: &str, content_dir: &str) -> Result<()> {
+    info!("Scanning modules (dual-directory mode)");
+    info!("  Metadata: {}", metadata_dir);
+    info!("  Content: {}", content_dir);
+
+    // 1. Traverse metadata directory, collect enabled module IDs
+    let enabled_modules = collect_enabled_modules(metadata_dir)?;
+
+    if enabled_modules.is_empty() {
+        info!("No enabled modules found");
+        return Ok(());
+    }
+
+    info!("Found {} enabled module(s)", enabled_modules.len());
+
+    // 2. Initialize partition lowerdir lists
+    let partition = vec!["vendor", "product", "system_ext", "odm", "oem"];
+    let mut system_lowerdir: Vec<String> = Vec::new();
+    let mut partition_lowerdir: HashMap<String, Vec<String>> = HashMap::new();
+
+    for part in &partition {
+        partition_lowerdir.insert((*part).to_string(), Vec::new());
+    }
+
+    // 3. Read module content from content directory
+    for module_id in &enabled_modules {
+        let module_content_path = Path::new(content_dir).join(module_id);
+
+        if !module_content_path.exists() {
+            warn!("Module {} has no content directory, skipping", module_id);
+            continue;
+        }
+
+        info!("Processing module: {}", module_id);
+
+        // Collect system partition
+        let system_path = module_content_path.join("system");
+        if system_path.is_dir() {
+            system_lowerdir.push(system_path.display().to_string());
+            info!("  + system/");
+        }
+
+        // Collect other partitions
         for part in &partition {
-            // if /partition is a mountpoint, we would move it to $MODPATH/$partition when install
-            // otherwise it must be a symlink and we don't need to overlay!
-            let part_path = Path::new(&module).join(part);
+            let part_path = module_content_path.join(part);
             if part_path.is_dir()
                 && let Some(v) = partition_lowerdir.get_mut(*part)
             {
-                v.push(format!("{}", part_path.display()));
+                v.push(part_path.display().to_string());
+                info!("  + {}/", part);
             }
         }
     }
 
-    // mount /system first
+    // 4. Mount partitions
+    info!("Mounting partitions...");
+
     if let Err(e) = mount_partition("system", &system_lowerdir) {
         warn!("mount system failed: {e:#}");
     }
 
-    // mount other partitions
     for (k, v) in partition_lowerdir {
         if let Err(e) = mount_partition(&k, &v) {
             warn!("mount {k} failed: {e:#}");
         }
     }
 
+    info!("All partitions processed");
     Ok(())
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn mount_modules_systemlessly(_module_dir: &str) -> Result<()> {
+pub fn mount_modules_systemlessly(_metadata_dir: &str, _content_dir: &str) -> Result<()> {
     unimplemented!("mount_modules_systemlessly is only supported on Linux/Android")
 }

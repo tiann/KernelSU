@@ -10,18 +10,19 @@ fn main() -> Result<()> {
         .filter_level(log::LevelFilter::Info)
         .init();
 
-    info!(
-        "KernelSU Official Mount Handler v{}",
-        env!("CARGO_PKG_VERSION")
-    );
+    info!("mm-overlayfs v{}", env!("CARGO_PKG_VERSION"));
 
-    // Get module directory from environment variable or use default
-    let module_dir = std::env::var("MODULE_DIR").unwrap_or_else(|_| defs::MODULE_DIR.to_string());
+    // Dual-directory support: metadata + content
+    let metadata_dir = std::env::var("MODULE_METADATA_DIR")
+        .unwrap_or_else(|_| defs::MODULE_METADATA_DIR.to_string());
+    let content_dir = std::env::var("MODULE_CONTENT_DIR")
+        .unwrap_or_else(|_| defs::MODULE_CONTENT_DIR.to_string());
 
-    info!("Module directory: {}", module_dir);
+    info!("Metadata directory: {}", metadata_dir);
+    info!("Content directory: {}", content_dir);
 
-    // Execute mounting
-    mount::mount_modules_systemlessly(&module_dir)?;
+    // Execute dual-directory mounting
+    mount::mount_modules_systemlessly(&metadata_dir, &content_dir)?;
 
     info!("Mount completed successfully");
     Ok(())

@@ -54,7 +54,7 @@ fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {
                     info!("Using metainstall.sh from metamodule");
                     let metamodule_content = std::fs::read_to_string(&metainstall_path)
                         .with_context(|| "Failed to read metamodule metainstall.sh")?;
-                    format!("{}\ninstall_module\nexit 0\n", metamodule_content)
+                    format!("{}\n{}\nexit 0\n", INSTALLER_CONTENT, metamodule_content)
                 } else {
                     info!("Metamodule exists but has no metainstall.sh, using default installer");
                     INSTALL_MODULE_SCRIPT.to_string()

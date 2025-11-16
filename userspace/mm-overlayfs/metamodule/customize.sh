@@ -40,3 +40,38 @@ rm -f "$MODPATH/$REMOVE_BINARY"
 chmod 755 "$MODPATH/mm-overlayfs" || abort "! Failed to set permissions"
 
 ui_print "- Architecture-specific binary installed successfully"
+
+# Create ext4 image for module content storage
+IMG_FILE="$MODPATH/modules.img"
+MNT_DIR="$MODPATH/mnt"
+IMG_SIZE_MB=2048
+
+if [ ! -f "$IMG_FILE" ]; then
+    ui_print "- Creating 2GB ext4 image for module storage"
+
+    # Create sparse file (2GB logical size, ~1MB actual)
+    dd if=/dev/zero of="$IMG_FILE" bs=1M count=1 seek=$((IMG_SIZE_MB - 1)) 2>/dev/null || \
+        abort "! Failed to create image file"
+
+    # Format as ext4 (disable journal for better performance)
+    mke2fs -t ext4 -O ^has_journal -F "$IMG_FILE" >/dev/null 2>&1 || \
+        abort "! Failed to format ext4 image"
+
+    ui_print "- Image created successfully (sparse file)"
+else
+    ui_print "- Existing image found, keeping it"
+fi
+
+# Mount image immediately for use
+ui_print "- Mounting image for immediate use..."
+mkdir -p "$MNT_DIR"
+if ! mountpoint -q "$MNT_DIR" 2>/dev/null; then
+    mount -t ext4 -o loop,rw,noatime "$IMG_FILE" "$MNT_DIR" || \
+        abort "! Failed to mount image"
+    ui_print "- Image mounted successfully"
+else
+    ui_print "- Image already mounted"
+fi
+
+ui_print "- Installation complete"
+ui_print "- Image is ready for module installations"
