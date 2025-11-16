@@ -3,6 +3,7 @@ use log::{info, warn};
 use std::{collections::HashMap, path::Path};
 
 use crate::module::prune_modules;
+use crate::utils::is_safe_mode;
 use crate::{
     assets, defs, ksucalls, mount, restorecon,
     utils::{self, ensure_clean_dir},
@@ -191,7 +192,9 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // load feature config
-    if let Err(e) = crate::feature::init_features() {
+    if is_safe_mode() {
+        warn!("safe mode, skip load feature config");
+    } else if let Err(e) = crate::feature::init_features() {
         warn!("init features failed: {e}");
     }
 

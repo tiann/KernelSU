@@ -8,7 +8,7 @@
     <string name="home_superuser_count">授權：%d 個應用程式</string>
     <string name="home_unsupported">未受支援</string>
     <string name="home_unsupported_reason">KernelSU 目前僅支援 GKI 核心</string>
-    <string name="home_kernel">裝置核心</string>
+    <string name="home_kernel">核心版本</string>
     <string name="home_manager_version">管理工具</string>
     <string name="home_fingerprint">指紋資訊</string>
     <string name="home_selinux_status">SELinux 狀態</string>
@@ -37,11 +37,11 @@
     <string name="module_uninstall_failed">無法解除安裝：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="module_overlay_fs_not_available">OverlayFS 已遭核心停用，無法使用模組功能。</string>
+    <string name="module_overlay_fs_not_available">OverlayFS 已遭核心停用，無法使用模組功能！</string>
     <string name="refresh">重新載入</string>
     <string name="show_system_apps">顯示系統程式</string>
     <string name="hide_system_apps">隱藏系統程式</string>
-    <string name="send_log">發送運作日誌</string>
+    <string name="send_log">傳送日誌</string>
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">將在重新啟動時生效</string>
     <string name="module_magisk_conflict">與 Magisk 發生衝突，無法使用模組功能！</string>
@@ -50,7 +50,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_TW/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">知曉安裝、使用 KernelSU 本體與其模組功能的方法</string>
     <string name="home_support_title">協助發展</string>
-    <string name="home_support_content">KernelSU 一向以免費製品與開放原始碼自居，矢志不渝。若想協助我們，請以小額捐款表達你對專案發展的大力支持。</string>
+    <string name="home_support_content">KernelSU 一向以免費與開放原始碼自居，矢志不渝。若想協助我們，可以用小額捐款表達你對專案發展的大力支持。</string>
     <string name="about_source_code"><![CDATA[前往 %1$s 檢閱原始碼<br/>前往 %2$s 加入頻道]]></string>
     <string name="profile_umount_modules">解除掛載模組功能</string>
     <string name="failed_to_update_app_profile">無法更新「%s」App Profile</string>
@@ -91,7 +91,7 @@
     <string name="app_profile_template_export_empty">查無可供匯出的本地範本！</string>
     <string name="app_profile_template_id_exist">編號已由其他範本領有！</string>
     <string name="app_profile_import_from_clipboard">自剪貼簿匯入</string>
-    <string name="module_changelog_failed">無法提取更新說明：%s</string>
+    <string name="module_changelog_failed">無法取得更新說明：%s</string>
     <string name="app_profile_template_name">名稱</string>
     <string name="app_profile_template_sync">同步線上範本</string>
     <string name="app_profile_template_readonly">唯讀</string>
@@ -128,8 +128,15 @@
     <string name="settings_restore_stock_image_message">若裝置內含有備份檔案，遂以 OTA 更新前的原廠系統映像檔進行復原。若需要解除安裝 KernelSU，請選擇「永久性解除安裝」。</string>
     <string name="flash_failed">閃刷失敗</string>
     <string name="selected_lkm">已選定 LKM：%s</string>
-    <string name="save_log">儲存運作日誌</string>
+    <string name="save_log">儲存日誌</string>
     <string name="action">執行</string>
+    <string name="module_sort_enabled_first">排序（啟用優先）</string>
+    <string name="module_sort_action_first">排序（執行優先）</string>
+    <string name="module_install_prompt_with_name">將安裝以下模組：%1$s</string>
+    <string name="confirm">確認</string>
+    <string name="settings_disable_su_summary">暫時禁用任何應用程式通過⁠ su 命令獲得 root 權限的能力（現有的 root 進程不會受到影響）。</string>
+    <string name="su_not_allowed">無法授予「%s」超級使用者存取</string>
+    <string name="settings_disable_su">停用 su 相容性</string>
     <string name="log_saved">已儲存運作日誌</string>
     <string name="processing">處理中…</string>
     <string name="refresh_pulling">下拉刷新</string>

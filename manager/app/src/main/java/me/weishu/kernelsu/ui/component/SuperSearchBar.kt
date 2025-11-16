@@ -105,16 +105,22 @@ class SearchStatus(val label: String) {
     fun TopAppBarAnim(
         modifier: Modifier = Modifier,
         visible: Boolean = shouldCollapsed(),
-        content: @Composable() () -> Unit
+        content: @Composable () -> Unit
     ) {
         val topAppBarAlpha = animateFloatAsState(
             if (visible) 1f else 0f,
             animationSpec = tween(if (visible) 550 else 0, easing = FastOutSlowInEasing),
         )
-        Box(
-            modifier = modifier.alpha(topAppBarAlpha.value),
-        ) {
-            content()
+        Box(modifier = modifier) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(colorScheme.background)
+            )
+            Box(
+                modifier = Modifier
+                    .alpha(topAppBarAlpha.value)
+            ) { content() }
         }
     }
 
@@ -219,18 +225,18 @@ fun SearchStatus.SearchPager(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(top = topPadding)
-                .alpha(if (searchStatus.isCollapsed()) 0f else 1f),
+                .padding(top = topPadding),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AnimatedVisibility(
-                visible = !searchStatus.isCollapsed(),
-                modifier = Modifier.weight(1f),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                expandBar(searchStatus, searchBarTopPadding)
+            if (!searchStatus.isCollapsed()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(colorScheme.background)
+                ) {
+                    expandBar(searchStatus, searchBarTopPadding)
+                }
             }
             AnimatedVisibility(
                 visible = searchStatus.isExpand() || searchStatus.isAnimatingExpand(),
@@ -269,7 +275,7 @@ fun SearchStatus.SearchPager(
                 SearchStatus.ResultStatus.SHOW -> LazyColumn(
                     Modifier
                         .fillMaxSize()
-                        .padding(top = 12.dp)
+                        .padding(top = 6.dp)
                         .overScrollVertical(),
                 ) {
                     result()
@@ -325,7 +331,7 @@ fun SearchBar(
         },
         modifier = Modifier
             .padding(horizontal = 12.dp)
-            .padding(top = searchBarTopPadding)
+            .padding(top = searchBarTopPadding, bottom = 6.dp)
             .focusRequester(focusRequester),
         onSearch = { it },
         expanded = searchStatus.shouldExpand(),
@@ -369,7 +375,7 @@ fun SearchBarFake(
                 end = innerPadding.calculateEndPadding(layoutDirection)
             )
             .padding(top = searchBarTopPadding, bottom = 6.dp),
-        onSearch = { it },
+        onSearch = { },
         enabled = false,
         expanded = false,
         onExpandedChange = { }

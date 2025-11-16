@@ -39,10 +39,25 @@ declare function toast(message: string);
 
 declare function moduleInfo(): string;
 
+interface PackagesInfo {
+    packageName: string;
+    versionName: string;
+    versionCode: number;
+    appLabel: string;
+    isSystem: boolean;
+    uid: number;
+}
+
+declare function listPackages(type: string): string[];
+
+declare function getPackagesInfo(packages: string[]): PackagesInfo[];
+
 export {
     exec,
     spawn,
     fullScreen,
     toast,
-    moduleInfo
+    moduleInfo,
+    listPackages,
+    getPackagesInfo,
 }

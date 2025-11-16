@@ -15,13 +15,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
@@ -30,6 +29,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  */
 @Composable
 fun TemplateConfig(
+    modifier: Modifier = Modifier,
     profile: Natives.Profile,
     onViewTemplate: (id: String) -> Unit = {},
     onManageTemplate: () -> Unit = {},
@@ -41,6 +41,7 @@ fun TemplateConfig(
 
     if (noTemplates) {
         SuperArrow(
+            modifier = modifier,
             title = stringResource(R.string.app_profile_template_create),
             leftAction = {
                 Icon(
@@ -55,7 +56,7 @@ fun TemplateConfig(
     } else {
         var template by rememberSaveable { mutableStateOf(profile.rootTemplate ?: profileTemplates[0]) }
 
-        Column {
+        Column(modifier = modifier) {
             SuperDropdown(
                 title = stringResource(R.string.profile_template),
                 items = profileTemplates,
@@ -82,7 +83,6 @@ fun TemplateConfig(
                 onClick = {
                     expanded = !expanded
                 },
-                mode = DropDownMode.AlwaysOnRight,
                 maxHeight = 280.dp
             )
             SuperArrow(

@@ -10,7 +10,7 @@
     <string name="home_module_count">Modüller: %d</string>
     <string name="home_unsupported">Desteklenmiyor</string>
     <string name="home_unsupported_reason">KernelSU şimdilik sadece GKI çekirdeklerini destekliyor</string>
-    <string name="home_kernel">Çekirdek</string>
+    <string name="home_kernel">Çekirdek Versiyonu</string>
     <string name="home_manager_version">Yönetici sürümü</string>
     <string name="home_fingerprint">Parmak izi</string>
     <string name="home_selinux_status">SELinux durumu</string>
@@ -39,7 +39,7 @@
     <string name="module_uninstall_failed">Kaldırma başarısız: %s</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Geliştirici</string>
-    <string name="module_overlay_fs_not_available">OverlayFS çekirdek tarafından devre dışı bırakıldığı için modüller kullanılamıyor.</string>
+    <string name="module_overlay_fs_not_available">OverlayFS çekirdek tarafından devre dışı bırakıldığı için modüller kullanılamıyor!</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
@@ -51,7 +51,7 @@
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">KernelSU\'nun nasıl kurulacağını ve modüllerin nasıl kullanılacağını öğrenin</string>
     <string name="home_support_title">Bizi destekleyin</string>
-    <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
+    <string name="home_support_content">KernelSU ücretsiz ve açık kaynaklı bir yazılımdır ve her zaman öyle kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz</string>
     <string name="about_source_code"><![CDATA[%1$s adresinde kaynak kodunu görüntüleyin.<br/>%2$s kanalımıza katılın.]]></string>
     <string name="profile" translatable="false">Uygulama profili</string>
     <string name="profile_default">Varsayılan</string>
@@ -66,21 +66,21 @@
     <string name="profile_capabilities">Yetkinlikler</string>
     <string name="profile_selinux_context">SELinux içeriği</string>
     <string name="profile_umount_modules">Modüllerin bağlantısını kes</string>
-    <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi.</string>
+    <string name="failed_to_update_app_profile">%s için uygulama profili güncellenemedi</string>
     <string name="require_kernel_version">Mevcut KernelSU sürümü %d, yöneticinin düzgün çalışabilmesi için çok düşük. Lütfen %d sürümüne veya daha yüksek bir sürüme güncelleyin!</string>
     <string name="settings_umount_modules_default">Varsayılan olarak modüllerin bağlantısını kes</string>
-    <string name="settings_umount_modules_default_summary">Uygulama profilindeki \"Modüllerin bağlantısını kes\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır.</string>
-    <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir.</string>
+    <string name="settings_umount_modules_default_summary">Uygulama profilindeki \"Modüllerin bağlantısını kes\" seçeneği için varsayılan değer. Etkinleştirilirse, profil ayarı yapılmamış uygulamalar için modüllerin sistemde yaptığı tüm değişiklikler kaldırılacaktır</string>
+    <string name="profile_umount_modules_summary">Bu seçeneği etkinleştirmek, KernelSU\'nun bu uygulama için modüller tarafından değiştirilen dosyaları geri yüklemesine izin verir</string>
     <string name="profile_selinux_domain">İsim alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
     <string name="module_start_downloading">İndirme başladı: %s</string>
-    <string name="new_version_available">Yeni sürüm: %s var, güncellemek için tıklayın.</string>
+    <string name="new_version_available">Yeni sürüm: %s kullanılabilir, güncellemek için tıklayın</string>
     <string name="launch_app">Uygulamayı başlat</string>
     <string name="force_stop_app">Uygulamayı durmaya zorla</string>
     <string name="restart_app">Uygulamayı yeniden başlat</string>
-    <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi.</string>
+    <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi</string>
     <string name="module_changelog">Değişiklik geçmişi</string>
     <string name="settings_profile_template">Uygulama profili şablonu</string>
     <string name="settings_profile_template_summary">Yerel ve çevrimiçi uygulama profili şablonlarını yönetin</string>
@@ -109,7 +109,7 @@
     <string name="grant_root_failed">Root izni verilemedi!</string>
     <string name="open">Aç</string>
     <string name="enable_web_debugging">Web görünümü hata ayıklamasını etkinleştir</string>
-    <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
+    <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin</string>
     <string name="direct_install">Doğrudan kur (Tavsiye edilen)</string>
     <string name="select_file">Bir dosya seçin</string>
     <string name="install_inactive_slot">Etkin olmayan yuvaya kur (OTA\'dan sonra)</string>
@@ -120,14 +120,14 @@
     <string name="select_kmi">KMI seçin</string>
     <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
     <string name="shrink_sparse_image">Sparse imajını küçültün</string>
-    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi).</string>
+    <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (yedekleme gibi)</string>
     <string name="settings_uninstall_temporary">Geçici olarak kaldır</string>
     <string name="settings_uninstall_permanent">Kalıcı olarak kaldır</string>
     <string name="settings_restore_stock_image">Stok imajı geri yükle</string>
-    <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldır, bir sonraki yeniden başlatmadan sonra orijinal durumuna geri yükle.</string>
+    <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldır, bir sonraki yeniden başlatmadan sonra orijinal durumuna geri yükle</string>
     <string name="settings_uninstall">Kaldır</string>
-    <string name="settings_uninstall_permanent_message">KernelSU (Root ve tüm modüller) tamamen ve kalıcı olarak kaldırılıyor.</string>
-    <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın.</string>
+    <string name="settings_uninstall_permanent_message">KernelSU (Root ve tüm modüller) tamamen ve kalıcı olarak kaldırılıyor</string>
+    <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın</string>
     <string name="flash_success">Flaşlama başarılı</string>
     <string name="selected_lkm">Seçili LKM: %s</string>
     <string name="flashing">Flaşlanıyor</string>
@@ -135,4 +135,11 @@
     <string name="save_log">Günlükleri Kaydet</string>
     <string name="action">Aksiyon</string>
     <string name="log_saved">Günlükler kaydedildi</string>
+    <string name="confirm">Onayla</string>
+    <string name="su_not_allowed">%s için Superuser erişimi verilemedi</string>
+    <string name="settings_disable_su_summary">Herhangi bir uygulamanın ⁠su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini geçici olarak devre dışı bırakın (mevcut kök işlemleri etkilenmeyecektir)</string>
+    <string name="module_install_prompt_with_name">Aşağıdaki modüller yüklenecek: %1$s</string>
+    <string name="module_sort_action_first">Sırala (Action önce)</string>
+    <string name="module_sort_enabled_first">Sırala (Etkin olanlar önce)</string>
+    <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
 </resources>

@@ -10,13 +10,23 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewAssetLoader
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.util.createRootShell
+import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -35,6 +45,24 @@ class WebUIActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
+        setContent {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                InfiniteProgressIndicator()
+            }
+        }
+
+        val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
+
+        lifecycleScope.launch {
+            superUserViewModel.fetchAppList()
+            setupWebView()
+        }
+    }
+
+    private fun setupWebView() {
         val moduleId = intent.getStringExtra("id")!!
         val name = intent.getStringExtra("name")!!
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
@@ -64,7 +92,23 @@ class WebUIActivity : ComponentActivity() {
                 view: WebView,
                 request: WebResourceRequest
             ): WebResourceResponse? {
-                return webViewAssetLoader.shouldInterceptRequest(request.url)
+                val url = request.url
+
+                // Handle ksu://icon/[packageName] to serve app icon via WebView
+                if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
+                    val packageName = url.path?.substring(1)
+                    if (!packageName.isNullOrEmpty()) {
+                        val icon = AppIconUtil.loadAppIconSync(this@WebUIActivity, packageName, 512)
+                        if (icon != null) {
+                            val stream = java.io.ByteArrayOutputStream()
+                            icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                            val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
+                            return WebResourceResponse("image/png", null, inputStream)
+                        }
+                    }
+                }
+
+                return webViewAssetLoader.shouldInterceptRequest(url)
             }
         }
 

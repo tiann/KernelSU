@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,7 +65,6 @@ import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
-import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -94,7 +92,6 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Reboot
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
-import top.yukonga.miuix.kmp.icon.icons.useful.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -111,18 +108,14 @@ fun HomePager(
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
 
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val checkUpdate = prefs.getBoolean("check_update", true)
+
     Scaffold(
         topBar = {
             TopBar(
                 kernelVersion = kernelVersion,
-                onSettingsClick = {
-                    navigator.navigate(SettingScreenDestination) {
-                        popUpTo(SettingScreenDestination) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                },
                 onInstallClick = {
                     navigator.navigate(InstallScreenDestination) {
                         popUpTo(InstallScreenDestination) {
@@ -191,9 +184,6 @@ fun HomePager(
                         }
                     )
 
-                    val checkUpdate =
-                        LocalContext.current.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                            .getBoolean("check_update", true)
                     if (checkUpdate) {
                         UpdateCard()
                     }
@@ -272,23 +262,10 @@ fun RebootDropdownItem(
 private fun TopBar(
     kernelVersion: KernelVersion,
     onInstallClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     scrollBehavior: ScrollBehavior,
 ) {
     TopAppBar(
         title = stringResource(R.string.app_name),
-        navigationIcon = {
-            IconButton(
-                modifier = Modifier.padding(start = 16.dp),
-                onClick = onSettingsClick
-            ) {
-                Icon(
-                    imageVector = MiuixIcons.Useful.Settings,
-                    contentDescription = stringResource(id = R.string.settings),
-                    tint = colorScheme.onBackground
-                )
-            }
-        },
         actions = {
             if (kernelVersion.isGKI()) {
                 IconButton(
