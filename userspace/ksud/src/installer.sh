@@ -373,6 +373,8 @@ install_module() {
   MODNAME=`grep_prop name $TMPDIR/module.prop`
   MODAUTH=`grep_prop author $TMPDIR/module.prop`
   MODPATH=$MODULEROOT/$MODID
+  IS_METAMODULE=`grep_prop metamodule $TMPDIR/module.prop`
+  [ "$IS_METAMODULE" = "1" -o "$IS_METAMODULE" = "true" ] && MODPATH=$NVBASE/metamodule
 
   # Check managed features
   check_managed_features $TMPDIR/module.prop

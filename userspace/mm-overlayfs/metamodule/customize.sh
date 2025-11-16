@@ -54,7 +54,7 @@ if [ ! -f "$IMG_FILE" ]; then
         abort "! Failed to create image file"
 
     # Format as ext4 with small journal (8MB) for safety with minimal overhead
-    mke2fs -t ext4 -J size=8 -F "$IMG_FILE" >/dev/null 2>&1 || \
+    /system/bin/mke2fs -t ext4 -J size=8 -F "$IMG_FILE" >/dev/null 2>&1 || \
         abort "! Failed to format ext4 image"
 
     ui_print "- Image created successfully (sparse file)"

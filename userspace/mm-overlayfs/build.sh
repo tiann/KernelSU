@@ -60,8 +60,7 @@ cp target/x86_64-linux-android/release/overlayfs-metamodule \
 # Copy metamodule files
 echo "Copying metamodule files..."
 cp "$METAMODULE_DIR"/module.prop "$MODULE_OUTPUT_DIR/"
-cp "$METAMODULE_DIR"/module-mount.sh "$MODULE_OUTPUT_DIR/"
-cp "$METAMODULE_DIR"/customize.sh "$MODULE_OUTPUT_DIR/"
+cp "$METAMODULE_DIR"/*.sh "$MODULE_OUTPUT_DIR/"
 
 # Set permissions
 echo "Setting permissions..."
