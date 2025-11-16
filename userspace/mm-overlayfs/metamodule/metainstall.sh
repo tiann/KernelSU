@@ -26,7 +26,7 @@ ensure_image_mounted() {
 post_install_to_image() {
     ui_print "- Moving module content to image"
 
-    local MOD_IMG_DIR="$MNT_DIR/$MODID"
+    MOD_IMG_DIR="$MNT_DIR/$MODID"
     mkdir -p "$MOD_IMG_DIR"
 
     # Move all partition directories
