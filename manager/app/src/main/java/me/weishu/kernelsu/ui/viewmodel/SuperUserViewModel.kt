@@ -8,8 +8,10 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.DeadObjectException
 import android.os.IBinder
 import android.os.Parcelable
+import android.os.RemoteException
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.State
@@ -20,8 +22,8 @@ import androidx.lifecycle.ViewModel
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.IKsuInterface
@@ -42,9 +44,6 @@ class SuperUserViewModel : ViewModel() {
         private const val TAG = "SuperUserViewModel"
         private val appsLock = Any()
         var apps by mutableStateOf<List<AppInfo>>(emptyList())
-        
-        private val _isAppListLoaded = MutableStateFlow(false)
-        val isAppListLoaded = _isAppListLoaded.asStateFlow()
 
         @JvmStatic
         fun getAppIconDrawable(context: Context, packageName: String): Drawable? {
@@ -159,63 +158,73 @@ class SuperUserViewModel : ViewModel() {
     }
 
     suspend fun fetchAppList() {
+        Mutex().withLock {
+            withContext(Dispatchers.Main) { isRefreshing = true }
 
-        isRefreshing = true
+            val result = connectKsuService {
+                Log.w(TAG, "KsuService disconnected")
+            }
 
-        val result = connectKsuService {
-            Log.w(TAG, "KsuService disconnected")
-        }
+            val allPackagesSlice = withContext(Dispatchers.IO) {
+                val pm = ksuApp.packageManager
+                val start = SystemClock.elapsedRealtime()
 
-        withContext(Dispatchers.IO) {
-            val pm = ksuApp.packageManager
-            val start = SystemClock.elapsedRealtime()
+                val binder = result.first
+                val iface = IKsuInterface.Stub.asInterface(binder)
+                val slice = try {
+                    iface.getPackages(0)
+                } catch (_: DeadObjectException) {
+                    val retry = connectKsuService { Log.w(TAG, "KsuService disconnected") }
+                    IKsuInterface.Stub.asInterface(retry.first).getPackages(0)
+                } catch (_: RemoteException) {
+                    val retry = connectKsuService { Log.w(TAG, "KsuService disconnected") }
+                    IKsuInterface.Stub.asInterface(retry.first).getPackages(0)
+                }
 
-            val binder = result.first
-            val allPackages = IKsuInterface.Stub.asInterface(binder).getPackages(0)
+                val packages = slice.list
+                val newApps = packages.map {
+                    val appInfo = it.applicationInfo
+                    val uid = appInfo!!.uid
+                    val profile = Natives.getAppProfile(it.packageName, uid)
+                    AppInfo(
+                        label = appInfo.loadLabel(pm).toString(),
+                        packageInfo = it,
+                        profile = profile,
+                    )
+                }.filter { it.packageName != ksuApp.packageName }
+                    .filter {
+                        val ai = it.packageInfo.applicationInfo!!
+                        if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
+                    }
+
+                val comparator = compareBy<AppInfo> {
+                    when {
+                        it.allowSu -> 0
+                        it.hasCustomProfile -> 1
+                        else -> 2
+                    }
+                }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
+                val sortedFiltered = newApps.sortedWith(comparator).filter {
+                    it.uid == 2000
+                            || showSystemApps
+                            || it.allowSu
+                            || it.hasCustomProfile
+                            || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
+                }
+
+                Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
+
+                Pair(newApps, sortedFiltered)
+            }
 
             withContext(Dispatchers.Main) {
+                synchronized(appsLock) {
+                    apps = allPackagesSlice.first
+                }
+                _appList.value = allPackagesSlice.second
+                isRefreshing = false
                 stopKsuService()
             }
-
-            val packages = allPackages.list
-
-            val newApps = packages.map {
-                val appInfo = it.applicationInfo
-                val uid = appInfo!!.uid
-                val profile = Natives.getAppProfile(it.packageName, uid)
-                AppInfo(
-                    label = appInfo.loadLabel(pm).toString(),
-                    packageInfo = it,
-                    profile = profile,
-                )
-            }.filter { it.packageName != ksuApp.packageName }
-                .filter {
-                    val ai = it.packageInfo.applicationInfo!!
-                    if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
-                }
-
-            synchronized(appsLock) {
-                apps = newApps
-                _isAppListLoaded.value = true
-            }
-
-            val comparator = compareBy<AppInfo> {
-                when {
-                    it.allowSu -> 0
-                    it.hasCustomProfile -> 1
-                    else -> 2
-                }
-            }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
-            _appList.value = newApps.sortedWith(comparator).also {
-                isRefreshing = false
-            }.filter {
-                it.uid == 2000
-                        || showSystemApps
-                        || it.allowSu
-                        || it.hasCustomProfile
-                        || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
-            }
-            Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
         }
     }
 }

@@ -516,8 +516,8 @@ private fun GroupItem(
                     modifier = Modifier
                         .basicMarquee(),
                     fontSize = 12.sp,
+                    fontWeight = FontWeight(550),
                     color = colorScheme.onSurfaceVariantSummary,
-                    fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     softWrap = false
                 )
@@ -565,7 +565,7 @@ fun StatusTag(
             text = label,
             color = contentColor,
             fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight(750),
             maxLines = 1,
             softWrap = false
         )

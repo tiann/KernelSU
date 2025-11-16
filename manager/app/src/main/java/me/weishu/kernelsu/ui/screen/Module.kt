@@ -426,6 +426,9 @@ fun ModulePager(
                         viewModel.markNeedRefresh()
                     }
                 )
+                val uris = mutableListOf<Uri>()
+                val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
+                val confirmContent = stringResource(R.string.module_install_prompt_with_name, moduleNames)
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
                 ) {
@@ -435,7 +438,6 @@ fun ModulePager(
                     val data = it.data ?: return@rememberLauncherForActivityResult
                     val clipData = data.clipData
 
-                    val uris = mutableListOf<Uri>()
                     if (clipData != null) {
                         for (i in 0 until clipData.itemCount) {
                             clipData.getItemAt(i)?.uri?.let { uris.add(it) }
@@ -450,9 +452,6 @@ fun ModulePager(
                         }
                     } else if (uris.size > 1) {
                         // multiple files selected
-                        val moduleNames =
-                            uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
-                        val confirmContent = context.getString(R.string.module_install_prompt_with_name, moduleNames)
                         zipUris = uris
                         confirmDialog.showConfirm(
                             title = confirmTitle,
@@ -869,16 +868,17 @@ fun ModuleItem(
                 )
                 Text(
                     text = "$moduleVersion: ${module.version}",
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 1.dp),
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 2.dp),
+                    fontWeight = FontWeight(550),
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration
                 )
                 Text(
                     text = "$moduleAuthor: ${module.author}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(bottom = 1.dp),
+                    fontWeight = FontWeight(550),
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration
                 )
@@ -895,7 +895,7 @@ fun ModuleItem(
         if (module.description.isNotBlank()) {
             Text(
                 text = module.description,
-                fontSize = 14.5.sp,
+                fontSize = 14.sp,
                 color = colorScheme.onSurfaceVariantSummary,
                 modifier = Modifier.padding(top = 2.dp),
                 overflow = TextOverflow.Ellipsis,
