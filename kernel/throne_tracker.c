@@ -160,7 +160,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
     if (d_type == DT_DIR && my_ctx->depth > 0 &&
         (my_ctx->stop && !*my_ctx->stop)) {
-        struct data_path *data = kmalloc(sizeof(struct data_path), GFP_ATOMIC);
+        struct data_path *data = kzalloc(sizeof(struct data_path), GFP_ATOMIC);
 
         if (!data) {
             pr_err("Failed to allocate memory for %s\n", dirpath);
@@ -195,7 +195,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
                 }
             } else {
                 struct apk_path_hash *apk_data =
-                    kmalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
+                    kzalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
                 apk_data->hash = hash;
                 apk_data->exists = true;
                 list_add_tail(&apk_data->list, &apk_path_hash_list);
