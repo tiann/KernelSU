@@ -157,5 +157,4 @@
     <string name="install_select_partition">Chọn phân vùng</string>
     <string name="app_profile_affects_following_apps">Ảnh hưởng đến các ứng dụng sau</string>
     <string name="group_contains_apps">Chứa %d ứng dụng</string>
-    <string name="affects_following_apps">Ảnh hưởng đến các ứng dụng sau</string>
 </resources>

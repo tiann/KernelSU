@@ -160,5 +160,4 @@
     <string name="app_profile_affects_following_apps">Wpływa na następujące aplikacje</string>
     <string name="install_select_partition">Wybierz partycję</string>
     <string name="group_contains_apps">Zawiera %d aplikacji</string>
-    <string name="affects_following_apps">Wpływa na następujące aplikacje</string>
 </resources>

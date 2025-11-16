@@ -162,5 +162,4 @@
     <string name="install_select_partition">Выбрать раздел</string>
     <string name="app_profile_affects_following_apps">Влияет на следующие приложения</string>
     <string name="group_contains_apps">Содержит %d приложений</string>
-    <string name="affects_following_apps">Влияет на следующие приложения</string>
 </resources>
