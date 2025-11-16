@@ -51,6 +51,7 @@ class ModuleViewModel : ViewModel() {
         val updateJson: String,
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
+        val metamodule: Boolean,
     )
 
     @Immutable
@@ -183,11 +184,12 @@ class ModuleViewModel : ViewModel() {
                                 obj.optInt("versionCode", 0),
                                 obj.optString("description"),
                                 obj.getBoolean("enabled"),
-                                obj.getBoolean("update"),
+                                obj.optBoolean("update"),
                                 obj.getBoolean("remove"),
                                 obj.optString("updateJson"),
                                 obj.optBoolean("web"),
-                                obj.optBoolean("action")
+                                obj.optBoolean("action"),
+                                obj.optBoolean("metamodule")
                             )
                         }.toList()
                 }.getOrElse {
