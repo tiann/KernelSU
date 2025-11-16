@@ -49,12 +49,12 @@ IMG_SIZE_MB=2048
 if [ ! -f "$IMG_FILE" ]; then
     ui_print "- Creating 2GB ext4 image for module storage"
 
-    # Create sparse file (2GB logical size, ~1MB actual)
-    dd if=/dev/zero of="$IMG_FILE" bs=1M count=1 seek=$((IMG_SIZE_MB - 1)) 2>/dev/null || \
+    # Create sparse file (2GB logical size, 0 bytes actual)
+    truncate -s ${IMG_SIZE_MB}M "$IMG_FILE" || \
         abort "! Failed to create image file"
 
-    # Format as ext4 (disable journal for better performance)
-    mke2fs -t ext4 -O ^has_journal -F "$IMG_FILE" >/dev/null 2>&1 || \
+    # Format as ext4 with small journal (8MB) for safety with minimal overhead
+    mke2fs -t ext4 -J size=8 -F "$IMG_FILE" >/dev/null 2>&1 || \
         abort "! Failed to format ext4 image"
 
     ui_print "- Image created successfully (sparse file)"
