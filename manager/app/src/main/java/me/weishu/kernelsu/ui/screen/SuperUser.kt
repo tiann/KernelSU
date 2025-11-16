@@ -346,6 +346,7 @@ fun SuperUserPager(
                                             group.apps.forEach { app ->
                                                 SimpleAppItem(app)
                                             }
+                                            Spacer(Modifier.height(6.dp))
                                         }
                                     }
                                 }
@@ -368,17 +369,16 @@ private fun SimpleAppItem(
     Row {
         Box(
             modifier = Modifier
-                .padding(start = 12.dp, bottom = 12.dp)
-                .width(12.dp)
-                .height(32.dp)
+                .padding(start = 12.dp)
+                .width(6.dp)
+                .height(24.dp)
                 .align(Alignment.CenterVertically)
                 .clip(ContinuousRoundedRectangle(16.dp))
                 .background(colorScheme.primaryContainer)
         )
         Card(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 0.dp)
-                .padding(bottom = 12.dp),
+                .padding(start = 6.dp, end = 12.dp, bottom = 6.dp)
         ) {
             BasicComponent(
                 title = app.label,
@@ -388,11 +388,11 @@ private fun SimpleAppItem(
                         packageInfo = app.packageInfo,
                         label = app.label,
                         modifier = Modifier
-                            .padding(end = 8.dp)
+                            .padding(end = 9.dp)
                             .size(40.dp)
                     )
                 },
-                insideMargin = PaddingValues(horizontal = 8.dp)
+                insideMargin = PaddingValues(horizontal = 9.dp)
             )
         }
     }
@@ -483,7 +483,7 @@ private fun GroupItem(
         onLongPress = if (group.apps.size > 1) onToggleExpand else null,
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
-        insideMargin = PaddingValues(16.dp)
+        insideMargin = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -492,8 +492,8 @@ private fun GroupItem(
                 packageInfo = group.primary.packageInfo,
                 label = group.primary.label,
                 modifier = Modifier
-                    .padding(end = 16.dp)
-                    .size(54.dp)
+                    .padding(end = 12.dp)
+                    .size(46.dp)
             )
             Column(
                 modifier = Modifier
@@ -522,7 +522,7 @@ private fun GroupItem(
                     softWrap = false
                 )
                 FlowRow(
-                    modifier = Modifier.padding(top = 3.dp),
+                    modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
