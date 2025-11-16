@@ -71,8 +71,8 @@ chmod 755 "$MODULE_OUTPUT_DIR"/mm-overlayfs-*
 # Display binary sizes
 echo ""
 echo "Binary sizes:"
-echo "  aarch64: $(ls -lh "$MODULE_OUTPUT_DIR"/mm-overlayfs-aarch64 | awk '{print $5}')"
-echo "  x86_64:  $(ls -lh "$MODULE_OUTPUT_DIR"/mm-overlayfs-x86_64 | awk '{print $5}')"
+echo "  aarch64: $(du -h "$MODULE_OUTPUT_DIR"/mm-overlayfs-aarch64 | awk '{print $1}')"
+echo "  x86_64:  $(du -h "$MODULE_OUTPUT_DIR"/mm-overlayfs-x86_64 | awk '{print $1}')"
 
 # Package
 echo ""
