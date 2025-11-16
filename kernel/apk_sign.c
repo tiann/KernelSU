@@ -28,7 +28,7 @@ static struct sdesc *init_sdesc(struct crypto_shash *alg)
     int size;
 
     size = sizeof(struct shash_desc) + crypto_shash_descsize(alg);
-    sdesc = kmalloc(size, GFP_KERNEL);
+    sdesc = kzalloc(size, GFP_KERNEL);
     if (!sdesc)
         return ERR_PTR(-ENOMEM);
     sdesc->shash.tfm = alg;
