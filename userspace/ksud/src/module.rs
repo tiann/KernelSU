@@ -338,6 +338,47 @@ pub fn load_system_prop() -> Result<()> {
     Ok(())
 }
 
+/// Execute metamodule's metauninstall.sh for a specific module
+fn exec_metamodule_uninstall(module_id: &str) -> Result<()> {
+    // Check if metamodule exists
+    let Some(metamodule_path) = get_metamodule_path() else {
+        return Ok(());
+    };
+
+    // Check if metamodule is disabled
+    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
+        info!("Metamodule is disabled, skipping metauninstall");
+        return Ok(());
+    }
+
+    // Check if metauninstall.sh exists
+    let metauninstall_path = metamodule_path.join(defs::METAMODULE_METAUNINSTALL_SCRIPT);
+    if !metauninstall_path.exists() {
+        return Ok(());
+    }
+
+    info!("Executing metamodule metauninstall.sh for module: {}", module_id);
+
+    // Execute metauninstall.sh with module ID as environment variable
+    let result = Command::new(assets::BUSYBOX_PATH)
+        .args(["sh", metauninstall_path.to_str().unwrap()])
+        .current_dir(&metamodule_path)
+        .env("ASH_STANDALONE", "1")
+        .env("MODULE_ID", module_id)
+        .env("KSU", "true")
+        .status()?;
+
+    ensure!(
+        result.success(),
+        "Metamodule metauninstall.sh failed for module {}: {:?}",
+        module_id,
+        result
+    );
+
+    info!("Metamodule metauninstall.sh executed successfully for {}", module_id);
+    Ok(())
+}
+
 pub fn prune_modules() -> Result<()> {
     foreach_module(false, |module| {
         if !module.join(defs::REMOVE_FILE_NAME).exists() {
@@ -346,6 +387,16 @@ pub fn prune_modules() -> Result<()> {
 
         info!("remove module: {}", module.display());
 
+        // Execute metamodule's metauninstall.sh first
+        let module_id = module.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("");
+
+        if let Err(e) = exec_metamodule_uninstall(module_id) {
+            warn!("Failed to exec metamodule uninstall for {}: {}", module_id, e);
+        }
+
+        // Then execute module's own uninstall.sh
         let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists()
             && let Err(e) = exec_script(uninstaller, true)
