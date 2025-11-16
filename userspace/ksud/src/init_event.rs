@@ -6,7 +6,7 @@ use crate::module::prune_modules;
 use crate::utils::is_safe_mode;
 use crate::{
     assets, defs, ksucalls, restorecon,
-    utils::{self, ensure_clean_dir},
+    utils::{self},
 };
 
 /// Execute metamodule script for a specific stage
@@ -110,9 +110,6 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     let module_dir = defs::MODULE_DIR;
-
-    // ensure module directory exists
-    ensure_clean_dir(module_dir)?;
 
     assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
 
