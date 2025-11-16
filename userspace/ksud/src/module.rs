@@ -336,8 +336,7 @@ pub fn prune_modules() -> Result<()> {
         .collect();
 
     if remaining_modules.is_empty() {
-        info!("no remaining modules, cleaning up metamodule record");
-        std::fs::remove_file(defs::METAMODULE_RECORD_FILE).ok();
+        info!("no remaining modules.");
     }
 
     Ok(())

@@ -25,7 +25,6 @@ pub const DISABLE_FILE_NAME: &str = "disable";
 pub const REMOVE_FILE_NAME: &str = "remove";
 
 // Metamodule support
-pub const METAMODULE_RECORD_FILE: &str = concatcp!(WORKING_DIR, "metamodule");
 pub const METAMODULE_MOUNT_SCRIPT: &str = "module-mount.sh";
 pub const METAMODULE_METAINSTALL_SCRIPT: &str = "metainstall.sh";
 
