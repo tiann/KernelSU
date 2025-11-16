@@ -106,8 +106,8 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
     let path = Path::new(defs::METAMODULE_DIR);
 
     // Check if symlink exists and resolve it
-    if path.is_symlink() {
-        if let Ok(target) = std::fs::read_link(path) {
+    if path.is_symlink()
+        && let Ok(target) = std::fs::read_link(path) {
             // If target is relative, resolve it
             let resolved = if target.is_absolute() {
                 target
@@ -124,13 +124,12 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
                 );
             }
         }
-    }
 
     // Fallback: search for metamodule=1 in modules directory
     let mut result = None;
     let _ = foreach_module(false, |module_path| {
-        if let Ok(props) = read_module_prop(module_path) {
-            if props
+        if let Ok(props) = read_module_prop(module_path)
+            && props
                 .get("metamodule")
                 .map(|s| s.trim().to_lowercase())
                 .map(|s| s == "true" || s == "1")
@@ -139,7 +138,6 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
                 info!("Found metamodule in modules directory: {:?}", module_path);
                 result = Some(module_path.to_path_buf());
             }
-        }
         Ok(())
     });
 
@@ -421,8 +419,8 @@ fn _install_module(zip: &str) -> Result<()> {
         info!("Installing metamodule: {}", module_id);
 
         // Check if there's already a metamodule installed
-        if has_metamodule() {
-            if let Some(existing_path) = get_metamodule_path() {
+        if has_metamodule()
+            && let Some(existing_path) = get_metamodule_path() {
                 let existing_id = read_module_prop(&existing_path)
                     .ok()
                     .and_then(|m| m.get("id").cloned())
@@ -437,7 +435,6 @@ fn _install_module(zip: &str) -> Result<()> {
                     );
                 }
             }
-        }
     }
 
     let zip_uncompressed_size = get_zip_uncompressed_size(zip)?;
