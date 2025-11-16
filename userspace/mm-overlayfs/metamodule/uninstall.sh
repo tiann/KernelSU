@@ -5,7 +5,6 @@
 ############################################
 
 MODDIR="${0%/*}"
-IMG_FILE="$MODDIR/modules.img"
 MNT_DIR="$MODDIR/mnt"
 
 echo "- Uninstalling metamodule..."
