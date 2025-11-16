@@ -1,0 +1,7 @@
+id=ksu-official-mount
+name=KernelSU Official Mount Handler
+version=1.0.0
+versionCode=1
+author=KernelSU Team
+description=Official overlayfs mount implementation for KernelSU modules. Provides systemless mounting using overlayfs.
+updateJson=https://raw.githubusercontent.com/tiann/KernelSU/main/userspace/ksu-metamodule/update.json
