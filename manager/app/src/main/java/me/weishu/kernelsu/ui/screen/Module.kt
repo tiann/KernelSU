@@ -52,11 +52,11 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -146,7 +146,7 @@ fun ModulePager(
 
     LaunchedEffect(navigator) {
         if (viewModel.moduleList.isEmpty() || viewModel.searchResults.value.isEmpty() || viewModel.isNeedRefresh) {
-            viewModel.checkModuleUpdate = prefs.getBoolean("module_check_update",true)
+            viewModel.checkModuleUpdate = prefs.getBoolean("module_check_update", true)
             viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
             viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
             viewModel.fetchModuleList()
@@ -438,10 +438,10 @@ fun ModulePager(
                     val uris = mutableListOf<Uri>()
                     if (clipData != null) {
                         for (i in 0 until clipData.itemCount) {
-                            clipData.getItemAt(i)?.uri?.let { it -> uris.add(it) }
+                            clipData.getItemAt(i)?.uri?.let { uris.add(it) }
                         }
                     } else {
-                        data.data?.let { it -> uris.add(it) }
+                        data.data?.let { uris.add(it) }
                     }
 
                     if (uris.size == 1) {
@@ -840,17 +840,15 @@ fun ModuleItem(
     val textDecoration by remember(module.remove) {
         mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
     }
-    val secondaryContainer = colorScheme.secondaryContainer
     val onSurface = colorScheme.onSurface
-    val actionIconTint = remember(isDark) {
-        onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
-    }
+    val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
+    val actionIconTint = remember(isDark) { onSurface.copy(alpha = if (isDark) 0.7f else 0.9f) }
     val updateBg = remember(isDark) { Color(if (isDark) 0xFF25354E else 0xFFEAF2FF) }
     val updateTint = remember { Color(0xFF0D84FF) }
 
     Card(
         modifier = Modifier
-            .padding(horizontal = 12.dp, vertical = 0.dp)
+            .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp),
         insideMargin = PaddingValues(16.dp)
     ) {
@@ -865,14 +863,13 @@ fun ModuleItem(
 
                 Text(
                     text = module.name,
-                    fontSize = 17.sp,
                     fontWeight = FontWeight(550),
                     color = colorScheme.onSurface,
                     textDecoration = textDecoration
                 )
                 Text(
                     text = "$moduleVersion: ${module.version}",
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     modifier = Modifier.padding(top = 1.dp),
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
@@ -880,7 +877,7 @@ fun ModuleItem(
                 )
                 Text(
                     text = "$moduleAuthor: ${module.author}",
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration
@@ -898,7 +895,7 @@ fun ModuleItem(
         if (module.description.isNotBlank()) {
             Text(
                 text = module.description,
-                fontSize = 14.5.sp,
+                fontSize = 14.sp,
                 color = colorScheme.onSurfaceVariantSummary,
                 modifier = Modifier.padding(top = 2.dp),
                 overflow = TextOverflow.Ellipsis,
@@ -908,7 +905,7 @@ fun ModuleItem(
         }
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 10.dp),
+            modifier = Modifier.padding(vertical = 8.dp),
             thickness = 0.5.dp,
             color = colorScheme.outline.copy(alpha = 0.5f)
         )
@@ -919,10 +916,10 @@ fun ModuleItem(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (module.hasActionScript) {
                         IconButton(
-                            backgroundColor = secondaryContainer.copy(alpha = 0.8f),
+                            backgroundColor = secondaryContainer,
                             minHeight = 35.dp,
                             minWidth = 35.dp,
                             onClick = onExecuteAction,
@@ -937,7 +934,7 @@ fun ModuleItem(
                     }
                     if (module.hasWebUi) {
                         IconButton(
-                            backgroundColor = secondaryContainer.copy(alpha = 0.8f),
+                            backgroundColor = secondaryContainer,
                             minHeight = 35.dp,
                             minWidth = 35.dp,
                             onClick = onOpenWebUi,
@@ -995,7 +992,7 @@ fun ModuleItem(
                 minHeight = 35.dp,
                 minWidth = 35.dp,
                 onClick = onUninstall,
-                backgroundColor = secondaryContainer.copy(alpha = 0.8f),
+                backgroundColor = secondaryContainer,
             ) {
                 val animatedPadding by animateDpAsState(
                     targetValue = if (!hasUpdate) 10.dp else 0.dp,

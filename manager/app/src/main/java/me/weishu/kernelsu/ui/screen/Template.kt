@@ -320,7 +320,6 @@ private fun TemplateItem(
             ) {
                 Text(
                     text = template.name,
-                    fontSize = 17.sp,
                     fontWeight = FontWeight(550),
                     color = colorScheme.onSurface,
                 )
@@ -345,7 +344,7 @@ private fun TemplateItem(
             Text(
                 text = "${template.id}${if (template.author.isEmpty()) "" else " by @${template.author}"}",
                 modifier = Modifier.padding(top = 1.dp),
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 color = colorScheme.onSurfaceVariantSummary,
                 fontWeight = FontWeight.Medium,
             )
@@ -354,7 +353,7 @@ private fun TemplateItem(
 
             Text(
                 text = template.description,
-                fontSize = 14.5.sp,
+                fontSize = 14.sp,
                 color = colorScheme.onSurfaceVariantSummary,
             )
 
@@ -365,8 +364,7 @@ private fun TemplateItem(
             )
 
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 InfoChip(
                     icon = Icons.Outlined.Fingerprint,
@@ -397,7 +395,7 @@ private fun InfoChip(icon: ImageVector, text: String) {
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = text,
-            style = MiuixTheme.textStyles.body2,
+            fontSize = 12.sp,
             color = colorScheme.onSurfaceSecondary
         )
     }
