@@ -36,32 +36,36 @@ const INSTALL_MODULE_SCRIPT: &str = concatcp!(
     "\n"
 );
 
-fn exec_install_script(module_file: &str) -> Result<()> {
+fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
         .with_context(|| format!("realpath: {module_file} failed"))?;
 
-    // Check if there's a metamodule and use its installer.sh if available
-    let install_script = if let Ok(Some(metamodule_id)) = read_metamodule() {
-        let metamodule_installer = Path::new(defs::MODULE_DIR)
-            .join(&metamodule_id)
-            .join("installer.sh");
+    // Check if there's a metamodule with metainstall.sh
+    // Only apply this logic for regular modules (not when installing metamodule itself)
+    let install_script = if !is_metamodule {
+        if let Some(metamodule_path) = get_metamodule_path() {
+            if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
+                info!("Metamodule is disabled, using default installer");
+                INSTALL_MODULE_SCRIPT.to_string()
+            } else {
+                let metainstall_path = metamodule_path.join(defs::METAMODULE_METAINSTALL_SCRIPT);
 
-        if metamodule_installer.exists() {
-            info!("Using installer from metamodule: {}", metamodule_id);
-            let metamodule_content =
-                std::fs::read_to_string(&metamodule_installer).with_context(|| {
-                    format!("Failed to read metamodule installer: {}", metamodule_id)
-                })?;
-            format!("{}\ninstall_module\nexit 0\n", metamodule_content)
+                if metainstall_path.exists() {
+                    info!("Using metainstall.sh from metamodule");
+                    let metamodule_content = std::fs::read_to_string(&metainstall_path)
+                        .with_context(|| "Failed to read metamodule metainstall.sh")?;
+                    format!("{}\ninstall_module\nexit 0\n", metamodule_content)
+                } else {
+                    info!("Metamodule exists but has no metainstall.sh, using default installer");
+                    INSTALL_MODULE_SCRIPT.to_string()
+                }
+            }
         } else {
-            info!(
-                "Metamodule {} has no installer.sh, using default",
-                metamodule_id
-            );
+            info!("No metamodule found, using default installer");
             INSTALL_MODULE_SCRIPT.to_string()
         }
     } else {
-        info!("No metamodule found, using default installer");
+        info!("Installing metamodule, using default installer");
         INSTALL_MODULE_SCRIPT.to_string()
     };
 
@@ -93,6 +97,69 @@ fn ensure_boot_completed() -> Result<()> {
     if getprop("sys.boot_completed").as_deref() != Some("1") {
         bail!("Android is Booting!");
     }
+    Ok(())
+}
+
+/// Get metamodule path if it exists
+pub fn get_metamodule_path() -> Option<PathBuf> {
+    let path = Path::new(defs::METAMODULE_DIR);
+    if path.exists() && path.is_dir() {
+        Some(path.to_path_buf())
+    } else {
+        None
+    }
+}
+
+/// Check if metamodule exists
+pub fn has_metamodule() -> bool {
+    get_metamodule_path().is_some()
+}
+
+/// Get metamodule's module.prop info
+pub fn get_metamodule_info() -> Result<Option<HashMap<String, String>>> {
+    let Some(metamodule_path) = get_metamodule_path() else {
+        return Ok(None);
+    };
+
+    let module_prop = metamodule_path.join("module.prop");
+    if !module_prop.exists() {
+        bail!("Metamodule exists but has no module.prop");
+    }
+
+    let content = std::fs::read(&module_prop)?;
+    let mut props = HashMap::new();
+    PropertiesIter::new_with_encoding(Cursor::new(content), encoding_rs::UTF_8).read_into(
+        |k, v| {
+            props.insert(k, v);
+        },
+    )?;
+
+    Ok(Some(props))
+}
+
+/// Uninstall metamodule
+pub fn uninstall_metamodule() -> Result<()> {
+    ensure_boot_completed()?;
+
+    let Some(metamodule_path) = get_metamodule_path() else {
+        bail!("No metamodule installed");
+    };
+
+    println!("- Uninstalling metamodule");
+
+    // Execute uninstall script if exists
+    let uninstall_script = metamodule_path.join("uninstall.sh");
+    if uninstall_script.exists() {
+        info!("Executing metamodule uninstall script");
+        if let Err(e) = exec_script(&uninstall_script, true) {
+            warn!("Metamodule uninstall script failed: {}", e);
+        }
+    }
+
+    // Remove the entire directory
+    remove_dir_all(&metamodule_path).with_context(|| "Failed to remove metamodule directory")?;
+
+    println!("- Metamodule uninstalled successfully");
     Ok(())
 }
 
@@ -142,7 +209,7 @@ pub fn load_sepolicy_rule() -> Result<()> {
     Ok(())
 }
 
-fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
+pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
     let mut command = &mut Command::new(assets::BUSYBOX_PATH);
@@ -315,21 +382,28 @@ fn _install_module(zip: &str) -> Result<()> {
         .map(|s| s == "true" || s == "1")
         .unwrap_or(false);
 
-    if is_metamodule {
+    // Determine target directory based on module type
+    let target_dir = if is_metamodule {
         info!("Installing metamodule: {}", module_id);
 
         // Check if there's already a metamodule installed
-        if let Ok(Some(existing_metamodule)) = read_metamodule()
-            && existing_metamodule != module_id
-        {
+        if has_metamodule() {
+            let existing = get_metamodule_info()?
+                .and_then(|m| m.get("id").cloned())
+                .unwrap_or_else(|| "unknown".to_string());
+
             bail!(
-                "Cannot install metamodule '{}': another metamodule '{}' is already installed. \
-                Please uninstall the existing metamodule first.",
-                module_id,
-                existing_metamodule
+                "A metamodule is already installed: {}\n\
+                 Please uninstall it first using: ksud module uninstall {}",
+                existing,
+                existing
             );
         }
-    }
+
+        Path::new(defs::METAMODULE_DIR).to_path_buf()
+    } else {
+        Path::new(defs::MODULE_DIR).join(module_id)
+    };
 
     let zip_uncompressed_size = get_zip_uncompressed_size(zip)?;
     info!(
@@ -341,33 +415,37 @@ fn _install_module(zip: &str) -> Result<()> {
         humansize::format_size(zip_uncompressed_size, humansize::DECIMAL)
     );
 
-    // ensure modules dir exists
-    ensure_dir_exists(defs::MODULE_DIR)?;
-    setsyscon(defs::MODULE_DIR)?;
+    // Ensure parent directory exists and set SELinux context
+    if is_metamodule {
+        ensure_dir_exists(defs::METAMODULE_DIR)?;
+        setsyscon(defs::METAMODULE_DIR)?;
+    } else {
+        ensure_dir_exists(defs::MODULE_DIR)?;
+        setsyscon(defs::MODULE_DIR)?;
+    }
 
-    // prepare module directory
-    let module_dir = Path::new(defs::MODULE_DIR).join(module_id);
-    println!("- Installing to {}", module_dir.display());
-    ensure_clean_dir(&module_dir)?;
-    info!("module dir: {}", module_dir.display());
+    // Prepare target directory
+    println!("- Installing to {}", target_dir.display());
+    ensure_clean_dir(&target_dir)?;
+    info!("target dir: {}", target_dir.display());
 
-    // extract zip to module directory
+    // Extract zip to target directory
     println!("- Extracting module files");
     let file = File::open(zip)?;
     let mut archive = zip::ZipArchive::new(file)?;
-    archive.extract(&module_dir)?;
+    archive.extract(&target_dir)?;
 
-    // set permission and selinux context for $MOD/system
-    let module_system_dir = module_dir.join("system");
+    // Set permission and selinux context for $MOD/system
+    let module_system_dir = target_dir.join("system");
     if module_system_dir.exists() {
         #[cfg(unix)]
         set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
         restore_syscon(&module_system_dir)?;
     }
 
-    // execute install script
+    // Execute install script
     println!("- Running module installer");
-    exec_install_script(zip)?;
+    exec_install_script(zip, is_metamodule)?;
 
     println!("- Module installed successfully!");
     info!("Module {} installed successfully!", module_id);
@@ -384,18 +462,17 @@ pub fn install_module(zip: &str) -> Result<()> {
 }
 
 pub fn uninstall_module(id: &str) -> Result<()> {
-    // Check if the module being uninstalled is the current metamodule
-    let is_metamodule = if let Ok(Some(metamodule_id)) = read_metamodule() {
-        if metamodule_id == id {
-            info!("Uninstalling metamodule: {}", id);
-            true
-        } else {
-            false
-        }
-    } else {
-        false
-    };
+    // First check if trying to uninstall the metamodule
+    if has_metamodule()
+        && let Ok(Some(metamodule_info)) = get_metamodule_info()
+        && let Some(metamodule_id) = metamodule_info.get("id")
+        && metamodule_id.trim() == id
+    {
+        // Uninstall metamodule directly using uninstall_metamodule()
+        return uninstall_metamodule();
+    }
 
+    // Regular module uninstall - mark for removal
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
@@ -404,12 +481,6 @@ pub fn uninstall_module(id: &str) -> Result<()> {
     File::create(remove_file).with_context(|| "Failed to create remove file")?;
 
     info!("Module {} marked for removal", id);
-
-    // If it was the metamodule, clean up the record file immediately
-    if is_metamodule {
-        info!("Cleaning up metamodule record file");
-        let _ = std::fs::remove_file(defs::METAMODULE_RECORD_FILE);
-    }
 
     Ok(())
 }
@@ -421,12 +492,24 @@ pub fn run_action(id: &str) -> Result<()> {
 
 pub fn enable_module(id: &str) -> Result<()> {
     // Check if enabling the metamodule
-    if let Ok(Some(metamodule_id)) = read_metamodule()
-        && metamodule_id == id
+    if has_metamodule()
+        && let Ok(Some(metamodule_info)) = get_metamodule_info()
+        && let Some(metamodule_id) = metamodule_info.get("id")
+        && metamodule_id.trim() == id
     {
         info!("Enabling metamodule: {}", id);
+        let metamodule_path = Path::new(defs::METAMODULE_DIR);
+        let disable_path = metamodule_path.join(defs::DISABLE_FILE_NAME);
+        if disable_path.exists() {
+            std::fs::remove_file(&disable_path).with_context(|| {
+                format!("Failed to remove disable file: {}", disable_path.display())
+            })?;
+            info!("Metamodule {} enabled", id);
+        }
+        return Ok(());
     }
 
+    // Regular module
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
@@ -443,15 +526,23 @@ pub fn enable_module(id: &str) -> Result<()> {
 
 pub fn disable_module(id: &str) -> Result<()> {
     // Check if disabling the metamodule
-    if let Ok(Some(metamodule_id)) = read_metamodule()
-        && metamodule_id == id
+    if has_metamodule()
+        && let Ok(Some(metamodule_info)) = get_metamodule_info()
+        && let Some(metamodule_id) = metamodule_info.get("id")
+        && metamodule_id.trim() == id
     {
         warn!(
             "Disabling metamodule: {}. Module mounting will not work until re-enabled.",
             id
         );
+        let metamodule_path = Path::new(defs::METAMODULE_DIR);
+        let disable_path = metamodule_path.join(defs::DISABLE_FILE_NAME);
+        ensure_file_exists(disable_path)?;
+        info!("Metamodule {} disabled", id);
+        return Ok(());
     }
 
+    // Regular module
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
@@ -464,27 +555,38 @@ pub fn disable_module(id: &str) -> Result<()> {
 }
 
 pub fn disable_all_modules() -> Result<()> {
-    // Check if metamodule will be disabled
-    if let Ok(Some(metamodule_id)) = read_metamodule() {
-        warn!(
-            "Disabling all modules including metamodule: {}. Module mounting will not work.",
-            metamodule_id
-        );
+    // Disable metamodule if exists
+    if has_metamodule() {
+        if let Ok(Some(metamodule_info)) = get_metamodule_info()
+            && let Some(metamodule_id) = metamodule_info.get("id")
+        {
+            warn!(
+                "Disabling all modules including metamodule: {}. Module mounting will not work.",
+                metamodule_id
+            );
+        }
+        let metamodule_path = Path::new(defs::METAMODULE_DIR);
+        let disable_path = metamodule_path.join(defs::DISABLE_FILE_NAME);
+        if let Err(e) = ensure_file_exists(disable_path) {
+            warn!("Failed to disable metamodule: {}", e);
+        }
     }
+
     mark_all_modules(defs::DISABLE_FILE_NAME)
 }
 
 pub fn uninstall_all_modules() -> Result<()> {
     info!("Uninstalling all modules");
-    let result = mark_all_modules(defs::REMOVE_FILE_NAME);
 
-    // Clean up metamodule record file if successful
-    if result.is_ok() {
-        info!("Cleaning up metamodule record file");
-        let _ = std::fs::remove_file(defs::METAMODULE_RECORD_FILE);
+    // Uninstall metamodule if exists
+    if has_metamodule() {
+        info!("Uninstalling metamodule");
+        if let Err(e) = uninstall_metamodule() {
+            warn!("Failed to uninstall metamodule: {}", e);
+        }
     }
 
-    result
+    mark_all_modules(defs::REMOVE_FILE_NAME)
 }
 
 fn mark_all_modules(flag_file: &str) -> Result<()> {
@@ -580,7 +682,27 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
 }
 
 pub fn list_modules() -> Result<()> {
-    let modules = _list_modules(defs::MODULE_DIR);
+    let mut modules = _list_modules(defs::MODULE_DIR);
+
+    // Add metamodule if exists
+    if let Ok(Some(mut metamodule_info)) = get_metamodule_info() {
+        let metamodule_path = Path::new(defs::METAMODULE_DIR);
+
+        // Add enabled, web, action flags
+        let enabled = !metamodule_path.join(defs::DISABLE_FILE_NAME).exists();
+        let web = metamodule_path.join(defs::MODULE_WEB_DIR).exists();
+        let action = metamodule_path.join(defs::MODULE_ACTION_SH).exists();
+
+        metamodule_info.insert("enabled".to_owned(), enabled.to_string());
+        metamodule_info.insert("remove".to_owned(), "false".to_string());
+        metamodule_info.insert("web".to_owned(), web.to_string());
+        metamodule_info.insert("action".to_owned(), action.to_string());
+        metamodule_info.insert("metamodule".to_owned(), "true".to_string());
+
+        // Insert metamodule at the beginning of the list
+        modules.insert(0, metamodule_info);
+    }
+
     println!("{}", serde_json::to_string_pretty(&modules)?);
     Ok(())
 }

@@ -9,37 +9,51 @@ use crate::{
     utils::{self, ensure_clean_dir},
 };
 
+/// Execute metamodule script for a specific stage
+fn exec_metamodule_script(stage: &str, block: bool) -> Result<()> {
+    let Some(metamodule_path) = crate::module::get_metamodule_path() else {
+        return Ok(());
+    };
+
+    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
+        info!("Metamodule is disabled, skipping {}.sh", stage);
+        return Ok(());
+    }
+
+    let script_path = metamodule_path.join(format!("{}.sh", stage));
+    if !script_path.exists() {
+        return Ok(());
+    }
+
+    info!("Executing metamodule {}.sh", stage);
+    crate::module::exec_script(&script_path, block)?;
+    info!("Metamodule {}.sh executed successfully", stage);
+    Ok(())
+}
+
 /// Execute metamodule mount script
 fn execute_metamodule_mount(module_dir: &str) -> Result<()> {
-    // Find the active metamodule
-    let metamodule_id = crate::module::find_metamodule()?;
-
-    let Some(metamodule_id) = metamodule_id else {
+    let Some(metamodule_path) = crate::module::get_metamodule_path() else {
         info!("No metamodule found");
         return Ok(());
     };
 
-    info!("Found metamodule: {}", metamodule_id);
-
-    let metamodule_path = Path::new(module_dir).join(&metamodule_id);
-
     // Check if metamodule is disabled
     if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
-        warn!("Metamodule {} is disabled, skipping mount", metamodule_id);
+        warn!("Metamodule is disabled, skipping mount");
         return Ok(());
     }
 
     let mount_script = metamodule_path.join(defs::METAMODULE_MOUNT_SCRIPT);
     if !mount_script.exists() {
         warn!(
-            "Metamodule {} does not have {} script",
-            metamodule_id,
+            "Metamodule does not have {} script",
             defs::METAMODULE_MOUNT_SCRIPT
         );
         return Ok(());
     }
 
-    info!("Executing mount script for metamodule {}", metamodule_id);
+    info!("Executing mount script for metamodule");
 
     // Execute the mount script
     let result = Command::new(assets::BUSYBOX_PATH)
@@ -49,28 +63,18 @@ fn execute_metamodule_mount(module_dir: &str) -> Result<()> {
         .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("KSU_VER", defs::VERSION_NAME)
-        .env("METAMODULE_ID", &metamodule_id)
         .env("MODULE_DIR", module_dir)
         .status();
 
     match result {
         Ok(status) if status.success() => {
-            info!(
-                "Metamodule {} mount script executed successfully",
-                metamodule_id
-            );
+            info!("Metamodule mount script executed successfully");
         }
         Ok(status) => {
-            warn!(
-                "Metamodule {} mount script failed with status: {:?}",
-                metamodule_id, status
-            );
+            warn!("Metamodule mount script failed with status: {:?}", status);
         }
         Err(e) => {
-            warn!(
-                "Failed to execute metamodule {} mount script: {}",
-                metamodule_id, e
-            );
+            warn!("Failed to execute metamodule mount script: {}", e);
         }
     }
 
@@ -145,6 +149,11 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("init features failed: {e}");
     }
 
+    // execute metamodule post-fs-data script first (priority)
+    if let Err(e) = exec_metamodule_script("post-fs-data", true) {
+        warn!("exec metamodule post-fs-data script failed: {e}");
+    }
+
     // exec modules post-fs-data scripts
     // TODO: Add timeout
     if let Err(e) = crate::module::exec_stage_script("post-fs-data", true) {
@@ -184,6 +193,13 @@ fn run_stage(stage: &str, block: bool) {
     if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), block) {
         warn!("Failed to exec common {stage} scripts: {e}");
     }
+
+    // execute metamodule stage script first (priority)
+    if let Err(e) = exec_metamodule_script(stage, block) {
+        warn!("Failed to exec metamodule {stage} script: {e}");
+    }
+
+    // execute regular modules stage scripts
     if let Err(e) = crate::module::exec_stage_script(stage, block) {
         warn!("Failed to exec {stage} scripts: {e}");
     }

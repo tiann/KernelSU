@@ -17,6 +17,7 @@ pub const MAGISKBOOT_PATH: &str = concatcp!(BINARY_DIR, "magiskboot");
 pub const DAEMON_LINK_PATH: &str = concatcp!(BINARY_DIR, "ksud");
 
 pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
+pub const METAMODULE_DIR: &str = concatcp!(ADB_DIR, "metamodule/");
 
 pub const MODULE_WEB_DIR: &str = "webroot";
 pub const MODULE_ACTION_SH: &str = "action.sh";
@@ -26,6 +27,7 @@ pub const REMOVE_FILE_NAME: &str = "remove";
 // Metamodule support
 pub const METAMODULE_RECORD_FILE: &str = concatcp!(WORKING_DIR, "metamodule");
 pub const METAMODULE_MOUNT_SCRIPT: &str = "module-mount.sh";
+pub const METAMODULE_METAINSTALL_SCRIPT: &str = "metainstall.sh";
 
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
