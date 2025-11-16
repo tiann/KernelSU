@@ -250,7 +250,7 @@ private fun AppProfileInner(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
-            insideMargin = PaddingValues(16.dp)
+            insideMargin = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -506,13 +506,13 @@ private fun AppProfileInner(
                                 packageInfo = app.packageInfo,
                                 label = app.label,
                                 modifier = Modifier
-                                    .padding(end = 14.dp)
-                                    .size(36.dp)
+                                    .padding(end = 12.dp)
+                                    .size(40.dp)
                             )
                         },
                         title = app.label,
                         summary = app.packageName,
-                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                     )
                 }
                 Spacer(Modifier.height(3.dp))

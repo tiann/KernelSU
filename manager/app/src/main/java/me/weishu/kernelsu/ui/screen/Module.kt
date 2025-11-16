@@ -869,7 +869,7 @@ fun ModuleItem(
                 )
                 Text(
                     text = "$moduleVersion: ${module.version}",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     modifier = Modifier.padding(top = 1.dp),
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
@@ -877,7 +877,7 @@ fun ModuleItem(
                 )
                 Text(
                     text = "$moduleAuthor: ${module.author}",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurfaceVariantSummary,
                     textDecoration = textDecoration
@@ -895,7 +895,7 @@ fun ModuleItem(
         if (module.description.isNotBlank()) {
             Text(
                 text = module.description,
-                fontSize = 14.sp,
+                fontSize = 14.5.sp,
                 color = colorScheme.onSurfaceVariantSummary,
                 modifier = Modifier.padding(top = 2.dp),
                 overflow = TextOverflow.Ellipsis,

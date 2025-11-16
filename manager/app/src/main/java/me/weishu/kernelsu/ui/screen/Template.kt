@@ -344,7 +344,7 @@ private fun TemplateItem(
             Text(
                 text = "${template.id}${if (template.author.isEmpty()) "" else " by @${template.author}"}",
                 modifier = Modifier.padding(top = 1.dp),
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = colorScheme.onSurfaceVariantSummary,
                 fontWeight = FontWeight.Medium,
             )
@@ -353,7 +353,7 @@ private fun TemplateItem(
 
             Text(
                 text = template.description,
-                fontSize = 14.sp,
+                fontSize = 14.5.sp,
                 color = colorScheme.onSurfaceVariantSummary,
             )
 
@@ -395,7 +395,7 @@ private fun InfoChip(icon: ImageVector, text: String) {
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = text,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = colorScheme.onSurfaceSecondary
         )
     }
