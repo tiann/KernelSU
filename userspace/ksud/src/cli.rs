@@ -185,17 +185,6 @@ enum Debug {
     /// Get kernel version
     Version,
 
-    /// Copy sparse file
-    Xcp {
-        /// source file
-        src: String,
-        /// destination file
-        dst: String,
-        /// punch hole
-        #[arg(short, long, default_value = "false")]
-        punch_hole: bool,
-    },
-
     /// For testing
     Test,
 
@@ -441,14 +430,6 @@ pub fn run() -> Result<()> {
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
-            Debug::Xcp {
-                src,
-                dst,
-                punch_hole,
-            } => {
-                utils::copy_sparse_file(src, dst, punch_hole)?;
-                Ok(())
-            }
             Debug::Test => assets::ensure_binaries(false),
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
