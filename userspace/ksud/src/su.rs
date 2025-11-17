@@ -55,13 +55,13 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
         rustix::thread::set_thread_groups(
             groups
                 .iter()
-                .map(|g| unsafe { Gid::from_raw(*g) })
+                .map(|g| Gid::from_raw(*g))
                 .collect::<Vec<_>>()
                 .as_ref(),
         )
         .ok();
-        let gid = unsafe { Gid::from_raw(gid) };
-        let uid = unsafe { Uid::from_raw(uid) };
+        let gid = Gid::from_raw(gid);
+        let uid = Uid::from_raw(uid);
         set_thread_res_gid(gid, gid, gid).ok();
         set_thread_res_uid(uid, uid, uid).ok();
     }
