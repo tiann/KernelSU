@@ -1,6 +1,6 @@
 #!/system/bin/sh
 ############################################
-# mm-overlayfs metainstall.sh
+# meta-overlayfs metainstall.sh
 # Module installation hook for ext4 image support
 ############################################
 
@@ -47,7 +47,7 @@ post_install_to_image() {
 }
 
 # Main installation flow
-ui_print "- Using mm-overlayfs metainstall"
+ui_print "- Using meta-overlayfs metainstall"
 
 # 1. Ensure ext4 image is mounted
 ensure_image_mounted

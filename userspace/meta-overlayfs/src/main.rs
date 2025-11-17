@@ -10,7 +10,7 @@ fn main() -> Result<()> {
         .filter_level(log::LevelFilter::Info)
         .init();
 
-    info!("mm-overlayfs v{}", env!("CARGO_PKG_VERSION"));
+    info!("meta-overlayfs v{}", env!("CARGO_PKG_VERSION"));
 
     // Dual-directory support: metadata + content
     let metadata_dir = std::env::var("MODULE_METADATA_DIR")

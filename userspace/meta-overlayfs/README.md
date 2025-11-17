@@ -1,18 +1,18 @@
-# mm-overlayfs
+# meta-overlayfs
 
 Official overlayfs mount handler for KernelSU metamodules.
 
 ## Installation
 
 ```bash
-adb push mm-overlayfs-v1.0.0.zip /sdcard/
-adb shell su -c 'ksud module install /sdcard/mm-overlayfs-v1.0.0.zip'
+adb push meta-overlayfs-v1.0.0.zip /sdcard/
+adb shell su -c 'ksud module install /sdcard/meta-overlayfs-v1.0.0.zip'
 adb reboot
 ```
 
 Or install via KernelSU Manager → Modules.
 
-**Note**: The metamodule is now installed as a regular module to `/data/adb/modules/mm-overlay/`, with a symlink created at `/data/adb/metamodule` pointing to it.
+**Note**: The metamodule is now installed as a regular module to `/data/adb/modules/meta-overlay/`, with a symlink created at `/data/adb/metamodule` pointing to it.
 
 ## How It Works
 
@@ -51,7 +51,7 @@ Automatically selects aarch64 or x86_64 binary during installation (~500KB).
 ./build.sh
 ```
 
-Output: `target/mm-overlayfs-v1.0.0.zip`
+Output: `target/meta-overlayfs-v1.0.0.zip`
 
 ## License
 

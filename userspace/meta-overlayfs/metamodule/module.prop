@@ -1,0 +1,8 @@
+id=meta-overlayfs
+metamodule=1
+name=OverlayFS MetaModule
+version=1.0.0
+versionCode=1
+author=KernelSU Developers
+description=An implementation of a metamodule using OverlayFS for KernelSU
+updateJson=https://raw.githubusercontent.com/tiann/KernelSU/main/userspace/meta-overlayfs/update.json

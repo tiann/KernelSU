@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# mm-overlayfs Module Mount Handler
+# meta-overlayfs Module Mount Handler
 # This script is the entry point for dual-directory module mounting
 
 MODDIR="${0%/*}"
@@ -8,7 +8,7 @@ MNT_DIR="$MODDIR/mnt"
 
 # Log function
 log() {
-    echo "[mm-overlayfs] $1"
+    echo "[meta-overlayfs] $1"
 }
 
 log "Starting module mount process"
@@ -37,7 +37,7 @@ else
 fi
 
 # Binary path (architecture-specific binary selected during installation)
-BINARY="$MODDIR/mm-overlayfs"
+BINARY="$MODDIR/meta-overlayfs"
 
 if [ ! -f "$BINARY" ]; then
     log "ERROR: Binary not found: $BINARY"

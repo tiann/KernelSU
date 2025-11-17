@@ -29,7 +29,7 @@ Các giải pháp root truyền thống tích hợp logic mount vào lõi của 
 **Tính linh hoạt của mount:**
 
 - **Không mount**: Đối với người dùng chỉ sử dụng module không cần mount, tránh hoàn toàn chi phí mount
-- **Mount OverlayFS**: Cách tiếp cận truyền thống với hỗ trợ lớp đọc-ghi (thông qua `mm-overlayfs`)
+- **Mount OverlayFS**: Cách tiếp cận truyền thống với hỗ trợ lớp đọc-ghi (thông qua `meta-overlayfs`)
 - **Magic mount**: Mount tương thích với Magisk để có khả năng tương thích ứng dụng tốt hơn
 - **Triển khai tùy chỉnh**: Overlay dựa trên FUSE, mount VFS tùy chỉnh hoặc các phương pháp hoàn toàn mới
 
@@ -40,7 +40,7 @@ Các giải pháp root truyền thống tích hợp logic mount vào lõi của 
 - **Tùy chỉnh**: Tạo các giải pháp chuyên biệt cho các thiết bị hoặc trường hợp sử dụng cụ thể
 
 ::: warning QUAN TRỌNG
-Nếu không cài đặt metamodule, các module sẽ **KHÔNG** được mount. Các cài đặt KernelSU mới yêu cầu cài đặt một metamodule (như `mm-overlayfs`) để các module hoạt động.
+Nếu không cài đặt metamodule, các module sẽ **KHÔNG** được mount. Các cài đặt KernelSU mới yêu cầu cài đặt một metamodule (như `meta-overlayfs`) để các module hoạt động.
 :::
 
 ## Dành cho Người dùng
@@ -49,13 +49,13 @@ Nếu không cài đặt metamodule, các module sẽ **KHÔNG** được mount.
 
 Cài đặt metamodule giống như cài đặt các module thông thường:
 
-1. Tải xuống tệp ZIP metamodule (ví dụ: `mm-overlayfs.zip`)
+1. Tải xuống tệp ZIP metamodule (ví dụ: `meta-overlayfs.zip`)
 2. Mở ứng dụng KernelSU Manager
 3. Nhấn nút hành động nổi (➕)
 4. Chọn tệp ZIP metamodule
 5. Khởi động lại thiết bị của bạn
 
-Metamodule `mm-overlayfs` là triển khai tham chiếu chính thức cung cấp mount module dựa trên overlayfs truyền thống với hỗ trợ ext4 image.
+Metamodule `meta-overlayfs` là triển khai tham chiếu chính thức cung cấp mount module dựa trên overlayfs truyền thống với hỗ trợ ext4 image.
 
 ### Kiểm tra Metamodule đang hoạt động
 
@@ -92,7 +92,7 @@ Chỉ có thể cài đặt một metamodule tại một thời điểm. Nếu b
 
 ## Dành cho Nhà phát triển Module
 
-Nếu bạn đang phát triển các module KernelSU thông thường, bạn không cần lo lắng nhiều về metamodule. Các module của bạn sẽ hoạt động miễn là người dùng có cài đặt một metamodule tương thích (như `mm-overlayfs`).
+Nếu bạn đang phát triển các module KernelSU thông thường, bạn không cần lo lắng nhiều về metamodule. Các module của bạn sẽ hoạt động miễn là người dùng có cài đặt một metamodule tương thích (như `meta-overlayfs`).
 
 **Những điều bạn cần biết:**
 
@@ -317,13 +317,13 @@ Khi một metamodule được cài đặt, KernelSU tạo một symlink:
 - Dễ dàng phát hiện metamodule đang hoạt động
 - Đơn giản hóa cấu hình
 
-### Ví dụ Thực tế: mm-overlayfs
+### Ví dụ Thực tế: meta-overlayfs
 
-Metamodule `mm-overlayfs` là triển khai tham chiếu chính thức. Nó thể hiện các thực hành tốt nhất cho phát triển metamodule.
+Metamodule `meta-overlayfs` là triển khai tham chiếu chính thức. Nó thể hiện các thực hành tốt nhất cho phát triển metamodule.
 
 #### Kiến trúc
 
-`mm-overlayfs` sử dụng **kiến trúc thư mục kép**:
+`meta-overlayfs` sử dụng **kiến trúc thư mục kép**:
 
 1. **Thư mục metadata**: `/data/adb/modules/`
    - Chứa `module.prop`, các marker `disable`, `skip_mount`
@@ -337,7 +337,7 @@ Metamodule `mm-overlayfs` là triển khai tham chiếu chính thức. Nó thể
 
 #### Triển khai metamount.sh
 
-Đây là cách `mm-overlayfs` triển khai xử lý mount:
+Đây là cách `meta-overlayfs` triển khai xử lý mount:
 
 ```sh
 #!/system/bin/sh
@@ -357,7 +357,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 
 # Thực thi binary mount
 # (Logic mount thực tế nằm trong binary Rust)
-"$MODDIR/mm-overlayfs"
+"$MODDIR/meta-overlayfs"
 ```
 
 #### Tính năng Chính
@@ -371,7 +371,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 **Xác định nguồn:**
 
 ```rust
-// Từ mm-overlayfs/src/mount.rs
+// Từ meta-overlayfs/src/mount.rs
 fsconfig_set_string(fs, "source", "KSU")?;  // BẮT BUỘC!
 ```
 
@@ -418,7 +418,7 @@ Không. Chỉ có thể cài đặt một metamodule tại một thời điểm.
 
 Các module sẽ không còn được mount. Thiết bị của bạn sẽ khởi động bình thường, nhưng các sửa đổi của module sẽ không áp dụng cho đến khi bạn cài đặt một metamodule khác.
 
-### mm-overlayfs có bắt buộc không?
+### meta-overlayfs có bắt buộc không?
 
 Không. Nó cung cấp mount overlayfs tiêu chuẩn tương thích với hầu hết các module. Bạn có thể tạo metamodule của riêng mình nếu cần hành vi khác.
 

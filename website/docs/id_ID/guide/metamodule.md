@@ -29,7 +29,7 @@ Solusi root tradisional memasukkan logika pemasangan ke dalam inti mereka, membu
 **Fleksibilitas pemasangan:**
 
 - **Tanpa pemasangan**: Untuk pengguna dengan modul tanpa pemasangan saja, hindari overhead pemasangan sepenuhnya
-- **Pemasangan OverlayFS**: Pendekatan tradisional dengan dukungan lapisan baca-tulis (melalui `mm-overlayfs`)
+- **Pemasangan OverlayFS**: Pendekatan tradisional dengan dukungan lapisan baca-tulis (melalui `meta-overlayfs`)
 - **Magic mount**: Pemasangan kompatibel Magisk untuk kompatibilitas aplikasi yang lebih baik
 - **Implementasi kustom**: Overlay berbasis FUSE, pemasangan VFS kustom, atau pendekatan yang sama sekali baru
 
@@ -40,7 +40,7 @@ Solusi root tradisional memasukkan logika pemasangan ke dalam inti mereka, membu
 - **Kustomisasi**: Buat solusi khusus untuk perangkat atau kasus penggunaan tertentu
 
 ::: warning PENTING
-Tanpa metamodul yang diinstal, modul **TIDAK** akan dipasang. Instalasi KernelSU yang baru memerlukan pemasangan metamodul (seperti `mm-overlayfs`) agar modul berfungsi.
+Tanpa metamodul yang diinstal, modul **TIDAK** akan dipasang. Instalasi KernelSU yang baru memerlukan pemasangan metamodul (seperti `meta-overlayfs`) agar modul berfungsi.
 :::
 
 ## Untuk Pengguna
@@ -49,13 +49,13 @@ Tanpa metamodul yang diinstal, modul **TIDAK** akan dipasang. Instalasi KernelSU
 
 Instal metamodul dengan cara yang sama seperti modul biasa:
 
-1. Unduh file ZIP metamodul (misalnya, `mm-overlayfs.zip`)
+1. Unduh file ZIP metamodul (misalnya, `meta-overlayfs.zip`)
 2. Buka aplikasi KernelSU Manager
 3. Ketuk tombol tindakan mengambang (➕)
 4. Pilih file ZIP metamodul
 5. Reboot perangkat Anda
 
-Metamodul `mm-overlayfs` adalah implementasi referensi resmi yang menyediakan pemasangan modul berbasis overlayfs tradisional dengan dukungan image ext4.
+Metamodul `meta-overlayfs` adalah implementasi referensi resmi yang menyediakan pemasangan modul berbasis overlayfs tradisional dengan dukungan image ext4.
 
 ### Memeriksa Metamodul Aktif
 
@@ -92,7 +92,7 @@ Untuk beralih metamodul:
 
 ## Untuk Pengembang Modul
 
-Jika Anda mengembangkan modul KernelSU biasa, Anda tidak perlu terlalu khawatir tentang metamodul. Modul Anda akan berfungsi selama pengguna memiliki metamodul yang kompatibel (seperti `mm-overlayfs`) yang diinstal.
+Jika Anda mengembangkan modul KernelSU biasa, Anda tidak perlu terlalu khawatir tentang metamodul. Modul Anda akan berfungsi selama pengguna memiliki metamodul yang kompatibel (seperti `meta-overlayfs`) yang diinstal.
 
 **Yang perlu Anda ketahui:**
 
@@ -317,13 +317,13 @@ Ini menyediakan path yang stabil untuk mengakses metamodul aktif, terlepas dari 
 - Deteksi mudah metamodul aktif
 - Menyederhanakan konfigurasi
 
-### Contoh Dunia Nyata: mm-overlayfs
+### Contoh Dunia Nyata: meta-overlayfs
 
-Metamodul `mm-overlayfs` adalah implementasi referensi resmi. Ini menunjukkan praktik terbaik untuk pengembangan metamodul.
+Metamodul `meta-overlayfs` adalah implementasi referensi resmi. Ini menunjukkan praktik terbaik untuk pengembangan metamodul.
 
 #### Arsitektur
 
-`mm-overlayfs` menggunakan **arsitektur dual-directory**:
+`meta-overlayfs` menggunakan **arsitektur dual-directory**:
 
 1. **Direktori metadata**: `/data/adb/modules/`
    - Berisi `module.prop`, `disable`, penanda `skip_mount`
@@ -337,7 +337,7 @@ Metamodul `mm-overlayfs` adalah implementasi referensi resmi. Ini menunjukkan pr
 
 #### Implementasi metamount.sh
 
-Berikut adalah cara `mm-overlayfs` mengimplementasikan handler mount:
+Berikut adalah cara `meta-overlayfs` mengimplementasikan handler mount:
 
 ```sh
 #!/system/bin/sh
@@ -357,7 +357,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 
 # Eksekusi binary mount
 # (Logika pemasangan aktual ada di binary Rust)
-"$MODDIR/mm-overlayfs"
+"$MODDIR/meta-overlayfs"
 ```
 
 #### Fitur Utama
@@ -371,7 +371,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 **Identifikasi sumber:**
 
 ```rust
-// Dari mm-overlayfs/src/mount.rs
+// Dari meta-overlayfs/src/mount.rs
 fsconfig_set_string(fs, "source", "KSU")?;  // DIPERLUKAN!
 ```
 
@@ -418,7 +418,7 @@ Tidak. Hanya satu metamodul yang dapat diinstal pada satu waktu. Ini mencegah ko
 
 Modul tidak akan lagi dipasang. Perangkat Anda akan boot secara normal, tetapi modifikasi modul tidak akan diterapkan hingga Anda menginstal metamodul lain.
 
-### Apakah mm-overlayfs diperlukan?
+### Apakah meta-overlayfs diperlukan?
 
 Tidak. Ini menyediakan pemasangan overlayfs standar yang kompatibel dengan sebagian besar modul. Anda dapat membuat metamodul Anda sendiri jika Anda memerlukan perilaku yang berbeda.
 

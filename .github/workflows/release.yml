@@ -18,8 +18,8 @@ jobs:
   build-arcvm-kernel:
     uses: ./.github/workflows/build-kernel-arcvm.yml
     secrets: inherit
-  build-mm-overlayfs:
-    uses: ./.github/workflows/mm-overlay.yml
+  build-meta-overlayfs:
+    uses: ./.github/workflows/meta-overlay.yml
     secrets: inherit
   release:
     needs:
@@ -27,7 +27,7 @@ jobs:
       - build-gki-image
       - build-wsa-kernel
       - build-arcvm-kernel
-      - build-mm-overlayfs
+      - build-meta-overlayfs
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -87,4 +87,4 @@ jobs:
             kernel-WSA*.zip
             kernel-ARCVM*.zip
             ksud/ksud-*
-            mm-overlayfs/mm-overlayfs-*.zip
+            meta-overlayfs/meta-overlayfs-*.zip

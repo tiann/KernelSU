@@ -11,7 +11,7 @@
 **主要特征:**
 
 - **基础设施角色**: 元模块提供常规模块依赖的服务
-- **单实例**: 一次只能安装一个元模块
+- **单实例**: 只允许一个元模块处于运行状态
 - **优先执行**: 元模块脚本在常规模块脚本之前运行
 - **特殊钩子**: 提供三个用于安装、挂载和清理的钩子脚本
 
@@ -29,8 +29,8 @@
 **挂载灵活性:**
 
 - **无挂载**: 对于仅使用无挂载模块的用户，完全避免挂载开销
-- **OverlayFS 挂载**: 传统方法，支持读写层(通过 `mm-overlayfs`)
-- **魔术挂载**: Magisk 兼容挂载，以获得更好的应用兼容性
+- **OverlayFS 挂载**: 传统方法，支持读写层(通过 `meta-overlayfs`)
+- **Magic Mount**: Magisk 兼容挂载，以获得更好的应用兼容性
 - **自定义实现**: 基于 FUSE 的 overlayfs、自定义 VFS 挂载或全新方法
 
 **超越挂载:**
@@ -40,7 +40,7 @@
 - **定制化**: 为特定设备或用例创建专门的解决方案
 
 ::: warning 重要
-如果没有安装元模块，模块将**不会**被挂载。新安装的 KernelSU 需要安装元模块(如 `mm-overlayfs`)才能使模块正常工作。
+如果没有安装元模块，依赖挂载的模块，其挂载功能将不会生效。新安装的 KernelSU 需要安装元模块(如 `meta-overlayfs`)才能使模块正常工作。
 :::
 
 ## 对于用户
@@ -49,13 +49,13 @@
 
 像安装常规模块一样安装元模块:
 
-1. 下载元模块 ZIP 文件(例如 `mm-overlayfs.zip`)
+1. 下载元模块 ZIP 文件(例如 `meta-overlayfs.zip`)
 2. 打开 KernelSU Manager 应用
 3. 点击浮动操作按钮(➕)
 4. 选择元模块 ZIP 文件
 5. 重启设备
 
-`mm-overlayfs` 元模块是官方参考实现，提供传统的基于 overlayfs 的模块挂载，支持 ext4 镜像。
+`meta-overlayfs` 元模块是官方参考实现，提供传统的基于 overlayfs 的模块挂载，支持读写系统分区。
 
 ### 检查活动的元模块
 
@@ -75,11 +75,11 @@
 4. 确认操作
 5. 重启设备
 
-卸载后，如果您希望模块继续工作，应该安装另一个元模块。
+卸载后，如果您需要元模块的功能，应该安装另一个元模块。
 
 ### 单元模块约束
 
-一次只能安装一个元模块。如果您尝试安装第二个元模块，KernelSU 将阻止安装以避免冲突。
+只允许一个元模块处于运行状态。如果您尝试安装第二个元模块，KernelSU 将阻止安装以避免冲突。
 
 切换元模块的步骤:
 
@@ -92,7 +92,7 @@
 
 ## 对于模块开发者
 
-如果您正在开发常规 KernelSU 模块，您不需要太担心元模块。只要用户安装了兼容的元模块(如 `mm-overlayfs`)，您的模块就能正常工作。
+如果您正在开发常规 KernelSU 模块，您不需要太担心元模块。只要用户安装了兼容的元模块(如 `meta-overlayfs`)，您的模块就能正常工作。
 
 **您需要知道的:**
 
@@ -112,7 +112,7 @@
 元模块通过 `module.prop` 中的特殊属性来识别:
 
 ```txt
-id=my_metamodule
+id=meta-example
 name=My Custom Metamodule
 version=1.0
 versionCode=1
@@ -128,7 +128,7 @@ metamodule=1
 元模块结构:
 
 ```txt
-my_metamodule/
+meta-example/
 ├── module.prop              (必须包含 metamodule=1)
 │
 │      *** 元模块特定钩子 ***
@@ -142,7 +142,6 @@ my_metamodule/
 ├── service.sh               (late_start service 脚本)
 ├── boot-completed.sh        (启动完成脚本)
 ├── uninstall.sh             (元模块自己的卸载脚本)
-├── system/                  (无系统修改，如果需要)
 └── [任何其他文件]
 ```
 
@@ -156,11 +155,11 @@ my_metamodule/
 
 **目的**: 控制启动期间模块的挂载方式。
 
-**执行时机**: 在 `post-fs-data` 阶段，在任何模块脚本运行之前。
+**执行时机**: 参考 [执行顺序](#execution-order)
 
 **环境变量:**
 
-- `MODDIR`: 元模块的目录路径(例如 `/data/adb/modules/my_metamodule`)
+- `MODDIR`: 元模块的目录路径(例如 `/data/adb/modules/meta-example`)
 - 所有标准 KernelSU 环境变量
 
 **职责:**
@@ -210,7 +209,7 @@ done
 
 **目的**: 自定义常规模块的安装方式。
 
-**执行时机**: 在模块安装期间，文件提取后但安装完成前。此脚本被内置安装程序**引用**(而非执行)，类似于 `customize.sh` 的工作方式。
+**执行时机**: 在模块安装期间，文件提取后但安装完成前。此脚本被内置安装程序**source**(而非执行)，类似于 `customize.sh` 的工作方式。
 
 **环境变量和函数:**
 
@@ -265,14 +264,14 @@ if [ -d "$IMG_MNT/$MODULE_ID" ]; then
 fi
 ```
 
-### 执行顺序
+### 执行顺序 {#execution-order}
 
 了解启动执行顺序对于元模块开发至关重要:
 
 ```txt
 post-fs-data 阶段:
   1. 执行通用 post-fs-data.d 脚本
-  2. 修剪模块，restorecon，加载 sepolicy.rule
+  2. restorecon，加载 sepolicy.rule
   3. 执行元模块的 post-fs-data.sh(如果存在)
   4. 执行常规模块的 post-fs-data.sh
   5. 加载 system.prop
@@ -317,13 +316,13 @@ boot-completed 阶段:
 - 轻松检测活动元模块
 - 简化配置
 
-### 真实示例: mm-overlayfs
+### 真实示例: meta-overlayfs
 
-`mm-overlayfs` 元模块是官方参考实现。它展示了元模块开发的最佳实践。
+`meta-overlayfs` 元模块是官方参考实现。它展示了元模块开发的最佳实践。
 
 #### 架构
 
-`mm-overlayfs` 使用**双目录架构**:
+`meta-overlayfs` 使用**双目录架构**:
 
 1. **元数据目录**: `/data/adb/modules/`
    - 包含 `module.prop`、`disable`、`skip_mount` 标记
@@ -337,7 +336,7 @@ boot-completed 阶段:
 
 #### metamount.sh 实现
 
-以下是 `mm-overlayfs` 如何实现挂载处理程序:
+以下是 `meta-overlayfs` 如何实现挂载处理程序:
 
 ```sh
 #!/system/bin/sh
@@ -357,7 +356,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 
 # 执行挂载二进制文件
 # (实际挂载逻辑在 Rust 二进制文件中)
-"$MODDIR/mm-overlayfs"
+"$MODDIR/meta-overlayfs"
 ```
 
 #### 主要特性
@@ -371,7 +370,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 **源标识:**
 
 ```rust
-// 来自 mm-overlayfs/src/mount.rs
+// 来自 meta-overlayfs/src/mount.rs
 fsconfig_set_string(fs， "source"， "KSU")?;  // 必需!
 ```
 
@@ -418,7 +417,7 @@ fsconfig_set_string(fs， "source"， "KSU")?;  // 必需!
 
 模块将不再被挂载。您的设备将正常启动，但模块修改将不会应用，直到您安装另一个元模块。
 
-### mm-overlayfs 是必需的吗?
+### meta-overlayfs 是必需的吗?
 
 不是。它提供与大多数模块兼容的标准 overlayfs 挂载。如果您需要不同的行为，可以创建自己的元模块。
 

@@ -29,7 +29,7 @@ Soluções root tradicionais incorporam a lógica de montagem em seu núcleo, to
 **Flexibilidade de montagem:**
 
 - **Sem montagem**: Para usuários com módulos somente sem montagem, evite completamente a sobrecarga de montagem
-- **Montagem OverlayFS**: Abordagem tradicional com suporte a camada de leitura-escrita (via `mm-overlayfs`)
+- **Montagem OverlayFS**: Abordagem tradicional com suporte a camada de leitura-escrita (via `meta-overlayfs`)
 - **Magic mount**: Montagem compatível com Magisk para melhor compatibilidade de aplicativos
 - **Implementações personalizadas**: Sobreposições baseadas em FUSE, montagens VFS personalizadas ou abordagens totalmente novas
 
@@ -40,7 +40,7 @@ Soluções root tradicionais incorporam a lógica de montagem em seu núcleo, to
 - **Personalização**: Crie soluções especializadas para dispositivos ou casos de uso específicos
 
 ::: warning IMPORTANTE
-Sem um metamódulo instalado, os módulos **NÃO** serão montados. Instalações novas do KernelSU requerem a instalação de um metamódulo (como `mm-overlayfs`) para que os módulos funcionem.
+Sem um metamódulo instalado, os módulos **NÃO** serão montados. Instalações novas do KernelSU requerem a instalação de um metamódulo (como `meta-overlayfs`) para que os módulos funcionem.
 :::
 
 ## Para Usuários
@@ -49,13 +49,13 @@ Sem um metamódulo instalado, os módulos **NÃO** serão montados. Instalaçõe
 
 Instale um metamódulo da mesma forma que módulos regulares:
 
-1. Baixe o arquivo ZIP do metamódulo (por exemplo, `mm-overlayfs.zip`)
+1. Baixe o arquivo ZIP do metamódulo (por exemplo, `meta-overlayfs.zip`)
 2. Abra o aplicativo KernelSU Manager
 3. Toque no botão de ação flutuante (➕)
 4. Selecione o arquivo ZIP do metamódulo
 5. Reinicie seu dispositivo
 
-O metamódulo `mm-overlayfs` é a implementação de referência oficial que fornece montagem de módulos baseada em overlayfs tradicional com suporte a imagem ext4.
+O metamódulo `meta-overlayfs` é a implementação de referência oficial que fornece montagem de módulos baseada em overlayfs tradicional com suporte a imagem ext4.
 
 ### Verificando o Metamódulo Ativo
 
@@ -92,7 +92,7 @@ Para trocar metamódulos:
 
 ## Para Desenvolvedores de Módulos
 
-Se você está desenvolvendo módulos KernelSU regulares, não precisa se preocupar muito com metamódulos. Seus módulos funcionarão desde que os usuários tenham um metamódulo compatível (como `mm-overlayfs`) instalado.
+Se você está desenvolvendo módulos KernelSU regulares, não precisa se preocupar muito com metamódulos. Seus módulos funcionarão desde que os usuários tenham um metamódulo compatível (como `meta-overlayfs`) instalado.
 
 **O que você precisa saber:**
 
@@ -317,13 +317,13 @@ Isso fornece um caminho estável para acessar o metamódulo ativo, independentem
 - Detecção fácil do metamódulo ativo
 - Simplifica a configuração
 
-### Exemplo do Mundo Real: mm-overlayfs
+### Exemplo do Mundo Real: meta-overlayfs
 
-O metamódulo `mm-overlayfs` é a implementação de referência oficial. Ele demonstra as melhores práticas para desenvolvimento de metamódulos.
+O metamódulo `meta-overlayfs` é a implementação de referência oficial. Ele demonstra as melhores práticas para desenvolvimento de metamódulos.
 
 #### Arquitetura
 
-`mm-overlayfs` usa uma **arquitetura de diretório duplo**:
+`meta-overlayfs` usa uma **arquitetura de diretório duplo**:
 
 1. **Diretório de metadados**: `/data/adb/modules/`
    - Contém `module.prop`, `disable`, marcadores `skip_mount`
@@ -337,7 +337,7 @@ O metamódulo `mm-overlayfs` é a implementação de referência oficial. Ele de
 
 #### Implementação do metamount.sh
 
-Veja como `mm-overlayfs` implementa o manipulador de montagem:
+Veja como `meta-overlayfs` implementa o manipulador de montagem:
 
 ```sh
 #!/system/bin/sh
@@ -357,7 +357,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 
 # Executar binário de montagem
 # (A lógica de montagem real está em um binário Rust)
-"$MODDIR/mm-overlayfs"
+"$MODDIR/meta-overlayfs"
 ```
 
 #### Recursos Principais
@@ -371,7 +371,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 **Identificação de origem:**
 
 ```rust
-// De mm-overlayfs/src/mount.rs
+// De meta-overlayfs/src/mount.rs
 fsconfig_set_string(fs, "source", "KSU")?;  // OBRIGATÓRIO!
 ```
 
@@ -418,7 +418,7 @@ Não. Apenas um metamódulo pode ser instalado por vez. Isso evita conflitos e g
 
 Os módulos não serão mais montados. Seu dispositivo inicializará normalmente, mas as modificações dos módulos não serão aplicadas até que você instale outro metamódulo.
 
-### O mm-overlayfs é obrigatório?
+### O meta-overlayfs é obrigatório?
 
 Não. Ele fornece montagem overlayfs padrão compatível com a maioria dos módulos. Você pode criar seu próprio metamódulo se precisar de comportamento diferente.
 

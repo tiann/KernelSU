@@ -1,5 +1,5 @@
 [package]
-name = "overlayfs-metamodule"
+name = "meta-overlayfs"
 version = "1.0.0"
 edition = "2024"
 authors = ["KernelSU Developers"]

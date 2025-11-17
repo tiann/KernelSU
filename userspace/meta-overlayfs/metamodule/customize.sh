@@ -9,13 +9,13 @@ ui_print "- Detected ABI: $ABI"
 # Select the correct binary based on architecture
 case "$ABI" in
     arm64-v8a)
-        ARCH_BINARY="mm-overlayfs-aarch64"
-        REMOVE_BINARY="mm-overlayfs-x86_64"
+        ARCH_BINARY="meta-overlayfs-aarch64"
+        REMOVE_BINARY="meta-overlayfs-x86_64"
         ui_print "- Selected architecture: ARM64"
         ;;
     x86_64)
-        ARCH_BINARY="mm-overlayfs-x86_64"
-        REMOVE_BINARY="mm-overlayfs-aarch64"
+        ARCH_BINARY="meta-overlayfs-x86_64"
+        REMOVE_BINARY="meta-overlayfs-aarch64"
         ui_print "- Selected architecture: x86_64"
         ;;
     *)
@@ -28,16 +28,16 @@ if [ ! -f "$MODPATH/$ARCH_BINARY" ]; then
     abort "! Binary not found: $ARCH_BINARY"
 fi
 
-ui_print "- Installing $ARCH_BINARY as mm-overlayfs"
+ui_print "- Installing $ARCH_BINARY as meta-overlayfs"
 
 # Rename the selected binary to the generic name
-mv "$MODPATH/$ARCH_BINARY" "$MODPATH/mm-overlayfs" || abort "! Failed to rename binary"
+mv "$MODPATH/$ARCH_BINARY" "$MODPATH/meta-overlayfs" || abort "! Failed to rename binary"
 
 # Remove the unused binary
 rm -f "$MODPATH/$REMOVE_BINARY"
 
 # Ensure the binary is executable
-chmod 755 "$MODPATH/mm-overlayfs" || abort "! Failed to set permissions"
+chmod 755 "$MODPATH/meta-overlayfs" || abort "! Failed to set permissions"
 
 ui_print "- Architecture-specific binary installed successfully"
 

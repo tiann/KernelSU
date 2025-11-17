@@ -29,7 +29,7 @@ Traditional root solutions bake mounting logic into their core, making them easi
 **Mounting flexibility:**
 
 - **No mounting**: For users with mountless-only modules, avoid mounting overhead entirely
-- **OverlayFS mounting**: Traditional approach with read-write layer support (via `mm-overlayfs`)
+- **OverlayFS mounting**: Traditional approach with read-write layer support (via `meta-overlayfs`)
 - **Magic mount**: Magisk-compatible mounting for better app compatibility
 - **Custom implementations**: FUSE-based overlays, custom VFS mounts, or entirely new approaches
 
@@ -40,7 +40,7 @@ Traditional root solutions bake mounting logic into their core, making them easi
 - **Customization**: Create specialized solutions for specific devices or use cases
 
 ::: warning IMPORTANT
-Without a metamodule installed, modules will **NOT** be mounted. Fresh KernelSU installations require installing a metamodule (such as `mm-overlayfs`) for modules to function.
+Without a metamodule installed, modules will **NOT** be mounted. Fresh KernelSU installations require installing a metamodule (such as `meta-overlayfs`) for modules to function.
 :::
 
 ## For Users
@@ -49,13 +49,13 @@ Without a metamodule installed, modules will **NOT** be mounted. Fresh KernelSU 
 
 Install a metamodule the same way as regular modules:
 
-1. Download the metamodule ZIP file (e.g., `mm-overlayfs.zip`)
+1. Download the metamodule ZIP file (e.g., `meta-overlayfs.zip`)
 2. Open KernelSU Manager app
 3. Tap the floating action button (➕)
 4. Select the metamodule ZIP file
 5. Reboot your device
 
-The `mm-overlayfs` metamodule is the official reference implementation that provides traditional overlayfs-based module mounting with ext4 image support.
+The `meta-overlayfs` metamodule is the official reference implementation that provides traditional overlayfs-based module mounting with ext4 image support.
 
 ### Checking Active Metamodule
 
@@ -92,7 +92,7 @@ To switch metamodules:
 
 ## For Module Developers
 
-If you're developing regular KernelSU modules, you don't need to worry much about metamodules. Your modules will work as long as users have a compatible metamodule installed (like `mm-overlayfs`).
+If you're developing regular KernelSU modules, you don't need to worry much about metamodules. Your modules will work as long as users have a compatible metamodule installed (like `meta-overlayfs`).
 
 **What you need to know:**
 
@@ -112,7 +112,7 @@ Creating a metamodule allows you to customize how KernelSU handles module instal
 A metamodule is identified by a special property in its `module.prop`:
 
 ```txt
-id=my_metamodule
+id=meta-example
 name=My Custom Metamodule
 version=1.0
 versionCode=1
@@ -121,14 +121,17 @@ description=Custom module mounting implementation
 metamodule=1
 ```
 
-The `metamodule=1` (or `metamodule=true`) property marks this as a metamodule. Without this property, the module will be treated as a regular module.
+**Key requirements:**
+
+- The `metamodule=1` (or `metamodule=true`) property marks this as a metamodule. Without this property, the module will be treated as a regular module.
+- **Naming convention**: It is strongly recommended to name your metamodule ID starting with `meta-` (e.g., `meta-overlayfs`, `meta-magicmount`, `meta-custom`). This helps users easily identify metamodules and prevents naming conflicts with regular modules.
 
 ### File Structure
 
 A metamodule structure:
 
 ```txt
-my_metamodule/
+meta-example/
 ├── module.prop              (must include metamodule=1)
 │
 │      *** Metamodule-specific hooks ***
@@ -142,7 +145,6 @@ my_metamodule/
 ├── service.sh               (late_start service script)
 ├── boot-completed.sh        (boot completed script)
 ├── uninstall.sh             (metamodule's own uninstallation script)
-├── system/                  (systemless modifications, if needed)
 └── [any additional files]
 ```
 
@@ -156,11 +158,11 @@ Metamodules can provide up to three special hook scripts:
 
 **Purpose**: Controls how modules are mounted during boot.
 
-**When executed**: During the `post-fs-data` stage, before any module scripts run.
+**When executed**: [Execution Order](#execution-order) below.
 
 **Environment variables:**
 
-- `MODDIR`: The metamodule's directory path (e.g., `/data/adb/modules/my_metamodule`)
+- `MODDIR`: The metamodule's directory path (e.g., `/data/adb/modules/meta-example`)
 - All standard KernelSU environment variables
 
 **Responsibilities:**
@@ -265,7 +267,7 @@ if [ -d "$IMG_MNT/$MODULE_ID" ]; then
 fi
 ```
 
-### Execution Order
+### Execution Order {#execution-order}
 
 Understanding the boot execution order is crucial for metamodule development:
 
@@ -317,13 +319,13 @@ This provides a stable path for accessing the active metamodule, regardless of i
 - Easy detection of active metamodule
 - Simplifies configuration
 
-### Real-World Example: mm-overlayfs
+### Real-World Example: meta-overlayfs
 
-The `mm-overlayfs` metamodule is the official reference implementation. It demonstrates best practices for metamodule development.
+The `meta-overlayfs` metamodule is the official reference implementation. It demonstrates best practices for metamodule development.
 
 #### Architecture
 
-`mm-overlayfs` uses a **dual-directory architecture**:
+`meta-overlayfs` uses a **dual-directory architecture**:
 
 1. **Metadata directory**: `/data/adb/modules/`
    - Contains `module.prop`, `disable`, `skip_mount` markers
@@ -337,7 +339,7 @@ The `mm-overlayfs` metamodule is the official reference implementation. It demon
 
 #### metamount.sh Implementation
 
-Here's how `mm-overlayfs` implements the mount handler:
+Here's how `meta-overlayfs` implements the mount handler:
 
 ```sh
 #!/system/bin/sh
@@ -357,7 +359,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 
 # Execute the mount binary
 # (The actual mounting logic is in a Rust binary)
-"$MODDIR/mm-overlayfs"
+"$MODDIR/meta-overlayfs"
 ```
 
 #### Key Features
@@ -371,7 +373,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 **Source identification:**
 
 ```rust
-// From mm-overlayfs/src/mount.rs
+// From meta-overlayfs/src/mount.rs
 fsconfig_set_string(fs, "source", "KSU")?;  // REQUIRED!
 ```
 
@@ -418,7 +420,7 @@ No. Only one metamodule can be installed at a time. This prevents conflicts and 
 
 Modules will no longer be mounted. Your device will boot normally, but module modifications won't apply until you install another metamodule.
 
-### Is mm-overlayfs required?
+### Is meta-overlayfs required?
 
 No. It provides standard overlayfs mounting compatible with most modules. You can create your own metamodule if you need different behavior.
 

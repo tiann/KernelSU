@@ -29,7 +29,7 @@
 **掛載靈活性:**
 
 - **無掛載**: 對於僅使用無掛載模組的使用者,完全避免掛載開銷
-- **OverlayFS 掛載**: 傳統方法,支援讀寫層(透過 `mm-overlayfs`)
+- **OverlayFS 掛載**: 傳統方法,支援讀寫層(透過 `meta-overlayfs`)
 - **魔術掛載**: Magisk 相容掛載,以獲得更好的應用程式相容性
 - **自訂實作**: 基於 FUSE 的覆蓋層、自訂 VFS 掛載或全新方法
 
@@ -40,7 +40,7 @@
 - **客製化**: 為特定裝置或用例建立專門的解決方案
 
 ::: warning 重要
-如果沒有安裝元模組,模組將**不會**被掛載。新安裝的 KernelSU 需要安裝元模組(如 `mm-overlayfs`)才能使模組正常運作。
+如果沒有安裝元模組,模組將**不會**被掛載。新安裝的 KernelSU 需要安裝元模組(如 `meta-overlayfs`)才能使模組正常運作。
 :::
 
 ## 對於使用者
@@ -49,13 +49,13 @@
 
 像安裝常規模組一樣安裝元模組:
 
-1. 下載元模組 ZIP 檔案(例如 `mm-overlayfs.zip`)
+1. 下載元模組 ZIP 檔案(例如 `meta-overlayfs.zip`)
 2. 開啟 KernelSU Manager 應用程式
 3. 點擊浮動操作按鈕(➕)
 4. 選擇元模組 ZIP 檔案
 5. 重新啟動裝置
 
-`mm-overlayfs` 元模組是官方參考實作,提供傳統的基於 overlayfs 的模組掛載,支援 ext4 映像。
+`meta-overlayfs` 元模組是官方參考實作,提供傳統的基於 overlayfs 的模組掛載,支援 ext4 映像。
 
 ### 檢查活動的元模組
 
@@ -92,7 +92,7 @@
 
 ## 對於模組開發者
 
-如果您正在開發常規 KernelSU 模組,您不需要太擔心元模組。只要使用者安裝了相容的元模組(如 `mm-overlayfs`),您的模組就能正常運作。
+如果您正在開發常規 KernelSU 模組,您不需要太擔心元模組。只要使用者安裝了相容的元模組(如 `meta-overlayfs`),您的模組就能正常運作。
 
 **您需要知道的:**
 
@@ -317,13 +317,13 @@ boot-completed 階段:
 - 輕鬆偵測活動元模組
 - 簡化設定
 
-### 真實範例: mm-overlayfs
+### 真實範例: meta-overlayfs
 
-`mm-overlayfs` 元模組是官方參考實作。它展示了元模組開發的最佳實踐。
+`meta-overlayfs` 元模組是官方參考實作。它展示了元模組開發的最佳實踐。
 
 #### 架構
 
-`mm-overlayfs` 使用**雙目錄架構**:
+`meta-overlayfs` 使用**雙目錄架構**:
 
 1. **中繼資料目錄**: `/data/adb/modules/`
    - 包含 `module.prop`、`disable`、`skip_mount` 標記
@@ -337,7 +337,7 @@ boot-completed 階段:
 
 #### metamount.sh 實作
 
-以下是 `mm-overlayfs` 如何實作掛載處理程式:
+以下是 `meta-overlayfs` 如何實作掛載處理程式:
 
 ```sh
 #!/system/bin/sh
@@ -357,7 +357,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 
 # 執行掛載二進位檔案
 # (實際掛載邏輯在 Rust 二進位檔案中)
-"$MODDIR/mm-overlayfs"
+"$MODDIR/meta-overlayfs"
 ```
 
 #### 主要特性
@@ -371,7 +371,7 @@ export MODULE_CONTENT_DIR="$MNT_DIR"
 **來源識別:**
 
 ```rust
-// 來自 mm-overlayfs/src/mount.rs
+// 來自 meta-overlayfs/src/mount.rs
 fsconfig_set_string(fs, "source", "KSU")?;  // 必需!
 ```
 
@@ -418,7 +418,7 @@ fsconfig_set_string(fs, "source", "KSU")?;  // 必需!
 
 模組將不再被掛載。您的裝置將正常啟動,但模組修改將不會套用,直到您安裝另一個元模組。
 
-### mm-overlayfs 是必需的嗎?
+### meta-overlayfs 是必需的嗎?
 
 不是。它提供與大多數模組相容的標準 overlayfs 掛載。如果您需要不同的行為,可以建立自己的元模組。
 
