@@ -1,5 +1,3 @@
-#include "supercalls.h"
-
 #include <linux/anon_inodes.h>
 #include <linux/capability.h>
 #include <linux/cred.h>
@@ -14,6 +12,7 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
+#include "supercalls.h"
 #include "arch.h"
 #include "allowlist.h"
 #include "feature.h"
@@ -448,6 +447,36 @@ static int do_manage_mark(void __user *arg)
     return 0;
 }
 
+static int do_nuke_ext4_sysfs(void __user *arg)
+{
+    struct ksu_nuke_ext4_sysfs_cmd cmd;
+    char mnt[256];
+    long ret;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd)))
+        return -EFAULT;
+
+    if (!cmd.arg)
+        return -EINVAL;
+
+    memset(mnt, 0, sizeof(mnt));
+
+    ret = strncpy_from_user(mnt, cmd.arg, sizeof(mnt));
+    if (ret < 0) {
+        pr_err("nuke ext4 copy mnt failed: %ld\\n", ret);
+        return -EFAULT;   // 或者 return ret;
+    }
+
+    if (ret == sizeof(mnt)) {
+        pr_err("nuke ext4 mnt path too long\\n");
+        return -ENAMETOOLONG;
+    }
+
+    pr_info("do_nuke_ext4_sysfs: %s\n", mnt);
+
+    return nuke_ext4_sysfs(mnt);
+}
+
 // IOCTL handlers mapping table
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GRANT_ROOT, .name = "GRANT_ROOT", .handler = do_grant_root, .perm_check = allowed_for_su },
@@ -466,6 +495,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_SET_FEATURE, .name = "SET_FEATURE", .handler = do_set_feature, .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_GET_WRAPPER_FD, .name = "GET_WRAPPER_FD", .handler = do_get_wrapper_fd, .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_MANAGE_MARK, .name = "MANAGE_MARK", .handler = do_manage_mark, .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_NUKE_EXT4_SYSFS, .name = "NUKE_EXT4_SYSFS", .handler = do_nuke_ext4_sysfs, .perm_check = manager_or_root },
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
