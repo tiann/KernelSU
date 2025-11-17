@@ -324,12 +324,19 @@ fn _install_module(zip: &str) -> Result<()> {
                 .unwrap_or_else(|| "unknown".to_string());
 
             if existing_id != module_id {
-                bail!(
-                    "A metamodule is already installed: {}\n\
-                         Please uninstall it first using: ksud module uninstall {}",
-                    existing_id,
-                    existing_id
-                );
+                println!("\n❌ Installation Failed");
+                println!("┌────────────────────────────────");
+                println!("│ A metamodule is already installed");
+                println!("│   Current metamodule: {}", existing_id);
+                println!("│");
+                println!("│ Only one metamodule can be active at a time.");
+                println!("│");
+                println!("│ To install this metamodule:");
+                println!("│   1. Uninstall the current metamodule");
+                println!("│   2. Reboot your device");
+                println!("│   3. Install the new metamodule");
+                println!("└─────────────────────────────────\n");
+                bail!("Cannot install multiple metamodules");
             }
         }
     }
