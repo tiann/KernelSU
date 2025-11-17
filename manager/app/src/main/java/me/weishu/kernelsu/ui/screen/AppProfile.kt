@@ -7,7 +7,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,7 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Security
@@ -39,12 +39,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -65,6 +63,7 @@ import me.weishu.kernelsu.ui.component.profile.TemplateConfig
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
+import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.pickPrimary
 import me.weishu.kernelsu.ui.util.restartApp
@@ -164,7 +163,7 @@ fun AppProfileScreen(
                         AppIconImage(
                             packageInfo = iconApp.packageInfo,
                             label = iconApp.label,
-                            modifier = Modifier.size(56.dp)
+                            modifier = Modifier.size(54.dp)
                         )
                     },
                     appUid = appInfo.uid,
@@ -240,6 +239,8 @@ private fun AppProfileInner(
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = profile.allowSu
+    val userId = appUid / 100000
+    val appId = appUid % 100000
 
     Column(
         modifier = modifier
@@ -249,87 +250,95 @@ private fun AppProfileInner(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
+            insideMargin = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Row(
-                modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 appIcon()
                 Column(
                     modifier = Modifier
-                        .padding(start = 14.dp, end = 8.dp)
+                        .padding(start = 16.dp, end = 8.dp)
                         .weight(1f),
                 ) {
                     Text(
                         text = appLabel,
                         color = colorScheme.onSurface,
-                        fontWeight = FontWeight(500),
-                        maxLines = 1,
-                        softWrap = false,
-                        overflow = TextOverflow.Clip,
+                        fontWeight = FontWeight(550),
                         modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .clipToBounds()
+                            .basicMarquee(),
+                        maxLines = 1,
+                        softWrap = false
                     )
                     if (!isUidGroup) {
                         Text(
                             text = "$appVersionName ($appVersionCode)",
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             color = colorScheme.onSurfaceVariantSummary,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Clip,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
-                                .horizontalScroll(rememberScrollState())
-                                .clipToBounds()
+                                .basicMarquee(),
+                            maxLines = 1,
+                            softWrap = false
                         )
                         Text(
                             text = packageName,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             color = colorScheme.onSurfaceVariantSummary,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Clip,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
-                                .horizontalScroll(rememberScrollState())
-                                .clipToBounds()
+                                .basicMarquee(),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     } else {
                         if (sharedUserId.isNotEmpty()) {
                             Text(
                                 text = sharedUserId,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 color = colorScheme.onSurfaceVariantSummary,
-                                maxLines = 1,
-                                softWrap = false,
-                                overflow = TextOverflow.Clip,
+                                fontWeight = FontWeight.Medium,
                                 modifier = Modifier
-                                    .horizontalScroll(rememberScrollState())
-                                    .clipToBounds()
+                                    .basicMarquee(),
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                         Text(
                             text = stringResource(R.string.group_contains_apps, affectedApps.size),
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             color = colorScheme.onSurfaceVariantSummary,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Clip,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
-                                .horizontalScroll(rememberScrollState())
-                                .clipToBounds()
+                                .basicMarquee(),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
                 Column(
                     modifier = Modifier,
                     horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    StatusTag(
-                        label = appUid.toString(),
-                        backgroundColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
-                    )
+                    if (userId != 0) {
+                        StatusTag(
+                            label = "USER $userId",
+                            backgroundColor = colorScheme.primary.copy(alpha = 0.8f),
+                            contentColor = colorScheme.onPrimary
+                        )
+                        StatusTag(
+                            label = "UID $appId",
+                            backgroundColor = colorScheme.primary.copy(alpha = 0.8f),
+                            contentColor = colorScheme.onPrimary
+                        )
+                    } else {
+                        StatusTag(
+                            label = "UID $appUid",
+                            backgroundColor = colorScheme.primary.copy(alpha = 0.8f),
+                            contentColor = colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
@@ -367,19 +376,51 @@ private fun AppProfileInner(
         }
         val nonRootMode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
         val dropdownMode = if (isRootGranted) rootMode else nonRootMode
-        ProfileBox(dropdownMode, isRootGranted) {
+        ProfileBox(dropdownMode, isRootGranted) { mode ->
             if (isRootGranted) {
-                if (it == Mode.Default || it == Mode.Custom) {
-                    onProfileChange(
-                        profile.copy(
-                            rootUseDefault = it == Mode.Default,
-                            rootTemplate = null
+                when (mode) {
+                    Mode.Default, Mode.Custom -> {
+                        onProfileChange(
+                            profile.copy(
+                                rootUseDefault = mode == Mode.Default,
+                                rootTemplate = null
+                            )
                         )
-                    )
+                        rootMode = mode
+                    }
+
+                    Mode.Template -> {
+                        val templates = listAppProfileTemplates()
+                        if (templates.isNotEmpty()) {
+                            val selected = profile.rootTemplate ?: templates[0]
+                            val info = getTemplateInfoById(selected)
+                            if (info != null && setSepolicy(selected, info.rules.joinToString("\n"))) {
+                                onProfileChange(
+                                    profile.copy(
+                                        rootUseDefault = false,
+                                        rootTemplate = selected,
+                                        uid = info.uid,
+                                        gid = info.gid,
+                                        groups = info.groups,
+                                        capabilities = info.capabilities,
+                                        context = info.context,
+                                        namespace = info.namespace,
+                                    )
+                                )
+                            } else if (profile.rootTemplate != selected || profile.rootUseDefault) {
+                                onProfileChange(
+                                    profile.copy(
+                                        rootUseDefault = false,
+                                        rootTemplate = selected
+                                    )
+                                )
+                            }
+                            rootMode = Mode.Template
+                        }
+                    }
                 }
-                rootMode = it
             } else {
-                onProfileChange(profile.copy(nonRootUseDefault = (it == Mode.Default)))
+                onProfileChange(profile.copy(nonRootUseDefault = (mode == Mode.Default)))
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -465,13 +506,13 @@ private fun AppProfileInner(
                                 packageInfo = app.packageInfo,
                                 label = app.label,
                                 modifier = Modifier
-                                    .padding(end = 14.dp)
-                                    .size(36.dp)
+                                    .padding(end = 12.dp)
+                                    .size(40.dp)
                             )
                         },
                         title = app.label,
                         summary = app.packageName,
-                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                     )
                 }
                 Spacer(Modifier.height(3.dp))

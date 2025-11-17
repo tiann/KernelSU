@@ -19,10 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewAssetLoader
 import com.topjohnwu.superuser.Shell
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
@@ -54,8 +54,10 @@ class WebUIActivity : ComponentActivity() {
             }
         }
 
+        val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
+
         lifecycleScope.launch {
-            SuperUserViewModel.isAppListLoaded.first { it }
+            superUserViewModel.fetchAppList()
             setupWebView()
         }
     }
