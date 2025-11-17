@@ -95,6 +95,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.DropdownImpl
+import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -398,7 +399,7 @@ fun ModulePager(
                             }
                         }
                         IconButton(
-                            modifier = Modifier.padding(end = 16.dp),
+                            modifier = Modifier.padding(end = 8.dp),
                             onClick = { showTopPopup.value = true },
                             holdDownState = showTopPopup.value
                         ) {
@@ -408,6 +409,10 @@ fun ModulePager(
                                 contentDescription = stringResource(id = R.string.settings)
                             )
                         }
+                        RebootListPopup(
+                            modifier = Modifier.padding(end = 16.dp),
+                            alignment = PopupPositionProvider.Align.TopRight
+                        )
                     },
                     scrollBehavior = scrollBehavior
                 )
