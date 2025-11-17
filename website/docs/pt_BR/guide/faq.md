@@ -70,13 +70,3 @@ Não recomendamos que você modifique a partição do sistema diretamente. Por f
 ## KernelSU pode modificar hosts? Como posso usar AdAway?
 
 Claro. Mas o KernelSU não tem suporte a hosts integrados, você pode instalar um módulo como [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) para fazer isso.
-
-## Por que existe um enorme arquivo de 1 TB?
-
-O arquivo `modules.img` de 1 TB é um arquivo de imagem de disco. **Não se preocupe com seu tamanho**; ele é um tipo especial de arquivo conhecido como [arquivo esparso](https://en.wikipedia.org/wiki/Sparse_file). Seu tamanho real é apenas o tamanho do módulo que você usa e diminuirá dinamicamente após a exclusão do módulo. Na verdade, ele não ocupa 1 TB de espaço em disco (seu celular pode não ter tanto espaço).
-
-Se você realmente se incomodar com o tamanho desse arquivo, você pode usar o comando `resize2fs -M` para ajustá-lo ao tamanho real. Porém, o módulo pode não funcionar corretamente nesse caso, e não forneceremos suporte para isso.
-
-## Por que meu dispositivo mostra o tamanho de armazenamento errado?
-
-Certos dispositivos usam métodos não padrão para calcular o tamanho de armazenamento do dispositivo, o que pode levar a cálculos imprecisos nos apps e menus do sistema, especialmente ao lidar com arquivos esparsos de 1 TB. Embora esse problema pareça ser específico para os dispositivos Samsung, afetando principalmente os apps e serviços da Samsung, é importante observar que a discrepância está principalmente no tamanho total do armazenamento, enquanto o cálculo do espaço livre permanece preciso.

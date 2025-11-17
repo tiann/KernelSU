@@ -117,8 +117,6 @@
     <string name="install_inactive_slot_warning">อุปกรณ์ของคุณจะถูก **บังคับ** ให้บูตไปยังสล็อตที่ไม่ได้ใช้งานหลังจากรีบูต!
 \nโปรดใช้ตัวเลือกนี้หลังจาก OTA เสร็จแล้วเท่านั้น
 \nดำเนินการต่อหรือไม่?</string>
-    <string name="shrink_sparse_image">ลดความกระจายของอิมเมจ</string>
-    <string name="shrink_sparse_image_message">ปรับขนาดความกระจายของอิมเมจในโมดูลให้เป็นขนาดจริง โปรดทราบว่านี่อาจทำให้โมดูลทำงานผิดปกติ โปรดใช้เมื่อจำเป็นเท่านั้น (เช่น การสำรองข้อมูล)</string>
     <string name="settings_uninstall_permanent">ถอนการติดตั้งถาวร</string>
     <string name="settings_restore_stock_image">เรียกคืนอิมเมจดั้งเดิม</string>
     <string name="settings_uninstall_temporary_message">ถอนการติดตั้ง KernelSU ชั่วคราว จะคืนค่าเป็นสถานะดั้งเดิมหลังจากรีบูตในครั้งถัดไป</string>

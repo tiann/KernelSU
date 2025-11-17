@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.BugReport
-import androidx.compose.material.icons.rounded.Compress
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeleteForever
@@ -33,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -55,18 +53,14 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.SendLogDialog
 import me.weishu.kernelsu.ui.component.SuperDropdown
 import me.weishu.kernelsu.ui.component.UninstallDialog
-import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.execKsud
-import me.weishu.kernelsu.ui.util.shrinkModules
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -113,7 +107,6 @@ fun SettingPager(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val loadingDialog = rememberLoadingDialog()
-        val shrinkDialog = rememberConfirmDialog()
 
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val uninstallDialog = UninstallDialog(showUninstallDialog, navigator)
@@ -133,7 +126,6 @@ fun SettingPager(
         ) {
             item {
                 val context = LocalContext.current
-                val scope = rememberCoroutineScope()
                 val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                 var checkUpdate by rememberSaveable {
                     mutableStateOf(prefs.getBoolean("check_update", true))
@@ -427,35 +419,12 @@ fun SettingPager(
                     }
                 }
 
-                val shrink = stringResource(id = R.string.shrink_sparse_image)
                 KsuIsValid {
                     Card(
                         modifier = Modifier
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
-                        SuperArrow(
-                            title = shrink,
-                            leftAction = {
-                                Icon(
-                                    Icons.Rounded.Compress,
-                                    modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = shrink,
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            onClick = {
-                                scope.launch {
-                                    val result = shrinkDialog.awaitConfirm(title = shrink)
-                                    if (result == ConfirmResult.Confirmed) {
-                                        loadingDialog.withLoading {
-                                            shrinkModules()
-                                        }
-                                    }
-                                }
-                            },
-                        )
-
                         val lkmMode = Natives.isLkmMode
                         if (lkmMode) {
                             val uninstall = stringResource(id = R.string.settings_uninstall)

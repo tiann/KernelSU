@@ -118,8 +118,6 @@
     <string name="install_next">Próximo</string>
     <string name="select_file_tip">A imagem da partição %1$s é recomendada</string>
     <string name="select_kmi">Selecionar KMI</string>
-    <string name="shrink_sparse_image">Minimizar imagem esparsa</string>
-    <string name="shrink_sparse_image_message">Redimensione a imagem esparsa onde o módulo está localizado para seu tamanho real. Observe que isso pode fazer com que o módulo funcione de forma anormal, portanto, use-o somente quando necessário (como um backup).</string>
     <string name="settings_uninstall">Desinstalar</string>
     <string name="settings_uninstall_temporary">Desinstalar temporariamente</string>
     <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>

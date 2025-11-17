@@ -121,8 +121,6 @@
 \n Продолжить?</string>
     <string name="select_kmi">Выбрать KMI</string>
     <string name="select_file_tip">%1$s образ раздела рекомендуется</string>
-    <string name="shrink_sparse_image">Минимизировать разреженный образ</string>
-    <string name="shrink_sparse_image_message">Изменить размер разреженного образа в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте это только при необходимости (например, для резервного копирования).</string>
     <string name="settings_uninstall_temporary">Удалить на время</string>
     <string name="settings_uninstall_permanent_message">Удалить KernelSU (root и все модули) полностью.</string>
     <string name="settings_uninstall_permanent">Удалить полностью</string>

@@ -81,7 +81,6 @@
     <string name="save_log">로그 저장</string>
     <string name="module_changelog">업데이트 내역</string>
     <string name="enable_web_debugging_summary">WebUI 디버깅에 사용 가능, 필요한 경우에만 활성화하세요.</string>
-    <string name="shrink_sparse_image">Sparse 이미지 축소</string>
     <string name="flashing">플래싱 중</string>
     <string name="selected_lkm">선택된 LKM: %s</string>
     <string name="select_file_tip">%1$s 파티션 이미지가 권장됩니다</string>
@@ -90,7 +89,6 @@
     <string name="settings_uninstall_permanent_message">완전하고 영구적으로 KernelSU(루트 권한 및 모든 모듈)를 제거합니다.</string>
     <string name="enable_web_debugging">WebView 디버깅</string>
     <string name="require_kernel_version">현재 KernelSU %d 버전은 매니저가 정상 작동하기에 너무 낮습니다. %d 버전 이상으로 업그레이드하세요!</string>
-    <string name="shrink_sparse_image_message">모듈이 위치한 Sparse 이미지의 크기를 실제 크기로 조정합니다. 모듈이 비정상적으로 작동할 수 있으니, 필요한 경우에만 (예: 백업) 사용하세요.</string>
     <string name="action">액션</string>
     <string name="settings_uninstall_temporary">임시 제거</string>
     <string name="module_changelog_failed">업데이트 내역 불러오기 실패: %s</string>

@@ -120,7 +120,6 @@
     <string name="settings_uninstall_temporary">Temporär deinstallieren</string>
     <string name="settings_uninstall">Deinstallieren</string>
     <string name="settings_uninstall_permanent_message">KernelSU (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
-    <string name="shrink_sparse_image_message">Ändert die Größe des Sparse-Images, in dem sich das Modul befindet, auf seine tatsächliche Größe. Beachten Sie, dass dies dazu führen kann, dass das Modul nicht ordnungsgemäß funktioniert; verwenden Sie es daher nur, wenn es notwendig ist (Wie für ein Backup).</string>
     <string name="save_log">Protokolle Speichern</string>
     <string name="settings_uninstall_permanent">Permanent deinstallieren</string>
     <string name="settings_restore_stock_image">Standard-Abbild wiederherstellen</string>
@@ -130,7 +129,6 @@
     <string name="flash_success">Schreiben erfolgreich</string>
     <string name="flash_failed">Schreiben fehlgeschlagen</string>
     <string name="selected_lkm">Wähle LKM: %s</string>
-    <string name="shrink_sparse_image">Spärliches Bild minimieren</string>
     <string name="action">Aktion</string>
     <string name="log_saved">Protokolle gespeichert</string>
     <string name="module_install_prompt_with_name">Folgende Module werden installiert: %1$s</string>

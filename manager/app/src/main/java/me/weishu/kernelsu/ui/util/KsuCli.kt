@@ -231,10 +231,6 @@ fun uninstallPermanently(
     return FlashResult(result)
 }
 
-suspend fun shrinkModules(): Boolean = withContext(Dispatchers.IO) {
-    execKsud("module shrink", true)
-}
-
 @Parcelize
 sealed class LkmSelection : Parcelable {
     data class LkmUri(val uri: Uri) : LkmSelection()

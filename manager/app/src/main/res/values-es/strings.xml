@@ -123,10 +123,8 @@
     <string name="settings_uninstall_temporary">Desinstalar temporalmente</string>
     <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
     <string name="settings_uninstall_permanent_message">Desinstalar KernelSU (Root y todos los módulos) completa y permanentemente.</string>
-    <string name="shrink_sparse_image_message">Redimensiona la imagen dispersa donde se encuentra el módulo a su tamaño real. Tenga en cuenta que esto puede hacer que el módulo funcione de forma anormal, por lo que sólo debe utilizarlo cuando sea necesario (por ejemplo, para realizar copias de seguridad).</string>
     <string name="settings_check_update">Comprobar actualización</string>
     <string name="settings_check_update_summary">Comprobación automática de actualizaciones al abrir la aplicación</string>
-    <string name="shrink_sparse_image">Minimizar la imagen dispersa</string>
     <string name="enable_web_debugging_summary">Puede ser usado para depurar WebUI, por favor habilítalo sólo cuando sea necesario.</string>
     <string name="settings_restore_stock_image_message">Restaurar la imagen de fábrica stock (Si existe una copia de seguridad), por lo general se utiliza antes de OTA; si necesita desinstalar KernelSU, por favor, utilice \"Desinstalar permanentemente\".</string>
 </resources>

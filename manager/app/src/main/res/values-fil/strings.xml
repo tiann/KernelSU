@@ -122,8 +122,6 @@
     <string name="install_next">Susunod</string>
     <string name="select_file_tip">Inirerekomenda ang %1$s partition image</string>
     <string name="select_kmi">Pumili ng KMI</string>
-    <string name="shrink_sparse_image">Paliitin ang sparse image</string>
-    <string name="shrink_sparse_image_message">Baguhin ang laki ng sparse image kung saan matatagpuan ang module sa aktwal na laki nito. Tandaan na ito ay maaaring maging sanhi ng hindi normal na paggana ng module, kaya mangyaring gamitin lamang kung kinakailangan (gaya ng para sa backup).</string>
     <string name="settings_uninstall">I-uninstall</string>
     <string name="settings_uninstall_temporary">Pansamantalang i-uninstall</string>
     <string name="settings_uninstall_permanent">Permanenteng i-uninstall</string>

@@ -119,8 +119,6 @@
     <string name="module_changelog_failed">Pobranie dziennika zmian nie powiodło się: %s</string>
     <string name="settings_check_update">Wyszukaj aktualizacje</string>
     <string name="settings_check_update_summary">Wyszukuj aktualizacje automatycznie przy otwieraniu aplikacji.</string>
-    <string name="shrink_sparse_image">Minimalizuj rozrzedzony (sparse) obraz</string>
-    <string name="shrink_sparse_image_message">Zmienia rozmiar obrazu rozrzedzonego(sparse), w którym znajduje się moduł, do jego rzeczywistego rozmiaru. Należy pamiętać, że może to spowodować nieprawidłowe działanie modułu, więc należy go używać tylko wtedy, gdy jest to konieczne (np. do tworzenia kopii zapasowych).</string>
     <string name="settings_uninstall_permanent">Odinstaluj zupełnie</string>
     <string name="settings_restore_stock_image">Przywróć obraz fabryczny</string>
     <string name="settings_uninstall_temporary">Odinstaluj tymczasowo</string>

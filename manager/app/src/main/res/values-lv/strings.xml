@@ -128,8 +128,6 @@
     <string name="flashing">Instalē</string>
     <string name="flash_success">Instalēts veiksmīgi</string>
     <string name="flash_failed">Instalēšana neizdevās</string>
-    <string name="shrink_sparse_image">Samazināt reto attēlu</string>
-    <string name="shrink_sparse_image_message">Mainīt retā attēla izmēru, kurā atrodas modulis, līdz tā faktiskajam izmēram. Ņemiet vērā, ka tas var izraisīt moduļa neparastu darbību, tāpēc, lūdzu, izmantojiet tikai nepieciešamības gadījumā (piemēram, dublēšanai)</string>
     <string name="save_log">Išsaugoti Žurnalus</string>
     <string name="module_sort_enabled_first">Kārtot (Iespējotie augšgalā)</string>
     <string name="confirm">Apstiprināt</string>

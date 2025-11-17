@@ -115,8 +115,6 @@
     <string name="install_next">繼續</string>
     <string name="select_kmi">選擇 KMI</string>
     <string name="select_file_tip">建議選擇 %1$s 分區的映像檔</string>
-    <string name="shrink_sparse_image">最小化稀疏映像檔</string>
-    <string name="shrink_sparse_image_message">為裝有模組的稀疏映像檔重新分配為實際占用大小。完成最小化後模組或有異常行為，請在非常時刻（如有備份需求）才採非常手段。</string>
     <string name="settings_uninstall">解除安裝</string>
     <string name="settings_uninstall_temporary">暫時性解除安裝</string>
     <string name="settings_restore_stock_image">恢復原廠映像檔</string>
