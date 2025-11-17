@@ -148,34 +148,43 @@ pub(crate) fn get_install_script(
     Ok(install_script)
 }
 
-/// Execute metamodule's metauninstall.sh for a specific module
-pub(crate) fn exec_metauninstall_script(module_id: &str) -> Result<()> {
+/// Check if metamodule script exists and is ready to execute
+/// Returns None if metamodule doesn't exist, is disabled, or script is missing
+/// Returns Some(script_path) if script is ready to execute
+fn check_metamodule_script(script_name: &str) -> Option<PathBuf> {
     // Check if metamodule exists
-    let Some(metamodule_path) = get_metamodule_path() else {
-        return Ok(());
-    };
+    let metamodule_path = get_metamodule_path()?;
 
     // Check if metamodule is disabled
     if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
-        info!("Metamodule is disabled, skipping metauninstall");
-        return Ok(());
+        info!("Metamodule is disabled, skipping {}", script_name);
+        return None;
     }
 
-    // Check if metauninstall.sh exists
-    let metauninstall_path = metamodule_path.join(defs::METAMODULE_METAUNINSTALL_SCRIPT);
-    if !metauninstall_path.exists() {
-        return Ok(());
+    // Check if script exists
+    let script_path = metamodule_path.join(script_name);
+    if !script_path.exists() {
+        return None;
     }
+
+    Some(script_path)
+}
+
+/// Execute metamodule's metauninstall.sh for a specific module
+pub(crate) fn exec_metauninstall_script(module_id: &str) -> Result<()> {
+    let Some(metauninstall_path) = check_metamodule_script(defs::METAMODULE_METAUNINSTALL_SCRIPT)
+    else {
+        return Ok(());
+    };
 
     info!(
         "Executing metamodule metauninstall.sh for module: {}",
         module_id
     );
 
-    // Execute metauninstall.sh with module ID as environment variable
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", metauninstall_path.to_str().unwrap()])
-        .current_dir(&metamodule_path)
+        .current_dir(metauninstall_path.parent().unwrap())
         .envs(crate::module::get_common_script_envs())
         .env("MODULE_ID", module_id)
         .status()?;
@@ -196,65 +205,33 @@ pub(crate) fn exec_metauninstall_script(module_id: &str) -> Result<()> {
 
 /// Execute metamodule mount script
 pub fn exec_mount_script(module_dir: &str) -> Result<()> {
-    let Some(metamodule_path) = get_metamodule_path() else {
-        info!("No metamodule found");
+    let Some(mount_script) = check_metamodule_script(defs::METAMODULE_MOUNT_SCRIPT) else {
         return Ok(());
     };
 
-    // Check if metamodule is disabled
-    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
-        warn!("Metamodule is disabled, skipping mount");
-        return Ok(());
-    }
-
-    let mount_script = metamodule_path.join(defs::METAMODULE_MOUNT_SCRIPT);
-    if !mount_script.exists() {
-        warn!(
-            "Metamodule does not have {} script",
-            defs::METAMODULE_MOUNT_SCRIPT
-        );
-        return Ok(());
-    }
-
     info!("Executing mount script for metamodule");
 
-    // Execute the mount script
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", mount_script.to_str().unwrap()])
         .envs(crate::module::get_common_script_envs())
         .env("MODULE_DIR", module_dir)
-        .status();
+        .status()?;
 
-    match result {
-        Ok(status) if status.success() => {
-            info!("Metamodule mount script executed successfully");
-        }
-        Ok(status) => {
-            warn!("Metamodule mount script failed with status: {:?}", status);
-        }
-        Err(e) => {
-            warn!("Failed to execute metamodule mount script: {}", e);
-        }
-    }
+    ensure!(
+        result.success(),
+        "Metamodule mount script failed with status: {:?}",
+        result
+    );
 
+    info!("Metamodule mount script executed successfully");
     Ok(())
 }
 
 /// Execute metamodule script for a specific stage
 pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
-    let Some(metamodule_path) = get_metamodule_path() else {
+    let Some(script_path) = check_metamodule_script(&format!("{}.sh", stage)) else {
         return Ok(());
     };
-
-    if metamodule_path.join(defs::DISABLE_FILE_NAME).exists() {
-        info!("Metamodule is disabled, skipping {}.sh", stage);
-        return Ok(());
-    }
-
-    let script_path = metamodule_path.join(format!("{}.sh", stage));
-    if !script_path.exists() {
-        return Ok(());
-    }
 
     info!("Executing metamodule {}.sh", stage);
     crate::module::exec_script(&script_path, block)?;
