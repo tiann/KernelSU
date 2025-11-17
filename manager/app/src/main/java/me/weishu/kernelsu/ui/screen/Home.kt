@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen
 
 import android.content.Context
 import android.os.Build
-import android.os.PowerManager
 import android.system.Os
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -40,9 +39,7 @@ import androidx.compose.material.icons.rounded.Link
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +63,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.component.DropdownItem
-import me.weishu.kernelsu.ui.component.KsuIsValid
+import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
@@ -80,17 +77,12 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.ListPopup
-import top.yukonga.miuix.kmp.basic.ListPopupColumn
-import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Reboot
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -269,7 +261,7 @@ private fun TopBar(
         actions = {
             if (kernelVersion.isGKI()) {
                 IconButton(
-                    modifier = Modifier.padding(end = 16.dp),
+                    modifier = Modifier.padding(end = 8.dp),
                     onClick = onInstallClick,
                 ) {
                     Icon(
@@ -279,56 +271,9 @@ private fun TopBar(
                     )
                 }
             }
-            val showTopPopup = remember { mutableStateOf(false) }
-            KsuIsValid {
-                IconButton(
-                    modifier = Modifier.padding(end = 16.dp),
-                    onClick = { showTopPopup.value = true },
-                    holdDownState = showTopPopup.value
-                ) {
-                    Icon(
-                        imageVector = MiuixIcons.Useful.Reboot,
-                        contentDescription = stringResource(id = R.string.reboot),
-                        tint = colorScheme.onBackground
-                    )
-                }
-                ListPopup(
-                    show = showTopPopup,
-                    popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                    alignment = PopupPositionProvider.Align.TopRight,
-                    onDismissRequest = {
-                        showTopPopup.value = false
-                    }
-                ) {
-                    val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
-
-                    @Suppress("DEPRECATION")
-                    val isRebootingUserspaceSupported =
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true
-
-                    ListPopupColumn {
-                        val rebootOptions = mutableListOf(
-                            Pair(R.string.reboot, ""),
-                            Pair(R.string.reboot_recovery, "recovery"),
-                            Pair(R.string.reboot_bootloader, "bootloader"),
-                            Pair(R.string.reboot_download, "download"),
-                            Pair(R.string.reboot_edl, "edl")
-                        )
-                        if (isRebootingUserspaceSupported) {
-                            rebootOptions.add(1, Pair(R.string.reboot_userspace, "userspace"))
-                        }
-                        rebootOptions.forEachIndexed { idx, (id, reason) ->
-                            RebootDropdownItem(
-                                id = id,
-                                reason = reason,
-                                showTopPopup = showTopPopup,
-                                optionSize = rebootOptions.size,
-                                index = idx
-                            )
-                        }
-                    }
-                }
-            }
+            RebootListPopup(
+                modifier = Modifier.padding(end = 16.dp),
+            )
         },
         scrollBehavior = scrollBehavior
     )
