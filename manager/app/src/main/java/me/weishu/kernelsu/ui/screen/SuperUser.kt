@@ -65,6 +65,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
@@ -127,11 +131,17 @@ fun SuperUserPager(
     val dynamicTopPadding by remember {
         derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.8f))
+    )
 
     Scaffold(
         topBar = {
-            searchStatus.TopAppBarAnim {
+            searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
+                    color = Color.Transparent,
                     title = stringResource(R.string.superuser),
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
@@ -209,7 +219,9 @@ fun SuperUserPager(
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
-                        Column {
+                        Column(
+                            Modifier.padding(top = 6.dp)
+                        ) {
                             GroupItem(
                                 group = group,
                                 onToggleExpand = {
@@ -231,6 +243,7 @@ fun SuperUserPager(
                                 Column {
                                     val matchedApps = matchedByUid[group.uid] ?: emptyList()
                                     matchedApps.forEach { app -> SimpleAppItem(app) }
+                                    Spacer(Modifier.height(6.dp))
                                 }
                             }
                         }
@@ -252,6 +265,8 @@ fun SuperUserPager(
                 start = innerPadding.calculateStartPadding(layoutDirection),
                 end = innerPadding.calculateEndPadding(layoutDirection)
             ),
+            hazeState = hazeState,
+            hazeStyle = hazeStyle
         ) { boxHeight ->
             var isRefreshing by rememberSaveable { mutableStateOf(false) }
             val pullToRefreshState = rememberPullToRefreshState()
@@ -307,7 +322,8 @@ fun SuperUserPager(
                             .height(getWindowSize().height.dp)
                             .scrollEndHaptic()
                             .overScrollVertical()
-                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            .hazeSource(state = hazeState),
                         contentPadding = PaddingValues(
                             top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
