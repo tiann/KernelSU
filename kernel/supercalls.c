@@ -509,7 +509,7 @@ static int add_try_umount(void __user *arg)
             
             buf[sizeof(buf) - 1] = '\0';
 
-            new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+            new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
             if (!new_entry)
                 return -ENOMEM;
 
