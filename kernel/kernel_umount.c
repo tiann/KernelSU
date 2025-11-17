@@ -82,7 +82,7 @@ static void umount_tw_func(struct callback_head *cb)
 
     struct mount_entry *entry;
     list_for_each_entry(entry, &mount_list, list) {
-        try_umount(entry->umountable, MNT_DETACH);
+        try_umount(entry->umountable, entry->flags);
     }
 
     if (saved)
