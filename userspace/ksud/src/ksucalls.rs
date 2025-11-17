@@ -6,7 +6,6 @@ use std::sync::OnceLock;
 // Event constants
 const EVENT_POST_FS_DATA: u32 = 1;
 const EVENT_BOOT_COMPLETED: u32 = 2;
-const EVENT_MODULE_MOUNTED: u32 = 3;
 
 const KSU_IOCTL_GRANT_ROOT: u32 = 0x00004b01; // _IOC(_IOC_NONE, 'K', 1, 0)
 const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
@@ -201,10 +200,6 @@ pub fn report_post_fs_data() {
 
 pub fn report_boot_complete() {
     report_event(EVENT_BOOT_COMPLETED);
-}
-
-pub fn report_module_mounted() {
-    report_event(EVENT_MODULE_MOUNTED);
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]

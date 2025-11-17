@@ -1,0 +1,54 @@
+name: Build meta-overlayfs
+
+on:
+  push:
+    branches: [ "main", "dev", "ci" ]
+    paths:
+      - '.github/workflows/meta-overlay.yml'
+      - 'userspace/meta-overlayfs/**'
+  pull_request:
+    branches: [ "main", "dev" ]
+    paths:
+      - '.github/workflows/meta-overlay.yml'
+      - 'userspace/meta-overlayfs/**'
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: userspace/meta-overlayfs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        run: |
+          rustup update stable
+          rustup target add aarch64-linux-android
+          rustup target add x86_64-linux-android
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: userspace/meta-overlayfs
+          cache-targets: false
+
+      - name: Install cross
+        run: |
+          RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
+
+      - name: Build meta-overlayfs metamodule
+        run: ./build.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: meta-overlayfs
+          path: userspace/meta-overlayfs/target/meta-overlayfs-*.zip
+          if-no-files-found: error

@@ -43,18 +43,14 @@ sha256 = "1"
 sha1 = "0.10"
 tempfile = "3"
 chrono = "0.4"
-hole-punch = { git = "https://github.com/tiann/hole-punch" }
 regex-lite = "0.1"
-fs4 = "0.13"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
+rustix = { version = "1", features = [
     "all-apis",
 ] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
-procfs = "0.17"
-loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = { version = "0.15", default-features = false }

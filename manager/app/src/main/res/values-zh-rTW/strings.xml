@@ -130,8 +130,8 @@
     <string name="selected_lkm">已選定 LKM：%s</string>
     <string name="save_log">儲存日誌</string>
     <string name="action">執行</string>
-    <string name="module_sort_enabled_first">排序（啟用優先）</string>
-    <string name="module_sort_action_first">排序（執行優先）</string>
+    <string name="module_sort_enabled_first">啟用優先</string>
+    <string name="module_sort_action_first">執行優先</string>
     <string name="module_install_prompt_with_name">將安裝以下模組：%1$s</string>
     <string name="confirm">確認</string>
     <string name="settings_disable_su_summary">暫時禁用任何應用程式通過⁠ su 命令獲得 root 權限的能力（現有的 root 進程不會受到影響）。</string>
