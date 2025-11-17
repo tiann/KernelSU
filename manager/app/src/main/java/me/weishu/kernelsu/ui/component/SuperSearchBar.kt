@@ -63,6 +63,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeEffect
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text
@@ -105,6 +108,8 @@ class SearchStatus(val label: String) {
     fun TopAppBarAnim(
         modifier: Modifier = Modifier,
         visible: Boolean = shouldCollapsed(),
+        hazeState: HazeState? = null,
+        hazeStyle: HazeStyle? = null,
         content: @Composable () -> Unit
     ) {
         val topAppBarAlpha = animateFloatAsState(
@@ -115,7 +120,17 @@ class SearchStatus(val label: String) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(colorScheme.background)
+                    .then(
+                        if (hazeState != null && hazeStyle != null) {
+                            Modifier.hazeEffect(hazeState) {
+                                style = hazeStyle
+                                blurRadius = 30.dp
+                                noiseFactor = 0f
+                            }
+                        } else {
+                            Modifier.background(colorScheme.background)
+                        }
+                    )
             )
             Box(
                 modifier = Modifier
@@ -136,6 +151,8 @@ fun SearchStatus.SearchBox(
     },
     searchBarTopPadding: Dp = 12.dp,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    hazeState: HazeState,
+    hazeStyle: HazeStyle,
     content: @Composable (MutableState<Dp>) -> Unit
 ) {
     val searchStatus = this
@@ -164,7 +181,11 @@ fun SearchStatus.SearchBox(
             .pointerInput(Unit) {
                 detectTapGestures { searchStatus.current = SearchStatus.Status.EXPANDING }
             }
-            .background(colorScheme.background)
+            .hazeEffect(hazeState) {
+                style = hazeStyle
+                blurRadius = 30.dp
+                noiseFactor = 0f
+            }
     ) {
         collapseBar(searchStatus, searchBarTopPadding, contentPadding)
     }
@@ -225,8 +246,12 @@ fun SearchStatus.SearchPager(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(top = topPadding),
-            horizontalArrangement = Arrangement.Center,
+                .padding(top = topPadding)
+                .then(
+                    if (!searchStatus.isCollapsed()) Modifier.background(colorScheme.background)
+                    else Modifier
+                ),
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!searchStatus.isCollapsed()) {
@@ -243,9 +268,6 @@ fun SearchStatus.SearchPager(
                 enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
                 exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it })
             ) {
-                BackHandler(enabled = true) {
-                    searchStatus.current = SearchStatus.Status.COLLAPSING
-                }
                 Text(
                     text = stringResource(android.R.string.cancel),
                     fontWeight = FontWeight.Bold,
@@ -258,6 +280,9 @@ fun SearchStatus.SearchPager(
                             indication = null
                         ) { searchStatus.current = SearchStatus.Status.COLLAPSING }
                 )
+                BackHandler(enabled = true) {
+                    searchStatus.current = SearchStatus.Status.COLLAPSING
+                }
             }
         }
         AnimatedVisibility(
@@ -275,7 +300,6 @@ fun SearchStatus.SearchPager(
                 SearchStatus.ResultStatus.SHOW -> LazyColumn(
                     Modifier
                         .fillMaxSize()
-                        .padding(top = 6.dp)
                         .overScrollVertical(),
                 ) {
                     result()
@@ -330,6 +354,7 @@ fun SearchBar(
             }
         },
         modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(top = searchBarTopPadding, bottom = 6.dp)
             .focusRequester(focusRequester),

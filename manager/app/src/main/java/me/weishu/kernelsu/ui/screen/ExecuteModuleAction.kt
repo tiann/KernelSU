@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -39,6 +40,11 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,6 +76,11 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var actionResult: Boolean
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.background,
+        tint = HazeTint(colorScheme.background.copy(0.8f))
+    )
 
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
@@ -115,6 +126,8 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                         Toast.makeText(context, "Log saved to ${file.absolutePath}", Toast.LENGTH_SHORT).show()
                     }
                 },
+                hazeState = hazeState,
+                hazeStyle = hazeStyle,
             )
         },
         popupHost = { },
@@ -128,6 +141,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
             modifier = Modifier
                 .fillMaxSize(1f)
                 .scrollEndHaptic()
+                .hazeSource(state = hazeState)
                 .padding(
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateStartPadding(layoutDirection),
@@ -158,8 +172,15 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
 private fun TopBar(
     onBack: () -> Unit = {},
     onSave: () -> Unit = {},
+    hazeState: HazeState,
+    hazeStyle: HazeStyle,
 ) {
     SmallTopAppBar(
+        modifier = Modifier.hazeEffect(hazeState) {
+            style = hazeStyle
+            blurRadius = 30.dp
+            noiseFactor = 0f
+        },
         title = stringResource(R.string.action),
         navigationIcon = {
             IconButton(
