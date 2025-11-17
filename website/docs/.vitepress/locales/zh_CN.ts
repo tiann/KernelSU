@@ -51,6 +51,7 @@ function sidebarGuide() {
           { text: '如何为非 GKI 设备集成 KernelSU', link: '/zh_CN/guide/how-to-integrate-for-non-gki'},
           { text: '非官方支持设备', link: '/zh_CN/guide/unofficially-support-devices.md' },
           { text: '模块开发指南', link: '/zh_CN/guide/module.md' },
+          { text: '元模块', link: '/zh_CN/guide/metamodule.md' },
           { text: '模块 Web 界面', link: '/zh_CN/guide/module-webui.md' },
           { text: 'App Profile', link: '/zh_CN/guide/app-profile.md' },
           { text: '救砖', link: '/zh_CN/guide/rescue-from-bootloop.md' },

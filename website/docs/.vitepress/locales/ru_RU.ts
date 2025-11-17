@@ -50,6 +50,7 @@ function sidebarGuide() {
           { text: 'Реализация в устройствах, не относящихся к GKI', link: '/ru_RU/guide/how-to-integrate-for-non-gki'},
           { text: 'Неофициально поддерживаемые устройства', link: '/ru_RU/guide/unofficially-support-devices.md' },
           { text: 'Руководство по разработке модулей', link: '/ru_RU/guide/module.md' },
+          { text: 'Метамодуль', link: '/ru_RU/guide/metamodule.md' },
           { text: 'Профиль приложений', link: '/ru_RU/guide/app-profile.md' },
           { text: 'Выход из циклической загрузки', link: '/ru_RU/guide/rescue-from-bootloop.md' },
           { text: 'FAQ', link: '/ru_RU/guide/faq' },

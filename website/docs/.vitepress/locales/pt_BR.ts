@@ -51,6 +51,7 @@ function sidebarGuide() {
           { text: 'Integração para dispositivos não-GKI', link: '/pt_BR/guide/how-to-integrate-for-non-gki'},
           { text: 'Dispositivos com suporte não oficial', link: '/pt_BR/guide/unofficially-support-devices.md' },
           { text: 'Guias de módulo', link: '/pt_BR/guide/module.md' },
+          { text: 'Metamódulo', link: '/pt_BR/guide/metamodule.md' },
           { text: 'Módulo WebUI', link: '/pt_BR/guide/module-webui.md' },
           { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
