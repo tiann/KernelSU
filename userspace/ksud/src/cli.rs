@@ -133,6 +133,11 @@ enum Commands {
         #[command(subcommand)]
         command: Debug,
     },
+    /// Kernel interface
+    Kernel {
+        #[command(subcommand)]
+        command: Kernel,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -351,6 +356,15 @@ enum Feature {
     Save,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum Kernel {
+    /// Nuke ext4 sysfs
+    NukeExt4Sysfs {
+        /// mount point
+        mnt: String,
+    },
+}
+
 pub fn run() -> Result<()> {
     #[cfg(target_os = "android")]
     android_logger::init_once(
@@ -495,6 +509,9 @@ pub fn run() -> Result<()> {
             magiskboot,
             flash,
         } => crate::boot_patch::restore(boot, magiskboot, flash),
+        Commands::Kernel { command } => match command {
+            Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),
+        },
     };
 
     if let Err(e) = &result {
