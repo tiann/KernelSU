@@ -85,13 +85,13 @@ void on_post_fs_data(void)
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
-static void nuke_ext4_sysfs(void)
+int nuke_ext4_sysfs(const char* mnt)
 {
     struct path path;
-    int err = kern_path("/data/adb/modules", 0, &path);
+    int err = kern_path(mnt, 0, &path);
     if (err) {
         pr_err("nuke path err: %d\n", err);
-        return;
+        return err;
     }
 
     struct super_block *sb = path.dentry->d_inode->i_sb;
@@ -99,17 +99,17 @@ static void nuke_ext4_sysfs(void)
     if (strcmp(name, "ext4") != 0) {
         pr_info("nuke but module aren't mounted\n");
         path_put(&path);
-        return;
+        return -EINVAL;
     }
 
     ext4_unregister_sysfs(sb);
     path_put(&path);
+    return 0;
 }
 
 void on_module_mounted(void){
     pr_info("on_module_mounted!\n");
     ksu_module_mounted = true;
-    nuke_ext4_sysfs();
 }
 
 void on_boot_completed(void){
