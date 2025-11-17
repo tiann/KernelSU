@@ -3,6 +3,7 @@
 
 #include <linux/types.h>
 #include <linux/ioctl.h>
+#include <linux/list.h>
 #include "app_profile.h"
 
 // Magic numbers for reboot hook to install fd
@@ -88,6 +89,18 @@ struct ksu_nuke_ext4_sysfs_cmd {
     __aligned_u64 arg; // Input: mnt pointer
 };
 
+// for the umount list
+struct mount_entry {
+    char *umountable;
+    struct list_head list;
+};
+
+extern struct list_head mount_list;
+
+struct ksu_add_try_umount_cmd {
+    __aligned_u64 arg; // Input: mnt pointer
+};
+
 #define KSU_MARK_GET 1
 #define KSU_MARK_MARK 2
 #define KSU_MARK_UNMARK 3
@@ -111,6 +124,8 @@ struct ksu_nuke_ext4_sysfs_cmd {
 #define KSU_IOCTL_GET_WRAPPER_FD _IOC(_IOC_WRITE, 'K', 15, 0)
 #define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
 #define KSU_IOCTL_NUKE_EXT4_SYSFS _IOC(_IOC_WRITE, 'K', 17, 0)
+#define KSU_IOCTL_WIPE_UMOUNT_LIST _IOC(_IOC_READ|_IOC_WRITE, 'K', 18, 0)
+#define KSU_IOCTL_ADD_TRY_UMOUNT _IOC(_IOC_READ|_IOC_WRITE, 'K', 19, 0)
 
 // IOCTL handler types
 typedef int (*ksu_ioctl_handler_t)(void __user *arg);
