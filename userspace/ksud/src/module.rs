@@ -12,6 +12,7 @@ use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{info, warn};
 
+use std::fs::{copy, rename};
 use std::{
     collections::HashMap,
     env::var as env_var,
@@ -23,6 +24,8 @@ use std::{
 };
 use zip_extensions::zip_extract_file_to_memory;
 
+use crate::defs::{MODULE_DIR, MODULE_UPDATE_DIR, UPDATE_FILE_NAME};
+use crate::module::ModuleType::{Active, All};
 #[cfg(unix)]
 use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
 
@@ -82,11 +85,21 @@ fn ensure_boot_completed() -> Result<()> {
     Ok(())
 }
 
+#[derive(PartialEq, Eq)]
+pub(crate) enum ModuleType {
+    All,
+    Active,
+    Updated,
+}
+
 pub(crate) fn foreach_module(
-    active_only: bool,
+    module_type: ModuleType,
     mut f: impl FnMut(&Path) -> Result<()>,
 ) -> Result<()> {
-    let modules_dir = Path::new(defs::MODULE_DIR);
+    let modules_dir = Path::new(match module_type {
+        ModuleType::Updated => MODULE_UPDATE_DIR,
+        _ => defs::MODULE_DIR,
+    });
     let dir = std::fs::read_dir(modules_dir)?;
     for entry in dir.flatten() {
         let path = entry.path();
@@ -95,11 +108,11 @@ pub(crate) fn foreach_module(
             continue;
         }
 
-        if active_only && path.join(defs::DISABLE_FILE_NAME).exists() {
+        if module_type == Active && path.join(defs::DISABLE_FILE_NAME).exists() {
             info!("{} is disabled, skip", path.display());
             continue;
         }
-        if active_only && path.join(defs::REMOVE_FILE_NAME).exists() {
+        if module_type == Active && path.join(defs::REMOVE_FILE_NAME).exists() {
             warn!("{} is removed, skip", path.display());
             continue;
         }
@@ -111,7 +124,7 @@ pub(crate) fn foreach_module(
 }
 
 fn foreach_active_module(f: impl FnMut(&Path) -> Result<()>) -> Result<()> {
-    foreach_module(true, f)
+    foreach_module(Active, f)
 }
 
 pub fn load_sepolicy_rule() -> Result<()> {
@@ -218,7 +231,7 @@ pub fn load_system_prop() -> Result<()> {
 }
 
 pub fn prune_modules() -> Result<()> {
-    foreach_module(false, |module| {
+    foreach_module(All, |module| {
         if !module.join(defs::REMOVE_FILE_NAME).exists() {
             return Ok(());
         }
@@ -273,6 +286,29 @@ pub fn prune_modules() -> Result<()> {
     Ok(())
 }
 
+pub fn handle_updated_modules() -> Result<()> {
+    let modules_root = Path::new(MODULE_DIR);
+    foreach_module(ModuleType::Updated, |module| {
+        if !module.is_dir() {
+            return Ok(());
+        }
+
+        if let Some(name) = module.file_name() {
+            let old_dir = modules_root.join(name);
+            if old_dir.exists()
+                && let Err(e) = remove_dir_all(&old_dir)
+            {
+                log::error!("Failed to remove old {}: {}", old_dir.display(), e);
+            }
+            if let Err(e) = rename(module, &old_dir) {
+                log::error!("Failed to move new module {}: {}", module.display(), e);
+            }
+        }
+        Ok(())
+    })?;
+    Ok(())
+}
+
 fn _install_module(zip: &str) -> Result<()> {
     ensure_boot_completed()?;
 
@@ -308,8 +344,8 @@ fn _install_module(zip: &str) -> Result<()> {
     // Check if this module is a metamodule
     let is_metamodule = metamodule::is_metamodule(&module_prop);
 
-    // All modules (including metamodules) are installed to MODULE_DIR
-    let target_dir = Path::new(defs::MODULE_DIR).join(module_id);
+    // All modules (including metamodules) are installed to MODULE_UPDATE_DIR
+    let updated_dir = Path::new(defs::MODULE_UPDATE_DIR).join(module_id);
 
     if is_metamodule {
         info!("Installing metamodule: {}", module_id);
@@ -352,22 +388,22 @@ fn _install_module(zip: &str) -> Result<()> {
     );
 
     // Ensure module directory exists and set SELinux context
-    ensure_dir_exists(defs::MODULE_DIR)?;
-    setsyscon(defs::MODULE_DIR)?;
+    ensure_dir_exists(defs::MODULE_UPDATE_DIR)?;
+    setsyscon(defs::MODULE_UPDATE_DIR)?;
 
     // Prepare target directory
-    println!("- Installing to {}", target_dir.display());
-    ensure_clean_dir(&target_dir)?;
-    info!("target dir: {}", target_dir.display());
+    println!("- Installing to {}", updated_dir.display());
+    ensure_clean_dir(&updated_dir)?;
+    info!("target dir: {}", updated_dir.display());
 
     // Extract zip to target directory
     println!("- Extracting module files");
     let file = File::open(zip)?;
     let mut archive = zip::ZipArchive::new(file)?;
-    archive.extract(&target_dir)?;
+    archive.extract(&updated_dir)?;
 
     // Set permission and selinux context for $MOD/system
-    let module_system_dir = target_dir.join("system");
+    let module_system_dir = updated_dir.join("system");
     if module_system_dir.exists() {
         #[cfg(unix)]
         set_permissions(&module_system_dir, Permissions::from_mode(0o755))?;
@@ -378,10 +414,18 @@ fn _install_module(zip: &str) -> Result<()> {
     println!("- Running module installer");
     exec_install_script(zip, is_metamodule)?;
 
+    let module_dir = Path::new(MODULE_DIR).join(module_id);
+    ensure_dir_exists(&module_dir)?;
+    copy(
+        updated_dir.join("module.prop"),
+        module_dir.join("module.prop"),
+    )?;
+    ensure_file_exists(module_dir.join(UPDATE_FILE_NAME))?;
+
     // Create symlink for metamodule
     if is_metamodule {
         println!("- Creating metamodule symlink");
-        metamodule::ensure_symlink(&target_dir)?;
+        metamodule::ensure_symlink(&module_dir)?;
     }
 
     println!("- Module installed successfully!");
