@@ -11,7 +11,7 @@ use std::{
     process::Command,
 };
 
-use crate::{assets, defs, ksucalls};
+use crate::{assets, defs};
 
 /// Get metamodule path if it exists
 /// The metamodule is stored in /data/adb/modules/{id} with a symlink at /data/adb/metamodule
@@ -176,9 +176,8 @@ pub(crate) fn exec_metauninstall_script(module_id: &str) -> Result<()> {
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", metauninstall_path.to_str().unwrap()])
         .current_dir(&metamodule_path)
-        .env("ASH_STANDALONE", "1")
+        .envs(crate::module::get_common_script_envs())
         .env("MODULE_ID", module_id)
-        .env("KSU", "true")
         .status()?;
 
     ensure!(
@@ -222,11 +221,7 @@ pub fn exec_mount_script(module_dir: &str) -> Result<()> {
     // Execute the mount script
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", mount_script.to_str().unwrap()])
-        .env("ASH_STANDALONE", "1")
-        .env("KSU", "true")
-        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
-        .env("KSU_VER_CODE", defs::VERSION_CODE)
-        .env("KSU_VER", defs::VERSION_NAME)
+        .envs(crate::module::get_common_script_envs())
         .env("MODULE_DIR", module_dir)
         .status();
 

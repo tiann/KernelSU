@@ -36,6 +36,25 @@ const INSTALL_MODULE_SCRIPT: &str = concatcp!(
     "\n"
 );
 
+/// Get common environment variables for script execution
+pub(crate) fn get_common_script_envs() -> Vec<(&'static str, String)> {
+    vec![
+        ("ASH_STANDALONE", "1".to_string()),
+        ("KSU", "true".to_string()),
+        ("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string()),
+        ("KSU_VER_CODE", defs::VERSION_CODE.to_string()),
+        ("KSU_VER", defs::VERSION_NAME.to_string()),
+        (
+            "PATH",
+            format!(
+                "{}:{}",
+                env_var("PATH").unwrap_or_default(),
+                defs::BINARY_DIR.trim_end_matches('/')
+            ),
+        ),
+    ]
+}
+
 fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {
     let realpath = std::fs::canonicalize(module_file)
         .with_context(|| format!("realpath: {module_file} failed"))?;
@@ -46,19 +65,7 @@ fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {
 
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", "-c", &install_script])
-        .env("ASH_STANDALONE", "1")
-        .env(
-            "PATH",
-            format!(
-                "{}:{}",
-                env_var("PATH").unwrap(),
-                defs::BINARY_DIR.trim_end_matches('/')
-            ),
-        )
-        .env("KSU", "true")
-        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
-        .env("KSU_VER", defs::VERSION_NAME)
-        .env("KSU_VER_CODE", defs::VERSION_CODE)
+        .envs(get_common_script_envs())
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
         .status()?;
@@ -143,19 +150,7 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .current_dir(path.as_ref().parent().unwrap())
         .arg("sh")
         .arg(path.as_ref())
-        .env("ASH_STANDALONE", "1")
-        .env("KSU", "true")
-        .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
-        .env("KSU_VER_CODE", defs::VERSION_CODE)
-        .env("KSU_VER", defs::VERSION_NAME)
-        .env(
-            "PATH",
-            format!(
-                "{}:{}",
-                env_var("PATH").unwrap(),
-                defs::BINARY_DIR.trim_end_matches('/')
-            ),
-        );
+        .envs(get_common_script_envs());
 
     let result = if wait {
         command.status().map(|_| ())
