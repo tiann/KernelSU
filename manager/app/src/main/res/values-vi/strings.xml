@@ -130,10 +130,10 @@
     <string name="shrink_sparse_image">Nén sparse image</string>
     <string name="shrink_sparse_image_message">Thay đổi kích thước sparse image nơi lưu trữ module về kích thước thực tế của nó. Lưu ý rằng điều này có thể khiến module hoạt động không bình thường, vì vậy vui lòng chỉ sử dụng khi cần thiết (chẳng hạn như để sao lưu).</string>
     <string name="save_log">Lưu nhật ký</string>
-    <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
+    <string name="module_sort_action_first">Khởi chạy trước</string>
     <string name="module_install_prompt_with_name">Các module sau đây sẽ được cài đặt: %1$s</string>
     <string name="confirm">Xác nhận</string>
-    <string name="module_sort_enabled_first">Sắp xếp (Đã bật trước)</string>
+    <string name="module_sort_enabled_first">Bật trước</string>
     <string name="su_not_allowed">Không thể cấp quyền Superuser cho %s</string>
     <string name="action">Khởi chạy</string>
     <string name="log_saved">Đã lưu nhật ký</string>
@@ -157,4 +157,5 @@
     <string name="install_select_partition">Chọn phân vùng</string>
     <string name="app_profile_affects_following_apps">Ảnh hưởng đến các ứng dụng sau</string>
     <string name="group_contains_apps">Chứa %d ứng dụng</string>
+    <string name="metamodule_uninstall_confirm">Bạn có chắc chắn muốn gỡ cài đặt module %s không? Thao tác này sẽ ảnh hưởng đến tất cả các module và một số tính năng do siêu module cung cấp (chẳng hạn như gắn kết) sẽ không còn hoạt động nữa.</string>
 </resources>
