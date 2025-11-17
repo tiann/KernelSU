@@ -229,15 +229,9 @@ pub fn prune_modules() -> Result<()> {
         let module_id = module.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         // Check if this is a metamodule
-        let is_metamodule = if let Ok(props) = read_module_prop(module) {
-            props
-                .get("metamodule")
-                .map(|s| s.trim().to_lowercase())
-                .map(|s| s == "true" || s == "1")
-                .unwrap_or(false)
-        } else {
-            false
-        };
+        let is_metamodule = read_module_prop(module)
+            .map(|props| metamodule::is_metamodule(&props))
+            .unwrap_or(false);
 
         if is_metamodule {
             info!("Removing metamodule symlink");
@@ -312,11 +306,7 @@ fn _install_module(zip: &str) -> Result<()> {
     let module_id = module_id.trim();
 
     // Check if this module is a metamodule
-    let is_metamodule = module_prop
-        .get("metamodule")
-        .map(|s| s.trim().to_lowercase())
-        .map(|s| s == "true" || s == "1")
-        .unwrap_or(false);
+    let is_metamodule = metamodule::is_metamodule(&module_prop);
 
     // All modules (including metamodules) are installed to MODULE_DIR
     let target_dir = Path::new(defs::MODULE_DIR).join(module_id);

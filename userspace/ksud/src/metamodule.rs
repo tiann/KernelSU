@@ -7,11 +7,23 @@
 use anyhow::{Context, Result, ensure};
 use log::{info, warn};
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     process::Command,
 };
 
 use crate::{assets, defs};
+
+/// Determine whether the provided module properties mark it as a metamodule
+pub fn is_metamodule(props: &HashMap<String, String>) -> bool {
+    props
+        .get("metamodule")
+        .map(|s| {
+            let trimmed = s.trim();
+            trimmed == "1" || trimmed.eq_ignore_ascii_case("true")
+        })
+        .unwrap_or(false)
+}
 
 /// Get metamodule path if it exists
 /// The metamodule is stored in /data/adb/modules/{id} with a symlink at /data/adb/metamodule
@@ -43,11 +55,7 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
     let mut result = None;
     let _ = crate::module::foreach_module(false, |module_path| {
         if let Ok(props) = crate::module::read_module_prop(module_path)
-            && props
-                .get("metamodule")
-                .map(|s| s.trim().to_lowercase())
-                .map(|s| s == "true" || s == "1")
-                .unwrap_or(false)
+            && is_metamodule(&props)
         {
             info!("Found metamodule in modules directory: {:?}", module_path);
             result = Some(module_path.to_path_buf());
