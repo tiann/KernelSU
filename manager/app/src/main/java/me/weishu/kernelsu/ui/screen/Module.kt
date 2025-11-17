@@ -194,6 +194,7 @@ fun ModulePager(
     val uninstall = stringResource(R.string.uninstall)
     val cancel = stringResource(android.R.string.cancel)
     val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
+    val metaModuleUninstallConfirm = stringResource(R.string.metamodule_uninstall_confirm)
     val updateText = stringResource(R.string.module_update)
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
@@ -267,9 +268,10 @@ fun ModulePager(
     }
 
     suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
+        val formatter = if (module.metamodule) metaModuleUninstallConfirm else moduleUninstallConfirm
         val confirmResult = confirmDialog.awaitConfirm(
             moduleStr,
-            content = moduleUninstallConfirm.format(module.name),
+            content = formatter.format(module.name),
             confirm = uninstall,
             dismiss = cancel
         )

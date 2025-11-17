@@ -97,10 +97,9 @@ pub(crate) fn ensure_symlink(module_path: &Path) -> Result<()> {
 
 /// Remove the metamodule symlink
 pub(crate) fn remove_symlink() -> Result<()> {
-    let symlink_path = Path::new(defs::METAMODULE_DIR);
+    let symlink_path = Path::new(defs::METAMODULE_DIR.trim_end_matches('/'));
 
     if symlink_path.is_symlink() {
-        info!("Removing metamodule symlink");
         std::fs::remove_file(symlink_path)
             .with_context(|| "Failed to remove metamodule symlink")?;
         info!("Metamodule symlink removed");

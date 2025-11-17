@@ -228,7 +228,23 @@ pub fn prune_modules() -> Result<()> {
         // Execute metamodule's metauninstall.sh first
         let module_id = module.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
-        if let Err(e) = metamodule::exec_metauninstall_script(module_id) {
+        // Check if this is a metamodule
+        let is_metamodule = if let Ok(props) = read_module_prop(module) {
+            props
+                .get("metamodule")
+                .map(|s| s.trim().to_lowercase())
+                .map(|s| s == "true" || s == "1")
+                .unwrap_or(false)
+        } else {
+            false
+        };
+
+        if is_metamodule {
+            info!("Removing metamodule symlink");
+            if let Err(e) = metamodule::remove_symlink() {
+                warn!("Failed to remove metamodule symlink: {}", e);
+            }
+        } else if let Err(e) = metamodule::exec_metauninstall_script(module_id) {
             warn!(
                 "Failed to exec metamodule uninstall for {}: {}",
                 module_id, e
@@ -389,30 +405,11 @@ pub fn uninstall_module(id: &str) -> Result<()> {
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
-    // Check if this is a metamodule
-    let is_metamodule = if let Ok(props) = read_module_prop(&module_path) {
-        props
-            .get("metamodule")
-            .map(|s| s.trim().to_lowercase())
-            .map(|s| s == "true" || s == "1")
-            .unwrap_or(false)
-    } else {
-        false
-    };
-
     // Mark for removal
     let remove_file = module_path.join(defs::REMOVE_FILE_NAME);
     File::create(remove_file).with_context(|| "Failed to create remove file")?;
 
     info!("Module {} marked for removal", id);
-
-    // Remove symlink if this is a metamodule
-    if is_metamodule {
-        info!("Removing metamodule symlink");
-        if let Err(e) = metamodule::remove_symlink() {
-            warn!("Failed to remove metamodule symlink: {}", e);
-        }
-    }
 
     Ok(())
 }

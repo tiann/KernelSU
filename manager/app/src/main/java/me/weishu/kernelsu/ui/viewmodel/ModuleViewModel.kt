@@ -189,7 +189,7 @@ class ModuleViewModel : ViewModel() {
                                 obj.optString("updateJson"),
                                 obj.optBoolean("web"),
                                 obj.optBoolean("action"),
-                                obj.optBoolean("metamodule")
+                                (obj.optInt("metamodule") != 0) or obj.optBoolean("metamodule")
                             )
                         }.toList()
                 }.getOrElse {
