@@ -89,8 +89,14 @@ struct ksu_nuke_ext4_sysfs_cmd {
 };
 
 struct ksu_add_try_umount_cmd {
-    __aligned_u64 arg; // Input: mnt pointer
+	__aligned_u64 arg; // char ptr, this is the mountpoint
+	__u32 flags; // this is the flag we use for it
+	__u8 mode; // denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry
 };
+
+#define KSU_UMOUNT_WIPE 0  // ignore everything and wipe list
+#define KSU_UMOUNT_ADD 1   // add entry (path + flags)
+#define KSU_UMOUNT_DEL 2   // delete entry, strcmp
 
 #define KSU_MARK_GET 1
 #define KSU_MARK_MARK 2
@@ -115,8 +121,7 @@ struct ksu_add_try_umount_cmd {
 #define KSU_IOCTL_GET_WRAPPER_FD _IOC(_IOC_WRITE, 'K', 15, 0)
 #define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
 #define KSU_IOCTL_NUKE_EXT4_SYSFS _IOC(_IOC_WRITE, 'K', 17, 0)
-#define KSU_IOCTL_WIPE_UMOUNT_LIST _IOC(_IOC_READ|_IOC_WRITE, 'K', 18, 0)
-#define KSU_IOCTL_ADD_TRY_UMOUNT _IOC(_IOC_READ|_IOC_WRITE, 'K', 19, 0)
+#define KSU_IOCTL_ADD_TRY_UMOUNT _IOC(_IOC_READ|_IOC_WRITE, 'K', 18, 0)
 
 // IOCTL handler types
 typedef int (*ksu_ioctl_handler_t)(void __user *arg);
