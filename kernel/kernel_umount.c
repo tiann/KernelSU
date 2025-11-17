@@ -82,6 +82,7 @@ static void umount_tw_func(struct callback_head *cb)
 
     struct mount_entry *entry;
     list_for_each_entry(entry, &mount_list, list) {
+        pr_info("%s: unmounting: %s flags 0x%x\n", __func__, entry->umountable, entry->flags);
         try_umount(entry->umountable, entry->flags);
     }
 
