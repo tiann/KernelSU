@@ -49,6 +49,7 @@ function sidebarGuide() {
           { text: 'Cách để build?', link: '/vi_VN/guide/how-to-build' },
           { text: 'Tích hợp vào thiết bị không sử dụng GKI', link: '/vi_VN/guide/how-to-integrate-for-non-gki'},
           { text: 'Thiết bị hỗ trợ không chính thức', link: '/vi_VN/guide/unofficially-support-devices.md' },
+          { text: 'Metamodule', link: '/vi_VN/guide/metamodule.md' },
           { text: 'FAQ - Câu hỏi thường gặp', link: '/vi_VN/guide/faq' },
         ]
     }
