@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -52,11 +53,11 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -64,24 +65,29 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.capsule.ContinuousRoundedRectangle
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -856,7 +862,10 @@ fun ModuleItem(
             .padding(bottom = 12.dp),
         insideMargin = PaddingValues(16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -865,13 +874,51 @@ fun ModuleItem(
                 val moduleVersion = stringResource(id = R.string.module_version)
                 val moduleAuthor = stringResource(id = R.string.module_author)
 
-                Text(
-                    text = module.name,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight(550),
-                    color = colorScheme.onSurface,
-                    textDecoration = textDecoration
-                )
+                SubcomposeLayout { constraints ->
+                    val spacingPx = 6.dp.roundToPx()
+                    var nameTextLayout: TextLayoutResult? = null
+                    val metaPlaceable = if (module.metamodule) {
+                        subcompose("meta") {
+                            Text(
+                                text = "META",
+                                fontSize = 12.sp,
+                                color = updateTint,
+                                modifier = Modifier
+                                    .clip(ContinuousRoundedRectangle(6.dp))
+                                    .background(updateBg)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                                fontWeight = FontWeight(750),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }.first().measure(Constraints(0, constraints.maxWidth, 0, constraints.maxHeight))
+                    } else null
+
+                    val reserved = (metaPlaceable?.width ?: 0) + if (metaPlaceable != null) spacingPx else 0
+                    val nameMax = (constraints.maxWidth - reserved).coerceAtLeast(0)
+                    val namePlaceable = subcompose("name") {
+                        Text(
+                            text = module.name,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight(550),
+                            color = colorScheme.onSurface,
+                            textDecoration = textDecoration,
+                            onTextLayout = { nameTextLayout = it }
+                        )
+                    }.first().measure(Constraints(constraints.minWidth, nameMax, constraints.minHeight, constraints.maxHeight))
+
+                    val width = (namePlaceable.width + reserved).coerceIn(constraints.minWidth, constraints.maxWidth)
+                    val height = maxOf(namePlaceable.height, metaPlaceable?.height ?: 0)
+
+                    layout(width, height) {
+                        namePlaceable.placeRelative(0, 0)
+                        val endX = nameTextLayout?.let { layoutRes ->
+                            val last = (layoutRes.lineCount - 1).coerceAtLeast(0)
+                            layoutRes.getLineRight(last).toInt()
+                        } ?: namePlaceable.width
+                        metaPlaceable?.placeRelative(endX + spacingPx, (height - (metaPlaceable.height)) / 2)
+                    }
+                }
                 Text(
                     text = "$moduleVersion: ${module.version}",
                     fontSize = 14.sp,
