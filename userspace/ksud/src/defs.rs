@@ -17,11 +17,13 @@ pub const MAGISKBOOT_PATH: &str = concatcp!(BINARY_DIR, "magiskboot");
 pub const DAEMON_LINK_PATH: &str = concatcp!(BINARY_DIR, "ksud");
 
 pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
+pub const MODULE_UPDATE_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
 pub const METAMODULE_DIR: &str = concatcp!(ADB_DIR, "metamodule/");
 
 pub const MODULE_WEB_DIR: &str = "webroot";
 pub const MODULE_ACTION_SH: &str = "action.sh";
 pub const DISABLE_FILE_NAME: &str = "disable";
+pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
 
 // Metamodule support

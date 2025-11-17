@@ -12,6 +12,7 @@ use std::{
     process::Command,
 };
 
+use crate::module::ModuleType::All;
 use crate::{assets, defs};
 
 /// Determine whether the provided module properties mark it as a metamodule
@@ -53,7 +54,7 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
 
     // Fallback: search for metamodule=1 in modules directory
     let mut result = None;
-    let _ = crate::module::foreach_module(false, |module_path| {
+    let _ = crate::module::foreach_module(All, |module_path| {
         if let Ok(props) = crate::module::read_module_prop(module_path)
             && is_metamodule(&props)
         {
