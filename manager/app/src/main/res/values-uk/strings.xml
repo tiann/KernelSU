@@ -118,8 +118,6 @@
     <string name="select_file_tip">%1$s образ розділу рекомендується</string>
     <string name="grant_root_failed">Не вдалося отримати root!</string>
     <string name="open">Відкрити</string>
-    <string name="shrink_sparse_image">Мінімізувати розріджений образ</string>
-    <string name="shrink_sparse_image_message">Змініть розмір розрідженого зображення, де розташований модуль, до його фактичного розміру. Зверніть увагу, що це може призвести до неправильної роботи модуля, тому використовуйте його лише за необхідності (наприклад, для резервного копіювання).</string>
     <string name="settings_uninstall_temporary">Тимчасово видалити</string>
     <string name="settings_uninstall_permanent">Видалити назавжди</string>
     <string name="settings_restore_stock_image">Відновити стокове зображення</string>

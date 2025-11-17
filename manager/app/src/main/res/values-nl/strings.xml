@@ -111,8 +111,6 @@
     <string name="direct_install">Directe installatie (aanbevolen)</string>
     <string name="select_file">Selecteer een bestand</string>
     <string name="grant_root_failed">Kan geen root verlenen!</string>
-    <string name="shrink_sparse_image">Minimaliseer schaarse afbeeldingen</string>
-    <string name="shrink_sparse_image_message">Wijzig het formaat van de beperkte afbeelding waar de module zich bevindt naar de werkelijke grootte. Houd er rekening mee dat dit ervoor kan zorgen dat de module abnormaal werkt, dus gebruik deze alleen wanneer dit nodig is (zoals voor back-up).</string>
     <string name="select_file_tip">%1$s partitie-image wordt aanbevolen</string>
     <string name="install_next">Naast</string>
     <string name="install_inactive_slot_warning">Uw apparaat wordt **GEFORCEERD** om na een herstart op te starten naar het huidige inactieve slot!

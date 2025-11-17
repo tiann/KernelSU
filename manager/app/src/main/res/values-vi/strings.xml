@@ -127,8 +127,6 @@
     <string name="flash_failed">Flash thất bại</string>
     <string name="selected_lkm">LKM đã chọn: %s</string>
     <string name="select_file_tip">Phân vùng image %1$s được khuyến nghị</string>
-    <string name="shrink_sparse_image">Nén sparse image</string>
-    <string name="shrink_sparse_image_message">Thay đổi kích thước sparse image nơi lưu trữ module về kích thước thực tế của nó. Lưu ý rằng điều này có thể khiến module hoạt động không bình thường, vì vậy vui lòng chỉ sử dụng khi cần thiết (chẳng hạn như để sao lưu).</string>
     <string name="save_log">Lưu nhật ký</string>
     <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
     <string name="module_install_prompt_with_name">Các module sau đây sẽ được cài đặt: %1$s</string>

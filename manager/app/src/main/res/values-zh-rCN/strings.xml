@@ -125,8 +125,6 @@
     <string name="install_only_support_ko_file">仅支持选择 .ko 文件</string>
     <string name="select_file_tip">建议选择 %1$s 分区镜像</string>
     <string name="select_kmi">选择 KMI</string>
-    <string name="shrink_sparse_image">最小化稀疏文件</string>
-    <string name="shrink_sparse_image_message">将模块所在的稀疏文件镜像调整为其实际大小。注意该操作可能会导致模块工作异常，请仅在必要时（如备份）使用。</string>
     <string name="settings_uninstall">卸载</string>
     <string name="settings_uninstall_temporary">临时卸载</string>
     <string name="settings_uninstall_permanent">永久卸载</string>

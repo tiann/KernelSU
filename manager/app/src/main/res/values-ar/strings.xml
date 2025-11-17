@@ -117,8 +117,6 @@
 \nأستمرار؟</string>
     <string name="select_kmi">اختر KMI</string>
     <string name="select_file_tip">يوصى باستخدام صورة القسم %1$s</string>
-    <string name="shrink_sparse_image">تصغير الصورة المتفرقة</string>
-    <string name="shrink_sparse_image_message">قم بتغيير حجم الصورة المتفرقة حيث توجد الإضافة إلى حجمها الفعلي. لاحظ أن هذا قد يتسبب في عمل الإضافة بشكل غير طبيعي، لذا يرجى استخدامها فقط عند الضرورة (مثل النسخ الاحتياطي).</string>
     <string name="settings_uninstall">إلغاء التثبيت</string>
     <string name="settings_uninstall_temporary">إلغاء التثبيت مؤقتًا</string>
     <string name="settings_uninstall_permanent">إلغاء التثبيت بشكل دائم</string>

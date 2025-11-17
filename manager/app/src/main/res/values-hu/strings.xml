@@ -125,10 +125,8 @@
     <string name="action">Művelet</string>
     <string name="direct_install">Közvetlen telepítés (Ajánlott)</string>
     <string name="install_inactive_slot_warning">Az eszköze **KÉNYSZERÍTETTEN** a jelenleg inaktív helyről fog indulni újraindítás után!\nCsak az OTA befejezése után használja.\nFolytatja?</string>
-    <string name="shrink_sparse_image_message">Átméretezi a sparse képfájlt, ahol a modul található, a tényleges méretére. Vegye figyelembe, hogy ez a modul rendellenes működését okozhatja, ezért kérjük, hogy csak akkor használja, ha szükséges (például biztonsági mentéshez).</string>
     <string name="settings_restore_stock_image_message">Állítsa vissza a gyári képfájlt (ha létezik biztonsági mentés). Általában OTA előtt használják. Ha a KernelSU-t szeretné eltávolítani, használja a végleges eltávolítás opciót.</string>
     <string name="settings_check_update">Frissítés ellenőrzése</string>
     <string name="settings_check_update_summary">Automatikusan keressen frissítéseket az alkalmazás megnyitásakor</string>
     <string name="log_saved">Mentett naplók</string>
-    <string name="shrink_sparse_image">Sparse képfájl minimalizálása</string>
 </resources>

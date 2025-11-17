@@ -122,8 +122,6 @@
     <string name="install_only_support_ko_file">Podržane su samo .ko datoteke</string>
     <string name="select_file_tip">Preporučuje se particija %1$s</string>
     <string name="select_kmi">Odaberi KMI</string>
-    <string name="shrink_sparse_image">Minimiziraj sparse image</string>
-    <string name="shrink_sparse_image_message">Promijeni veličinu sparse image na mjestu gdje se nalazi modul na stvarnu veličinu. Imajte na umu da to može uzrokovati abnormalan rad modula, stoga ga koristite samo kada je to potrebno (npr. za sigurnosnu kopiju)</string>
     <string name="settings_uninstall">Deinstaliraj</string>
     <string name="settings_uninstall_temporary">Privremeno deinstaliraj</string>
     <string name="settings_uninstall_permanent">Trajno deinstaliraj</string>
