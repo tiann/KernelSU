@@ -84,6 +84,11 @@ struct ksu_manage_mark_cmd {
     __u32 result; // Output: for get operation - mark status or reg_count
 };
 
+#define KSU_MARK_GET 1
+#define KSU_MARK_MARK 2
+#define KSU_MARK_UNMARK 3
+#define KSU_MARK_REFRESH 4
+
 struct ksu_nuke_ext4_sysfs_cmd {
     __aligned_u64 arg; // Input: mnt pointer
 };
@@ -98,10 +103,6 @@ struct ksu_add_try_umount_cmd {
 #define KSU_UMOUNT_ADD 1   // add entry (path + flags)
 #define KSU_UMOUNT_DEL 2   // delete entry, strcmp
 
-#define KSU_MARK_GET 1
-#define KSU_MARK_MARK 2
-#define KSU_MARK_UNMARK 3
-#define KSU_MARK_REFRESH 4
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)
