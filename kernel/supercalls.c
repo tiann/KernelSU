@@ -19,6 +19,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
+#include "kernel_umount.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "objsec.h"

@@ -16,7 +16,6 @@
 #include "selinux/selinux.h"
 #include "feature.h"
 #include "ksud.h"
-#include "supercalls.h"
 
 static bool ksu_kernel_umount_enabled = true;
 

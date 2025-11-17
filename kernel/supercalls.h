@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 #include <linux/ioctl.h>
-#include <linux/list.h>
 #include "app_profile.h"
 
 // Magic numbers for reboot hook to install fd
@@ -88,14 +87,6 @@ struct ksu_manage_mark_cmd {
 struct ksu_nuke_ext4_sysfs_cmd {
     __aligned_u64 arg; // Input: mnt pointer
 };
-
-// for the umount list
-struct mount_entry {
-    char *umountable;
-    struct list_head list;
-};
-
-extern struct list_head mount_list;
 
 struct ksu_add_try_umount_cmd {
     __aligned_u64 arg; // Input: mnt pointer
