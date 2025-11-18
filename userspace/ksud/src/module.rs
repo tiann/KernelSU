@@ -594,12 +594,14 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
         let remove = path.join(defs::REMOVE_FILE_NAME).exists();
         let web = path.join(defs::MODULE_WEB_DIR).exists();
         let action = path.join(defs::MODULE_ACTION_SH).exists();
+        let need_mount = path.join("system").exists();
 
         module_prop_map.insert("enabled".to_owned(), enabled.to_string());
         module_prop_map.insert("update".to_owned(), update.to_string());
         module_prop_map.insert("remove".to_owned(), remove.to_string());
         module_prop_map.insert("web".to_owned(), web.to_string());
         module_prop_map.insert("action".to_owned(), action.to_string());
+        module_prop_map.insert("mount".to_owned(), need_mount.to_string());
 
         modules.push(module_prop_map);
     }
