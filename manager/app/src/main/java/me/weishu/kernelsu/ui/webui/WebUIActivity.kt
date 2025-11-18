@@ -119,7 +119,7 @@ class WebUIActivity : ComponentActivity() {
             val density = resources.displayMetrics.density
 
             ViewCompat.setOnApplyWindowInsetsListener(this) { _, windowInsets ->
-                val inset = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                val inset = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
                 insets = Insets(
                     top = (inset.top / density).toInt(),
                     bottom = (inset.bottom / density).toInt(),
