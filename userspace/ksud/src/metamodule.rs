@@ -72,6 +72,36 @@ pub fn has_metamodule() -> bool {
     get_metamodule_path().is_some()
 }
 
+/// Check if it's safe to install a regular module
+/// Returns Ok(()) if safe, Err(is_disabled) if blocked
+/// - Err(true) means metamodule is disabled
+/// - Err(false) means metamodule is in other unstable state
+pub fn check_install_safety() -> Result<(), bool> {
+    // No metamodule → safe
+    let Some(metamodule_path) = get_metamodule_path() else {
+        return Ok(());
+    };
+
+    // No metainstall.sh → safe (uses default installer)
+    let metainstall_path = metamodule_path.join(defs::METAMODULE_METAINSTALL_SCRIPT);
+    if !metainstall_path.exists() {
+        return Ok(());
+    }
+
+    // Check for marker files
+    let has_update = metamodule_path.join(defs::UPDATE_FILE_NAME).exists();
+    let has_remove = metamodule_path.join(defs::REMOVE_FILE_NAME).exists();
+    let has_disable = metamodule_path.join(defs::DISABLE_FILE_NAME).exists();
+
+    // Stable state (no markers) → safe
+    if !has_update && !has_remove && !has_disable {
+        return Ok(());
+    }
+
+    // Return true if disabled, false for other unstable states
+    Err(has_disable && !has_update && !has_remove)
+}
+
 /// Create or update the metamodule symlink
 /// Points /data/adb/metamodule -> /data/adb/modules/{module_id}
 pub(crate) fn ensure_symlink(module_path: &Path) -> Result<()> {
