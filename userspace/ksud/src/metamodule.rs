@@ -83,8 +83,17 @@ pub fn check_install_safety() -> Result<(), bool> {
     };
 
     // No metainstall.sh → safe (uses default installer)
-    let metainstall_path = metamodule_path.join(defs::METAMODULE_METAINSTALL_SCRIPT);
-    if !metainstall_path.exists() {
+    // The staged update directory may contain the latest scripts, so check both locations
+    let has_metainstall = metamodule_path
+        .join(defs::METAMODULE_METAINSTALL_SCRIPT)
+        .exists()
+        || metamodule_path.file_name().is_some_and(|module_id| {
+            Path::new(defs::MODULE_UPDATE_DIR)
+                .join(module_id)
+                .join(defs::METAMODULE_METAINSTALL_SCRIPT)
+                .exists()
+        });
+    if !has_metainstall {
         return Ok(());
     }
 
