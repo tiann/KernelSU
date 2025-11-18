@@ -363,6 +363,32 @@ enum Kernel {
         /// mount point
         mnt: String,
     },
+    /// Manage umount list
+    Umount {
+        #[command(subcommand)]
+        command: UmountOp,
+    },
+    /// Notify that module is mounted
+    NotifyModuleMounted,
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum UmountOp {
+    /// Add mount point to umount list
+    Add {
+        /// mount point path
+        mnt: String,
+        /// umount flags (default: 0, MNT_DETACH: 2)
+        #[arg(short, long, default_value = "0")]
+        flags: u32,
+    },
+    /// Delete mount point from umount list
+    Del {
+        /// mount point path
+        mnt: String,
+    },
+    /// Wipe all entries from umount list
+    Wipe,
 }
 
 pub fn run() -> Result<()> {
@@ -511,6 +537,15 @@ pub fn run() -> Result<()> {
         } => crate::boot_patch::restore(boot, magiskboot, flash),
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),
+            Kernel::Umount { command } => match command {
+                UmountOp::Add { mnt, flags } => ksucalls::umount_list_add(&mnt, flags),
+                UmountOp::Del { mnt } => ksucalls::umount_list_del(&mnt),
+                UmountOp::Wipe => ksucalls::umount_list_wipe().map_err(Into::into),
+            },
+            Kernel::NotifyModuleMounted => {
+                ksucalls::report_module_mounted();
+                Ok(())
+            }
         },
     };
 
