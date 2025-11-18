@@ -344,6 +344,23 @@ fn _install_module(zip: &str) -> Result<()> {
     // Check if this module is a metamodule
     let is_metamodule = metamodule::is_metamodule(&module_prop);
 
+    // Check if it's safe to install regular module
+    if !is_metamodule && let Err(is_disabled) = metamodule::check_install_safety() {
+        println!("\n❌ Installation Blocked");
+        println!("┌────────────────────────────────");
+        println!("│ A metamodule with custom installer is active");
+        println!("│");
+        if is_disabled {
+            println!("│ Current state: Disabled");
+            println!("│ Action required: Re-enable or uninstall it, then reboot");
+        } else {
+            println!("│ Current state: Pending changes");
+            println!("│ Action required: Reboot to apply changes first");
+        }
+        println!("└─────────────────────────────────\n");
+        bail!("Metamodule installation blocked");
+    }
+
     // All modules (including metamodules) are installed to MODULE_UPDATE_DIR
     let updated_dir = Path::new(defs::MODULE_UPDATE_DIR).join(module_id);
 
