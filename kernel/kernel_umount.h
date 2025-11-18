@@ -3,6 +3,7 @@
 
 #include <linux/types.h>
 #include <linux/list.h>
+#include <linux/rwsem.h>
 
 void ksu_kernel_umount_init(void);
 void ksu_kernel_umount_exit(void);
@@ -17,5 +18,6 @@ struct mount_entry {
     struct list_head list;
 };
 extern struct list_head mount_list;
+extern struct rw_semaphore mount_list_lock;
 
 #endif

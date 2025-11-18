@@ -479,6 +479,7 @@ static int do_nuke_ext4_sysfs(void __user *arg)
 }
 
 struct list_head mount_list = LIST_HEAD_INIT(mount_list);
+DECLARE_RWSEM(mount_list_lock);
 
 static int add_try_umount(void __user *arg)
 {
@@ -492,12 +493,14 @@ static int add_try_umount(void __user *arg)
     switch (cmd.mode) {
         case KSU_UMOUNT_WIPE: {
             struct mount_entry *entry, *tmp;
+            down_write(&mount_list_lock);
             list_for_each_entry_safe(entry, tmp, &mount_list, list) {
                 pr_info("wipe_umount_list: removing entry: %s\n", entry->umountable);
                 list_del(&entry->list);
                 kfree(entry->umountable);
                 kfree(entry);
             }
+            up_write(&mount_list_lock);
 
             return 0;
         }
@@ -519,11 +522,14 @@ static int add_try_umount(void __user *arg)
                 return -1;
             }
 
+            down_write(&mount_list_lock);
+
             // disallow dupes
             // if this gets too many, we can consider moving this whole task to a kthread
             list_for_each_entry(entry, &mount_list, list) {
                 if (!strcmp(entry->umountable, buf)) {
                     pr_info("cmd_add_try_umount: %s is already here!\n", buf);
+                    up_write(&mount_list_lock);
                     kfree(new_entry->umountable);
                     kfree(new_entry);
                     return -1;
@@ -539,6 +545,7 @@ static int add_try_umount(void __user *arg)
 
             // debug
             list_add(&new_entry->list, &mount_list);
+            up_write(&mount_list_lock);
             pr_info("cmd_add_try_umount: %s added!\n", buf);
 
             return 0;
@@ -552,6 +559,7 @@ static int add_try_umount(void __user *arg)
             
             buf[sizeof(buf) - 1] = '\0';
 
+            down_write(&mount_list_lock);
             list_for_each_entry_safe(entry, tmp, &mount_list, list) {
                 if (!strcmp(entry->umountable, buf)) {
                     pr_info("cmd_add_try_umount: entry removed: %s\n", entry->umountable);
@@ -560,6 +568,7 @@ static int add_try_umount(void __user *arg)
                     kfree(entry);
                 }
             }
+            up_write(&mount_list_lock);
             
             return 0;
         }
