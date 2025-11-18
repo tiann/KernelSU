@@ -368,6 +368,8 @@ enum Kernel {
         #[command(subcommand)]
         command: UmountOp,
     },
+    /// Notify that module is mounted
+    NotifyModuleMounted,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -540,6 +542,10 @@ pub fn run() -> Result<()> {
                 UmountOp::Del { mnt } => ksucalls::umount_list_del(&mnt),
                 UmountOp::Wipe => ksucalls::umount_list_wipe().map_err(Into::into),
             },
+            Kernel::NotifyModuleMounted => {
+                ksucalls::report_module_mounted();
+                Ok(())
+            }
         },
     };
 
