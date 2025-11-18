@@ -6,6 +6,7 @@ use std::sync::OnceLock;
 // Event constants
 const EVENT_POST_FS_DATA: u32 = 1;
 const EVENT_BOOT_COMPLETED: u32 = 2;
+const EVENT_MODULE_MOUNTED: u32 = 3;
 
 const KSU_IOCTL_GRANT_ROOT: u32 = 0x00004b01; // _IOC(_IOC_NONE, 'K', 1, 0)
 const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
@@ -17,6 +18,7 @@ const KSU_IOCTL_SET_FEATURE: u32 = 0x40004b0e; // _IOC(_IOC_WRITE, 'K', 14, 0)
 const KSU_IOCTL_GET_WRAPPER_FD: u32 = 0x40004b0f; // _IOC(_IOC_WRITE, 'K', 15, 0)
 const KSU_IOCTL_MANAGE_MARK: u32 = 0xc0004b10; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
 const KSU_IOCTL_NUKE_EXT4_SYSFS: u32 = 0x40004b11; // _IOC(_IOC_WRITE, 'K', 17, 0)
+const KSU_IOCTL_ADD_TRY_UMOUNT: u32 = 0x40004b12; // _IOC(_IOC_WRITE, 'K', 18, 0)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -79,11 +81,24 @@ pub struct NukeExt4SysfsCmd {
     pub arg: u64,
 }
 
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct AddTryUmountCmd {
+    arg: u64,   // char ptr, this is the mountpoint
+    flags: u32, // this is the flag we use for it
+    mode: u8,   // denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry
+}
+
 // Mark operation constants
 const KSU_MARK_GET: u32 = 1;
 const KSU_MARK_MARK: u32 = 2;
 const KSU_MARK_UNMARK: u32 = 3;
 const KSU_MARK_REFRESH: u32 = 4;
+
+// Umount operation constants
+const KSU_UMOUNT_WIPE: u8 = 0;
+const KSU_UMOUNT_ADD: u8 = 1;
+const KSU_UMOUNT_DEL: u8 = 2;
 
 // Global driver fd cache
 #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -209,6 +224,10 @@ pub fn report_boot_complete() {
     report_event(EVENT_BOOT_COMPLETED);
 }
 
+pub fn report_module_mounted() {
+    report_event(EVENT_MODULE_MOUNTED);
+}
+
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn check_kernel_safemode() -> bool {
     let mut cmd = CheckSafemodeCmd { in_safe_mode: 0 };
@@ -303,5 +322,40 @@ pub fn nuke_ext4_sysfs(mnt: &str) -> anyhow::Result<()> {
         arg: c_mnt.as_ptr() as u64,
     };
     ksuctl(KSU_IOCTL_NUKE_EXT4_SYSFS, &mut ioctl_cmd as *mut _)?;
+    Ok(())
+}
+
+/// Wipe all entries from umount list
+pub fn umount_list_wipe() -> std::io::Result<()> {
+    let mut cmd = AddTryUmountCmd {
+        arg: 0,
+        flags: 0,
+        mode: KSU_UMOUNT_WIPE,
+    };
+    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &mut cmd as *mut _)?;
+    Ok(())
+}
+
+/// Add mount point to umount list
+pub fn umount_list_add(path: &str, flags: u32) -> anyhow::Result<()> {
+    let c_path = std::ffi::CString::new(path)?;
+    let mut cmd = AddTryUmountCmd {
+        arg: c_path.as_ptr() as u64,
+        flags,
+        mode: KSU_UMOUNT_ADD,
+    };
+    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &mut cmd as *mut _)?;
+    Ok(())
+}
+
+/// Delete mount point from umount list
+pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
+    let c_path = std::ffi::CString::new(path)?;
+    let mut cmd = AddTryUmountCmd {
+        arg: c_path.as_ptr() as u64,
+        flags: 0,
+        mode: KSU_UMOUNT_DEL,
+    };
+    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &mut cmd as *mut _)?;
     Ok(())
 }

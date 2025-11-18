@@ -19,6 +19,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
+#include "kernel_umount.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "objsec.h"
@@ -477,6 +478,111 @@ static int do_nuke_ext4_sysfs(void __user *arg)
     return nuke_ext4_sysfs(mnt);
 }
 
+struct list_head mount_list = LIST_HEAD_INIT(mount_list);
+DECLARE_RWSEM(mount_list_lock);
+
+static int add_try_umount(void __user *arg)
+{
+    struct mount_entry *new_entry, *entry, *tmp;
+    struct ksu_add_try_umount_cmd cmd;
+    char buf[256] = {0};
+
+    if (copy_from_user(&cmd, arg, sizeof cmd))
+        return -EFAULT;
+
+    switch (cmd.mode) {
+        case KSU_UMOUNT_WIPE: {
+            struct mount_entry *entry, *tmp;
+            down_write(&mount_list_lock);
+            list_for_each_entry_safe(entry, tmp, &mount_list, list) {
+                pr_info("wipe_umount_list: removing entry: %s\n", entry->umountable);
+                list_del(&entry->list);
+                kfree(entry->umountable);
+                kfree(entry);
+            }
+            up_write(&mount_list_lock);
+
+            return 0;
+        }
+
+        case KSU_UMOUNT_ADD: {
+            long len = strncpy_from_user(buf, (const char __user *)cmd.arg, 256);
+            if (len <= 0)
+                return -EFAULT;    
+            
+            buf[sizeof(buf) - 1] = '\0';
+
+            new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
+            if (!new_entry)
+                return -ENOMEM;
+
+            new_entry->umountable = kstrdup(buf, GFP_KERNEL);
+            if (!new_entry->umountable) {
+                kfree(new_entry);
+                return -1;
+            }
+
+            down_write(&mount_list_lock);
+
+            // disallow dupes
+            // if this gets too many, we can consider moving this whole task to a kthread
+            list_for_each_entry(entry, &mount_list, list) {
+                if (!strcmp(entry->umountable, buf)) {
+                    pr_info("cmd_add_try_umount: %s is already here!\n", buf);
+                    up_write(&mount_list_lock);
+                    kfree(new_entry->umountable);
+                    kfree(new_entry);
+                    return -1;
+                }
+            }
+
+            // now check flags and add
+            // this also serves as a null check
+            if (cmd.flags)
+                new_entry->flags = cmd.flags;
+            else
+                new_entry->flags = 0;
+
+            // debug
+            list_add(&new_entry->list, &mount_list);
+            up_write(&mount_list_lock);
+            pr_info("cmd_add_try_umount: %s added!\n", buf);
+
+            return 0;
+        }
+
+        // this is just strcmp'd wipe anyway
+        case KSU_UMOUNT_DEL: {
+            long len = strncpy_from_user(buf, (const char __user *)cmd.arg, sizeof(buf) - 1);
+            if (len <= 0)
+                return -EFAULT;
+            
+            buf[sizeof(buf) - 1] = '\0';
+
+            down_write(&mount_list_lock);
+            list_for_each_entry_safe(entry, tmp, &mount_list, list) {
+                if (!strcmp(entry->umountable, buf)) {
+                    pr_info("cmd_add_try_umount: entry removed: %s\n", entry->umountable);
+                    list_del(&entry->list);
+                    kfree(entry->umountable);
+                    kfree(entry);
+                }
+            }
+            up_write(&mount_list_lock);
+            
+            return 0;
+        }
+        
+        default: {
+            pr_err("cmd_add_try_umount: invalid operation %u\n", cmd.mode);
+            return -EINVAL;
+        }
+
+    } // switch(cmd.mode)
+    
+    return 0;
+}
+
 // IOCTL handlers mapping table
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GRANT_ROOT, .name = "GRANT_ROOT", .handler = do_grant_root, .perm_check = allowed_for_su },
@@ -496,6 +602,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GET_WRAPPER_FD, .name = "GET_WRAPPER_FD", .handler = do_get_wrapper_fd, .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_MANAGE_MARK, .name = "MANAGE_MARK", .handler = do_manage_mark, .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_NUKE_EXT4_SYSFS, .name = "NUKE_EXT4_SYSFS", .handler = do_nuke_ext4_sysfs, .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_ADD_TRY_UMOUNT, .name = "ADD_TRY_UMOUNT", .handler = add_try_umount, .perm_check = manager_or_root },
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
