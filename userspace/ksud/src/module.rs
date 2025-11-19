@@ -295,13 +295,18 @@ pub fn handle_updated_modules() -> Result<()> {
 
         if let Some(name) = module.file_name() {
             let old_dir = modules_root.join(name);
-            if old_dir.exists()
-                && let Err(e) = remove_dir_all(&old_dir)
-            {
-                log::error!("Failed to remove old {}: {}", old_dir.display(), e);
+            let mut disabled = false;
+            if old_dir.exists() {
+                // If the old module is disabled, we need to also disable the new one
+                disabled = old_dir.join(defs::DISABLE_FILE_NAME).exists();
+                remove_dir_all(&old_dir)?;
             }
-            if let Err(e) = rename(module, &old_dir) {
-                log::error!("Failed to move new module {}: {}", module.display(), e);
+            rename(module, &old_dir)?;
+            if disabled {
+                let path = module.join(defs::DISABLE_FILE_NAME);
+                if let Err(e) = ensure_file_exists(&path) {
+                    warn!("Failed to disable module: {} {}", module.display(), e);
+                }
             }
         }
         Ok(())
