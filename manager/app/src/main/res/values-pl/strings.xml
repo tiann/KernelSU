@@ -159,4 +159,7 @@
     <string name="install_select_partition">Wybierz partycję</string>
     <string name="group_contains_apps">Zawiera %d aplikacji</string>
     <string name="metamodule_uninstall_confirm">Czy na pewno chcesz odinstalować moduł %s? Ta czynność wpłynie na wszystkie moduły, a niektóre funkcje zapewniane przez moduł meta (takie jak montowanie) przestaną działać.</string>
+    <string name="undo">Cofnij</string>
+    <string name="module_undo_uninstall_success">Pomyślnie anulowano odinstalowywanie %s</string>
+    <string name="module_undo_uninstall_failed">Nie udało się cofnąć dezinstalacji: %s</string>
 </resources>
