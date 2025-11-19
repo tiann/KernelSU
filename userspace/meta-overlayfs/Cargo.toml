@@ -13,7 +13,7 @@ env_logger = { version = "0.11", default-features = false }
 
 [target.'cfg(any(target_os = "linux", target_os = "android"))'.dependencies]
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", rev = "4a53fbc7cb7a07cabe87125cc21dbc27db316259", features = ["all-apis"] }
-procfs = "0.17"
+procfs = "0.18"
 
 [profile.release]
 strip = true
