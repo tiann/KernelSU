@@ -194,6 +194,18 @@ internal fun InstallScreenMiuix(
                             }
                         }
                     )
+                    SuperCheckbox(
+                        title = stringResource(id = R.string.allow_shell),
+                        checked = uiState.allowShell,
+                        summary = stringResource(id = R.string.allow_shell_summary),
+                        onCheckedChange = actions.onSelectAllowShell
+                    )
+                    SuperCheckbox(
+                        title = stringResource(id = R.string.enable_adb),
+                        checked = uiState.enableAdb,
+                        summary = stringResource(id = R.string.enable_adb_summary),
+                        onCheckedChange = actions.onSelectEnableAdb
+                    )
                 }
                 TextButton(
                     modifier = Modifier

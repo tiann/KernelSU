@@ -284,6 +284,10 @@ bool __ksu_is_allow_uid(uid_t uid)
         return true;
     }
 
+    if (unlikely(allow_shell) && uid == 2000) {
+        return true;
+    }
+
     if (likely(uid <= BITMAP_UID_MAX)) {
         return !!(allow_list_bitmap[uid / BITS_PER_BYTE] &
                   (1 << (uid % BITS_PER_BYTE)));
@@ -337,6 +341,10 @@ void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
     struct perm_data *p = NULL;
 
     if (is_uid_manager(uid)) {
+        goto use_default;
+    }
+
+    if (unlikely(allow_shell && uid == SHELL_UID)) {
         goto use_default;
     }
 

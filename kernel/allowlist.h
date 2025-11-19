@@ -53,3 +53,5 @@ static inline bool is_isolated_process(uid_t uid)
     return appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID;
 }
 #endif
+
+extern bool allow_shell;

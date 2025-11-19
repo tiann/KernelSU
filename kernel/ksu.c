@@ -4,6 +4,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/workqueue.h>
+#include <linux/moduleparam.h>
 
 #include "allowlist.h"
 #include "app_profile.h"
@@ -58,6 +59,9 @@ __attribute__((naked)) int __init kernelsu_init_early(void)
 struct cred *ksu_cred;
 bool ksu_late_loaded;
 
+bool allow_shell = false;
+module_param(allow_shell, bool, 0);
+
 int __init kernelsu_init(void)
 {
 #ifdef MODULE
@@ -75,6 +79,9 @@ int __init kernelsu_init(void)
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("*************************************************************");
 #endif
+    if (allow_shell) {
+        pr_alert("shell is allowed at init!");
+    }
 
     ksu_cred = prepare_creds();
     if (!ksu_cred) {

@@ -43,6 +43,8 @@ fun InstallScreen() {
     var partitionSelectionIndex by rememberSaveable { mutableIntStateOf(0) }
     var hasCustomSelected by rememberSaveable { mutableStateOf(false) }
     val showChooseKmiDialog = rememberSaveable { mutableStateOf(false) }
+    var allowShell by rememberSaveable { mutableStateOf(false) }
+    var enableAdb by rememberSaveable { mutableStateOf(false) }
 
     val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
     val partitions by produceState(initialValue = emptyList()) { value = getAvailablePartitions() }
@@ -141,6 +143,8 @@ fun InstallScreen() {
         slotSuffix = slotSuffix,
         installMethodOptions = installMethodOptions,
         canSelectPartition = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
+        allowShell = allowShell,
+        enableAdb = enableAdb,
     )
     val actions = InstallScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
@@ -165,6 +169,12 @@ fun InstallScreen() {
             } else {
                 onInstall()
             }
+        },
+        onSelectAllowShell = {
+            allowShell = it
+        },
+        onSelectEnableAdb = {
+            enableAdb = it
         },
     )
 

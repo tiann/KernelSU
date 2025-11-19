@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.material.SegmentedCheckboxItem
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
@@ -112,6 +113,22 @@ internal fun InstallScreenMaterial(
                                 }
                             },
                             onClick = actions.onUploadLkm
+                        )
+                    }
+                    add {
+                        SegmentedCheckboxItem(
+                            title = stringResource(id = R.string.allow_shell),
+                            summary = stringResource(id = R.string.allow_shell_summary),
+                            checked = state.allowShell,
+                            onCheckedChange = actions.onSelectAllowShell,
+                        )
+                    }
+                    add {
+                        SegmentedCheckboxItem(
+                            title = stringResource(id = R.string.enable_adb),
+                            summary = stringResource(id = R.string.enable_adb_summary),
+                            checked = state.enableAdb,
+                            onCheckedChange = actions.onSelectEnableAdb,
                         )
                     }
                 }
