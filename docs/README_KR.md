@@ -15,7 +15,7 @@
 ## 기능들
 
 1. 커널 기반 `su` 및 루트 액세스 관리.
-2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) 기반 모듈 시스템.
+2. [metamodules](https://kernelsu.org/guide/metamodule.html) 기반 모듈 시스템: 플러그인 가능한 시스템리스 수정 인프라.
 3. [App Profile](https://kernelsu.org/guide/app-profile.html): 루트 권한을 케이지에 가둡니다.
 
 ## 호환 상태

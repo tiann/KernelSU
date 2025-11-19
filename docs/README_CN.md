@@ -15,7 +15,7 @@
 ## 特性
 
 - 基于内核的 `su` 和权限管理。
-- 基于 [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) 的模块系统。
+- 基于 [metamodules](https://kernelsu.org/zh_CN/guide/metamodule.html) 的模块系统：可插拔的模块架构。
 - [App Profile](https://kernelsu.org/zh_CN/guide/app-profile.html): 把 Root 权限关进笼子里。
 
 ## 兼容状态

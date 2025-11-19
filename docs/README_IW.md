@@ -15,7 +15,7 @@
 ## תכונות
 
 1. ניהול root ו־`su` מבוססים על Kernel.
-2. מערכת מודולים מבוססת [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. מערכת מודולים מבוססת [metamodules](https://kernelsu.org/guide/metamodule.html): תשתית מודולרית לשינויים systemless.
 3. [פרופיל אפליקציה](https://kernelsu.org/guide/app-profile.html): נעילת גישת root בכלוב.
 
 ## מצב תאימות

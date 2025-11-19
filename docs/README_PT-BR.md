@@ -15,7 +15,7 @@ Uma solução root baseada em kernel para dispositivos Android.
 ## Características
 
 1. `su` e gerenciamento de acesso root baseado em kernel.
-2. Sistema de módulos baseado em [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. Sistema de módulos baseado em [metamodules](https://kernelsu.org/pt_BR/guide/metamodule.html): Infraestrutura plugável para modificações systemless.
 3. [Perfil do Aplicativo](https://kernelsu.org/pt_BR/guide/app-profile.html): Tranque o poder root em uma gaiola.
 
 ## Estado de compatibilidade

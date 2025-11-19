@@ -15,7 +15,7 @@ Una soluzione per il root basata sul kernel per i dispositivi Android.
 ## Funzionalità
 
 1. `su` e accesso root basato sul kernel.
-2. Sistema di moduli per la modifica del sistema basato su [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. Sistema di moduli basato su [metamodules](https://kernelsu.org/guide/metamodule.html): Infrastruttura modulare per modifiche systemless.
 3. [App profile](https://kernelsu.org/guide/app-profile.html): Limita i poteri dell'accesso root a permessi specifici.
 
 ## Compatibilità

@@ -15,7 +15,7 @@
 ## 特色功能
 
 1. 以核心內 `su` 管理 Root 存取。
-2. 以 [OverlayFS](https://zh.wikipedia.org/zh-tw/OverlayFS) 運作模組系統。
+2. 以 [metamodules](https://kernelsu.org/zh_TW/guide/metamodule.html) 運作模組系統：可插拔的無系統修改基礎架構。
 3. [App Profile](https://kernelsu.org/zh_TW/guide/app-profile.html)：使 Root 掌握的生殺大權受制於此。
 
 ## 相容事態
