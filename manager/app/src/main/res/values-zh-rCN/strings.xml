@@ -154,5 +154,8 @@
     <string name="refresh_release">松开刷新</string>
     <string name="refresh_refresh">正在刷新…</string>
     <string name="refresh_complete">刷新成功</string>
+    <string name="undo">撤销</string>
+    <string name="module_undo_uninstall_success">成功撤销卸载 %s</string>
+    <string name="module_undo_uninstall_failed">撤销卸载 %s 失败</string>
     <string name="group_contains_apps">包含 %1$d 个应用</string>
 </resources>

@@ -471,6 +471,21 @@ pub fn install_module(zip: &str) -> Result<()> {
     result
 }
 
+pub fn undo_uninstall_module(id: &str) -> Result<()> {
+    let module_path = Path::new(defs::MODULE_DIR).join(id);
+    ensure!(module_path.exists(), "Module {} not found", id);
+
+    // Remove the remove mark
+    let remove_file = module_path.join(defs::REMOVE_FILE_NAME);
+    if remove_file.exists() {
+        std::fs::remove_file(&remove_file)
+            .with_context(|| format!("Failed to delete remove file for module '{}'", id))?;
+        info!("Removed the remove mark for module {}", id);
+    }
+
+    Ok(())
+}
+
 pub fn uninstall_module(id: &str) -> Result<()> {
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
