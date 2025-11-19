@@ -157,6 +157,6 @@
     <string name="group_contains_apps">Chứa %d ứng dụng</string>
     <string name="metamodule_uninstall_confirm">Bạn có chắc chắn muốn gỡ cài đặt module %s không? Thao tác này sẽ ảnh hưởng đến tất cả các module và một số tính năng do siêu module cung cấp (chẳng hạn như mount) sẽ không còn hoạt động nữa.</string>
     <string name="undo">Hoàn tác</string>
-    <string name="module_undo_uninstall_success">Đã hủy việc gỡ cài đặt %s thành công</string>
+    <string name="module_undo_uninstall_success">Đã huỷ việc gỡ cài đặt %s thành công</string>
     <string name="module_undo_uninstall_failed">Hoàn tác gỡ cài đặt: %s thất bại</string>
 </resources>
