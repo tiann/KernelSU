@@ -288,24 +288,31 @@ pub fn prune_modules() -> Result<()> {
 
 pub fn handle_updated_modules() -> Result<()> {
     let modules_root = Path::new(MODULE_DIR);
-    foreach_module(ModuleType::Updated, |module| {
-        if !module.is_dir() {
+    foreach_module(ModuleType::Updated, |updated_module| {
+        if !updated_module.is_dir() {
             return Ok(());
         }
 
-        if let Some(name) = module.file_name() {
-            let old_dir = modules_root.join(name);
+        if let Some(name) = updated_module.file_name() {
+            let module_dir = modules_root.join(name);
             let mut disabled = false;
-            if old_dir.exists() {
+            let mut removed = false;
+            if module_dir.exists() {
                 // If the old module is disabled, we need to also disable the new one
-                disabled = old_dir.join(defs::DISABLE_FILE_NAME).exists();
-                remove_dir_all(&old_dir)?;
+                disabled = module_dir.join(defs::DISABLE_FILE_NAME).exists();
+                removed = module_dir.join(defs::REMOVE_FILE_NAME).exists();
+                remove_dir_all(&module_dir)?;
             }
-            rename(module, &old_dir)?;
-            if disabled {
-                let path = module.join(defs::DISABLE_FILE_NAME);
+            rename(updated_module, &module_dir)?;
+            if removed {
+                let path = module_dir.join(defs::REMOVE_FILE_NAME);
                 if let Err(e) = ensure_file_exists(&path) {
-                    warn!("Failed to disable module: {} {}", module.display(), e);
+                    warn!("Failed to create {}: {}", path.display(), e);
+                }
+            } else if disabled {
+                let path = module_dir.join(defs::DISABLE_FILE_NAME);
+                if let Err(e) = ensure_file_exists(&path) {
+                    warn!("Failed to create {}: {}", path.display(), e);
                 }
             }
         }
