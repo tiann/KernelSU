@@ -62,7 +62,7 @@
     <string name="profile_custom">사용자 지정</string>
     <string name="profile_template">템플릿</string>
     <string name="profile_name">프로필 이름</string>
-    <string name="profile_namespace">마운트할 네임스페이스</string>
+    <string name="profile_namespace">마운트 대상 네임스페이스</string>
     <string name="profile_namespace_inherited">상속</string>
     <string name="profile_namespace_global">전역</string>
     <string name="profile_namespace_individual">개별</string>
@@ -125,7 +125,7 @@
     <string name="direct_install">직접 설치 (권장)</string>
     <string name="install_inactive_slot">비활성 슬롯에 설치 (OTA 이후)</string>
     <string name="settings_restore_stock_image">순정 이미지 복구</string>
-    <string name="settings_restore_stock_image_message">순정 이미지 복구 (백업 존재 시), OTA 이전에 사용합니다. KernelSU를 제거해야 한다면, \"영구 삭제\"를 사용하세요.</string>
+    <string name="settings_restore_stock_image_message">순정 이미지 복구 (백업 존재 시), OTA 이전에 사용합니다. KernelSU를 제거해야 하는 경우, \"영구 삭제\"를 사용하세요.</string>
     <string name="settings_check_update">업데이트 확인</string>
     <string name="settings_check_update_summary">앱 실행 시 자동으로 업데이트를 확인합니다.</string>
     <string name="log_saved">로그 저장됨</string>
@@ -151,4 +151,5 @@
     <string name="refresh_release">놓아서 새로 고침</string>
     <string name="refresh_refresh">새로 고침 중…</string>
     <string name="refresh_complete">새로 고침 성공</string>
+    <string name="install_select_partition">파티션 선택</string>
 </resources>

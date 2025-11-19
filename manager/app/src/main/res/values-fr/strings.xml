@@ -5,7 +5,7 @@
     <string name="home_working_version">Version : %d</string>
     <string name="home_superuser_count">Super-utilisateurs : %d</string>
     <string name="home_module_count">Modules : %d</string>
-    <string name="home_unsupported_reason">KernelSU ne prend désormais en charge que les noyaux GKI</string>
+    <string name="home_unsupported_reason">KernelSU prend désormais en charge seulement les noyaux GKI.</string>
     <string name="home_kernel">Version du noyau</string>
     <string name="home_fingerprint">Empreinte digitale</string>
     <string name="home_selinux_status">Mode SELinux</string>
@@ -49,7 +49,7 @@
     <string name="module_magisk_conflict">Les modules sont indisponibles en raison d\'un conflit avec Magisk !</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_support_title">Soutenez-nous</string>
-    <string name="home_click_to_learn_kernelsu">Découvrez comment installer KernelSU et utiliser les modules</string>
+    <string name="home_click_to_learn_kernelsu">Apprenez à installer KernelSU et à utiliser les modules.</string>
     <string name="home_support_content">KernelSU est, et restera toujours, gratuit et open-source. Néanmoins, vous pouvez nous témoigner de votre soutien en nous faisant un don.</string>
     <string name="about_source_code"><![CDATA[Voir le code source à %1$s<br/>Rejoignez notre canal %2$s]]></string>
     <string name="profile_template">Modèle</string>
@@ -66,7 +66,7 @@
     <string name="profile_umount_modules">Démonter les modules</string>
     <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>
     <string name="profile_umount_modules_summary">L\'activation de cette option permettra à KernelSU de restaurer tous les fichiers modifiés par les modules pour cette application.</string>
-    <string name="settings_umount_modules_default">Démonter les modules par défaut</string>
+    <string name="settings_umount_modules_default">Démonter les modules</string>
     <string name="settings_umount_modules_default_summary">Valeur globale par défaut pour l\'option \"Démonter les modules\" dans les profils d\'application. Lorsque l\'option est activée, les modifications apportées au système par les modules sont supprimées pour les applications qui n\'ont pas de profil défini.</string>
     <string name="profile_selinux_domain">Domaine</string>
     <string name="profile_selinux_rules">Règles</string>
@@ -129,8 +129,8 @@
     <string name="settings_uninstall_permanent_message">Désinstallation complète et permanente de KernelSU (root et tous les modules).</string>
     <string name="settings_uninstall_temporary_message">Désinstaller temporairement KernelSU et rétablir l\'état original au redémarrage suivant.</string>
     <string name="save_log">Enregistrer les journaux</string>
-    <string name="module_sort_action_first">Trier par action</string>
-    <string name="module_sort_enabled_first">Trier par activé</string>
+    <string name="module_sort_action_first">Par action</string>
+    <string name="module_sort_enabled_first">Par activation</string>
     <string name="action">Action</string>
     <string name="log_saved">Journaux enregistrés</string>
     <string name="settings_disable_su">Désactiver la compatibilité avec su</string>
@@ -153,4 +153,8 @@
     <string name="settings_mode_default">Par défaut</string>
     <string name="settings_mode_temp_enable">Activer temporairement</string>
     <string name="settings_mode_always_enable">Activer définitivement</string>
+    <string name="install_select_partition">Sélectionner une partition</string>
+    <string name="metamodule_uninstall_confirm">Voulez-vous vraiment désinstaller le module %s ? Cette action affectera tous les modules, et certaines fonctionnalités fournies par le métamodule (telles que le montage) ne fonctionneront plus.</string>
+    <string name="app_profile_affects_following_apps">Affecte les applis suivantes</string>
+    <string name="group_contains_apps">Contient %d applis</string>
 </resources>

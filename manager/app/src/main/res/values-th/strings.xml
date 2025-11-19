@@ -51,7 +51,7 @@
     <string name="home_click_to_learn_kernelsu">เรียนรู้วิธีการติดตั้ง KernelSU และวิธีใช้งานโมดูลต่าง ๆ</string>
     <string name="home_support_title">สนับสนุนพวกเรา</string>
     <string name="home_support_content">KernelSU จะเป็นโอเพ่นซอร์สฟรีเสมอ อย่างไรก็ตาม คุณสามารถแสดงความห่วงใยได้ด้วยการบริจาค</string>
-    <string name="about_source_code"><![CDATA[ดูซอร์สโค้ดได้ที่ %1$s<br/>และเข้าร่วมช่อง %2$s channel]]></string>
+    <string name="about_source_code"><![CDATA[ดูซอร์สโค้ดได้ที่ %1$s<br/>เข้าร่วม %2$s channel]]></string>
     <string name="profile_custom">กำหนดเอง</string>
     <string name="profile_default">ค่าเริ่มต้น</string>
     <string name="profile_template">เทมเพลต</string>
@@ -128,11 +128,11 @@
     <string name="settings_uninstall_temporary">ถอนการติดตั้งชั่วคราว</string>
     <string name="settings_uninstall_permanent_message">การถอนการติดตั้ง KernelSU (การรูทและโมดูลทั้งหมด) อย่างสมบูรณ์</string>
     <string name="settings_restore_stock_image_message">คืนค่าโรงงานอิมเมจดั้งเดิม (หากมีข้อมูลสำรอง) ส่วนใหญ่มักใช้ก่อนทำการ OTA ซึ่งหากคุณต้องการถอนการติดตั้ง KernelSU โปรดใช้ \"ถอนการติดตั้งถาวร\"</string>
-    <string name="save_log">บันทึกบันทึก</string>
+    <string name="save_log">บันทึก logs</string>
     <string name="action">คำสั่ง</string>
-    <string name="log_saved">บันทึก Log แล้ว</string>
-    <string name="module_sort_action_first">เรียงลำดับ (แบบรันคำสั่งก่อน)</string>
-    <string name="module_sort_enabled_first">เรียงลำดับ (แบบเปิดใช้งานก่อน)</string>
+    <string name="log_saved">บันทึก logs แล้ว</string>
+    <string name="module_sort_action_first">เรียงลำดับ (รันคำสั่งขึ้นก่อน)</string>
+    <string name="module_sort_enabled_first">เรียงลำดับ (เปิดใช้งานขึ้นก่อน)</string>
     <string name="settings_disable_su_summary">ปิดใช้งานความสามารถของแอปต่าง ๆ ในการรับสิทธิ์ root โดยใช้คำสั่ง ⁠su (กระบวนการ root ที่มีอยู่จะไม่ได้รับผลกระทบ)</string>
     <string name="module_install_prompt_with_name">โมดูล %1$s จะถูกติดตั้ง</string>
     <string name="confirm">ยืนยัน</string>
@@ -142,7 +142,7 @@
     <string name="install_upload_lkm_file">ใช้ไฟล์ LKM ในเครื่อง</string>
     <string name="install_only_support_ko_file">รองรับเฉพาะไฟล์ .ko เท่านั้น</string>
     <string name="settings_disable_kernel_umount">ปิดใช้งานการ umount เคอร์เนล</string>
-    <string name="settings_disable_kernel_umount_summary">ปิดใช้งานพฤติกรรมการ umount ในระดับเคอร์เนลควบคุมโดย KernelSU</string>
+    <string name="settings_disable_kernel_umount_summary">ปิดใช้งานพฤติกรรมการ umount ในระดับเคอร์เนลที่ถูกควบคุมโดย KernelSU</string>
     <string name="settings_enable_enhanced_security">เปิดใช้งานการรักษาความปลอดภัยขั้นสูง</string>
     <string name="settings_enable_enhanced_security_summary">เปิดใช้งานนโยบายความปลอดภัยที่เข้มงวดยิ่งขึ้น</string>
     <string name="settings_mode_default">ค่าเริ่มต้น</string>
@@ -153,4 +153,7 @@
     <string name="refresh_release">ปล่อยเพื่อรีเฟรช</string>
     <string name="refresh_refresh">กำลังรีเฟรช…</string>
     <string name="refresh_complete">รีเฟรชสำเร็จ</string>
+    <string name="install_select_partition">เลือกพาร์ทิชัน</string>
+    <string name="app_profile_affects_following_apps">ส่งผลต่อแอปดังต่อไปนี้</string>
+    <string name="group_contains_apps">มีแอป %d รายการ</string>
 </resources>

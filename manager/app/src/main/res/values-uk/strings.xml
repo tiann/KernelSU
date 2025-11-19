@@ -131,8 +131,8 @@
     <string name="settings_restore_stock_image_message">Відновити стоковий заводський образ (якщо є резервна копія), зазвичай використовується перед OTA; якщо вам потрібно видалити KernelSU, використовуйте \"Назавжди видалити\".</string>
     <string name="save_log">Зберегти Журнали</string>
     <string name="module_install_prompt_with_name">Будуть встановлені такі модулі: %1$s</string>
-    <string name="module_sort_action_first">Сортувати (спочатку за дією)</string>
-    <string name="module_sort_enabled_first">Сортувати (спочатку ввімкнено)</string>
+    <string name="module_sort_action_first">Дія спочатку</string>
+    <string name="module_sort_enabled_first">Увімкнено першим</string>
     <string name="confirm">Підтвердити</string>
     <string name="su_not_allowed">Не вдалося надати доступ суперкористувачу для %s</string>
     <string name="action">Дія</string>
@@ -154,4 +154,8 @@
     <string name="refresh_release">Відпустіть для оновлення</string>
     <string name="refresh_refresh">Оновлення…</string>
     <string name="refresh_complete">Оновлено успішно</string>
+    <string name="install_select_partition">Виберіть розділ</string>
+    <string name="metamodule_uninstall_confirm">Ви впевнені, що хочете видалити модуль %s? Ця дія вплине на всі модулі, а деякі функції, що надаються метамодулем (наприклад, монтування), більше не працюватимуть.</string>
+    <string name="app_profile_affects_following_apps">Впливає на такі програми</string>
+    <string name="group_contains_apps">Містить %d програм</string>
 </resources>

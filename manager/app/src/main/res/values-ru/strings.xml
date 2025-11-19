@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Суперпользователи: %d</string>
+    <string name="home_superuser_count">Суперюзеры: %d</string>
     <!--Don't translate this string!-->
     <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
@@ -18,7 +18,7 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Суперпользователи</string>
+    <string name="superuser">Суперюзеры</string>
     <!--Don't translate this string!-->
     <string name="module_failed_to_enable">Не удалось включить модуль %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль %s</string>
@@ -124,7 +124,7 @@
     <string name="settings_uninstall_temporary">Удалить на время</string>
     <string name="settings_uninstall_permanent_message">Удалить KernelSU (root и все модули) полностью.</string>
     <string name="settings_uninstall_permanent">Удалить полностью</string>
-    <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки</string>
+    <string name="settings_uninstall_temporary_message">Временно удалить KernelSU, восстановить исходное состояние после следующей перезагрузки.</string>
     <string name="settings_uninstall">Удалить</string>
     <string name="settings_restore_stock_image">Восстановить сток образ</string>
     <string name="settings_restore_stock_image_message">Восстановить исходный заводской образ (если существует резервная копия), обычно используется перед OTA; если вам нужно удалить KernelSU, используйте «Удалить полностью».</string>
@@ -135,8 +135,8 @@
     <string name="save_log">Сохранить логи</string>
     <string name="action">Действие</string>
     <string name="log_saved">Логи сохранены</string>
-    <string name="module_sort_action_first">Сортировать (Сначала с действием)</string>
-    <string name="module_sort_enabled_first">Сортировать (Сначала включённые)</string>
+    <string name="module_sort_action_first">Сначала с действием</string>
+    <string name="module_sort_enabled_first">Сначала включённые</string>
     <string name="settings_disable_su">Отключить su совместимость</string>
     <string name="settings_disable_su_summary">Отключить возможность получения root привилегий любым приложениям с помощью команды su (существующие root процессы не будут затронуты).</string>
     <string name="module_install_prompt_with_name">Будут установлены следующие модули: %1$s</string>
@@ -157,4 +157,11 @@
     <string name="settings_mode_temp_enable">Включить временно</string>
     <string name="settings_mode_always_enable">Включить постоянно</string>
     <string name="settings_module_check_update">Проверять обновления модулей</string>
+    <string name="install_select_partition">Выбрать раздел</string>
+    <string name="app_profile_affects_following_apps">Влияет на следующие приложения</string>
+    <string name="group_contains_apps">Содержит %d приложений</string>
+    <string name="metamodule_uninstall_confirm">Вы уверены, что хотите удалить модуль %s? Это действие повлияет на все модули, и некоторые функции метамодуля (например, монтирование) перестанут работать.</string>
+    <string name="undo">Отменить</string>
+    <string name="module_undo_uninstall_failed">не удалось отменить удаление: %s</string>
+    <string name="module_undo_uninstall_success">Удаление %s успешно отменено</string>
 </resources>

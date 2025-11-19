@@ -128,10 +128,10 @@
     <string name="selected_lkm">LKM đã chọn: %s</string>
     <string name="select_file_tip">Phân vùng image %1$s được khuyến nghị</string>
     <string name="save_log">Lưu nhật ký</string>
-    <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
+    <string name="module_sort_action_first">Khởi chạy trước</string>
     <string name="module_install_prompt_with_name">Các module sau đây sẽ được cài đặt: %1$s</string>
     <string name="confirm">Xác nhận</string>
-    <string name="module_sort_enabled_first">Sắp xếp (Đã bật trước)</string>
+    <string name="module_sort_enabled_first">Bật trước</string>
     <string name="su_not_allowed">Không thể cấp quyền Superuser cho %s</string>
     <string name="action">Khởi chạy</string>
     <string name="log_saved">Đã lưu nhật ký</string>
@@ -152,4 +152,11 @@
     <string name="refresh_release">Thả để làm mới</string>
     <string name="refresh_refresh">Đang làm mới…</string>
     <string name="refresh_complete">Đã làm mới thành công</string>
+    <string name="install_select_partition">Chọn phân vùng</string>
+    <string name="app_profile_affects_following_apps">Ảnh hưởng đến các ứng dụng sau</string>
+    <string name="group_contains_apps">Chứa %d ứng dụng</string>
+    <string name="metamodule_uninstall_confirm">Bạn có chắc chắn muốn gỡ cài đặt module %s không? Thao tác này sẽ ảnh hưởng đến tất cả các module và một số tính năng do siêu module cung cấp (chẳng hạn như mount) sẽ không còn hoạt động nữa.</string>
+    <string name="undo">Hoàn tác</string>
+    <string name="module_undo_uninstall_success">Đã hủy việc gỡ cài đặt %s thành công</string>
+    <string name="module_undo_uninstall_failed">Hoàn tác gỡ cài đặt: %s thất bại</string>
 </resources>
