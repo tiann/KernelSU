@@ -46,7 +46,7 @@ chrono = "0.4"
 regex-lite = "0.1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-rustix = { version = "1", features = [
+rustix = { version = "=1.0.8", features = [
     "all-apis",
 ] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
