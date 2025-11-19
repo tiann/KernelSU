@@ -22,6 +22,22 @@ ensure_image_mounted() {
     fi
 }
 
+# Determine whether this module should be moved into the ext4 image.
+# We only relocate payloads that expose system/ overlays and do not opt out via skip_mount.
+module_requires_overlay_move() {
+    if [ -f "$MODPATH/skip_mount" ]; then
+        ui_print "- skip_mount flag detected; keeping files under /data/adb/modules"
+        return 1
+    fi
+
+    if [ ! -d "$MODPATH/system" ]; then
+        ui_print "- No system/ directory detected; keeping files under /data/adb/modules"
+        return 1
+    fi
+
+    return 0
+}
+
 # Post-installation: move partition directories to ext4 image
 post_install_to_image() {
     ui_print "- Moving module content to image"
@@ -32,7 +48,7 @@ post_install_to_image() {
     # Move all partition directories
     for partition in system vendor product system_ext odm oem; do
         if [ -d "$MODPATH/$partition" ]; then
-            ui_print "  Moving $partition/"
+            ui_print " Moving $partition/"
             mv "$MODPATH/$partition" "$MOD_IMG_DIR/" || {
                 ui_print "! Warning: Failed to move $partition"
             }
@@ -55,7 +71,11 @@ ensure_image_mounted
 # 2. Call standard install_module function (defined in installer.sh)
 install_module
 
-# 3. Post-process: move content to image
-post_install_to_image
+# 3. Post-process: move content to image when overlay data exists
+if module_requires_overlay_move; then
+    post_install_to_image
+else
+    ui_print "- Skipping move to modules image"
+fi
 
 ui_print "- Installation complete"
