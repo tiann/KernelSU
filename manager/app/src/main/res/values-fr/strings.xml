@@ -157,4 +157,7 @@
     <string name="metamodule_uninstall_confirm">Voulez-vous vraiment désinstaller le module %s ? Cette action affectera tous les modules, et certaines fonctionnalités fournies par le métamodule (telles que le montage) ne fonctionneront plus.</string>
     <string name="app_profile_affects_following_apps">Affecte les applis suivantes</string>
     <string name="group_contains_apps">Contient %d applis</string>
+    <string name="undo">Annuler</string>
+    <string name="module_undo_uninstall_success">Désinstallation de %s annulée avec succès</string>
+    <string name="module_undo_uninstall_failed">Échec de l\'annulation de la désinstallation : %s</string>
 </resources>
