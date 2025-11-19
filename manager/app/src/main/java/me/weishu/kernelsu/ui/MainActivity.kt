@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -68,21 +69,39 @@ class MainActivity : ComponentActivity() {
         val isManager = Natives.isManager
         if (isManager && !Natives.requireNewKernel()) install()
 
-        // Check if launched with a ZIP file
-        val zipUri = intent?.data?.takeIf { it.scheme == "content" && intent.type == "application/zip" }
+        // Check if launched with ZIP file(s)
+        val zipurl: List<Uri>? = when (intent?.action) {
+            Intent.ACTION_VIEW -> 
+                intent.data?.takeIf { 
+                    intent.type == "application/zip" && it.scheme == "content" 
+                }?.let { listOf(it) }
+            
+            Intent.ACTION_SEND -> 
+                intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                    ?.takeIf { it.scheme == "content" }
+                    ?.let { listOf(it) }
+            
+            Intent.ACTION_SEND_MULTIPLE -> {
+                val uris = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM)
+                }
+                uris?.filter { it.scheme == "content" }?.takeIf { it.isNotEmpty() }
+            }
+            
+            else -> null
+        }
 
         setContent {
             KernelSUTheme {
                 val navController = rememberNavController()
                 val navigator = navController.rememberDestinationsNavigator()
 
-                LaunchedEffect(zipUri) {
-                    if (zipUri != null) {
-                        navigator.navigate(
-                            FlashScreenDestination(
-                                FlashIt.FlashModules(listOf(zipUri))
-                            )
-                        )
+                LaunchedEffect(zipurl) {
+                    zipurl?.let { 
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(it))) 
                     }
                 }
 
