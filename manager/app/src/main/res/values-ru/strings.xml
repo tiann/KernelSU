@@ -161,4 +161,7 @@
     <string name="app_profile_affects_following_apps">Влияет на следующие приложения</string>
     <string name="group_contains_apps">Содержит %d приложений</string>
     <string name="metamodule_uninstall_confirm">Вы уверены, что хотите удалить модуль %s? Это действие повлияет на все модули, и некоторые функции метамодуля (например, монтирование) перестанут работать.</string>
+    <string name="undo">Отменить</string>
+    <string name="module_undo_uninstall_failed">не удалось отменить удаление: %s</string>
+    <string name="module_undo_uninstall_success">Удаление %s успешно отменено</string>
 </resources>
