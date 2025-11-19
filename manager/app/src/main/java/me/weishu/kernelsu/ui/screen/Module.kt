@@ -1103,76 +1103,48 @@ fun ModuleItem(
                     }
                 }
             }
-            if (module.remove) {
-                IconButton(
-                    minHeight = 35.dp,
-                    minWidth = 35.dp,
-                    onClick = onUndoUninstall,
-                    backgroundColor = secondaryContainer.copy(alpha = 0.8f),
+            IconButton(
+                minHeight = 35.dp,
+                minWidth = 35.dp,
+                onClick = if (module.remove) onUndoUninstall else onUninstall,
+                backgroundColor = if (module.remove) {
+                    secondaryContainer.copy(alpha = 0.8f)
+                } else {
+                    secondaryContainer
+                },
+            ) {
+                val animatedPadding by animateDpAsState(
+                    targetValue = if (!hasUpdate) 10.dp else 0.dp,
+                    animationSpec = tween(durationMillis = 300)
+                )
+                Row(
+                    modifier = Modifier.padding(horizontal = animatedPadding),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    val animatedPadding by animateDpAsState(
-                        targetValue = if (!hasUpdate) 10.dp else 0.dp,
-                        animationSpec = tween(durationMillis = 300)
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = if (module.remove) {
+                            Icons.AutoMirrored.Outlined.Undo
+                        } else {
+                            Icons.Outlined.Delete
+                        },
+                        tint = actionIconTint,
+                        contentDescription = null
                     )
-                    Row(
-                        modifier = Modifier.padding(horizontal = animatedPadding),
-                        verticalAlignment = Alignment.CenterVertically,
+                    AnimatedVisibility(
+                        visible = !hasUpdate,
+                        enter = expandHorizontally(),
+                        exit = shrinkHorizontally()
                     ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.AutoMirrored.Outlined.Undo,
-                            tint = actionIconTint,
-                            contentDescription = null
+                        Text(
+                            modifier = Modifier.padding(start = 4.dp, end = 3.dp),
+                            text = stringResource(
+                                if (module.remove) R.string.undo else R.string.uninstall
+                            ),
+                            color = actionIconTint,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp
                         )
-                        AnimatedVisibility(
-                            visible = !hasUpdate,
-                            enter = expandHorizontally(),
-                            exit = shrinkHorizontally()
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(start = 4.dp, end = 3.dp),
-                                text = stringResource(R.string.undo),
-                                color = actionIconTint,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp
-                            )
-                        }
-                    }
-                }
-            } else {
-                IconButton(
-                    minHeight = 35.dp,
-                    minWidth = 35.dp,
-                    onClick = onUninstall,
-                    backgroundColor = secondaryContainer,
-                ) {
-                    val animatedPadding by animateDpAsState(
-                        targetValue = if (!hasUpdate) 10.dp else 0.dp,
-                        animationSpec = tween(durationMillis = 300)
-                    )
-                    Row(
-                        modifier = Modifier.padding(horizontal = animatedPadding),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Outlined.Delete,
-                            tint = actionIconTint,
-                            contentDescription = null
-                        )
-                        AnimatedVisibility(
-                            visible = !hasUpdate,
-                            enter = expandHorizontally(),
-                            exit = shrinkHorizontally()
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(start = 4.dp, end = 3.dp),
-                                text = stringResource(R.string.uninstall),
-                                color = actionIconTint,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp
-                            )
-                        }
                     }
                 }
             }
