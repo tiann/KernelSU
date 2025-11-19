@@ -15,7 +15,7 @@
 ## Особенности
 
 1. Управление `su` и root-доступом на основе ядра.
-2. Система модулей на основе [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. Система модулей на основе [metamodules](https://kernelsu.org/ru_RU/guide/metamodule.html): Подключаемая инфраструктура для безсистемных модификаций.
 3. [Профиль приложений](https://kernelsu.org/ru_RU/guide/app-profile.html): Запри корневую силу в клетке.
 
 ## Совместимость

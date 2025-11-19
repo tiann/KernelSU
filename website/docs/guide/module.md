@@ -4,6 +4,10 @@ KernelSU provides a module mechanism that achieves the effect of modifying the s
 
 The module mechanism of KernelSU is almost the same as that of Magisk. If you're familiar with Magisk module development, developing KernelSU modules is very similar. You can skip the introduction of modules below and just read [Difference with Magisk](difference-with-magisk.md).
 
+::: warning METAMODULE REQUIRED FOR MODULE MOUNTING
+KernelSU uses a [metamodule](metamodule.md) architecture where module mounting is delegated to pluggable metamodules rather than being built into the core. **Fresh KernelSU installations require installing a metamodule** (such as [meta-overlayfs](https://github.com/tiann/KernelSU/releases)) **for modules to be mounted**. Without a metamodule, your modules' `system` directories will not be mounted, though scripts will still execute.
+:::
+
 ## WebUI
 
 KernelSU's modules support displaying interfaces and interacting with users. For more details, refer to the [WebUI documentation](module-webui.md).
@@ -118,7 +122,11 @@ You can use the environment variable `KSU` to determine if a script is running i
 
 ### `system` directory
 
-The contents of this directory will be overlaid on top of the system's `/system` partition using OverlayFS after the system is booted. This means that:
+The contents of this directory will be overlaid on top of the system's `/system` partition after the system is booted. This means that:
+
+::: tip METAMODULE REQUIREMENT
+The `system` directory is only mounted if you have a metamodule installed that provides mounting functionality (such as `meta-overlayfs`). The metamodule handles how modules are mounted. See the [Metamodule Guide](metamodule.md) for more information.
+:::
 
 1. Files with the same name as those in the corresponding directory in the system will be overwritten by the files in this directory.
 2. Folders with the same name as those in the corresponding directory in the system will be merged with the folders in this directory.
@@ -150,10 +158,10 @@ REPLACE="
 This list will automatically create the directories `$MODPATH/system/app/YouTube` and `$MODPATH/system/app/Bloatware`, and then execute `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/YouTube` and `setfattr -n trusted.overlay.opaque -v y $MODPATH/system/app/Bloatware`. After the module takes effect, `/system/app/YouTube` and `/system/app/Bloatware` will be replaced with empty directories.
 
 ::: tip DIFFERENCE WITH MAGISK
-KernelSU's systemless mechanism is implemented through the kernel's OverlayFS, while Magisk currently uses magic mount (bind mount). These two implementation methods have significant differences, but the ultimate goal is the same: modifying `/system` files without physically modifying the `/system` partition.
+KernelSU uses a [metamodule architecture](metamodule.md) where mounting is delegated to pluggable metamodules. The official `meta-overlayfs` metamodule uses the kernel's OverlayFS for systemless modifications, while Magisk uses magic mount (bind mount) built directly into its core. Both achieve the same goal: modifying `/system` files without physically modifying the `/system` partition. KernelSU's approach provides more flexibility and reduces detection surface.
 :::
 
-If you're interested in OverlayFS, it's recommended to read the Linux Kernel's [documentation on OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html).
+If you're interested in OverlayFS, it's recommended to read the Linux Kernel's [documentation on OverlayFS](https://docs.kernel.org/filesystems/overlayfs.html). For details on KernelSU's metamodule system, see the [Metamodule Guide](metamodule.md).
 
 ### system.prop
 
@@ -289,12 +297,13 @@ post-fs-data
   *safe mode check
   *execute general scripts in post-fs-data.d/
   *load sepolicy.rule
-  *mount tmpfs
+  *execute metamodule's post-fs-data.sh (if exists)
   *execute module scripts post-fs-data.sh
     **(Zygisk)./bin/zygisk-ptrace64 monitor
   *(pre)load system.prop (same as resetprop -n)
-  *remount modules /system
+  *execute metamodule's metamount.sh (mounts all modules)
   *execute general scripts in post-mount.d/
+  *execute metamodule's post-mount.sh (if exists)
   *execute module scripts post-mount.sh
 zygote-start
 load_all_props_action
@@ -307,6 +316,7 @@ load_all_props_action
 
 2. kernel2user init (ROM animation on screen, start by service bootanim)
 *execute general scripts in service.d/
+*execute metamodule's service.sh (if exists)
 *execute module scripts service.sh
 *set props for resetprop without -p option
   **(Zygisk) hook zygote (start zygiskd)
@@ -315,6 +325,7 @@ start system apps (autostart)
 ...
 boot complete (broadcast ACTION_BOOT_COMPLETED event)
 *execute general scripts in boot-completed.d/
+*execute metamodule's boot-completed.sh (if exists)
 *execute module scripts boot-completed.sh
 
 3. User operable (lock screen)

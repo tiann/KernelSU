@@ -15,7 +15,7 @@ Solusi root berbasis Kernel untuk perangkat Android.
 ## Fitur
 
 1. Manajemen akses root dan `su` berbasis kernel.
-2. Sistem modul berdasarkan [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. Sistem modul berdasarkan [metamodules](https://kernelsu.org/id_ID/guide/metamodule.html): Infrastruktur pluggable untuk modifikasi systemless.
 3. [Profil Aplikasi](https://kernelsu.org/guide/app-profile.html): Kunci daya root di dalam sangkar.
 
 ## Status Kompatibilitas

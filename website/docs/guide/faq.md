@@ -16,7 +16,7 @@ Certainly, yes.
 
 ## Does KernelSU support modules?
 
-Yes, most Magisk modules work on KernelSU. Check [Module guide](module.md) for more info.
+Yes, most Magisk modules work on KernelSU. However, you need to install a [metamodule](metamodule.md) (such as `meta-overlayfs`) to enable module mounting. Check [Module guide](module.md) for more info.
 
 ## Does KernelSU support Xposed?
 
@@ -70,3 +70,13 @@ We don't recommend that you modify the system partition directly. Please check [
 ## Can KernelSU modify hosts? How can I use AdAway？
 
 Of course. But KernelSU doesn't have built-in hosts support, you can install a module like [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) to do it.
+
+## Why aren't my modules working after fresh install?
+
+If your modules modify system files, you need to install a [metamodule](metamodule.md) to enable module mounting. Without a metamodule, your modules' `system` directories won't be mounted (though scripts will still execute).
+
+**Solution**: See the [Metamodule Guide](metamodule.md) for installation instructions.
+
+## What is a metamodule and why do I need one?
+
+A metamodule is a special module that provides infrastructure for mounting regular modules. See the [Metamodule Guide](metamodule.md) for a complete explanation.

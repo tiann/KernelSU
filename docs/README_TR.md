@@ -15,7 +15,7 @@ Android cihazlar için kernel tabanlı root çözümü.
 ## Özellikler
 
 1. Kernel-tabanlı `su` ve root erişimi yönetimi.
-2. [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS)'ye dayalı modül sistemi.
+2. [metamodules](https://kernelsu.org/guide/metamodule.html)'ye dayalı modül sistemi: Systemless modifikasyonlar için takılabilir altyapı.
 3. [Uygulama profili](https://kernelsu.org/guide/app-profile.html): Root gücünü bir kafese kapatın.
 
 ## Uyumluluk Durumu

@@ -278,3 +278,18 @@ In fact, all of these installation methods have only one main idea, which is to 
 2. Use any flashing toolkit on PC to flash the kernel provided by KernelSU.
 
 However, if it doesn't work, please try `magiskboot` approach.
+
+## Post-Installation: Module Support
+
+::: warning METAMODULE REQUIRED FOR MODULE MOUNTING
+If you want to use modules that modify system files (most modules), you need to install a **metamodule** after installing KernelSU. Fresh installations do not mount modules by default.
+:::
+
+**For module mounting support**, please see the [Metamodule Guide](metamodule.md) to:
+- Understand what metamodules are and why they're needed
+- Install the official `meta-overlayfs` metamodule
+- Learn about other metamodule options
+
+::: tip
+If you only use modules that run scripts without mounting (e.g., script-only modules), you don't need a metamodule.
+:::

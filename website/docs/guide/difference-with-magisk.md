@@ -21,8 +21,9 @@ Here are some differences:
 
 - KernelSU modules cannot be installed in Recovery mode.
 - KernelSU modules don't have built-in support for Zygisk, but you can use Zygisk modules through [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext).
+- **Module mounting architecture**: KernelSU uses a [metamodule system](metamodule.md) where mounting is delegated to pluggable metamodules (e.g., `meta-overlayfs`), while Magisk has mounting built into its core. KernelSU requires installing a metamodule to enable module mounting.
 - The method for replacing or deleting files in KernelSU modules is completely different from Magisk. KernelSU doesn't support the `.replace` method. Instead, you need to create a same-named file with `mknod filename c 0 0` to delete the corresponding file.
 - The directories for BusyBox are different. The built-in BusyBox in KernelSU is located at `/data/adb/ksu/bin/busybox`, while in Magisk it is at `/data/adb/magisk/busybox`. **Note that this is an internal behavior of KernelSU and may change in the future!**
 - KernelSU doesn't support `.replace` files, but it supports the `REMOVE` and `REPLACE` variables to remove or replace files and folders.
 - KernelSU adds the `boot-completed` stage to run scripts after the boot process is finished.
-- KernelSU adds the `post-mount` stage to run scripts after OverlayFS is mounted.
+- KernelSU adds the `post-mount` stage to run scripts after module mounting is complete.

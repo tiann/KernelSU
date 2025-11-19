@@ -15,7 +15,7 @@ Una solución root basada en el kernel para dispositivos Android.
 ## Características
 
 1. Binario `su` basado en el kernel y gestión de acceso root.
-2. Sistema de módulos basado en [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. Sistema de módulos basado en [metamodules](https://kernelsu.org/guide/metamodule.html): Infraestructura conectable para modificaciones sin sistema.
 
 ## Estado de compatibilidad
 

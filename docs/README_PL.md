@@ -15,7 +15,7 @@ Rozwiązanie root oparte na jądrze dla urządzeń z systemem Android.
 ## Cechy
 
 1. Oparte na jądrze `su` i zarządzanie dostępem roota.
-2. System modułów oparty na [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
+2. System modułów oparty na [metamodules](https://kernelsu.org/guide/metamodule.html): Wtykowa infrastruktura dla modyfikacji systemless.
 
 ## Kompatybilność
 

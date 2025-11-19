@@ -24,5 +24,5 @@ features:
     details: Only permitted apps may access or see su, all other apps aren't aware of this.
   - title: Customizable root privileges
     details: KernelSU allows customization of su's uid, gid, groups, capabilities, and SELinux rules, locking up root privileges.
-  - title: Modules
-    details: Modules may modify /system systemlessly using OverlayFS providing significant flexibility.
+  - title: Metamodule system
+    details: Pluggable module infrastructure allows systemless /system modifications. Install a metamodule like meta-overlayfs to enable module mounting.
