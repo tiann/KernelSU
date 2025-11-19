@@ -16,7 +16,7 @@ use std::fs::{copy, rename};
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{File, Permissions, remove_dir_all, set_permissions},
+    fs::{File, Permissions, canonicalize, remove_dir_all, set_permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::Command,
@@ -174,7 +174,17 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
 }
 
 pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
+    let metamodule_dir = metamodule::get_metamodule_path().and_then(|path| canonicalize(path).ok());
+
     foreach_active_module(|module| {
+        if metamodule_dir.as_ref().is_some_and(|meta_dir| {
+            canonicalize(module)
+                .map(|resolved| resolved == *meta_dir)
+                .unwrap_or(false)
+        }) {
+            return Ok(());
+        }
+
         let script_path = module.join(format!("{stage}.sh"));
         if !script_path.exists() {
             return Ok(());
