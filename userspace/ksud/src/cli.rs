@@ -256,6 +256,12 @@ enum Module {
         zip: String,
     },
 
+    /// Undo module uninstall mark <id>
+    UndoUninstall {
+        /// module id
+        id: String,
+    },
+
     /// Uninstall module <id>
     Uninstall {
         /// module id
@@ -423,6 +429,7 @@ pub fn run() -> Result<()> {
             }
             match command {
                 Module::Install { zip } => module::install_module(&zip),
+                Module::UndoUninstall { id } => module::undo_uninstall_module(&id),
                 Module::Uninstall { id } => module::uninstall_module(&id),
                 Module::Enable { id } => module::enable_module(&id),
                 Module::Disable { id } => module::disable_module(&id),

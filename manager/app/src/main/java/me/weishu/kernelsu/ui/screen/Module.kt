@@ -45,6 +45,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
@@ -115,6 +116,7 @@ import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.hasMagisk
 import me.weishu.kernelsu.ui.util.toggleModule
+import me.weishu.kernelsu.ui.util.undoUninstallModule
 import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
@@ -198,6 +200,8 @@ fun ModulePager(
 
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
+    val failedUndoUninstall = stringResource(R.string.module_undo_uninstall_failed)
+    val successUndoUninstall = stringResource(R.string.module_undo_uninstall_success)
     val failedUninstall = stringResource(R.string.module_uninstall_failed)
     val successUninstall = stringResource(R.string.module_uninstall_success)
     val rebootToApply = stringResource(R.string.reboot_to_apply)
@@ -276,6 +280,25 @@ fun ModulePager(
                 }
             )
         }
+    }
+
+    suspend fun onModuleUndoUninstall(module: ModuleViewModel.ModuleInfo) {
+
+        val success = loadingDialog.withLoading {
+            withContext(Dispatchers.IO) {
+                undoUninstallModule(module.id)
+            }
+        }
+
+        if (success) {
+            viewModel.fetchModuleList()
+        }
+        val message = if (success) {
+            successUndoUninstall.format(module.name)
+        } else {
+            failedUndoUninstall.format(module.name)
+        }
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
@@ -539,6 +562,14 @@ fun ModulePager(
                                 Unit
                             }
                         }
+                        val onUndoUninstallClick = remember(module.id, itemScope, ::onModuleUndoUninstall) {
+                            {
+                                itemScope.launch {
+                                    onModuleUndoUninstall(currentModuleState.value)
+                                }
+                                Unit
+                            }
+                        }
                         val onToggleClick = remember(module.id, itemScope, ::onModuleToggle) {
                             { _: Boolean ->
                                 itemScope.launch {
@@ -585,6 +616,7 @@ fun ModulePager(
                         ModuleItem(
                             module = module,
                             updateUrl = moduleUpdateInfo.downloadUrl,
+                            onUndoUninstall = onUndoUninstallClick,
                             onUninstall = onUninstallClick,
                             onCheckChanged = onToggleClick,
                             onUpdate = onUpdateClick,
@@ -651,6 +683,9 @@ fun ModulePager(
                         onModuleUninstall = { module ->
                             onModuleUninstall(module)
                         },
+                        onModuleUndoUninstall = { module ->
+                            onModuleUndoUninstall(module)
+                        },
                         onModuleToggle = { module ->
                             onModuleToggle(module)
                         },
@@ -688,6 +723,7 @@ private fun ModuleList(
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     onModuleUninstall: suspend (ModuleViewModel.ModuleInfo) -> Unit,
+    onModuleUndoUninstall: suspend (ModuleViewModel.ModuleInfo) -> Unit,
     onModuleToggle: suspend (ModuleViewModel.ModuleInfo) -> Unit,
     onModuleUpdate: suspend (ModuleViewModel.ModuleInfo, String, String, String) -> Unit,
     context: Context,
@@ -786,6 +822,14 @@ private fun ModuleList(
                         val currentModuleState = rememberUpdatedState(module)
                         val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
 
+                        val onUndoUninstallClick = remember(module.id, scope, onModuleUndoUninstall) {
+                            {
+                                scope.launch {
+                                    onModuleUndoUninstall(currentModuleState.value)
+                                }
+                                Unit
+                            }
+                        }
                         val onUninstallClick = remember(module.id, scope, onModuleUninstall) {
                             {
                                 scope.launch {
@@ -837,6 +881,7 @@ private fun ModuleList(
                             module = module,
                             updateUrl = moduleUpdateInfo.downloadUrl,
                             onUninstall = onUninstallClick,
+                            onUndoUninstall = onUndoUninstallClick,
                             onCheckChanged = onToggleClick,
                             onUpdate = onUpdateClick,
                             onExecuteAction = onExecuteActionClick,
@@ -857,6 +902,7 @@ private fun ModuleList(
 fun ModuleItem(
     module: ModuleViewModel.ModuleInfo,
     updateUrl: String,
+    onUndoUninstall: () -> Unit,
     onUninstall: () -> Unit,
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: () -> Unit,
@@ -1057,13 +1103,15 @@ fun ModuleItem(
                     }
                 }
             }
-
             IconButton(
-                enabled = !module.remove,
                 minHeight = 35.dp,
                 minWidth = 35.dp,
-                onClick = onUninstall,
-                backgroundColor = secondaryContainer,
+                onClick = if (module.remove) onUndoUninstall else onUninstall,
+                backgroundColor = if (module.remove) {
+                    secondaryContainer.copy(alpha = 0.8f)
+                } else {
+                    secondaryContainer
+                },
             ) {
                 val animatedPadding by animateDpAsState(
                     targetValue = if (!hasUpdate) 10.dp else 0.dp,
@@ -1075,7 +1123,11 @@ fun ModuleItem(
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Outlined.Delete,
+                        imageVector = if (module.remove) {
+                            Icons.AutoMirrored.Outlined.Undo
+                        } else {
+                            Icons.Outlined.Delete
+                        },
                         tint = actionIconTint,
                         contentDescription = null
                     )
@@ -1086,7 +1138,9 @@ fun ModuleItem(
                     ) {
                         Text(
                             modifier = Modifier.padding(start = 4.dp, end = 3.dp),
-                            text = stringResource(R.string.uninstall),
+                            text = stringResource(
+                                if (module.remove) R.string.undo else R.string.uninstall
+                            ),
                             color = actionIconTint,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp

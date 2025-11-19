@@ -140,6 +140,13 @@ fun toggleModule(id: String, enable: Boolean): Boolean {
     return result
 }
 
+fun undoUninstallModule(id: String): Boolean {
+    val cmd = "module undo-uninstall $id"
+    val result = execKsud(cmd, true)
+    Log.i(TAG, "undo uninstall module $id result: $result")
+    return result
+}
+
 fun uninstallModule(id: String): Boolean {
     val cmd = "module uninstall $id"
     val result = execKsud(cmd, true)
