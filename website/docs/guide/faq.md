@@ -10,13 +10,13 @@ If the app shows `Not installed`, it means your device is officially supported b
 
 If the app shows `Unsupported`, it means your device isn't officially supported at present. However, you can build kernel source code and integrate KernelSU to make it work, or use [Unofficially supported devices](unofficially-support-devices).
 
-## Does KernelSU need to unlock bootloader?
+## Do I need to unlock the bootloader to use KernelSU?
 
-Certainly, yes.
+Yes. KernelSU requires an unlocked bootloader.
 
 ## Does KernelSU support modules?
 
-Yes, most Magisk modules work on KernelSU. However, you need to install a [metamodule](metamodule.md) (such as `meta-overlayfs`) to enable module mounting. Check [Module guide](module.md) for more info.
+Yes, most Magisk modules work on KernelSU. However, if your module needs to modify `/system` files, you need to install a [metamodule](metamodule.md) (such as `meta-overlayfs`). Other module features work without a metamodule. Check [Module guide](module.md) for more info.
 
 ## Does KernelSU support Xposed?
 
@@ -34,11 +34,11 @@ However, if you only use the `su` of KernelSU, it will work well with Magisk. Ke
 
 ## Will KernelSU substitute Magisk?
 
-We believe that it isn't, and that isn't our goal. Magisk is good enough for userspace root solution and will have a long life. KernelSU's goal is to provide a kernel interface to users, not substituting Magisk.
+No. Replacing Magisk isn't our goal. Magisk is already an excellent userspace root solution. KernelSU focuses on exposing kernel interfaces to users instead of supplanting Magisk.
 
 ## Can KernelSU support non-GKI devices?
 
-It's possible. But you should download the kernel source and intergrate KernelSU into the source tree, and compile the kernel yourself.
+It's possible. But you should download the kernel source, integrate KernelSU into the source tree, and compile the kernel yourself.
 
 ## Can KernelSU support devices below Android 12?
 
@@ -53,7 +53,7 @@ It's possible. KernelSU is backported to kernel 4.14 now. For older kernels, you
 
 ## How to integrate KernelSU for an older kernel?
 
-Please check the [Intergrate for non-GKI devices](how-to-integrate-for-non-gki) guide.
+Please check the [Integrate for non-GKI devices](how-to-integrate-for-non-gki) guide.
 
 ## Why my Android version is 13, and the kernel shows "android12-5.10"?
 
@@ -73,7 +73,7 @@ Of course. But KernelSU doesn't have built-in hosts support, you can install a m
 
 ## Why aren't my modules working after fresh install?
 
-If your modules modify system files, you need to install a [metamodule](metamodule.md) to enable module mounting. Without a metamodule, your modules' `system` directories won't be mounted (though scripts will still execute).
+If your modules need to modify `/system` files, you need to install a [metamodule](metamodule.md) to mount the `system` directory. Other module features (scripts, sepolicy, system.prop) work without a metamodule.
 
 **Solution**: See the [Metamodule Guide](metamodule.md) for installation instructions.
 

@@ -1,8 +1,8 @@
-# Intergrate for non-GKI devices
+# Integrate for non-GKI devices
 
 KernelSU can be integrated into non-GKI kernels and was backported to 4.14 and earlier versions.
 
-Due to the fragmentation of non-GKI kernels, we don't have a universal method to build it, so we cannot provide the non-GKI boot.img. However, you can build the kernel with KernelSU integrated on your own.
+Due to the fragmentation of non-GKI kernels, we don't have a universal way to build them; therefore, we cannot provide a non-GKI boot.img. However, you can build the kernel with KernelSU integrated on your own.
 
 First, you should be able to build a bootable kernel from kernel source code. If the kernel isn't open source, then it is difficult to run KernelSU for your device.
 
@@ -13,7 +13,7 @@ If you're able to build a bootable kernel, there are two ways to integrate Kerne
 
 ## Integrate with kprobe
 
-KernelSU uses kprobe to do kernel hooks, if kprobe runs well in your kernel, it's recommended to use it this way.
+KernelSU uses kprobe for its kernel hooks. If kprobe runs reliably on your kernel, we recommend integrating KernelSU this way.
 
 First, add KernelSU to your kernel source tree:
 
@@ -40,7 +40,7 @@ If you find that KPROBES is still not enabled, you can try enabling `CONFIG_MODU
 However, if you encounter a bootloop after integrating KernelSU, this may indicate that the **kprobe is broken in your kernel**, which means that you should fix the kprobe bug or use another way.
 
 ::: tip HOW TO CHECK IF KPROBE IS BROKEN？
-Comment out `ksu_sucompat_init()` and `ksu_ksud_init()` in `KernelSU/kernel/ksu.c`, if the device boots normally, then kprobe may be broken.
+Comment out `ksu_sucompat_init()` and `ksu_ksud_init()` in `KernelSU/kernel/ksu.c`. If the device boots normally, kprobe may be broken.
 :::
 
 ::: info HOW TO GET MODULE UMOUNT FEATURE WORKING ON PRE-GKI?
@@ -49,7 +49,7 @@ If your kernel is older than 5.9, you should backport `path_umount` to `fs/names
 
 ## Manually modify the kernel source
 
-If kprobe doesn't work on your kernel this may be caused by an upstream bug or if the kernel is below 4.8), then you can try the following:
+If kprobe doesn't work on your kernel—either because of an upstream bug or because your kernel is older than 4.8—you can try the following approach:
 
 First, add KernelSU to your kernel source tree:
 

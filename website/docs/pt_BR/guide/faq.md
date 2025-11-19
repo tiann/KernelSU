@@ -16,7 +16,7 @@ Certamente, sim.
 
 ## KernelSU suporta módulos?
 
-Sim, a maioria dos módulos Magisk funcionam no KernelSU. Verifique [Guias de módulo](module.md) para mais informações.
+Sim, a maioria dos módulos Magisk funcionam no KernelSU. No entanto, se seu módulo precisar modificar arquivos `/system`, você precisa instalar um [metamodule](metamodule.md) (como `meta-overlayfs`). Outros recursos de módulos funcionam sem um metamodule. Confira o [Guia de módulos](module.md) para mais informações.
 
 ## KernelSU suporta Xposed?
 
@@ -25,6 +25,16 @@ Sim, você pode usar LSPosed (ou outro derivado moderno do Xposed) com [ZygiskNe
 ## KernelSU suporta Zygisk?
 
 KernelSU não tem suporte integrado ao Zygisk, mas você pode usar um módulo como [ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext) para suportá-lo.
+
+## Por que meus módulos não funcionam após uma instalação nova?
+
+Se seus módulos precisam modificar arquivos `/system`, você precisa instalar um [metamodule](metamodule.md) para montar o diretório `system`. Outros recursos de módulos (scripts, sepolicy, system.prop) funcionam sem um metamodule.
+
+**Solução**: Consulte o [Guia de Metamodule](metamodule.md) para instruções de instalação.
+
+## O que é um metamodule e por que preciso dele?
+
+Um metamodule é um módulo especial que fornece infraestrutura para montar módulos regulares. Consulte o [Guia de Metamodule](metamodule.md) para uma explicação completa.
 
 ## KernelSU é compatível com o Magisk?
 

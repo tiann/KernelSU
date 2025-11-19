@@ -263,3 +263,14 @@ PS. 這種方法適用於任何狀況下的安裝 (不限於初次安裝或後�
 
 但是，如果不起作用，請嘗試 Magiskboot 方法。
 
+## 安裝後：模組支援 {#post-installation}
+
+::: warning 用於系統檔案修改的 METAMODULE
+如果您想使用修改 `/system` 檔案的模組，您需要在安裝 KernelSU 後安裝 **metamodule**。僅使用腳本、sepolicy 或 system.prop 的模組無需 metamodule 即可運作。
+:::
+
+**若需 `/system` 修改支援**，請參閱 [Metamodule 指南](metamodule.md)以：
+- 了解什麼是 metamodule 以及為何需要它
+- 安裝官方 `meta-overlayfs` metamodule
+- 了解其他 metamodule 選項
+

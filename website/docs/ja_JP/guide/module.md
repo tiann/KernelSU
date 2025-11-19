@@ -4,6 +4,14 @@ KernelSU はシステムパーティションの整合性を維持しながら�
 
 KernelSU のモジュール機構は、Magisk とほぼ同じです。Magisk のモジュール開発に慣れている方であれば、KernelSU のモジュール開発も簡単でしょう。その場合は以下のモジュールの紹介は読み飛ばして、[Magisk との違い](difference-with-magisk.md)の内容だけ読めばOKです。
 
+::: warning METAMODULE はシステムファイル変更時のみ必要
+KernelSU は [metamodule](metamodule.md) アーキテクチャを使用して `system` ディレクトリをマウントします。**モジュールが `/system` ファイルを変更する必要がある場合のみ**（`system` ディレクトリ経由で）、metamodule ([meta-overlayfs](https://github.com/tiann/KernelSU/releases)など) をインストールする必要があります。スクリプト、sepolicy ルール、system.propなどの他のモジュール機能は metamodule なしで動作します。
+:::
+
+## WebUI
+
+KernelSU modules support displaying interfaces and interacting with users. See the [WebUI documentation](module-webui.md) for more information.
+
 ## Busybox
 
 KernelSU には、機能的に完全な Busybox バイナリ (SELinux の完全サポートを含む) が同梱されています。実行ファイルは `/data/adb/ksu/bin/busybox` に配置されています。KernelSU の Busybox はランタイムに切り替え可能な「ASH スタンドアローンシェルモード」をサポートしています。このスタンドアロンモードとは、Busybox の `ash` シェルで実行する場合 `PATH` として設定されているものに関係なく、すべてのコマンドが Busybox 内のアプレットを直接使用するというものです。たとえば、`ls`、`rm`、`chmod` などのコマンドは、`PATH` にあるもの（Android の場合、デフォルトではそれぞれ `/system/bin/ls`, `/system/bin/rm`, `/system/bin/chmod`）ではなく、直接 Busybox 内部のアプレットを呼び出すことになります。これにより、スクリプトは常に予測可能な環境で実行され、どの Android バージョンで実行されていても常にコマンドを利用できます。Busybox を使用しないコマンドを強制的に実行するには、フルパスで実行ファイルを呼び出す必要があります。

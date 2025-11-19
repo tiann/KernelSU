@@ -278,3 +278,14 @@ Na verdade, todos esses métodos de instalação têm apenas uma ideia principal
 2. Use algum kit de ferramentas de flash em PC para flashar no kernel fornecido pelo KernelSU.
 
 No entanto, se não funcionar, por favor, tente o método `magiskboot`.
+
+## Pós-instalação: Suporte a Módulos {#post-installation}
+
+::: warning METAMODULE PARA MODIFICAÇÃO DE ARQUIVOS DO SISTEMA
+Se você deseja usar módulos que modificam arquivos `/system`, você precisa instalar um **metamodule** após instalar o KernelSU. Módulos que usam apenas scripts, sepolicy ou system.prop funcionam sem um metamodule.
+:::
+
+**Para suporte à modificação de `/system`**, consulte o [Guia de Metamodule](metamodule.md) para:
+- Entender o que são metamodules e por que são necessários
+- Instalar o metamodule oficial `meta-overlayfs`
+- Conhecer outras opções de metamodule

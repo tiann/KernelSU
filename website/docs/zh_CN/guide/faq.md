@@ -12,7 +12,7 @@
 
 ## KernelSU 是否支持模块？
 
-支持。请查阅 [模块](module.md)。
+支持。但是，如果您的模块需要修改 `/system` 文件，则需要安装 [metamodule](metamodule.md)（例如 `meta-overlayfs`）。其他模块功能无需 metamodule。请查阅 [模块](module.md)。
 
 ## KernelSU 是否支持 Xposed？
 
@@ -66,3 +66,13 @@ GKI1 跟 GKI2 完全是两个东西，所以你需要自行编译内核。
 ## KernelSU 能修改 hosts 吗，我如何使用 AdAway？
 
 当然可以。但这个功能 KernelSU 没有内置，你可以安装这个 [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module)
+
+## 为什么全新安装后模块不工作？
+
+如果您的模块需要修改 `/system` 文件，您需要安装 [metamodule](metamodule.md) 来挂载 `system` 目录。其他模块功能（脚本、sepolicy、system.prop）无需 metamodule 即可工作。
+
+**解决方案**：参阅 [Metamodule 指南](metamodule.md) 获取安装说明。
+
+## 什么是 metamodule，为什么需要它？
+
+Metamodule 是一个特殊模块，为挂载常规模块提供基础设施。请参阅 [Metamodule 指南](metamodule.md) 获取完整说明。

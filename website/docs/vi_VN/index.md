@@ -24,6 +24,6 @@ features:
     details: Chỉ ứng dụng được cấp quyền root mới có thể truy cập `su`, các ứng dụng khác không thể nhận được su.
   - title: Quyền root bị hạn chế
     details: KernelSU cho phép bạn tùy chỉnh uid, gid, group, capabilities và các quy tắc SELinux của su. Giới hạn sức mạnh của root.
-  - title: Mô-đun & Nguồn mở
-    details: KernelSU hỗ trợ sửa đổi /system một cách systemless bằng overlayfs và nó có nguồn mở theo GPL-3.
+  - title: Hệ thống Metamodule
+    details: Cơ sở hạ tầng module có thể cắm cho phép sửa đổi /system theo cách systemless. Cài đặt metamodule như meta-overlayfs để bật tính năng mount module.
 

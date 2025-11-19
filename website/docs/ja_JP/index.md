@@ -22,8 +22,8 @@ features:
     details: KernelSU は Linux カーネルモードで動作し、ユーザー空間よりも高度な制御が可能です。
   - title: ホワイトリストの権限管理
     details: root 権限を許可したアプリのみが su にアクセスでき、他のアプリは su を見つけられません。
-  - title: モジュール対応
-    details: KernelSU は OverlayFS により実際のシステムを改変せずに /system を変更できます。書き込み可能にすることさえできます。
+  - title: Metamodule システム
+    details: プラグ可能なモジュールインフラストラクチャにより、systemless方式で/systemを変更可能。metamodule(meta-overlayfsなど)をインストールすることでモジュールのマウント機能を有効化。
   - title: オープンソース
     details: KernelSU は GPL-3 でライセンスされたオープンソースプロジェクトです。
 

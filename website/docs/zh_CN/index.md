@@ -24,6 +24,6 @@ features:
     details: 只有被授权的 App 才可以访问 `su`，而其他 App 无法感知其存在。
   - title: 受限制的 root 权限
     details: KernelSU 可以自定义 `su` 的 uid, gid, groups, capabilities 和 SELinux 规则：把 root 权限关进笼子里。
-  - title: 模块系统 & 开源
-    details: KernelSU 支持通过 overlayfs 修改 /system，并且是 GPL-3 许可下的开源项目。
+  - title: Metamodule 模块系统
+    details: 可插拔的模块基础架构，支持无系统修改。安装 meta-overlayfs 等 metamodule 来启用模块挂载。
 

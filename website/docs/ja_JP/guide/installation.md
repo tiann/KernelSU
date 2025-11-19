@@ -268,6 +268,17 @@ Android-Image-Kitchen は現在非推奨です。セキュリティパッチレ�
 
 実はこれらのインストール方法はすべて、**元のカーネルを KernelSU が提供するカーネルに置き換える**という主旨でしかなく、これが実現できれば他の方法でもインストール可能です：
 
+## インストール後：モジュールサポート {#post-installation}
+
+::: warning システムファイル変更用の METAMODULE
+`/system` ファイルを変更するモジュールを使用したい場合は、KernelSU インストール後に **metamodule** をインストールする必要があります。スクリプト、sepolicy、または system.prop のみを使用するモジュールは metamodule なしで動作します。
+:::
+
+**`/system` 変更サポートが必要な場合**、[Metamodule ガイド](metamodule.md)を参照して：
+- metamodule とは何か、なぜ必要なのかを理解する
+- 公式の `meta-overlayfs` metamodule をインストールする
+- 他の metamodule オプションについて学ぶ
+
 1. まず Magisk をインストールし、Magisk を通じて root 権限を取得し、カーネル管理アプリで KernelSU の AnyKernel ZIPをインストールする
 2. PC 上で何らかの書き込みツールを使用し、KernelSU が提供するカーネルを書き込む
 

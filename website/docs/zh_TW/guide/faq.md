@@ -12,7 +12,7 @@
 
 ## KernelSU 是否支援模組？
 
-支援，但它是早期版本，可能存在問題。請等候它逐漸穩定 :)
+支援，大多數 Magisk 模組都可以在 KernelSU 上運作。但是，如果您的模組需要修改 `/system` 檔案，您需要安裝 [metamodule](metamodule.md)(如 `meta-overlayfs`)。其他模組功能無需 metamodule 即可運作。請參閱 [模組指南](module.md) 以獲取更多資訊。
 
 ## KernelSU 是否支援 Xposed ？
 
@@ -68,3 +68,13 @@ GKI1 與 GKI2 完全不同，所以您需要自行編譯核心。
 
 ## KernelSU 可以修改 Hosts 嗎？ 我要怎麼使用 AdAway？
 當然。但是 KernelSU 沒有內建的 Hosts 支持，您可以安裝 [systemless-hosts](https://github.com/symbuzzer/systemless-hosts-KernelSU-module) 來做到這一點。
+
+## 為什麼全新安裝後模組不工作？
+
+如果您的模組需要修改 `/system` 檔案，您需要安裝 [metamodule](metamodule.md) 來掛載 `system` 目錄。其他模組功能(腳本、sepolicy、system.prop)無需 metamodule 即可運作。
+
+**解決方案**：參閱 [Metamodule 指南](metamodule.md) 獲取安裝說明。
+
+## 什麼是 metamodule，為什麼需要它？
+
+Metamodule 是一個特殊模組，為掛載常規模組提供基礎架構。請參閱 [Metamodule 指南](metamodule.md) 獲取完整說明。

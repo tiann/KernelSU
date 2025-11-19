@@ -277,3 +277,14 @@ PS. 这种方法适用于任何情况下的安装（不限于初次安装或者�
 2. 使用某些 PC 上的刷机工具箱刷入 KernelSU 提供的内核。
 
 如果这些方法导致无法开机，请优先尝试用 `magiskboot` 的方法。
+
+## 安装后：模块支持 {#post-installation-module-support}
+
+::: warning 修改系统文件需要 METAMODULE
+如果您想使用修改 `/system` 文件的模块，需要在安装 KernelSU 后安装一个 **metamodule**。仅使用脚本、sepolicy 或 system.prop 的模块无需 metamodule。
+:::
+
+**要获得 `/system` 修改支持**，请参阅 [Metamodule 指南](metamodule.md) 了解：
+- 什么是 metamodule 以及为什么需要它们
+- 如何安装官方的 `meta-overlayfs` metamodule
+- 其他 metamodule 选项

@@ -4,8 +4,8 @@ KernelSU provides a module mechanism that achieves the effect of modifying the s
 
 The module mechanism of KernelSU is almost the same as that of Magisk. If you're familiar with Magisk module development, developing KernelSU modules is very similar. You can skip the introduction of modules below and just read [Difference with Magisk](difference-with-magisk.md).
 
-::: warning METAMODULE REQUIRED FOR MODULE MOUNTING
-KernelSU uses a [metamodule](metamodule.md) architecture where module mounting is delegated to pluggable metamodules rather than being built into the core. **Fresh KernelSU installations require installing a metamodule** (such as [meta-overlayfs](https://github.com/tiann/KernelSU/releases)) **for modules to be mounted**. Without a metamodule, your modules' `system` directories will not be mounted, though scripts will still execute.
+::: warning METAMODULE ONLY NEEDED FOR SYSTEM FILE MODIFICATION
+KernelSU uses a [metamodule](metamodule.md) architecture for mounting the `system` directory. **Only if your module needs to modify `/system` files** (via the `system` directory) do you need to install a metamodule (such as [meta-overlayfs](https://github.com/tiann/KernelSU/releases)). Other module features like scripts, sepolicy rules, and system.prop work without a metamodule.
 :::
 
 ## WebUI

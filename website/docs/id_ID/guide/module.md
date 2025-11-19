@@ -4,6 +4,14 @@ KernelSU menyediakan mekanisme modul yang mencapai efek memodifikasi direktori s
 
 Mekanisme modul KernelSU hampir sama dengan Magisk. Jika Anda terbiasa dengan pengembangan modul Magisk, mengembangkan modul KernelSU sangat mirip. Anda dapat melewati pengenalan modul di bawah ini dan hanya perlu membaca [difference-with-magisk](difference-with-magisk.md).
 
+::: warning METAMODULE HANYA DIPERLUKAN UNTUK MODIFIKASI FILE SISTEM
+KernelSU menggunakan arsitektur [metamodule](metamodule.md) untuk me-mount direktori `system`. **Hanya jika modul Anda perlu memodifikasi file `/system`** (melalui direktori `system`) Anda perlu menginstal metamodule (seperti [meta-overlayfs](https://github.com/tiann/KernelSU/releases)). Fitur modul lainnya seperti skrip, aturan sepolicy, dan system.prop bekerja tanpa metamodule.
+:::
+
+## WebUI
+
+KernelSU modules support displaying interfaces and interacting with users. See the [WebUI documentation](module-webui.md) for details.
+
 ## Busybox
 
 KernelSU dikirimkan dengan fitur biner BusyBox yang lengkap (termasuk dukungan penuh SELinux). Eksekusi terletak di `/data/adb/ksu/bin/busybox`. BusyBox KernelSU mendukung "Mode Shell Standalone Shell" yang dapat dialihkan waktu proses. Apa yang dimaksud dengan mode mandiri ini adalah bahwa ketika dijalankan di shell `ash` dari BusyBox, setiap perintah akan langsung menggunakan applet di dalam BusyBox, terlepas dari apa yang ditetapkan sebagai `PATH`. Misalnya, perintah seperti `ls`, `rm`, `chmod` **TIDAK** akan menggunakan apa yang ada di `PATH` (dalam kasus Android secara default akan menjadi `/system/bin/ls`, ` /system/bin/rm`, dan `/system/bin/chmod` masing-masing), tetapi akan langsung memanggil applet BusyBox internal. Ini memastikan bahwa skrip selalu berjalan di lingkungan yang dapat diprediksi dan selalu memiliki rangkaian perintah lengkap, apa pun versi Android yang menjalankannya. Untuk memaksa perintah _not_ menggunakan BusyBox, Anda harus memanggil yang dapat dieksekusi dengan path lengkap.
@@ -112,7 +120,11 @@ Anda dapat menggunakan variabel lingkungan KSU untuk menentukan apakah skrip ber
 
 ### `system` directory
 
-Isi direktori ini akan dihamparkan di atas partisi sistem /sistem menggunakan overlayfs setelah sistem di-boot. Ini berarti bahwa:
+Isi direktori ini akan dihamparkan di atas partisi sistem /sistem setelah sistem di-boot. Ini berarti bahwa:
+
+::: tip PERSYARATAN METAMODULE
+Direktori `system` hanya di-mount jika Anda telah menginstal metamodule yang menyediakan fungsionalitas mounting (seperti `meta-overlayfs`). Metamodule menangani bagaimana modul di-mount. Lihat [Panduan Metamodule](metamodule.md) untuk informasi lebih lanjut.
+:::
 
 1. File dengan nama yang sama dengan yang ada di direktori terkait di sistem akan ditimpa oleh file di direktori ini.
 2. Folder dengan nama yang sama dengan yang ada di direktori terkait di sistem akan digabungkan dengan folder di direktori ini.
@@ -143,7 +155,7 @@ Daftar ini akan secara otomatis membuat direktori `$MODPATH/system/app/YouTube` 
 
 ::: perbedaan tip dengan Magisk
 
-Mekanisme tanpa sistem KernelSU diimplementasikan melalui overlay kernel, sementara Magisk saat ini menggunakan magic mount (bind mount). Kedua metode implementasi tersebut memiliki perbedaan yang signifikan, tetapi tujuan utamanya sama: untuk memodifikasi file / sistem tanpa memodifikasi partisi / sistem secara fisik.
+KernelSU menggunakan arsitektur [metamodule](metamodule.md) di mana mounting didelegasikan ke metamodule yang dapat dipasang. Metamodule `meta-overlayfs` resmi menggunakan OverlayFS kernel untuk modifikasi systemless, sedangkan Magisk menggunakan magic mount (bind mount) yang dibangun langsung ke dalam intinya. Keduanya mencapai tujuan yang sama: memodifikasi file `/system` tanpa memodifikasi partisi `/system` secara fisik. Pendekatan KernelSU memberikan lebih banyak fleksibilitas dan mengurangi permukaan deteksi.
 :::
 
 Jika Anda tertarik dengan overlayfs, disarankan untuk membaca [dokumentasi overlayfs](https://docs.kernel.org/filesystems/overlayfs.html) Kernel Linux.

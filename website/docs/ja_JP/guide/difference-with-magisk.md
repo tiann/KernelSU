@@ -21,6 +21,9 @@ KernelSU モジュールと Magisk モジュールには多くの共通点があ
 
 - KernelSU モジュールは、リカバリーモードではインストールできません。
 - KernelSU モジュールには Zygisk のサポートが組み込まれていません（ただし[ZygiskNext](https://github.com/Dr-TSNG/ZygiskNext)を使うと Zygisk モジュールを使用できます）。
+- **モジュールマウントアーキテクチャ**：KernelSU は [metamodule システム](metamodule.md) を使用し、マウントをプラグ可能な metamodule (`meta-overlayfs`など) に委任します。一方、Magisk はマウントをコアに組み込んでいます。KernelSU はモジュールマウントを有効にするために metamodule のインストールが必要です。
 - KernelSU モジュールにおけるファイルの置換や削除の方法は、Magisk とは全く異なります。KernelSU は `.replace` メソッドをサポートしていません。その代わり、`mknod filename c 0 0` で同名のファイルを作成し、対応するファイルを削除する必要があります。
 - BusyBox 用のディレクトリが違います。KernelSU の組み込み BusyBox は `/data/adb/ksu/bin/busybox` に、Magisk では `/data/adb/magisk/busybox` に配置されます。**これは KernelSU の内部動作であり、将来的に変更される可能性があることに注意してください!**
 - KernelSU は `.replace` ファイルをサポートしていません。しかし、KernelSU はファイルやフォルダを削除したり置き換えたりするための `REMOVE` と `REPLACE` 変数をサポートしています。
+- KernelSU は `boot-completed.sh` スクリプトを追加し、Android システムの起動完了後にタスクを実行できます。
+- KernelSU は `post-mount.sh` スクリプトを追加し、モジュールマウント完了後にタスクを実行できます。

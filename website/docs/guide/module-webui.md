@@ -1,8 +1,8 @@
 # Module WebUI
 
-In addition to executing boot scripts and modifying system files, KernelSU's modules also support displaying UI interfaces and interacting directly with users.
+In addition to executing boot scripts and modifying system files, KernelSU modules can display user interfaces and interact directly with users.
 
-The module can write HTML + CSS + JavaScript pages through any web technology. KernelSU's manager will display these pages through WebView. It also provides some APIs to interact with the system, such as executing shell commands.
+Modules can define HTML + CSS + JavaScript pages with any web technology. KernelSU's manager displays these pages via WebView and exposes APIs for interacting with the system, such as executing shell commands.
 
 ## `webroot` directory
 
@@ -36,7 +36,7 @@ import { exec } from 'kernelsu';
 const { errno, stdout } = exec("getprop ro.product.model");
 ```
 
-For another example, you can make the web page display full screen, or display a toast.
+You can also make the page full screen or display a toast.
 
 [API documentation](https://www.npmjs.com/package/kernelsu)
 

@@ -4,6 +4,10 @@ KernelSU 提供了一个模块机制，它可以在保持系统分区完整性�
 
 KernelSU 的模块运作机制与 Magisk 几乎是一样的，如果你熟悉 Magisk 模块的开发，那么开发 KernelSU 的模块大同小异，你可以跳过下面有关模块的介绍，只需要了解 [KernelSU 模块与 Magisk 模块的异同](difference-with-magisk.md)。
 
+::: warning 仅修改系统文件需要 METAMODULE
+KernelSU 使用 [metamodule](metamodule.md) 架构来挂载 `system` 目录。**只有当您的模块需要修改 `/system` 文件**（通过 `system` 目录）时，才需要安装 metamodule（例如 [meta-overlayfs](https://github.com/tiann/KernelSU/releases)）。其他模块功能如脚本、sepolicy 规则和 system.prop 无需 metamodule 即可工作。
+:::
+
 ## 模块界面
 
 KernelSU 的模块支持显示界面并与用户交互，请参阅 [WebUI 文档](module-webui.md)。

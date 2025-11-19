@@ -58,6 +58,101 @@ w      .x         .y       -zzz           -k            -something
 3. Установка с помощью fastboot с использованием boot.img, предоставленного KernelSU
 4. Восстановить boot.img вручную и установить его
 
+Since version [0.9.0](https://github.com/tiann/KernelSU/releases/tag/v0.9.0), KernelSU supports two running modes on GKI devices:
+
+1. `GKI`: Replace the original kernel of the device with the **Generic Kernel Image** (GKI) provided by KernelSU.
+2. `LKM`: Load the **Loadable Kernel Module** (LKM) into the device kernel without replacing the original kernel.
+
+These two modes are suitable for different scenarios, and you can choose the one according to your needs.
+
+### GKI mode {#gki-mode}
+
+In GKI mode, the original kernel of the device will be replaced with the generic kernel image provided by KernelSU. The advantages of GKI mode are:
+
+1. Strong universality, suitable for most devices. For example, Samsung has enabled KNOX devices, and LKM mode cannot work. There are also some niche modified devices that can only use GKI mode.
+2. Can be used without relying on official firmware, and there is no need to wait for official firmware updates, as long as the KMI is consistent, it can be used.
+
+### LKM mode {#lkm-mode}
+
+In LKM mode, the original kernel of the device won't be replaced, but the loadable kernel module will be loaded into the device kernel. The advantages of LKM mode are:
+
+1. Won't replace the original kernel of the device. If you have special requirements for the original kernel of the device, or you want to use KernelSU while using a third-party kernel, you can use LKM mode.
+2. It's more convenient to upgrade and OTA. When upgrading KernelSU, you can directly install it in the manager without flashing manually. After the system OTA, you can directly install it to the second slot without manual flashing.
+3. Suitable for some special scenarios. For example, LKM can also be loaded with temporary root permissions. Since it doesn't need to replace the boot partition, it won't trigger AVB and won't cause the device to be bricked.
+4. LKM can be temporarily uninstalled. If you want to temporarily disable root access, you can uninstall LKM. This process doesn't require flashing partitions, or even rebooting the device. If you want to enable root again, just reboot the device.
+
+::: tip COEXISTENCE OF TWO MODES
+After opening the manager, you can see the current mode of the device on the homepage. Note that the priority of GKI mode is higher than that of LKM. For example, if you use GKI kernel to replace the original kernel, and use LKM to patch the GKI kernel, the LKM will be ignored, and the device will always run in GKI mode.
+:::
+
+### Which one to choose? {#which-one}
+
+If your device is a mobile phone, we recommend that you prioritize LKM mode. If your device is an emulator, WSA, or Waydroid, we recommend that you prioritize GKI mode.
+
+## LKM installation
+
+### Get the official firmware
+
+To use LKM mode, you need to get the official firmware and patch it based on the official firmware. If you use a third-party kernel, you can use the `boot.img` of the third-party kernel as the official firmware.
+
+There are many ways to get the official firmware. If your device supports `fastboot boot`, we recommend **the most recommended and simplest** method is to use `fastboot boot` to temporarily boot the GKI kernel provided by KernelSU, then install the manager, and finally install it directly in the manager. This method doesn't require manually downloading the official firmware or manually extracting the boot.
+
+If your device doesn't support `fastboot boot`, you may need to manually download the official firmware package and extract the boot from it.
+
+Unlike GKI mode, LKM mode modifies the `ramdisk`. Therefore, on devices with Android 13, it needs to patch the `init_boot` partition instead of the `boot` partition, while GKI mode always operates on the `boot` partition.
+
+### Use the manager
+
+Open the manager, click the installation icon in the upper right corner, and several options will appear:
+
+1. Select a file. If your device doesn't have root privileges, you can choose this option and then select your official firmware. The manager will automatically patch it. After that, just flash this patched file to obtain root privileges permanently.
+2. Direct install. If your device is already rooted, you can choose this option. The manager will automatically get your device information, and then automatically patch the official firmware, and flash it automatically. You can consider using `fastboot boot` KernelSU's GKI kernel to get temporary root and install the manager, and then use this option. This is also the main way to upgrade KernelSU.
+3. Install to inactive slot. If your device supports A/B partition, you can choose this option. The manager will automatically patch the official firmware and install it to another partition. This method is suitable for devices after OTA, you can directly install it to the inactive slot after OTA.
+
+If you don't want to use the manager, you can also use the command line to install LKM. The `ksud` tool provided by KernelSU can help you patch the official firmware quickly and then flash it.
+
+The usage of `ksud` is as follows:
+
+```sh
+ksud boot-patch 
+```
+
+```txt
+Usage: ksud boot-patch [OPTIONS]
+
+Options:
+  -b, --boot <BOOT>              Boot image be patched
+  -l, --lkm <LKM>                LKM module path. If not specified, the built-in module will be used
+  -m, --module <MODULE>          LKM module path to be replaced. If not specified, the built-in module will be used
+  -i, --init <INIT>              init to be replaced
+  -u, --ota                      Will use another slot if the boot image is not specified
+  -f, --flash                    Flash it to boot partition after patch
+  -o, --out <OUT>                Output path. If not specified, the current directory will be used
+      --magiskboot <MAGISKBOOT>  magiskboot path. If not specified, the built-in version will be used
+      --kmi <KMI>                KMI version. If specified, the indicated KMI will be used
+  -h, --help                     Print help
+```
+
+A few options that need to be explained:
+
+1. The `--magiskboot` option can specify the path of magiskboot. If not specified, ksud will look for it in the environment variables. If you don’t know how to get magiskboot, you can check [here](#patch-boot-image).
+2. The `--kmi` option can specify the `KMI` version. If the kernel name of your device doesn't follow the KMI specification, you can specify it using this option.
+
+The most common usage is:
+
+```sh
+ksud boot-patch -b <boot.img> --kmi android13-5.10
+```
+
+## LKM mode installation
+
+There are several installation methods for LKM mode, each suitable for a different scenario, so please choose accordingly:
+
+1. Install with fastboot using the boot.img provided by KernelSU.
+2. Install with a kernel flash app, such as [Kernel Flasher](https://github.com/capntrips/KernelFlasher/releases).
+3. Repair the boot.img manually and install it.
+4. Install with custom Recovery (e.g., TWRP).
+
 ## Установка с помощью пользовательского Recovery {#install-by-recovery}
 
 Необходимые условия: На устройстве должен быть установлен пользовательский Recovery, например TWRP; если его нет или доступен только официальный Recovery, воспользуйтесь другим способом.
@@ -167,3 +262,16 @@ fastboot reboot
 
 1. Сначала установить Magisk, получить права root через Magisk, а затем с помощью kernel flasher прошить AnyKernel zip из KernelSU.
 2. Использовать какой-либо инструментарий для прошивки на ПК, чтобы прошить ядро, предоставленное KernelSU.
+
+Однако, если это не работает, попробуйте подход `magiskboot`.
+
+## После установки: Поддержка модулей
+
+::: warning МЕТАМОДУЛЬ ДЛЯ МОДИФИКАЦИИ СИСТЕМНЫХ ФАЙЛОВ
+Если вы хотите использовать модули, которые модифицируют файлы `/system`, вам необходимо установить **метамодуль** после установки KernelSU. Модули, которые используют только скрипты, sepolicy или system.prop, работают без метамодуля.
+:::
+
+**Для поддержки модификации `/system`**, пожалуйста, см. [Руководство по метамодулям](metamodule.md), чтобы:
+- Понять, что такое метамодули и зачем они нужны
+- Установить официальный метамодуль `meta-overlayfs`
+- Узнать о других вариантах метамодулей
