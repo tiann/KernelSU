@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
@@ -143,6 +144,7 @@ import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
+@SuppressLint("StringFormatInvalid")
 @Composable
 fun ModulePager(
     navigator: DestinationsNavigator,
@@ -473,12 +475,10 @@ fun ModulePager(
                         viewModel.markNeedRefresh()
                     }
                 )
-                val uris = mutableListOf<Uri>()
-                val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
-                val confirmContent = stringResource(R.string.module_install_prompt_with_name, moduleNames)
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
                 ) {
+                    val uris = mutableListOf<Uri>()
                     if (it.resultCode != RESULT_OK) {
                         return@rememberLauncherForActivityResult
                     }
@@ -500,6 +500,8 @@ fun ModulePager(
                     } else if (uris.size > 1) {
                         // multiple files selected
                         zipUris = uris
+                        val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
+                        val confirmContent = context.getString(R.string.module_install_prompt_with_name, moduleNames)
                         confirmDialog.showConfirm(
                             title = confirmTitle,
                             content = confirmContent
