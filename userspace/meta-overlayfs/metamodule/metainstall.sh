@@ -55,7 +55,7 @@ copy_selinux_contexts() {
         if [ "$PATH_SRC" = "$SRC" ]; then
             continue
         fi
-        REL_PATH="${PATH_SRC#$SRC/}"
+        REL_PATH="${PATH_SRC#"${SRC}/"}"
         PATH_DST="$DST/$REL_PATH"
         if [ -e "$PATH_DST" ] || [ -L "$PATH_DST" ]; then
             chcon --reference="$PATH_SRC" "$PATH_DST" 2>/dev/null || true
