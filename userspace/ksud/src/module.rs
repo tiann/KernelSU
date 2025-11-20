@@ -147,6 +147,15 @@ pub fn load_sepolicy_rule() -> Result<()> {
 pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
+    // Extract module_id from path if it matches /data/adb/modules/{id}/...
+    let module_id = path
+        .as_ref()
+        .strip_prefix(defs::MODULE_DIR)
+        .ok()
+        .and_then(|p| p.components().next())
+        .and_then(|c| c.as_os_str().to_str())
+        .map(|s| s.to_string());
+
     let mut command = &mut Command::new(assets::BUSYBOX_PATH);
     #[cfg(unix)]
     {
@@ -164,6 +173,11 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .arg("sh")
         .arg(path.as_ref())
         .envs(get_common_script_envs());
+
+    // Set KSU_MODULE environment variable if module_id was extracted successfully
+    if let Some(id) = &module_id {
+        command = command.env("KSU_MODULE", id);
+    }
 
     let result = if wait {
         command.status().map(|_| ())
