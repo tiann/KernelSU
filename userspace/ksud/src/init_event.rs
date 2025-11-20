@@ -14,6 +14,11 @@ pub fn on_post_data_fs() -> Result<()> {
 
     utils::umask(0);
 
+    // Clear all temporary module configs early
+    if let Err(e) = crate::module_config::clear_all_temp_configs() {
+        warn!("clear temp configs failed: {e}");
+    }
+
     #[cfg(unix)]
     let _ = catch_bootlog("logcat", vec!["logcat"]);
     #[cfg(unix)]

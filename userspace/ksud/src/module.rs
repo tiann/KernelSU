@@ -294,6 +294,11 @@ pub fn prune_modules() -> Result<()> {
             warn!("Failed to remove {}: {}", module.display(), e);
         }
 
+        // Clear module configs
+        if let Err(e) = crate::module_config::clear_module_configs(module_id) {
+            warn!("Failed to clear configs for {}: {}", module_id, e);
+        }
+
         Ok(())
     })?;
 
@@ -654,6 +659,38 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
         module_prop_map.insert("action".to_owned(), action.to_string());
         module_prop_map.insert("mount".to_owned(), need_mount.to_string());
 
+        // Apply module config overrides and extract managed features
+        if let Some(module_id) = module_prop_map.get("id") {
+            if let Ok(config) = crate::module_config::merge_configs(module_id) {
+                // Apply override.description
+                if let Some(desc) = config.get("override.description") {
+                    module_prop_map.insert("description".to_owned(), desc.clone());
+                }
+
+                // Extract managed features from manage.* config entries
+                let managed_features: Vec<String> = config
+                    .iter()
+                    .filter_map(|(k, v)| {
+                        if k.starts_with("manage.") {
+                            let enabled = v.trim().eq_ignore_ascii_case("true") || v.trim() == "1";
+                            if enabled {
+                                k.strip_prefix("manage.").map(|f| f.to_string())
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                if !managed_features.is_empty() {
+                    module_prop_map
+                        .insert("managedFeatures".to_owned(), managed_features.join(","));
+                }
+            }
+        }
+
         modules.push(module_prop_map);
     }
 
@@ -667,45 +704,49 @@ pub fn list_modules() -> Result<()> {
 }
 
 /// Get all managed features from active modules
-/// Modules can specify managedFeatures in their module.prop
-/// Format: managedFeatures=feature1,feature2,feature3
+/// Modules declare managed features via config system (manage.<feature>=true)
 /// Returns: HashMap<ModuleId, Vec<ManagedFeature>>
 pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
     let mut managed_features_map: HashMap<String, Vec<String>> = HashMap::new();
 
     foreach_active_module(|module_path| {
-        let prop_map = match read_module_prop(module_path) {
-            Ok(prop) => prop,
-            Err(e) => {
+        // Get module ID
+        let module_id = match module_path.file_name().and_then(|n| n.to_str()) {
+            Some(id) => id,
+            None => {
                 warn!(
-                    "Failed to read module.prop for {}: {}",
-                    module_path.display(),
-                    e
+                    "Failed to get module id from path: {}",
+                    module_path.display()
                 );
                 return Ok(());
             }
         };
 
-        if let Some(features_str) = prop_map.get("managedFeatures") {
-            let module_id = prop_map
-                .get("id")
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| "unknown".to_string());
+        // Read module config
+        let config = match crate::module_config::merge_configs(module_id) {
+            Ok(c) => c,
+            Err(_) => return Ok(()), // No config, skip
+        };
 
-            info!("Module {} manages features: {}", module_id, features_str);
+        // Extract manage.* config entries
+        let mut feature_list = Vec::new();
+        for (key, value) in config.iter() {
+            if key.starts_with("manage.") {
+                // Parse feature name
+                if let Some(feature_name) = key.strip_prefix("manage.") {
+                    // Check if enabled (true or 1)
+                    let enabled = value.trim().eq_ignore_ascii_case("true") || value.trim() == "1";
 
-            let mut feature_list = Vec::new();
-            for feature in features_str.split(',') {
-                let feature = feature.trim();
-                if !feature.is_empty() {
-                    info!("  - Adding managed feature: {}", feature);
-                    feature_list.push(feature.to_string());
+                    if enabled {
+                        info!("Module {} manages feature: {}", module_id, feature_name);
+                        feature_list.push(feature_name.to_string());
+                    }
                 }
             }
+        }
 
-            if !feature_list.is_empty() {
-                managed_features_map.insert(module_id, feature_list);
-            }
+        if !feature_list.is_empty() {
+            managed_features_map.insert(module_id.to_string(), feature_list);
         }
 
         Ok(())

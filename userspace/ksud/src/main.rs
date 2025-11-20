@@ -9,6 +9,7 @@ mod init_event;
 mod ksucalls;
 mod metamodule;
 mod module;
+mod module_config;
 mod profile;
 mod restorecon;
 mod sepolicy;
