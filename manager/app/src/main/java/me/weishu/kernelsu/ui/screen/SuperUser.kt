@@ -133,8 +133,8 @@ fun SuperUserPager(
     }
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.background,
-        tint = HazeTint(colorScheme.background.copy(0.8f))
+        backgroundColor = colorScheme.surface,
+        tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
     Scaffold(
@@ -469,19 +469,23 @@ private fun GroupItem(
 ) {
     val isDark = isSystemInDarkTheme()
     val colorScheme = colorScheme
-    val bg = remember { colorScheme.secondaryContainer.copy(alpha = 0.8f) }
-    val rootBg = remember { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
-    val unmountBg = remember(isDark) { if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f) }
-    val fg = remember { colorScheme.onSecondaryContainer }
-    val rootFg = remember { colorScheme.onTertiaryContainer.copy(alpha = 0.8f) }
-    val unmountFg = remember(isDark) { if (isDark) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f) }
+    val bg = remember(colorScheme) { colorScheme.secondaryContainer.copy(alpha = 0.8f) }
+    val rootBg = remember(colorScheme) { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
+    val unmountBg = remember(isDark, colorScheme) {
+        if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f)
+    }
+    val fg = remember(colorScheme) { colorScheme.onSecondaryContainer }
+    val rootFg = remember(colorScheme) { colorScheme.onTertiaryContainer.copy(alpha = 0.8f) }
+    val unmountFg = remember(isDark, colorScheme) {
+        if (isDark) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f)
+    }
     val userId = group.uid / 100000
     val packageInfo = group.primary.packageInfo
     val applicationInfo = packageInfo.applicationInfo
     val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
     val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
             || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom) {
+    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom, colorScheme) {
         buildList {
             if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
             if (Natives.uidShouldUmount(group.uid)) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
