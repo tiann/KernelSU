@@ -159,4 +159,23 @@
     <string name="undo">Hoàn tác</string>
     <string name="module_undo_uninstall_success">Đã huỷ việc gỡ cài đặt %s thành công</string>
     <string name="module_undo_uninstall_failed">Hoàn tác gỡ cài đặt: %s thất bại</string>
+    <string name="settings_theme">Chủ đề</string>
+    <string name="settings_theme_summary">Chọn chủ đề ứng dụng.</string>
+    <string name="settings_theme_mode_system">Mặc định theo hệ thống</string>
+    <string name="settings_theme_mode_light">Sáng</string>
+    <string name="settings_theme_mode_dark">Tối</string>
+    <string name="settings_theme_mode_monet_system">Monet (Theo hệ thống)</string>
+    <string name="settings_theme_mode_monet_light">Monet (Sáng)</string>
+    <string name="settings_theme_mode_monet_dark">Monet (Tối)</string>
+    <string name="settings_key_color_summary">Tùy chỉnh màu nhấn khi sử dụng Monet.</string>
+    <string name="settings_key_color_default">Mặc định</string>
+    <string name="color_blue">Dương</string>
+    <string name="color_red">Đỏ</string>
+    <string name="color_green">Lục</string>
+    <string name="color_purple">Tím</string>
+    <string name="color_orange">Cam</string>
+    <string name="color_teal">Xanh mòng két</string>
+    <string name="color_pink">Hồng</string>
+    <string name="color_brown">Nâu</string>
+    <string name="settings_key_color">Màu nhấn</string>
 </resources>
