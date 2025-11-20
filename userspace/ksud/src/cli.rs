@@ -288,6 +288,51 @@ enum Module {
 
     /// list all modules
     List,
+
+    /// manage module configuration
+    Config {
+        #[command(subcommand)]
+        command: ModuleConfigCmd,
+    },
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum ModuleConfigCmd {
+    /// Get a config value
+    Get {
+        /// config key
+        key: String,
+    },
+
+    /// Set a config value
+    Set {
+        /// config key
+        key: String,
+        /// config value
+        value: String,
+        /// use temporary config (cleared on reboot)
+        #[arg(short, long)]
+        temp: bool,
+    },
+
+    /// List all config entries
+    List,
+
+    /// Delete a config entry
+    Delete {
+        /// config key
+        key: String,
+        /// delete from temporary config
+        #[arg(short, long)]
+        temp: bool,
+    },
+
+    /// Clear all config entries
+    Clear {
+        /// clear temporary config
+        #[arg(short, long)]
+        temp: bool,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -435,6 +480,66 @@ pub fn run() -> Result<()> {
                 Module::Disable { id } => module::disable_module(&id),
                 Module::Action { id } => module::run_action(&id),
                 Module::List => module::list_modules(),
+                Module::Config { command } => {
+                    // Get module ID from environment variable
+                    let module_id = std::env::var("KSU_MODULE").map_err(|_| {
+                        anyhow::anyhow!("This command must be run in the context of a module")
+                    })?;
+
+                    use crate::module_config;
+                    match command {
+                        ModuleConfigCmd::Get { key } => {
+                            // Use merge_configs to respect priority (temp overrides persist)
+                            let config = module_config::merge_configs(&module_id)?;
+                            match config.get(&key) {
+                                Some(value) => {
+                                    println!("{}", value);
+                                    Ok(())
+                                }
+                                None => anyhow::bail!("Key '{}' not found", key),
+                            }
+                        }
+                        ModuleConfigCmd::Set { key, value, temp } => {
+                            // Validate input at CLI layer for better user experience
+                            module_config::validate_config_key(&key)?;
+                            module_config::validate_config_value(&value)?;
+
+                            let config_type = if temp {
+                                module_config::ConfigType::Temp
+                            } else {
+                                module_config::ConfigType::Persist
+                            };
+                            module_config::set_config_value(&module_id, &key, &value, config_type)
+                        }
+                        ModuleConfigCmd::List => {
+                            let config = module_config::merge_configs(&module_id)?;
+                            if config.is_empty() {
+                                println!("No config entries found");
+                            } else {
+                                for (key, value) in config {
+                                    println!("{}={}", key, value);
+                                }
+                            }
+                            Ok(())
+                        }
+                        ModuleConfigCmd::Delete { key, temp } => {
+                            let config_type = if temp {
+                                module_config::ConfigType::Temp
+                            } else {
+                                module_config::ConfigType::Persist
+                            };
+                            module_config::delete_config_value(&module_id, &key, config_type)
+                        }
+                        ModuleConfigCmd::Clear { temp } => {
+                            let config_type = if temp {
+                                module_config::ConfigType::Temp
+                            } else {
+                                module_config::ConfigType::Persist
+                            };
+                            module_config::clear_config(&module_id, config_type)
+                        }
+                    }
+                }
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),

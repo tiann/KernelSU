@@ -199,6 +199,39 @@ pub fn get_feature(id: String) -> Result<()> {
 pub fn set_feature(id: String, value: u64) -> Result<()> {
     let feature_id = parse_feature_id(&id)?;
 
+    // Check if this feature is managed by any module
+    if let Ok(managed_features_map) = crate::module::get_managed_features() {
+        // Find which modules manage this feature
+        let managing_modules: Vec<&String> = managed_features_map
+            .iter()
+            .filter(|(_, features)| features.iter().any(|f| f == feature_id.name()))
+            .map(|(module_id, _)| module_id)
+            .collect();
+
+        if !managing_modules.is_empty() {
+            // Feature is managed, check if caller is an authorized module
+            let caller_module = std::env::var("KSU_MODULE").unwrap_or_default();
+
+            if caller_module.is_empty() || !managing_modules.contains(&&caller_module) {
+                bail!(
+                    "Feature '{}' is managed by module(s): {}. Direct modification is not allowed.",
+                    feature_id.name(),
+                    managing_modules
+                        .iter()
+                        .map(|s| s.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+            }
+
+            log::info!(
+                "Module '{}' is setting managed feature '{}'",
+                caller_module,
+                feature_id.name()
+            );
+        }
+    }
+
     crate::ksucalls::set_feature(feature_id as u32, value)
         .with_context(|| format!("Failed to set feature {} to {}", id, value))?;
 
@@ -349,7 +382,7 @@ pub fn init_features() -> Result<()> {
 
     let mut features = load_binary_config()?;
 
-    // Get managed features from active modules
+    // Get managed features from active modules and skip them during init
     if let Ok(managed_features_map) = crate::module::get_managed_features() {
         if !managed_features_map.is_empty() {
             log::info!(
@@ -357,7 +390,7 @@ pub fn init_features() -> Result<()> {
                 managed_features_map.len()
             );
 
-            // Force override managed features to 0
+            // Build a set of all managed feature IDs to skip
             for (module_id, feature_list) in managed_features_map.iter() {
                 log::info!(
                     "Module '{}' manages {} feature(s)",
@@ -368,12 +401,20 @@ pub fn init_features() -> Result<()> {
                 for feature_name in feature_list {
                     if let Ok(feature_id) = parse_feature_id(feature_name) {
                         let feature_id_u32 = feature_id as u32;
-                        log::info!(
-                            "  - Force overriding managed feature '{}' to 0 (by module: {})",
-                            feature_name,
-                            module_id
-                        );
-                        features.insert(feature_id_u32, 0);
+                        // Remove managed features from config, let modules control them
+                        if features.remove(&feature_id_u32).is_some() {
+                            log::info!(
+                                "  - Skipping managed feature '{}' (controlled by module: {})",
+                                feature_name,
+                                module_id
+                            );
+                        } else {
+                            log::info!(
+                                "  - Feature '{}' is managed by module '{}', skipping",
+                                feature_name,
+                                module_id
+                            );
+                        }
                     } else {
                         log::warn!(
                             "  - Unknown managed feature '{}' from module '{}', ignoring",
@@ -397,9 +438,9 @@ pub fn init_features() -> Result<()> {
 
     apply_config(&features)?;
 
-    // Save the final configuration (including managed features forced to 0)
+    // Save the configuration (excluding managed features)
     save_binary_config(&features)?;
-    log::info!("Saved final feature configuration to file");
+    log::info!("Saved feature configuration to file");
 
     Ok(())
 }
