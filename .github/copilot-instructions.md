@@ -27,33 +27,54 @@ KernelSU is a kernel-based root solution for Android devices that provides:
 ## Build System & Dependencies
 
 ### Kernel Module (kernel/)
-- **Build Tool**: Linux kernel make system
-- **Configuration**: `CONFIG_KSU=m` in kernel config
-- **Key Files**: `Makefile`, `Kconfig`, `setup.sh`
-- **Build Command**: `CONFIG_KSU=m make` (in kernel directory, requires kernel source tree)
-- **Integration Script**: `kernel/setup.sh` - sets up KernelSU in kernel source tree
-- **CI Builds**: Uses DDK (Driver Development Kit) containers with specific KMI versions
-  - Supported KMI: android12-5.10, android13-5.10, android13-5.15, android14-5.15, android14-6.1, android15-6.6, android16-6.12
-  - DDK Release: 20251104
+The kernel source is a kernel driver that can be compiled in two ways:
 
-### Userspace Daemon (userspace/ksud/)
+#### 1. Build as Kernel Module (.ko file)
+- **Build Tool**: [DDK (Driver Development Kit)](https://github.com/Ylarod/ddk)
+- **Command**: `ddk -e CONFIG_KSU=m -t <kmi> build`
+- **Output**: `kernelsu.ko` file
+- **Supported KMI**: android12-5.10, android13-5.10, android13-5.15, android14-5.15, android14-6.1, android15-6.6, android16-6.12
+- **DDK Release**: 20251104
+- **CI Usage**: See `.github/workflows/ddk-lkm.yml`
+
+#### 2. Build into Kernel Image
+- **Build Tool**: `bazel` (for Android 13+ kernels)
+- **Command**: See `.github/workflows/gki-kernel.yml` for detailed bazel commands
+- **Example**: `tools/bazel run --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist`
+- **Integration Script**: `kernel/setup.sh` - sets up KernelSU in kernel source tree
+- **Key Files**: `Makefile`, `Kconfig`, `setup.sh`
+
+### Userspace Components (userspace/ksud/ and userspace/meta-overlayfs/)
 - **Language**: Rust 2024 edition
-- **Build Tool**: `cross` (cross-compilation tool) - version from git rev 66845c1
 - **Rust Toolchain**: Requires stable Rust (tested with 1.91.1+)
 - **Target Platforms**: 
-  - Primary: `aarch64-linux-android`, `x86_64-linux-android`
+  - Primary: `aarch64-linux-android` (arm64-v8a), `x86_64-linux-android`
   - Extra: `x86_64-pc-windows-gnu`, `x86_64-apple-darwin`, `aarch64-apple-darwin`, `aarch64-unknown-linux-musl`, `x86_64-unknown-linux-musl`
-- **Build Command**: 
+
+#### Local Development (PREFERRED)
+- **Build Tool**: `cargo-ndk` - for local development and testing
+- **Install**: `cargo install cargo-ndk`
+- **Commands**:
   ```bash
-  # Install cross if not present
-  RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
+  # Check compilation
+  cargo ndk -t arm64-v8a check
   
-  # Build for Android
-  CROSS_NO_WARNINGS=0 cross build --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml
+  # Build
+  cargo ndk -t arm64-v8a build --release
+  
+  # Run clippy
+  cargo ndk -t arm64-v8a clippy
   ```
+
+#### CI Build
+- **Build Tool**: `cross` (cross-compilation tool) - version from git rev 66845c1
+- **Install**: `RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1`
+- **Command**: `CROSS_NO_WARNINGS=0 cross build --target aarch64-linux-android --release --manifest-path ./userspace/ksud/Cargo.toml`
 - **Build Time**: ~25 seconds for check, longer for cross-compilation
-- **Dependencies**: See `userspace/ksud/Cargo.toml` - includes zip, clap, rustix, android-properties
-- **Embedded Assets**: Contains LKM files in `bin/aarch64/` directory (from build-lkm workflow)
+
+#### Dependencies & Assets
+- See `userspace/ksud/Cargo.toml` - includes zip, clap, rustix, android-properties
+- Embedded Assets: Contains LKM files in `bin/aarch64/` directory (from build-lkm workflow)
 
 ### Android Manager App (manager/)
 - **Build Tool**: Gradle 8.13.1+ with Kotlin 2.2.21
@@ -83,13 +104,19 @@ KernelSU is a kernel-based root solution for Android devices that provides:
 
 ### Website (website/)
 - **Framework**: VitePress 1.6.4+ with Vue 3.5.22+
-- **Build Tool**: npm/yarn
+- **Build Tool**: `bun` (preferred) or npm/yarn
 - **Commands**:
   ```bash
   cd website
+  # Using bun (preferred)
+  bun install
+  bun run docs:dev    # Development server
+  bun run docs:build  # Production build
+  
+  # Or using npm/yarn
   npm install
-  npm run docs:dev    # Development server
-  npm run docs:build  # Production build
+  npm run docs:dev
+  npm run docs:build
   ```
 
 ### Just Build Tool (justfile)
@@ -148,10 +175,15 @@ just clippy         # Run Rust linting
 
 ## Common Build Issues & Workarounds
 
-### Cross Tool Installation
+### Cargo-NDK for Local Development
+- **Issue**: Need to test Rust code locally without full cross-compilation
+- **Fix**: Use `cargo-ndk` for local development: `cargo ndk -t arm64-v8a check/build/clippy`
+- **Note**: Install with `cargo install cargo-ndk`. This is faster and easier for development.
+
+### Cross Tool Installation (CI only)
 - **Issue**: cross tool not in PATH
 - **Fix**: Install with exact revision: `RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1`
-- **Note**: Must clear RUSTFLAGS during cross installation to avoid conflicts
+- **Note**: Must clear RUSTFLAGS during cross installation to avoid conflicts. Use `cross` only for CI builds.
 
 ### Manager Build Without ksud
 - **Issue**: Manager build fails with missing jniLibs
@@ -165,7 +197,7 @@ just clippy         # Run Rust linting
 
 ### Clippy Warnings
 - **Issue**: Build passes locally but fails in CI
-- **Fix**: Run with `-Dwarnings` flag: `RUSTFLAGS='-Dwarnings' cargo clippy`
+- **Fix**: Use `cargo ndk -t arm64-v8a clippy` for local checks, or `RUSTFLAGS='-Dwarnings' cargo clippy` for CI validation
 - **Note**: CI treats all warnings as errors
 
 ### Android SDK/NDK Versions
@@ -181,17 +213,29 @@ just clippy         # Run Rust linting
 3. Ensure C code follows kernel coding standards
 4. Run `shellcheck` on any modified .sh files
 
-### For Userspace Daemon Changes
-1. Modify files in `/userspace/ksud/src/`
-2. **Always run before committing**:
-   ```bash
-   cd userspace/ksud
-   cargo fmt
-   cargo clippy --target aarch64-linux-android --release
-   cargo test
-   ```
-3. Test cross-compilation: `cross build --target aarch64-linux-android --release`
-4. Verify no warnings with: `RUSTFLAGS='-Dwarnings' cargo clippy`
+### For Userspace Daemon Changes (ksud/meta-overlayfs)
+When modifying Rust code, you **MUST** follow these steps in order:
+
+1. Make your code changes in `/userspace/ksud/src/` or `/userspace/meta-overlayfs/`
+2. **Run `cargo ndk -t arm64-v8a check`** to verify compilation
+3. **Run `cargo ndk -t arm64-v8a clippy`** to check for lints and warnings
+4. **Run `cargo fmt`** to format the code
+5. Fix any errors or warnings before considering the task complete
+6. **Only mark tasks as completed after all checks pass**
+
+**Important**: For local development, always use `cargo-ndk` first. Use `cross` only for CI builds.
+
+Example workflow:
+```bash
+cd userspace/ksud
+# After making changes
+cargo ndk -t arm64-v8a check     # Must pass
+cargo ndk -t arm64-v8a clippy    # Must have no warnings
+cargo fmt                         # Must format code
+cargo test                        # Run tests if applicable
+```
+
+For CI validation, verify no warnings with: `RUSTFLAGS='-Dwarnings' cargo clippy`
 
 ### For Manager Changes
 1. Modify files in `/manager/app/src/`
@@ -202,7 +246,12 @@ just clippy         # Run Rust linting
 
 ### For Documentation Changes
 1. Modify files in `/website/docs/` or `/docs/`
-2. Test locally: `cd website && npm run docs:dev`
+2. Test locally: 
+   ```bash
+   cd website
+   bun install    # or npm install
+   bun run docs:dev    # or npm run docs:dev
+   ```
 3. No linting required for documentation-only changes
 
 ## Key Configuration Files
@@ -242,7 +291,8 @@ just clippy         # Run Rust linting
 2. **Build order matters**: LKM → ksud → manager (each step depends on previous)
 3. **CI runs on**: pushes to main/dev/ci branches, PRs to main/dev
 4. **Licensing**: kernel/ is GPL-2.0-only, everything else is GPL-3.0-or-later
-5. **Cross-compilation required**: ksud cannot be built natively, must use `cross` tool
+5. **Local Rust development**: Always use `cargo-ndk` for local development. Use `cross` only for CI builds.
 6. **Java 21 required**: Manager requires Java 21 (Temurin distribution in CI)
-7. **Format before commit**: Always run `cargo fmt` on Rust code before committing
+7. **Mandatory Rust workflow**: check → clippy → fmt → fix errors → repeat until all pass
 8. **No warnings allowed**: Clippy runs with `-Dwarnings`, all warnings must be fixed
+9. **Website tooling**: Prefer `bun` over npm/yarn for website development
