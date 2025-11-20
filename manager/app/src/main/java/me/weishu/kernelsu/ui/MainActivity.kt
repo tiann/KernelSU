@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -57,13 +59,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // Enable edge to edge
-        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
-
-        super.onCreate(savedInstanceState)
 
         val isManager = Natives.isManager
         if (isManager && !Natives.requireNewKernel()) install()
@@ -75,7 +75,24 @@ class MainActivity : ComponentActivity() {
             var keyColorInt by remember { mutableIntStateOf(prefs.getInt("key_color", 0)) }
             val keyColor = remember(keyColorInt) { if (keyColorInt == 0) null else Color(keyColorInt) }
 
-            DisposableEffect(prefs) {
+            val darkMode = when (colorMode) {
+                2, 5 -> true
+                0, 3 -> isSystemInDarkTheme()
+                else -> false
+            }
+
+            DisposableEffect(prefs, darkMode) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                )
+
                 val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
                     when (key) {
                         "color_mode" -> colorMode = prefs.getInt("color_mode", 0)
