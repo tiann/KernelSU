@@ -179,4 +179,6 @@
     <string name="color_teal">Bleu sarcelle</string>
     <string name="color_pink">Rose</string>
     <string name="color_brown">Marron</string>
+    <string name="feature_status_unsupported_summary">Le noyau ne prend pas en charge cette fonctionnalité.</string>
+    <string name="feature_status_managed_summary">Cette fonctionnalité est gérée par un module.</string>
 </resources>
