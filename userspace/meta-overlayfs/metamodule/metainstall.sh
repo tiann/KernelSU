@@ -38,6 +38,31 @@ module_requires_overlay_move() {
     return 0
 }
 
+# Copy SELinux contexts from src tree to destination by mirroring each entry.
+copy_selinux_contexts() {
+    command -v chcon >/dev/null 2>&1 || return 0
+
+    SRC="$1"
+    DST="$2"
+
+    if [ -z "$SRC" ] || [ -z "$DST" ] || [ ! -e "$SRC" ] || [ ! -e "$DST" ]; then
+        return 0
+    fi
+
+    chcon --reference="$SRC" "$DST" 2>/dev/null || true
+
+    find "$SRC" -print | while IFS= read -r PATH_SRC; do
+        if [ "$PATH_SRC" = "$SRC" ]; then
+            continue
+        fi
+        REL_PATH="${PATH_SRC#$SRC/}"
+        PATH_DST="$DST/$REL_PATH"
+        if [ -e "$PATH_DST" ] || [ -L "$PATH_DST" ]; then
+            chcon --reference="$PATH_SRC" "$PATH_DST" 2>/dev/null || true
+        fi
+    done
+}
+
 # Post-installation: move partition directories to ext4 image
 post_install_to_image() {
     ui_print "- Copying module content to image"
@@ -53,18 +78,11 @@ post_install_to_image() {
             ui_print "- Copying $partition/"
             cp -af "$MODPATH/$partition" "$MOD_IMG_DIR/" || {
                 ui_print "! Warning: Failed to move $partition"
+                continue
             }
+            copy_selinux_contexts "$MODPATH/$partition" "$MOD_IMG_DIR/$partition"
         fi
     done
-
-    # Set permissions
-    set_perm_recursive "$MOD_IMG_DIR" 0 0 0755 0644
-    set_perm_recursive "$MOD_IMG_DIR/system/bin" 0 2000 0755 0755
-    set_perm_recursive "$MOD_IMG_DIR/system/xbin" 0 2000 0755 0755
-    set_perm_recursive "$MOD_IMG_DIR/system/system_ext/bin" 0 2000 0755 0755
-    set_perm_recursive "$MOD_IMG_DIR/system/vendor" 0 2000 0755 0755 u:object_r:vendor_file:s0
-
-    ui_print "- Module content copied"
 }
 
 ui_print "- Using meta-overlayfs metainstall"
