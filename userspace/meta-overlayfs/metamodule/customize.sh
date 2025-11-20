@@ -45,8 +45,13 @@ ui_print "- Architecture-specific binary installed successfully"
 IMG_FILE="$MODPATH/modules.img"
 MNT_DIR="$MODPATH/mnt"
 IMG_SIZE_MB=2048
+EXISTING_IMG="/data/adb/modules/$MODID/modules.img"
 
-if [ ! -f "$IMG_FILE" ]; then
+if [ -f "$EXISTING_IMG" ]; then
+    ui_print "- Reusing modules image from previous install"
+    cp "$EXISTING_IMG" "$IMG_FILE" || \
+        abort "! Failed to copy existing modules image"
+else
     ui_print "- Creating 2GB ext4 image for module storage"
 
     # Create sparse file (2GB logical size, 0 bytes actual)
@@ -58,20 +63,6 @@ if [ ! -f "$IMG_FILE" ]; then
         abort "! Failed to format ext4 image"
 
     ui_print "- Image created successfully (sparse file)"
-else
-    ui_print "- Existing image found, keeping it"
-fi
-
-# Mount image immediately for use
-ui_print "- Mounting image for immediate use..."
-mkdir -p "$MNT_DIR"
-if ! mountpoint -q "$MNT_DIR" 2>/dev/null; then
-    mount -t ext4 -o loop,rw,noatime "$IMG_FILE" "$MNT_DIR" || \
-        abort "! Failed to mount image"
-    ui_print "- Image mounted successfully"
-else
-    ui_print "- Image already mounted"
 fi
 
 ui_print "- Installation complete"
-ui_print "- Image is ready for module installations"

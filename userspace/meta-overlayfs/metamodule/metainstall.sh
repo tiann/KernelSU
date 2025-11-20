@@ -40,7 +40,9 @@ module_requires_overlay_move() {
 
 # Post-installation: move partition directories to ext4 image
 post_install_to_image() {
-    ui_print "- Moving module content to image"
+    ui_print "- Copying module content to image"
+
+    set_perm_recursive $MNT_DIR 0 0 0755 0644
 
     MOD_IMG_DIR="$MNT_DIR/$MODID"
     mkdir -p "$MOD_IMG_DIR"
@@ -48,31 +50,29 @@ post_install_to_image() {
     # Move all partition directories
     for partition in system vendor product system_ext odm oem; do
         if [ -d "$MODPATH/$partition" ]; then
-            ui_print " Moving $partition/"
-            mv "$MODPATH/$partition" "$MOD_IMG_DIR/" || {
+            ui_print "- Copying $partition/"
+            cp -af "$MODPATH/$partition" "$MOD_IMG_DIR/" || {
                 ui_print "! Warning: Failed to move $partition"
             }
         fi
     done
 
     # Set permissions
-    chown -R 0:0 "$MOD_IMG_DIR" 2>/dev/null
-    chmod -R 755 "$MOD_IMG_DIR" 2>/dev/null
+    set_perm_recursive $MOD_IMG_DIR 0 0 0755 0644
+    set_perm_recursive $MOD_IMG_DIR/system/bin 0 2000 0755 0755
+    set_perm_recursive $MOD_IMG_DIR/system/xbin 0 2000 0755 0755
+    set_perm_recursive $MOD_IMG_DIR/system/system_ext/bin 0 2000 0755 0755
+    set_perm_recursive $MOD_IMG_DIR/system/vendor 0 2000 0755 0755 u:object_r:vendor_file:s0
 
-    ui_print "- Module content moved to image"
+    ui_print "- Module content copied"
 }
 
-# Main installation flow
 ui_print "- Using meta-overlayfs metainstall"
 
-# 1. Ensure ext4 image is mounted
-ensure_image_mounted
-
-# 2. Call standard install_module function (defined in installer.sh)
 install_module
 
-# 3. Post-process: move content to image when overlay data exists
 if module_requires_overlay_move; then
+    ensure_image_mounted
     post_install_to_image
 else
     ui_print "- Skipping move to modules image"
