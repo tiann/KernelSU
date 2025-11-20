@@ -3,8 +3,14 @@ use log::info;
 
 mod defs;
 mod mount;
+mod xcp;
 
 fn main() -> Result<()> {
+    let args: Vec<String> = std::env::args().collect();
+    if matches!(args.get(1), Some(cmd) if cmd == "xcp") {
+        return xcp::run(&args[2..]);
+    }
+
     // Initialize logger
     env_logger::builder()
         .filter_level(log::LevelFilter::Info)

@@ -42,7 +42,7 @@ module_requires_overlay_move() {
 post_install_to_image() {
     ui_print "- Copying module content to image"
 
-    set_perm_recursive $MNT_DIR 0 0 0755 0644
+    set_perm_recursive "$MNT_DIR" 0 0 0755 0644
 
     MOD_IMG_DIR="$MNT_DIR/$MODID"
     mkdir -p "$MOD_IMG_DIR"
@@ -58,11 +58,11 @@ post_install_to_image() {
     done
 
     # Set permissions
-    set_perm_recursive $MOD_IMG_DIR 0 0 0755 0644
-    set_perm_recursive $MOD_IMG_DIR/system/bin 0 2000 0755 0755
-    set_perm_recursive $MOD_IMG_DIR/system/xbin 0 2000 0755 0755
-    set_perm_recursive $MOD_IMG_DIR/system/system_ext/bin 0 2000 0755 0755
-    set_perm_recursive $MOD_IMG_DIR/system/vendor 0 2000 0755 0755 u:object_r:vendor_file:s0
+    set_perm_recursive "$MOD_IMG_DIR" 0 0 0755 0644
+    set_perm_recursive "$MOD_IMG_DIR/system/bin" 0 2000 0755 0755
+    set_perm_recursive "$MOD_IMG_DIR/system/xbin" 0 2000 0755 0755
+    set_perm_recursive "$MOD_IMG_DIR/system/system_ext/bin" 0 2000 0755 0755
+    set_perm_recursive "$MOD_IMG_DIR/system/vendor" 0 2000 0755 0755 u:object_r:vendor_file:s0
 
     ui_print "- Module content copied"
 }

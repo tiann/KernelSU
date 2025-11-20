@@ -43,13 +43,12 @@ ui_print "- Architecture-specific binary installed successfully"
 
 # Create ext4 image for module content storage
 IMG_FILE="$MODPATH/modules.img"
-MNT_DIR="$MODPATH/mnt"
 IMG_SIZE_MB=2048
 EXISTING_IMG="/data/adb/modules/$MODID/modules.img"
 
 if [ -f "$EXISTING_IMG" ]; then
     ui_print "- Reusing modules image from previous install"
-    cp "$EXISTING_IMG" "$IMG_FILE" || \
+    "$MODPATH/meta-overlayfs" xcp "$EXISTING_IMG" "$IMG_FILE" || \
         abort "! Failed to copy existing modules image"
 else
     ui_print "- Creating 2GB ext4 image for module storage"
