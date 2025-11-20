@@ -467,7 +467,9 @@ private fun GroupItem(
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
-    val isDark = isSystemInDarkTheme()
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val isDark = isSystemInDarkTheme() || prefs.getInt("color_mode", 0) == 2 || prefs.getInt("color_mode", 0) == 5
     val colorScheme = colorScheme
     val bg = remember(colorScheme) { colorScheme.secondaryContainer.copy(alpha = 0.8f) }
     val rootBg = remember(colorScheme) { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
@@ -485,7 +487,7 @@ private fun GroupItem(
     val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
     val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
             || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom, colorScheme) {
+    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom, colorScheme, isDark) {
         buildList {
             if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
             if (Natives.uidShouldUmount(group.uid)) add(StatusMeta("UMOUNT", unmountBg, unmountFg))

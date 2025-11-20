@@ -139,6 +139,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
+import top.yukonga.miuix.kmp.icon.icons.useful.Undo
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -911,16 +912,18 @@ fun ModuleItem(
     onExecuteAction: () -> Unit,
     onOpenWebUi: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
-    val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }
-    val textDecoration by remember(module.remove) {
-        mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
-    }
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val isDark = isSystemInDarkTheme() || prefs.getInt("color_mode", 0) == 2 || prefs.getInt("color_mode", 0) == 5
     val colorScheme = colorScheme
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
     val actionIconTint = remember(isDark) { colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f) }
     val updateBg = remember(colorScheme) { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
     val updateTint = remember(colorScheme) { colorScheme.onTertiaryContainer.copy(alpha = 0.8f) }
+    val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }
+    val textDecoration by remember(module.remove) {
+        mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
+    }
 
     Card(
         modifier = Modifier
@@ -1126,7 +1129,7 @@ fun ModuleItem(
                     Icon(
                         modifier = Modifier.size(20.dp),
                         imageVector = if (module.remove) {
-                            Icons.AutoMirrored.Outlined.Undo
+                            MiuixIcons.Useful.Undo
                         } else {
                             Icons.Outlined.Delete
                         },

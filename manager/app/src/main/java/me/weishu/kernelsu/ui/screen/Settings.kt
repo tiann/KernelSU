@@ -246,7 +246,7 @@ fun SettingPager(
                         )
                         var keyColorIndex by rememberSaveable {
                             mutableIntStateOf(
-                                colorValues.indexOf(prefs.getInt("key_color", 0)).coerceAtLeast(0)
+                                colorValues.indexOf(prefs.getInt("key_color", 0)).takeIf { it >= 0 } ?: 0
                             )
                         }
                         SuperDropdown(
