@@ -10,7 +10,7 @@ use anyhow::{Context, Result, anyhow, bail, ensure};
 use const_format::concatcp;
 use is_executable::is_executable;
 use java_properties::PropertiesIter;
-use log::{info, warn};
+use log::{debug, info, warn};
 
 use std::fs::{copy, rename};
 use std::{
@@ -38,6 +38,63 @@ const INSTALL_MODULE_SCRIPT: &str = concatcp!(
     "exit 0",
     "\n"
 );
+
+/// Validate module_id format and security
+/// Module ID must match: ^[a-zA-Z][a-zA-Z0-9._-]+$
+/// - Must start with a letter (a-zA-Z)
+/// - Followed by one or more alphanumeric, dot, underscore, or hyphen characters
+/// - Minimum length: 2 characters
+pub fn validate_module_id(module_id: &str) -> Result<()> {
+    if module_id.is_empty() {
+        bail!("Module ID cannot be empty");
+    }
+
+    if module_id.len() < 2 {
+        bail!("Module ID too short: must be at least 2 characters");
+    }
+
+    if module_id.len() > 64 {
+        bail!(
+            "Module ID too long: {} characters (max: 64)",
+            module_id.len()
+        );
+    }
+
+    // Check first character: must be a letter
+    let first_char = module_id.chars().next().unwrap();
+    if !first_char.is_ascii_alphabetic() {
+        bail!(
+            "Module ID must start with a letter (a-zA-Z), got: '{}'",
+            first_char
+        );
+    }
+
+    // Check remaining characters: alphanumeric, dot, underscore, or hyphen
+    for (i, ch) in module_id.chars().enumerate() {
+        if i == 0 {
+            continue; // Already checked
+        }
+
+        if !ch.is_ascii_alphanumeric() && ch != '.' && ch != '_' && ch != '-' {
+            bail!(
+                "Module ID contains invalid character '{}' at position {}. Only letters, digits, '.', '_', and '-' are allowed",
+                ch,
+                i
+            );
+        }
+    }
+
+    // Additional security checks
+    if module_id.contains("..") {
+        bail!("Module ID cannot contain '..' sequence");
+    }
+
+    if module_id == "." || module_id == ".." {
+        bail!("Module ID cannot be '.' or '..'");
+    }
+
+    Ok(())
+}
 
 /// Get common environment variables for script execution
 pub(crate) fn get_common_script_envs() -> Vec<(&'static str, String)> {
@@ -156,6 +213,32 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .and_then(|c| c.as_os_str().to_str())
         .map(|s| s.to_string());
 
+    // Validate and log module_id extraction
+    let validated_module_id = module_id
+        .as_ref()
+        .and_then(|id| match validate_module_id(id) {
+            Ok(_) => {
+                debug!("Module ID extracted from script path: '{}'", id);
+                Some(id.as_str())
+            }
+            Err(e) => {
+                warn!(
+                    "Invalid module ID '{}' extracted from script path '{}': {}",
+                    id,
+                    path.as_ref().display(),
+                    e
+                );
+                None
+            }
+        });
+
+    if module_id.is_none() {
+        debug!(
+            "Failed to extract module_id from script path '{}'. Script will run without KSU_MODULE environment variable.",
+            path.as_ref().display()
+        );
+    }
+
     let mut command = &mut Command::new(assets::BUSYBOX_PATH);
     #[cfg(unix)]
     {
@@ -174,8 +257,8 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .arg(path.as_ref())
         .envs(get_common_script_envs());
 
-    // Set KSU_MODULE environment variable if module_id was extracted successfully
-    if let Some(id) = &module_id {
+    // Set KSU_MODULE environment variable if module_id was validated successfully
+    if let Some(id) = validated_module_id {
         command = command.env("KSU_MODULE", id);
     }
 
@@ -290,13 +373,14 @@ pub fn prune_modules() -> Result<()> {
             warn!("Failed to exec uninstaller: {e}");
         }
 
-        if let Err(e) = remove_dir_all(module) {
-            warn!("Failed to remove {}: {}", module.display(), e);
-        }
-
-        // Clear module configs
+        // Clear module configs before removing module directory
         if let Err(e) = crate::module_config::clear_module_configs(module_id) {
             warn!("Failed to clear configs for {}: {}", module_id, e);
+        }
+
+        // Finally remove the module directory
+        if let Err(e) = remove_dir_all(module) {
+            warn!("Failed to remove {}: {}", module.display(), e);
         }
 
         Ok(())
@@ -381,6 +465,10 @@ fn _install_module(zip: &str) -> Result<()> {
         bail!("module id not found in module.prop!");
     };
     let module_id = module_id.trim();
+
+    // Validate module_id format
+    validate_module_id(module_id)
+        .with_context(|| format!("Invalid module ID in module.prop: '{}'", module_id))?;
 
     // Check if this module is a metamodule
     let is_metamodule = metamodule::is_metamodule(&module_prop);
@@ -501,6 +589,8 @@ pub fn install_module(zip: &str) -> Result<()> {
 }
 
 pub fn undo_uninstall_module(id: &str) -> Result<()> {
+    validate_module_id(id)?;
+
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
@@ -516,6 +606,8 @@ pub fn undo_uninstall_module(id: &str) -> Result<()> {
 }
 
 pub fn uninstall_module(id: &str) -> Result<()> {
+    validate_module_id(id)?;
+
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
@@ -529,11 +621,15 @@ pub fn uninstall_module(id: &str) -> Result<()> {
 }
 
 pub fn run_action(id: &str) -> Result<()> {
+    validate_module_id(id)?;
+
     let action_script_path = format!("/data/adb/modules/{id}/action.sh");
     exec_script(&action_script_path, true)
 }
 
 pub fn enable_module(id: &str) -> Result<()> {
+    validate_module_id(id)?;
+
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {} not found", id);
 
@@ -606,6 +702,15 @@ pub fn read_module_prop(module_path: &Path) -> Result<HashMap<String, String>> {
 }
 
 fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
+    // Load all module configs once to minimize I/O overhead
+    let all_configs = match crate::module_config::get_all_module_configs() {
+        Ok(configs) => configs,
+        Err(e) => {
+            warn!("Failed to load module configs: {}", e);
+            HashMap::new()
+        }
+    };
+
     // first check enabled modules
     let dir = std::fs::read_dir(path);
     let Ok(dir) = dir else {
@@ -661,7 +766,7 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
 
         // Apply module config overrides and extract managed features
         if let Some(module_id) = module_prop_map.get("id")
-            && let Ok(config) = crate::module_config::merge_configs(module_id)
+            && let Some(config) = all_configs.get(module_id.as_str())
         {
             // Apply override.description
             if let Some(desc) = config.get("override.description") {
@@ -672,13 +777,8 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
             let managed_features: Vec<String> = config
                 .iter()
                 .filter_map(|(k, v)| {
-                    if k.starts_with("manage.") {
-                        let enabled = v.trim().eq_ignore_ascii_case("true") || v.trim() == "1";
-                        if enabled {
-                            k.strip_prefix("manage.").map(|f| f.to_string())
-                        } else {
-                            None
-                        }
+                    if k.starts_with("manage.") && crate::module_config::parse_bool_config(v) {
+                        k.strip_prefix("manage.").map(|f| f.to_string())
                     } else {
                         None
                     }
@@ -724,7 +824,10 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
         // Read module config
         let config = match crate::module_config::merge_configs(module_id) {
             Ok(c) => c,
-            Err(_) => return Ok(()), // No config, skip
+            Err(e) => {
+                warn!("Failed to merge configs for module '{}': {}", module_id, e);
+                return Ok(()); // Skip this module
+            }
         };
 
         // Extract manage.* config entries
@@ -732,14 +835,11 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
         for (key, value) in config.iter() {
             if key.starts_with("manage.") {
                 // Parse feature name
-                if let Some(feature_name) = key.strip_prefix("manage.") {
-                    // Check if enabled (true or 1)
-                    let enabled = value.trim().eq_ignore_ascii_case("true") || value.trim() == "1";
-
-                    if enabled {
-                        info!("Module {} manages feature: {}", module_id, feature_name);
-                        feature_list.push(feature_name.to_string());
-                    }
+                if let Some(feature_name) = key.strip_prefix("manage.")
+                    && crate::module_config::parse_bool_config(value)
+                {
+                    info!("Module {} manages feature: {}", module_id, feature_name);
+                    feature_list.push(feature_name.to_string());
                 }
             }
         }

@@ -11,6 +11,11 @@ use crate::utils::ensure_dir_exists;
 const MODULE_CONFIG_MAGIC: u32 = 0x4b53554d; // "KSUM"
 const MODULE_CONFIG_VERSION: u32 = 1;
 
+// Validation limits
+pub const MAX_CONFIG_KEY_LEN: usize = 256;
+pub const MAX_CONFIG_VALUE_LEN: usize = 256;
+pub const MAX_CONFIG_COUNT: usize = 32;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConfigType {
     Persist,
@@ -24,6 +29,84 @@ impl ConfigType {
             ConfigType::Temp => defs::TEMP_CONFIG_NAME,
         }
     }
+}
+
+/// Parse a boolean config value
+/// Accepts "true", "1" (case-insensitive) as true, everything else as false
+pub fn parse_bool_config(value: &str) -> bool {
+    let trimmed = value.trim();
+    trimmed.eq_ignore_ascii_case("true") || trimmed == "1"
+}
+
+/// Validate config key
+/// Rejects keys with control characters, newlines, or excessive length
+pub fn validate_config_key(key: &str) -> Result<()> {
+    if key.is_empty() {
+        bail!("Config key cannot be empty");
+    }
+
+    if key.len() > MAX_CONFIG_KEY_LEN {
+        bail!(
+            "Config key too long: {} bytes (max: {})",
+            key.len(),
+            MAX_CONFIG_KEY_LEN
+        );
+    }
+
+    // Check for control characters and newlines
+    for ch in key.chars() {
+        if ch.is_control() {
+            bail!(
+                "Config key contains control character: {:?} (U+{:04X})",
+                ch,
+                ch as u32
+            );
+        }
+    }
+
+    // Reject keys with path separators to prevent path traversal
+    if key.contains('/') || key.contains('\\') {
+        bail!("Config key cannot contain path separators");
+    }
+
+    Ok(())
+}
+
+/// Validate config value
+/// Rejects values with control characters (except tab), newlines, or excessive length
+pub fn validate_config_value(value: &str) -> Result<()> {
+    if value.len() > MAX_CONFIG_VALUE_LEN {
+        bail!(
+            "Config value too long: {} bytes (max: {})",
+            value.len(),
+            MAX_CONFIG_VALUE_LEN
+        );
+    }
+
+    // Check for control characters (allow tab but reject newlines and others)
+    for ch in value.chars() {
+        if ch.is_control() && ch != '\t' {
+            bail!(
+                "Config value contains invalid control character: {:?} (U+{:04X})",
+                ch,
+                ch as u32
+            );
+        }
+    }
+
+    Ok(())
+}
+
+/// Validate config count
+fn validate_config_count(config: &HashMap<String, String>) -> Result<()> {
+    if config.len() > MAX_CONFIG_COUNT {
+        bail!(
+            "Too many config entries: {} (max: {})",
+            config.len(),
+            MAX_CONFIG_COUNT
+        );
+    }
+    Ok(())
 }
 
 /// Get the config directory path for a module
@@ -43,26 +126,9 @@ fn ensure_config_dir(module_id: &str) -> Result<PathBuf> {
     Ok(dir)
 }
 
-/// Validate module_id to prevent path traversal attacks
-fn validate_module_id(module_id: &str) -> Result<()> {
-    if module_id.is_empty() {
-        bail!("Module ID cannot be empty");
-    }
-
-    if module_id.contains('/') || module_id.contains('\\') {
-        bail!("Invalid module ID: contains path separators");
-    }
-
-    if module_id == "." || module_id == ".." {
-        bail!("Invalid module ID: relative path component");
-    }
-
-    Ok(())
-}
-
 /// Load config from binary file
 pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<String, String>> {
-    validate_module_id(module_id)?;
+    crate::module::validate_module_id(module_id)?;
 
     let config_path = get_config_path(module_id, config_type);
 
@@ -150,7 +216,18 @@ pub fn save_config(
     config_type: ConfigType,
     config: &HashMap<String, String>,
 ) -> Result<()> {
-    validate_module_id(module_id)?;
+    crate::module::validate_module_id(module_id)?;
+
+    // Validate config count
+    validate_config_count(config)?;
+
+    // Validate all keys and values
+    for (key, value) in config {
+        validate_config_key(key).with_context(|| format!("Invalid config key: '{}'", key))?;
+        validate_config_value(value)
+            .with_context(|| format!("Invalid config value for key '{}'", key))?;
+    }
+
     ensure_config_dir(module_id)?;
 
     let config_path = get_config_path(module_id, config_type);
@@ -212,6 +289,7 @@ pub fn save_config(
 }
 
 /// Get a single config value
+#[allow(dead_code)]
 pub fn get_config_value(
     module_id: &str,
     key: &str,
@@ -228,8 +306,14 @@ pub fn set_config_value(
     value: &str,
     config_type: ConfigType,
 ) -> Result<()> {
+    // Validate input early for better error messages
+    validate_config_key(key)?;
+    validate_config_value(value)?;
+
     let mut config = load_config(module_id, config_type)?;
     config.insert(key.to_string(), value.to_string());
+
+    // Note: save_config will also validate, but this provides earlier feedback
     save_config(module_id, config_type, &config)?;
     Ok(())
 }
@@ -261,11 +345,29 @@ pub fn clear_config(module_id: &str, config_type: ConfigType) -> Result<()> {
 
 /// Merge persist and temp configs (temp takes priority)
 pub fn merge_configs(module_id: &str) -> Result<HashMap<String, String>> {
-    validate_module_id(module_id)?;
+    crate::module::validate_module_id(module_id)?;
 
-    let mut merged = load_config(module_id, ConfigType::Persist).unwrap_or_default();
+    let mut merged = match load_config(module_id, ConfigType::Persist) {
+        Ok(config) => config,
+        Err(e) => {
+            warn!(
+                "Failed to load persist config for module '{}': {}",
+                module_id, e
+            );
+            HashMap::new()
+        }
+    };
 
-    let temp = load_config(module_id, ConfigType::Temp).unwrap_or_default();
+    let temp = match load_config(module_id, ConfigType::Temp) {
+        Ok(config) => config,
+        Err(e) => {
+            warn!(
+                "Failed to load temp config for module '{}': {}",
+                module_id, e
+            );
+            HashMap::new()
+        }
+    };
 
     // Temp config overrides persist config
     for (key, value) in temp {
@@ -276,7 +378,7 @@ pub fn merge_configs(module_id: &str) -> Result<HashMap<String, String>> {
 }
 
 /// Get all module configs (for iteration)
-#[allow(dead_code)]
+/// Loads all configs in a single pass to minimize I/O overhead
 pub fn get_all_module_configs() -> Result<HashMap<String, HashMap<String, String>>> {
     let config_root = Path::new(defs::MODULE_CONFIG_DIR);
 
@@ -296,11 +398,18 @@ pub fn get_all_module_configs() -> Result<HashMap<String, HashMap<String, String
             continue;
         }
 
-        if let Some(module_id) = path.file_name().and_then(|n| n.to_str())
-            && let Ok(config) = merge_configs(module_id)
-            && !config.is_empty()
-        {
-            all_configs.insert(module_id.to_string(), config);
+        if let Some(module_id) = path.file_name().and_then(|n| n.to_str()) {
+            match merge_configs(module_id) {
+                Ok(config) => {
+                    if !config.is_empty() {
+                        all_configs.insert(module_id.to_string(), config);
+                    }
+                }
+                Err(e) => {
+                    warn!("Failed to load config for module '{}': {}", module_id, e);
+                    // Continue processing other modules
+                }
+            }
         }
     }
 
@@ -351,7 +460,7 @@ pub fn clear_all_temp_configs() -> Result<()> {
 
 /// Clear all configs for a module (called during uninstall)
 pub fn clear_module_configs(module_id: &str) -> Result<()> {
-    validate_module_id(module_id)?;
+    crate::module::validate_module_id(module_id)?;
 
     let config_dir = get_config_dir(module_id);
 

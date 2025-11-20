@@ -489,30 +489,21 @@ pub fn run() -> Result<()> {
                     use crate::module_config;
                     match command {
                         ModuleConfigCmd::Get { key } => {
-                            let config_type = module_config::ConfigType::Persist;
-                            match module_config::get_config_value(&module_id, &key, config_type)? {
+                            // Use merge_configs to respect priority (temp overrides persist)
+                            let config = module_config::merge_configs(&module_id)?;
+                            match config.get(&key) {
                                 Some(value) => {
                                     println!("{}", value);
                                     Ok(())
                                 }
-                                None => {
-                                    // Also check temp config
-                                    let temp_config_type = module_config::ConfigType::Temp;
-                                    match module_config::get_config_value(
-                                        &module_id,
-                                        &key,
-                                        temp_config_type,
-                                    )? {
-                                        Some(value) => {
-                                            println!("{}", value);
-                                            Ok(())
-                                        }
-                                        None => anyhow::bail!("Key '{}' not found", key),
-                                    }
-                                }
+                                None => anyhow::bail!("Key '{}' not found", key),
                             }
                         }
                         ModuleConfigCmd::Set { key, value, temp } => {
+                            // Validate input at CLI layer for better user experience
+                            module_config::validate_config_key(&key)?;
+                            module_config::validate_config_value(&value)?;
+
                             let config_type = if temp {
                                 module_config::ConfigType::Temp
                             } else {
