@@ -160,4 +160,23 @@
     <string name="module_undo_uninstall_success">Successfully canceled uninstall of %s</string>
     <string name="module_undo_uninstall_failed">Failed to undo uninstall: %s</string>
     <string name="group_contains_apps">Contains %d apps</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_summary">Choose the app theme mode.</string>
+    <string name="settings_theme_mode_system">Follow system</string>
+    <string name="settings_theme_mode_light">Light</string>
+    <string name="settings_theme_mode_dark">Dark</string>
+    <string name="settings_theme_mode_monet_system">Monet (Follow system)</string>
+    <string name="settings_theme_mode_monet_light">Monet (Light)</string>
+    <string name="settings_theme_mode_monet_dark">Monet (Dark)</string>
+    <string name="settings_key_color">Key color</string>
+    <string name="settings_key_color_summary">Customize accent when using Monet.</string>
+    <string name="settings_key_color_default">Default</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="color_purple">Purple</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_teal">Teal</string>
+    <string name="color_pink">Pink</string>
+    <string name="color_brown">Brown</string>
 </resources>

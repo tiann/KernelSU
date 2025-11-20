@@ -2,21 +2,43 @@ package me.weishu.kernelsu.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.ThemeController
 import top.yukonga.miuix.kmp.theme.darkColorScheme
 import top.yukonga.miuix.kmp.theme.lightColorScheme
 
 @Composable
 fun KernelSUTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    colorMode: Int = 0,
+    keyColor: Color? = null,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        darkTheme -> darkColorScheme()
-        else -> lightColorScheme()
+    val isDark = isSystemInDarkTheme()
+    val controller = when (colorMode) {
+        1 -> ThemeController(ColorSchemeMode.Light)
+        2 -> ThemeController(ColorSchemeMode.Dark)
+        3 -> ThemeController(
+            ColorSchemeMode.MonetSystem,
+            keyColor = keyColor,
+            isDark = isDark
+        )
+
+        4 -> ThemeController(
+            ColorSchemeMode.MonetLight,
+            keyColor = keyColor,
+        )
+
+        5 -> ThemeController(
+            ColorSchemeMode.MonetDark,
+            keyColor = keyColor,
+        )
+
+        else -> ThemeController(ColorSchemeMode.System)
     }
-    MiuixTheme(
-        colors = colorScheme,
+    return MiuixTheme(
+        controller = controller,
         content = content
     )
 }
