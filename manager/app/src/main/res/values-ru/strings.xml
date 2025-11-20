@@ -167,4 +167,6 @@
     <string name="settings_theme">Тема</string>
     <string name="settings_theme_summary">Выберите режим темы приложения.</string>
     <string name="settings_theme_mode_system">Следовать за системой</string>
+    <string name="feature_status_managed_summary">Эта функция управляется модулем.</string>
+    <string name="feature_status_unsupported_summary">Ядро не поддерживает эту функцию.</string>
 </resources>
