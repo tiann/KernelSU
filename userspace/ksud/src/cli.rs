@@ -482,10 +482,9 @@ pub fn run() -> Result<()> {
                 Module::List => module::list_modules(),
                 Module::Config { command } => {
                     // Get module ID from environment variable
-                    let module_id = std::env::var("KSU_MODULE")
-                        .map_err(|_| anyhow::anyhow!(
-                            "This command must be run in the context of a module"
-                        ))?;
+                    let module_id = std::env::var("KSU_MODULE").map_err(|_| {
+                        anyhow::anyhow!("This command must be run in the context of a module")
+                    })?;
 
                     use crate::module_config;
                     match command {

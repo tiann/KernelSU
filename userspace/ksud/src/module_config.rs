@@ -276,6 +276,7 @@ pub fn merge_configs(module_id: &str) -> Result<HashMap<String, String>> {
 }
 
 /// Get all module configs (for iteration)
+#[allow(dead_code)]
 pub fn get_all_module_configs() -> Result<HashMap<String, HashMap<String, String>>> {
     let config_root = Path::new(defs::MODULE_CONFIG_DIR);
 
@@ -295,12 +296,11 @@ pub fn get_all_module_configs() -> Result<HashMap<String, HashMap<String, String
             continue;
         }
 
-        if let Some(module_id) = path.file_name().and_then(|n| n.to_str()) {
-            if let Ok(config) = merge_configs(module_id) {
-                if !config.is_empty() {
-                    all_configs.insert(module_id.to_string(), config);
-                }
-            }
+        if let Some(module_id) = path.file_name().and_then(|n| n.to_str())
+            && let Ok(config) = merge_configs(module_id)
+            && !config.is_empty()
+        {
+            all_configs.insert(module_id.to_string(), config);
         }
     }
 

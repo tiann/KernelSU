@@ -660,34 +660,33 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
         module_prop_map.insert("mount".to_owned(), need_mount.to_string());
 
         // Apply module config overrides and extract managed features
-        if let Some(module_id) = module_prop_map.get("id") {
-            if let Ok(config) = crate::module_config::merge_configs(module_id) {
-                // Apply override.description
-                if let Some(desc) = config.get("override.description") {
-                    module_prop_map.insert("description".to_owned(), desc.clone());
-                }
+        if let Some(module_id) = module_prop_map.get("id")
+            && let Ok(config) = crate::module_config::merge_configs(module_id)
+        {
+            // Apply override.description
+            if let Some(desc) = config.get("override.description") {
+                module_prop_map.insert("description".to_owned(), desc.clone());
+            }
 
-                // Extract managed features from manage.* config entries
-                let managed_features: Vec<String> = config
-                    .iter()
-                    .filter_map(|(k, v)| {
-                        if k.starts_with("manage.") {
-                            let enabled = v.trim().eq_ignore_ascii_case("true") || v.trim() == "1";
-                            if enabled {
-                                k.strip_prefix("manage.").map(|f| f.to_string())
-                            } else {
-                                None
-                            }
+            // Extract managed features from manage.* config entries
+            let managed_features: Vec<String> = config
+                .iter()
+                .filter_map(|(k, v)| {
+                    if k.starts_with("manage.") {
+                        let enabled = v.trim().eq_ignore_ascii_case("true") || v.trim() == "1";
+                        if enabled {
+                            k.strip_prefix("manage.").map(|f| f.to_string())
                         } else {
                             None
                         }
-                    })
-                    .collect();
+                    } else {
+                        None
+                    }
+                })
+                .collect();
 
-                if !managed_features.is_empty() {
-                    module_prop_map
-                        .insert("managedFeatures".to_owned(), managed_features.join(","));
-                }
+            if !managed_features.is_empty() {
+                module_prop_map.insert("managedFeatures".to_owned(), managed_features.join(","));
             }
         }
 
