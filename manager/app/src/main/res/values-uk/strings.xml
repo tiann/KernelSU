@@ -177,4 +177,6 @@
     <string name="color_teal">Бірюзовий</string>
     <string name="color_pink">Рожевий</string>
     <string name="color_brown">Коричневий</string>
+    <string name="feature_status_unsupported_summary">Ядро не підтримує цю функцію.</string>
+    <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
 </resources>
