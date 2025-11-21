@@ -8,6 +8,7 @@ use std::path::Path;
 use crate::defs;
 
 const FEATURE_CONFIG_PATH: &str = concatcp!(defs::WORKING_DIR, ".feature_config");
+#[allow(clippy::unreadable_literal)]
 const FEATURE_MAGIC: u32 = 0x7f4b5355;
 const FEATURE_VERSION: u32 = 1;
 
@@ -20,32 +21,32 @@ pub enum FeatureId {
 }
 
 impl FeatureId {
-    pub fn from_u32(id: u32) -> Option<Self> {
+    pub const fn from_u32(id: u32) -> Option<Self> {
         match id {
-            0 => Some(FeatureId::SuCompat),
-            1 => Some(FeatureId::KernelUmount),
-            2 => Some(FeatureId::EnhancedSecurity),
+            0 => Some(Self::SuCompat),
+            1 => Some(Self::KernelUmount),
+            2 => Some(Self::EnhancedSecurity),
             _ => None,
         }
     }
 
-    pub fn name(&self) -> &'static str {
+    pub const fn name(self) -> &'static str {
         match self {
-            FeatureId::SuCompat => "su_compat",
-            FeatureId::KernelUmount => "kernel_umount",
-            FeatureId::EnhancedSecurity => "enhanced_security",
+            Self::SuCompat => "su_compat",
+            Self::KernelUmount => "kernel_umount",
+            Self::EnhancedSecurity => "enhanced_security",
         }
     }
 
-    pub fn description(&self) -> &'static str {
+    pub const fn description(self) -> &'static str {
         match self {
-            FeatureId::SuCompat => {
+            Self::SuCompat => {
                 "SU Compatibility Mode - allows authorized apps to gain root via traditional 'su' command"
             }
-            FeatureId::KernelUmount => {
+            Self::KernelUmount => {
                 "Kernel Umount - controls whether kernel automatically unmounts modules when not needed"
             }
-            FeatureId::EnhancedSecurity => {
+            Self::EnhancedSecurity => {
                 "Enhanced Security - disable non‑KSU root elevation and unauthorized UID downgrades"
             }
         }
@@ -76,11 +77,7 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
     let magic = u32::from_le_bytes(magic_buf);
 
     if magic != FEATURE_MAGIC {
-        bail!(
-            "Invalid feature config magic: expected 0x{:08x}, got 0x{:08x}",
-            FEATURE_MAGIC,
-            magic
-        );
+        bail!("Invalid feature config magic: expected 0x{FEATURE_MAGIC:08x}, got 0x{magic:08x}",);
     }
 
     let mut version_buf = [0u8; 4];
@@ -90,9 +87,8 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
 
     if version != FEATURE_VERSION {
         log::warn!(
-            "Feature config version mismatch: expected {}, got {}",
-            FEATURE_VERSION,
-            version
+            "Feature config version mismatch: expected {FEATURE_VERSION}, got {version
+            }",
         );
     }
 
@@ -137,11 +133,11 @@ pub fn save_binary_config(features: &HashMap<u32, u64>) -> Result<()> {
     file.write_all(&count.to_le_bytes())
         .with_context(|| "Failed to write count")?;
 
-    for (&id, &value) in features.iter() {
+    for (&id, &value) in features {
         file.write_all(&id.to_le_bytes())
-            .with_context(|| format!("Failed to write feature id {}", id))?;
+            .with_context(|| format!("Failed to write feature id {id}"))?;
         file.write_all(&value.to_le_bytes())
-            .with_context(|| format!("Failed to write feature value for id {}", id))?;
+            .with_context(|| format!("Failed to write feature value for id {id}"))?;
     }
 
     file.sync_all()
@@ -151,43 +147,42 @@ pub fn save_binary_config(features: &HashMap<u32, u64>) -> Result<()> {
     Ok(())
 }
 
-pub fn apply_config(features: &HashMap<u32, u64>) -> Result<()> {
+pub fn apply_config(features: &HashMap<u32, u64>) {
     log::info!("Applying feature configuration to kernel...");
 
     let mut applied = 0;
-    for (&id, &value) in features.iter() {
+    for (&id, &value) in features {
         match crate::ksucalls::set_feature(id, value) {
-            Ok(_) => {
+            Ok(()) => {
                 if let Some(feature_id) = FeatureId::from_u32(id) {
-                    log::info!("Set feature {} to {}", feature_id.name(), value);
+                    log::info!("Set feature {} to {value}", feature_id.name());
                 } else {
-                    log::info!("Set feature {} to {}", id, value);
+                    log::info!("Set feature {id} to {value}");
                 }
                 applied += 1;
             }
             Err(e) => {
-                log::warn!("Failed to set feature {}: {}", id, e);
+                log::warn!("Failed to set feature {id}: {e}");
             }
         }
     }
 
-    log::info!("Applied {} features successfully", applied);
-    Ok(())
+    log::info!("Applied {applied} features successfully");
 }
 
-pub fn get_feature(id: String) -> Result<()> {
-    let feature_id = parse_feature_id(&id)?;
+pub fn get_feature(id: &str) -> Result<()> {
+    let feature_id = parse_feature_id(id)?;
     let (value, supported) = crate::ksucalls::get_feature(feature_id as u32)
-        .with_context(|| format!("Failed to get feature {}", id))?;
+        .with_context(|| format!("Failed to get feature {id}"))?;
 
     if !supported {
-        println!("Feature '{}' is not supported by kernel", id);
+        println!("Feature '{id}' is not supported by kernel");
         return Ok(());
     }
 
     println!("Feature: {} ({})", feature_id.name(), feature_id as u32);
     println!("Description: {}", feature_id.description());
-    println!("Value: {}", value);
+    println!("Value: {value}");
     println!(
         "Status: {}",
         if value != 0 { "enabled" } else { "disabled" }
@@ -196,8 +191,8 @@ pub fn get_feature(id: String) -> Result<()> {
     Ok(())
 }
 
-pub fn set_feature(id: String, value: u64) -> Result<()> {
-    let feature_id = parse_feature_id(&id)?;
+pub fn set_feature(id: &str, value: u64) -> Result<()> {
+    let feature_id = parse_feature_id(id)?;
 
     // Check if this feature is managed by any module
     if let Ok(managed_features_map) = crate::module::get_managed_features() {
@@ -225,27 +220,25 @@ pub fn set_feature(id: String, value: u64) -> Result<()> {
             }
 
             log::info!(
-                "Module '{}' is setting managed feature '{}'",
-                caller_module,
+                "Module '{caller_module}' is setting managed feature '{}'",
                 feature_id.name()
             );
         }
     }
 
     crate::ksucalls::set_feature(feature_id as u32, value)
-        .with_context(|| format!("Failed to set feature {} to {}", id, value))?;
+        .with_context(|| format!("Failed to set feature {id} to {value}"))?;
 
     println!(
-        "Feature '{}' set to {} ({})",
+        "Feature '{}' set to {value} ({})",
         feature_id.name(),
-        value,
         if value != 0 { "enabled" } else { "disabled" }
     );
 
     Ok(())
 }
 
-pub fn list_features() -> Result<()> {
+pub fn list_features() {
     println!("Available Features:");
     println!("{}", "=".repeat(80));
 
@@ -254,7 +247,7 @@ pub fn list_features() -> Result<()> {
 
     // Build a reverse map: feature_name -> Vec<module_id>
     let mut feature_to_modules: HashMap<String, Vec<String>> = HashMap::new();
-    for (module_id, feature_list) in managed_features_map.iter() {
+    for (module_id, feature_list) in &managed_features_map {
         for feature_name in feature_list {
             feature_to_modules
                 .entry(feature_name.clone())
@@ -269,14 +262,14 @@ pub fn list_features() -> Result<()> {
         FeatureId::EnhancedSecurity,
     ];
 
-    for feature_id in all_features.iter() {
+    for feature_id in &all_features {
         let id = *feature_id as u32;
         let (value, supported) = crate::ksucalls::get_feature(id).unwrap_or((0, false));
 
         let status = if !supported {
             "NOT_SUPPORTED".to_string()
         } else if value != 0 {
-            format!("ENABLED ({})", value)
+            format!("ENABLED ({value})")
         } else {
             "DISABLED".to_string()
         };
@@ -306,8 +299,6 @@ pub fn list_features() -> Result<()> {
 
         println!();
     }
-
-    Ok(())
 }
 
 pub fn load_config_and_apply() -> Result<()> {
@@ -318,7 +309,7 @@ pub fn load_config_and_apply() -> Result<()> {
         return Ok(());
     }
 
-    apply_config(&features)?;
+    apply_config(&features);
     println!("Feature configuration loaded and applied");
     Ok(())
 }
@@ -332,13 +323,13 @@ pub fn save_config() -> Result<()> {
         FeatureId::EnhancedSecurity,
     ];
 
-    for feature_id in all_features.iter() {
+    for feature_id in &all_features {
         let id = *feature_id as u32;
         if let Ok((value, supported)) = crate::ksucalls::get_feature(id)
             && supported
         {
             features.insert(id, value);
-            log::info!("Saved feature {} = {}", feature_id.name(), value);
+            log::info!("Saved feature {} = {value}", feature_id.name());
         }
     }
 
@@ -350,8 +341,8 @@ pub fn save_config() -> Result<()> {
     Ok(())
 }
 
-pub fn check_feature(id: String) -> Result<()> {
-    let feature_id = parse_feature_id(&id)?;
+pub fn check_feature(id: &str) -> Result<()> {
+    let feature_id = parse_feature_id(id)?;
 
     // Check if this feature is managed by any module
     let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
@@ -366,7 +357,7 @@ pub fn check_feature(id: String) -> Result<()> {
 
     // Check if the feature is supported by kernel
     let (_value, supported) = crate::ksucalls::get_feature(feature_id as u32)
-        .with_context(|| format!("Failed to get feature {}", id))?;
+        .with_context(|| format!("Failed to get feature {id}"))?;
 
     if supported {
         println!("supported");
@@ -391,10 +382,9 @@ pub fn init_features() -> Result<()> {
             );
 
             // Build a set of all managed feature IDs to skip
-            for (module_id, feature_list) in managed_features_map.iter() {
+            for (module_id, feature_list) in &managed_features_map {
                 log::info!(
-                    "Module '{}' manages {} feature(s)",
-                    module_id,
+                    "Module '{module_id}' manages {} feature(s)",
                     feature_list.len()
                 );
 
@@ -404,22 +394,16 @@ pub fn init_features() -> Result<()> {
                         // Remove managed features from config, let modules control them
                         if features.remove(&feature_id_u32).is_some() {
                             log::info!(
-                                "  - Skipping managed feature '{}' (controlled by module: {})",
-                                feature_name,
-                                module_id
+                                "  - Skipping managed feature '{feature_name}' (controlled by module: {module_id})",
                             );
                         } else {
                             log::info!(
-                                "  - Feature '{}' is managed by module '{}', skipping",
-                                feature_name,
-                                module_id
+                                "  - Feature '{feature_name}' is managed by module '{module_id}', skipping",
                             );
                         }
                     } else {
                         log::warn!(
-                            "  - Unknown managed feature '{}' from module '{}', ignoring",
-                            feature_name,
-                            module_id
+                            "  - Unknown managed feature '{feature_name}' from module '{module_id}', ignoring",
                         );
                     }
                 }
@@ -436,7 +420,7 @@ pub fn init_features() -> Result<()> {
         return Ok(());
     }
 
-    apply_config(&features)?;
+    apply_config(&features);
 
     // Save the configuration (excluding managed features)
     save_binary_config(&features)?;
