@@ -1,6 +1,0 @@
-{
-    "version": "1.1.0",
-    "versionCode": 1100,
-    "zipUrl": "https://github.com/tiann/KernelSU/releases/download/v2.1.2/meta-overlayfs-v1.1.0.zip",
-    "changelog": "https://github.com/tiann/KernelSU/releases/download/v2.1.2/meta-overlayfs-changelog.md"
-}
