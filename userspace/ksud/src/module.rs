@@ -11,6 +11,7 @@ use const_format::concatcp;
 use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{debug, info, warn};
+use regex_lite::Regex;
 
 use std::fs::{copy, rename};
 use std::{
@@ -45,55 +46,15 @@ const INSTALL_MODULE_SCRIPT: &str = concatcp!(
 /// - Followed by one or more alphanumeric, dot, underscore, or hyphen characters
 /// - Minimum length: 2 characters
 pub fn validate_module_id(module_id: &str) -> Result<()> {
-    if module_id.is_empty() {
-        bail!("Module ID cannot be empty");
+    let re = Regex::new(r"^[a-zA-Z][a-zA-Z0-9._-]+$")?;
+    if re.is_match(module_id) {
+        Ok(())
+    } else {
+        Err(anyhow!(
+            "Invalid module ID: '{}'. Must match /^[a-zA-Z][a-zA-Z0-9._-]+$/",
+            module_id
+        ))
     }
-
-    if module_id.len() < 2 {
-        bail!("Module ID too short: must be at least 2 characters");
-    }
-
-    if module_id.len() > 64 {
-        bail!(
-            "Module ID too long: {} characters (max: 64)",
-            module_id.len()
-        );
-    }
-
-    // Check first character: must be a letter
-    let first_char = module_id.chars().next().unwrap();
-    if !first_char.is_ascii_alphabetic() {
-        bail!(
-            "Module ID must start with a letter (a-zA-Z), got: '{}'",
-            first_char
-        );
-    }
-
-    // Check remaining characters: alphanumeric, dot, underscore, or hyphen
-    for (i, ch) in module_id.chars().enumerate() {
-        if i == 0 {
-            continue; // Already checked
-        }
-
-        if !ch.is_ascii_alphanumeric() && ch != '.' && ch != '_' && ch != '-' {
-            bail!(
-                "Module ID contains invalid character '{}' at position {}. Only letters, digits, '.', '_', and '-' are allowed",
-                ch,
-                i
-            );
-        }
-    }
-
-    // Additional security checks
-    if module_id.contains("..") {
-        bail!("Module ID cannot contain '..' sequence");
-    }
-
-    if module_id == "." || module_id == ".." {
-        bail!("Module ID cannot be '.' or '..'");
-    }
-
-    Ok(())
 }
 
 /// Get common environment variables for script execution
