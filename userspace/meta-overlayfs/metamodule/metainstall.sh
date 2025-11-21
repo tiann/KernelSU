@@ -67,10 +67,11 @@ copy_selinux_contexts() {
 post_install_to_image() {
     ui_print "- Copying module content to image"
 
-    set_perm_recursive "$MNT_DIR" 0 0 0755 0644
+    set_perm "$MNT_DIR" 0 0 0755 0644
 
     MOD_IMG_DIR="$MNT_DIR/$MODID"
     mkdir -p "$MOD_IMG_DIR"
+    set_perm "$MOD_IMG_DIR" 0 0 0755 0644
 
     # Move all partition directories
     for partition in system vendor product system_ext odm oem; do

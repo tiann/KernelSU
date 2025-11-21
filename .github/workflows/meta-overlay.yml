@@ -50,5 +50,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: meta-overlayfs
-          path: userspace/meta-overlayfs/target/meta-overlayfs-*.zip
+          path: |
+            userspace/meta-overlayfs/target/meta-overlayfs-*.zip
+            userspace/meta-overlayfs/metamodule/meta-overlayfs-changelog.md
           if-no-files-found: error
