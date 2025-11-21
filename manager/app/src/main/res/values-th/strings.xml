@@ -178,4 +178,6 @@
     <string name="color_teal">สีเขียวอมน้ำเงิน</string>
     <string name="color_pink">สีชมพู</string>
     <string name="color_brown">สีน้ำตาล</string>
+    <string name="feature_status_unsupported_summary">เคอร์เนลของคุณไม่รองรับฟีเจอร์นี้</string>
+    <string name="feature_status_managed_summary">คุณสมบัตินี้ถูกจัดการโดยโมดูล</string>
 </resources>
