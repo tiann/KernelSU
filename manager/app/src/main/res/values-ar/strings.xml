@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">فشل إلغاء تثبيت %s</string>
     <string name="module_version">الإصدار</string>
     <string name="module_author">المطور</string>
-    <string name="module_overlay_fs_not_available">الوحدات غير متوفرة حيث يتم تعطيل نظام الملفات المتراكب بواسطة النواة!</string>
     <string name="refresh">إنعاش</string>
     <string name="show_system_apps">إظهار تطبيقات النظام</string>
     <string name="hide_system_apps">إخفاء تطبيقات النظام</string>

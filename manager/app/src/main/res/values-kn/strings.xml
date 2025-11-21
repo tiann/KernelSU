@@ -36,7 +36,6 @@
     <string name="profile_namespace">ಮೌಂಟ್ ನೇಮ್‌ಸ್ಪೇಸ್</string>
     <string name="profile_selinux_rules">ನಿಯಮಗಳು</string>
     <string name="profile_groups">ಗುಂಪುಗಳು</string>
-    <string name="module_overlay_fs_not_available">ಓವರ್‌ಲೇಫ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ, ಮಾಡ್ಯೂಲ್ ಕಾರ್ಯನಿರ್ವಹಿಸುವುದಿಲ್ಲ!</string>
     <string name="module">ಮಾಡ್ಯೂಲ್</string>
     <string name="module_author">ಲೇಖಕ</string>
     <string name="about">ಬಗ್ಗೆ</string>

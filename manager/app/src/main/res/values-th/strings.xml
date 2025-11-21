@@ -35,7 +35,6 @@
     <string name="reboot_edl">รีบูตเข้าสู่โหมด EDL</string>
     <string name="module_uninstall_success">%s ถอนการติดตั้งสำเร็จ</string>
     <string name="module_uninstall_failed">ถอนการติดตั้ง %s ล้มเหลว</string>
-    <string name="module_overlay_fs_not_available">โมดูลไม่สามารถใช้งานได้เนื่องจาก OverlayFS ถูกปิดใช้งานโดยเคอร์เนล!</string>
     <string name="module_uninstall_confirm">คุณแน่ใจว่าจะถอนการติดตั้งโมดูล %s หรือไม่\?</string>
     <string name="module_author">ผู้สร้าง</string>
     <string name="module_version">เวอร์ชัน</string>

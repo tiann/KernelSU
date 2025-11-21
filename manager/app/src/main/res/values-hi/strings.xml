@@ -44,7 +44,6 @@
     <string name="home_click_to_install">इंस्टाल करने के लिए क्लिक करें</string>
     <string name="profile_selinux_rules">नियम</string>
     <string name="profile_groups">समूह</string>
-    <string name="module_overlay_fs_not_available">Overlayfs उपलब्ध नहीं है, मॉड्यूल काम नहीं कर सकता !</string>
     <string name="module">मॉड्यूल</string>
     <string name="module_author">निर्माता</string>
     <string name="about">हमारे बारे में</string>

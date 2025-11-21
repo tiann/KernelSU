@@ -38,7 +38,6 @@
     <string name="module_uninstall_failed">Impossibile disinstallare: %s</string>
     <string name="module_version">Versione</string>
     <string name="module_author">Autore</string>
-    <string name="module_overlay_fs_not_available">overlayfs non è disponibile, i moduli non possono funzionare!</string>
     <string name="refresh">Ricarica</string>
     <string name="show_system_apps">Mostra app di sistema</string>
     <string name="hide_system_apps">Nascondi app di sistema</string>

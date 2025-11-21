@@ -45,8 +45,7 @@
     <string name="module_version">Verzija</string>
     <string name="module_author">Autor</string>
     <string name="refresh">Osvježi</string>
-    <string name="module_overlay_fs_not_available">Moduli nisu dostupni jer je OverlayFS onemogućen od strane kernela!</string>
-    <string name="module_magisk_conflict">Moduli nisu dostupni zbog sukoba s Magiskom!</string>
+    <string name="module_magisk_conflict">Module su isključene jer je u sukobu sa Magisk-om!</string>
     <string name="home_learn_kernelsu">Naučite KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Naučite kako da instalirate KernelSU i da koristite module</string>
