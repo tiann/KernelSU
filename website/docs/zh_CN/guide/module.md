@@ -12,6 +12,79 @@ KernelSU 使用 [metamodule](metamodule.md) 架构来挂载 `system` 目录。**
 
 KernelSU 的模块支持显示界面并与用户交互，请参阅 [WebUI 文档](module-webui.md)。
 
+## 模块配置
+
+KernelSU 提供了一个内置的配置系统，允许模块存储持久化或临时的键值设置。配置以二进制格式存储在 `/data/adb/ksu/module_configs/<module_id>/`，具有以下特性：
+
+### 配置类型
+
+- **持久配置** (`persist.config`)：重启后保留，直到明确删除或卸载模块
+- **临时配置** (`tmp.config`)：在每次启动时的 post-fs-data 阶段自动清除
+
+读取配置时，对于同一个键，临时值优先于持久值。
+
+### 在模块脚本中使用配置
+
+所有模块脚本（`post-fs-data.sh`、`service.sh`、`boot-completed.sh` 等）运行时都会设置 `KSU_MODULE` 环境变量为模块 ID。您可以使用 `ksud module config` 命令来管理模块的配置：
+
+```bash
+# 获取配置值
+value=$(ksud module config get my_setting)
+
+# 设置持久配置值
+ksud module config set my_setting "some value"
+
+# 设置临时配置值（重启后清除）
+ksud module config set --temp runtime_state "active"
+
+# 列出所有配置项（合并持久和临时配置）
+ksud module config list
+
+# 删除配置项
+ksud module config delete my_setting
+
+# 删除临时配置项
+ksud module config delete --temp runtime_state
+
+# 清除所有持久配置
+ksud module config clear
+
+# 清除所有临时配置
+ksud module config clear --temp
+```
+
+### 验证限制
+
+配置系统强制执行以下限制：
+
+- **最大键长度**：256 字节
+- **最大值长度**：256 字节
+- **最大配置项数**：每个模块 32 个
+- 键不能包含控制字符、换行符或路径分隔符（`/` 或 `\`）
+- 值不能包含控制字符（制表符 `\t` 除外）
+
+### 生命周期
+
+- **启动时**：所有临时配置在 post-fs-data 阶段清除
+- **模块卸载时**：所有配置（持久和临时）自动删除
+- 配置以二进制格式存储，使用魔数 `0x4b53554d`（"KSUM"）和版本验证
+
+### 使用场景
+
+配置系统适用于：
+
+- **用户偏好**：存储用户通过 WebUI 或 action 脚本配置的模块设置
+- **功能开关**：在不重新安装的情况下启用/禁用模块功能
+- **运行时状态**：跟踪应在重启时重置的临时状态（使用临时配置）
+- **安装设置**：记住模块安装时做出的选择
+
+::: tip 最佳实践
+- 对于应在重启后保留的用户偏好，使用持久配置
+- 对于应在启动时重置的运行时状态或功能开关，使用临时配置
+- 在脚本中使用配置值之前验证它们
+- 使用 `ksud module config list` 命令调试配置问题
+:::
+
 ## Busybox
 
 KernelSU 提供了一个功能完备的 BusyBox 二进制文件（包括完整的 SELinux 支持）。可执行文件位于 `/data/adb/ksu/bin/busybox`。

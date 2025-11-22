@@ -12,6 +12,79 @@ KernelSU 使用 [metamodule](metamodule.md) 架構來掛載 `system` 目錄。**
 
 KernelSU 的模組支援顯示互動介面，請參閱 [WebUI 文檔](module-webui.md).
 
+## 模組配置
+
+KernelSU 提供了一個內建的配置系統，允許模組儲存持久化或暫時的鍵值設定。配置以二進位格式儲存在 `/data/adb/ksu/module_configs/<module_id>/`，具有以下特性：
+
+### 配置類型
+
+- **持久配置** (`persist.config`)：重新開機後保留，直到明確刪除或解除安裝模組
+- **暫時配置** (`tmp.config`)：在每次啟動時的 post-fs-data 階段自動清除
+
+讀取配置時，對於同一個鍵，暫時值優先於持久值。
+
+### 在模組腳本中使用配置
+
+所有模組腳本（`post-fs-data.sh`、`service.sh`、`boot-completed.sh` 等）執行時都會設定 `KSU_MODULE` 環境變數為模組 ID。您可以使用 `ksud module config` 命令來管理模組的配置：
+
+```bash
+# 獲取配置值
+value=$(ksud module config get my_setting)
+
+# 設定持久配置值
+ksud module config set my_setting "some value"
+
+# 設定暫時配置值（重新開機後清除）
+ksud module config set --temp runtime_state "active"
+
+# 列出所有配置項（合併持久和暫時配置）
+ksud module config list
+
+# 刪除配置項
+ksud module config delete my_setting
+
+# 刪除暫時配置項
+ksud module config delete --temp runtime_state
+
+# 清除所有持久配置
+ksud module config clear
+
+# 清除所有暫時配置
+ksud module config clear --temp
+```
+
+### 驗證限制
+
+配置系統強制執行以下限制：
+
+- **最大鍵長度**：256 位元組
+- **最大值長度**：256 位元組
+- **最大配置項數**：每個模組 32 個
+- 鍵不能包含控制字元、換行符或路徑分隔符（`/` 或 `\`）
+- 值不能包含控制字元（製表符 `\t` 除外）
+
+### 生命週期
+
+- **啟動時**：所有暫時配置在 post-fs-data 階段清除
+- **模組解除安裝時**：所有配置（持久和暫時）自動刪除
+- 配置以二進位格式儲存，使用魔數 `0x4b53554d`（"KSUM"）和版本驗證
+
+### 使用場景
+
+配置系統適用於：
+
+- **使用者偏好**：儲存使用者透過 WebUI 或 action 腳本配置的模組設定
+- **功能開關**：在不重新安裝的情況下啟用/停用模組功能
+- **執行時狀態**：追蹤應在重新開機時重置的暫時狀態（使用暫時配置）
+- **安裝設定**：記住模組安裝時做出的選擇
+
+::: tip 最佳實踐
+- 對於應在重新開機後保留的使用者偏好，使用持久配置
+- 對於應在啟動時重置的執行時狀態或功能開關，使用暫時配置
+- 在腳本中使用配置值之前驗證它們
+- 使用 `ksud module config list` 命令偵錯配置問題
+:::
+
 ## Busybox
 
 KernelSU 提供了一個完備的 BusyBox 二進位檔案 (包括完整的 SELinux 支援)。可執行檔位於 `/data/adb/ksu/bin/busybox`。
