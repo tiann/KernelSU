@@ -92,7 +92,7 @@ Sistem konfigurasi ideal untuk:
 
 Sistem konfigurasi modul menyediakan kunci konfigurasi khusus untuk kasus penggunaan lanjutan:
 
-### Mengganti Deskripsi Modul
+### Mengganti Deskripsi Modul {#overriding-module-description}
 
 Anda dapat mengganti field `description` dari `module.prop` secara dinamis dengan mengatur kunci konfigurasi `override.description`:
 

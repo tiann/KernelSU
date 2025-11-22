@@ -12,6 +12,10 @@ KernelSU sử dụng kiến trúc [metamodule](metamodule.md) để mount thư m
 
 KernelSU modules support displaying interfaces and interacting with users. Xem [tài liệu WebUI](module-webui.md) để biết thêm chi tiết.
 
+## Cấu hình module
+
+KernelSU cung cấp hệ thống cấu hình tích hợp cho phép các module lưu trữ các cài đặt key-value liên tục hoặc tạm thời. Để biết thêm chi tiết, xem [tài liệu Cấu hình module](module-config.md).
+
 ## Busybox
 
 KernelSU cung cấp tính năng nhị phân BusyBox hoàn chỉnh (bao gồm hỗ trợ SELinux đầy đủ). Tệp thực thi được đặt tại `/data/adb/ksu/bin/busybox`. BusyBox của KernelSU hỗ trợ "ASH Standalone Shell Mode" có thể chuyển đổi thời gian chạy. Standalone mode này có nghĩa là khi chạy trong shell `ash` của BusyBox, mọi lệnh sẽ trực tiếp sử dụng applet trong BusyBox, bất kể cái gì được đặt là `PATH`. Ví dụ: các lệnh như `ls`, `rm`, `chmod` sẽ **KHÔNG** sử dụng những gì có trong `PATH` (trong trường hợp Android theo mặc định, nó sẽ là `/system/bin/ls`, ` /system/bin/rm` và `/system/bin/chmod` tương ứng), nhưng thay vào đó sẽ gọi trực tiếp các ứng dụng BusyBox nội bộ. Điều này đảm bảo rằng các tập lệnh luôn chạy trong môi trường có thể dự đoán được và luôn có bộ lệnh đầy đủ cho dù nó đang chạy trên phiên bản Android nào. Để buộc lệnh _not_ sử dụng BusyBox, bạn phải gọi tệp thực thi có đường dẫn đầy đủ.
@@ -109,6 +113,10 @@ description=<string>
 - `versionCode` phải là **số nguyên**. Điều này được sử dụng để so sánh các phiên bản
 - Các chuỗi khác không được đề cập ở trên có thể là chuỗi **một dòng** bất kỳ.
 - Đảm bảo sử dụng kiểu ngắt dòng `UNIX (LF)` chứ không phải `Windows (CR+LF)` hoặc `Macintosh (CR)`.
+
+::: tip MÔ TẢ ĐỘNG
+Trường `description` có thể được ghi đè động khi chạy bằng hệ thống cấu hình mô-đun. Xem [Ghi đè Mô tả Mô-đun](module-config.md#overriding-module-description) để biết chi tiết.
+:::
 
 ### Tập lệnh Shell
 

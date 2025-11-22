@@ -12,6 +12,10 @@ KernelSU uses a [metamodule](metamodule.md) architecture for mounting the `syste
 
 KernelSU's modules support displaying interfaces and interacting with users. For more details, refer to the [WebUI documentation](module-webui.md).
 
+## Module Configuration
+
+KernelSU provides a built-in configuration system that allows modules to store persistent or temporary key-value settings. For more details, refer to the [Module Configuration documentation](module-config.md).
+
 ## BusyBox
 
 KernelSU ships with a feature-complete BusyBox binary (including full SELinux support). The executable is located at `/data/adb/ksu/bin/busybox`. KernelSU's BusyBox supports runtime toggle-able "ASH Standalone Shell Mode". What this Standalone Mode means is that when running in the `ash` shell of BusyBox, every single command will directly use the applet within BusyBox, regardless of what is set as `PATH`. For example, commands like `ls`, `rm`, `chmod` will **NOT** use what is in `PATH` (in the case of Android by default it will be `/system/bin/ls`, `/system/bin/rm`, and `/system/bin/chmod` respectively), but will instead directly call internal BusyBox applets. This makes sure that scripts always run in a predictable environment and always have the full suite of commands no matter which Android version it is running on. To force a command _not_ to use BusyBox, you have to call the executable with full paths.
@@ -109,6 +113,10 @@ description=<string>
 - `versionCode` has to be an **integer**. This is used to compare versions.
 - Others that were not mentioned above can be any **single line** string.
 - Make sure to use the `UNIX (LF)` line break type and not the `Windows (CR+LF)` or `Macintosh (CR)`.
+
+::: tip DYNAMIC DESCRIPTION
+The `description` field can be dynamically overridden at runtime using the module configuration system. See [Overriding Module Description](module-config.md#overriding-module-description) for details.
+:::
 
 ### Shell scripts
 

@@ -92,7 +92,7 @@ ksud module config clear --temp
 
 モジュール設定システムは、高度なユースケースのための特別な設定キーを提供します:
 
-### モジュール説明のオーバーライド
+### モジュール説明のオーバーライド {#overriding-module-description}
 
 `override.description` 設定キーを設定することで、`module.prop` の `description` フィールドを動的にオーバーライドできます:
 

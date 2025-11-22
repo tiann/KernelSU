@@ -12,6 +12,10 @@ KernelSU 使用 [metamodule](metamodule.md) 架構來掛載 `system` 目錄。**
 
 KernelSU 的模組支援顯示互動介面，請參閱 [WebUI 文檔](module-webui.md).
 
+## 模組配置
+
+KernelSU 提供了一個內建的配置系統，允許模組儲存持久化或暫時的鍵值設定。詳情請參閱[模組配置文檔](module-config.md)。
+
 ## Busybox
 
 KernelSU 提供了一個完備的 BusyBox 二進位檔案 (包括完整的 SELinux 支援)。可執行檔位於 `/data/adb/ksu/bin/busybox`。
@@ -110,6 +114,10 @@ description=<string>
 - versionCode 必須是一個整數，用於比較版本。
 - 其他未在上方提到的內容可以是任何單行字串。
 - 請確保使用 `UNIX (LF)` 分行符號類型，而非 `Windows (CR + LF)` 或 `Macintosh (CR)`。
+
+::: tip 動態描述
+`description` 欄位可以在執行階段使用模組配置系統動態覆蓋。詳情請參閱[覆蓋模組描述](module-config.md#overriding-module-description)。
+:::
 
 ### Shell 腳本 {#shell-scripts}
 

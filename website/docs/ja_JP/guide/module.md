@@ -12,6 +12,10 @@ KernelSU は [metamodule](metamodule.md) アーキテクチャを使用して `s
 
 KernelSU modules support displaying interfaces and interacting with users. See the [WebUI documentation](module-webui.md) for more information.
 
+## モジュール設定
+
+KernelSU は、モジュールが永続的または一時的なキー値設定を保存できる組み込みの設定システムを提供します。詳細については、[モジュール設定ドキュメント](module-config.md)を参照してください。
+
 ## Busybox
 
 KernelSU には、機能的に完全な Busybox バイナリ (SELinux の完全サポートを含む) が同梱されています。実行ファイルは `/data/adb/ksu/bin/busybox` に配置されています。KernelSU の Busybox はランタイムに切り替え可能な「ASH スタンドアローンシェルモード」をサポートしています。このスタンドアロンモードとは、Busybox の `ash` シェルで実行する場合 `PATH` として設定されているものに関係なく、すべてのコマンドが Busybox 内のアプレットを直接使用するというものです。たとえば、`ls`、`rm`、`chmod` などのコマンドは、`PATH` にあるもの（Android の場合、デフォルトではそれぞれ `/system/bin/ls`, `/system/bin/rm`, `/system/bin/chmod`）ではなく、直接 Busybox 内部のアプレットを呼び出すことになります。これにより、スクリプトは常に予測可能な環境で実行され、どの Android バージョンで実行されていても常にコマンドを利用できます。Busybox を使用しないコマンドを強制的に実行するには、フルパスで実行ファイルを呼び出す必要があります。
@@ -107,6 +111,10 @@ description=<string>
 - `versionCode` は **integer** です。バージョンの比較に使います。
 - 他のものには**単一行** の文字であれば何でも使えます。
 - 改行文字は `UNIX (LF)` を使ってください。`Windows (CR+LF)` や `Macintosh (CR)` は使ってはいけません。
+
+::: tip 動的説明
+`description` フィールドは、モジュール設定システムを使用して実行時に動的にオーバーライドできます。詳細は[モジュール説明のオーバーライド](module-config.md#overriding-module-description)を参照してください。
+:::
 
 ### シェルスクリプト
 

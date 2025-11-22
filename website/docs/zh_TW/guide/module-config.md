@@ -92,7 +92,7 @@ cat file.json | ksud module config set json_data --stdin
 
 模組配置系統提供了用於進階用例的特殊配置鍵:
 
-### 覆蓋模組描述
+### 覆蓋模組描述 {#overriding-module-description}
 
 您可以透過設定 `override.description` 配置鍵來動態覆蓋 `module.prop` 中的 `description` 欄位:
 

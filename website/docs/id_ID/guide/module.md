@@ -12,6 +12,10 @@ KernelSU menggunakan arsitektur [metamodule](metamodule.md) untuk me-mount direk
 
 KernelSU modules support displaying interfaces and interacting with users. See the [WebUI documentation](module-webui.md) for details.
 
+## Konfigurasi Modul
+
+KernelSU menyediakan sistem konfigurasi bawaan yang memungkinkan modul menyimpan pengaturan key-value persisten atau sementara. Untuk detail lebih lanjut, lihat [dokumentasi Konfigurasi Modul](module-config.md).
+
 ## Busybox
 
 KernelSU dikirimkan dengan fitur biner BusyBox yang lengkap (termasuk dukungan penuh SELinux). Eksekusi terletak di `/data/adb/ksu/bin/busybox`. BusyBox KernelSU mendukung "Mode Shell Standalone Shell" yang dapat dialihkan waktu proses. Apa yang dimaksud dengan mode mandiri ini adalah bahwa ketika dijalankan di shell `ash` dari BusyBox, setiap perintah akan langsung menggunakan applet di dalam BusyBox, terlepas dari apa yang ditetapkan sebagai `PATH`. Misalnya, perintah seperti `ls`, `rm`, `chmod` **TIDAK** akan menggunakan apa yang ada di `PATH` (dalam kasus Android secara default akan menjadi `/system/bin/ls`, ` /system/bin/rm`, dan `/system/bin/chmod` masing-masing), tetapi akan langsung memanggil applet BusyBox internal. Ini memastikan bahwa skrip selalu berjalan di lingkungan yang dapat diprediksi dan selalu memiliki rangkaian perintah lengkap, apa pun versi Android yang menjalankannya. Untuk memaksa perintah _not_ menggunakan BusyBox, Anda harus memanggil yang dapat dieksekusi dengan path lengkap.
@@ -107,6 +111,10 @@ description=<string>
 - `versionCode` harus berupa **integer**. Ini digunakan untuk membandingkan versi
 - Lainnya yang tidak disebutkan di atas dapat berupa string **satu baris**.
 - Pastikan untuk menggunakan tipe jeda baris `UNIX (LF)` dan bukan `Windows (CR+LF)` atau `Macintosh (CR)`.
+
+::: tip DESKRIPSI DINAMIS
+Field `description` dapat diganti secara dinamis saat runtime menggunakan sistem konfigurasi modul. Lihat [Mengganti Deskripsi Modul](module-config.md#overriding-module-description) untuk detailnya.
+:::
 
 ### Shell skrip
 
