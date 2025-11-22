@@ -92,7 +92,7 @@ The configuration system is ideal for:
 
 The module configuration system provides special configuration keys for advanced use cases:
 
-### Overriding Module Description
+### Overriding Module Description {#overriding-module-description}
 
 You can dynamically override the `description` field from `module.prop` by setting the `override.description` configuration key:
 

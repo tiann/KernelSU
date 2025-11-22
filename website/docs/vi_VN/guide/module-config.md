@@ -92,7 +92,7 @@ Hệ thống cấu hình lý tưởng cho:
 
 Hệ thống cấu hình mô-đun cung cấp các khóa cấu hình đặc biệt cho các trường hợp sử dụng nâng cao:
 
-### Ghi đè Mô tả Mô-đun
+### Ghi đè Mô tả Mô-đun {#overriding-module-description}
 
 Bạn có thể ghi đè động trường `description` từ `module.prop` bằng cách đặt khóa cấu hình `override.description`:
 

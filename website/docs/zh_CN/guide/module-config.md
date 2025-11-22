@@ -92,7 +92,7 @@ ksud module config clear --temp
 
 模块配置系统提供了用于高级用例的特殊配置键:
 
-### 覆盖模块描述
+### 覆盖模块描述 {#overriding-module-description}
 
 您可以通过设置 `override.description` 配置键来动态覆盖 `module.prop` 中的 `description` 字段:
 

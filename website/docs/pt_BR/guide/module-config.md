@@ -92,7 +92,7 @@ O sistema de configuração é ideal para:
 
 O sistema de configuração de módulos fornece chaves de configuração especiais para casos de uso avançados:
 
-### Substituindo a Descrição do Módulo
+### Substituindo a Descrição do Módulo {#overriding-module-description}
 
 Você pode substituir dinamicamente o campo `description` do `module.prop` definindo a chave de configuração `override.description`:
 
