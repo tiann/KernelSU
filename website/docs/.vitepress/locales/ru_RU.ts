@@ -51,6 +51,7 @@ function sidebarGuide() {
           { text: 'Неофициально поддерживаемые устройства', link: '/ru_RU/guide/unofficially-support-devices.md' },
           { text: 'Руководство по разработке модулей', link: '/ru_RU/guide/module.md' },
           { text: 'Метамодуль', link: '/ru_RU/guide/metamodule.md' },
+          { text: 'Конфигурация модулей', link: '/ru_RU/guide/module-config.md' },
           { text: 'Профиль приложений', link: '/ru_RU/guide/app-profile.md' },
           { text: 'Выход из циклической загрузки', link: '/ru_RU/guide/rescue-from-bootloop.md' },
           { text: 'FAQ', link: '/ru_RU/guide/faq' },

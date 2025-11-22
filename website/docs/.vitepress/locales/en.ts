@@ -53,6 +53,7 @@ function sidebarGuide() {
           { text: 'Module guide', link: '/guide/module.md' },
           { text: 'Metamodule', link: '/guide/metamodule.md' },
           { text: 'Module WebUI', link: '/guide/module-webui.md' },
+          { text: 'Module Configuration', link: '/guide/module-config.md' },
           { text: 'App Profile', link: '/guide/app-profile.md' },
           { text: 'Rescue from bootloop', link: '/guide/rescue-from-bootloop.md' },
           { text: 'FAQ', link: '/guide/faq' },

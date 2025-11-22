@@ -53,6 +53,7 @@ function sidebarGuide() {
           { text: 'Guias de módulo', link: '/pt_BR/guide/module.md' },
           { text: 'Metamódulo', link: '/pt_BR/guide/metamodule.md' },
           { text: 'Módulo WebUI', link: '/pt_BR/guide/module-webui.md' },
+          { text: 'Configuração de Módulo', link: '/pt_BR/guide/module-config.md' },
           { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
           { text: 'Perguntas frequentes', link: '/pt_BR/guide/faq' },

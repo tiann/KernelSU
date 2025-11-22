@@ -51,6 +51,7 @@ function sidebarGuide() {
         { text: '非公式の対応デバイス', link: '/ja_JP/guide/unofficially-support-devices.md' },
         { text: 'モジュールのガイド', link: '/ja_JP/guide/module.md' },
         { text: 'メタモジュール', link: '/ja_JP/guide/metamodule.md' },
+        { text: 'モジュール設定', link: '/ja_JP/guide/module-config.md' },
         { text: 'ブートループからの復旧', link: '/ja_JP/guide/rescue-from-bootloop.md' },
         { text: 'よくある質問', link: '/ja_JP/guide/faq' },
         { text: '隠し機能', link: '/ja_JP/guide/hidden-features' },
