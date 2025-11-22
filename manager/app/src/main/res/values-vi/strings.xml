@@ -177,4 +177,6 @@
     <string name="color_pink">Hồng</string>
     <string name="color_brown">Nâu</string>
     <string name="settings_key_color">Màu nhấn</string>
+    <string name="feature_status_managed_summary">Tính năng này được quản lý bởi một module.</string>
+    <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này.</string>
 </resources>
