@@ -1,3 +1,4 @@
+#![allow(clippy::ref_option, clippy::needless_pass_by_value)]
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
@@ -220,7 +221,7 @@ pub fn restore(
     let workdir = tmpdir.path();
     let magiskboot = find_magiskboot(magiskboot_path, workdir)?;
 
-    let kmi = get_current_kmi().unwrap_or_else(|_| String::from(""));
+    let kmi = get_current_kmi().unwrap_or_default();
 
     let (bootimage, bootdevice) = find_boot_image(&image, &kmi, false, false, workdir, &None)?;
 
@@ -236,7 +237,7 @@ pub fn restore(
 
     let mut ramdisk = workdir.join("ramdisk.cpio");
     if !ramdisk.exists() {
-        ramdisk = workdir.join("vendor_ramdisk").join("init_boot.cpio")
+        ramdisk = workdir.join("vendor_ramdisk").join("init_boot.cpio");
     }
     if !ramdisk.exists() {
         ramdisk = workdir.join("vendor_ramdisk").join("ramdisk.cpio");
@@ -275,7 +276,7 @@ pub fn restore(
             new_boot = Some(backup_path);
             from_backup = true;
         } else {
-            println!("- Warning: no backup {backup_path:?} found!");
+            println!("- Warning: no backup {} found!", backup_path.display());
         }
 
         if let Err(e) = clean_backup(sha) {
@@ -358,7 +359,7 @@ pub fn patch(
     result
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::needless_pass_by_value)]
 fn do_patch(
     image: Option<PathBuf>,
     kernel: Option<PathBuf>,
@@ -418,7 +419,7 @@ fn do_patch(
                     );
                     parse_kmi_from_kernel(kernel_path, tmpdir.path())?
                 } else {
-                    "".to_string()
+                    String::new()
                 }
             }
         }
@@ -447,7 +448,7 @@ fn do_patch(
         let name = format!("{kmi}_kernelsu.ko");
         assets::copy_assets_to_file(&name, kmod_file)
             .with_context(|| format!("Failed to copy {name}"))?;
-    };
+    }
 
     let init_file = workdir.join("init");
     if let Some(init) = init {
@@ -468,7 +469,7 @@ fn do_patch(
 
     let mut ramdisk = workdir.join("ramdisk.cpio");
     if !ramdisk.exists() {
-        ramdisk = workdir.join("vendor_ramdisk").join("init_boot.cpio")
+        ramdisk = workdir.join("vendor_ramdisk").join("init_boot.cpio");
     }
     if !ramdisk.exists() {
         ramdisk = workdir.join("vendor_ramdisk").join("ramdisk.cpio");
@@ -484,15 +485,16 @@ fn do_patch(
     println!("- Adding KernelSU LKM");
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workdir, ramdisk)?;
 
-    let mut need_backup = false;
-    if !is_kernelsu_patched {
+    let need_backup = if is_kernelsu_patched {
+        false
+    } else {
         // kernelsu.ko is not exist, backup init if necessary
         let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init");
         if status.is_ok() {
             do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init init.real")?;
         }
-        need_backup = flash;
-    }
+        flash
+    };
 
     do_cpio_cmd(&magiskboot, workdir, ramdisk, "add 0755 init init")?;
     do_cpio_cmd(
@@ -681,7 +683,7 @@ fn find_boot_image(
 
         bootimage = tmp_boot_path;
         bootdevice = Some(boot_partition);
-    };
+    }
     Ok((bootimage, bootdevice))
 }
 
@@ -722,12 +724,12 @@ pub fn choose_boot_partition(
 
 #[cfg(target_os = "android")]
 pub fn get_slot_suffix(ota: bool) -> String {
-    let mut slot_suffix = utils::getprop("ro.boot.slot_suffix").unwrap_or_else(|| String::from(""));
+    let mut slot_suffix = utils::getprop("ro.boot.slot_suffix").unwrap_or_default();
     if !slot_suffix.is_empty() && ota {
         if slot_suffix == "_a" {
-            slot_suffix = "_b".to_string()
+            slot_suffix = "_b".to_string();
         } else {
-            slot_suffix = "_a".to_string()
+            slot_suffix = "_a".to_string();
         }
     }
     slot_suffix
@@ -744,8 +746,8 @@ pub fn list_available_partitions() -> Vec<String> {
     let candidates = vec!["boot", "init_boot", "vendor_boot"];
     candidates
         .into_iter()
-        .filter(|name| Path::new(&format!("/dev/block/by-name/{}{}", name, slot_suffix)).exists())
-        .map(|s| s.to_string())
+        .filter(|name| Path::new(&format!("/dev/block/by-name/{name}{slot_suffix}")).exists())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 
@@ -768,7 +770,7 @@ fn post_ota() -> Result<()> {
         .stdout;
     let current_slot = String::from_utf8(current_slot)?;
     let current_slot = current_slot.trim();
-    let target_slot = if current_slot == "0" { 1 } else { 0 };
+    let target_slot = i32::from(current_slot == "0");
 
     Command::new(BOOTCTL_PATH)
         .arg(format!("set-active-boot-slot {target_slot}"))
@@ -779,11 +781,11 @@ fn post_ota() -> Result<()> {
     let post_ota_sh = post_fs_data.join("post_ota.sh");
 
     let sh_content = format!(
-        r###"
+        r"
 {BOOTCTL_PATH} mark-boot-successful
 rm -f {BOOTCTL_PATH}
 rm -f /data/adb/post-fs-data.d/post_ota.sh
-"###
+"
     );
 
     std::fs::write(&post_ota_sh, sh_content)?;

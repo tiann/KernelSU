@@ -10,7 +10,10 @@ use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
-use std::{ffi::CStr, process::Command};
+use std::{
+    ffi::{CStr, CString},
+    process::Command,
+};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use crate::ksucalls::get_wrapped_fd;
@@ -44,7 +47,7 @@ pub fn grant_root(_global_mnt: bool) -> Result<()> {
     unimplemented!("grant_root is only available on android");
 }
 
-fn print_usage(program: &str, opts: Options) {
+fn print_usage(program: &str, opts: &Options) {
     let brief = format!("KernelSU\n\nUsage: {program} [options] [-] [user [argument...]]");
     print!("{}", opts.usage(&brief));
 }
@@ -79,10 +82,9 @@ fn wrap_tty(fd: c_int) {
             bail!("dup {new_fd} -> {fd} errno: {}", unsafe {
                 *libc::__errno()
             });
-        } else {
-            unsafe { libc::close(new_fd) };
-            Ok(())
         }
+        unsafe { libc::close(new_fd) };
+        Ok(())
     };
 
     if let Err(e) = inner_fn() {
@@ -96,16 +98,16 @@ pub fn root_shell() -> Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
+#[allow(clippy::similar_names)]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
 
     use anyhow::anyhow;
     let env_args: Vec<String> = env::args().collect();
     let program = env_args[0].clone();
-    let args = env_args
-        .iter()
-        .position(|arg| arg == "-c")
-        .map(|i| {
+    let args = env_args.iter().position(|arg| arg == "-c").map_or_else(
+        || env_args.clone(),
+        |i| {
             let rest = env_args[i + 1..].to_vec();
             let mut new_args = env_args[..i].to_vec();
             new_args.push("-c".to_string());
@@ -113,8 +115,8 @@ pub fn root_shell() -> Result<()> {
                 new_args.push(rest.join(" "));
             }
             new_args
-        })
-        .unwrap_or_else(|| env_args.clone());
+        },
+    );
 
     let mut opts = Options::new();
     opts.optopt(
@@ -170,13 +172,13 @@ pub fn root_shell() -> Result<()> {
         Result::Ok(m) => m,
         Err(f) => {
             println!("{f}");
-            print_usage(&program, opts);
+            print_usage(&program, &opts);
             std::process::exit(-1);
         }
     };
 
     if matches.opt_present("h") {
-        print_usage(&program, opts);
+        print_usage(&program, &opts);
         return Ok(());
     }
 
@@ -190,7 +192,9 @@ pub fn root_shell() -> Result<()> {
         return Ok(());
     }
 
-    let shell = matches.opt_str("s").unwrap_or("/system/bin/sh".to_string());
+    let shell = matches
+        .opt_str("s")
+        .unwrap_or_else(|| "/system/bin/sh".to_string());
     let mut is_login = matches.opt_present("l");
     let preserve_env = matches.opt_present("p");
     let mount_master = matches.opt_present("M");
@@ -230,15 +234,11 @@ pub fn root_shell() -> Result<()> {
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
-            #[cfg(target_arch = "aarch64")]
-            let pw = libc::getpwnam(name.as_ptr()).as_ref();
-            #[cfg(target_arch = "x86_64")]
-            let pw = libc::getpwnam(name.as_ptr() as *const i8).as_ref();
+            let pw = CString::new(name.as_str())
+                .ok()
+                .and_then(|c_name| libc::getpwnam(c_name.as_ptr()).as_ref());
 
-            match pw {
-                Some(pw) => pw.pw_uid,
-                None => name.parse::<u32>().unwrap_or(0),
-            }
+            pw.map_or_else(|| name.parse::<u32>().unwrap_or(0), |pw| pw.pw_uid)
         }
     }
 

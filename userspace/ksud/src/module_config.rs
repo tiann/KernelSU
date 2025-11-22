@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use crate::defs;
 use crate::utils::ensure_dir_exists;
 
+#[allow(clippy::unreadable_literal)]
 const MODULE_CONFIG_MAGIC: u32 = 0x4b53554d; // "KSUM"
 const MODULE_CONFIG_VERSION: u32 = 1;
 
@@ -23,10 +24,10 @@ pub enum ConfigType {
 }
 
 impl ConfigType {
-    fn filename(&self) -> &'static str {
+    const fn filename(self) -> &'static str {
         match self {
-            ConfigType::Persist => defs::PERSIST_CONFIG_NAME,
-            ConfigType::Temp => defs::TEMP_CONFIG_NAME,
+            Self::Persist => defs::PERSIST_CONFIG_NAME,
+            Self::Temp => defs::TEMP_CONFIG_NAME,
         }
     }
 }
@@ -133,12 +134,12 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
     let config_path = get_config_path(module_id, config_type);
 
     if !config_path.exists() {
-        debug!("Config file not found: {:?}", config_path);
+        debug!("Config file not found: {}", config_path.display());
         return Ok(HashMap::new());
     }
 
     let mut file = File::open(&config_path)
-        .with_context(|| format!("Failed to open config file: {:?}", config_path))?;
+        .with_context(|| format!("Failed to open config file: {}", config_path.display()))?;
 
     // Read magic
     let mut magic_buf = [0u8; 4];
@@ -161,11 +162,7 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
     let version = u32::from_le_bytes(version_buf);
 
     if version != MODULE_CONFIG_VERSION {
-        bail!(
-            "Unsupported config version: expected {}, got {}",
-            MODULE_CONFIG_VERSION,
-            version
-        );
+        bail!("Unsupported config version: expected {MODULE_CONFIG_VERSION}, got {version}");
     }
 
     // Read count
@@ -180,33 +177,37 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
         // Read key length
         let mut key_len_buf = [0u8; 4];
         file.read_exact(&mut key_len_buf)
-            .with_context(|| format!("Failed to read key length for entry {}", i))?;
+            .with_context(|| format!("Failed to read key length for entry {i}"))?;
         let key_len = u32::from_le_bytes(key_len_buf) as usize;
 
         // Read key data
         let mut key_buf = vec![0u8; key_len];
         file.read_exact(&mut key_buf)
-            .with_context(|| format!("Failed to read key data for entry {}", i))?;
+            .with_context(|| format!("Failed to read key data for entry {i}"))?;
         let key = String::from_utf8(key_buf)
-            .with_context(|| format!("Invalid UTF-8 in key for entry {}", i))?;
+            .with_context(|| format!("Invalid UTF-8 in key for entry {i}"))?;
 
         // Read value length
         let mut value_len_buf = [0u8; 4];
         file.read_exact(&mut value_len_buf)
-            .with_context(|| format!("Failed to read value length for entry {}", i))?;
+            .with_context(|| format!("Failed to read value length for entry {i}"))?;
         let value_len = u32::from_le_bytes(value_len_buf) as usize;
 
         // Read value data
         let mut value_buf = vec![0u8; value_len];
         file.read_exact(&mut value_buf)
-            .with_context(|| format!("Failed to read value data for entry {}", i))?;
+            .with_context(|| format!("Failed to read value data for entry {i}"))?;
         let value = String::from_utf8(value_buf)
-            .with_context(|| format!("Invalid UTF-8 in value for entry {}", i))?;
+            .with_context(|| format!("Invalid UTF-8 in value for entry {i}"))?;
 
         config.insert(key, value);
     }
 
-    debug!("Loaded {} entries from {:?}", config.len(), config_path);
+    debug!(
+        "Loaded {} entries from {}",
+        config.len(),
+        config_path.display()
+    );
     Ok(config)
 }
 
@@ -223,9 +224,9 @@ pub fn save_config(
 
     // Validate all keys and values
     for (key, value) in config {
-        validate_config_key(key).with_context(|| format!("Invalid config key: '{}'", key))?;
+        validate_config_key(key).with_context(|| format!("Invalid config key: '{key}'"))?;
         validate_config_value(value)
-            .with_context(|| format!("Invalid config value for key '{}'", key))?;
+            .with_context(|| format!("Invalid config value for key '{key}'"))?;
     }
 
     ensure_config_dir(module_id)?;
@@ -235,7 +236,7 @@ pub fn save_config(
 
     // Write to temporary file first
     let mut file = File::create(&temp_path)
-        .with_context(|| format!("Failed to create temp config file: {:?}", temp_path))?;
+        .with_context(|| format!("Failed to create temp config file: {}", temp_path.display()))?;
 
     // Write magic
     file.write_all(&MODULE_CONFIG_MAGIC.to_le_bytes())
@@ -256,21 +257,21 @@ pub fn save_config(
         let key_bytes = key.as_bytes();
         let key_len = key_bytes.len() as u32;
         file.write_all(&key_len.to_le_bytes())
-            .with_context(|| format!("Failed to write key length for '{}'", key))?;
+            .with_context(|| format!("Failed to write key length for '{key}'"))?;
 
         // Write key data
         file.write_all(key_bytes)
-            .with_context(|| format!("Failed to write key data for '{}'", key))?;
+            .with_context(|| format!("Failed to write key data for '{key}'"))?;
 
         // Write value length
         let value_bytes = value.as_bytes();
         let value_len = value_bytes.len() as u32;
         file.write_all(&value_len.to_le_bytes())
-            .with_context(|| format!("Failed to write value length for '{}'", key))?;
+            .with_context(|| format!("Failed to write value length for '{key}'"))?;
 
         // Write value data
         file.write_all(value_bytes)
-            .with_context(|| format!("Failed to write value data for '{}'", key))?;
+            .with_context(|| format!("Failed to write value data for '{key}'"))?;
     }
 
     file.sync_all()
@@ -279,12 +280,17 @@ pub fn save_config(
     // Atomic rename
     fs::rename(&temp_path, &config_path).with_context(|| {
         format!(
-            "Failed to rename config file: {:?} -> {:?}",
-            temp_path, config_path
+            "Failed to rename config file: {} -> {}",
+            temp_path.display(),
+            config_path.display()
         )
     })?;
 
-    debug!("Saved {} entries to {:?}", config.len(), config_path);
+    debug!(
+        "Saved {} entries to {}",
+        config.len(),
+        config_path.display()
+    );
     Ok(())
 }
 
@@ -323,7 +329,7 @@ pub fn delete_config_value(module_id: &str, key: &str, config_type: ConfigType) 
     let mut config = load_config(module_id, config_type)?;
 
     if config.remove(key).is_none() {
-        bail!("Key '{}' not found in config", key);
+        bail!("Key '{key}' not found in config");
     }
 
     save_config(module_id, config_type, &config)?;
@@ -336,8 +342,8 @@ pub fn clear_config(module_id: &str, config_type: ConfigType) -> Result<()> {
 
     if config_path.exists() {
         fs::remove_file(&config_path)
-            .with_context(|| format!("Failed to remove config file: {:?}", config_path))?;
-        debug!("Cleared config: {:?}", config_path);
+            .with_context(|| format!("Failed to remove config file: {}", config_path.display()))?;
+        debug!("Cleared config: {}", config_path.display());
     }
 
     Ok(())
@@ -350,10 +356,7 @@ pub fn merge_configs(module_id: &str) -> Result<HashMap<String, String>> {
     let mut merged = match load_config(module_id, ConfigType::Persist) {
         Ok(config) => config,
         Err(e) => {
-            warn!(
-                "Failed to load persist config for module '{}': {}",
-                module_id, e
-            );
+            warn!("Failed to load persist config for module '{module_id}': {e}");
             HashMap::new()
         }
     };
@@ -361,10 +364,7 @@ pub fn merge_configs(module_id: &str) -> Result<HashMap<String, String>> {
     let temp = match load_config(module_id, ConfigType::Temp) {
         Ok(config) => config,
         Err(e) => {
-            warn!(
-                "Failed to load temp config for module '{}': {}",
-                module_id, e
-            );
+            warn!("Failed to load temp config for module '{module_id}': {e}");
             HashMap::new()
         }
     };
@@ -389,7 +389,7 @@ pub fn get_all_module_configs() -> Result<HashMap<String, HashMap<String, String
     let mut all_configs = HashMap::new();
 
     for entry in fs::read_dir(config_root)
-        .with_context(|| format!("Failed to read config directory: {:?}", config_root))?
+        .with_context(|| format!("Failed to read config directory: {}", config_root.display()))?
     {
         let entry = entry?;
         let path = entry.path();
@@ -406,7 +406,7 @@ pub fn get_all_module_configs() -> Result<HashMap<String, HashMap<String, String
                     }
                 }
                 Err(e) => {
-                    warn!("Failed to load config for module '{}': {}", module_id, e);
+                    warn!("Failed to load config for module '{module_id}': {e}");
                     // Continue processing other modules
                 }
             }
@@ -428,7 +428,7 @@ pub fn clear_all_temp_configs() -> Result<()> {
     let mut cleared_count = 0;
 
     for entry in fs::read_dir(config_root)
-        .with_context(|| format!("Failed to read config directory: {:?}", config_root))?
+        .with_context(|| format!("Failed to read config directory: {}", config_root.display()))?
     {
         let entry = entry?;
         let path = entry.path();
@@ -440,19 +440,19 @@ pub fn clear_all_temp_configs() -> Result<()> {
         let temp_config = path.join(defs::TEMP_CONFIG_NAME);
         if temp_config.exists() {
             match fs::remove_file(&temp_config) {
-                Ok(_) => {
-                    debug!("Cleared temp config: {:?}", temp_config);
+                Ok(()) => {
+                    debug!("Cleared temp config: {}", temp_config.display());
                     cleared_count += 1;
                 }
                 Err(e) => {
-                    warn!("Failed to clear temp config {:?}: {}", temp_config, e);
+                    warn!("Failed to clear temp config {}: {e}", temp_config.display());
                 }
             }
         }
     }
 
     if cleared_count > 0 {
-        debug!("Cleared {} temp config file(s)", cleared_count);
+        debug!("Cleared {cleared_count} temp config file(s)");
     }
 
     Ok(())
@@ -465,9 +465,13 @@ pub fn clear_module_configs(module_id: &str) -> Result<()> {
     let config_dir = get_config_dir(module_id);
 
     if config_dir.exists() {
-        fs::remove_dir_all(&config_dir)
-            .with_context(|| format!("Failed to remove config directory: {:?}", config_dir))?;
-        debug!("Cleared all configs for module: {}", module_id);
+        fs::remove_dir_all(&config_dir).with_context(|| {
+            format!(
+                "Failed to remove config directory: {}",
+                config_dir.display()
+            )
+        })?;
+        debug!("Cleared all configs for module: {module_id}");
     }
 
     Ok(())

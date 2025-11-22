@@ -1,3 +1,4 @@
+#![allow(clippy::unreadable_literal)]
 use std::fs;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::fd::RawFd;
@@ -115,7 +116,7 @@ fn scan_driver_fd() -> Option<RawFd> {
 
     for entry in fd_dir.flatten() {
         if let Ok(fd_num) = entry.file_name().to_string_lossy().parse::<i32>() {
-            let link_path = format!("/proc/self/fd/{}", fd_num);
+            let link_path = format!("/proc/self/fd/{fd_num}");
             if let Ok(target) = fs::read_link(&link_path) {
                 let target_str = target.to_string_lossy();
                 if target_str.contains("[ksu_driver]") {
@@ -181,7 +182,7 @@ fn get_info() -> GetInfoCmd {
             version: 0,
             flags: 0,
         };
-        let _ = ksuctl(KSU_IOCTL_GET_INFO, &mut cmd as *mut _);
+        let _ = ksuctl(KSU_IOCTL_GET_INFO, &raw mut cmd);
         cmd
     })
 }
@@ -210,7 +211,7 @@ pub fn grant_root() -> std::io::Result<()> {
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn report_event(event: u32) {
     let mut cmd = ReportEventCmd { event };
-    let _ = ksuctl(KSU_IOCTL_REPORT_EVENT, &mut cmd as *mut _);
+    let _ = ksuctl(KSU_IOCTL_REPORT_EVENT, &raw mut cmd);
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "android")))]
@@ -231,7 +232,7 @@ pub fn report_module_mounted() {
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn check_kernel_safemode() -> bool {
     let mut cmd = CheckSafemodeCmd { in_safe_mode: 0 };
-    let _ = ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &mut cmd as *mut _);
+    let _ = ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &raw mut cmd);
     cmd.in_safe_mode != 0
 }
 
@@ -242,7 +243,7 @@ pub fn check_kernel_safemode() -> bool {
 
 pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
     let mut ioctl_cmd = *cmd;
-    ksuctl(KSU_IOCTL_SET_SEPOLICY, &mut ioctl_cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)?;
     Ok(())
 }
 
@@ -254,21 +255,21 @@ pub fn get_feature(feature_id: u32) -> std::io::Result<(u64, bool)> {
         value: 0,
         supported: 0,
     };
-    ksuctl(KSU_IOCTL_GET_FEATURE, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_GET_FEATURE, &raw mut cmd)?;
     Ok((cmd.value, cmd.supported != 0))
 }
 
 /// Set feature value in kernel
 pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     let mut cmd = SetFeatureCmd { feature_id, value };
-    ksuctl(KSU_IOCTL_SET_FEATURE, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_SET_FEATURE, &raw mut cmd)?;
     Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
     let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
-    let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &mut cmd as *mut _)?;
+    let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &raw mut cmd)?;
     Ok(result)
 }
 
@@ -279,7 +280,7 @@ pub fn mark_get(pid: i32) -> std::io::Result<u32> {
         pid,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
     Ok(cmd.result)
 }
 
@@ -290,7 +291,7 @@ pub fn mark_set(pid: i32) -> std::io::Result<()> {
         pid,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
     Ok(())
 }
 
@@ -301,7 +302,7 @@ pub fn mark_unset(pid: i32) -> std::io::Result<()> {
         pid,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
     Ok(())
 }
 
@@ -312,7 +313,7 @@ pub fn mark_refresh() -> std::io::Result<()> {
         pid: 0,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
     Ok(())
 }
 
@@ -321,7 +322,7 @@ pub fn nuke_ext4_sysfs(mnt: &str) -> anyhow::Result<()> {
     let mut ioctl_cmd = NukeExt4SysfsCmd {
         arg: c_mnt.as_ptr() as u64,
     };
-    ksuctl(KSU_IOCTL_NUKE_EXT4_SYSFS, &mut ioctl_cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_NUKE_EXT4_SYSFS, &raw mut ioctl_cmd)?;
     Ok(())
 }
 
@@ -332,7 +333,7 @@ pub fn umount_list_wipe() -> std::io::Result<()> {
         flags: 0,
         mode: KSU_UMOUNT_WIPE,
     };
-    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
     Ok(())
 }
 
@@ -344,7 +345,7 @@ pub fn umount_list_add(path: &str, flags: u32) -> anyhow::Result<()> {
         flags,
         mode: KSU_UMOUNT_ADD,
     };
-    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
     Ok(())
 }
 
@@ -356,6 +357,6 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
         flags: 0,
         mode: KSU_UMOUNT_DEL,
     };
-    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &mut cmd as *mut _)?;
+    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
     Ok(())
 }

@@ -7,7 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -465,7 +465,10 @@ pub fn run() -> Result<()> {
 
     let result = match cli.command {
         Commands::PostFsData => init_event::on_post_data_fs(),
-        Commands::BootCompleted => init_event::on_boot_completed(),
+        Commands::BootCompleted => {
+            init_event::on_boot_completed();
+            Ok(())
+        }
 
         Commands::Module { command } => {
             #[cfg(any(target_os = "linux", target_os = "android"))]
@@ -486,17 +489,16 @@ pub fn run() -> Result<()> {
                         anyhow::anyhow!("This command must be run in the context of a module")
                     })?;
 
-                    use crate::module_config;
                     match command {
                         ModuleConfigCmd::Get { key } => {
                             // Use merge_configs to respect priority (temp overrides persist)
                             let config = module_config::merge_configs(&module_id)?;
                             match config.get(&key) {
                                 Some(value) => {
-                                    println!("{}", value);
+                                    println!("{value}");
                                     Ok(())
                                 }
-                                None => anyhow::bail!("Key '{}' not found", key),
+                                None => anyhow::bail!("Key '{key}' not found"),
                             }
                         }
                         ModuleConfigCmd::Set { key, value, temp } => {
@@ -517,7 +519,7 @@ pub fn run() -> Result<()> {
                                 println!("No config entries found");
                             } else {
                                 for (key, value) in config {
-                                    println!("{}={}", key, value);
+                                    println!("{key}={value}");
                                 }
                             }
                             Ok(())
@@ -549,7 +551,10 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::Services => init_event::on_services(),
+        Commands::Services => {
+            init_event::on_services();
+            Ok(())
+        }
         Commands::Profile { command } => match command {
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
@@ -562,10 +567,13 @@ pub fn run() -> Result<()> {
         },
 
         Commands::Feature { command } => match command {
-            Feature::Get { id } => crate::feature::get_feature(id),
-            Feature::Set { id, value } => crate::feature::set_feature(id, value),
-            Feature::List => crate::feature::list_features(),
-            Feature::Check { id } => crate::feature::check_feature(id),
+            Feature::Get { id } => crate::feature::get_feature(&id),
+            Feature::Set { id, value } => crate::feature::set_feature(&id, value),
+            Feature::List => {
+                crate::feature::list_features();
+                Ok(())
+            }
+            Feature::Check { id } => crate::feature::check_feature(&id),
             Feature::Load => crate::feature::load_config_and_apply(),
             Feature::Save => crate::feature::save_config(),
         },
@@ -614,8 +622,10 @@ pub fn run() -> Result<()> {
                 return Ok(());
             }
             BootInfo::SupportedKmis => {
-                let kmi = crate::assets::list_supported_kmi()?;
-                kmi.iter().for_each(|kmi| println!("{kmi}"));
+                let kmi = crate::assets::list_supported_kmi();
+                for kmi in &kmi {
+                    println!("{kmi}");
+                }
                 return Ok(());
             }
             BootInfo::IsAbDevice => {
@@ -626,7 +636,7 @@ pub fn run() -> Result<()> {
                 return Ok(());
             }
             BootInfo::DefaultPartition => {
-                let kmi = crate::boot_patch::get_current_kmi().unwrap_or_else(|_| String::from(""));
+                let kmi = crate::boot_patch::get_current_kmi().unwrap_or_else(|_| String::new());
                 let name = crate::boot_patch::choose_boot_partition(&kmi, false, &None);
                 println!("{name}");
                 return Ok(());
@@ -638,7 +648,9 @@ pub fn run() -> Result<()> {
             }
             BootInfo::AvailablePartitions => {
                 let parts = crate::boot_patch::list_available_partitions();
-                parts.iter().for_each(|p| println!("{p}"));
+                for p in &parts {
+                    println!("{p}");
+                }
                 return Ok(());
             }
         },

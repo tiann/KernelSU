@@ -20,9 +20,9 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     #[cfg(unix)]
-    let _ = catch_bootlog("logcat", vec!["logcat"]);
+    let _ = catch_bootlog("logcat", &["logcat"]);
     #[cfg(unix)]
-    let _ = catch_bootlog("dmesg", vec!["dmesg", "-w"]);
+    let _ = catch_bootlog("dmesg", &["dmesg", "-w"]);
 
     if utils::has_magisk() {
         warn!("Magisk detected, skip post-fs-data!");
@@ -139,24 +139,20 @@ fn run_stage(stage: &str, block: bool) {
     }
 }
 
-pub fn on_services() -> Result<()> {
+pub fn on_services() {
     info!("on_services triggered!");
     run_stage("service", false);
-
-    Ok(())
 }
 
-pub fn on_boot_completed() -> Result<()> {
+pub fn on_boot_completed() {
     ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
 
     run_stage("boot-completed", false);
-
-    Ok(())
 }
 
 #[cfg(unix)]
-fn catch_bootlog(logname: &str, command: Vec<&str>) -> Result<()> {
+fn catch_bootlog(logname: &str, command: &[&str]) -> Result<()> {
     use std::os::unix::process::CommandExt;
     use std::process::Stdio;
 
@@ -172,7 +168,7 @@ fn catch_bootlog(logname: &str, command: Vec<&str>) -> Result<()> {
     let bootlog = std::fs::File::create(bootlog)?;
 
     let mut args = vec!["-s", "9", "30s"];
-    args.extend_from_slice(&command);
+    args.extend_from_slice(command);
     // timeout -s 9 30s logcat > boot.log
     let result = unsafe {
         std::process::Command::new("timeout")
