@@ -58,7 +58,7 @@ ksud module config clear --temp
 The configuration system enforces the following limits:
 
 - **Maximum key length**: 256 bytes
-- **Maximum value length**: 256 bytes
+- **Maximum value length**: 1MB (1048576 bytes)
 - **Maximum config entries**: 32 per module
 - Keys cannot contain control characters, newlines, or path separators (`/` or `\`)
 - Values cannot contain control characters except tab (`\t`)
@@ -83,6 +83,58 @@ The configuration system is ideal for:
 - Use temporary configs for runtime state or feature toggles that should reset on boot
 - Validate configuration values in your scripts before using them
 - Use the `ksud module config list` command to debug configuration issues
+:::
+
+### Advanced Features
+
+The module configuration system provides special configuration keys for advanced use cases:
+
+#### Overriding Module Description
+
+You can dynamically override the `description` field from `module.prop` by setting the `override.description` configuration key:
+
+```bash
+# Override module description
+ksud module config set override.description "Custom description shown in the manager"
+```
+
+When the module list is retrieved, if the `override.description` config exists, it will replace the original description from `module.prop`. This is useful for:
+- Displaying dynamic status information in the module description
+- Showing runtime configuration details to users
+- Updating description based on module state without reinstalling
+
+#### Declaring Managed Features
+
+Modules can declare which KernelSU features they manage using the `manage.<feature>` configuration pattern. The supported features correspond to KernelSU's internal `FeatureId` enum:
+
+**Supported Features:**
+- `su_compat` - SU compatibility mode
+- `kernel_umount` - Kernel automatic unmount
+- `enhanced_security` - Enhanced security mode
+
+```bash
+# Declare that this module manages SU compatibility and enables it
+ksud module config set manage.su_compat true
+
+# Declare that this module manages kernel unmount and disables it
+ksud module config set manage.kernel_umount false
+
+# Remove feature management (module no longer controls this feature)
+ksud module config delete manage.su_compat
+```
+
+**How it works:**
+- The presence of a `manage.<feature>` key indicates the module is managing that feature
+- The value indicates the desired state: `true`/`1` for enabled, `false`/`0` (or any other value) for disabled
+- To stop managing a feature, delete the configuration key entirely
+
+Managed features are exposed through the module list API as a `managedFeatures` field (comma-separated string). This allows:
+- KernelSU manager to detect which modules manage which KernelSU features
+- Prevention of conflicts when multiple modules try to manage the same feature
+- Better coordination between modules and core KernelSU functionality
+
+::: warning SUPPORTED FEATURES ONLY
+Only use the predefined feature names listed above (`su_compat`, `kernel_umount`, `enhanced_security`). These correspond to actual KernelSU internal features. Using other feature names will not cause errors but serves no functional purpose.
 :::
 
 ## BusyBox

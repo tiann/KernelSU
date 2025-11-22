@@ -14,7 +14,7 @@ const MODULE_CONFIG_VERSION: u32 = 1;
 
 // Validation limits
 pub const MAX_CONFIG_KEY_LEN: usize = 256;
-pub const MAX_CONFIG_VALUE_LEN: usize = 256;
+pub const MAX_CONFIG_VALUE_LEN: usize = 1024 * 1024; // 1MB
 pub const MAX_CONFIG_COUNT: usize = 32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

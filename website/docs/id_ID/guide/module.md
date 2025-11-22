@@ -58,7 +58,7 @@ ksud module config clear --temp
 Sistem konfigurasi memberlakukan batasan berikut:
 
 - **Panjang key maksimum**: 256 byte
-- **Panjang nilai maksimum**: 256 byte
+- **Panjang nilai maksimum**: 1MB (1048576 byte)
 - **Jumlah entri konfigurasi maksimum**: 32 per modul
 - Key tidak boleh mengandung karakter kontrol, newline, atau pemisah path (`/` atau `\`)
 - Nilai tidak boleh mengandung karakter kontrol (kecuali tab `\t`)
@@ -83,6 +83,58 @@ Sistem konfigurasi ideal untuk:
 - Gunakan konfigurasi sementara untuk status runtime atau flag fitur yang harus direset saat boot
 - Validasi nilai konfigurasi dalam skrip Anda sebelum menggunakannya
 - Gunakan perintah `ksud module config list` untuk men-debug masalah konfigurasi
+:::
+
+### Fitur Lanjutan
+
+Sistem konfigurasi modul menyediakan kunci konfigurasi khusus untuk kasus penggunaan lanjutan:
+
+#### Mengganti Deskripsi Modul
+
+Anda dapat mengganti field `description` dari `module.prop` secara dinamis dengan mengatur kunci konfigurasi `override.description`:
+
+```bash
+# Mengganti deskripsi modul
+ksud module config set override.description "Deskripsi kustom yang ditampilkan di pengelola"
+```
+
+Saat mengambil daftar modul, jika konfigurasi `override.description` ada, itu akan menggantikan deskripsi asli dari `module.prop`. Ini berguna untuk:
+- Menampilkan informasi status dinamis dalam deskripsi modul
+- Menunjukkan detail konfigurasi runtime kepada pengguna
+- Memperbarui deskripsi berdasarkan status modul tanpa menginstal ulang
+
+#### Mendeklarasikan Fitur yang Dikelola
+
+Modul dapat mendeklarasikan fitur KernelSU mana yang mereka kelola menggunakan pola konfigurasi `manage.<feature>`. Fitur yang didukung sesuai dengan enum internal `FeatureId` KernelSU:
+
+**Fitur yang Didukung:**
+- `su_compat` - Mode kompatibilitas SU
+- `kernel_umount` - Unmount otomatis kernel
+- `enhanced_security` - Mode keamanan yang ditingkatkan
+
+```bash
+# Mendeklarasikan bahwa modul ini mengelola kompatibilitas SU dan mengaktifkannya
+ksud module config set manage.su_compat true
+
+# Mendeklarasikan bahwa modul ini mengelola unmount kernel dan menonaktifkannya
+ksud module config set manage.kernel_umount false
+
+# Menghapus pengelolaan fitur (modul tidak lagi mengontrol fitur ini)
+ksud module config delete manage.su_compat
+```
+
+**Cara kerjanya:**
+- Keberadaan kunci `manage.<feature>` menunjukkan bahwa modul mengelola fitur tersebut
+- Nilai menunjukkan status yang diinginkan: `true`/`1` untuk diaktifkan, `false`/`0` (atau nilai lainnya) untuk dinonaktifkan
+- Untuk berhenti mengelola fitur, hapus kunci konfigurasi sepenuhnya
+
+Fitur yang dikelola diekspos melalui API daftar modul sebagai field `managedFeatures` (string yang dipisahkan koma). Ini memungkinkan:
+- Pengelola KernelSU mendeteksi modul mana yang mengelola fitur KernelSU mana
+- Pencegahan konflik ketika beberapa modul mencoba mengelola fitur yang sama
+- Koordinasi yang lebih baik antara modul dan fungsionalitas inti KernelSU
+
+::: warning HANYA FITUR YANG DIDUKUNG
+Gunakan hanya nama fitur yang telah ditentukan sebelumnya yang tercantum di atas (`su_compat`, `kernel_umount`, `enhanced_security`). Ini sesuai dengan fitur internal KernelSU yang sebenarnya. Menggunakan nama fitur lain tidak akan menyebabkan error, tetapi tidak memiliki tujuan fungsional.
 :::
 
 ## Busybox
