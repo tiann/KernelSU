@@ -10,7 +10,10 @@ use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
-use std::{ffi::CStr, process::Command};
+use std::{
+    ffi::{CStr, CString},
+    process::Command,
+};
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use crate::ksucalls::get_wrapped_fd;
@@ -231,10 +234,9 @@ pub fn root_shell() -> Result<()> {
     if free_idx < matches.free.len() {
         let name = &matches.free[free_idx];
         uid = unsafe {
-            #[cfg(target_arch = "aarch64")]
-            let pw = libc::getpwnam(name.as_ptr()).as_ref();
-            #[cfg(target_arch = "x86_64")]
-            let pw = libc::getpwnam(name.as_ptr() as *const i8).as_ref();
+            let pw = CString::new(name.as_str())
+                .ok()
+                .and_then(|c_name| libc::getpwnam(c_name.as_ptr()).as_ref());
 
             pw.map_or_else(|| name.parse::<u32>().unwrap_or(0), |pw| pw.pw_uid)
         }
