@@ -12,6 +12,79 @@ KernelSU uses a [metamodule](metamodule.md) architecture for mounting the `syste
 
 KernelSU's modules support displaying interfaces and interacting with users. For more details, refer to the [WebUI documentation](module-webui.md).
 
+## Module Configuration
+
+KernelSU provides a built-in configuration system that allows modules to store persistent or temporary key-value settings. Configurations are stored in a binary format at `/data/adb/ksu/module_configs/<module_id>/` with the following characteristics:
+
+### Configuration Types
+
+- **Persist Config** (`persist.config`): Survives reboots and persists until explicitly deleted or the module is uninstalled
+- **Temp Config** (`tmp.config`): Automatically cleared during the post-fs-data stage on every boot
+
+When reading configurations, temporary values take priority over persistent values for the same key.
+
+### Using Configuration in Module Scripts
+
+All module scripts (`post-fs-data.sh`, `service.sh`, `boot-completed.sh`, etc.) run with the `KSU_MODULE` environment variable set to the module ID. You can use the `ksud module config` commands to manage your module's configuration:
+
+```bash
+# Get a configuration value
+value=$(ksud module config get my_setting)
+
+# Set a persistent configuration value
+ksud module config set my_setting "some value"
+
+# Set a temporary configuration value (cleared on reboot)
+ksud module config set --temp runtime_state "active"
+
+# List all configuration entries (merged persist + temp)
+ksud module config list
+
+# Delete a configuration entry
+ksud module config delete my_setting
+
+# Delete a temporary configuration entry
+ksud module config delete --temp runtime_state
+
+# Clear all persistent configurations
+ksud module config clear
+
+# Clear all temporary configurations
+ksud module config clear --temp
+```
+
+### Validation Limits
+
+The configuration system enforces the following limits:
+
+- **Maximum key length**: 256 bytes
+- **Maximum value length**: 256 bytes
+- **Maximum config entries**: 32 per module
+- Keys cannot contain control characters, newlines, or path separators (`/` or `\`)
+- Values cannot contain control characters except tab (`\t`)
+
+### Lifecycle
+
+- **On boot**: All temporary configurations are cleared during the post-fs-data stage
+- **On module uninstall**: All configurations (both persist and temp) are removed automatically
+- Configurations are stored in a binary format with magic number `0x4b53554d` ("KSUM") and version validation
+
+### Use Cases
+
+The configuration system is ideal for:
+
+- **User preferences**: Store module settings that users configure through WebUI or action scripts
+- **Feature flags**: Enable/disable module features without reinstalling
+- **Runtime state**: Track temporary state that should reset on reboot (use temp config)
+- **Installation settings**: Remember choices made during module installation
+
+::: tip BEST PRACTICES
+- Use persistent configs for user preferences that should survive reboots
+- Use temporary configs for runtime state or feature toggles that should reset on boot
+- Validate configuration values in your scripts before using them
+- Use the `ksud module config list` command to debug configuration issues
+:::
+
 ## BusyBox
 
 KernelSU ships with a feature-complete BusyBox binary (including full SELinux support). The executable is located at `/data/adb/ksu/bin/busybox`. KernelSU's BusyBox supports runtime toggle-able "ASH Standalone Shell Mode". What this Standalone Mode means is that when running in the `ash` shell of BusyBox, every single command will directly use the applet within BusyBox, regardless of what is set as `PATH`. For example, commands like `ls`, `rm`, `chmod` will **NOT** use what is in `PATH` (in the case of Android by default it will be `/system/bin/ls`, `/system/bin/rm`, and `/system/bin/chmod` respectively), but will instead directly call internal BusyBox applets. This makes sure that scripts always run in a predictable environment and always have the full suite of commands no matter which Android version it is running on. To force a command _not_ to use BusyBox, you have to call the executable with full paths.

@@ -12,6 +12,79 @@ KernelSU usa uma arquitetura [metamodule](metamodule.md) para montar o diretóri
 
 Os módulos do KernelSU suportam a exibição de interfaces e a interação com os usuários. Para mais detalhes, consulte a [documentação do WebUI](module-webui.md).
 
+## Configuração de Módulo
+
+O KernelSU fornece um sistema de configuração integrado que permite que os módulos armazenem configurações de chave-valor persistentes ou temporárias. As configurações são armazenadas em formato binário em `/data/adb/ksu/module_configs/<module_id>/` com as seguintes características:
+
+### Tipos de Configuração
+
+- **Configuração Persistente** (`persist.config`): Sobrevive às reinicializações até ser explicitamente excluída ou o módulo ser desinstalado
+- **Configuração Temporária** (`tmp.config`): Automaticamente limpa durante o estágio post-fs-data em cada inicialização
+
+Ao ler configurações, os valores temporários têm prioridade sobre os valores persistentes para a mesma chave.
+
+### Usando Configuração em Scripts de Módulo
+
+Todos os scripts de módulo (`post-fs-data.sh`, `service.sh`, `boot-completed.sh`, etc.) são executados com a variável de ambiente `KSU_MODULE` definida como o ID do módulo. Você pode usar os comandos `ksud module config` para gerenciar a configuração do seu módulo:
+
+```bash
+# Obter um valor de configuração
+value=$(ksud module config get my_setting)
+
+# Definir um valor de configuração persistente
+ksud module config set my_setting "some value"
+
+# Definir um valor de configuração temporário (limpo após a reinicialização)
+ksud module config set --temp runtime_state "active"
+
+# Listar todas as entradas de configuração (mesclando persistentes e temporárias)
+ksud module config list
+
+# Excluir uma entrada de configuração
+ksud module config delete my_setting
+
+# Excluir uma entrada de configuração temporária
+ksud module config delete --temp runtime_state
+
+# Limpar todas as configurações persistentes
+ksud module config clear
+
+# Limpar todas as configurações temporárias
+ksud module config clear --temp
+```
+
+### Limites de Validação
+
+O sistema de configuração impõe os seguintes limites:
+
+- **Comprimento máximo da chave**: 256 bytes
+- **Comprimento máximo do valor**: 256 bytes
+- **Número máximo de entradas de configuração**: 32 por módulo
+- As chaves não podem conter caracteres de controle, novas linhas ou separadores de caminho (`/` ou `\`)
+- Os valores não podem conter caracteres de controle (exceto tab `\t`)
+
+### Ciclo de Vida
+
+- **Na inicialização**: Todas as configurações temporárias são limpas durante o estágio post-fs-data
+- **Na desinstalação do módulo**: Todas as configurações (persistentes e temporárias) são automaticamente removidas
+- As configurações são armazenadas em formato binário com número mágico `0x4b53554d` ("KSUM") e validação de versão
+
+### Casos de Uso
+
+O sistema de configuração é ideal para:
+
+- **Preferências do usuário**: Armazenar configurações de módulo que os usuários configuram por meio de WebUI ou scripts de ação
+- **Sinalizadores de recursos**: Ativar/desativar recursos do módulo sem reinstalar
+- **Estado de execução**: Rastrear estado temporário que deve ser redefinido na reinicialização (use configuração temporária)
+- **Configurações de instalação**: Lembrar escolhas feitas durante a instalação do módulo
+
+::: tip MELHORES PRÁTICAS
+- Use configurações persistentes para preferências do usuário que devem sobreviver às reinicializações
+- Use configurações temporárias para estado de execução ou sinalizadores de recursos que devem ser redefinidos na inicialização
+- Valide os valores de configuração em seus scripts antes de usá-los
+- Use o comando `ksud module config list` para depurar problemas de configuração
+:::
+
 ## BusyBox
 
 O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta "ASH Standalone Shell Mode" alternável em tempo de execução. O que este Modo Autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido em `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android, por padrão será `/system/bin/ls`, `/system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a **NÃO** usar o BusyBox, você deve chamar o executável com caminhos completos.

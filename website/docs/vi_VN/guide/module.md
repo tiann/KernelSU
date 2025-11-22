@@ -12,6 +12,79 @@ KernelSU sử dụng kiến trúc [metamodule](metamodule.md) để mount thư m
 
 KernelSU modules support displaying interfaces and interacting with users. Xem [tài liệu WebUI](module-webui.md) để biết thêm chi tiết.
 
+## Cấu hình module
+
+KernelSU cung cấp hệ thống cấu hình tích hợp cho phép các module lưu trữ các cài đặt key-value liên tục hoặc tạm thời. Cấu hình được lưu trữ ở định dạng nhị phân tại `/data/adb/ksu/module_configs/<module_id>/` với các đặc điểm sau:
+
+### Các loại cấu hình
+
+- **Cấu hình liên tục** (`persist.config`): tồn tại sau khi khởi động lại cho đến khi bị xóa rõ ràng hoặc gỡ cài đặt module
+- **Cấu hình tạm thời** (`tmp.config`): tự động bị xóa trong giai đoạn post-fs-data mỗi khi khởi động
+
+Khi đọc cấu hình, giá trị tạm thời được ưu tiên hơn giá trị liên tục cho cùng một key.
+
+### Sử dụng cấu hình trong script module
+
+Tất cả các script module (`post-fs-data.sh`, `service.sh`, `boot-completed.sh`, v.v.) chạy với biến môi trường `KSU_MODULE` được đặt thành ID module. Bạn có thể sử dụng các lệnh `ksud module config` để quản lý cấu hình module của mình:
+
+```bash
+# Lấy giá trị cấu hình
+value=$(ksud module config get my_setting)
+
+# Đặt giá trị cấu hình liên tục
+ksud module config set my_setting "some value"
+
+# Đặt giá trị cấu hình tạm thời (xóa sau khi khởi động lại)
+ksud module config set --temp runtime_state "active"
+
+# Liệt kê tất cả các mục cấu hình (hợp nhất liên tục và tạm thời)
+ksud module config list
+
+# Xóa một mục cấu hình
+ksud module config delete my_setting
+
+# Xóa một mục cấu hình tạm thời
+ksud module config delete --temp runtime_state
+
+# Xóa tất cả cấu hình liên tục
+ksud module config clear
+
+# Xóa tất cả cấu hình tạm thời
+ksud module config clear --temp
+```
+
+### Giới hạn xác thực
+
+Hệ thống cấu hình áp dụng các giới hạn sau:
+
+- **Độ dài key tối đa**: 256 byte
+- **Độ dài giá trị tối đa**: 256 byte
+- **Số lượng mục cấu hình tối đa**: 32 mỗi module
+- Key không được chứa ký tự điều khiển, dòng mới hoặc dấu phân tách đường dẫn (`/` hoặc `\`)
+- Giá trị không được chứa ký tự điều khiển (ngoại trừ tab `\t`)
+
+### Vòng đời
+
+- **Khi khởi động**: Tất cả cấu hình tạm thời được xóa trong giai đoạn post-fs-data
+- **Khi gỡ cài đặt module**: Tất cả cấu hình (liên tục và tạm thời) tự động bị xóa
+- Cấu hình được lưu trữ ở định dạng nhị phân với số ma thuật `0x4b53554d` ("KSUM") và xác thực phiên bản
+
+### Trường hợp sử dụng
+
+Hệ thống cấu hình lý tưởng cho:
+
+- **Tùy chọn người dùng**: Lưu trữ cài đặt module mà người dùng cấu hình thông qua WebUI hoặc action script
+- **Cờ tính năng**: Bật/tắt tính năng module mà không cần cài đặt lại
+- **Trạng thái runtime**: Theo dõi trạng thái tạm thời nên được đặt lại khi khởi động lại (sử dụng cấu hình tạm thời)
+- **Cài đặt cài đặt**: Ghi nhớ các lựa chọn được thực hiện trong quá trình cài đặt module
+
+::: tip THỰC HÀNH TốT NHẤT
+- Sử dụng cấu hình liên tục cho tùy chọn người dùng nên tồn tại sau khi khởi động lại
+- Sử dụng cấu hình tạm thời cho trạng thái runtime hoặc cờ tính năng nên được đặt lại khi khởi động
+- Xác thực giá trị cấu hình trong script của bạn trước khi sử dụng chúng
+- Sử dụng lệnh `ksud module config list` để gỡ lỗi các vấn đề cấu hình
+:::
+
 ## Busybox
 
 KernelSU cung cấp tính năng nhị phân BusyBox hoàn chỉnh (bao gồm hỗ trợ SELinux đầy đủ). Tệp thực thi được đặt tại `/data/adb/ksu/bin/busybox`. BusyBox của KernelSU hỗ trợ "ASH Standalone Shell Mode" có thể chuyển đổi thời gian chạy. Standalone mode này có nghĩa là khi chạy trong shell `ash` của BusyBox, mọi lệnh sẽ trực tiếp sử dụng applet trong BusyBox, bất kể cái gì được đặt là `PATH`. Ví dụ: các lệnh như `ls`, `rm`, `chmod` sẽ **KHÔNG** sử dụng những gì có trong `PATH` (trong trường hợp Android theo mặc định, nó sẽ là `/system/bin/ls`, ` /system/bin/rm` và `/system/bin/chmod` tương ứng), nhưng thay vào đó sẽ gọi trực tiếp các ứng dụng BusyBox nội bộ. Điều này đảm bảo rằng các tập lệnh luôn chạy trong môi trường có thể dự đoán được và luôn có bộ lệnh đầy đủ cho dù nó đang chạy trên phiên bản Android nào. Để buộc lệnh _not_ sử dụng BusyBox, bạn phải gọi tệp thực thi có đường dẫn đầy đủ.

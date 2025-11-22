@@ -12,6 +12,79 @@ KernelSU は [metamodule](metamodule.md) アーキテクチャを使用して `s
 
 KernelSU modules support displaying interfaces and interacting with users. See the [WebUI documentation](module-webui.md) for more information.
 
+## モジュール設定
+
+KernelSU は、モジュールが永続的または一時的なキー値設定を保存できる組み込みの設定システムを提供します。設定は `/data/adb/ksu/module_configs/<module_id>/` にバイナリ形式で保存され、以下の特性があります：
+
+### 設定タイプ
+
+- **永続設定** (`persist.config`)：再起動後も保持され、明示的に削除またはモジュールをアンインストールするまで残ります
+- **一時設定** (`tmp.config`)：起動時の post-fs-data ステージで自動的にクリアされます
+
+設定を読み取るとき、同じキーに対して一時値が永続値より優先されます。
+
+### モジュールスクリプトでの設定の使用
+
+すべてのモジュールスクリプト（`post-fs-data.sh`、`service.sh`、`boot-completed.sh` など）は、`KSU_MODULE` 環境変数がモジュール ID に設定された状態で実行されます。`ksud module config` コマンドを使用してモジュールの設定を管理できます：
+
+```bash
+# 設定値を取得
+value=$(ksud module config get my_setting)
+
+# 永続設定値を設定
+ksud module config set my_setting "some value"
+
+# 一時設定値を設定（再起動後にクリア）
+ksud module config set --temp runtime_state "active"
+
+# すべての設定エントリを一覧表示（永続と一時をマージ）
+ksud module config list
+
+# 設定エントリを削除
+ksud module config delete my_setting
+
+# 一時設定エントリを削除
+ksud module config delete --temp runtime_state
+
+# すべての永続設定をクリア
+ksud module config clear
+
+# すべての一時設定をクリア
+ksud module config clear --temp
+```
+
+### 検証制限
+
+設定システムは以下の制限を強制します：
+
+- **最大キー長**：256 バイト
+- **最大値長**：256 バイト
+- **最大設定エントリ数**：モジュールあたり 32 個
+- キーには制御文字、改行、パス区切り文字（`/` または `\`）を含めることができません
+- 値には制御文字を含めることができません（タブ `\t` を除く）
+
+### ライフサイクル
+
+- **起動時**：すべての一時設定が post-fs-data ステージでクリアされます
+- **モジュールアンインストール時**：すべての設定（永続と一時）が自動的に削除されます
+- 設定はバイナリ形式で保存され、マジックナンバー `0x4b53554d`（"KSUM"）とバージョン検証を使用します
+
+### ユースケース
+
+設定システムは以下に最適です：
+
+- **ユーザー設定**：WebUI または action スクリプトを通じてユーザーが設定したモジュール設定を保存
+- **機能フラグ**：再インストールせずにモジュール機能を有効/無効にする
+- **ランタイム状態**：再起動時にリセットすべき一時的な状態を追跡（一時設定を使用）
+- **インストール設定**：モジュールインストール時に行った選択を記憶
+
+::: tip ベストプラクティス
+- 再起動後も保持すべきユーザー設定には永続設定を使用
+- 起動時にリセットすべきランタイム状態や機能フラグには一時設定を使用
+- スクリプトで設定値を使用する前に検証する
+- 設定の問題をデバッグするには `ksud module config list` コマンドを使用
+:::
+
 ## Busybox
 
 KernelSU には、機能的に完全な Busybox バイナリ (SELinux の完全サポートを含む) が同梱されています。実行ファイルは `/data/adb/ksu/bin/busybox` に配置されています。KernelSU の Busybox はランタイムに切り替え可能な「ASH スタンドアローンシェルモード」をサポートしています。このスタンドアロンモードとは、Busybox の `ash` シェルで実行する場合 `PATH` として設定されているものに関係なく、すべてのコマンドが Busybox 内のアプレットを直接使用するというものです。たとえば、`ls`、`rm`、`chmod` などのコマンドは、`PATH` にあるもの（Android の場合、デフォルトではそれぞれ `/system/bin/ls`, `/system/bin/rm`, `/system/bin/chmod`）ではなく、直接 Busybox 内部のアプレットを呼び出すことになります。これにより、スクリプトは常に予測可能な環境で実行され、どの Android バージョンで実行されていても常にコマンドを利用できます。Busybox を使用しないコマンドを強制的に実行するには、フルパスで実行ファイルを呼び出す必要があります。
