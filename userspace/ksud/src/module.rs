@@ -166,14 +166,18 @@ pub fn load_sepolicy_rule() -> Result<()> {
 pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
+    let is_module_script = path.as_ref().starts_with(defs::MODULE_DIR);
     // Extract module_id from path if it matches /data/adb/modules/{id}/...
-    let module_id = path
-        .as_ref()
-        .strip_prefix(defs::MODULE_DIR)
-        .ok()
-        .and_then(|p| p.components().next())
-        .and_then(|c| c.as_os_str().to_str())
-        .map(std::string::ToString::to_string);
+    let module_id = if is_module_script {
+        path.as_ref()
+            .strip_prefix(defs::MODULE_DIR)
+            .ok()
+            .and_then(|p| p.components().next())
+            .and_then(|c| c.as_os_str().to_str())
+            .map(ToString::to_string)
+    } else {
+        None
+    };
 
     // Validate and log module_id extraction
     let validated_module_id = module_id
@@ -192,7 +196,7 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
             }
         });
 
-    if module_id.is_none() {
+    if is_module_script && module_id.is_none() {
         debug!(
             "Failed to extract module_id from script path '{}'. Script will run without KSU_MODULE environment variable.",
             path.as_ref().display()
