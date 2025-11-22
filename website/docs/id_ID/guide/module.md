@@ -37,6 +37,18 @@ ksud module config set my_setting "some value"
 # Mengatur nilai konfigurasi sementara (dihapus setelah reboot)
 ksud module config set --temp runtime_state "active"
 
+# Mengatur nilai dari stdin (berguna untuk teks multiline atau data kompleks)
+ksud module config set my_key <<EOF
+teks multiline
+nilai
+EOF
+
+# Atau alirkan dari perintah
+echo "value" | ksud module config set my_key
+
+# Bendera stdin eksplisit
+cat file.json | ksud module config set json_data --stdin
+
 # Daftar semua entri konfigurasi (gabungan persisten dan sementara)
 ksud module config list
 
@@ -60,8 +72,12 @@ Sistem konfigurasi memberlakukan batasan berikut:
 - **Panjang key maksimum**: 256 byte
 - **Panjang nilai maksimum**: 1MB (1048576 byte)
 - **Jumlah entri konfigurasi maksimum**: 32 per modul
-- Key tidak boleh mengandung karakter kontrol, newline, atau pemisah path (`/` atau `\`)
-- Nilai tidak boleh mengandung karakter kontrol (kecuali tab `\t`)
+- **Format key**: Harus cocok dengan `^[a-zA-Z][a-zA-Z0-9._-]+$` (seperti ID modul)
+  - Harus dimulai dengan huruf
+  - Dapat berisi huruf, angka, titik, garis bawah, atau tanda hubung
+  - Panjang minimum: 2 karakter
+- **Format nilai**: Tanpa batasan - dapat berisi karakter UTF-8 apa pun, termasuk jeda baris dan karakter kontrol
+  - Disimpan dalam format biner dengan awalan panjang untuk penanganan data yang aman
 
 ### Siklus Hidup
 
@@ -77,6 +93,7 @@ Sistem konfigurasi ideal untuk:
 - **Flag fitur**: Mengaktifkan/menonaktifkan fitur modul tanpa menginstal ulang
 - **Status runtime**: Melacak status sementara yang harus direset saat reboot (gunakan konfigurasi sementara)
 - **Pengaturan instalasi**: Mengingat pilihan yang dibuat saat instalasi modul
+- **Data kompleks**: Menyimpan JSON, teks multiline, data terenkode Base64, atau konten terstruktur apa pun (hingga 1MB)
 
 ::: tip PRAKTIK TERBAIK
 - Gunakan konfigurasi persisten untuk preferensi pengguna yang harus bertahan setelah reboot
