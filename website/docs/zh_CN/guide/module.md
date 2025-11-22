@@ -37,6 +37,18 @@ ksud module config set my_setting "some value"
 # 设置临时配置值（重启后清除）
 ksud module config set --temp runtime_state "active"
 
+# 从 stdin 设置值（适用于多行或复杂数据）
+ksud module config set my_key <<EOF
+多行
+文本值
+EOF
+
+# 或从命令管道输入
+echo "value" | ksud module config set my_key
+
+# 显式使用 stdin 标志
+cat file.json | ksud module config set json_data --stdin
+
 # 列出所有配置项（合并持久和临时配置）
 ksud module config list
 
@@ -60,8 +72,12 @@ ksud module config clear --temp
 - **最大键长度**：256 字节
 - **最大值长度**：1MB (1048576 字节)
 - **最大配置项数**：每个模块 32 个
-- 键不能包含控制字符、换行符或路径分隔符（`/` 或 `\`）
-- 值不能包含控制字符（制表符 `\t` 除外）
+- **键格式**：必须匹配 `^[a-zA-Z][a-zA-Z0-9._-]+$`（与模块 ID 相同）
+  - 必须以字母（a-zA-Z）开头
+  - 可包含字母、数字、点（`.`）、下划线（`_`）或连字符（`-`）
+  - 最小长度：2 个字符
+- **值格式**：无限制 - 可包含任何 UTF-8 字符，包括换行符、控制字符等
+  - 以二进制格式存储，带长度前缀，确保安全处理所有数据
 
 ### 生命周期
 
@@ -77,6 +93,7 @@ ksud module config clear --temp
 - **功能开关**：在不重新安装的情况下启用/禁用模块功能
 - **运行时状态**：跟踪应在重启时重置的临时状态（使用临时配置）
 - **安装设置**：记住模块安装时做出的选择
+- **复杂数据**：存储 JSON、多行文本、Base64 编码数据或任何结构化内容（最多 1MB）
 
 ::: tip 最佳实践
 - 对于应在重启后保留的用户偏好，使用持久配置

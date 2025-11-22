@@ -37,6 +37,18 @@ ksud module config set my_setting "some value"
 # Definir um valor de configuração temporário (limpo após a reinicialização)
 ksud module config set --temp runtime_state "active"
 
+# Definir valor a partir de stdin (útil para texto multilinhas ou dados complexos)
+ksud module config set my_key <<EOF
+texto multilinhas
+valor
+EOF
+
+# Ou transmitir de um comando
+echo "value" | ksud module config set my_key
+
+# Sinalizador stdin explícito
+cat file.json | ksud module config set json_data --stdin
+
 # Listar todas as entradas de configuração (mesclando persistentes e temporárias)
 ksud module config list
 
@@ -60,8 +72,12 @@ O sistema de configuração impõe os seguintes limites:
 - **Comprimento máximo da chave**: 256 bytes
 - **Comprimento máximo do valor**: 1MB (1048576 bytes)
 - **Número máximo de entradas de configuração**: 32 por módulo
-- As chaves não podem conter caracteres de controle, novas linhas ou separadores de caminho (`/` ou `\`)
-- Os valores não podem conter caracteres de controle (exceto tab `\t`)
+- **Formato de chave**: Deve corresponder a `^[a-zA-Z][a-zA-Z0-9._-]+$` (como ID do módulo)
+  - Deve começar com uma letra
+  - Pode conter letras, números, pontos, sublinhados ou hífens
+  - Comprimento mínimo: 2 caracteres
+- **Formato de valor**: Sem restrições - pode conter qualquer caractere UTF-8, incluindo quebras de linha e caracteres de controle
+  - Armazenado em formato binário com prefixo de comprimento para manuseio seguro de todos os dados
 
 ### Ciclo de Vida
 
@@ -77,6 +93,7 @@ O sistema de configuração é ideal para:
 - **Sinalizadores de recursos**: Ativar/desativar recursos do módulo sem reinstalar
 - **Estado de execução**: Rastrear estado temporário que deve ser redefinido na reinicialização (use configuração temporária)
 - **Configurações de instalação**: Lembrar escolhas feitas durante a instalação do módulo
+- **Dados complexos**: Armazenar JSON, texto multilinha, dados codificados em Base64 ou qualquer conteúdo estruturado (até 1MB)
 
 ::: tip MELHORES PRÁTICAS
 - Use configurações persistentes para preferências do usuário que devem sobreviver às reinicializações

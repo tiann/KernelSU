@@ -51,6 +51,18 @@ ksud module config clear
 
 # 清除所有暫時配置
 ksud module config clear --temp
+
+# 從 stdin 設定值（適用於多行或複雜資料）
+ksud module config set my_key <<EOF
+多行
+文字值
+EOF
+
+# 或從命令管道輸入
+echo "value" | ksud module config set my_key
+
+# 明確使用 stdin 標誌
+cat file.json | ksud module config set json_data --stdin
 ```
 
 ### 驗證限制
@@ -60,8 +72,12 @@ ksud module config clear --temp
 - **最大鍵長度**：256 位元組
 - **最大值長度**：1MB (1048576 位元組)
 - **最大配置項數**：每個模組 32 個
-- 鍵不能包含控制字元、換行符或路徑分隔符（`/` 或 `\`）
-- 值不能包含控制字元（製表符 `\t` 除外）
+- **鍵格式**：必須符合 `^[a-zA-Z][a-zA-Z0-9._-]+$`（與模組 ID 相同）
+  - 必須以字母（a-zA-Z）開頭
+  - 可包含字母、數字、點（`.`）、底線（`_`）或連字號（`-`）
+  - 最小長度：2 個字元
+- **值格式**：無限制 - 可包含任何 UTF-8 字元，包括換行符、控制字元等
+  - 以二進位格式儲存，帶長度前綴，確保安全處理所有資料
 
 ### 生命週期
 
@@ -77,6 +93,7 @@ ksud module config clear --temp
 - **功能開關**：在不重新安裝的情況下啟用/停用模組功能
 - **執行時狀態**：追蹤應在重新開機時重置的暫時狀態（使用暫時配置）
 - **安裝設定**：記住模組安裝時做出的選擇
+- **複雜資料**：儲存 JSON、多行文字、Base64 編碼資料或任何結構化內容（最多 1MB）
 
 ::: tip 最佳實踐
 - 對於應在重新開機後保留的使用者偏好，使用持久配置

@@ -37,6 +37,18 @@ ksud module config set my_setting "some value"
 # Set a temporary configuration value (cleared on reboot)
 ksud module config set --temp runtime_state "active"
 
+# Set value from stdin (useful for multiline or complex data)
+ksud module config set my_key <<EOF
+multiline
+text value
+EOF
+
+# Or pipe from command
+echo "value" | ksud module config set my_key
+
+# Explicit stdin flag
+cat file.json | ksud module config set json_data --stdin
+
 # List all configuration entries (merged persist + temp)
 ksud module config list
 
@@ -60,8 +72,12 @@ The configuration system enforces the following limits:
 - **Maximum key length**: 256 bytes
 - **Maximum value length**: 1MB (1048576 bytes)
 - **Maximum config entries**: 32 per module
-- Keys cannot contain control characters, newlines, or path separators (`/` or `\`)
-- Values cannot contain control characters except tab (`\t`)
+- **Key format**: Must match `^[a-zA-Z][a-zA-Z0-9._-]+$` (same as module ID)
+  - Must start with a letter (a-zA-Z)
+  - Can contain letters, numbers, dots (`.`), underscores (`_`), or hyphens (`-`)
+  - Minimum length: 2 characters
+- **Value format**: No restrictions - can contain any UTF-8 characters including newlines, control characters, etc.
+  - Stored in binary format with length prefix, ensuring safe handling of all data
 
 ### Lifecycle
 
@@ -77,6 +93,7 @@ The configuration system is ideal for:
 - **Feature flags**: Enable/disable module features without reinstalling
 - **Runtime state**: Track temporary state that should reset on reboot (use temp config)
 - **Installation settings**: Remember choices made during module installation
+- **Complex data**: Store JSON, multiline text, Base64 encoded data, or any structured content (up to 1MB)
 
 ::: tip BEST PRACTICES
 - Use persistent configs for user preferences that should survive reboots

@@ -37,6 +37,18 @@ ksud module config set my_setting "some value"
 # Đặt giá trị cấu hình tạm thời (xóa sau khi khởi động lại)
 ksud module config set --temp runtime_state "active"
 
+# Đặt giá trị từ stdin (hữu ích cho văn bản nhiều dòng hoặc dữ liệu phức tạp)
+ksud module config set my_key <<EOF
+văn bản nhiều dòng
+giá trị
+EOF
+
+# Hoặc truyền từ lệnh
+echo "value" | ksud module config set my_key
+
+# Cờ stdin rõ ràng
+cat file.json | ksud module config set json_data --stdin
+
 # Liệt kê tất cả các mục cấu hình (hợp nhất liên tục và tạm thời)
 ksud module config list
 
@@ -60,8 +72,12 @@ Hệ thống cấu hình áp dụng các giới hạn sau:
 - **Độ dài key tối đa**: 256 byte
 - **Độ dài giá trị tối đa**: 1MB (1048576 byte)
 - **Số lượng mục cấu hình tối đa**: 32 mỗi module
-- Key không được chứa ký tự điều khiển, dòng mới hoặc dấu phân tách đường dẫn (`/` hoặc `\`)
-- Giá trị không được chứa ký tự điều khiển (ngoại trừ tab `\t`)
+- **Định dạng key**: Phải khớp với `^[a-zA-Z][a-zA-Z0-9._-]+$` (như ID module)
+  - Phải bắt đầu bằng một chữ cái
+  - Có thể chứa chữ cái, số, dấu chấm, dấu gạch dưới hoặc dấu gạch ngang
+  - Độ dài tối thiểu: 2 ký tự
+- **Định dạng giá trị**: Không có hạn chế - có thể chứa bất kỳ ký tự UTF-8 nào, bao gồm ngắt dòng và ký tự điều khiển
+  - Được lưu trữ ở định dạng nhị phân có tiền tố độ dài để xử lý dữ liệu an toàn
 
 ### Vòng đời
 
@@ -77,6 +93,7 @@ Hệ thống cấu hình lý tưởng cho:
 - **Cờ tính năng**: Bật/tắt tính năng module mà không cần cài đặt lại
 - **Trạng thái runtime**: Theo dõi trạng thái tạm thời nên được đặt lại khi khởi động lại (sử dụng cấu hình tạm thời)
 - **Cài đặt cài đặt**: Ghi nhớ các lựa chọn được thực hiện trong quá trình cài đặt module
+- **Dữ liệu phức tạp**: Lưu trữ JSON, văn bản nhiều dòng, dữ liệu được mã hóa Base64 hoặc bất kỳ nội dung có cấu trúc nào (lên đến 1MB)
 
 ::: tip THỰC HÀNH TốT NHẤT
 - Sử dụng cấu hình liên tục cho tùy chọn người dùng nên tồn tại sau khi khởi động lại
