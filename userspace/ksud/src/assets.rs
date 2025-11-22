@@ -26,19 +26,19 @@ pub fn ensure_binaries(ignore_if_exist: bool) -> Result<()> {
             // don't extract ksuinit and kernel modules
             continue;
         }
-        let asset = Asset::get(&file).ok_or(anyhow::anyhow!("asset not found: {}", file))?;
-        utils::ensure_binary(format!("{BINARY_DIR}{file}"), &asset.data, ignore_if_exist)?
+        let asset = Asset::get(&file).ok_or_else(|| anyhow::anyhow!("asset not found: {file}"))?;
+        utils::ensure_binary(format!("{BINARY_DIR}{file}"), &asset.data, ignore_if_exist)?;
     }
     Ok(())
 }
 
 pub fn copy_assets_to_file(name: &str, dst: impl AsRef<Path>) -> Result<()> {
-    let asset = Asset::get(name).ok_or(anyhow::anyhow!("asset not found: {}", name))?;
+    let asset = Asset::get(name).ok_or_else(|| anyhow::anyhow!("asset not found: {name}"))?;
     std::fs::write(dst, asset.data)?;
     Ok(())
 }
 
-pub fn list_supported_kmi() -> Result<Vec<String>> {
+pub fn list_supported_kmi() -> std::vec::Vec<std::string::String> {
     let mut list = Vec::new();
     for file in Asset::iter() {
         // kmi_name = "xxx_kernelsu.ko"
@@ -46,5 +46,5 @@ pub fn list_supported_kmi() -> Result<Vec<String>> {
             list.push(kmi.to_string());
         }
     }
-    Ok(list)
+    list
 }

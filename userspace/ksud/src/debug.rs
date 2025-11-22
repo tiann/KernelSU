@@ -58,13 +58,11 @@ pub fn mark_get(pid: i32) -> Result<()> {
     let result = ksucalls::mark_get(pid)?;
     if pid == 0 {
         bail!("Please specify a pid to get its mark status");
-    } else {
-        println!(
-            "Process {} mark status: {}",
-            pid,
-            if result != 0 { "marked" } else { "unmarked" }
-        );
     }
+    println!(
+        "Process {pid} mark status: {}",
+        if result != 0 { "marked" } else { "unmarked" }
+    );
     Ok(())
 }
 
@@ -74,7 +72,7 @@ pub fn mark_set(pid: i32) -> Result<()> {
     if pid == 0 {
         println!("All processes marked successfully");
     } else {
-        println!("Process {} marked successfully", pid);
+        println!("Process {pid} marked successfully");
     }
     Ok(())
 }
@@ -85,7 +83,7 @@ pub fn mark_unset(pid: i32) -> Result<()> {
     if pid == 0 {
         println!("All processes unmarked successfully");
     } else {
-        println!("Process {} unmarked successfully", pid);
+        println!("Process {pid} unmarked successfully");
     }
     Ok(())
 }
