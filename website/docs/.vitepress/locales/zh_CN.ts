@@ -53,6 +53,7 @@ function sidebarGuide() {
           { text: '模块开发指南', link: '/zh_CN/guide/module.md' },
           { text: '元模块', link: '/zh_CN/guide/metamodule.md' },
           { text: '模块 Web 界面', link: '/zh_CN/guide/module-webui.md' },
+          { text: '模块配置', link: '/zh_CN/guide/module-config.md' },
           { text: 'App Profile', link: '/zh_CN/guide/app-profile.md' },
           { text: '救砖', link: '/zh_CN/guide/rescue-from-bootloop.md' },
           { text: '常见问题', link: '/zh_CN/guide/faq' },

@@ -51,6 +51,7 @@ function sidebarGuide() {
           { text: 'Perangkat yang didukung secara tidak resmi', link: '/id_ID/guide/unofficially-support-devices.md' },
           { text: 'Petunjuk module', link: '/id_ID/guide/module.md' },
           { text: 'Metamodule', link: '/id_ID/guide/metamodule.md' },
+          { text: 'Konfigurasi Modul', link: '/id_ID/guide/module-config.md' },
           { text: 'Antisipasi dari bootloop', link: '/id_ID/guide/rescue-from-bootloop.md' },
           { text: 'FAQ', link: '/id_ID/guide/faq' },
         ]

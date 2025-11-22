@@ -53,6 +53,7 @@ function sidebarGuide() {
           { text: '模組指南', link: '/zh_TW/guide/module.md' },
           { text: '元模組', link: '/zh_TW/guide/metamodule.md' },
           { text: '模組 WebUI', link: '/zh_TW/guide/module-webui.md' },
+          { text: '模組配置', link: '/zh_TW/guide/module-config.md' },
           { text: 'App Profile', link: '/zh_TW/guide/app-profile.md' },
           { text: '搶救開機迴圈', link: '/zh_TW/guide/rescue-from-bootloop.md' },
           { text: '常見問題', link: '/zh_TW/guide/faq' },
