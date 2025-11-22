@@ -58,7 +58,7 @@ ksud module config clear --temp
 O sistema de configuração impõe os seguintes limites:
 
 - **Comprimento máximo da chave**: 256 bytes
-- **Comprimento máximo do valor**: 256 bytes
+- **Comprimento máximo do valor**: 1MB (1048576 bytes)
 - **Número máximo de entradas de configuração**: 32 por módulo
 - As chaves não podem conter caracteres de controle, novas linhas ou separadores de caminho (`/` ou `\`)
 - Os valores não podem conter caracteres de controle (exceto tab `\t`)
@@ -83,6 +83,58 @@ O sistema de configuração é ideal para:
 - Use configurações temporárias para estado de execução ou sinalizadores de recursos que devem ser redefinidos na inicialização
 - Valide os valores de configuração em seus scripts antes de usá-los
 - Use o comando `ksud module config list` para depurar problemas de configuração
+:::
+
+## Recursos Avançados
+
+O sistema de configuração de módulos fornece chaves de configuração especiais para casos de uso avançados:
+
+### Substituindo a Descrição do Módulo
+
+Você pode substituir dinamicamente o campo `description` do `module.prop` definindo a chave de configuração `override.description`:
+
+```bash
+# Substituir a descrição do módulo
+ksud module config set override.description "Descrição personalizada exibida no gerenciador"
+```
+
+Ao recuperar a lista de módulos, se a configuração `override.description` existir, ela substituirá a descrição original do `module.prop`. Isso é útil para:
+- Exibir informações dinâmicas de status na descrição do módulo
+- Mostrar detalhes de configuração em tempo de execução aos usuários
+- Atualizar a descrição com base no estado do módulo sem reinstalar
+
+### Declarando Recursos Gerenciados
+
+Os módulos podem declarar quais recursos do KernelSU eles gerenciam usando o padrão de configuração `manage.<feature>`. Os recursos suportados correspondem ao enum interno `FeatureId` do KernelSU:
+
+**Recursos Suportados:**
+- `su_compat` - Modo de compatibilidade SU
+- `kernel_umount` - Desmontagem automática do kernel
+- `enhanced_security` - Modo de segurança aprimorada
+
+```bash
+# Declarar que este módulo gerencia a compatibilidade SU e a habilita
+ksud module config set manage.su_compat true
+
+# Declarar que este módulo gerencia a desmontagem do kernel e a desabilita
+ksud module config set manage.kernel_umount false
+
+# Remover gerenciamento de recurso (o módulo não controla mais este recurso)
+ksud module config delete manage.su_compat
+```
+
+**Como funciona:**
+- A presença de uma chave `manage.<feature>` indica que o módulo está gerenciando esse recurso
+- O valor indica o estado desejado: `true`/`1` para habilitado, `false`/`0` (ou qualquer outro valor) para desabilitado
+- Para parar de gerenciar um recurso, exclua completamente a chave de configuração
+
+Os recursos gerenciados são expostos através da API de lista de módulos como um campo `managedFeatures` (string separada por vírgulas). Isso permite:
+- O gerenciador do KernelSU detectar quais módulos gerenciam quais recursos do KernelSU
+- Prevenção de conflitos quando vários módulos tentam gerenciar o mesmo recurso
+- Melhor coordenação entre módulos e funcionalidade central do KernelSU
+
+::: warning APENAS RECURSOS SUPORTADOS
+Use apenas os nomes de recursos predefinidos listados acima (`su_compat`, `kernel_umount`, `enhanced_security`). Eles correspondem aos recursos internos reais do KernelSU. Usar outros nomes de recursos não causará erros, mas não terá nenhum propósito funcional.
 :::
 
 ## BusyBox

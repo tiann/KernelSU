@@ -58,7 +58,7 @@ ksud module config clear --temp
 Hệ thống cấu hình áp dụng các giới hạn sau:
 
 - **Độ dài key tối đa**: 256 byte
-- **Độ dài giá trị tối đa**: 256 byte
+- **Độ dài giá trị tối đa**: 1MB (1048576 byte)
 - **Số lượng mục cấu hình tối đa**: 32 mỗi module
 - Key không được chứa ký tự điều khiển, dòng mới hoặc dấu phân tách đường dẫn (`/` hoặc `\`)
 - Giá trị không được chứa ký tự điều khiển (ngoại trừ tab `\t`)
@@ -83,6 +83,58 @@ Hệ thống cấu hình lý tưởng cho:
 - Sử dụng cấu hình tạm thời cho trạng thái runtime hoặc cờ tính năng nên được đặt lại khi khởi động
 - Xác thực giá trị cấu hình trong script của bạn trước khi sử dụng chúng
 - Sử dụng lệnh `ksud module config list` để gỡ lỗi các vấn đề cấu hình
+:::
+
+### Tính năng Nâng cao
+
+Hệ thống cấu hình mô-đun cung cấp các khóa cấu hình đặc biệt cho các trường hợp sử dụng nâng cao:
+
+#### Ghi đè Mô tả Mô-đun
+
+Bạn có thể ghi đè động trường `description` từ `module.prop` bằng cách đặt khóa cấu hình `override.description`:
+
+```bash
+# Ghi đè mô tả mô-đun
+ksud module config set override.description "Mô tả tùy chỉnh được hiển thị trong trình quản lý"
+```
+
+Khi lấy danh sách mô-đun, nếu cấu hình `override.description` tồn tại, nó sẽ thay thế mô tả gốc từ `module.prop`. Điều này hữu ích cho:
+- Hiển thị thông tin trạng thái động trong mô tả mô-đun
+- Hiển thị chi tiết cấu hình runtime cho người dùng
+- Cập nhật mô tả dựa trên trạng thái mô-đun mà không cần cài đặt lại
+
+#### Khai báo Tính năng được Quản lý
+
+Các mô-đun có thể khai báo tính năng KernelSU nào mà chúng quản lý bằng cách sử dụng mẫu cấu hình `manage.<feature>`. Các tính năng được hỗ trợ tương ứng với enum nội bộ `FeatureId` của KernelSU:
+
+**Tính năng được Hỗ trợ:**
+- `su_compat` - Chế độ tương thích SU
+- `kernel_umount` - Tự động unmount kernel
+- `enhanced_security` - Chế độ bảo mật nâng cao
+
+```bash
+# Khai báo rằng mô-đun này quản lý khả năng tương thích SU và bật nó
+ksud module config set manage.su_compat true
+
+# Khai báo rằng mô-đun này quản lý unmount kernel và tắt nó
+ksud module config set manage.kernel_umount false
+
+# Xóa quản lý tính năng (mô-đun không còn kiểm soát tính năng này)
+ksud module config delete manage.su_compat
+```
+
+**Cách hoạt động:**
+- Sự hiện diện của khóa `manage.<feature>` cho biết mô-đun đang quản lý tính năng đó
+- Giá trị cho biết trạng thái mong muốn: `true`/`1` để bật, `false`/`0` (hoặc bất kỳ giá trị nào khác) để tắt
+- Để ngừng quản lý một tính năng, xóa hoàn toàn khóa cấu hình
+
+Các tính năng được quản lý được hiển thị thông qua API danh sách mô-đun dưới dạng trường `managedFeatures` (chuỗi phân tách bằng dấu phẩy). Điều này cho phép:
+- Trình quản lý KernelSU phát hiện mô-đun nào quản lý tính năng KernelSU nào
+- Ngăn chặn xung đột khi nhiều mô-đun cố gắng quản lý cùng một tính năng
+- Phối hợp tốt hơn giữa các mô-đun và chức năng cốt lõi của KernelSU
+
+::: warning CHỈ CÁC TÍNH NĂNG ĐƯỢC HỖ TRỢ
+Chỉ sử dụng các tên tính năng được xác định trước được liệt kê ở trên (`su_compat`, `kernel_umount`, `enhanced_security`). Chúng tương ứng với các tính năng nội bộ thực tế của KernelSU. Sử dụng các tên tính năng khác sẽ không gây lỗi nhưng không có mục đích chức năng nào.
 :::
 
 ## Busybox
