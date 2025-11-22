@@ -1,4 +1,4 @@
-use anyhow::{Ok, Result};
+use anyhow::{Context, Ok, Result};
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -308,8 +308,11 @@ enum ModuleConfigCmd {
     Set {
         /// config key
         key: String,
-        /// config value
-        value: String,
+        /// config value (omit to read from stdin)
+        value: Option<String>,
+        /// read value from stdin (default if value not provided)
+        #[arg(long)]
+        stdin: bool,
         /// use temporary config (cleared on reboot)
         #[arg(short, long)]
         temp: bool,
@@ -501,17 +504,32 @@ pub fn run() -> Result<()> {
                                 None => anyhow::bail!("Key '{key}' not found"),
                             }
                         }
-                        ModuleConfigCmd::Set { key, value, temp } => {
-                            // Validate input at CLI layer for better user experience
+                        ModuleConfigCmd::Set { key, value, stdin, temp } => {
+                            // Validate key at CLI layer for better user experience
                             module_config::validate_config_key(&key)?;
-                            module_config::validate_config_value(&value)?;
+
+                            // Read value from stdin or argument
+                            let value_str = match value {
+                                Some(v) if !stdin => v,
+                                _ => {
+                                    // Read from stdin
+                                    use std::io::Read;
+                                    let mut buffer = String::new();
+                                    std::io::stdin().read_to_string(&mut buffer)
+                                        .context("Failed to read from stdin")?;
+                                    buffer
+                                }
+                            };
+
+                            // Validate value
+                            module_config::validate_config_value(&value_str)?;
 
                             let config_type = if temp {
                                 module_config::ConfigType::Temp
                             } else {
                                 module_config::ConfigType::Persist
                             };
-                            module_config::set_config_value(&module_id, &key, &value, config_type)
+                            module_config::set_config_value(&module_id, &key, &value_str, config_type)
                         }
                         ModuleConfigCmd::List => {
                             let config = module_config::merge_configs(&module_id)?;

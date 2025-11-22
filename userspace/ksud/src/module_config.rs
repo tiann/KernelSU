@@ -40,7 +40,10 @@ pub fn parse_bool_config(value: &str) -> bool {
 }
 
 /// Validate config key
-/// Rejects keys with control characters, newlines, or excessive length
+/// Uses the same validation rules as module_id: ^[a-zA-Z][a-zA-Z0-9._-]+$
+/// - Must start with a letter (a-zA-Z)
+/// - Followed by one or more alphanumeric, dot, underscore, or hyphen characters
+/// - Minimum length: 2 characters
 pub fn validate_config_key(key: &str) -> Result<()> {
     if key.is_empty() {
         bail!("Config key cannot be empty");
@@ -54,27 +57,21 @@ pub fn validate_config_key(key: &str) -> Result<()> {
         );
     }
 
-    // Check for control characters and newlines
-    for ch in key.chars() {
-        if ch.is_control() {
-            bail!(
-                "Config key contains control character: {:?} (U+{:04X})",
-                ch,
-                ch as u32
-            );
-        }
-    }
-
-    // Reject keys with path separators to prevent path traversal
-    if key.contains('/') || key.contains('\\') {
-        bail!("Config key cannot contain path separators");
+    // Use same pattern as module_id for consistency
+    let re = regex_lite::Regex::new(r"^[a-zA-Z][a-zA-Z0-9._-]+$")?;
+    if !re.is_match(key) {
+        bail!(
+            "Invalid config key: '{}'. Must match /^[a-zA-Z][a-zA-Z0-9._-]+$/",
+            key
+        );
     }
 
     Ok(())
 }
 
 /// Validate config value
-/// Rejects values with control characters (except tab), newlines, or excessive length
+/// Only enforces maximum length - no character restrictions
+/// Values are stored in binary format with length prefix, so any UTF-8 data is safe
 pub fn validate_config_value(value: &str) -> Result<()> {
     if value.len() > MAX_CONFIG_VALUE_LEN {
         bail!(
@@ -84,17 +81,7 @@ pub fn validate_config_value(value: &str) -> Result<()> {
         );
     }
 
-    // Check for control characters (allow tab but reject newlines and others)
-    for ch in value.chars() {
-        if ch.is_control() && ch != '\t' {
-            bail!(
-                "Config value contains invalid control character: {:?} (U+{:04X})",
-                ch,
-                ch as u32
-            );
-        }
-    }
-
+    // No character restrictions - binary storage format handles all UTF-8 safely
     Ok(())
 }
 
