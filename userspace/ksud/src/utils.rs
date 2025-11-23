@@ -17,6 +17,7 @@ use std::os::unix::prelude::PermissionsExt;
 
 use std::path::PathBuf;
 
+use crate::boot_patch::BootRestoreArgs;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process,
@@ -217,7 +218,12 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     std::fs::remove_file(defs::DAEMON_PATH).ok();
     std::fs::remove_dir_all(defs::MODULE_DIR).ok();
     println!("- Restore boot image..");
-    boot_patch::restore(None, magiskboot_path, true)?;
+    boot_patch::restore(BootRestoreArgs {
+        boot: None,
+        flash: true,
+        magiskboot: magiskboot_path,
+        out_name: None,
+    })?;
     println!("- Uninstall KernelSU manager..");
     Command::new("pm")
         .args(["uninstall", "me.weishu.kernelsu"])
