@@ -308,29 +308,30 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
         println!("- Backup info is absent!");
     }
 
-    let new_boot = if let Some(new_boot) = new_boot {
-        new_boot
-    } else {
-        // remove kernelsu.ko
-        do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm kernelsu.ko")?;
+    let new_boot = new_boot.map_or_else(
+        || -> Result<_> {
+            // remove kernelsu.ko
+            do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm kernelsu.ko")?;
 
-        // if init.real exists, restore it
-        let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init.real").is_ok();
-        if status {
-            do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init.real init")?;
-        }
+            // if init.real exists, restore it
+            let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init.real").is_ok();
+            if status {
+                do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init.real init")?;
+            }
 
-        println!("- Repacking boot image");
-        let status = Command::new(&magiskboot)
-            .current_dir(workdir)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .arg("repack")
-            .arg(&bootimage)
-            .status()?;
-        ensure!(status.success(), "magiskboot repack failed");
-        workdir.join("new-boot.img")
-    };
+            println!("- Repacking boot image");
+            let status = Command::new(&magiskboot)
+                .current_dir(workdir)
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .arg("repack")
+                .arg(&bootimage)
+                .status()?;
+            ensure!(status.success(), "magiskboot repack failed");
+            Ok(workdir.join("new-boot.img"))
+        },
+        Ok,
+    )?;
 
     if image.is_some() {
         // if image is specified, write to output file
@@ -451,31 +452,32 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         // extract magiskboot
         let magiskboot = find_magiskboot(magiskboot_path, workdir)?;
 
-        let kmi = if let Some(kmi) = kmi {
-            kmi
-        } else {
-            match get_current_kmi() {
-                Ok(value) => value,
-                Err(e) => {
-                    println!("- {e}");
-                    if let Some(image_path) = &image {
-                        println!(
-                            "- Trying to auto detect KMI version for {}",
-                            image_path.display()
-                        );
-                        parse_kmi_from_boot(&magiskboot, image_path, tmpdir.path())?
-                    } else if let Some(kernel_path) = &kernel {
-                        println!(
-                            "- Trying to auto detect KMI version for {}",
-                            kernel_path.display()
-                        );
-                        parse_kmi_from_kernel(kernel_path, tmpdir.path())?
-                    } else {
-                        String::new()
+        let kmi = kmi.map_or_else(
+            || -> Result<_> {
+                Ok(match get_current_kmi() {
+                    Ok(value) => value,
+                    Err(e) => {
+                        println!("- {e}");
+                        if let Some(image_path) = &image {
+                            println!(
+                                "- Trying to auto detect KMI version for {}",
+                                image_path.display()
+                            );
+                            parse_kmi_from_boot(&magiskboot, image_path, tmpdir.path())?
+                        } else if let Some(kernel_path) = &kernel {
+                            println!(
+                                "- Trying to auto detect KMI version for {}",
+                                kernel_path.display()
+                            );
+                            parse_kmi_from_kernel(kernel_path, tmpdir.path())?
+                        } else {
+                            String::new()
+                        }
                     }
-                }
-            }
-        };
+                })
+            },
+            Ok,
+        )?;
 
         let (bootimage, bootdevice) =
             find_boot_image(&image, &kmi, ota, is_replace_kernel, workdir, &partition)?;
