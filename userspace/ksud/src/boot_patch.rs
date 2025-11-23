@@ -365,47 +365,47 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
 pub struct BootPatchArgs {
     /// boot image path, if not specified, will try to find the boot image automatically
     #[arg(short, long)]
-    boot: Option<PathBuf>,
+    pub boot: Option<PathBuf>,
 
     /// kernel image path to replace
     #[arg(short, long)]
-    kernel: Option<PathBuf>,
+    pub kernel: Option<PathBuf>,
 
     /// LKM module path to replace, if not specified, will use the builtin one
     #[arg(short, long)]
-    module: Option<PathBuf>,
+    pub module: Option<PathBuf>,
 
     /// init to be replaced
     #[arg(short, long, requires("module"))]
-    init: Option<PathBuf>,
+    pub init: Option<PathBuf>,
 
     /// will use another slot when boot image is not specified
     #[arg(short = 'u', long, default_value = "false")]
-    ota: bool,
+    pub ota: bool,
 
     /// Flash it to boot partition after patch
     #[arg(short, long, default_value = "false")]
-    flash: bool,
+    pub flash: bool,
 
     /// output path, if not specified, will use current directory
     #[arg(short, long, default_value = None)]
-    out: Option<PathBuf>,
+    pub out: Option<PathBuf>,
 
     /// magiskboot path, if not specified, will search from $PATH
     #[arg(long, default_value = None)]
-    magiskboot: Option<PathBuf>,
+    pub magiskboot: Option<PathBuf>,
 
     /// KMI version, if specified, will use the specified KMI
     #[arg(long, default_value = None)]
-    kmi: Option<String>,
+    pub kmi: Option<String>,
 
     /// target partition override (init_boot | boot | vendor_boot)
     #[arg(long, default_value = None)]
-    partition: Option<String>,
+    pub partition: Option<String>,
 
     /// File name of output boot image.
     #[arg(long, default_value = None)]
-    out_name: Option<String>,
+    pub out_name: Option<String>,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
