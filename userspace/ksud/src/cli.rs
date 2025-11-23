@@ -7,6 +7,7 @@ use android_logger::Config;
 #[cfg(target_os = "android")]
 use log::LevelFilter;
 
+use crate::boot_patch::BootPatchArgs;
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
 
 /// KernelSU userspace cli
@@ -66,47 +67,7 @@ enum Commands {
     },
 
     /// Patch boot or init_boot images to apply KernelSU
-    BootPatch {
-        /// boot image path, if not specified, will try to find the boot image automatically
-        #[arg(short, long)]
-        boot: Option<PathBuf>,
-
-        /// kernel image path to replace
-        #[arg(short, long)]
-        kernel: Option<PathBuf>,
-
-        /// LKM module path to replace, if not specified, will use the builtin one
-        #[arg(short, long)]
-        module: Option<PathBuf>,
-
-        /// init to be replaced
-        #[arg(short, long, requires("module"))]
-        init: Option<PathBuf>,
-
-        /// will use another slot when boot image is not specified
-        #[arg(short = 'u', long, default_value = "false")]
-        ota: bool,
-
-        /// Flash it to boot partition after patch
-        #[arg(short, long, default_value = "false")]
-        flash: bool,
-
-        /// output path, if not specified, will use current directory
-        #[arg(short, long, default_value = None)]
-        out: Option<PathBuf>,
-
-        /// magiskboot path, if not specified, will search from $PATH
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
-
-        /// KMI version, if specified, will use the specified KMI
-        #[arg(long, default_value = None)]
-        kmi: Option<String>,
-
-        /// target partition override (init_boot | boot | vendor_boot)
-        #[arg(long, default_value = None)]
-        partition: Option<String>,
-    },
+    BootPatch(BootPatchArgs),
 
     /// Restore boot or init_boot images patched by KernelSU
     BootRestore {
@@ -628,20 +589,7 @@ pub fn run() -> Result<()> {
             },
         },
 
-        Commands::BootPatch {
-            boot,
-            init,
-            kernel,
-            module,
-            ota,
-            flash,
-            out,
-            magiskboot,
-            kmi,
-            partition,
-        } => crate::boot_patch::patch(
-            boot, kernel, module, init, ota, flash, out, magiskboot, kmi, partition,
-        ),
+        Commands::BootPatch(boot_patch) => crate::boot_patch::patch(boot_patch),
 
         Commands::BootInfo { command } => match command {
             BootInfo::CurrentKmi => {
