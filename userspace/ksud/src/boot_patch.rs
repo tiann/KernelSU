@@ -336,13 +336,10 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
         // if image is specified, write to output file
         let output_dir = std::env::current_dir()?;
 
-        let name = out_name.map_or_else(
-            || {
-                let now = chrono::Utc::now();
-                format!("kernelsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
-            },
-            |name| name,
-        );
+        let name = out_name.unwrap_or_else(|| {
+            let now = chrono::Utc::now();
+            format!("kernelsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
+        });
 
         let output_image = output_dir.join(name);
 
@@ -579,13 +576,10 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         if patch_file {
             // if image is specified, write to output file
             let output_dir = out.unwrap_or(std::env::current_dir()?);
-            let name = out_name.map_or_else(
-                || {
-                    let now = chrono::Utc::now();
-                    format!("kernelsu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
-                },
-                |name| name,
-            );
+            let name = out_name.unwrap_or_else(|| {
+                let now = chrono::Utc::now();
+                format!("kernelsu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
+            });
             let output_image = output_dir.join(name);
 
             if std::fs::rename(&new_boot, &output_image).is_err() {
