@@ -14,7 +14,6 @@ use anyhow::ensure;
 use regex_lite::Regex;
 use which::which;
 
-use crate::defs;
 use crate::defs::BACKUP_FILENAME;
 use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
 use crate::{assets, utils};
@@ -84,7 +83,7 @@ fn parse_kmi_from_modules() -> Result<String> {
             return parse_kmi(&line);
         }
     }
-    anyhow::bail!("Parse KMI from modules failed")
+    bail!("Parse KMI from modules failed")
 }
 
 #[cfg(target_os = "android")]
@@ -145,10 +144,7 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
         .context("Failed to execute magiskboot command")?;
 
     if !status.success() {
-        bail!(
-            "magiskboot unpack failed with status: {:?}",
-            status.code().unwrap()
-        );
+        bail!("magiskboot unpack failed with status: {:?}", status);
     }
 
     parse_kmi_from_kernel(&image_path, workdir)
@@ -223,7 +219,7 @@ pub struct BootRestoreArgs {
     #[arg(long, default_value = None)]
     pub magiskboot: Option<PathBuf>,
 
-    /// File name of output boot image.
+    /// File name of the output.
     #[arg(long, default_value = None)]
     pub out_name: Option<String>,
 }
@@ -336,12 +332,10 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     if image.is_some() {
         // if image is specified, write to output file
         let output_dir = std::env::current_dir()?;
-
         let name = out_name.unwrap_or_else(|| {
             let now = chrono::Utc::now();
             format!("kernelsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
         });
-
         let output_image = output_dir.join(name);
 
         if from_backup || std::fs::rename(&new_boot, &output_image).is_err() {
@@ -404,7 +398,7 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = None)]
     pub partition: Option<String>,
 
-    /// File name of output boot image.
+    /// File name of the output.
     #[arg(long, default_value = None)]
     pub out_name: Option<String>,
 }
@@ -583,7 +577,6 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 format!("kernelsu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
             });
             let output_image = output_dir.join(name);
-
             if std::fs::rename(&new_boot, &output_image).is_err() {
                 std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
             }
@@ -606,7 +599,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
     let result = inner();
     if let Err(ref e) = result {
-        println!("- Install Error: {e}");
+        println!("- Patch Error: {e}");
     }
     result
 }
@@ -656,7 +649,7 @@ fn do_backup(magiskboot: &Path, workdir: &Path, cpio_path: &Path, image: &Path) 
 fn clean_backup(sha1: &str) -> Result<()> {
     println!("- Clean up backup");
     let backup_name = format!("{KSU_BACKUP_FILE_PREFIX}{sha1}");
-    let dir = std::fs::read_dir(defs::KSU_BACKUP_DIR)?;
+    let dir = std::fs::read_dir(KSU_BACKUP_DIR)?;
     for entry in dir.flatten() {
         let path = entry.path();
         if !path.is_file() {
@@ -808,7 +801,7 @@ pub fn list_available_partitions() -> Vec<String> {
     candidates
         .into_iter()
         .filter(|name| Path::new(&format!("/dev/block/by-name/{name}{slot_suffix}")).exists())
-        .map(std::string::ToString::to_string)
+        .map(ToString::to_string)
         .collect()
 }
 
@@ -837,7 +830,7 @@ fn post_ota() -> Result<()> {
         .arg(format!("set-active-boot-slot {target_slot}"))
         .status()?;
 
-    let post_fs_data = std::path::Path::new(ADB_DIR).join("post-fs-data.d");
+    let post_fs_data = Path::new(ADB_DIR).join("post-fs-data.d");
     utils::ensure_dir_exists(&post_fs_data)?;
     let post_ota_sh = post_fs_data.join("post_ota.sh");
 
