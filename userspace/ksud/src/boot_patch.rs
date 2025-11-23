@@ -209,11 +209,33 @@ fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     Ok(())
 }
 
-pub fn restore(
-    image: Option<PathBuf>,
-    magiskboot_path: Option<PathBuf>,
-    flash: bool,
-) -> Result<()> {
+#[derive(clap::Args, Debug)]
+pub struct BootRestoreArgs {
+    /// boot image path, if not specified, will try to find the boot image automatically
+    #[arg(short, long)]
+    pub boot: Option<PathBuf>,
+
+    /// Flash it to boot partition after restore
+    #[arg(short, long, default_value = "false")]
+    pub flash: bool,
+
+    /// magiskboot path, if not specified, will search from $PATH
+    #[arg(long, default_value = None)]
+    pub magiskboot: Option<PathBuf>,
+
+    /// File name of output boot image.
+    #[arg(long, default_value = None)]
+    pub out_name: Option<String>,
+}
+
+pub fn restore(args: BootRestoreArgs) -> Result<()> {
+    let BootRestoreArgs {
+        boot: image,
+        flash,
+        magiskboot: magiskboot_path,
+        out_name,
+    } = args;
+
     let tmpdir = tempfile::Builder::new()
         .prefix("KernelSU")
         .tempdir()
@@ -313,11 +335,16 @@ pub fn restore(
     if image.is_some() {
         // if image is specified, write to output file
         let output_dir = std::env::current_dir()?;
-        let now = chrono::Utc::now();
-        let output_image = output_dir.join(format!(
-            "kernelsu_restore_{}.img",
-            now.format("%Y%m%d_%H%M%S")
-        ));
+
+        let name = out_name.map_or_else(
+            || {
+                let now = chrono::Utc::now();
+                format!("kernelsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
+            },
+            |name| name,
+        );
+
+        let output_image = output_dir.join(name);
 
         if from_backup || std::fs::rename(&new_boot, &output_image).is_err() {
             std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
@@ -378,6 +405,10 @@ pub struct BootPatchArgs {
     /// target partition override (init_boot | boot | vendor_boot)
     #[arg(long, default_value = None)]
     partition: Option<String>,
+
+    /// File name of output boot image.
+    #[arg(long, default_value = None)]
+    out_name: Option<String>,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -393,6 +424,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             magiskboot: magiskboot_path,
             kmi,
             partition,
+            out_name,
         } = args;
 
         println!(include_str!("banner"));
@@ -547,11 +579,14 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         if patch_file {
             // if image is specified, write to output file
             let output_dir = out.unwrap_or(std::env::current_dir()?);
-            let now = chrono::Utc::now();
-            let output_image = output_dir.join(format!(
-                "kernelsu_patched_{}.img",
-                now.format("%Y%m%d_%H%M%S")
-            ));
+            let name = out_name.map_or_else(
+                || {
+                    let now = chrono::Utc::now();
+                    format!("kernelsu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
+                },
+                |name| name,
+            );
+            let output_image = output_dir.join(name);
 
             if std::fs::rename(&new_boot, &output_image).is_err() {
                 std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
