@@ -14,7 +14,6 @@ use anyhow::ensure;
 use regex_lite::Regex;
 use which::which;
 
-use crate::defs;
 use crate::defs::BACKUP_FILENAME;
 use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
 use crate::{assets, utils};
@@ -84,7 +83,7 @@ fn parse_kmi_from_modules() -> Result<String> {
             return parse_kmi(&line);
         }
     }
-    anyhow::bail!("Parse KMI from modules failed")
+    bail!("Parse KMI from modules failed")
 }
 
 #[cfg(target_os = "android")]
@@ -145,10 +144,7 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
         .context("Failed to execute magiskboot command")?;
 
     if !status.success() {
-        bail!(
-            "magiskboot unpack failed with status: {:?}",
-            status.code().unwrap()
-        );
+        bail!("magiskboot unpack failed with status: {:?}", status);
     }
 
     parse_kmi_from_kernel(&image_path, workdir)
@@ -209,11 +205,33 @@ fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     Ok(())
 }
 
-pub fn restore(
-    image: Option<PathBuf>,
-    magiskboot_path: Option<PathBuf>,
-    flash: bool,
-) -> Result<()> {
+#[derive(clap::Args, Debug)]
+pub struct BootRestoreArgs {
+    /// boot image path, if not specified, will try to find the boot image automatically
+    #[arg(short, long)]
+    pub boot: Option<PathBuf>,
+
+    /// Flash it to boot partition after restore
+    #[arg(short, long, default_value = "false")]
+    pub flash: bool,
+
+    /// magiskboot path, if not specified, will search from $PATH
+    #[arg(long, default_value = None)]
+    pub magiskboot: Option<PathBuf>,
+
+    /// File name of the output.
+    #[arg(long, default_value = None)]
+    pub out_name: Option<String>,
+}
+
+pub fn restore(args: BootRestoreArgs) -> Result<()> {
+    let BootRestoreArgs {
+        boot: image,
+        flash,
+        magiskboot: magiskboot_path,
+        out_name,
+    } = args;
+
     let tmpdir = tempfile::Builder::new()
         .prefix("KernelSU")
         .tempdir()
@@ -286,38 +304,39 @@ pub fn restore(
         println!("- Backup info is absent!");
     }
 
-    if new_boot.is_none() {
-        // remove kernelsu.ko
-        do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm kernelsu.ko")?;
+    let new_boot = new_boot.map_or_else(
+        || -> Result<_> {
+            // remove kernelsu.ko
+            do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm kernelsu.ko")?;
 
-        // if init.real exists, restore it
-        let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init.real").is_ok();
-        if status {
-            do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init.real init")?;
-        }
+            // if init.real exists, restore it
+            let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init.real").is_ok();
+            if status {
+                do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init.real init")?;
+            }
 
-        println!("- Repacking boot image");
-        let status = Command::new(&magiskboot)
-            .current_dir(workdir)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .arg("repack")
-            .arg(&bootimage)
-            .status()?;
-        ensure!(status.success(), "magiskboot repack failed");
-        new_boot = Some(workdir.join("new-boot.img"));
-    }
-
-    let new_boot = new_boot.unwrap();
+            println!("- Repacking boot image");
+            let status = Command::new(&magiskboot)
+                .current_dir(workdir)
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .arg("repack")
+                .arg(&bootimage)
+                .status()?;
+            ensure!(status.success(), "magiskboot repack failed");
+            Ok(workdir.join("new-boot.img"))
+        },
+        Ok,
+    )?;
 
     if image.is_some() {
         // if image is specified, write to output file
         let output_dir = std::env::current_dir()?;
-        let now = chrono::Utc::now();
-        let output_image = output_dir.join(format!(
-            "kernelsu_restore_{}.img",
-            now.format("%Y%m%d_%H%M%S")
-        ));
+        let name = out_name.unwrap_or_else(|| {
+            let now = chrono::Utc::now();
+            format!("kernelsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
+        });
+        let output_image = output_dir.join(name);
 
         if from_backup || std::fs::rename(&new_boot, &output_image).is_err() {
             std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
@@ -337,217 +356,252 @@ pub fn restore(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn patch(
-    image: Option<PathBuf>,
-    kernel: Option<PathBuf>,
-    kmod: Option<PathBuf>,
-    init: Option<PathBuf>,
-    ota: bool,
-    flash: bool,
-    out: Option<PathBuf>,
-    magiskboot: Option<PathBuf>,
-    kmi: Option<String>,
-    partition: Option<String>,
-) -> Result<()> {
-    let result = do_patch(
-        image, kernel, kmod, init, ota, flash, out, magiskboot, kmi, partition,
-    );
-    if let Err(ref e) = result {
-        println!("- Install Error: {e}");
-    }
-    result
+#[derive(clap::Args, Debug)]
+pub struct BootPatchArgs {
+    /// boot image path, if not specified, will try to find the boot image automatically
+    #[arg(short, long)]
+    pub boot: Option<PathBuf>,
+
+    /// kernel image path to replace
+    #[arg(short, long)]
+    pub kernel: Option<PathBuf>,
+
+    /// LKM module path to replace, if not specified, will use the builtin one
+    #[arg(short, long)]
+    pub module: Option<PathBuf>,
+
+    /// init to be replaced
+    #[arg(short, long, requires("module"))]
+    pub init: Option<PathBuf>,
+
+    /// will use another slot when boot image is not specified
+    #[arg(short = 'u', long, default_value = "false")]
+    pub ota: bool,
+
+    /// Flash it to boot partition after patch
+    #[arg(short, long, default_value = "false")]
+    pub flash: bool,
+
+    /// output path, if not specified, will use current directory
+    #[arg(short, long, default_value = None)]
+    pub out: Option<PathBuf>,
+
+    /// magiskboot path, if not specified, will search from $PATH
+    #[arg(long, default_value = None)]
+    pub magiskboot: Option<PathBuf>,
+
+    /// KMI version, if specified, will use the specified KMI
+    #[arg(long, default_value = None)]
+    pub kmi: Option<String>,
+
+    /// target partition override (init_boot | boot | vendor_boot)
+    #[arg(long, default_value = None)]
+    pub partition: Option<String>,
+
+    /// File name of the output.
+    #[arg(long, default_value = None)]
+    pub out_name: Option<String>,
 }
 
-#[allow(clippy::too_many_arguments, clippy::needless_pass_by_value)]
-fn do_patch(
-    image: Option<PathBuf>,
-    kernel: Option<PathBuf>,
-    kmod: Option<PathBuf>,
-    init: Option<PathBuf>,
-    ota: bool,
-    flash: bool,
-    out: Option<PathBuf>,
-    magiskboot_path: Option<PathBuf>,
-    kmi: Option<String>,
-    partition: Option<String>,
-) -> Result<()> {
-    println!(include_str!("banner"));
+pub fn patch(args: BootPatchArgs) -> Result<()> {
+    let inner = move || {
+        let BootPatchArgs {
+            boot: image,
+            init,
+            kernel,
+            module: kmod,
+            ota,
+            flash,
+            out,
+            magiskboot: magiskboot_path,
+            kmi,
+            partition,
+            out_name,
+        } = args;
 
-    let patch_file = image.is_some();
+        println!(include_str!("banner"));
 
-    #[cfg(target_os = "android")]
-    if !patch_file {
-        ensure_gki_kernel()?;
-    }
+        let patch_file = image.is_some();
 
-    let is_replace_kernel = kernel.is_some();
+        #[cfg(target_os = "android")]
+        if !patch_file {
+            ensure_gki_kernel()?;
+        }
 
-    if is_replace_kernel {
-        ensure!(
-            init.is_none() && kmod.is_none(),
-            "init and module must not be specified."
-        );
-    }
+        let is_replace_kernel = kernel.is_some();
 
-    let tmpdir = tempfile::Builder::new()
-        .prefix("KernelSU")
-        .tempdir()
-        .context("create temp dir failed")?;
-    let workdir = tmpdir.path();
+        if is_replace_kernel {
+            ensure!(
+                init.is_none() && kmod.is_none(),
+                "init and module must not be specified."
+            );
+        }
 
-    // extract magiskboot
-    let magiskboot = find_magiskboot(magiskboot_path, workdir)?;
+        let tmpdir = tempfile::Builder::new()
+            .prefix("KernelSU")
+            .tempdir()
+            .context("create temp dir failed")?;
+        let workdir = tmpdir.path();
 
-    let kmi = if let Some(kmi) = kmi {
-        kmi
-    } else {
-        match get_current_kmi() {
-            Ok(value) => value,
-            Err(e) => {
-                println!("- {e}");
-                if let Some(image_path) = &image {
-                    println!(
-                        "- Trying to auto detect KMI version for {}",
-                        image_path.to_str().unwrap()
-                    );
-                    parse_kmi_from_boot(&magiskboot, image_path, tmpdir.path())?
-                } else if let Some(kernel_path) = &kernel {
-                    println!(
-                        "- Trying to auto detect KMI version for {}",
-                        kernel_path.to_str().unwrap()
-                    );
-                    parse_kmi_from_kernel(kernel_path, tmpdir.path())?
-                } else {
-                    String::new()
-                }
+        // extract magiskboot
+        let magiskboot = find_magiskboot(magiskboot_path, workdir)?;
+
+        let kmi = kmi.map_or_else(
+            || -> Result<_> {
+                Ok(match get_current_kmi() {
+                    Ok(value) => value,
+                    Err(e) => {
+                        println!("- {e}");
+                        if let Some(image_path) = &image {
+                            println!(
+                                "- Trying to auto detect KMI version for {}",
+                                image_path.display()
+                            );
+                            parse_kmi_from_boot(&magiskboot, image_path, tmpdir.path())?
+                        } else if let Some(kernel_path) = &kernel {
+                            println!(
+                                "- Trying to auto detect KMI version for {}",
+                                kernel_path.display()
+                            );
+                            parse_kmi_from_kernel(kernel_path, tmpdir.path())?
+                        } else {
+                            String::new()
+                        }
+                    }
+                })
+            },
+            Ok,
+        )?;
+
+        let (bootimage, bootdevice) =
+            find_boot_image(&image, &kmi, ota, is_replace_kernel, workdir, &partition)?;
+
+        let bootimage = bootimage.as_path();
+
+        // try extract magiskboot/bootctl
+        let _ = assets::ensure_binaries(false);
+
+        if let Some(kernel) = kernel {
+            std::fs::copy(kernel, workdir.join("kernel")).context("copy kernel from failed")?;
+        }
+
+        println!("- Preparing assets");
+
+        let kmod_file = workdir.join("kernelsu.ko");
+        if let Some(kmod) = kmod {
+            std::fs::copy(kmod, kmod_file).context("copy kernel module failed")?;
+        } else {
+            // If kmod is not specified, extract from assets
+            println!("- KMI: {kmi}");
+            let name = format!("{kmi}_kernelsu.ko");
+            assets::copy_assets_to_file(&name, kmod_file)
+                .with_context(|| format!("Failed to copy {name}"))?;
+        }
+
+        let init_file = workdir.join("init");
+        if let Some(init) = init {
+            std::fs::copy(init, init_file).context("copy init failed")?;
+        } else {
+            assets::copy_assets_to_file("ksuinit", init_file).context("copy ksuinit failed")?;
+        }
+
+        println!("- Unpacking boot image");
+        let status = Command::new(&magiskboot)
+            .current_dir(workdir)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .arg("unpack")
+            .arg(bootimage)
+            .status()?;
+        ensure!(status.success(), "magiskboot unpack failed");
+
+        let mut ramdisk = workdir.join("ramdisk.cpio");
+        if !ramdisk.exists() {
+            ramdisk = workdir.join("vendor_ramdisk").join("init_boot.cpio");
+        }
+        if !ramdisk.exists() {
+            ramdisk = workdir.join("vendor_ramdisk").join("ramdisk.cpio");
+        }
+        if !ramdisk.exists() {
+            println!("- No ramdisk, create by default");
+            ramdisk = "ramdisk.cpio".into();
+        }
+        let ramdisk = ramdisk.as_path();
+        let is_magisk_patched = is_magisk_patched(&magiskboot, workdir, ramdisk)?;
+        ensure!(!is_magisk_patched, "Cannot work with Magisk patched image");
+
+        println!("- Adding KernelSU LKM");
+        let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workdir, ramdisk)?;
+
+        let need_backup = if is_kernelsu_patched {
+            false
+        } else {
+            // kernelsu.ko is not exist, backup init if necessary
+            let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init");
+            if status.is_ok() {
+                do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init init.real")?;
+            }
+            flash
+        };
+
+        do_cpio_cmd(&magiskboot, workdir, ramdisk, "add 0755 init init")?;
+        do_cpio_cmd(
+            &magiskboot,
+            workdir,
+            ramdisk,
+            "add 0755 kernelsu.ko kernelsu.ko",
+        )?;
+
+        #[cfg(target_os = "android")]
+        if need_backup && let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
+            println!("- Backup stock image failed: {e}");
+        }
+
+        println!("- Repacking boot image");
+        // magiskboot repack boot.img
+        let status = Command::new(&magiskboot)
+            .current_dir(workdir)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .arg("repack")
+            .arg(bootimage)
+            .status()?;
+        ensure!(status.success(), "magiskboot repack failed");
+        let new_boot = workdir.join("new-boot.img");
+
+        if patch_file {
+            // if image is specified, write to output file
+            let output_dir = out.unwrap_or(std::env::current_dir()?);
+            let name = out_name.unwrap_or_else(|| {
+                let now = chrono::Utc::now();
+                format!("kernelsu_patched_{}.img", now.format("%Y%m%d_%H%M%S"))
+            });
+            let output_image = output_dir.join(name);
+            if std::fs::rename(&new_boot, &output_image).is_err() {
+                std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
+            }
+            println!("- Output file is written to");
+            println!("- {}", output_image.display().to_string().trim_matches('"'));
+        }
+
+        if flash {
+            println!("- Flashing new boot image");
+            flash_boot(&bootdevice, new_boot)?;
+
+            if ota {
+                post_ota()?;
             }
         }
+
+        println!("- Done!");
+        Ok(())
     };
 
-    let (bootimage, bootdevice) =
-        find_boot_image(&image, &kmi, ota, is_replace_kernel, workdir, &partition)?;
-
-    let bootimage = bootimage.as_path();
-
-    // try extract magiskboot/bootctl
-    let _ = assets::ensure_binaries(false);
-
-    if let Some(kernel) = kernel {
-        std::fs::copy(kernel, workdir.join("kernel")).context("copy kernel from failed")?;
+    let result = inner();
+    if let Err(ref e) = result {
+        println!("- Patch Error: {e}");
     }
-
-    println!("- Preparing assets");
-
-    let kmod_file = workdir.join("kernelsu.ko");
-    if let Some(kmod) = kmod {
-        std::fs::copy(kmod, kmod_file).context("copy kernel module failed")?;
-    } else {
-        // If kmod is not specified, extract from assets
-        println!("- KMI: {kmi}");
-        let name = format!("{kmi}_kernelsu.ko");
-        assets::copy_assets_to_file(&name, kmod_file)
-            .with_context(|| format!("Failed to copy {name}"))?;
-    }
-
-    let init_file = workdir.join("init");
-    if let Some(init) = init {
-        std::fs::copy(init, init_file).context("copy init failed")?;
-    } else {
-        assets::copy_assets_to_file("ksuinit", init_file).context("copy ksuinit failed")?;
-    }
-
-    println!("- Unpacking boot image");
-    let status = Command::new(&magiskboot)
-        .current_dir(workdir)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .arg("unpack")
-        .arg(bootimage)
-        .status()?;
-    ensure!(status.success(), "magiskboot unpack failed");
-
-    let mut ramdisk = workdir.join("ramdisk.cpio");
-    if !ramdisk.exists() {
-        ramdisk = workdir.join("vendor_ramdisk").join("init_boot.cpio");
-    }
-    if !ramdisk.exists() {
-        ramdisk = workdir.join("vendor_ramdisk").join("ramdisk.cpio");
-    }
-    if !ramdisk.exists() {
-        println!("- No ramdisk, create by default");
-        ramdisk = "ramdisk.cpio".into();
-    }
-    let ramdisk = ramdisk.as_path();
-    let is_magisk_patched = is_magisk_patched(&magiskboot, workdir, ramdisk)?;
-    ensure!(!is_magisk_patched, "Cannot work with Magisk patched image");
-
-    println!("- Adding KernelSU LKM");
-    let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workdir, ramdisk)?;
-
-    let need_backup = if is_kernelsu_patched {
-        false
-    } else {
-        // kernelsu.ko is not exist, backup init if necessary
-        let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init");
-        if status.is_ok() {
-            do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init init.real")?;
-        }
-        flash
-    };
-
-    do_cpio_cmd(&magiskboot, workdir, ramdisk, "add 0755 init init")?;
-    do_cpio_cmd(
-        &magiskboot,
-        workdir,
-        ramdisk,
-        "add 0755 kernelsu.ko kernelsu.ko",
-    )?;
-
-    #[cfg(target_os = "android")]
-    if need_backup && let Err(e) = do_backup(&magiskboot, workdir, ramdisk, bootimage) {
-        println!("- Backup stock image failed: {e}");
-    }
-
-    println!("- Repacking boot image");
-    // magiskboot repack boot.img
-    let status = Command::new(&magiskboot)
-        .current_dir(workdir)
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .arg("repack")
-        .arg(bootimage)
-        .status()?;
-    ensure!(status.success(), "magiskboot repack failed");
-    let new_boot = workdir.join("new-boot.img");
-
-    if patch_file {
-        // if image is specified, write to output file
-        let output_dir = out.unwrap_or(std::env::current_dir()?);
-        let now = chrono::Utc::now();
-        let output_image = output_dir.join(format!(
-            "kernelsu_patched_{}.img",
-            now.format("%Y%m%d_%H%M%S")
-        ));
-
-        if std::fs::rename(&new_boot, &output_image).is_err() {
-            std::fs::copy(&new_boot, &output_image).context("copy out new boot failed")?;
-        }
-        println!("- Output file is written to");
-        println!("- {}", output_image.display().to_string().trim_matches('"'));
-    }
-
-    if flash {
-        println!("- Flashing new boot image");
-        flash_boot(&bootdevice, new_boot)?;
-
-        if ota {
-            post_ota()?;
-        }
-    }
-
-    println!("- Done!");
-    Ok(())
+    result
 }
 
 #[cfg(target_os = "android")]
@@ -595,7 +649,7 @@ fn do_backup(magiskboot: &Path, workdir: &Path, cpio_path: &Path, image: &Path) 
 fn clean_backup(sha1: &str) -> Result<()> {
     println!("- Clean up backup");
     let backup_name = format!("{KSU_BACKUP_FILE_PREFIX}{sha1}");
-    let dir = std::fs::read_dir(defs::KSU_BACKUP_DIR)?;
+    let dir = std::fs::read_dir(KSU_BACKUP_DIR)?;
     for entry in dir.flatten() {
         let path = entry.path();
         if !path.is_file() {
@@ -747,7 +801,7 @@ pub fn list_available_partitions() -> Vec<String> {
     candidates
         .into_iter()
         .filter(|name| Path::new(&format!("/dev/block/by-name/{name}{slot_suffix}")).exists())
-        .map(std::string::ToString::to_string)
+        .map(ToString::to_string)
         .collect()
 }
 
@@ -776,7 +830,7 @@ fn post_ota() -> Result<()> {
         .arg(format!("set-active-boot-slot {target_slot}"))
         .status()?;
 
-    let post_fs_data = std::path::Path::new(ADB_DIR).join("post-fs-data.d");
+    let post_fs_data = Path::new(ADB_DIR).join("post-fs-data.d");
     utils::ensure_dir_exists(&post_fs_data)?;
     let post_ota_sh = post_fs_data.join("post_ota.sh");
 
