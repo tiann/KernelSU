@@ -18,16 +18,6 @@ updates:
       crates:
         patterns:
           - "*"
-  - package-ecosystem: cargo
-    directory: userspace/meta-overlayfs
-    schedule:
-      interval: weekly
-    allow:
-      - dependency-type: "all"
-    groups:
-      crates:
-        patterns:
-          - "*"
   - package-ecosystem: gradle
     directory: manager
     schedule:
