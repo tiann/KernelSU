@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.webui;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import android.webkit.WebResourceResponse;
 
@@ -10,7 +9,6 @@ import androidx.annotation.WorkerThread;
 import androidx.webkit.WebViewAssetLoader;
 
 import com.topjohnwu.superuser.Shell;
-import me.weishu.kernelsu.ui.webui.MonetColorsProvider;
 import com.topjohnwu.superuser.io.SuFile;
 import com.topjohnwu.superuser.io.SuFileInputStream;
 
@@ -155,14 +153,15 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
         }
         if ("internal/colors.css".equals(path)) {
             int colorMode = mContext.getSharedPreferences("settings", Context.MODE_PRIVATE).getInt("color_mode", 0);
+            String css = "";
             if (colorMode >= 3 && colorMode <= 5) {
-                String css = MonetColorsProvider.INSTANCE.getColorsCss();
-                return new WebResourceResponse(
-                        "text/css",
-                        "utf-8",
-                        new ByteArrayInputStream(css.getBytes(StandardCharsets.UTF_8))
-                );
+                css = MonetColorsProvider.INSTANCE.getColorsCss();
             }
+            return new WebResourceResponse(
+                    "text/css",
+                    "utf-8",
+                    new ByteArrayInputStream(css.getBytes(StandardCharsets.UTF_8))
+            );
         }
         try {
             File file = getCanonicalFileIfChild(mDirectory, path);
