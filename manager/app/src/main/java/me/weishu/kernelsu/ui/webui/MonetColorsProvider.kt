@@ -3,7 +3,6 @@ package me.weishu.kernelsu.ui.webui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
