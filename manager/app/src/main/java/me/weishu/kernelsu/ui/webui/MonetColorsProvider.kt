@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * @author rifsxd
@@ -11,11 +12,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  */
 object MonetColorsProvider {
 
-    @Volatile
-    private var colorsCss: String? = null
+    private val colorsCss: AtomicReference<String?> = AtomicReference(null)
 
     fun getColorsCss(): String {
-        return colorsCss ?: ""
+        return colorsCss.get() ?: ""
     }
 
     @Composable
@@ -73,7 +73,7 @@ object MonetColorsProvider {
                 "filledCardDisabledContainerColor" to colorScheme.surfaceVariant.toCssValue()
             )
 
-            colorsCss = monetColors.toCssVars()
+            colorsCss.set(monetColors.toCssVars())
         }
     }
 
