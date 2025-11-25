@@ -26,7 +26,7 @@
     <string name="module_sort_action_first">Първо действие</string>
     <string name="module_sort_enabled_first">Първо включено</string>
     <string name="confirm">Потвърди</string>
-    <string name="uninstall">Премахнете</string>
+    <string name="uninstall">Деинсталиране</string>
     <string name="module_install">Инсалирай</string>
     <string name="install">Инсталирай</string>
     <string name="reboot">Рестартирай</string>
