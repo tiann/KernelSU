@@ -51,13 +51,16 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.BottomBar
+import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
 import me.weishu.kernelsu.ui.screen.SettingPager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
+import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.install
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -115,16 +118,13 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navigator = navController.rememberDestinationsNavigator()
 
-                // Navigate to FlashScreen if ZIP file is provided and isManager
-                // Collect intentState as Compose State for thread-safe observation
-                val intentStateValue by intentState.collectAsState()
-                LaunchedEffect(intentStateValue) {
-                    intent?.data
-                        ?.takeIf { isManager && it.scheme == "content" && intent.type == "application/zip" }
-                        ?.let {
-                            navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it))))
-                        }
-                }
+                // Handle ZIP file installation from external apps
+                ZipFileIntentHandler(
+                    intentState = intentState,
+                    intent = intent,
+                    isManager = isManager,
+                    navigator = navigator
+                )
 
                 Scaffold {
                     DestinationsNavHost(
@@ -232,5 +232,43 @@ fun MainScreen(navController: DestinationsNavigator) {
                 }
             }
         }
+    }
+}
+/**
+ * Handles ZIP file installation from external apps (e.g., file managers).
+ * Shows a confirmation dialog to prevent accidental installation.
+ */
+@Composable
+private fun ZipFileIntentHandler(
+    intentState: MutableStateFlow<Int>,
+    intent: android.content.Intent?,
+    isManager: Boolean,
+    navigator: DestinationsNavigator
+) {
+    val context = LocalActivity.current ?: return
+    var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+    val confirmDialog = rememberConfirmDialog(
+        onConfirm = {
+            zipUri?.let { navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) }
+            zipUri = null
+        },
+        onDismiss = { zipUri = null }
+    )
+
+    val intentStateValue by intentState.collectAsState()
+    LaunchedEffect(intentStateValue) {
+        intent?.data
+            ?.takeIf { isManager && it.scheme == "content" && intent.type == "application/zip" }
+            ?.also { zipUri = it }
+            ?.let {
+                confirmDialog.showConfirm(
+                    title = context.getString(R.string.module),
+                    content = context.getString(
+                        R.string.module_install_prompt_with_name,
+                        "\n${it.getFileName(context) ?: it.lastPathSegment ?: "Unknown"}"
+                    )
+                )
+            }
     }
 }
