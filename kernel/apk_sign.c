@@ -23,6 +23,51 @@ struct sdesc {
     char ctx[];
 };
 
+#ifdef CONFIG_KSU_DEBUG
+// Extract package name from APK path for debug logging
+// Examples:
+//   "/data/app/~~xxx==/me.weishu.kernelsu-yyy==/base.apk" -> "me.weishu.kernelsu"
+//   "/data/app/MIUICalculator/base.apk" -> "MIUICalculator"
+//   "/system/app/Calculator/Calculator.apk" -> "Calculator"
+static const char *extract_package_name(const char *path)
+{
+    static char pkg_name[256];
+    const char *last_slash = NULL;
+    const char *second_last_slash = NULL;
+    
+    // Find last two '/' in path
+    for (const char *p = path; *p; p++) {
+        if (*p == '/') {
+            second_last_slash = last_slash;
+            last_slash = p;
+        }
+    }
+    
+    // Extract directory name between the two slashes
+    if (!second_last_slash || !last_slash)
+        return path;
+    
+    int len = last_slash - second_last_slash - 1;
+    if (len <= 0 || len >= sizeof(pkg_name))
+        return path;
+    
+    memcpy(pkg_name, second_last_slash + 1, len);
+    pkg_name[len] = '\0';
+    
+    // Remove ".apk" suffix if present (e.g., /system/app/Calc/Calc.apk)
+    len = strlen(pkg_name);
+    if (len > 4 && !strcmp(pkg_name + len - 4, ".apk"))
+        pkg_name[len - 4] = '\0';
+    
+    // Find first '-' and check total length from there to end
+    char *dash = strchr(pkg_name, '-');
+    if (dash && dash > pkg_name && strlen(dash) > 10)
+        *dash = '\0';
+    
+    return pkg_name;
+}
+#endif
+
 static struct sdesc *init_sdesc(struct crypto_shash *alg)
 {
     struct sdesc *sdesc;
@@ -249,7 +294,7 @@ static __always_inline bool check_v2_signature(char *path,
             v3_1_signing_exist = true;
         } else {
 #ifdef CONFIG_KSU_DEBUG
-            pr_info("Unknown id: 0x%08x\n", id);
+            pr_info("[%s] Unknown id: 0x%08x\n", extract_package_name(path), id);
 #endif
         }
         pos += (size8 - offset);
@@ -275,7 +320,7 @@ clean:
 
     if (v3_signing_exist || v3_1_signing_exist) {
 #ifdef CONFIG_KSU_DEBUG
-        pr_err("Unexpected v3 signature scheme found!\n");
+        pr_err("[%s] Unexpected v3 signature scheme found!\n", extract_package_name(path));
 #endif
         return false;
     }
