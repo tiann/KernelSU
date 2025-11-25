@@ -6,6 +6,7 @@
 #include <linux/version.h>
 #ifdef CONFIG_KSU_DEBUG
 #include <linux/moduleparam.h>
+#include "throne_tracker.h"
 #endif
 #include <crypto/hash.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -24,18 +25,22 @@ struct sdesc {
 };
 
 #ifdef CONFIG_KSU_DEBUG
+extern int get_pkg_from_apk_path(char *pkg, const char *path);
+
 // Extract package name from APK path for debug logging
-// Examples:
-//   "/data/app/~~xxx==/me.weishu.kernelsu-yyy==/base.apk" -> "me.weishu.kernelsu"
-//   "/data/app/MIUICalculator/base.apk" -> "MIUICalculator"
-//   "/system/app/Calculator/Calculator.apk" -> "Calculator"
+// Reuses get_pkg_from_apk_path() for third-party apps, with fallback for system apps
 static const char *extract_package_name(const char *path)
 {
     static char pkg_name[256];
+    
+    // Try official function first (handles third-party apps)
+    if (get_pkg_from_apk_path(pkg_name, path) == 0)
+        return pkg_name;
+    
+    // Fallback for system apps: extract directory name
     const char *last_slash = NULL;
     const char *second_last_slash = NULL;
     
-    // Find last two '/' in path
     for (const char *p = path; *p; p++) {
         if (*p == '/') {
             second_last_slash = last_slash;
@@ -43,7 +48,6 @@ static const char *extract_package_name(const char *path)
         }
     }
     
-    // Extract directory name between the two slashes
     if (!second_last_slash || !last_slash)
         return path;
     
@@ -54,7 +58,7 @@ static const char *extract_package_name(const char *path)
     memcpy(pkg_name, second_last_slash + 1, len);
     pkg_name[len] = '\0';
     
-    // Remove ".apk" suffix if present (e.g., /system/app/Calc/Calc.apk)
+    // Remove .apk suffix if present
     len = strlen(pkg_name);
     if (len > 4 && !strcmp(pkg_name + len - 4, ".apk"))
         pkg_name[len - 4] = '\0';
