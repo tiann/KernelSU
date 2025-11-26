@@ -176,4 +176,20 @@
     <string name="color_teal">青色</string>
     <string name="color_pink">粉色</string>
     <string name="color_brown">棕色</string>
+    <string name="module_update_prompt_with_name">将会更新下面的模块: %1$s</string>
+    <string name="module_parse_failed">处理模块信息失败，模块可能损坏: %s</string>
+    <string name="module_parse_reason">原因: %s</string>
+    <string name="module_install_confirm_extra">你确定还要安装这个模块吗？</string>
+    <string name="module_info_id">模块ID: %s</string>
+    <string name="module_info_name">模块名称: %s</string>
+    <string name="module_info_version">版本: %s</string>
+    <string name="module_info_version_code">版本号: %s</string>
+    <string name="module_info_author">作者: %s</string>
+    <string name="module_info_description">模块描述: %s</string>
+    <string name="module_error_no_prop">没有在zip文件根目录中找到 module.prop 文件</string>
+    <string name="module_error_open_zip">从 URI 中打开 zip 文件失败</string>
+    <string name="module_error_invalid_zip">无效的 zip 文件</string>
+    <string name="module_error_prop_too_large">module.prop 文件过大 (&gt; 1MiB)</string>
+    <string name="module_error_missing_id">module.prop 缺少字段 \'id\'</string>
+    <string name="module_error_invalid_id">模块 ID \'%s\' 无效</string>
 </resources>

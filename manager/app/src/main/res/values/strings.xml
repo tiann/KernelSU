@@ -180,4 +180,23 @@
     <string name="color_teal">Teal</string>
     <string name="color_pink">Pink</string>
     <string name="color_brown">Brown</string>
+
+    <string name="module_parse_failed">Failed to parse module information, module may be corrupted: %s</string>
+    <string name="module_parse_reason">Reason: %s</string>
+    <string name="module_install_confirm_extra">Do you still want to install this module?</string>
+    <string name="module_update_prompt_with_name">The following modules will be updated: %1$s</string>
+
+    <string name="module_info_id">ID: %s</string>
+    <string name="module_info_name">Name: %s</string>
+    <string name="module_info_version">Version: %s</string>
+    <string name="module_info_version_code">VersionCode: %s</string>
+    <string name="module_info_author">Author: %s</string>
+    <string name="module_info_description">Description: %s</string>
+
+    <string name="module_error_no_prop">module.prop not found in zip root</string>
+    <string name="module_error_open_zip">Failed to open zip file from URI</string>
+    <string name="module_error_invalid_zip">Invalid zip file format</string>
+    <string name="module_error_prop_too_large">module.prop is too large (&gt; 1MiB)</string>
+    <string name="module_error_missing_id">module.prop is missing required field \'id\'</string>
+    <string name="module_error_invalid_id">Module ID \'%s\' is invalid</string>
 </resources>

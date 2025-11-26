@@ -34,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -48,20 +49,24 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.BottomBar
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
 import me.weishu.kernelsu.ui.screen.SettingPager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
-import me.weishu.kernelsu.ui.util.getFileName
+import me.weishu.kernelsu.ui.util.ModuleParser
 import me.weishu.kernelsu.ui.util.install
+import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -257,17 +262,29 @@ private fun ZipFileIntentHandler(
     )
 
     val intentStateValue by intentState.collectAsState()
+    val loadingDialog = rememberLoadingDialog()
+    val viewModel = viewModel<ModuleViewModel>()
+
     LaunchedEffect(intentStateValue) {
         intent?.data
             ?.takeIf { isManager && it.scheme == "content" && intent.type == "application/zip" }
             ?.also { zipUri = it }
             ?.let {
+                viewModel.fetchModuleList()
+                val moduleInstallDesc = loadingDialog.withLoading {
+                    withContext(Dispatchers.IO) {
+                        zipUri?.let { uri ->
+                            ModuleParser.getModuleInstallDesc(
+                                context,
+                                uri,
+                                viewModel.moduleList
+                            )
+                        }
+                    }
+                }
                 confirmDialog.showConfirm(
                     title = context.getString(R.string.module),
-                    content = context.getString(
-                        R.string.module_install_prompt_with_name,
-                        "\n${it.getFileName(context) ?: it.lastPathSegment ?: "Unknown"}"
-                    )
+                    content = moduleInstallDesc
                 )
             }
     }
