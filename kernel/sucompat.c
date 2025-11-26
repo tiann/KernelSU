@@ -1,10 +1,13 @@
-#include "linux/compiler.h"
-#include "linux/printk.h"
+#include <linux/compiler_types.h>
+#include <linux/preempt.h>
+#include <linux/printk.h>
+#include <linux/mm.h>
+#include <linux/pgtable.h>
+#include <linux/uaccess.h>
 #include <asm/current.h>
 #include <linux/cred.h>
 #include <linux/fs.h>
 #include <linux/types.h>
-#include <linux/uaccess.h>
 #include <linux/version.h>
 #include <linux/sched/task_stack.h>
 #include <linux/ptrace.h>
@@ -15,7 +18,6 @@
 #include "ksud.h"
 #include "sucompat.h"
 #include "app_profile.h"
-#include "syscall_hook_manager.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -66,8 +68,78 @@ static char __user *ksud_user_path(void)
     return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
-			 int *mode, int *__unused_flags)
+static bool try_set_access_flag(unsigned long addr)
+{
+#ifdef CONFIG_ARM64
+    struct mm_struct *mm = current->mm;
+    struct vm_area_struct *vma;
+    pgd_t *pgd;
+    p4d_t *p4d;
+    pud_t *pud;
+    pmd_t *pmd;
+    pte_t *ptep, pte;
+    spinlock_t *ptl;
+    bool ret = false;
+
+    if (!mm)
+        return false;
+
+    if (!mmap_read_trylock(mm))
+        return false;
+
+    vma = find_vma(mm, addr);
+    if (!vma || addr < vma->vm_start)
+        goto out_unlock;
+
+    pgd = pgd_offset(mm, addr);
+    if (!pgd_present(*pgd))
+        goto out_unlock;
+
+    p4d = p4d_offset(pgd, addr);
+    if (!p4d_present(*p4d))
+        goto out_unlock;
+
+    pud = pud_offset(p4d, addr);
+    if (!pud_present(*pud))
+        goto out_unlock;
+
+    pmd = pmd_offset(pud, addr);
+    if (!pmd_present(*pmd))
+        goto out_unlock;
+
+    if (pmd_trans_huge(*pmd))
+        goto out_unlock;
+
+    ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
+    if (!ptep)
+        goto out_unlock;
+
+    pte = *ptep;
+
+    if (!pte_present(pte))
+        goto out_pte_unlock;
+
+    if (pte_young(pte)) {
+        ret = true;
+        goto out_pte_unlock;
+    }
+
+    ptep_set_access_flags(vma, addr, ptep, pte_mkyoung(pte), 0);
+    pr_info("set AF for addr %lx\n", addr);
+    ret = true;
+
+out_pte_unlock:
+    pte_unmap_unlock(ptep, ptl);
+out_unlock:
+    mmap_read_unlock(mm);
+    return ret;
+#else
+    return false;
+#endif
+}
+
+int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
+                         int *__unused_flags)
 {
     const char su[] = SU_PATH;
 
@@ -117,18 +189,41 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
                                int *__never_use_flags)
 {
     const char su[] = SU_PATH;
+    const char __user *fn;
     char path[sizeof(su) + 1];
+    long ret;
+    unsigned long addr;
 
     if (unlikely(!filename_user))
         return 0;
 
-    memset(path, 0, sizeof(path));
-    strncpy_from_user_nofault(path, *filename_user, sizeof(path));
-
-    if (likely(memcmp(path, su, sizeof(su))))
+    if (!ksu_is_allow_uid_for_current(current_uid().val))
         return 0;
 
-    if (!ksu_is_allow_uid_for_current(current_uid().val))
+    addr = untagged_addr((unsigned long)*filename_user);
+    fn = (const char __user *)addr;
+    memset(path, 0, sizeof(path));
+    ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+
+    if (ret < 0 && try_set_access_flag(addr)) {
+        ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+    }
+
+    if (ret < 0 && preempt_count()) {
+        /* This is crazy, but we know what we are doing:
+         * Temporarily exit atomic context to handle page faults, then restore it */
+        pr_info("Access filename failed, try rescue..\n");
+        preempt_enable_no_resched_notrace();
+        ret = strncpy_from_user(path, fn, sizeof(path));
+        preempt_disable_notrace();
+    }
+
+    if (ret < 0) {
+        pr_warn("Access filename when execve failed: %ld", ret);
+        return 0;
+    }
+
+    if (likely(memcmp(path, su, sizeof(su))))
         return 0;
 
     pr_info("sys_execve su found\n");
@@ -138,7 +233,6 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
 
     return 0;
 }
-
 
 // sucompat: permitted process can execute 'su' to gain root access.
 void ksu_sucompat_init()
