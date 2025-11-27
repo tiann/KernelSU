@@ -139,7 +139,7 @@ import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Delete
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
-import top.yukonga.miuix.kmp.icon.icons.useful.New
+import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.icon.icons.useful.Undo
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -161,12 +161,18 @@ fun ModulePager(
 
     val modules = viewModel.moduleList
 
-    LaunchedEffect(navigator) {
-        if (viewModel.moduleList.isEmpty() || viewModel.searchResults.value.isEmpty() || viewModel.isNeedRefresh) {
-            viewModel.checkModuleUpdate = prefs.getBoolean("module_check_update", true)
-            viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
-            viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
-            viewModel.fetchModuleList()
+    LaunchedEffect(Unit) {
+        when {
+            viewModel.moduleList.isEmpty() -> {
+                viewModel.checkModuleUpdate = prefs.getBoolean("module_check_update", true)
+                viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
+                viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
+                viewModel.fetchModuleList()
+            }
+
+            viewModel.isNeedRefresh -> {
+                viewModel.fetchModuleList()
+            }
         }
     }
 
@@ -470,7 +476,7 @@ fun ModulePager(
                             },
                         ) {
                             Icon(
-                                imageVector = MiuixIcons.Useful.New,
+                                imageVector = MiuixIcons.Useful.Save,
                                 tint = colorScheme.onSurface,
                                 contentDescription = stringResource(id = R.string.settings)
                             )

@@ -2,8 +2,10 @@ package me.weishu.kernelsu
 
 import android.app.Application
 import android.system.Os
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
@@ -19,6 +21,9 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
     override fun onCreate() {
         super.onCreate()
         ksuApp = this
+
+        val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
+        superUserViewModel.loadAppList()
 
         val webroot = File(dataDir, "webroot")
         if (!webroot.exists()) {
