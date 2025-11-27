@@ -90,7 +90,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.Redo
+import top.yukonga.miuix.kmp.icon.icons.useful.NavigatorSwitch
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -563,7 +563,7 @@ fun ModuleRepoDetailScreen(
                             onClick = { uriHandler.openUri(module.homepageUrl) }
                         ) {
                             Icon(
-                                imageVector = MiuixIcons.Useful.Redo,
+                                imageVector = MiuixIcons.Useful.NavigatorSwitch,
                                 contentDescription = null,
                                 tint = colorScheme.onBackground
                             )
