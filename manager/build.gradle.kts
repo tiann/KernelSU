@@ -31,7 +31,7 @@ val androidTargetSdkVersion = 36
 val androidCompileSdkVersion = 36
 val androidBuildToolsVersion = "36.1.0"
 val androidCompileNdkVersion by extra(libs.versions.ndk.get())
-val androidCmakeVersion by extra("3.28.0+")
+val androidCmakeVersion by extra("4.1.0+")
 val androidSourceCompatibility = JavaVersion.VERSION_21
 val androidTargetCompatibility = JavaVersion.VERSION_21
 val managerVersionCode by extra(getVersionCode())
