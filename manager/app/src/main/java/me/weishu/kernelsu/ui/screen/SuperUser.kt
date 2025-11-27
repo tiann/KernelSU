@@ -116,7 +116,7 @@ fun SuperUserPager(
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     LaunchedEffect(Unit) {
-        if (viewModel.appList.value.isEmpty() || viewModel.isRefreshing) {
+        if (viewModel.appList.value.isEmpty()) {
             viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
             viewModel.loadAppList()
         }
