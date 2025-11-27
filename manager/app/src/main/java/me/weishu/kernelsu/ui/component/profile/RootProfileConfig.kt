@@ -334,7 +334,6 @@ private fun SELinuxPanel(
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     label = stringResource(id = R.string.profile_selinux_domain),
-                    backgroundColor = colorScheme.surfaceContainer,
                     borderColor = if (isDomainValid) {
                         colorScheme.primary
                     } else {
@@ -353,7 +352,6 @@ private fun SELinuxPanel(
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     label = stringResource(id = R.string.profile_selinux_rules),
-                    backgroundColor = colorScheme.surfaceContainer,
                     borderColor = if (isRulesValid) {
                         colorScheme.primary
                     } else {
