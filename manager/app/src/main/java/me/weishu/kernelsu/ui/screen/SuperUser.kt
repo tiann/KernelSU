@@ -212,6 +212,9 @@ fun SuperUserPager(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
+                item {
+                    Spacer(Modifier.height(6.dp))
+                }
                 items(searchGroups, key = { it.uid }) { group ->
                     val expanded = expandedSearchUids.value.contains(group.uid)
                     AnimatedVisibility(
@@ -219,9 +222,7 @@ fun SuperUserPager(
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
-                        Column(
-                            Modifier.padding(top = 6.dp)
-                        ) {
+                        Column {
                             GroupItem(
                                 group = group,
                                 onToggleExpand = {
