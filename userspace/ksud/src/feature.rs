@@ -191,6 +191,28 @@ pub fn get_feature(id: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn get_feature_config(id: &str) -> Result<()> {
+    let feature_id = parse_feature_id(id)?;
+
+    let features = load_binary_config()?;
+    let id_u32 = feature_id as u32;
+
+    println!("Feature: {} ({})", feature_id.name(), id_u32);
+    println!("Description: {}", feature_id.description());
+
+    if let Some(value) = features.get(&id_u32) {
+        println!("Value: {value}");
+        println!(
+            "Status: {}",
+            if *value != 0 { "enabled" } else { "disabled" }
+        );
+    } else {
+        println!("Not set in config");
+    }
+
+    Ok(())
+}
+
 pub fn set_feature(id: &str, value: u64) -> Result<()> {
     let feature_id = parse_feature_id(id)?;
 

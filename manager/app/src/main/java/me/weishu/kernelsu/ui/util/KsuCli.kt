@@ -109,6 +109,14 @@ suspend fun getFeatureStatus(feature: String): String = withContext(Dispatchers.
     out.firstOrNull()?.trim().orEmpty()
 }
 
+suspend fun getFeaturePersistValue(feature: String): Long? = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val out = shell.newJob()
+        .add("${getKsuDaemonPath()} feature get --config $feature").to(ArrayList<String>(), null).exec().out
+    val valueLine = out.firstOrNull { it.trim().startsWith("Value:") } ?: return@withContext null
+    valueLine.substringAfter("Value:").trim().toLongOrNull()
+}
+
 fun install() {
     val start = SystemClock.elapsedRealtime()
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so").absolutePath
