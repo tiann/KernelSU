@@ -29,7 +29,6 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.colintheshots.twain.MarkdownText
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -418,12 +417,7 @@ private fun ConfirmDialog(
                 content = {
                     visuals.content?.let {
                         if (visuals.isMarkdown) {
-                            MarkdownText(
-                                markdown = visuals.content!!,
-                                color = MiuixTheme.colorScheme.onSurface,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            )
+                            MarkdownContent(content = visuals.content!!)
                         } else {
                             Text(text = visuals.content!!)
                         }
