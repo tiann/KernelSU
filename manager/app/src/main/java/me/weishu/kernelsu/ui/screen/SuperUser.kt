@@ -115,10 +115,10 @@ fun SuperUserPager(
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    LaunchedEffect(navigator) {
-        if (viewModel.appList.value.isEmpty() || viewModel.searchResults.value.isEmpty()) {
+    LaunchedEffect(Unit) {
+        if (viewModel.appList.value.isEmpty() || viewModel.isRefreshing) {
             viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
-            viewModel.fetchAppList()
+            viewModel.loadAppList()
         }
     }
 
@@ -274,7 +274,7 @@ fun SuperUserPager(
             LaunchedEffect(isRefreshing) {
                 if (isRefreshing) {
                     delay(350)
-                    viewModel.fetchAppList()
+                    viewModel.loadAppList()
                     isRefreshing = false
                 }
             }

@@ -82,14 +82,11 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.isDynamicColor
@@ -287,18 +284,6 @@ private fun TopBar(
         color = Color.Transparent,
         title = stringResource(R.string.app_name),
         actions = {
-            if (kernelVersion.isGKI()) {
-                IconButton(
-                    modifier = Modifier.padding(end = 8.dp),
-                    onClick = onInstallClick,
-                ) {
-                    Icon(
-                        imageVector = MiuixIcons.Useful.Save,
-                        contentDescription = stringResource(id = R.string.install),
-                        tint = colorScheme.onBackground
-                    )
-                }
-            }
             RebootListPopup(
                 modifier = Modifier.padding(end = 16.dp),
             )

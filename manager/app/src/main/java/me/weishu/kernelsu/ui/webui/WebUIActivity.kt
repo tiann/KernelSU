@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewAssetLoader
 import com.topjohnwu.superuser.Shell
@@ -57,11 +56,10 @@ class WebUIActivity : ComponentActivity() {
             }
         }
 
-        val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
-
         lifecycleScope.launch {
-            superUserViewModel.fetchAppList()
-            setupWebView()
+            if (SuperUserViewModel.apps.isNotEmpty()) {
+                setupWebView()
+            }
         }
     }
 

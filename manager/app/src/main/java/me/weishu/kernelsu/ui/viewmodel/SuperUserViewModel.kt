@@ -19,9 +19,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -56,6 +60,7 @@ class SuperUserViewModel : ViewModel() {
 
     private var _appList = mutableStateOf<List<AppInfo>>(emptyList())
     val appList: State<List<AppInfo>> = _appList
+
     private val _searchStatus = mutableStateOf(SearchStatus(""))
     val searchStatus: State<SearchStatus> = _searchStatus
 
@@ -113,13 +118,7 @@ class SuperUserViewModel : ViewModel() {
             }
         }
 
-        if (_searchResults.value == result) {
-            fetchAppList()
-            updateSearchText(text)
-        } else {
-            _searchResults.value = result
-
-        }
+        _searchResults.value = result
         _searchStatus.value.resultStatus = if (result.isEmpty()) {
             SearchStatus.ResultStatus.EMPTY
         } else {
@@ -225,6 +224,12 @@ class SuperUserViewModel : ViewModel() {
                 isRefreshing = false
                 stopKsuService()
             }
+        }
+    }
+
+    fun loadAppList() {
+        viewModelScope.launch {
+            fetchAppList()
         }
     }
 }
