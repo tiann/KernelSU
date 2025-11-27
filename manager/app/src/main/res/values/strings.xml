@@ -23,6 +23,7 @@
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
+    <string name="module_repo">Module repository</string>
     <string name="module_install_prompt_with_name">The following modules will be installed: %1$s</string>
     <string name="module_sort_action_first">Action first</string>
     <string name="module_sort_enabled_first">Enabled first</string>

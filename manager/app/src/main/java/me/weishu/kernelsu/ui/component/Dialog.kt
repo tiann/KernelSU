@@ -1,14 +1,7 @@
 package me.weishu.kernelsu.ui.component
 
-import android.graphics.text.LineBreaker
-import android.os.Build
 import android.os.Parcelable
-import android.text.Layout
-import android.text.method.LinkMovementMethod
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.ScrollView
-import android.widget.TextView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -21,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -33,15 +25,10 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import io.noties.markwon.Markwon
-import io.noties.markwon.utils.NoCopySpannableFactory
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -474,39 +461,6 @@ private fun ConfirmDialog(
                     }
                 }
             }
-        }
-    )
-}
-
-@Composable
-private fun MarkdownContent(content: String) {
-    val contentColor = MiuixTheme.colorScheme.onBackground.toArgb()
-
-    AndroidView(
-        factory = { context ->
-            val scrollView = ScrollView(context)
-            val textView = TextView(context).apply {
-                movementMethod = LinkMovementMethod.getInstance()
-                setSpannableFactory(NoCopySpannableFactory.getInstance())
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    breakStrategy = LineBreaker.BREAK_STRATEGY_SIMPLE
-                }
-                hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_NONE
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            }
-            scrollView.addView(textView)
-            scrollView
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clipToBounds(),
-        update = {
-            val textView = it.getChildAt(0) as TextView
-            Markwon.create(textView.context).setMarkdown(textView, content)
-            textView.setTextColor(contentColor)
         }
     )
 }
