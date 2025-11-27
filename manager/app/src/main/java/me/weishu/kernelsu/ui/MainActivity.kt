@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui
 
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -22,12 +23,12 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,8 +41,8 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dev.chrisbanes.haze.HazeState
@@ -190,8 +191,8 @@ fun MainScreen(navController: DestinationsNavigator) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
-        backgroundColor = MiuixTheme.colorScheme.background,
-        tint = HazeTint(MiuixTheme.colorScheme.background.copy(0.8f))
+        backgroundColor = MiuixTheme.colorScheme.surface,
+        tint = HazeTint(MiuixTheme.colorScheme.surface.copy(0.8f))
     )
     val handlePageChange: (Int) -> Unit = remember(pagerState, coroutineScope) {
         { page ->
@@ -234,10 +235,12 @@ fun MainScreen(navController: DestinationsNavigator) {
         }
     }
 }
+
 /**
  * Handles ZIP file installation from external apps (e.g., file managers).
  * Shows a confirmation dialog to prevent accidental installation.
  */
+@SuppressLint("StringFormatInvalid")
 @Composable
 private fun ZipFileIntentHandler(
     intentState: MutableStateFlow<Int>,

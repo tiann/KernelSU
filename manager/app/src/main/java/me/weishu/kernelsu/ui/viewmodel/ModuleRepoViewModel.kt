@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.component.SearchStatus
+import me.weishu.kernelsu.ui.util.HanziToPinyin
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
@@ -64,6 +66,12 @@ class ModuleRepoViewModel : ViewModel() {
     var isRefreshing by mutableStateOf(false)
         private set
 
+    private val _searchStatus = mutableStateOf(SearchStatus(""))
+    val searchStatus: State<SearchStatus> = _searchStatus
+
+    private val _searchResults = mutableStateOf<List<RepoModule>>(emptyList())
+    val searchResults: State<List<RepoModule>> = _searchResults
+
     fun refresh() {
         viewModelScope.launch {
             withContext(Dispatchers.Main) { isRefreshing = true }
@@ -72,6 +80,34 @@ class ModuleRepoViewModel : ViewModel() {
                 _modules.value = parsed
                 isRefreshing = false
             }
+        }
+    }
+
+    suspend fun updateSearchText(text: String) {
+        _searchStatus.value.searchText = text
+
+        if (text.isEmpty()) {
+            _searchStatus.value.resultStatus = SearchStatus.ResultStatus.DEFAULT
+            _searchResults.value = emptyList()
+            return
+        }
+
+        val result = withContext(Dispatchers.IO) {
+            _searchStatus.value.resultStatus = SearchStatus.ResultStatus.LOAD
+            _modules.value.filter {
+                it.moduleId.contains(text, true)
+                        || it.moduleName.contains(text, true)
+                        || it.authors.contains(text, true)
+                        || it.summary.contains(text, true)
+                        || HanziToPinyin.getInstance().toPinyinString(it.moduleName).contains(text, true)
+            }
+        }
+
+        _searchResults.value = result
+        _searchStatus.value.resultStatus = if (result.isEmpty()) {
+            SearchStatus.ResultStatus.EMPTY
+        } else {
+            SearchStatus.ResultStatus.SHOW
         }
     }
 

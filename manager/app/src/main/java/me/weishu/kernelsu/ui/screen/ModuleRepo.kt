@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,15 +25,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Code
-import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,13 +60,17 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.MarkdownContent
+import me.weishu.kernelsu.ui.component.SearchBox
+import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
@@ -76,12 +82,16 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Redo
+import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.getWindowSize
@@ -129,8 +139,11 @@ fun ModuleRepoScreen(
     navigator: DestinationsNavigator
 ) {
     val viewModel = viewModel<ModuleRepoViewModel>()
+    val searchStatus by viewModel.searchStatus
     val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
+    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -140,6 +153,9 @@ fun ModuleRepoScreen(
     }
 
     val scrollBehavior = MiuixScrollBehavior()
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = colorScheme.surface,
@@ -158,83 +174,37 @@ fun ModuleRepoScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                modifier = Modifier.hazeEffect(hazeState) {
-                    style = hazeStyle
-                    blurRadius = 30.dp
-                    noiseFactor = 0f
-                },
-                color = Color.Transparent,
-                title = stringResource(R.string.module_repo),
-                scrollBehavior = scrollBehavior,
-                navigationIcon = {
-                    IconButton(
-                        modifier = Modifier.padding(start = 16.dp),
-                        onClick = {
-                            navigator.popBackStack()
+            searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
+                TopAppBar(
+                    color = Color.Transparent,
+                    title = stringResource(R.string.module_repo),
+                    scrollBehavior = scrollBehavior,
+                    navigationIcon = {
+                        IconButton(
+                            modifier = Modifier.padding(start = 16.dp),
+                            onClick = { navigator.popBackStack() }
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Useful.Back,
+                                contentDescription = null,
+                                tint = colorScheme.onSurface
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = MiuixIcons.Useful.Back,
-                            contentDescription = null,
-                            tint = colorScheme.onSurface
-                        )
                     }
-                }
-            )
-        }
-    ) { innerPadding ->
-        val layoutDirection = LocalLayoutDirection.current
-        val isLoading = viewModel.modules.value.isEmpty()
-
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .height(getWindowSize().height.dp)
-                    .hazeSource(state = hazeState),
-                contentAlignment = Alignment.Center
-            ) {
-                InfiniteProgressIndicator()
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .height(getWindowSize().height.dp)
-                    .scrollEndHaptic()
-                    .overScrollVertical()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .hazeSource(state = hazeState),
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateEndPadding(layoutDirection)
-                ),
-            ) {
-                items(viewModel.modules.value, key = { it.moduleId }) { module ->
-                    val moduleName = remember(module.moduleName) { module.moduleName }
-                    val moduleId = remember(module.moduleId) { module.moduleId }
-                    val authors = remember(module.authors) { module.authors }
-                    val summary = remember(module.summary) { module.summary }
-                    val latestReleaseTime = remember(module.latestReleaseTime) { module.latestReleaseTime }
-                    val latestTag = remember(module.latestRelease) { module.latestRelease }
-                    val latestRel = remember(module.releases, latestTag) {
-                        module.releases.find { it.tagName == latestTag } ?: module.releases.firstOrNull()
-                    }
-                    val latestAsset = remember(latestRel) { latestRel?.assets?.firstOrNull() }
-
-                    val moduleVersion = stringResource(id = R.string.module_version)
-                    val moduleAuthor = stringResource(id = R.string.module_author)
-
-                    val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
-                    val actionIconTint = colorScheme.onSurface.copy(alpha = 0.9f)
-                    val installBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-                    val installTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
-
+        },
+        popupHost = {
+            searchStatus.SearchPager(defaultResult = {}) {
+                item {
+                    Spacer(Modifier.height(6.dp))
+                }
+                items(viewModel.searchResults.value, key = { it.moduleId }) { module ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp)
-                            .padding(vertical = 8.dp),
+                            .padding(bottom = 12.dp),
                         insideMargin = PaddingValues(16.dp),
                         showIndication = true,
                         pressFeedbackType = PressFeedbackType.Sink,
@@ -242,7 +212,7 @@ fun ModuleRepoScreen(
                             val args = RepoModuleArg(
                                 moduleId = module.moduleId,
                                 moduleName = module.moduleName,
-                                authors = authors,
+                                authors = module.authors,
                                 authorsList = module.authorList.map { AuthorArg(it.name, it.link) },
                                 homepageUrl = module.homepageUrl,
                                 sourceUrl = module.sourceUrl,
@@ -259,45 +229,36 @@ fun ModuleRepoScreen(
                                     )
                                 }
                             )
-                            navigator.navigate(ModuleRepoDetailScreenDestination(args)) {
-                                launchSingleTop = true
-                            }
+                            navigator.navigate(ModuleRepoDetailScreenDestination(args)) { launchSingleTop = true }
                         }
                     ) {
                         Column {
-                            if (moduleName.isNotBlank()) {
+                            if (module.moduleName.isNotBlank()) {
                                 Text(
-                                    text = moduleName,
+                                    text = module.moduleName,
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight(550),
                                     color = colorScheme.onSurface
                                 )
                             }
-                            if (moduleId.isNotBlank()) {
+                            if (module.moduleId.isNotBlank()) {
                                 Text(
-                                    text = moduleId,
-                                    fontSize = 14.sp,
+                                    text = "ID: ${module.moduleId}",
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight(550),
                                     color = colorScheme.onSurfaceVariantSummary,
                                 )
                             }
                             Text(
-                                text = "$moduleVersion: $latestTag",
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(top = 2.dp),
-                                fontWeight = FontWeight(550),
-                                color = colorScheme.onSurfaceVariantSummary,
-                            )
-                            Text(
-                                text = "$moduleAuthor: $authors",
+                                text = "${stringResource(id = R.string.module_author)}: ${module.authors}",
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(bottom = 1.dp),
                                 fontWeight = FontWeight(550),
                                 color = colorScheme.onSurfaceVariantSummary,
                             )
-                            if (summary.isNotBlank()) {
+                            if (module.summary.isNotBlank()) {
                                 Text(
-                                    text = summary,
+                                    text = module.summary,
                                     fontSize = 14.sp,
                                     color = colorScheme.onSurfaceVariantSummary,
                                     modifier = Modifier.padding(top = 2.dp),
@@ -305,109 +266,239 @@ fun ModuleRepoScreen(
                                     maxLines = 4,
                                 )
                             }
-                            if (latestReleaseTime.isNotBlank()) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = latestReleaseTime,
-                                    fontSize = 12.sp,
-                                    color = colorScheme.onSurfaceVariantSummary,
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                            HorizontalDivider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                thickness = 0.5.dp,
-                                color = colorScheme.outline.copy(alpha = 0.5f)
-                            )
+                        }
+                    }
+                }
+            }
+        },
+    ) { innerPadding ->
+        val layoutDirection = LocalLayoutDirection.current
+        val isLoading = viewModel.modules.value.isEmpty()
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                InfiniteProgressIndicator()
+            }
+        } else {
+            LaunchedEffect(searchStatus.searchText) { viewModel.updateSearchText(searchStatus.searchText) }
+            searchStatus.SearchBox(
+                searchBarTopPadding = dynamicTopPadding,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection)
+                ),
+                hazeState = hazeState,
+                hazeStyle = hazeStyle
+            ) { boxHeight ->
+                var isRefreshing by rememberSaveable { mutableStateOf(false) }
+                val pullToRefreshState = rememberPullToRefreshState()
+                LaunchedEffect(isRefreshing) {
+                    if (isRefreshing) {
+                        delay(350)
+                        viewModel.refresh()
+                        isRefreshing = false
+                    }
+                }
+                val refreshTexts = listOf(
+                    stringResource(R.string.refresh_pulling),
+                    stringResource(R.string.refresh_release),
+                    stringResource(R.string.refresh_refresh),
+                    stringResource(R.string.refresh_complete),
+                )
+                PullToRefresh(
+                    isRefreshing = isRefreshing,
+                    pullToRefreshState = pullToRefreshState,
+                    onRefresh = { if (!isRefreshing) isRefreshing = true },
+                    refreshTexts = refreshTexts,
+                    contentPadding = PaddingValues(
+                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection)
+                    ),
+                ) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .height(getWindowSize().height.dp)
+                            .scrollEndHaptic()
+                            .overScrollVertical()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            .hazeSource(state = hazeState),
+                        contentPadding = PaddingValues(
+                            top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection)
+                        ),
+                        overscrollEffect = null,
+                    ) {
+                        items(
+                            items = viewModel.modules.value,
+                            key = { it.moduleId },
+                            contentType = { "module" }
+                        ) { module ->
+                            val latestTag = module.latestRelease
+                            val latestRel = remember(module.releases, latestTag) {
+                                module.releases.find { it.tagName == latestTag } ?: module.releases.firstOrNull()
+                            }
+                            val latestAsset = remember(latestRel) { latestRel?.assets?.firstOrNull() }
+
+                            val moduleAuthor = stringResource(id = R.string.module_author)
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp)
+                                    .padding(bottom = 12.dp),
+                                insideMargin = PaddingValues(16.dp),
+                                showIndication = true,
+                                pressFeedbackType = PressFeedbackType.Sink,
+                                onClick = {
+                                    val args = RepoModuleArg(
+                                        moduleId = module.moduleId,
+                                        moduleName = module.moduleName,
+                                        authors = module.authors,
+                                        authorsList = module.authorList.map { AuthorArg(it.name, it.link) },
+                                        homepageUrl = module.homepageUrl,
+                                        sourceUrl = module.sourceUrl,
+                                        latestRelease = module.latestRelease,
+                                        latestReleaseTime = module.latestReleaseTime,
+                                        releases = module.releases.map { r ->
+                                            ReleaseArg(
+                                                tagName = r.tagName,
+                                                name = r.name,
+                                                publishedAt = r.publishedAt,
+                                                assets = r.assets.map { a ->
+                                                    ReleaseAssetArg(name = a.name, downloadUrl = a.downloadUrl, size = a.size)
+                                                }
+                                            )
+                                        }
+                                    )
+                                    navigator.navigate(ModuleRepoDetailScreenDestination(args)) {
+                                        launchSingleTop = true
+                                    }
+                                }
                             ) {
-                                if (module.homepageUrl.isNotBlank()) {
-                                    IconButton(
-                                        backgroundColor = secondaryContainer,
-                                        minHeight = 35.dp,
-                                        minWidth = 35.dp,
-                                        onClick = { uriHandler.openUri(module.homepageUrl) },
-                                    ) {
-                                        Icon(
-                                            modifier = Modifier.size(20.dp),
-                                            imageVector = Icons.Rounded.Link,
-                                            tint = actionIconTint,
-                                            contentDescription = null
+                                Column {
+                                    if (module.moduleName.isNotBlank()) {
+                                        Text(
+                                            text = module.moduleName,
+                                            fontSize = 17.sp,
+                                            fontWeight = FontWeight(550),
+                                            color = colorScheme.onSurface
                                         )
                                     }
-                                }
-                                if (module.sourceUrl.isNotBlank()) {
-                                    IconButton(
-                                        backgroundColor = secondaryContainer,
-                                        minHeight = 35.dp,
-                                        minWidth = 35.dp,
-                                        onClick = { uriHandler.openUri(module.sourceUrl) },
-                                    ) {
-                                        Icon(
-                                            modifier = Modifier.size(20.dp),
-                                            imageVector = Icons.Rounded.Code,
-                                            tint = actionIconTint,
-                                            contentDescription = null
+                                    if (module.moduleId.isNotBlank()) {
+                                        Text(
+                                            text = "ID: ${module.moduleId}",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight(550),
+                                            color = colorScheme.onSurfaceVariantSummary,
                                         )
                                     }
-                                }
-                                Spacer(Modifier.weight(1f))
-                                if (latestAsset != null) {
-                                    val fileName = latestAsset.name
-                                    val downloadingText = stringResource(R.string.module_downloading)
-                                    IconButton(
-                                        backgroundColor = installBg,
-                                        minHeight = 35.dp,
-                                        minWidth = 35.dp,
-                                        onClick = {
-                                            pendingDownload = {
-                                                scope.launch(Dispatchers.IO) {
-                                                    download(
-                                                        context,
-                                                        latestAsset.downloadUrl,
-                                                        fileName,
-                                                        downloadingText.format(module.moduleId)
+                                    Text(
+                                        text = "$moduleAuthor: ${module.authors}",
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(bottom = 1.dp),
+                                        fontWeight = FontWeight(550),
+                                        color = colorScheme.onSurfaceVariantSummary,
+                                    )
+                                    if (module.summary.isNotBlank()) {
+                                        Text(
+                                            text = module.summary,
+                                            fontSize = 14.sp,
+                                            color = colorScheme.onSurfaceVariantSummary,
+                                            modifier = Modifier.padding(top = 2.dp),
+                                            overflow = TextOverflow.Ellipsis,
+                                            maxLines = 4,
+                                        )
+                                    }
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(vertical = 8.dp),
+                                        thickness = 0.5.dp,
+                                        color = colorScheme.outline.copy(alpha = 0.5f)
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = latestTag,
+                                                fontSize = 12.sp,
+                                                modifier = Modifier.padding(top = 2.dp),
+                                                fontWeight = FontWeight(550),
+                                                color = colorScheme.onSurfaceVariantSummary,
+                                            )
+                                            if (module.latestReleaseTime.isNotBlank()) {
+                                                Text(
+                                                    text = module.latestReleaseTime,
+                                                    fontSize = 12.sp,
+                                                    color = colorScheme.onSurfaceVariantSummary,
+                                                    textAlign = TextAlign.End
+                                                )
+                                            }
+                                        }
+                                        Spacer(Modifier.weight(1f))
+                                        if (latestAsset != null) {
+                                            val fileName = latestAsset.name
+                                            val downloadingText = stringResource(R.string.module_downloading)
+                                            IconButton(
+                                                backgroundColor = colorScheme.secondaryContainer.copy(alpha = 0.8f),
+                                                minHeight = 35.dp,
+                                                minWidth = 35.dp,
+                                                onClick = {
+                                                    pendingDownload = {
+                                                        scope.launch(Dispatchers.IO) {
+                                                            download(
+                                                                context,
+                                                                latestAsset.downloadUrl,
+                                                                fileName,
+                                                                downloadingText.format(module.moduleId)
+                                                            )
+                                                        }
+                                                    }
+                                                    val confirmContent =
+                                                        context.getString(R.string.module_install_prompt_with_name, fileName)
+                                                    confirmDialog.showConfirm(
+                                                        title = confirmTitle,
+                                                        content = confirmContent
+                                                    )
+                                                },
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(horizontal = 10.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                ) {
+                                                    Icon(
+                                                        modifier = Modifier.size(20.dp),
+                                                        imageVector = MiuixIcons.Useful.Save,
+                                                        tint = actionIconTint,
+                                                        contentDescription = stringResource(R.string.install)
+                                                    )
+                                                    Text(
+                                                        modifier = Modifier.padding(start = 4.dp, end = 2.dp),
+                                                        text = stringResource(R.string.install),
+                                                        color = actionIconTint,
+                                                        fontWeight = FontWeight.Medium,
+                                                        fontSize = 15.sp
                                                     )
                                                 }
                                             }
-                                            val confirmContent = context.getString(R.string.module_install_prompt_with_name, fileName)
-                                            confirmDialog.showConfirm(
-                                                title = confirmTitle,
-                                                content = confirmContent
-                                            )
-                                        },
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier.size(20.dp),
-                                                imageVector = Icons.Rounded.Download,
-                                                tint = installTint,
-                                                contentDescription = stringResource(R.string.install)
-                                            )
-                                            Text(
-                                                modifier = Modifier.padding(start = 4.dp, end = 3.dp),
-                                                text = stringResource(R.string.install),
-                                                color = installTint,
-                                                fontWeight = FontWeight.Medium,
-                                                fontSize = 15.sp
-                                            )
                                         }
                                     }
                                 }
                             }
                         }
+                        item { Spacer(Modifier.height(12.dp)) }
                     }
                 }
-                item { Spacer(Modifier.height(12.dp)) }
             }
+            DownloadListener(context, onInstallModule)
         }
-        DownloadListener(context, onInstallModule)
     }
 }
 
@@ -419,6 +510,11 @@ fun ModuleRepoDetailScreen(
     module: RepoModuleArg
 ) {
     val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
+    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
+    val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
+    val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     val confirmTitle = stringResource(R.string.module)
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
@@ -459,6 +555,20 @@ fun ModuleRepoDetailScreen(
                             tint = colorScheme.onSurface
                         )
                     }
+                },
+                actions = {
+                    if (module.homepageUrl.isNotBlank()) {
+                        IconButton(
+                            modifier = Modifier.padding(end = 16.dp),
+                            onClick = { uriHandler.openUri(module.homepageUrl) }
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Useful.Redo,
+                                contentDescription = null,
+                                tint = colorScheme.onBackground
+                            )
+                        }
+                    }
                 }
             )
         }
@@ -497,16 +607,22 @@ fun ModuleRepoDetailScreen(
                 bottom = innerPadding.calculateBottomPadding(),
             ),
         ) {
-            if (readmeLoaded && readmeText != null) {
-                item {
-                    SmallTitle(text = "README")
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp),
-                        insideMargin = PaddingValues(16.dp)
-                    ) {
-                        Column {
-                            MarkdownContent(content = readmeText!!)
+            item {
+                AnimatedVisibility(
+                    visible = readmeLoaded && readmeText != null,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column {
+                        SmallTitle(text = "README")
+                        Card(
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp),
+                            insideMargin = PaddingValues(16.dp)
+                        ) {
+                            Column {
+                                MarkdownContent(content = readmeText!!)
+                            }
                         }
                     }
                 }
@@ -519,9 +635,6 @@ fun ModuleRepoDetailScreen(
                     )
                 }
                 item {
-                    val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
-                    val actionIconTint = colorScheme.onSurface.copy(alpha = 0.9f)
-                    val uriHandler = LocalUriHandler.current
                     Card(
                         modifier = Modifier
                             .padding(horizontal = 12.dp),
@@ -580,10 +693,12 @@ fun ModuleRepoDetailScreen(
                         modifier = Modifier.padding(top = 10.dp)
                     )
                 }
-                items(module.releases, key = { it.tagName }) { rel ->
+                items(
+                    items = module.releases,
+                    key = { it.tagName },
+                    contentType = { "release" }
+                ) { rel ->
                     val title = remember(rel.name, rel.tagName) { rel.name.ifBlank { rel.tagName } }
-                    val installBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-                    val installTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
 
                     Card(
                         modifier = Modifier
@@ -633,7 +748,6 @@ fun ModuleRepoDetailScreen(
 
                                     rel.assets.forEachIndexed { index, asset ->
                                         val fileName = asset.name
-                                        stringResource(R.string.module_start_downloading)
                                         val downloadingText = stringResource(R.string.module_downloading)
                                         val sizeText = remember(asset.size) {
                                             val s = asset.size
@@ -683,7 +797,7 @@ fun ModuleRepoDetailScreen(
                                                 )
                                             }
                                             IconButton(
-                                                backgroundColor = installBg,
+                                                backgroundColor = secondaryContainer,
                                                 minHeight = 35.dp,
                                                 minWidth = 35.dp,
                                                 onClick = onClickDownload,
@@ -694,14 +808,14 @@ fun ModuleRepoDetailScreen(
                                                 ) {
                                                     Icon(
                                                         modifier = Modifier.size(20.dp),
-                                                        imageVector = Icons.Rounded.Download,
-                                                        tint = installTint,
+                                                        imageVector = MiuixIcons.Useful.Save,
+                                                        tint = actionIconTint,
                                                         contentDescription = stringResource(R.string.install)
                                                     )
                                                     Text(
-                                                        modifier = Modifier.padding(start = 4.dp, end = 3.dp),
+                                                        modifier = Modifier.padding(start = 4.dp, end = 2.dp),
                                                         text = stringResource(R.string.install),
-                                                        color = installTint,
+                                                        color = actionIconTint,
                                                         fontWeight = FontWeight.Medium,
                                                         fontSize = 15.sp
                                                     )
