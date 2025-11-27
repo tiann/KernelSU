@@ -124,12 +124,15 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.core)
 
-    implementation(libs.markdown)
     implementation(libs.androidx.webkit)
 
     implementation(libs.lsposed.cxx)
 
     implementation(libs.miuix)
+
     implementation(libs.haze)
+
     implementation(libs.capsule)
+
+    implementation(libs.twain)
 }
