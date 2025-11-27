@@ -334,7 +334,7 @@ private fun TopBar(
                 Icon(
                     imageVector = MiuixIcons.Useful.Back,
                     contentDescription = null,
-                    tint = colorScheme.onBackground
+                    tint = colorScheme.onSurface
                 )
             }
         },
