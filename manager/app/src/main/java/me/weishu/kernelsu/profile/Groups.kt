@@ -103,6 +103,9 @@ enum class Groups(val gid: Int, val display: String, val desc: String) {
     SDK_SANDBOX(1090, "sdk_sandbox", "SDK sandbox virtual UID"),
     SECURITY_LOG_WRITER(1091, "security_log_writer", "write to security log"),
     PRNG_SEEDER(1092, "prng_seeder", "PRNG seeder daemon"),
+    UPROBESTATS(1093, "uprobestats", "uid for uprobestats"),
+    CROS_EC(1094, "cros_ec", "uid for accessing ChromeOS EC (cros_ec)"),
+    MMD(1095, "mmd", "uid for memory management daemon"),
 
     SHELL(2000, "shell", "adb and debug shell user"),
     CACHE(2001, "cache", "cache access"),
@@ -122,6 +125,7 @@ enum class Groups(val gid: Int, val display: String, val desc: String) {
     WAKELOCK(3010, "wakelock", "Allow system wakelock read/write access"),
     UHID(3011, "uhid", "Allow read/write to /dev/uhid node"),
     READTRACEFS(3012, "readtracefs", "Allow tracefs read"),
+    VIRTUALMACHINE(3013, "virtualmachine", "Allows VMs to tune for performance"),
 
     EVERYBODY(9997, "everybody", "Shared external storage read/write"),
     MISC(9998, "misc", "Access to misc storage"),
