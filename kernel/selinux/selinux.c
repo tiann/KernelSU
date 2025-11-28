@@ -10,17 +10,24 @@
 static int transive_to_domain(const char *domain)
 {
     struct cred *cred;
-    struct task_security_struct *tsec;
     u32 sid;
     int error;
-
     cred = (struct cred *)__task_cred(current);
-
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
+    struct task_security_struct *tsec;
     tsec = cred->security;
     if (!tsec) {
         pr_err("tsec == NULL!\n");
         return -1;
     }
+#else 
+    struct cred_security_struct *crsec;
+    crsec = cred->security;
+    if (!crsec) {
+        pr_err("crsec == NULL!\n");
+        return -1;
+    }
+#endif
 
     error = security_secctx_to_secid(domain, strlen(domain), &sid);
     if (error) {
@@ -28,10 +35,17 @@ static int transive_to_domain(const char *domain)
             domain, sid, error);
     }
     if (!error) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
         tsec->sid = sid;
         tsec->create_sid = 0;
         tsec->keycreate_sid = 0;
         tsec->sockcreate_sid = 0;
+#else
+        crsec->sid = sid;
+        crsec->create_sid = 0;
+        crsec->keycreate_sid = 0;
+        crsec->sockcreate_sid = 0;
+#endif
     }
     return error;
 }
@@ -92,11 +106,19 @@ bool is_task_ksu_domain(const struct cred* cred)
     if (!cred) {
         return false;
     }
-    const struct task_security_struct *tsec = selinux_cred(cred);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
+    const struct task_security_struct * tsec = selinux_cred(cred);
     if (!tsec) {
         return false;
     }
     int err = __security_secid_to_secctx(tsec->sid, &ctx);
+#else 
+    const struct cred_security_struct *crsec = selinux_cred(cred);
+    if (!crsec) {
+        return false;
+    }
+    int err = __security_secid_to_secctx(crsec->sid, &ctx);
+#endif
     if (err) {
         return false;
     }
@@ -113,16 +135,24 @@ bool is_ksu_domain()
 
 bool is_context(const struct cred* cred, const char* context)
 {
+    struct lsm_context ctx;
+    bool result;
     if (!cred) {
         return false;
     }
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
     const struct task_security_struct * tsec = selinux_cred(cred);
     if (!tsec) {
         return false;
     }
-    struct lsm_context ctx;
-    bool result;
     int err = __security_secid_to_secctx(tsec->sid, &ctx);
+#else 
+    const struct cred_security_struct *crsec = selinux_cred(cred);
+    if (!crsec) {
+        return false;
+    }
+    int err = __security_secid_to_secctx(crsec->sid, &ctx);
+#endif
     if (err) {
         return false;
     }
