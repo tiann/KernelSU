@@ -74,7 +74,6 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
 fn wrap_tty(fd: c_int) {
     let inner_fn = move || -> Result<()> {
         if unsafe { libc::isatty(fd) != 1 } {
-            warn!("not a tty: {fd}");
             return Ok(());
         }
         let new_fd = get_wrapped_fd(fd).context("get_wrapped_fd")?;
