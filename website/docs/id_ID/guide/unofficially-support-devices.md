@@ -1,5 +1,10 @@
 # Perangkat Yang Didukung Tidak Resmi
 
+::: warning
+Dokumen ini hanya untuk referensi arsip dan tidak lagi diperbarui.
+Sejak KernelSU v1.0, kami telah menghentikan dukungan resmi untuk perangkat non-GKI.
+:::
+
 :::peringatan
 
 di halaman ini, terdapat kernel untuk perangkat non-GKI yang mendukung KernelSU yang dikelola oleh pengembang lain.

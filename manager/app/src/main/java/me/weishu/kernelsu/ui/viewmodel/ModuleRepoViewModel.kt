@@ -39,14 +39,6 @@ class ModuleRepoViewModel : ViewModel() {
     )
 
     @Immutable
-    data class Release(
-        val tagName: String,
-        val name: String,
-        val publishedAt: String,
-        val assets: List<ReleaseAsset>
-    )
-
-    @Immutable
     data class RepoModule(
         val moduleId: String,
         val moduleName: String,
@@ -55,9 +47,14 @@ class ModuleRepoViewModel : ViewModel() {
         val summary: String,
         val homepageUrl: String,
         val sourceUrl: String,
+        val metamodule: Boolean,
+        val stargazerCount: Int,
+        val updatedAt: String,
+        val createdAt: String,
         val latestRelease: String,
         val latestReleaseTime: String,
-        val releases: List<Release>,
+        val latestVersionCode: Int,
+        val latestAsset: ReleaseAsset?,
     )
 
     private var _modules = mutableStateOf<List<RepoModule>>(emptyList())
@@ -117,10 +114,7 @@ class ModuleRepoViewModel : ViewModel() {
             ksuApp.okhttpClient.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) return emptyList()
                 val body = resp.body?.string() ?: return emptyList()
-                val json = kotlin.runCatching { JSONArray(body) }.getOrElse {
-                    val obj = JSONObject(body)
-                    obj.optJSONArray("modules") ?: JSONArray()
-                }
+                val json = JSONArray(body)
                 (0 until json.length()).mapNotNull { idx ->
                     val item = json.optJSONObject(idx) ?: return@mapNotNull null
                     parseRepoModule(item)
@@ -152,27 +146,27 @@ class ModuleRepoViewModel : ViewModel() {
         val summary = item.optString("summary", "")
         val homepageUrl = item.optString("homepageUrl", item.optString("url", ""))
         val sourceUrl = item.optString("sourceUrl", item.optString("url", ""))
-        val latestRelease = item.optString("latestRelease", "")
-        val latestReleaseTime = item.optString("latestReleaseTime", "")
+        val metamodule = item.optBoolean("metamodule", false)
+        val stargazerCount = item.optInt("stargazerCount", 0)
+        val updatedAt = item.optString("updatedAt", "")
+        val createdAt = item.optString("createdAt", "")
 
-        val releasesArray = item.optJSONArray("releases") ?: JSONArray()
-        val releases = (0 until releasesArray.length()).mapNotNull { rIdx ->
-            val r = releasesArray.optJSONObject(rIdx) ?: return@mapNotNull null
-            val tag = r.optString("tagName", r.optString("name", ""))
-            val rname = r.optString("name", tag)
-            val publishedAt = r.optString("publishedAt", r.optString("updatedAt", ""))
-            val assetsArray = r.optJSONArray("releaseAssets") ?: r.optJSONArray("assets") ?: JSONArray()
-            val assets = (0 until assetsArray.length()).mapNotNull { aIdx ->
-                val a = assetsArray.optJSONObject(aIdx) ?: return@mapNotNull null
-                val aname = a.optString("name", "")
-                val downloadUrl = a.optString("downloadUrl", a.optString("browser_download_url", ""))
-                if (aname.isEmpty() || downloadUrl.isEmpty()) null else ReleaseAsset(
-                    name = aname,
-                    downloadUrl = downloadUrl,
-                    size = a.optLong("size", 0L)
-                )
+        var latestRelease = ""
+        var latestReleaseTime = ""
+        var latestVersionCode = 0
+        var latestAsset: ReleaseAsset? = null
+        val lr = item.optJSONObject("latestRelease")
+        if (lr != null) {
+            val lrName = lr.optString("name", lr.optString("version", ""))
+            val lrTime = lr.optString("time", "")
+            val lrUrl = lr.optString("downloadUrl", "")
+            latestVersionCode = lr.optInt("versionCode", 0)
+            latestRelease = lrName
+            latestReleaseTime = lrTime
+            if (lrUrl.isNotEmpty()) {
+                val fileName = lrUrl.substringAfterLast('/')
+                latestAsset = ReleaseAsset(name = fileName, downloadUrl = lrUrl, size = 0L)
             }
-            Release(tagName = tag, name = rname, publishedAt = publishedAt, assets = assets)
         }
 
         return RepoModule(
@@ -183,9 +177,14 @@ class ModuleRepoViewModel : ViewModel() {
             summary = summary,
             homepageUrl = homepageUrl,
             sourceUrl = sourceUrl,
+            metamodule = metamodule,
+            stargazerCount = stargazerCount,
+            updatedAt = updatedAt,
+            createdAt = createdAt,
             latestRelease = latestRelease,
             latestReleaseTime = latestReleaseTime,
-            releases = releases,
+            latestVersionCode = latestVersionCode,
+            latestAsset = latestAsset,
         )
     }
 }

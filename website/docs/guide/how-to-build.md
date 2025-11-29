@@ -1,5 +1,10 @@
 # How to build
 
+::: warning
+This document is for archival reference only and is no longer maintained.
+Since KernelSU v3.0, we have dropped official support for GKI image mode for faster iteration and build speed. It is recommended to use `Ylarod/ddk` to build LKM.
+:::
+
 First, you should read the official Android documentation for building kernels:
 
 1. [Build kernels](https://source.android.com/docs/setup/build/building-kernels)

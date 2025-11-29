@@ -163,4 +163,26 @@
     <string name="undo">Отменить</string>
     <string name="module_undo_uninstall_failed">не удалось отменить удаление: %s</string>
     <string name="module_undo_uninstall_success">Удаление %s успешно отменено</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_theme_summary">Выберите режим темы приложения.</string>
+    <string name="settings_theme_mode_system">Как в системе</string>
+    <string name="feature_status_managed_summary">Эта функция управляется модулем.</string>
+    <string name="feature_status_unsupported_summary">Ядро не поддерживает эту функцию.</string>
+    <string name="settings_key_color">Ключевой цвет</string>
+    <string name="settings_key_color_summary">Настройте акцент при использовании Monet.</string>
+    <string name="settings_key_color_default">По умолчанию</string>
+    <string name="color_blue">Синий</string>
+    <string name="color_red">Красный</string>
+    <string name="color_green">Зеленый</string>
+    <string name="color_purple">Фиолетовый</string>
+    <string name="color_orange">Оранжевый</string>
+    <string name="color_teal">Бирюзовый</string>
+    <string name="color_pink">Розовый</string>
+    <string name="color_brown">Коричневый</string>
+    <string name="settings_theme_mode_monet_system">Monet (Как в системе)</string>
+    <string name="settings_theme_mode_monet_light">Monet (Светлая)</string>
+    <string name="settings_theme_mode_monet_dark">Monet (Тёмная)</string>
+    <string name="settings_theme_mode_light">Светлая</string>
+    <string name="settings_theme_mode_dark">Тёмная</string>
+    <string name="module_repo">Репозиторий модулей</string>
 </resources>

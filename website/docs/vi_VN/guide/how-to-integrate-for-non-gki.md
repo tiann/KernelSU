@@ -1,5 +1,10 @@
 # Làm thế nào để tích hợp KernelSU vào thiết bị không sử dụng GKI ?
 
+::: warning
+Tài liệu này chỉ để tham khảo lưu trữ và không còn được duy trì.
+Kể từ KernelSU v1.0, chúng tôi đã ngừng hỗ trợ chính thức cho các thiết bị không phải GKI.
+:::
+
 KernelSU có thể được tích hợp vào kernel không phải GKI và hiện tại nó đã được backport xuống 4.14, thậm chí cũng có thể chạy trên kernel thấp hơn 4.14.
 
 Do các kernel không phải GKI bị phân mảnh nên chúng tôi không có cách build thống nhất, vì vậy chúng tôi không thể cung cấp các boot image không phải GKI. Nhưng bạn có thể tự build kernel với KernelSU được tích hợp vào.

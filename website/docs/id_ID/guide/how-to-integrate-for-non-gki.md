@@ -1,5 +1,10 @@
 # Bagaimana Caranya untuk mengintegrasikan KernelSU ke kernel non GKI?
 
+::: warning
+Dokumen ini hanya untuk referensi arsip dan tidak lagi diperbarui.
+Sejak KernelSU v1.0, kami telah menghentikan dukungan resmi untuk perangkat non-GKI.
+:::
+
 KernelSU dapat diintegrasikan ke kernel non GKI, dan saat ini sudah di-backport ke 4.14, dan juga dapat dijalankan pada kernel di bawah 4.14.
 
 Karena fragmentasi kernel non GKI, kami tidak memiliki cara yang seragam untuk membangunnya, sehingga kami tidak dapat menyediakan gambar boot non GKI. Tetapi Anda dapat membangun kernel sendiri dengan KernelSU yang terintegrasi.

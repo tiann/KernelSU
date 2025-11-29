@@ -158,6 +158,12 @@ fun HomePager(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    if (ksuVersion != null && !Natives.isLkmMode) {
+                        WarningCard(
+                            stringResource(id = R.string.home_gki_warning),
+                            themeMode
+                        )
+                    }
                     if (isManager && Natives.requireNewKernel()) {
                         WarningCard(
                             stringResource(id = R.string.require_kernel_version)

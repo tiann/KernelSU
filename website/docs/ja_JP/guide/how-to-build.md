@@ -1,5 +1,10 @@
 # KernelSU のビルド方法は？
 
+::: warning
+このドキュメントはアーカイブ参照のみを目的としており、更新されなくなりました。
+KernelSU v3.0以降、より高速な反復とビルド速度のため、GKIイメージモードの公式サポートを終了しました。`Ylarod/ddk` を使用してLKMをビルドすることをお勧めします。
+:::
+
 まず、Android の公式ドキュメントを読むべきです：
 
 1. [カーネルをビルドする](https://source.android.com/docs/setup/build/building-kernels)

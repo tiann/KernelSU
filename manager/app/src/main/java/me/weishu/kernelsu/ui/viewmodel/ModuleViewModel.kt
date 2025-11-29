@@ -24,6 +24,9 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.listModules
+import me.weishu.kernelsu.ui.util.module.RepoSummary
+import me.weishu.kernelsu.ui.util.module.fetchRepoIndex
+import me.weishu.kernelsu.ui.util.module.sanitizeVersionString
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
@@ -157,6 +160,7 @@ class ModuleViewModel : ViewModel() {
                         executable -> 3
                         else -> 4
                     }
+
                     sortEnabledFirst && !sortActionFirst -> if (it.enabled) 1 else 2
                     !sortEnabledFirst && sortActionFirst -> if (executable) 1 else 2
                     else -> 1
@@ -226,9 +230,16 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
-    private fun sanitizeVersionString(version: String): String {
-        return version.replace(Regex("[^a-zA-Z0-9.\\-_]"), "_")
+    private val _repoIndex = mutableStateMapOf<String, RepoSummary>()
+
+    suspend fun refreshRepoIndex() {
+        val parsed = withContext(Dispatchers.IO) { fetchRepoIndex() }
+        withContext(Dispatchers.Main) {
+            _repoIndex.clear()
+            parsed.forEach { (id, summary) -> _repoIndex[id] = summary }
+        }
     }
+
 
     private fun ModuleInfo.toSignature(): ModuleUpdateSignature {
         return ModuleUpdateSignature(
@@ -280,6 +291,21 @@ class ModuleViewModel : ViewModel() {
                     changedEntries += id to entry.info
                 }
                 updateInfoInFlight.remove(id)
+            }
+
+            modules.forEach { m ->
+                val cache = updateInfoCache[m.id]
+                val hasUpdateJson = cache?.info?.downloadUrl?.isNotEmpty() == true
+                if (!hasUpdateJson) {
+                    val repo = _repoIndex[m.id]
+                    if (repo != null) {
+                        if (repo.versionCode > m.versionCode && repo.downloadUrl.isNotBlank()) {
+                            val info = ModuleUpdateInfo(downloadUrl = repo.downloadUrl, version = repo.latestVersion, changelog = "")
+                            updateInfoCache[m.id] = ModuleUpdateCache(m.toSignature(), info)
+                            changedEntries += m.id to info
+                        }
+                    }
+                }
             }
         }
 

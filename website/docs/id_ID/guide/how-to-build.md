@@ -1,5 +1,10 @@
 # Bagaimana caranya untuk build KernelSU?
 
+::: warning
+Dokumen ini hanya untuk referensi arsip dan tidak lagi diperbarui.
+Sejak KernelSU v3.0, kami telah menghentikan dukungan resmi untuk mode gambar GKI demi iterasi dan kecepatan build yang lebih cepat. Disarankan untuk menggunakan `Ylarod/ddk` untuk membangun LKM.
+:::
+
 Pertama, Anda harus membaca dokumen resmi Android untuk membangun kernel:
 
 1. [Building Kernels](https://source.android.com/docs/setup/build/building-kernels)

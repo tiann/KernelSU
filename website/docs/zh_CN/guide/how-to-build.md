@@ -1,5 +1,10 @@
 # 如何构建 KernelSU？
 
+::: warning
+该文档仅供存档参考，不再维护更新。
+自 KernelSU v3.0 版本之后，为了更快的迭代和构建速度，我们放弃了对 GKI 镜像模式的官方支持。推荐使用 `Ylarod/ddk` 构建 LKM 使用。
+:::
+
 首先，您应该阅读内核构建的 Android 官方文档：
 
 1. [构建内核](https://source.android.com/docs/setup/build/building-kernels)
