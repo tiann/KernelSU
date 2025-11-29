@@ -1,6 +1,11 @@
 # 如何建置 KernelSU? {#how-to-build-kernelsu}
 
-首先，您需要閱讀核心建置的 Android 官方文件：
+::: warning
+該文件僅供存檔參考，不再維護更新。
+自 KernelSU v3.0 版本之後，為了更快的迭代和建置速度，我們放棄了對 GKI 映像模式的官方支援。推薦使用 `Ylarod/ddk` 建置 LKM 使用。
+:::
+
+首先,您需要閱讀核心建置的 Android 官方文件：
 
 1. [建置核心](https://source.android.com/docs/setup/build/building-kernels)
 2. [標準核心映像 (GKI) 發行組建](https://source.android.com/docs/core/architecture/kernel/gki-release-builds)

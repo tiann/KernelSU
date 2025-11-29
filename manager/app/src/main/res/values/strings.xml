@@ -57,6 +57,7 @@
     <string name="home_click_to_learn_kernelsu">Learn how to install KernelSU and use modules.</string>
     <string name="home_support_title">Support Us</string>
     <string name="home_support_content">KernelSU is, and always will be, free, and open source. However, you can show us that you care by making a donation.</string>
+    <string name="home_gki_warning">Starting from version 30000+, the GKI mode will be used only in testing environments. We do not recommend it for everyday use, and GKI image files will no longer be provided.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
     <string name="profile" translatable="false">App Profile</string>
     <string name="profile_default">Default</string>
@@ -79,6 +80,7 @@
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
     <string name="module_update">Update</string>
+    <string name="module_reinstall">Reinstall</string>
     <string name="module_downloading">Downloading module: %s</string>
     <string name="module_start_downloading">Start downloading: %s</string>
     <string name="new_version_available">New version %s is available, click to upgrade!</string>

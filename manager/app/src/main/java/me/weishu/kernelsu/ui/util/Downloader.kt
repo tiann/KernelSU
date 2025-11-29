@@ -11,8 +11,15 @@ import android.os.Environment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
+import okhttp3.Request
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import android.os.Handler
+import android.os.Looper
 
 /**
  * @author weishu
@@ -20,46 +27,46 @@ import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
  */
 @SuppressLint("Range")
 fun download(
-    context: Context,
     url: String,
     fileName: String,
-    description: String,
     onDownloaded: (Uri) -> Unit = {},
-    onDownloading: () -> Unit = {}
+    onDownloading: () -> Unit = {},
+    onProgress: (Int) -> Unit = {}
 ) {
-    val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
-    val query = DownloadManager.Query()
-    query.setFilterByStatus(DownloadManager.STATUS_RUNNING or DownloadManager.STATUS_PAUSED or DownloadManager.STATUS_PENDING)
-    downloadManager.query(query).use { cursor ->
-        while (cursor.moveToNext()) {
-            val uri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))
-            val localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
-            val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
-            val columnTitle = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE))
-            if (url == uri || fileName == columnTitle) {
-                if (status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PENDING) {
-                    onDownloading()
-                    return
-                } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                    onDownloaded(Uri.parse(localUri))
-                    return
+    onDownloading()
+    Thread {
+        val target = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName)
+        try {
+            ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
+                if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                val body = resp.body ?: throw IOException("Empty body")
+                val total = body.contentLength()
+                target.parentFile?.mkdirs()
+                FileOutputStream(target).use { fos ->
+                    val buf = ByteArray(8 * 1024)
+                    var read: Int
+                    var soFar = 0L
+                    val source = body.byteStream()
+                    while (true) {
+                        read = source.read(buf)
+                        if (read == -1) break
+                        fos.write(buf, 0, read)
+                        soFar += read
+                        if (total > 0) {
+                            val percent = ((soFar * 100L) / total).toInt().coerceIn(0, 100)
+                            onProgress(percent)
+                        }
+                    }
+                    fos.flush()
                 }
             }
+            Handler(Looper.getMainLooper()).post {
+                onDownloaded(Uri.fromFile(target))
+            }
+        } catch (_: Exception) {
+            // ignore, keep UI state
         }
-    }
-
-    val request = DownloadManager.Request(Uri.parse(url))
-        .setDestinationInExternalPublicDir(
-            Environment.DIRECTORY_DOWNLOADS,
-            fileName
-        )
-        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        .setMimeType("application/zip")
-        .setTitle(fileName)
-        .setDescription(description)
-
-    downloadManager.enqueue(request)
+    }.start()
 }
 
 fun checkNewVersion(): LatestVersionInfo {
@@ -67,7 +74,7 @@ fun checkNewVersion(): LatestVersionInfo {
     // default null value if failed
     val defaultValue = LatestVersionInfo()
     runCatching {
-        ksuApp.okhttpClient.newCall(okhttp3.Request.Builder().url(url).build()).execute()
+        ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
             .use { response ->
                 if (!response.isSuccessful) {
                     return defaultValue
@@ -86,7 +93,7 @@ fun checkNewVersion(): LatestVersionInfo {
 
                     val regex = Regex("v(.+?)_(\\d+)-")
                     val matchResult = regex.find(name) ?: continue
-                    val versionName = matchResult.groupValues[1]
+                    matchResult.groupValues[1]
                     val versionCode = matchResult.groupValues[2].toInt()
                     val downloadUrl = asset.getString("browser_download_url")
 
@@ -124,7 +131,7 @@ fun DownloadListener(context: Context, onDownloaded: (Uri) -> Unit) {
                             val uri = cursor.getString(
                                 cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
                             )
-                            onDownloaded(Uri.parse(uri))
+                            onDownloaded(uri.toUri())
                         }
                     }
                 }

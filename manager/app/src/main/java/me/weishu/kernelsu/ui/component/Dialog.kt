@@ -55,6 +55,7 @@ interface ConfirmDialogVisuals : Parcelable {
     val title: String
     val content: String?
     val isMarkdown: Boolean
+    val isHtml: Boolean
     val confirm: String?
     val dismiss: String?
 }
@@ -64,11 +65,12 @@ private data class ConfirmDialogVisualsImpl(
     override val title: String,
     override val content: String?,
     override val isMarkdown: Boolean,
+    override val isHtml: Boolean,
     override val confirm: String?,
     override val dismiss: String?,
 ) : ConfirmDialogVisuals {
     companion object {
-        val Empty: ConfirmDialogVisuals = ConfirmDialogVisualsImpl("", "", false, null, null)
+        val Empty: ConfirmDialogVisuals = ConfirmDialogVisualsImpl("", "", false, false, null, null)
     }
 }
 
@@ -96,6 +98,7 @@ interface ConfirmDialogHandle : DialogHandle {
         title: String,
         content: String? = null,
         markdown: Boolean = false,
+        html: Boolean = false,
         confirm: String? = null,
         dismiss: String? = null
     )
@@ -104,6 +107,7 @@ interface ConfirmDialogHandle : DialogHandle {
         title: String,
         content: String? = null,
         markdown: Boolean = false,
+        html: Boolean = false,
         confirm: String? = null,
         dismiss: String? = null
     ): ConfirmResult
@@ -262,11 +266,12 @@ private class ConfirmDialogHandleImpl(
         title: String,
         content: String?,
         markdown: Boolean,
+        html: Boolean,
         confirm: String?,
         dismiss: String?
     ) {
         coroutineScope.launch {
-            updateVisuals(ConfirmDialogVisualsImpl(title, content, markdown, confirm, dismiss))
+            updateVisuals(ConfirmDialogVisualsImpl(title, content, markdown, html, confirm, dismiss))
             show()
         }
     }
@@ -275,11 +280,12 @@ private class ConfirmDialogHandleImpl(
         title: String,
         content: String?,
         markdown: Boolean,
+        html: Boolean,
         confirm: String?,
         dismiss: String?
     ): ConfirmResult {
         coroutineScope.launch {
-            updateVisuals(ConfirmDialogVisualsImpl(title, content, markdown, confirm, dismiss))
+            updateVisuals(ConfirmDialogVisualsImpl(title, content, markdown, html, confirm, dismiss))
             show()
         }
         return awaitResult()
@@ -415,11 +421,11 @@ private fun ConfirmDialog(
         content = {
             Layout(
                 content = {
-                    visuals.content?.let {
-                        if (visuals.isMarkdown) {
-                            MarkdownContent(content = visuals.content!!)
-                        } else {
-                            Text(text = visuals.content!!)
+                    visuals.content?.let { content ->
+                        when {
+                            visuals.isMarkdown -> MarkdownContent(content = content)
+                            visuals.isHtml -> GithubMarkdownContent(content = content)
+                            else -> Text(text = content)
                         }
                     }
                     Row(
