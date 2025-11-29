@@ -1,7 +1,12 @@
 # Thiết bị hỗ trợ không chính thức
 
 ::: warning
-Đây là trang liệt kê kernel cho các thiết bị không dùng GKI được hỗ trợ bởi các lập trình viên khác. 
+Tài liệu này chỉ để tham khảo lưu trữ và không còn được duy trì.
+Kể từ KernelSU v1.0, chúng tôi đã ngừng hỗ trợ chính thức cho các thiết bị không phải GKI.
+:::
+
+::: warning
+Đây là trang liệt kê kernel cho các thiết bị không dùng GKI được hỗ trợ bởi các lập trình viên khác.
 
 :::
 

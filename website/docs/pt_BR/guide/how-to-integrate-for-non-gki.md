@@ -1,5 +1,10 @@
 # Integração para dispositivos não-GKI
 
+::: warning
+Este documento é apenas para referência de arquivo e não é mais mantido.
+Desde o KernelSU v1.0, abandonamos o suporte oficial para dispositivos não-GKI.
+:::
+
 O KernelSU pode ser integrado a kernels não-GKI e foi portado para 4.14 e versões anteriores.
 
 Devido à fragmentação dos kernels não-GKI, não temos um método universal para construí-lo, portanto, não podemos fornecer o boot.img não-GKI. No entanto, você pode compilar o kernel com o KernelSU integrado por conta própria.

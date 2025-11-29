@@ -1,6 +1,11 @@
 # Unofficially supported devices
 
 ::: warning
+This document is for archival reference only and is no longer maintained.
+Since KernelSU v1.0, we have dropped official support for non-GKI devices.
+:::
+
+::: warning
 In this page, there are kernels for non-GKI devices supporting KernelSU maintained by other developers.
 :::
 
