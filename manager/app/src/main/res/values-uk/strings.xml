@@ -157,4 +157,26 @@
     <string name="metamodule_uninstall_confirm">Ви впевнені, що хочете видалити модуль %s? Ця дія вплине на всі модулі, а деякі функції, що надаються метамодулем (наприклад, монтування), більше не працюватимуть.</string>
     <string name="app_profile_affects_following_apps">Впливає на такі програми</string>
     <string name="group_contains_apps">Містить %d програм</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_theme_summary">Виберіть режим теми програми.</string>
+    <string name="settings_theme_mode_system">Слідкувати за системою</string>
+    <string name="settings_theme_mode_light">Світло</string>
+    <string name="settings_theme_mode_dark">Темний</string>
+    <string name="settings_theme_mode_monet_system">Моне (система підписок)</string>
+    <string name="settings_theme_mode_monet_light">Моне (Світло)</string>
+    <string name="settings_theme_mode_monet_dark">Моне (Темний)</string>
+    <string name="settings_key_color">Ключовий колір</string>
+    <string name="settings_key_color_summary">Налаштуйте акцент під час використання Monet.</string>
+    <string name="settings_key_color_default">За замовчуванням</string>
+    <string name="color_blue">Синій</string>
+    <string name="color_red">Червоний</string>
+    <string name="color_green">Зелений</string>
+    <string name="color_purple">Фіолетовий</string>
+    <string name="color_orange">Помаранчевий</string>
+    <string name="color_teal">Бірюзовий</string>
+    <string name="color_pink">Рожевий</string>
+    <string name="color_brown">Коричневий</string>
+    <string name="feature_status_unsupported_summary">Ядро не підтримує цю функцію.</string>
+    <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
+    <string name="module_repo">Репозиторій модулів</string>
 </resources>
