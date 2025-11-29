@@ -9,21 +9,9 @@ jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
     secrets: inherit
-  build-gki-image:
-    uses: ./.github/workflows/build-gki-image.yml
-    secrets: inherit
-  build-wsa-kernel:
-    uses: ./.github/workflows/build-kernel-wsa.yml
-    secrets: inherit
-  build-arcvm-kernel:
-    uses: ./.github/workflows/build-kernel-arcvm.yml
-    secrets: inherit
   release:
     needs:
       - build-manager
-      - build-gki-image
-      - build-wsa-kernel
-      - build-arcvm-kernel
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
