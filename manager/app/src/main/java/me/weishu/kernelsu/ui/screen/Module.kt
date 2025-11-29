@@ -113,6 +113,8 @@ import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.hasMagisk
+import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
+import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
 import me.weishu.kernelsu.ui.util.toggleModule
 import me.weishu.kernelsu.ui.util.undoUninstallModule
 import me.weishu.kernelsu.ui.util.uninstallModule
@@ -259,11 +261,27 @@ fun ModulePager(
         }
 
         val changelog = changelogResult.getOrElse { "" }
+        var htmlLog = ""
+        if (changelog.isBlank()) {
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val detail = fetchModuleDetail(module.id)
+                    val latestTag = detail?.latestTag ?: ""
+                    val html = if (latestTag.isNotBlank()) fetchReleaseDescriptionHtml(module.id, latestTag) else null
+                    if (html != null) htmlLog = html
+                }
+            }
+        }
 
         val confirmResult = confirmDialog.awaitConfirm(
-            if (changelog.isNotEmpty()) changelogText else updateText,
-            content = changelog.ifBlank { startDownloadingText.format(module.name) },
-            markdown = changelog.isNotBlank(),
+            if (changelog.isNotEmpty() || htmlLog.isNotEmpty()) changelogText else updateText,
+            content = when {
+                changelog.isNotEmpty() -> changelog
+                htmlLog.isNotEmpty() -> htmlLog
+                else -> startDownloadingText.format(module.name)
+            },
+            markdown = changelog.isNotEmpty(),
+            html = htmlLog.isNotEmpty(),
             confirm = updateText,
         )
 

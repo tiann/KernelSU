@@ -69,7 +69,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.component.GithubMarkdownContent
 import me.weishu.kernelsu.ui.component.MarkdownContent
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
@@ -77,11 +77,12 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.module.UpdateState
+import me.weishu.kernelsu.ui.util.module.compareVersionCode
+import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
+import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
-import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
@@ -117,7 +118,8 @@ data class ReleaseArg(
     val tagName: String,
     val name: String,
     val publishedAt: String,
-    val assets: List<ReleaseAssetArg>
+    val assets: List<ReleaseAssetArg>,
+    val descriptionHTML: String
 ) : Parcelable
 
 @Parcelize
@@ -181,7 +183,8 @@ fun ModuleRepoScreen(
         }
     }
 
-    val confirmTitle = stringResource(R.string.module)
+    val confirmTitle = stringResource(R.string.module_install)
+    val updateTitle = stringResource(R.string.module_update)
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
 
@@ -474,11 +477,10 @@ fun ModuleRepoScreen(
                                             var progress by remember(fileName, latestAsset.downloadUrl) { mutableIntStateOf(0) }
                                             val installed = installedVm.moduleList.firstOrNull { it.id == module.moduleId }
                                             val repoCode = module.latestVersionCode
-                                            val installedCode = installed?.versionCode ?: 0
-                                            installed != null && repoCode > 0 && repoCode <= installedCode
-                                            val canUpdateByCode = installed != null && repoCode > installedCode
-                                            val equalByCode = installed != null && repoCode > 0 && repoCode == installedCode
-                                            val olderByCode = installed != null && repoCode > 0 && repoCode < installedCode
+                                            val state = compareVersionCode(installed?.versionCode, repoCode)
+                                            val canUpdateByCode = state == UpdateState.CAN_UPDATE
+                                            val equalByCode = state == UpdateState.EQUAL
+                                            val olderByCode = state == UpdateState.OLDER
                                             IconButton(
                                                 backgroundColor = if (canUpdateByCode) updateBg else colorScheme.secondaryContainer.copy(
                                                     alpha = 0.8f
@@ -499,12 +501,41 @@ fun ModuleRepoScreen(
                                                             )
                                                         }
                                                     }
-                                                    val confirmContent =
-                                                        context.getString(R.string.module_install_prompt_with_name, fileName)
-                                                    confirmDialog.showConfirm(
-                                                        title = confirmTitle,
-                                                        content = confirmContent
-                                                    )
+                                                    val startDownloadingText =
+                                                        context.getString(R.string.module_start_downloading, fileName)
+                                                    if (canUpdateByCode) {
+                                                        var confirmContent = startDownloadingText
+                                                        var confirmHtml = false
+                                                        scope.launch(Dispatchers.IO) {
+                                                            runCatching {
+                                                                val html = fetchReleaseDescriptionHtml(module.moduleId, latestTag)
+                                                                if (html != null) {
+                                                                    confirmContent = html
+                                                                    confirmHtml = true
+                                                                }
+                                                            }.onSuccess {
+                                                                withContext(Dispatchers.Main) {
+                                                                    confirmDialog.showConfirm(
+                                                                        title = updateTitle,
+                                                                        content = confirmContent,
+                                                                        html = confirmHtml
+                                                                    )
+                                                                }
+                                                            }.onFailure {
+                                                                withContext(Dispatchers.Main) {
+                                                                    confirmDialog.showConfirm(
+                                                                        title = confirmTitle,
+                                                                        content = startDownloadingText
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    } else {
+                                                        confirmDialog.showConfirm(
+                                                            title = confirmTitle,
+                                                            content = startDownloadingText
+                                                        )
+                                                    }
                                                 },
                                             ) {
                                                 if (isDownloading) {
@@ -570,7 +601,7 @@ fun ModuleRepoDetailScreen(
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
-    val confirmTitle = stringResource(R.string.module)
+    val confirmTitle = stringResource(R.string.module_install)
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
     val onInstallModule: (Uri) -> Unit = { uri ->
@@ -641,50 +672,26 @@ fun ModuleRepoDetailScreen(
             if (module.moduleId.isNotEmpty()) {
                 withContext(Dispatchers.IO) {
                     runCatching {
-                        val url = "https://modules.kernelsu.org/module/${module.moduleId}.json"
-                        ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-                            if (!resp.isSuccessful) return@use
-                            val body = resp.body?.string() ?: return@use
-                            val obj = JSONObject(body)
-                            val readme = obj.optString("readme", "")
-                            readmeText = readme.ifBlank { null }
-
-                            val lr = obj.optJSONObject("latestRelease")
-                            if (lr != null) {
-                                detailLatestTag = lr.optString("name", lr.optString("version", ""))
-                                detailLatestTime = lr.optString("time", "")
-
-                                val urlDl = lr.optString("downloadUrl", "")
-                                if (urlDl.isNotEmpty()) {
-                                    val fname = urlDl.substringAfterLast('/')
-                                    detailLatestAsset = ReleaseAssetArg(name = fname, downloadUrl = urlDl, size = 0L)
-                                }
+                        val detail = fetchModuleDetail(module.moduleId)
+                        if (detail != null) {
+                            readmeText = detail.readme
+                            detailLatestTag = detail.latestTag
+                            detailLatestTime = detail.latestTime
+                            detailLatestAsset = detail.latestAssetUrl?.let { url ->
+                                val fname = detail.latestAssetName ?: url.substringAfterLast('/')
+                                ReleaseAssetArg(name = fname, downloadUrl = url, size = 0L)
                             }
-
-                            val releasesArray = obj.optJSONArray("releases")
-                            if (releasesArray != null) {
-                                val parsed = (0 until releasesArray.length()).mapNotNull { rIdx ->
-                                    val r = releasesArray.optJSONObject(rIdx) ?: return@mapNotNull null
-                                    val rname = r.optString("name", "")
-                                    val publishedAt = r.optString("publishedAt", "")
-                                    val assetsArray = r.optJSONArray("releaseAssets") ?: JSONArray()
-                                    val assets = (0 until assetsArray.length()).mapNotNull { aIdx ->
-                                        val a = assetsArray.optJSONObject(aIdx) ?: return@mapNotNull null
-                                        val aname = a.optString("name", "")
-                                        val adl = a.optString("downloadUrl", "")
-                                        val asz = a.optLong("size", 0L)
-                                        if (aname.isEmpty() || adl.isEmpty()) null else ReleaseAssetArg(
-                                            name = aname,
-                                            downloadUrl = adl,
-                                            size = asz
-                                        )
-                                    }
-                                    ReleaseArg(tagName = rname, name = rname, publishedAt = publishedAt, assets = assets)
-                                }
-                                detailReleases = parsed
-                            } else {
-                                detailReleases = emptyList()
+                            detailReleases = detail.releases.map { r ->
+                                ReleaseArg(
+                                    tagName = r.tagName,
+                                    name = r.name,
+                                    publishedAt = r.publishedAt,
+                                    assets = r.assets.map { a -> ReleaseAssetArg(a.name, a.downloadUrl, a.size) },
+                                    descriptionHTML = r.descriptionHTML
+                                )
                             }
+                        } else {
+                            detailReleases = emptyList()
                         }
                     }.onSuccess {
                         readmeLoaded = true
@@ -832,6 +839,7 @@ fun ModuleRepoDetailScreen(
                                     text = rel.publishedAt,
                                     fontSize = 12.sp,
                                     color = colorScheme.onSurfaceVariantSummary,
+                                    modifier = Modifier.align(Alignment.Top)
                                 )
                             }
 
@@ -841,8 +849,22 @@ fun ModuleRepoDetailScreen(
                                 exit = fadeOut() + shrinkVertically()
                             ) {
                                 Column {
+                                    AnimatedVisibility(
+                                        visible = rel.descriptionHTML.isNotBlank(),
+                                        enter = fadeIn() + expandVertically(),
+                                        exit = fadeOut() + shrinkVertically()
+                                    ) {
+                                        Column {
+                                            HorizontalDivider(
+                                                modifier = Modifier.padding(vertical = 4.dp),
+                                                thickness = 0.5.dp,
+                                                color = colorScheme.outline.copy(alpha = 0.5f)
+                                            )
+                                            GithubMarkdownContent(content = rel.descriptionHTML)
+                                        }
+                                    }
                                     HorizontalDivider(
-                                        modifier = Modifier.padding(vertical = 8.dp),
+                                        modifier = Modifier.padding(vertical = 4.dp),
                                         thickness = 0.5.dp,
                                         color = colorScheme.outline.copy(alpha = 0.5f)
                                     )
@@ -875,10 +897,10 @@ fun ModuleRepoDetailScreen(
                                                         )
                                                     }
                                                 }
-                                                val confirmContent = context.getString(R.string.module_install_prompt_with_name, fileName)
+                                                val startDownloadingText = context.getString(R.string.module_start_downloading, fileName)
                                                 confirmDialog.showConfirm(
                                                     title = confirmTitle,
-                                                    content = confirmContent
+                                                    content = startDownloadingText
                                                 )
                                             }
                                         }
@@ -1038,10 +1060,10 @@ fun ModuleRepoDetailScreen(
                                                     )
                                                 }
                                             }
-                                            val confirmContent = context.getString(R.string.module_install_prompt_with_name, fileName)
+                                            val startDownloadingText = context.getString(R.string.module_start_downloading, fileName)
                                             confirmDialog.showConfirm(
                                                 title = confirmTitle,
-                                                content = confirmContent
+                                                content = startDownloadingText
                                             )
                                         },
                                     ) {

@@ -24,6 +24,9 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.listModules
+import me.weishu.kernelsu.ui.util.module.RepoSummary
+import me.weishu.kernelsu.ui.util.module.fetchRepoIndex
+import me.weishu.kernelsu.ui.util.module.sanitizeVersionString
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
@@ -157,6 +160,7 @@ class ModuleViewModel : ViewModel() {
                         executable -> 3
                         else -> 4
                     }
+
                     sortEnabledFirst && !sortActionFirst -> if (it.enabled) 1 else 2
                     !sortEnabledFirst && sortActionFirst -> if (executable) 1 else 2
                     else -> 1
@@ -226,49 +230,16 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
-    @Immutable
-    data class RepoSummary(
-        val latestVersion: String,
-        val versionCode: Int,
-        val downloadUrl: String
-    )
-
     private val _repoIndex = mutableStateMapOf<String, RepoSummary>()
-    val repoIndex: SnapshotStateMap<String, RepoSummary> = _repoIndex
 
     suspend fun refreshRepoIndex() {
-        val parsed = withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-                val req = okhttp3.Request.Builder().url("https://modules.kernelsu.org/modules.json").build()
-                ksuApp.okhttpClient.newCall(req).execute().use { resp ->
-                    if (!resp.isSuccessful) emptyList() else {
-                        val body = resp.body?.string() ?: return@use emptyList()
-                        val arr = org.json.JSONArray(body)
-                        (0 until arr.length()).mapNotNull { idx ->
-                            val obj = arr.optJSONObject(idx) ?: return@mapNotNull null
-                            val id = obj.optString("moduleId", "").ifBlank { return@mapNotNull null }
-                            val lr = obj.optJSONObject("latestRelease")
-                            if (lr == null) null else {
-                                val ver = sanitizeVersionString(lr.optString("name", lr.optString("version", "")))
-                                val vcode = lr.optInt("versionCode", 0)
-                                val dl = lr.optString("downloadUrl", "")
-                                if (vcode <= 0 || dl.isBlank()) null else id to RepoSummary(ver, vcode, dl)
-                            }
-                        }
-                    }
-                }
-            }.getOrElse { emptyList() }
-        }
-
+        val parsed = withContext(Dispatchers.IO) { fetchRepoIndex() }
         withContext(Dispatchers.Main) {
             _repoIndex.clear()
             parsed.forEach { (id, summary) -> _repoIndex[id] = summary }
         }
     }
 
-    private fun sanitizeVersionString(version: String): String {
-        return version.replace(Regex("[^a-zA-Z0-9.\\-_]"), "_")
-    }
 
     private fun ModuleInfo.toSignature(): ModuleUpdateSignature {
         return ModuleUpdateSignature(
