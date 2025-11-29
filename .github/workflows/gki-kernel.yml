@@ -148,6 +148,33 @@ jobs:
           repo status
           echo "[+] KernelSU setup done."
 
+      - name: Fix WiFi and Bluetooth on Samsung 6.6 GKI devices
+        if: ${{ ( inputs.version == 'android15-6.6' && inputs.build_lkm == false ) }}
+        run: |
+          COMMON_ROOT=$GITHUB_WORKSPACE/android-kernel/common
+          KSU_ROOT=$GITHUB_WORKSPACE/KernelSU
+          echo "[+] Adding Samsung KDP exported symbols to abi_gki_aarch64_galaxy"
+          SYMBOL_LIST=$COMMON_ROOT/android/abi_gki_aarch64_galaxy
+          echo "kdp_set_cred_non_rcu" >> $SYMBOL_LIST
+          echo "kdp_usecount_dec_and_test" >> $SYMBOL_LIST
+          echo "kdp_usecount_inc" >> $SYMBOL_LIST
+          echo "[+] Adding Samsung KDP exported symbols definition to abi_gki_aarch64.stg"
+          cd $COMMON_ROOT
+          if [[ -f "$KSU_ROOT/.github/patches/${{ inputs.patch_path }}/add-min_kdp-symbols-${{ inputs.os_patch_level }}.patch" ]]; then
+            PATCH="$KSU_ROOT/.github/patches/${{ inputs.patch_path }}/add-min_kdp-symbols-${{ inputs.os_patch_level }}.patch"
+          else
+            PATCH="$KSU_ROOT/.github/patches/${{ inputs.patch_path }}/add-min_kdp-symbols.patch"
+          fi
+          echo "[+] Samsung KDP exported symbols patch is $PATCH"
+          if patch -p1 --dry-run < $PATCH; then
+            echo "[+] Successfully added Samsung KDP exported symbols definition to abi_gki_aarch64.stg"
+            patch -p1 --no-backup-if-mismatch < $PATCH
+          fi
+          echo "[+] Adding Samsung minimal KDP driver"
+          cd $COMMON_ROOT/drivers
+          cp "$KSU_ROOT/.github/patches/${{ inputs.patch_path }}/min_kdp.c" min_kdp.c
+          echo "obj-y += min_kdp.o" >> $COMMON_ROOT/drivers/Makefile
+
       - name: Symbol magic
         run: |
           echo "[+] Export all symbol from abi_gki_aarch64.xml"
