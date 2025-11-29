@@ -47,7 +47,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
-import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -168,10 +167,12 @@ fun ModulePager(
                 viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
                 viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
                 viewModel.fetchModuleList()
+                scope.launch { viewModel.refreshRepoIndex(); viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
             }
 
             viewModel.isNeedRefresh -> {
                 viewModel.fetchModuleList()
+                scope.launch { viewModel.refreshRepoIndex(); viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
             }
         }
     }
@@ -224,7 +225,6 @@ fun ModulePager(
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
     val startDownloadingText = stringResource(R.string.module_start_downloading)
-    val fetchChangeLogFailed = stringResource(R.string.module_changelog_failed)
 
     suspend fun onModuleUpdate(
         module: ModuleViewModel.ModuleInfo,
@@ -234,12 +234,16 @@ fun ModulePager(
         context: Context,
         onInstallModule: (Uri) -> Unit
     ) {
-        val changelogResult = loadingDialog.withLoading {
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    ksuApp.okhttpClient.newCall(
-                        okhttp3.Request.Builder().url(changelogUrl).build()
-                    ).execute().body!!.string()
+        val changelogResult = if (changelogUrl.isBlank()) {
+            Result.success("")
+        } else {
+            loadingDialog.withLoading {
+                withContext(Dispatchers.IO) {
+                    runCatching {
+                        ksuApp.okhttpClient.newCall(
+                            okhttp3.Request.Builder().url(changelogUrl).build()
+                        ).execute().body!!.string()
+                    }
                 }
             }
         }
@@ -254,18 +258,12 @@ fun ModulePager(
             }
         }
 
-        val changelog = changelogResult.getOrElse {
-            showToast(fetchChangeLogFailed.format(it.message))
-            return
-        }.ifBlank {
-            showToast(fetchChangeLogFailed.format(module.name))
-            return
-        }
+        val changelog = changelogResult.getOrElse { "" }
 
         val confirmResult = confirmDialog.awaitConfirm(
-            changelogText,
-            content = changelog,
-            markdown = true,
+            if (changelog.isNotEmpty()) changelogText else updateText,
+            content = changelog.ifBlank { startDownloadingText.format(module.name) },
+            markdown = changelog.isNotBlank(),
             confirm = updateText,
         )
 
@@ -278,10 +276,8 @@ fun ModulePager(
         val downloading = downloadingText.format(module.name)
         withContext(Dispatchers.IO) {
             download(
-                context,
-                downloadUrl,
-                fileName,
-                downloading,
+                url = downloadUrl,
+                fileName = fileName,
                 onDownloaded = onInstallModule,
                 onDownloading = {
                     scope.launch(Dispatchers.Main) {
@@ -918,11 +914,10 @@ fun ModuleItem(
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
-    val colorScheme = colorScheme
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
-    val actionIconTint = remember(isDark) { colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f) }
-    val updateBg = remember(colorScheme) { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
-    val updateTint = remember(colorScheme) { colorScheme.onTertiaryContainer.copy(alpha = 0.8f) }
+    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
+    val updateBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+    val updateTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
     val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }
     val textDecoration by remember(module.remove) {
         mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
@@ -1097,12 +1092,12 @@ fun ModuleItem(
                     ) {
                         Icon(
                             modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Rounded.Download,
+                            imageVector = MiuixIcons.Useful.Save,
                             tint = updateTint,
                             contentDescription = stringResource(R.string.module_update),
                         )
                         Text(
-                            modifier = Modifier.padding(end = 3.dp),
+                            modifier = Modifier.padding(start = 4.dp, end = 2.dp),
                             text = stringResource(R.string.module_update),
                             color = updateTint,
                             fontWeight = FontWeight.Medium,

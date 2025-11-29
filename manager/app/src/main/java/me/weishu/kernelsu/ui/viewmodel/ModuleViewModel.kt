@@ -226,6 +226,46 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
+    @Immutable
+    data class RepoSummary(
+        val latestVersion: String,
+        val versionCode: Int,
+        val downloadUrl: String
+    )
+
+    private val _repoIndex = mutableStateMapOf<String, RepoSummary>()
+    val repoIndex: SnapshotStateMap<String, RepoSummary> = _repoIndex
+
+    suspend fun refreshRepoIndex() {
+        val parsed = withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                val req = okhttp3.Request.Builder().url("https://modules.kernelsu.org/modules.json").build()
+                ksuApp.okhttpClient.newCall(req).execute().use { resp ->
+                    if (!resp.isSuccessful) emptyList() else {
+                        val body = resp.body?.string() ?: return@use emptyList()
+                        val arr = org.json.JSONArray(body)
+                        (0 until arr.length()).mapNotNull { idx ->
+                            val obj = arr.optJSONObject(idx) ?: return@mapNotNull null
+                            val id = obj.optString("moduleId", "").ifBlank { return@mapNotNull null }
+                            val lr = obj.optJSONObject("latestRelease")
+                            if (lr == null) null else {
+                                val ver = sanitizeVersionString(lr.optString("name", lr.optString("version", "")))
+                                val vcode = lr.optInt("versionCode", 0)
+                                val dl = lr.optString("downloadUrl", "")
+                                if (vcode <= 0 || dl.isBlank()) null else id to RepoSummary(ver, vcode, dl)
+                            }
+                        }
+                    }
+                }
+            }.getOrElse { emptyList() }
+        }
+
+        withContext(Dispatchers.Main) {
+            _repoIndex.clear()
+            parsed.forEach { (id, summary) -> _repoIndex[id] = summary }
+        }
+    }
+
     private fun sanitizeVersionString(version: String): String {
         return version.replace(Regex("[^a-zA-Z0-9.\\-_]"), "_")
     }
@@ -280,6 +320,21 @@ class ModuleViewModel : ViewModel() {
                     changedEntries += id to entry.info
                 }
                 updateInfoInFlight.remove(id)
+            }
+
+            modules.forEach { m ->
+                val cache = updateInfoCache[m.id]
+                val hasUpdateJson = cache?.info?.downloadUrl?.isNotEmpty() == true
+                if (!hasUpdateJson) {
+                    val repo = _repoIndex[m.id]
+                    if (repo != null) {
+                        if (repo.versionCode > m.versionCode && repo.downloadUrl.isNotBlank()) {
+                            val info = ModuleUpdateInfo(downloadUrl = repo.downloadUrl, version = repo.latestVersion, changelog = "")
+                            updateInfoCache[m.id] = ModuleUpdateCache(m.toSignature(), info)
+                            changedEntries += m.id to info
+                        }
+                    }
+                }
             }
         }
 
