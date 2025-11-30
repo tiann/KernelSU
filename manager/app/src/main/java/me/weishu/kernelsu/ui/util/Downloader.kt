@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
@@ -18,8 +20,6 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import android.os.Handler
-import android.os.Looper
 
 /**
  * @author weishu
@@ -70,6 +70,7 @@ fun download(
 }
 
 fun checkNewVersion(): LatestVersionInfo {
+    if (!isNetworkAvailable(ksuApp)) return LatestVersionInfo()
     val url = "https://api.github.com/repos/tiann/KernelSU/releases/latest"
     // default null value if failed
     val defaultValue = LatestVersionInfo()

@@ -77,6 +77,7 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import me.weishu.kernelsu.ui.util.module.UpdateState
 import me.weishu.kernelsu.ui.util.module.compareVersionCode
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
@@ -94,6 +95,7 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -297,6 +299,7 @@ fun ModuleRepoScreen(
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
         val isLoading = viewModel.modules.value.isEmpty()
+        var offline = !isNetworkAvailable(context)
 
         if (isLoading) {
             Box(
@@ -304,7 +307,21 @@ fun ModuleRepoScreen(
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                InfiniteProgressIndicator()
+                if (offline) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = stringResource(R.string.network_offline), color = colorScheme.onSurfaceVariantSummary, fontSize = 16.sp)
+                        Spacer(Modifier.height(12.dp))
+                        TextButton(
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .fillMaxWidth(),
+                            text = stringResource(R.string.network_retry),
+                            onClick = { viewModel.refresh() },
+                        )
+                    }
+                } else {
+                    InfiniteProgressIndicator()
+                }
             }
         } else {
             LaunchedEffect(searchStatus.searchText) { viewModel.updateSearchText(searchStatus.searchText) }
@@ -322,12 +339,13 @@ fun ModuleRepoScreen(
                 val pullToRefreshState = rememberPullToRefreshState()
                 LaunchedEffect(isRefreshing) {
                     if (isRefreshing) {
-                        delay(350)
+                        delay(450)
                         viewModel.refresh()
                         isRefreshing = false
                     }
                 }
                 val refreshTexts = listOf(
+
                     stringResource(R.string.refresh_pulling),
                     stringResource(R.string.refresh_release),
                     stringResource(R.string.refresh_refresh),

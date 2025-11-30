@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
+import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.module.RepoSummary
 import me.weishu.kernelsu.ui.util.module.fetchRepoIndex
@@ -233,13 +234,18 @@ class ModuleViewModel : ViewModel() {
     private val _repoIndex = mutableStateMapOf<String, RepoSummary>()
 
     suspend fun refreshRepoIndex() {
-        val parsed = withContext(Dispatchers.IO) { fetchRepoIndex() }
+        val parsed = withContext(Dispatchers.IO) {
+            val map = fetchRepoIndex()
+            if (map.isEmpty()) null else map.entries.map { it.key to it.value }
+        }
+
         withContext(Dispatchers.Main) {
-            _repoIndex.clear()
-            parsed.forEach { (id, summary) -> _repoIndex[id] = summary }
+            if (parsed != null) {
+                _repoIndex.clear()
+                parsed.forEach { (id, summary) -> _repoIndex[id] = summary }
+            }
         }
     }
-
 
     private fun ModuleInfo.toSignature(): ModuleUpdateSignature {
         return ModuleUpdateSignature(
@@ -322,6 +328,9 @@ class ModuleViewModel : ViewModel() {
     }
 
     fun checkUpdate(m: ModuleInfo): ModuleUpdateInfo {
+        if (!isNetworkAvailable(ksuApp)) {
+            return ModuleUpdateInfo.Empty
+        }
         if (m.updateJson.isEmpty() || m.remove || m.update || !m.enabled) {
             return ModuleUpdateInfo.Empty
         }

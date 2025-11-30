@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -11,9 +12,11 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
+import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
@@ -71,10 +74,18 @@ class ModuleRepoViewModel : ViewModel() {
 
     fun refresh() {
         viewModelScope.launch {
+            val netAvailable = isNetworkAvailable(ksuApp)
             withContext(Dispatchers.Main) { isRefreshing = true }
-            val parsed = withContext(Dispatchers.IO) { fetchModulesInternal() }
+            val parsed = withContext(Dispatchers.IO) { if (!netAvailable) null else fetchModulesInternal() }
             withContext(Dispatchers.Main) {
-                _modules.value = parsed
+                if (parsed != null) {
+                    _modules.value = parsed
+                } else {
+                    Toast.makeText(
+                        ksuApp,
+                        ksuApp.getString(R.string.network_offline), Toast.LENGTH_SHORT
+                    ).show()
+                }
                 isRefreshing = false
             }
         }
