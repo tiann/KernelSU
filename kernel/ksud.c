@@ -203,8 +203,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 
     /* This applies to versions Android 10+ */
     static const char system_bin_init[] = "/system/bin/init";
-    /* This applies to versions between Android 6 ~ 9  */
-    static const char old_system_init[] = "/init";
     static bool init_second_stage_executed = false;
 
     if (!filename_ptr)
@@ -215,6 +213,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
         return 0;
     }
 
+    // https://cs.android.com/android/platform/superproject/+/android-16.0.0_r2:system/core/init/main.cpp;l=77
     if (unlikely(!memcmp(filename->name, system_bin_init,
                          sizeof(system_bin_init) - 1) &&
                  argv)) {
@@ -236,60 +235,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
                 pr_err("/system/bin/init parse args err!\n");
             }
         }
-    } else if (unlikely(!memcmp(filename->name, old_system_init,
-                                sizeof(old_system_init) - 1) &&
-                        argv)) {
-        // /init executed
-        int argc = count(*argv, MAX_ARG_STRINGS);
-        pr_info("/init argc: %d\n", argc);
-        if (argc > 1 && !init_second_stage_executed) {
-            /* This applies to versions between Android 6 ~ 7 */
-            const char __user *p = get_user_arg_ptr(*argv, 1);
-            if (p && !IS_ERR(p)) {
-                char first_arg[16];
-                strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-                pr_info("/init first arg: %s\n", first_arg);
-                if (!strcmp(first_arg, "--second-stage")) {
-                    pr_info("/init second_stage executed\n");
-                    apply_kernelsu_rules();
-                    init_second_stage_executed = true;
-                }
-            } else {
-                pr_err("/init parse args err!\n");
-            }
-        } else if (argc == 1 && !init_second_stage_executed && envp) {
-            /* This applies to versions between Android 8 ~ 9  */
-            int envc = count(*envp, MAX_ARG_STRINGS);
-            if (envc > 0) {
-                int n;
-                for (n = 1; n <= envc; n++) {
-                    const char __user *p = get_user_arg_ptr(*envp, n);
-                    if (!p || IS_ERR(p)) {
-                        continue;
-                    }
-                    char env[256];
-                    // Reading environment variable strings from user space
-                    if (strncpy_from_user_nofault(env, p, sizeof(env)) < 0)
-                        continue;
-                    // Parsing environment variable names and values
-                    char *env_name = env;
-                    char *env_value = strchr(env, '=');
-                    if (env_value == NULL)
-                        continue;
-                    // Replace equal sign with string terminator
-                    *env_value = '\0';
-                    env_value++;
-                    // Check if the environment variable name and value are matching
-                    if (!strcmp(env_name, "INIT_SECOND_STAGE") &&
-                        (!strcmp(env_value, "1") ||
-                         !strcmp(env_value, "true"))) {
-                        pr_info("/init second_stage executed\n");
-                        apply_kernelsu_rules();
-                        init_second_stage_executed = true;
-                    }
-                }
-            }
-        }
     }
 
     if (unlikely(first_app_process && !memcmp(filename->name, app_process,
@@ -300,6 +245,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
         struct task_struct *init_task;
         rcu_read_lock();
         init_task = rcu_dereference(current->real_parent);
+        // fallback for initial installation, ksud is not there
         if (init_task) {
             task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
         }
