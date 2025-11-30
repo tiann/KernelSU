@@ -16,6 +16,7 @@
 #include <linux/uaccess.h>
 #include <linux/namei.h>
 #include <linux/workqueue.h>
+#include <linux/atomic.h>
 
 #include "manager.h"
 #include "allowlist.h"
@@ -25,6 +26,11 @@
 #include "util.h"
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
+
+static atomic_t vfs_read_rc_inserted = ATOMIC_INIT(0);
+static atomic_t execve_first_app_process = ATOMIC_INIT(1);
+static atomic_t volumedown_pressed_count = ATOMIC_INIT(0);
+static atomic_t input_hook_stopped = ATOMIC_INIT(0);
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
@@ -199,7 +205,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
     struct filename *filename;
 
     static const char app_process[] = "/system/bin/app_process";
-    static bool first_app_process = true;
 
     /* This applies to versions Android 10+ */
     static const char system_bin_init[] = "/system/bin/init";
@@ -215,8 +220,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 
     // https://cs.android.com/android/platform/superproject/+/android-16.0.0_r2:system/core/init/main.cpp;l=77
     if (unlikely(!memcmp(filename->name, system_bin_init,
-                         sizeof(system_bin_init) - 1) &&
-                 argv)) {
+                         sizeof(system_bin_init) - 1) && argv)) {
         // /system/bin/init executed
         int argc = count(*argv, MAX_ARG_STRINGS);
         pr_info("/system/bin/init argc: %d\n", argc);
@@ -237,9 +241,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
         }
     }
 
-    if (unlikely(first_app_process && !memcmp(filename->name, app_process,
-                                              sizeof(app_process) - 1))) {
-        first_app_process = false;
+    if (unlikely(atomic_xchg(&execve_first_app_process, 0) == 1 &&
+                 !memcmp(filename->name, app_process, sizeof(app_process) - 1))) {
         pr_info("exec app_process, /data prepared, second_stage: %d\n",
                 init_second_stage_executed);
         struct task_struct *init_task;
@@ -323,13 +326,11 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
     }
 
     // we only process the first read
-    static bool rc_inserted = false;
-    if (rc_inserted) {
+    if (atomic_xchg(&vfs_read_rc_inserted, 1) != 0) {
         // we don't need this kprobe, unregister it!
         stop_vfs_read_hook();
         return 0;
     }
-    rc_inserted = true;
 
     // now we can sure that the init process is reading
     // `/system/etc/init/atrace.rc`
@@ -386,8 +387,6 @@ static int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
     return result;
 }
 
-static unsigned int volumedown_pressed_count = 0;
-
 static bool is_volumedown_enough(unsigned int count)
 {
     return count >= 3;
@@ -399,12 +398,8 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
     if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
         int val = *value;
         pr_info("KEY_VOLUMEDOWN val: %d\n", val);
-        if (val) {
-            // key pressed, count it
-            volumedown_pressed_count += 1;
-            if (is_volumedown_enough(volumedown_pressed_count)) {
-                stop_input_hook();
-            }
+        if (val && is_volumedown_enough(atomic_inc_return(&volumedown_pressed_count))) {
+            stop_input_hook();
         }
     }
 
@@ -422,8 +417,9 @@ bool ksu_is_safe_mode()
     // stop hook first!
     stop_input_hook();
 
-    pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
-    if (is_volumedown_enough(volumedown_pressed_count)) {
+    int count = atomic_read(&volumedown_pressed_count);
+    pr_info("volumedown_pressed_count: %d\n", count);
+    if (is_volumedown_enough(count)) {
         // pressed over 3 times
         pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
         safe_mode = true;
@@ -531,11 +527,9 @@ static void stop_execve_hook()
 
 static void stop_input_hook()
 {
-    static bool input_hook_stopped = false;
-    if (input_hook_stopped) {
+    if (atomic_xchg(&input_hook_stopped, 1) != 0) {
         return;
     }
-    input_hook_stopped = true;
     bool ret = schedule_work(&stop_input_hook_work);
     pr_info("unregister input kprobe: %d!\n", ret);
 }
