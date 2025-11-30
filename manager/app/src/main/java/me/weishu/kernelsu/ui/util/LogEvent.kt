@@ -17,6 +17,7 @@ fun getBugreportFile(context: Context): File {
     val bugreportDir = File(context.cacheDir, "bugreport")
     bugreportDir.mkdirs()
 
+    val processFile = File(bugreportDir, "process.txt")
     val dmesgFile = File(bugreportDir, "dmesg.txt")
     val logcatFile = File(bugreportDir, "logcat.txt")
     val tombstonesFile = File(bugreportDir, "tombstones.tar.gz")
@@ -40,6 +41,8 @@ fun getBugreportFile(context: Context): File {
 
     val shell = getRootShell(true)
 
+    // busybox ps has very few features for embed devices
+    shell.newJob().add("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}").exec()
     shell.newJob().add("dmesg > ${dmesgFile.absolutePath}").exec()
     shell.newJob().add("logcat -d > ${logcatFile.absolutePath}").exec()
     shell.newJob().add("tar -czf ${tombstonesFile.absolutePath} -C /data/tombstones .").exec()
