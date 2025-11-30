@@ -20,9 +20,9 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     #[cfg(unix)]
-    let _ = catch_bootlog("logcat", &["logcat"]);
+    let _ = catch_bootlog("logcat", &["logcat", "-b", "all"]);
     #[cfg(unix)]
-    let _ = catch_bootlog("dmesg", &["dmesg", "-w"]);
+    let _ = catch_bootlog("dmesg", &["dmesg", "-w", "-r"]);
 
     if utils::has_magisk() {
         warn!("Magisk detected, skip post-fs-data!");
