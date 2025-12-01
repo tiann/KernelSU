@@ -9,14 +9,14 @@ edition = "2024"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "3",  features = [
+zip = { version = "6",  features = [
     "deflate",
     "deflate64",
     "time",
     "lzma",
     "xz",
 ], default-features = false }
-zip-extensions = { version = "0.8", features = [
+zip-extensions = { version = "0.9", features = [
     "deflate",
     "lzma",
     "xz",
@@ -37,7 +37,7 @@ rust-embed = { version = "8", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
 ] }
-which = "7"
+which = "8"
 getopts = "0.2"
 sha256 = "1"
 sha1 = "0.10"
@@ -46,7 +46,7 @@ chrono = "0.4"
 regex-lite = "0.1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-rustix = { version = "=1.0.8", features = [
+rustix = { version = "=1.1.2", features = [
     "all-apis",
 ] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
