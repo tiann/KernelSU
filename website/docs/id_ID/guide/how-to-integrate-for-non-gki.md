@@ -255,7 +255,7 @@ Terakhir, edit `KernelSU/kernel/ksu.c` dan beri komentar pada `enable_sucompat()
 
 ### How to backport path_umount
 
-You can make the "Umount modules" feature work on pre-GKI kernels by manually backporting `path_umount` from 5.9. You can use this patch as reference:
+Anda dapat membuat fitur "Umount modules" berfungsi pada kernel pra-GKI dengan membackport `path_umount` secara manual dari versi 5.9. Anda dapat menggunakan patch ini sebagai referensi:
 
 ```diff
 --- a/fs/namespace.c
@@ -302,4 +302,4 @@ You can make the "Umount modules" feature work on pre-GKI kernels by manually ba
   * This is important for filesystems which use unnamed block devices.
 ```
 
-Finally, build your kernel again, and KernelSU should work correctly.
+Terakhir, build kembali kernel Anda, dan KernelSU akan berfungsi dengan benar.

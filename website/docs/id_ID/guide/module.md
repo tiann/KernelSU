@@ -10,7 +10,7 @@ KernelSU menggunakan arsitektur [metamodule](metamodule.md) untuk me-mount direk
 
 ## WebUI
 
-KernelSU modules support displaying interfaces and interacting with users. See the [WebUI documentation](module-webui.md) for details.
+Modul KernelSU mendukung tampilan antarmuka dan interaksi dengan pengguna. Lihat [WebUI documentation](module-webui.md) untuk detailnya.
 
 ## Konfigurasi Modul
 
