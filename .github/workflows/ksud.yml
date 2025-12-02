@@ -47,6 +47,32 @@ jobs:
       run: |
         RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
 
+    - name: Build ksuinit
+      if: ${{ inputs.target == 'aarch64-linux-android' || inputs.target == 'x86_64-linux-android' }}
+      run: |
+        TARGET=${{ inputs.target }}
+        if [ "$TARGET" == "aarch64-linux-android" ]; then
+          ARCH="aarch64"
+          ABI="arm64-v8a"
+        elif [ "$TARGET" == "x86_64-linux-android" ]; then
+          ARCH="x86_64"
+          ABI="x86_64"
+        else
+          exit 1
+        fi
+        cargo install cargo-ndk
+        rustup target add $TARGET
+        cd userspace/ksuinit
+        RUSTFLAGS="-C link-arg=-no-pie" cargo ndk -t $ABI build --release
+        cp target/$TARGET/release/ksuinit ../../userspace/ksud/bin/$ARCH
+
+    - name: Upload ksuinit artifact
+      if: ${{ inputs.target == 'aarch64-linux-android' || inputs.target == 'x86_64-linux-android' }}
+      uses: actions/upload-artifact@v5
+      with:
+        name: ksuinit-${{ inputs.target }}
+        path: userspace/ksuinit/target/**/release/ksuinit*
+
     - name: Build ksud
       run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
