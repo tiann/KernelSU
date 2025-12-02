@@ -12,8 +12,6 @@ use rustix::{
     },
 };
 
-use obfstr::obfstr as s;
-
 struct AutoUmount {
     mountpoints: Vec<String>,
 }
@@ -22,7 +20,7 @@ impl Drop for AutoUmount {
     fn drop(&mut self) {
         for mountpoint in self.mountpoints.iter().rev() {
             if let Err(e) = unmount(mountpoint.as_str(), UnmountFlags::DETACH) {
-                log::error!("{} {}: {}", s!("Cannot umount"), mountpoint, e)
+                log::error!("Cannot umount {}: {}", mountpoint, e)
             }
         }
     }
@@ -57,7 +55,7 @@ fn prepare_mount() -> AutoUmount {
         });
     match result {
         Ok(_) => mountpoints.push("/proc".to_string()),
-        Err(e) => log::error!("{} {:?}", s!("Cannot mount procfs: "), e),
+        Err(e) => log::error!("Cannot mount procfs: {:?}", e),
     }
 
     // mount sysfs
@@ -87,7 +85,7 @@ fn prepare_mount() -> AutoUmount {
 
     match result {
         Ok(_) => mountpoints.push("/sys".to_string()),
-        Err(e) => log::error!("{} {:?}", s!("Cannot mount sysfs:"), e),
+        Err(e) => log::error!("Cannot mount sysfs: {:?}", e),
     }
 
     AutoUmount { mountpoints }
@@ -118,7 +116,7 @@ fn unlimit_kmsg() {
     // Disable kmsg rate limiting
     if let Ok(mut rate) = std::fs::File::options()
         .write(true)
-        .open(s!("/proc/sys/kernel/printk_devkmsg"))
+        .open("/proc/sys/kernel/printk_devkmsg")
     {
         writeln!(rate, "on").ok();
     }
@@ -128,7 +126,7 @@ pub fn init() -> Result<()> {
     // Setup kernel log first
     setup_kmsg();
 
-    log::info!("{}", s!("Hello, KernelSU!"));
+    log::info!("Hello, KernelSU!");
 
     // mount /proc and /sys to access kernel interface
     let _dontdrop = prepare_mount();
@@ -137,11 +135,11 @@ pub fn init() -> Result<()> {
     unlimit_kmsg();
 
     if has_kernelsu() {
-        log::info!("{}", s!("KernelSU may be already loaded in kernel, skip!"));
+        log::info!("KernelSU may be already loaded in kernel, skip!");
     } else {
-        log::info!("{}", s!("Loading kernelsu.ko.."));
-        if let Err(e) = load_module(s!("/kernelsu.ko")) {
-            log::error!("{}: {}", s!("Cannot load kernelsu.ko"), e);
+        log::info!("Loading kernelsu.ko..");
+        if let Err(e) = load_module("/kernelsu.ko") {
+            log::error!("Cannot load kernelsu.ko: {:?}", e);
         }
     }
 
@@ -153,7 +151,7 @@ pub fn init() -> Result<()> {
         Err(_) => "/system/bin/init",
     };
 
-    log::info!("{} {}", s!("init is"), real_init);
+    log::info!("init is {}", real_init);
     symlink(real_init, "/init")?;
 
     chmodat(
@@ -179,7 +177,7 @@ fn has_kernelsu_legacy() -> bool {
         );
     }
 
-    log::info!("{}: {}", s!("KernelSU version"), version);
+    log::info!("KernelSU version: {}", version);
 
     version != 0
 }
@@ -230,7 +228,7 @@ fn has_kernelsu_v2() -> bool {
         0
     };
 
-    log::info!("{}: {}", s!("KernelSU version"), version);
+    log::info!("KernelSU version: {}", version);
 
     version != 0
 }

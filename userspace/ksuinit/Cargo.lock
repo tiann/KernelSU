@@ -51,7 +51,6 @@ dependencies = [
  "goblin",
  "kernlog",
  "log",
- "obfstr",
  "rustix",
  "scroll",
  "syscalls",
@@ -74,12 +73,6 @@ name = "log"
 version = "0.4.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
-
-[[package]]
-name = "obfstr"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3ba2979b86cc910a6d13837ef97fef0c6b68fa807c5e014d622449db18351dc"
 
 [[package]]
 name = "plain"
