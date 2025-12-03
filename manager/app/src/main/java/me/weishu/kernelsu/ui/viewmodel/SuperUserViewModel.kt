@@ -188,11 +188,10 @@ class SuperUserViewModel : ViewModel() {
                         packageInfo = it,
                         profile = profile,
                     )
-                }.filter { it.packageName != ksuApp.packageName }
-                    .filter {
-                        val ai = it.packageInfo.applicationInfo!!
-                        if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
-                    }
+                }.filter {
+                    val ai = it.packageInfo.applicationInfo!!
+                    if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
+                }
 
                 val comparator = compareBy<AppInfo> {
                     when {

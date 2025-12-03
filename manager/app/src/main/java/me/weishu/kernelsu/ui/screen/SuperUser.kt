@@ -72,6 +72,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.SearchBox
@@ -194,7 +195,10 @@ fun SuperUserPager(
             }
         },
         popupHost = {
-            val allGroups = remember(viewModel.appList.value) { buildGroups(viewModel.appList.value) }
+            val filteredApps = remember(viewModel.appList.value) {
+                viewModel.appList.value.filter { it.packageName != ksuApp.packageName }
+            }
+            val allGroups = remember(filteredApps) { buildGroups(filteredApps) }
             val matchedByUid = remember(viewModel.searchResults.value) {
                 viewModel.searchResults.value.groupBy { it.uid }
             }
