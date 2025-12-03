@@ -5,8 +5,6 @@
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
 
-#define KERNEL_SU_DOMAIN "u:r:su:s0"
-
 static int transive_to_domain(const char *domain)
 {
     struct cred *cred;
@@ -100,7 +98,7 @@ bool is_task_ksu_domain(const struct cred* cred)
     if (err) {
         return false;
     }
-    result = strncmp(KERNEL_SU_DOMAIN, ctx.context, ctx.len) == 0;
+    result = strncmp(KERNEL_SU_CONTEXT, ctx.context, ctx.len) == 0;
     __security_release_secctx(&ctx);
     return result;
 }
@@ -140,12 +138,10 @@ bool is_init(const struct cred* cred) {
     return is_context(cred, "u:r:init:s0");
 }
 
-#define KSU_FILE_DOMAIN "u:object_r:ksu_file:s0"
-
 u32 ksu_get_ksu_file_sid()
 {
     u32 ksu_file_sid = 0;
-    int err = security_secctx_to_secid(KSU_FILE_DOMAIN, strlen(KSU_FILE_DOMAIN),
+    int err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
                        &ksu_file_sid);
     if (err) {
         pr_info("get ksufile sid err %d\n", err);

@@ -133,3 +133,7 @@ void escape_with_root_profile(void)
 		ksu_set_task_tracepoint_flag(t);
 	}
 }
+
+void escape_to_root_for_init(void) {
+	setup_selinux(KERNEL_SU_CONTEXT);
+}

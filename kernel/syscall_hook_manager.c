@@ -18,6 +18,7 @@
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
 #include "util.h"
+#include "ksud.h"
 
 // Tracepoint registration count management
 // == 1: just us
@@ -261,8 +262,11 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
         pr_info("ksu_handle_init_mark_tracker: %ld\n", ret);
     }
 
-    if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL && strstr(path, "/ksud") == NULL)) {
-		pr_info("hook_manager: unmark %d exec %s", current->pid, path);
+    if (unlikely(strcmp(path, KSUD_PATH) == 0)) {
+        pr_info("hook_manager: escape to root for init executing ksud: %d\n", current->pid);
+        escape_to_root_for_init();
+    } else if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
+        pr_info("hook_manager: unmark %d exec %s\n", current->pid, path);
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
