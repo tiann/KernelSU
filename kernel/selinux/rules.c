@@ -11,9 +11,6 @@
 
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
 
-#define KERNEL_SU_DOMAIN "su"
-#define KERNEL_SU_FILE "ksu_file"
-#define KERNEL_EXEC_TYPE "ksu_exec"
 #define ALL NULL
 
 static struct policydb *get_policydb(void)
@@ -60,8 +57,6 @@ void apply_kernelsu_rules()
     }
 
     // our ksud triggered by init
-    ksu_allow(db, "init", "adb_data_file", "file", ALL);
-    ksu_allow(db, "init", "adb_data_file", "dir", ALL); // #1289
     ksu_allow(db, "init", KERNEL_SU_DOMAIN, ALL, ALL);
     // we need to umount modules in zygote
     ksu_allow(db, "zygote", "adb_data_file", "dir", "search");
