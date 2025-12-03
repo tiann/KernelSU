@@ -4,13 +4,12 @@
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep
+#include "../ksu.h"
 
-static int transive_to_domain(const char *domain)
+static int transive_to_domain(const char *domain, struct cred *cred)
 {
-    struct cred *cred;
     u32 sid;
     int error;
-    cred = (struct cred *)__task_cred(current);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
     struct task_security_struct *tsec;
 #else 
@@ -37,9 +36,16 @@ static int transive_to_domain(const char *domain)
 
 void setup_selinux(const char *domain)
 {
-    if (transive_to_domain(domain)) {
+    if (transive_to_domain(domain, (struct cred *)__task_cred(current))) {
         pr_err("transive domain failed.\n");
         return;
+    }
+}
+
+void setup_ksu_cred()
+{
+    if (ksu_cred && transive_to_domain(KERNEL_SU_CONTEXT, ksu_cred)) {
+        pr_err("setup ksu cred failed.\n");
     }
 }
 

@@ -11,6 +11,9 @@
 #include "syscall_hook_manager.h"
 #include "ksud.h"
 #include "supercalls.h"
+#include "ksu.h"
+
+struct cred* ksu_cred;
 
 int __init kernelsu_init(void)
 {
@@ -23,6 +26,11 @@ int __init kernelsu_init(void)
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("*************************************************************");
 #endif
+
+    ksu_cred = prepare_creds();
+    if (!ksu_cred) {
+        pr_err("prepare cred failed!\n");
+    }
 
     ksu_feature_init();
 
@@ -60,6 +68,10 @@ void kernelsu_exit(void)
     ksu_supercalls_exit();
 
     ksu_feature_exit();
+
+    if (ksu_cred) {
+        put_cred(ksu_cred);
+    }
 }
 
 module_init(kernelsu_init);

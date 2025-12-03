@@ -58,8 +58,6 @@ void apply_kernelsu_rules()
 
     // our ksud triggered by init
     ksu_allow(db, "init", KERNEL_SU_DOMAIN, ALL, ALL);
-    // we need to umount modules in zygote
-    ksu_allow(db, "zygote", "adb_data_file", "dir", "search");
 
     // copied from Magisk rules
     // suRights
