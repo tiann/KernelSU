@@ -307,7 +307,10 @@ fun SuperUserPager(
                     )
                 }
             } else {
-                val allGroups = remember(SuperUserViewModel.apps) { buildGroups(SuperUserViewModel.apps) }
+                val filteredApps = remember(SuperUserViewModel.apps) {
+                    SuperUserViewModel.apps.filter { it.packageName != ksuApp.packageName }
+                }
+                val allGroups = remember(filteredApps) { buildGroups(filteredApps) }
                 val visibleUidSet = remember(viewModel.appList.value) { viewModel.appList.value.map { it.uid }.toSet() }
                 val expandedUids = remember { mutableStateOf(setOf<Int>()) }
                 PullToRefresh(
