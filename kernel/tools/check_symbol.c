@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
             if (!vmlinux_sym || vmlinux_sym->st_shndx == SHN_UNDEF) {
                 fprintf(
                     stderr,
-                    "Error: Undefined symbol '%s' not found or undefined in %s\n",
+                    "Error: Symbol '%s' not found or undefined in %s\n",
                     sym_name, vmlinux_path);
                 has_error = 1;
             } else {
