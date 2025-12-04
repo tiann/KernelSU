@@ -88,7 +88,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -479,22 +478,6 @@ fun ModulePager(
                             modifier = Modifier.padding(end = 16.dp),
                             alignment = PopupPositionProvider.Align.TopRight
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            modifier = Modifier.padding(start = 16.dp),
-                            onClick = {
-                                navigator.navigate(ModuleRepoScreenDestination) {
-                                    launchSingleTop = true
-                                }
-                            },
-                        ) {
-                            Icon(
-                                imageVector = MiuixIcons.Useful.Save,
-                                tint = colorScheme.onSurface,
-                                contentDescription = stringResource(id = R.string.settings)
-                            )
-                        }
                     },
                     scrollBehavior = scrollBehavior
                 )

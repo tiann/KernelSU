@@ -21,9 +21,12 @@
     <string name="module_failed_to_disable">无法禁用模块：%s</string>
     <string name="module_empty">没有安装模块</string>
     <string name="module">模块</string>
-    <string name="module_repo">模块仓库</string>
     <string name="module_sort_action_first">可执行优先</string>
     <string name="module_sort_enabled_first">已启用优先</string>
+    <string name="module_repos">模块仓库</string>
+    <string name="module_repos_sort_update_first">可更新优先</string>
+    <string name="module_repos_sort_name">按名称排序</string>
+    <string name="module_repos_source_code">源码</string>
     <string name="uninstall">卸载</string>
     <string name="module_install">安装</string>
     <string name="install">安装</string>
@@ -181,4 +184,7 @@
     <string name="color_brown">棕色</string>
     <string name="network_offline">未连接到网络</string>
     <string name="network_retry">重试</string>
+    <string name="tab_readme">自述</string>
+    <string name="tab_releases">版本</string>
+    <string name="tab_info">信息</string>
 </resources>

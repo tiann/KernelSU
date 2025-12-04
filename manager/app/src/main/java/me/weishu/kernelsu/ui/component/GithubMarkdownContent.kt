@@ -143,10 +143,6 @@ fun GithubMarkdownContent(content: String) {
         },
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
             .clipToBounds(),
-        update = { webView ->
-            webView.loadDataWithBaseURL("https://github.com", html, "text/html", StandardCharsets.UTF_8.name(), null)
-        }
     )
 }

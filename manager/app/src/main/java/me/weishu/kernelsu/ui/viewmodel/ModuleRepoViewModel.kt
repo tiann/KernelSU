@@ -48,8 +48,6 @@ class ModuleRepoViewModel : ViewModel() {
         val authors: String,
         val authorList: List<Author>,
         val summary: String,
-        val homepageUrl: String,
-        val sourceUrl: String,
         val metamodule: Boolean,
         val stargazerCount: Int,
         val updatedAt: String,
@@ -147,7 +145,10 @@ class ModuleRepoViewModel : ViewModel() {
                 .mapNotNull { idx ->
                     val authorObj = authorsArray.optJSONObject(idx) ?: return@mapNotNull null
                     val name = authorObj.optString("name", "").trim()
-                    val link = authorObj.optString("link", "").trim()
+                    var link = authorObj.optString("link", "").trim()
+                    if (link.startsWith("`") && link.endsWith("`") && link.length >= 2) {
+                        link = link.substring(1, link.length - 1)
+                    }
                     if (name.isEmpty()) null else Author(name = name, link = link)
                 }
         } else {
@@ -155,8 +156,6 @@ class ModuleRepoViewModel : ViewModel() {
         }
         val authors = if (authorList.isNotEmpty()) authorList.joinToString(", ") { it.name } else item.optString("authors", "")
         val summary = item.optString("summary", "")
-        val homepageUrl = item.optString("homepageUrl", item.optString("url", ""))
-        val sourceUrl = item.optString("sourceUrl", item.optString("url", ""))
         val metamodule = item.optBoolean("metamodule", false)
         val stargazerCount = item.optInt("stargazerCount", 0)
         val updatedAt = item.optString("updatedAt", "")
@@ -170,8 +169,20 @@ class ModuleRepoViewModel : ViewModel() {
         if (lr != null) {
             val lrName = lr.optString("name", lr.optString("version", ""))
             val lrTime = lr.optString("time", "")
-            val lrUrl = lr.optString("downloadUrl", "")
-            latestVersionCode = lr.optInt("versionCode", 0)
+            var lrUrl = lr.optString("downloadUrl", "")
+            lrUrl = lrUrl.trim().let {
+                var s = it
+                if (s.startsWith("`") && s.endsWith("`") && s.length >= 2) {
+                    s = s.substring(1, s.length - 1)
+                }
+                s
+            }
+            val vcAny = lr.opt("versionCode")
+            latestVersionCode = when (vcAny) {
+                is Number -> vcAny.toInt()
+                is String -> vcAny.toIntOrNull() ?: 0
+                else -> 0
+            }
             latestRelease = lrName
             latestReleaseTime = lrTime
             if (lrUrl.isNotEmpty()) {
@@ -186,8 +197,6 @@ class ModuleRepoViewModel : ViewModel() {
             authors = authors,
             authorList = authorList,
             summary = summary,
-            homepageUrl = homepageUrl,
-            sourceUrl = sourceUrl,
             metamodule = metamodule,
             stargazerCount = stargazerCount,
             updatedAt = updatedAt,

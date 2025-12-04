@@ -184,5 +184,5 @@
     <string name="settings_theme_mode_monet_dark">Monet (Тёмная)</string>
     <string name="settings_theme_mode_light">Светлая</string>
     <string name="settings_theme_mode_dark">Тёмная</string>
-    <string name="module_repo">Репозиторий модулей</string>
+    <string name="module_repos">Репозиторий модулей</string>
 </resources>

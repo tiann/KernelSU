@@ -180,5 +180,5 @@
     <string name="color_brown">Marron</string>
     <string name="feature_status_unsupported_summary">Le noyau ne prend pas en charge cette fonctionnalité.</string>
     <string name="feature_status_managed_summary">Cette fonctionnalité est gérée par un module.</string>
-    <string name="module_repo">Dépôt de modules</string>
+    <string name="module_repos">Dépôt de modules</string>
 </resources>

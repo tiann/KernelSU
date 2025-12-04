@@ -23,10 +23,13 @@
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
-    <string name="module_repo">Module repository</string>
     <string name="module_install_prompt_with_name">The following modules will be installed: %1$s</string>
     <string name="module_sort_action_first">Action first</string>
     <string name="module_sort_enabled_first">Enabled first</string>
+    <string name="module_repos">Repos</string>
+    <string name="module_repos_sort_update_first">Update first</string>
+    <string name="module_repos_sort_name">Sort by name</string>
+    <string name="module_repos_source_code">Source code</string>
     <string name="confirm">Confirm</string>
     <string name="uninstall">Uninstall</string>
     <string name="module_install">Install</string>
@@ -185,4 +188,7 @@
     <string name="color_brown">Brown</string>
     <string name="network_offline">Not connected to network</string>
     <string name="network_retry">Retry</string>
+    <string name="tab_readme">README</string>
+    <string name="tab_releases">Releases</string>
+    <string name="tab_info">Info</string>
 </resources>

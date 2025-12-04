@@ -180,5 +180,5 @@
     <string name="color_brown">สีน้ำตาล</string>
     <string name="feature_status_unsupported_summary">เคอร์เนลของคุณไม่รองรับฟีเจอร์นี้</string>
     <string name="feature_status_managed_summary">คุณสมบัตินี้ถูกจัดการโดยโมดูล</string>
-    <string name="module_repo">พื้นที่จัดเก็บโมดูล</string>
+    <string name="module_repos">พื้นที่จัดเก็บโมดูล</string>
 </resources>

@@ -178,5 +178,5 @@
     <string name="color_brown">Коричневий</string>
     <string name="feature_status_unsupported_summary">Ядро не підтримує цю функцію.</string>
     <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
-    <string name="module_repo">Репозиторій модулів</string>
+    <string name="module_repos">Репозиторій модулів</string>
 </resources>
