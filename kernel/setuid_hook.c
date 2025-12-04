@@ -104,7 +104,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     }
 
     // if on private space, see if its possibly the manager
-    if (new_uid > PER_USER_RANGE && new_uid % PER_USER_RANGE == ksu_get_manager_uid()) {
+    if (new_uid != ksu_get_manager_uid() && new_uid % PER_USER_RANGE == ksu_get_manager_uid()) {
         ksu_set_manager_uid(new_uid);
     }
 
