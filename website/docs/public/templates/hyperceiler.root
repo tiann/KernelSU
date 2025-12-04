@@ -1,0 +1,55 @@
+{
+    "id":"hyperceiler.root",
+    "name":"HyperCeiler Official Root Template",
+    "author":"github@lingqiqi5211",
+    "description":"Minimum permissions to ensure HyperCeiler main functions work properly.",
+    "namespace":"INHERITED",
+    "uid":0,
+    "gid":0,
+    "groups":[
+        "ROOT"
+    ],
+    "capabilities":[
+        "CAP_DAC_OVERRIDE",
+        "CAP_FOWNER",
+        "CAP_KILL",
+        "CAP_SYS_CHROOT",
+        "CAP_SYS_PTRACE",
+        "CAP_SYS_ADMIN",
+        "CAP_SYS_BOOT",
+        "CAP_SETFCAP",
+        "CAP_BLOCK_SUSPEND"
+    ],
+    "context":"u:r:su:s0",
+    "rules":"",
+    "locales": {
+        "zh_CN": {
+            "name": "HyperCeiler 官方 Root 模板",
+            "description": "能保证 HyperCeiler 主要功能运行的最小权能"
+        },
+        "zh_TW": {
+            "name": "HyperCeiler 官方 Root 範本",
+            "description": "能保證 HyperCeiler 主要功能運作的最小權能"
+        },
+        "bn": {
+            "name": "হাইপারসিলার অফিসিয়াল রুট টেমপ্লেট",
+            "description": "হাইপারসিলারের মূল কার্যকারিতা নিশ্চিত করতে ন্যূনতম অনুমতি।"
+        },
+        "tr": {
+            "name": "HyperCeiler Resmi Root Şablonu",
+            "description": "HyperCeiler'in ana işlevlerinin düzgün çalışmasını sağlamak için minimum izinler."
+        },
+        "pt_BR": {
+            "name": "Modelo Root Oficial do HyperCeiler",
+            "description": "Permissões mínimas para garantir que as funções principais do HyperCeiler funcionem corretamente."
+        },
+        "ja": {
+            "name": "HyperCeiler 公式 Root テンプレート",
+            "description": "HyperCeiler の主要機能が正常に動作するための最小限の権限。"
+        },
+        "it_IT": {
+            "name": "Modello Root Ufficiale di HyperCeiler",
+            "description": "Autorizzazioni minime per garantire il corretto funzionamento delle funzioni principali di HyperCeiler."
+        }
+    }
+}
