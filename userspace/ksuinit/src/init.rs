@@ -130,13 +130,6 @@ pub fn init() -> Result<()> {
     log::info!("init is {}", real_init);
     symlink(real_init, "/init")?;
 
-    chmodat(
-        CWD,
-        "/init",
-        Mode::from_raw_mode(0o755),
-        AtFlags::SYMLINK_NOFOLLOW,
-    )?;
-
     Ok(())
 }
 
