@@ -581,11 +581,11 @@ static int add_try_umount(void __user *arg)
         
             size_t total_size = 0; // size of list in bytes
 
-            down_write(&mount_list_lock);
+            down_read(&mount_list_lock);
             list_for_each_entry(entry, &mount_list, list) {
                 total_size = total_size + strlen(entry->umountable) + 1; // + 1 for \0
             }
-            up_write(&mount_list_lock);
+            up_read(&mount_list_lock);
 
             // debug
             pr_info("cmd_add_try_umount: total_size: %d\n", total_size);
@@ -610,7 +610,7 @@ static int add_try_umount(void __user *arg)
             
             // userspace is resposible for zero init-ing their buffer!
             
-            down_write(&mount_list_lock);
+            down_read(&mount_list_lock);
             list_for_each_entry(entry, &mount_list, list) {
 
                 //debug
@@ -622,7 +622,7 @@ static int add_try_umount(void __user *arg)
                 // walk it! +1 for null terminator
                 user_buf = user_buf + strlen(entry->umountable) + 1;
             }
-            up_write(&mount_list_lock);
+            up_read(&mount_list_lock);
 
             return 0;
         }
