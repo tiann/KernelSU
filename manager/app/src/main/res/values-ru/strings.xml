@@ -184,5 +184,15 @@
     <string name="settings_theme_mode_monet_dark">Monet (Тёмная)</string>
     <string name="settings_theme_mode_light">Светлая</string>
     <string name="settings_theme_mode_dark">Тёмная</string>
-    <string name="module_repos">Репозиторий модулей</string>
+    <string name="module_repos">Репозиторий</string>
+    <string name="module_repos_sort_update_first">Сначала с обновлением</string>
+    <string name="module_repos_sort_name">Сортировать по имени</string>
+    <string name="module_repos_source_code">Исходный код</string>
+    <string name="home_gki_warning">Начиная с версии 3.0.0, режим работы GKI будет использоваться только в тестовых средах. Мы не рекомендуем его для ежедневного использования, а image файлы больше предоставляться не будут.</string>
+    <string name="module_reinstall">Переустановить</string>
+    <string name="network_offline">Нет подключения к сети</string>
+    <string name="network_retry">Повторить</string>
+    <string name="tab_readme">README</string>
+    <string name="tab_releases">Релизы</string>
+    <string name="tab_info">Информация</string>
 </resources>
