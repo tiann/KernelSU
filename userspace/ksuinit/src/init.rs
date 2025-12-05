@@ -2,7 +2,7 @@ use std::io::{ErrorKind, Write};
 
 use crate::loader::load_module;
 use anyhow::Result;
-use rustix::fs::{chmodat, symlink, unlink, AtFlags, Mode};
+use rustix::fs::{symlink, unlink, AtFlags, Mode};
 use rustix::{
     fd::AsFd,
     fs::{access, makedev, mkdir, mknodat, Access, FileType, CWD},
