@@ -179,4 +179,17 @@
     <string name="feature_status_unsupported_summary">Ядро не підтримує цю функцію.</string>
     <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
     <string name="module_repos">Репозиторій модулів</string>
+    <string name="module_repos_sort_update_first">Спочатку оновіть</string>
+    <string name="module_repos_sort_name">Сортувати за назвою</string>
+    <string name="module_repos_source_code">Вихідний код</string>
+    <string name="home_gki_warning">Починаючи з версії 3.0.0, робочий режим GKI використовуватиметься лише в тестових середовищах. Ми не рекомендуємо його для щоденного використання, а файли зображень більше не надаватимуться.</string>
+    <string name="module_reinstall">Перевстановити</string>
+    <string name="undo">Відмінити</string>
+    <string name="module_undo_uninstall_success">Видалення %s успішно скасовано</string>
+    <string name="module_undo_uninstall_failed">Не вдалося відмінити видалення: %s</string>
+    <string name="network_offline">Не підключено до мережі</string>
+    <string name="network_retry">Повторити спробу</string>
+    <string name="tab_readme">Файл README</string>
+    <string name="tab_releases">Релізи</string>
+    <string name="tab_info">Інформація</string>
 </resources>
