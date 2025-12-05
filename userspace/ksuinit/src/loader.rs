@@ -78,7 +78,7 @@ pub fn load_module(path: &str) -> Result<()> {
 
         let offset = elf.syms.offset() + index * Sym::size_with(elf.syms.ctx());
         let Some(real_addr) = kernel_symbols.get(name) else {
-            log::warn!("Cannot found symbol: {}", &name);
+            log::warn!("Cannot find symbol: {}", &name);
             continue;
         };
         sym.st_shndx = section_header::SHN_ABS as usize;
