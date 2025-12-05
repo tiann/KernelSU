@@ -179,4 +179,15 @@
     <string name="settings_key_color">Màu nhấn</string>
     <string name="feature_status_managed_summary">Tính năng này được quản lý bởi một module.</string>
     <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này.</string>
+    <string name="module_repos">Thư viện</string>
+    <string name="module_repos_sort_update_first">Cập nhật trước</string>
+    <string name="module_repos_sort_name">Tên (A → Z)</string>
+    <string name="module_repos_source_code">Mã nguồn</string>
+    <string name="home_gki_warning">Bắt đầu từ v3.0.0, chế độ GKI sẽ chỉ được sử dụng trong môi trường thử nghiệm. Chúng tôi không khuyến nghị sử dụng chế độ này và các file image sẽ không còn được cung cấp nữa.</string>
+    <string name="module_reinstall">Cài đặt lại</string>
+    <string name="network_offline">Không có kết nối Internet</string>
+    <string name="network_retry">Thử lại</string>
+    <string name="tab_readme">README</string>
+    <string name="tab_releases">Releases</string>
+    <string name="tab_info">Info</string>
 </resources>
