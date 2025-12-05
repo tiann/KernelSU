@@ -14,6 +14,6 @@ compdb:
 clean:
 	make -C $(KDIR) M=$(MDIR) clean
 check_symbol: tools/check_symbol.c
-	$(CC) tools/check_symbol.c -o tools/check_symbol
+	$(CC) tools/check_symbol.c -o check_symbol
 
 # Keep a new line here!! Because someone may append config
