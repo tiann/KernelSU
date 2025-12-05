@@ -9,7 +9,7 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: cargo
-    directory: userspace/ksud
+    directory: userspace
     schedule:
       interval: weekly
     allow:
