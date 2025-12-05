@@ -27,11 +27,10 @@ impl Drop for AutoUmount {
 }
 
 fn mount_filesystem(name: &str, mountpoint: &str) -> Result<()> {
-    mkdir(mountpoint, Mode::from_raw_mode(0o755))
-        .or_else(|err| match err.kind() {
-            ErrorKind::AlreadyExists => Ok(()),
-            _ => Err(err),
-        })?;
+    mkdir(mountpoint, Mode::from_raw_mode(0o755)).or_else(|err| match err.kind() {
+        ErrorKind::AlreadyExists => Ok(()),
+        _ => Err(err),
+    })?;
     let fs_fd = fsopen(name, FsOpenFlags::FSOPEN_CLOEXEC)?;
     fsconfig_create(fs_fd.as_fd())?;
     let mount_fd = fsmount(
