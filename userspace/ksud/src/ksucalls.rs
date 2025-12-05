@@ -1,4 +1,3 @@
-#![allow(clippy::unreadable_literal)]
 use std::fs;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::fd::RawFd;
@@ -9,17 +8,17 @@ const EVENT_POST_FS_DATA: u32 = 1;
 const EVENT_BOOT_COMPLETED: u32 = 2;
 const EVENT_MODULE_MOUNTED: u32 = 3;
 
-const KSU_IOCTL_GRANT_ROOT: u32 = 0x00004b01; // _IOC(_IOC_NONE, 'K', 1, 0)
-const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
-const KSU_IOCTL_REPORT_EVENT: u32 = 0x40004b03; // _IOC(_IOC_WRITE, 'K', 3, 0)
-const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc0004b04; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 4, 0)
-const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x80004b05; // _IOC(_IOC_READ, 'K', 5, 0)
-const KSU_IOCTL_GET_FEATURE: u32 = 0xc0004b0d; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
-const KSU_IOCTL_SET_FEATURE: u32 = 0x40004b0e; // _IOC(_IOC_WRITE, 'K', 14, 0)
-const KSU_IOCTL_GET_WRAPPER_FD: u32 = 0x40004b0f; // _IOC(_IOC_WRITE, 'K', 15, 0)
-const KSU_IOCTL_MANAGE_MARK: u32 = 0xc0004b10; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
-const KSU_IOCTL_NUKE_EXT4_SYSFS: u32 = 0x40004b11; // _IOC(_IOC_WRITE, 'K', 17, 0)
-const KSU_IOCTL_ADD_TRY_UMOUNT: u32 = 0x40004b12; // _IOC(_IOC_WRITE, 'K', 18, 0)
+const KSU_IOCTL_GRANT_ROOT: u32 = 0x0000_4b01; // _IOC(_IOC_NONE, 'K', 1, 0)
+const KSU_IOCTL_GET_INFO: u32 = 0x8000_4b02; // _IOC(_IOC_READ, 'K', 2, 0)
+const KSU_IOCTL_REPORT_EVENT: u32 = 0x4000_4b03; // _IOC(_IOC_WRITE, 'K', 3, 0)
+const KSU_IOCTL_SET_SEPOLICY: u32 = 0xc000_4b04; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 4, 0)
+const KSU_IOCTL_CHECK_SAFEMODE: u32 = 0x8000_4b05; // _IOC(_IOC_READ, 'K', 5, 0)
+const KSU_IOCTL_GET_FEATURE: u32 = 0xc000_4b0d; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
+const KSU_IOCTL_SET_FEATURE: u32 = 0x4000_4b0e; // _IOC(_IOC_WRITE, 'K', 14, 0)
+const KSU_IOCTL_GET_WRAPPER_FD: u32 = 0x4000_4b0f; // _IOC(_IOC_WRITE, 'K', 15, 0)
+const KSU_IOCTL_MANAGE_MARK: u32 = 0xc000_4b10; // _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
+const KSU_IOCTL_NUKE_EXT4_SYSFS: u32 = 0x4000_4b11; // _IOC(_IOC_WRITE, 'K', 17, 0)
+const KSU_IOCTL_ADD_TRY_UMOUNT: u32 = 0x4000_4b12; // _IOC(_IOC_WRITE, 'K', 18, 0)
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -107,8 +106,8 @@ static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
 #[cfg(any(target_os = "linux", target_os = "android"))]
 static INFO_CACHE: OnceLock<GetInfoCmd> = OnceLock::new();
 
-const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
-const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
+const KSU_INSTALL_MAGIC1: u32 = 0xDEAD_BEEF;
+const KSU_INSTALL_MAGIC2: u32 = 0xCAFE_BABE;
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 fn scan_driver_fd() -> Option<RawFd> {
