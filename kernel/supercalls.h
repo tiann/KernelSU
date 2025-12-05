@@ -102,7 +102,8 @@ struct ksu_add_try_umount_cmd {
 #define KSU_UMOUNT_WIPE 0  // ignore everything and wipe list
 #define KSU_UMOUNT_ADD 1   // add entry (path + flags)
 #define KSU_UMOUNT_DEL 2   // delete entry, strcmp
-
+#define KSU_UMOUNT_GETSIZE 3   // get list size
+#define KSU_UMOUNT_GETLIST 4   // get list
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)

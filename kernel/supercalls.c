@@ -573,6 +573,60 @@ static int add_try_umount(void __user *arg)
             return 0;
         }
         
+        // this way userspace can deduce the memory it has to prepare.
+        case KSU_UMOUNT_GETSIZE: {
+            // check for pointer first
+            if (!cmd.arg)
+                return -EFAULT;
+        
+            size_t total_size = 0; // size of list in bytes
+
+            down_write(&mount_list_lock);
+            list_for_each_entry(entry, &mount_list, list) {
+                total_size = total_size + strlen(entry->umountable) + 1; // + 1 for \0
+            }
+            up_write(&mount_list_lock);
+
+            // debug
+            pr_info("cmd_add_try_umount: total_size: %d\n", total_size);
+            
+            if (copy_to_user((size_t __user *)cmd.arg, &total_size, sizeof(total_size)))
+                return -EFAULT;
+
+            return 0;
+        }
+        
+        // WARNING! this is straight up pointerwalking.
+        // this way we dont need to redefine the ioctl defs.
+        // this also avoids us needing to kmalloc
+        // userspace have to send pointer to memory or pointer to a VLA.
+        // userspace also has to process the flat blob itself and zero init properly.
+        case KSU_UMOUNT_GETLIST: {
+            // check for pointer first
+            if (!cmd.arg)
+                return -EFAULT;
+            
+            void *user_buf = (void *)cmd.arg;
+            
+            // userspace is resposible for zero init-ing their buffer!
+            
+            down_write(&mount_list_lock);
+            list_for_each_entry(entry, &mount_list, list) {
+
+                //debug
+                pr_info("cmd_add_try_umount: entry: %s\n", entry->umountable);
+            
+                if (copy_to_user(user_buf, entry->umountable, strlen(entry->umountable)))
+                    return -EFAULT;
+                
+                // walk it! +1 for null terminator
+                user_buf = user_buf + strlen(entry->umountable) + 1;
+            }
+            up_write(&mount_list_lock);
+
+            return 0;
+        }
+
         default: {
             pr_err("cmd_add_try_umount: invalid operation %u\n", cmd.mode);
             return -EINVAL;
