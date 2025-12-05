@@ -6,13 +6,13 @@ on:
       - main
     paths:
       - '.github/workflows/clippy.yml'
-      - 'userspace/ksud/**'
+      - 'userspace/**'
   pull_request:
     branches:
       - main
     paths:
       - '.github/workflows/clippy.yml'
-      - 'userspace/ksud/**'
+      - 'userspace/**'
 
 env:
   RUSTFLAGS: '-Dwarnings'
@@ -35,3 +35,5 @@ jobs:
         run: |
           cross clippy --manifest-path userspace/ksud/Cargo.toml --target aarch64-linux-android --release
           cross clippy --manifest-path userspace/ksud/Cargo.toml --target x86_64-linux-android --release
+          cross clippy --manifest-path userspace/ksuinit/Cargo.toml --target aarch64-linux-android --release
+          cross clippy --manifest-path userspace/ksuinit/Cargo.toml --target x86_64-linux-android --release
