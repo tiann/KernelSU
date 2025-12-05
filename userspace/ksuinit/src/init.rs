@@ -26,64 +26,40 @@ impl Drop for AutoUmount {
     }
 }
 
+fn mount_filesystem(name: &str, mountpoint: &str) -> Result<()> {
+    mkdir(mountpoint, Mode::from_raw_mode(0o755))
+        .or_else(|err| match err.kind() {
+            ErrorKind::AlreadyExists => Ok(()),
+            _ => Err(err),
+        })?;
+    let fs_fd = fsopen(name, FsOpenFlags::FSOPEN_CLOEXEC)?;
+    fsconfig_create(fs_fd.as_fd())?;
+    let mount_fd = fsmount(
+        fs_fd.as_fd(),
+        FsMountFlags::FSMOUNT_CLOEXEC,
+        MountAttrFlags::empty(),
+    )?;
+    move_mount(
+        mount_fd.as_fd(),
+        "",
+        CWD,
+        mountpoint,
+        MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
+    )?;
+    Ok(())
+}
+
 fn prepare_mount() -> AutoUmount {
     let mut mountpoints = vec![];
 
     // mount procfs
-    let result = mkdir("/proc", Mode::from_raw_mode(0o755))
-        .or_else(|err| match err.kind() {
-            ErrorKind::AlreadyExists => Ok(()),
-            _ => Err(err),
-        })
-        .and_then(|_| fsopen("proc", FsOpenFlags::FSOPEN_CLOEXEC))
-        .and_then(|fd| fsconfig_create(fd.as_fd()).map(|_| fd))
-        .and_then(|fd| {
-            fsmount(
-                fd.as_fd(),
-                FsMountFlags::FSMOUNT_CLOEXEC,
-                MountAttrFlags::empty(),
-            )
-        })
-        .and_then(|fd| {
-            move_mount(
-                fd.as_fd(),
-                "",
-                CWD,
-                "/proc",
-                MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
-            )
-        });
-    match result {
+    match mount_filesystem("proc", "/proc") {
         Ok(_) => mountpoints.push("/proc".to_string()),
         Err(e) => log::error!("Cannot mount procfs: {:?}", e),
     }
 
     // mount sysfs
-    let result = mkdir("/sys", Mode::from_raw_mode(0o755))
-        .or_else(|err| match err.kind() {
-            ErrorKind::AlreadyExists => Ok(()),
-            _ => Err(err),
-        })
-        .and_then(|_| fsopen("sysfs", FsOpenFlags::FSOPEN_CLOEXEC))
-        .and_then(|fd| fsconfig_create(fd.as_fd()).map(|_| fd))
-        .and_then(|fd| {
-            fsmount(
-                fd.as_fd(),
-                FsMountFlags::FSMOUNT_CLOEXEC,
-                MountAttrFlags::empty(),
-            )
-        })
-        .and_then(|fd| {
-            move_mount(
-                fd.as_fd(),
-                "",
-                CWD,
-                "/sys",
-                MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH,
-            )
-        });
-
-    match result {
+    match mount_filesystem("sysfs", "/sys") {
         Ok(_) => mountpoints.push("/sys".to_string()),
         Err(e) => log::error!("Cannot mount sysfs: {:?}", e),
     }
