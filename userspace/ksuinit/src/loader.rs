@@ -38,7 +38,8 @@ fn parse_kallsyms() -> Result<HashMap<String, u64>> {
         .map(|(symbol, addr)| {
             (
                 symbol
-                    .find("$").or_else(|| symbol.find(".llvm."))
+                    .find("$")
+                    .or_else(|| symbol.find(".llvm."))
                     .map_or(symbol, |pos| &symbol[0..pos])
                     .to_owned(),
                 addr,
@@ -55,12 +56,10 @@ pub fn load_module(path: &str) -> Result<()> {
         anyhow::bail!("{}", "Invalid process");
     }
 
-    let mut buffer =
-        fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
+    let mut buffer = fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
     let elf = Elf::parse(&buffer)?;
 
-    let kernel_symbols =
-        parse_kallsyms().context("Cannot parse kallsyms")?;
+    let kernel_symbols = parse_kallsyms().context("Cannot parse kallsyms")?;
 
     let mut modifications = Vec::new();
     for (index, mut sym) in elf.syms.iter().enumerate() {
