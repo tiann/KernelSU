@@ -4,10 +4,10 @@ use std::path::Path;
 
 #[cfg(target_os = "android")]
 mod android {
-    use const_format::concatcp;
     use crate::assets::Asset;
     use crate::defs::BINARY_DIR;
     use crate::utils_common::ensure_binary;
+    use const_format::concatcp;
 
     pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
     pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
@@ -19,7 +19,8 @@ mod android {
                 // don't extract ksuinit and kernel modules
                 continue;
             }
-            let asset = Asset::get(&file).ok_or_else(|| anyhow::anyhow!("asset not found: {file}"))?;
+            let asset =
+                Asset::get(&file).ok_or_else(|| anyhow::anyhow!("asset not found: {file}"))?;
             ensure_binary(format!("{BINARY_DIR}{file}"), &asset.data, ignore_if_exist)?;
         }
         Ok(())
@@ -39,7 +40,6 @@ struct Asset;
 #[derive(RustEmbed)]
 #[folder = "bin/aarch64"]
 struct Asset;
-
 
 pub fn copy_assets_to_file(name: &str, dst: impl AsRef<Path>) -> Result<()> {
     let asset = Asset::get(name).ok_or_else(|| anyhow::anyhow!("asset not found: {name}"))?;

@@ -1,10 +1,7 @@
 use anyhow::{Context, Error, Ok, Result};
 use std::{
     fs::{File, OpenOptions},
-    io::{
-        ErrorKind::{AlreadyExists},
-        Write,
-    },
+    io::{ErrorKind::AlreadyExists, Write},
     path::Path,
     process::Command,
 };

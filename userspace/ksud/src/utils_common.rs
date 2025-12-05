@@ -1,8 +1,8 @@
-use std::fs::{create_dir_all, remove_file, set_permissions, write, Permissions};
+use anyhow::{Context, Error, Result, bail};
+use std::fs::{Permissions, create_dir_all, remove_file, set_permissions, write};
 use std::io::ErrorKind::NotFound;
 use std::os::unix::prelude::PermissionsExt;
 use std::path::Path;
-use anyhow::{bail, Context, Error, Result};
 
 pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
     let result = create_dir_all(&dir);
