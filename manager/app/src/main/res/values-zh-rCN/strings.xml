@@ -187,4 +187,6 @@
     <string name="tab_readme">自述</string>
     <string name="tab_releases">版本</string>
     <string name="tab_info">信息</string>
+    <string name="feature_status_unsupported_summary">内核不支持此特性。</string>
+    <string name="feature_status_managed_summary">此功能由一个模块管理。</string>
 </resources>
