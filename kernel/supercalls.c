@@ -588,7 +588,7 @@ static int add_try_umount(void __user *arg)
             up_read(&mount_list_lock);
 
             // debug
-            pr_info("cmd_add_try_umount: total_size: %d\n", total_size);
+            pr_info("cmd_add_try_umount: total_size: %zu\n", total_size);
             
             if (copy_to_user((size_t __user *)cmd.arg, &total_size, sizeof(total_size)))
                 return -EFAULT;
