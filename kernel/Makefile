@@ -13,6 +13,7 @@ compdb:
 	python3 $(MDIR)/.vscode/generate_compdb.py -O $(KDIR) $(MDIR)
 clean:
 	make -C $(KDIR) M=$(MDIR) clean
+	rm check_symbol
 check_symbol: tools/check_symbol.c
 	$(CC) tools/check_symbol.c -o check_symbol
 
