@@ -16,7 +16,11 @@ use which::which;
 
 use crate::defs::BACKUP_FILENAME;
 use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
-use crate::{assets, utils};
+use crate::assets;
+use crate::utils_common::ensure_dir_exists;
+
+#[cfg(target_os = "android")]
+use crate::utils;
 
 #[cfg(target_os = "android")]
 fn ensure_gki_kernel() -> Result<()> {
@@ -831,7 +835,7 @@ fn post_ota() -> Result<()> {
         .status()?;
 
     let post_fs_data = Path::new(ADB_DIR).join("post-fs-data.d");
-    utils::ensure_dir_exists(&post_fs_data)?;
+    ensure_dir_exists(&post_fs_data)?;
     let post_ota_sh = post_fs_data.join("post_ota.sh");
 
     let sh_content = format!(
