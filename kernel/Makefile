@@ -4,11 +4,11 @@ MDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 $(info -- KDIR: $(KDIR))
 $(info -- MDIR: $(MDIR))
 
-.PHONY: all compdb clean check_symbol
+.PHONY: all compdb clean
 
 all: check_symbol
 	make -C $(KDIR) M=$(MDIR) modules
-	tools/check_symbol kernelsu.ko $(KDIR)/vmlinux
+	./check_symbol kernelsu.ko $(KDIR)/vmlinux
 compdb:
 	python3 $(MDIR)/.vscode/generate_compdb.py -O $(KDIR) $(MDIR)
 clean:
