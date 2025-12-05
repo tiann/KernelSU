@@ -33,7 +33,7 @@ jobs:
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        CONFIG_KSU=m make
+        CONFIG_KSU=m CC=clang make
         
         echo "=== Build completed ==="
 
