@@ -186,12 +186,12 @@ fun HomePager(
                         },
                         onClickSuperuser = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
+                                pagerState.animateScrollToPage(3)
                             }
                         },
                         onclickModule = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(2)
+                                pagerState.animateScrollToPage(1)
                             }
                         },
                         themeMode = themeMode
