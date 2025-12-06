@@ -12,8 +12,41 @@ data class RepoSummary(
     val downloadUrl: String
 )
 
+data class ModuleDetail(
+    val readme: String?,
+    val readmeHtml: String?,
+    val latestTag: String,
+    val latestTime: String,
+    val latestAssetName: String?,
+    val latestAssetUrl: String?,
+    val releases: List<ReleaseInfo>,
+    val homepageUrl: String?,
+    val sourceUrl: String?,
+    val url: String?
+)
+
+data class ReleaseInfo(
+    val name: String,
+    val tagName: String,
+    val publishedAt: String,
+    val descriptionHTML: String,
+    val assets: List<ReleaseAssetInfo>
+)
+
+data class ReleaseAssetInfo(
+    val name: String,
+    val downloadUrl: String,
+    val size: Long,
+    val downloadCount: Int
+)
+
 fun sanitizeVersionString(version: String): String {
     return version.replace(Regex("[^a-zA-Z0-9.\\-_]"), "_")
+}
+
+fun stripTicks(s: String): String {
+    val t = s.trim()
+    return if (t.startsWith("`") && t.endsWith("`") && t.length >= 2) t.substring(1, t.length - 1) else t
 }
 
 fun fetchRepoIndex(): Map<String, RepoSummary> {
@@ -42,33 +75,6 @@ fun fetchRepoIndex(): Map<String, RepoSummary> {
     }.getOrDefault(emptyMap())
 }
 
-data class ModuleDetail(
-    val readme: String?,
-    val latestTag: String,
-    val latestTime: String,
-    val latestAssetName: String?,
-    val latestAssetUrl: String?,
-    val releases: List<ReleaseInfo>,
-    val homepageUrl: String?,
-    val sourceUrl: String?,
-    val url: String?
-)
-
-data class ReleaseInfo(
-    val name: String,
-    val tagName: String,
-    val publishedAt: String,
-    val descriptionHTML: String,
-    val assets: List<ReleaseAssetInfo>
-)
-
-data class ReleaseAssetInfo(
-    val name: String,
-    val downloadUrl: String,
-    val size: Long,
-    val downloadCount: Int
-)
-
 fun fetchReleaseDescriptionHtml(moduleId: String, latestTag: String): String? {
     if (!isNetworkAvailable(ksuApp)) return null
     val url = "https://modules.kernelsu.org/module/$moduleId.json"
@@ -96,6 +102,7 @@ fun fetchReleaseDescriptionHtml(moduleId: String, latestTag: String): String? {
     }.getOrNull()
 }
 
+
 fun fetchModuleDetail(moduleId: String): ModuleDetail? {
     if (!isNetworkAvailable(ksuApp)) return null
     val url = "https://modules.kernelsu.org/module/$moduleId.json"
@@ -104,12 +111,8 @@ fun fetchModuleDetail(moduleId: String): ModuleDetail? {
             if (!resp.isSuccessful) return@use null
             val body = resp.body?.string() ?: return@use null
             val obj = JSONObject(body)
-
             val readme = obj.optString("readme", "").ifBlank { null }
-            fun stripTicks(s: String): String {
-                val t = s.trim()
-                return if (t.startsWith("`") && t.endsWith("`") && t.length >= 2) t.substring(1, t.length - 1) else t
-            }
+            val readmeHtml = obj.optString("readmeHTML", "").ifBlank { null }
             val homepageUrl = stripTicks(obj.optString("homepageUrl", "")).ifBlank { null }
             val sourceUrl = stripTicks(obj.optString("sourceUrl", "")).ifBlank { null }
             val urlRepo = stripTicks(obj.optString("url", "")).ifBlank { null }
@@ -164,6 +167,7 @@ fun fetchModuleDetail(moduleId: String): ModuleDetail? {
 
             return@use ModuleDetail(
                 readme = readme,
+                readmeHtml = readmeHtml,
                 latestTag = latestTag,
                 latestTime = latestTime,
                 latestAssetName = latestAssetName,

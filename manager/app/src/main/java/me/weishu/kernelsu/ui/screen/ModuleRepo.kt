@@ -82,8 +82,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
-import me.weishu.kernelsu.ui.component.GithubMarkdownContent
-import me.weishu.kernelsu.ui.component.MarkdownContent
+import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -739,7 +738,7 @@ fun ModuleRepoPager(
 
 @Composable
 private fun ReadmePage(
-    readmeText: String?,
+    readmeHtml: String?,
     readmeLoaded: Boolean,
     innerPadding: PaddingValues,
     scrollBehavior: ScrollBehavior,
@@ -760,19 +759,17 @@ private fun ReadmePage(
     ) {
         item {
             AnimatedVisibility(
-                visible = readmeLoaded && readmeText != null,
+                visible = readmeLoaded && readmeHtml != null,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column {
                     Spacer(Modifier.height(6.dp))
                     Card(
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp),
-                        insideMargin = PaddingValues(16.dp)
+                        modifier = Modifier.padding(horizontal = 12.dp),
                     ) {
                         Column {
-                            MarkdownContent(content = readmeText!!)
+                            GithubMarkdown(content = readmeHtml!!)
                         }
                     }
                 }
@@ -825,15 +822,18 @@ fun ReleasesPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
-                        .padding(bottom = 12.dp),
-                    insideMargin = PaddingValues(16.dp)
+                        .padding(bottom = 12.dp)
                 ) {
                     Column {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                                    .weight(1f)
+                            ) {
                                 Text(
                                     text = title,
                                     fontSize = 17.sp,
@@ -852,7 +852,9 @@ fun ReleasesPage(
                                 text = rel.publishedAt,
                                 fontSize = 12.sp,
                                 color = colorScheme.onSurfaceVariantSummary,
-                                modifier = Modifier.align(Alignment.Top)
+                                modifier = Modifier
+                                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                                    .align(Alignment.Top)
                             )
                         }
                         AnimatedVisibility(
@@ -868,15 +870,15 @@ fun ReleasesPage(
                                 ) {
                                     Column {
                                         HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = 4.dp),
+                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
                                             thickness = 0.5.dp,
                                             color = colorScheme.outline.copy(alpha = 0.5f)
                                         )
-                                        GithubMarkdownContent(content = rel.descriptionHTML)
+                                        GithubMarkdown(content = rel.descriptionHTML)
                                     }
                                 }
                                 HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 4.dp),
                                     thickness = 0.5.dp,
                                     color = colorScheme.outline.copy(alpha = 0.5f)
                                 )
@@ -919,7 +921,11 @@ fun ReleasesPage(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Column(modifier = Modifier.weight(1f)) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                                                .weight(1f)
+                                        ) {
                                             Text(
                                                 text = fileName,
                                                 fontSize = 14.sp,
@@ -933,6 +939,7 @@ fun ReleasesPage(
                                             )
                                         }
                                         IconButton(
+                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                                             backgroundColor = secondaryContainer,
                                             minHeight = 35.dp,
                                             minWidth = 35.dp,
@@ -1145,7 +1152,7 @@ fun ModuleRepoDetailScreen(
         }
     }
 
-    var readmeText by remember(module.moduleId) { mutableStateOf<String?>(null) }
+    var readmeHtml by remember(module.moduleId) { mutableStateOf<String?>(null) }
     var readmeLoaded by remember(module.moduleId) { mutableStateOf(false) }
     var detailReleases by remember(module.moduleId) { mutableStateOf<List<ReleaseArg>>(emptyList()) }
     var homepageUrl by remember(module.moduleId) { mutableStateOf("") }
@@ -1208,7 +1215,7 @@ fun ModuleRepoDetailScreen(
                     runCatching {
                         val detail = fetchModuleDetail(module.moduleId)
                         if (detail != null) {
-                            readmeText = detail.readme
+                            readmeHtml = detail.readmeHtml
                             homepageUrl = (detail.homepageUrl ?: detail.url ?: "")
                             sourceUrl = (detail.sourceUrl ?: "")
                             detailReleases = detail.releases.map { r ->
@@ -1259,7 +1266,7 @@ fun ModuleRepoDetailScreen(
                 )
                 when (page) {
                     0 -> ReadmePage(
-                        readmeText = readmeText,
+                        readmeHtml = readmeHtml,
                         readmeLoaded = readmeLoaded,
                         innerPadding = innerPadding,
                         scrollBehavior = scrollBehavior,
