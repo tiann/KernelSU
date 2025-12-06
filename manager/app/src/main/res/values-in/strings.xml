@@ -153,4 +153,9 @@
     <string name="refresh_release">Lepaskan untuk menyegarkan</string>
     <string name="refresh_refresh">Menyegarkan…</string>
     <string name="refresh_complete">Penyegaran berhasil</string>
+    <string name="module_repos">Gudang</string>
+    <string name="module_repos_sort_update_first">Sesuai pembaruan</string>
+    <string name="module_repos_sort_name">Sesuai nama</string>
+    <string name="module_repos_source_code">Sumber kode</string>
+    <string name="metamodule_uninstall_confirm">Yakin ingin menghapus modul %s? Tindakan ini akan memengaruhi semua modul, dan fitur tertentu yang disediakan oleh metamodul (seperti mounting) tidak akan berfungsi lagi.</string>
 </resources>

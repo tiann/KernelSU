@@ -181,4 +181,14 @@
     <string name="feature_status_unsupported_summary">Le noyau ne prend pas en charge cette fonctionnalité.</string>
     <string name="feature_status_managed_summary">Cette fonctionnalité est gérée par un module.</string>
     <string name="module_repos">Dépôt de modules</string>
+    <string name="module_repos_sort_update_first">Par mise à jour</string>
+    <string name="module_repos_sort_name">Trier par nom</string>
+    <string name="module_repos_source_code">Code source</string>
+    <string name="home_gki_warning">À partir de la version 3.0.0, le mode de fonctionnement GKI sera utilisé uniquement dans les environnements de test. Nous vous le déconseillons pour une utilisation quotidienne, et les fichiers images ne seront plus fournis.</string>
+    <string name="module_reinstall">Réinstaller</string>
+    <string name="network_offline">Non connecté au réseau</string>
+    <string name="network_retry">Réessayer</string>
+    <string name="tab_readme">README</string>
+    <string name="tab_releases">Versions</string>
+    <string name="tab_info">Infos</string>
 </resources>
