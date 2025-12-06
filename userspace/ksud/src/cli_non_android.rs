@@ -1,9 +1,8 @@
-use anyhow::{Context, Ok, Result};
+use anyhow::Result;
 use clap::Parser;
-use std::path::PathBuf;
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::{apk_sign, assets, defs};
+use crate::{apk_sign, defs};
 
 /// KernelSU cli for non-android
 #[derive(Parser, Debug)]

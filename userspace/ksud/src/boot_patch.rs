@@ -17,8 +17,6 @@ use which::which;
 use crate::assets;
 #[cfg(target_os = "android")]
 use crate::defs::{BACKUP_FILENAME, KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
-#[cfg(target_os = "android")]
-use crate::utils::ensure_dir_exists;
 
 #[cfg(target_os = "android")]
 use crate::utils;
@@ -841,7 +839,7 @@ fn post_ota() -> Result<()> {
         .status()?;
 
     let post_fs_data = Path::new(ADB_DIR).join("post-fs-data.d");
-    ensure_dir_exists(&post_fs_data)?;
+    utils::ensure_dir_exists(&post_fs_data)?;
     let post_ota_sh = post_fs_data.join("post_ota.sh");
 
     let sh_content = format!(
