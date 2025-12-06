@@ -224,7 +224,6 @@ fun MainScreen(navController: DestinationsNavigator) {
                 modifier = Modifier.hazeSource(state = hazeState),
                 state = pagerState,
                 beyondViewportPageCount = 2,
-                userScrollEnabled = false,
             ) {
                 when (it) {
                     0 -> ModuleRepoPager(navController, innerPadding.calculateBottomPadding())
