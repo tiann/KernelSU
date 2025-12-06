@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.component
 
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -44,12 +43,11 @@ fun GithubMarkdown(content: String) {
 
     val bgArgb = MiuixTheme.colorScheme.surfaceContainer.toArgb()
     val bgLuminance = relativeLuminance(bgArgb)
-    val minVisibleRatio = 1.15
 
     fun makeVariant(delta: Float): Int {
         val candidate = adjustLightnessArgb(bgArgb, delta)
         val madeLighter = delta > 0f
-        return ensureVisibleByMix(bgArgb, candidate, minVisibleRatio, madeLighter)
+        return ensureVisibleByMix(bgArgb, candidate, 1.15, madeLighter)
     }
 
     val bgDefault = cssColorFromArgb(bgArgb)
@@ -90,7 +88,7 @@ fun GithubMarkdown(content: String) {
           </style>
         </head>
         <body dir='${dir}'>
-          <article class='markdown-body'>${content}</article>
+          <article class='markdown-body' data-theme='${if (isDark) "dark" else "light"}'>${content}</article>
         </body>
         </html>
     """.trimIndent()
@@ -103,9 +101,6 @@ fun GithubMarkdown(content: String) {
                 isHorizontalScrollBarEnabled = false
                 overScrollMode = android.view.View.OVER_SCROLL_NEVER
                 settings.apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        setForceDark(if (isDark) WebSettings.FORCE_DARK_ON else WebSettings.FORCE_DARK_OFF)
-                    }
                     offscreenPreRaster = true
                     domStorageEnabled = true
                     mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
