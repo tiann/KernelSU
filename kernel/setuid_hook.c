@@ -103,12 +103,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         return 0;
     }
 
-    // if on private space, see if its possibly the manager
-    if (new_uid > PER_USER_RANGE && new_uid % PER_USER_RANGE == ksu_get_manager_uid()) {
-        ksu_set_manager_uid(new_uid);
-    }
-
-    if (ksu_get_manager_uid() == new_uid) {
+    if (ksu_get_manager_appid() == new_uid % PER_USER_RANGE) {
         pr_info("install fd for manager: %d\n", new_uid);
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);

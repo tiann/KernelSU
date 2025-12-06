@@ -290,15 +290,15 @@ clean:
 
 #ifdef CONFIG_KSU_DEBUG
 
-int ksu_debug_manager_uid = -1;
+int ksu_debug_manager_appid = -1;
 
 #include "manager.h"
 
 static int set_expected_size(const char *val, const struct kernel_param *kp)
 {
     int rv = param_set_uint(val, kp);
-    ksu_set_manager_uid(ksu_debug_manager_uid);
-    pr_info("ksu_manager_uid set to %d\n", ksu_debug_manager_uid);
+    ksu_set_manager_appid(ksu_debug_manager_appid);
+    pr_info("ksu_manager_appid set to %d\n", ksu_debug_manager_appid);
     return rv;
 }
 
@@ -307,8 +307,8 @@ static struct kernel_param_ops expected_size_ops = {
     .get = param_get_uint,
 };
 
-module_param_cb(ksu_debug_manager_uid, &expected_size_ops,
-        &ksu_debug_manager_uid, S_IRUSR | S_IWUSR);
+module_param_cb(ksu_debug_manager_appid, &expected_size_ops,
+        &ksu_debug_manager_appid, S_IRUSR | S_IWUSR);
 
 #endif
 

@@ -11,7 +11,7 @@
 #include "manager.h"
 #include "throne_tracker.h"
 
-uid_t ksu_manager_uid = KSU_INVALID_UID;
+uid_t ksu_manager_appid = KSU_INVALID_APPID;
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 
@@ -84,7 +84,7 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
     list_for_each_entry (np, list, list) {
         if (strncmp(np->package, pkg, KSU_MAX_PACKAGE_NAME) == 0) {
             pr_info("Crowning manager: %s(uid=%d)\n", pkg, np->uid);
-            ksu_set_manager_uid(np->uid);
+            ksu_set_manager_appid(np->uid);
             break;
         }
     }
@@ -291,7 +291,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 
     bool exist = false;
     list_for_each_entry (np, list, list) {
-        if (np->uid == uid % 100000 &&
+        if (np->uid == uid % PER_USER_RANGE &&
             strncmp(np->package, package, KSU_MAX_PACKAGE_NAME) == 0) {
             exist = true;
             break;
@@ -363,17 +363,14 @@ void track_throne(bool prune_only)
     // first, check if manager_uid exist!
     bool manager_exist = false;
     list_for_each_entry (np, &uid_list, list) {
-        // if manager is installed in work profile, the uid in packages.list is still equals main profile
-        // don't delete it in this case!
-        int manager_uid = ksu_get_manager_uid() % 100000;
-        if (np->uid == manager_uid) {
+        if (np->uid == ksu_get_manager_appid()) {
             manager_exist = true;
             break;
         }
     }
 
     if (!manager_exist) {
-        if (ksu_is_manager_uid_valid()) {
+        if (ksu_is_manager_appid_valid()) {
             pr_info("manager is uninstalled, invalidate it!\n");
             ksu_invalidate_manager_uid();
             goto prune;
