@@ -42,7 +42,6 @@ mod sepolicy;
 mod su;
 #[cfg(target_os = "android")]
 mod utils;
-mod utils_common;
 
 fn main() -> anyhow::Result<()> {
     #[cfg(target_os = "android")]

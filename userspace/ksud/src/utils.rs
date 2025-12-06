@@ -1,7 +1,10 @@
-use anyhow::{Context, Error, Ok, Result};
+use anyhow::{Context, Error, Ok, Result, bail};
 use std::{
-    fs::{File, OpenOptions},
-    io::{ErrorKind::AlreadyExists, Write},
+    fs::{File, OpenOptions, create_dir_all, remove_file, write},
+    io::{
+        ErrorKind::{AlreadyExists, NotFound},
+        Write,
+    },
     path::Path,
     process::Command,
 };
@@ -9,6 +12,8 @@ use std::{
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
 #[allow(unused_imports)]
 use std::fs::{Permissions, set_permissions};
+#[cfg(unix)]
+use std::os::unix::prelude::PermissionsExt;
 
 use std::path::PathBuf;
 
@@ -18,8 +23,6 @@ use rustix::{
     process,
     thread::{LinkNameSpaceType, move_into_link_name_space},
 };
-
-pub use crate::utils_common::*;
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
     let path = dir.as_ref();
@@ -43,6 +46,44 @@ pub fn ensure_file_exists<T: AsRef<Path>>(file: T) -> Result<()> {
             }
         }
     }
+}
+
+pub fn ensure_dir_exists<T: AsRef<Path>>(dir: T) -> Result<()> {
+    let result = create_dir_all(&dir);
+    if dir.as_ref().is_dir() && result.is_ok() {
+        Ok(())
+    } else {
+        bail!("{} is not a regular directory", dir.as_ref().display())
+    }
+}
+
+pub fn ensure_binary<T: AsRef<Path>>(
+    path: T,
+    contents: &[u8],
+    ignore_if_exist: bool,
+) -> Result<()> {
+    if ignore_if_exist && path.as_ref().exists() {
+        return Ok(());
+    }
+
+    ensure_dir_exists(path.as_ref().parent().ok_or_else(|| {
+        anyhow::anyhow!(
+            "{} does not have parent directory",
+            path.as_ref().to_string_lossy()
+        )
+    })?)?;
+
+    if let Err(e) = remove_file(path.as_ref())
+        && e.kind() != NotFound
+    {
+        return Err(Error::from(e))
+            .with_context(|| format!("failed to unlink {}", path.as_ref().display()));
+    }
+
+    write(&path, contents)?;
+    #[cfg(unix)]
+    set_permissions(&path, Permissions::from_mode(0o755))?;
+    Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "android"))]

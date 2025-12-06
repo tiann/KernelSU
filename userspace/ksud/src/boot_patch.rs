@@ -17,7 +17,8 @@ use which::which;
 use crate::assets;
 #[cfg(target_os = "android")]
 use crate::defs::{BACKUP_FILENAME, KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
-use crate::utils_common::ensure_dir_exists;
+#[cfg(target_os = "android")]
+use crate::utils::ensure_dir_exists;
 
 #[cfg(target_os = "android")]
 use crate::utils;

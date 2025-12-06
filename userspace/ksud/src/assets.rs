@@ -6,7 +6,7 @@ use std::path::Path;
 mod android {
     use crate::assets::Asset;
     use crate::defs::BINARY_DIR;
-    use crate::utils_common::ensure_binary;
+    use crate::utils::ensure_binary;
     use const_format::concatcp;
 
     pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
