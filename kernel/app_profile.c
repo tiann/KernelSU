@@ -4,6 +4,7 @@
 #include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/fs.h>
+#include <linux/kprobes.h>
 #include <linux/proc_ns.h>
 #include <linux/pid.h>
 #include <linux/sched.h>
@@ -63,11 +64,24 @@ void setup_groups(struct root_profile *profile, struct cred *cred)
     put_group_info(group_info);
 }
 
-#if defined(__aarch64__)
-extern long __arm64_sys_setns(const struct pt_regs *regs);
-#elif defined(__x86_64__)
-extern long __x64_sys_setns(const struct pt_regs *regs);
-#endif
+static long (*ksu_sys_setns_fn)(const struct pt_regs *);
+
+void ksu_resolve_setns(void)
+{
+	int ret;
+	struct kprobe kp = {
+		.symbol_name = SYS_SETNS_SYMBOL,
+	};
+	ret = register_kprobe(&kp);
+	if (ret < 0) {
+		pr_err("register kprobe for resolve_setns failed: %d\n", ret);
+		return;
+	}
+	ksu_sys_setns_fn = (void *)kp.addr;
+	unregister_kprobe(&kp);
+	pr_info("resolved "SYS_SETNS_SYMBOL" addr: %p\n", ksu_sys_setns_fn);
+	return;
+}
 
 static long ksu_sys_setns(int fd, int flags)
 {
@@ -77,13 +91,10 @@ static long ksu_sys_setns(int fd, int flags)
 	PT_REGS_PARM1(&regs) = fd;
 	PT_REGS_PARM2(&regs) = flags;
 
-#if defined(__aarch64__)
-	return __arm64_sys_setns(&regs);
-#elif defined(__x86_64__)
-	return __x64_sys_setns(&regs);
-#else
-	return -ENOSYS;
-#endif
+	if (unlikely(!ksu_sys_setns_fn)) {
+		return -ENOSYS;
+	}
+	return ksu_sys_setns_fn(&regs);
 }
 
 static void setup_mount_namespace(int32_t ns_mode) {
@@ -134,7 +145,7 @@ static void setup_mount_namespace(int32_t ns_mode) {
 			pr_warn("failed to get task_struct for PID 1\n");
 			goto try_drop_caps;
 		}
-		// mabe you can use &init_task for first stage init?
+		// maybe you can use &init_task for first stage init?
 		long ret = ns_get_path(&ns_path, pid1_task, &mntns_operations);
 		put_task_struct(pid1_task);
 		if (ret) {

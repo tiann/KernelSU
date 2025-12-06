@@ -65,4 +65,6 @@ void escape_with_root_profile(void);
 
 void escape_to_root_for_init(void);
 
+void ksu_resolve_setns(void);
+
 #endif
