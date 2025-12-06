@@ -137,12 +137,8 @@ struct ksu_uid_should_umount_cmd {
     uint8_t should_umount; // Output: true if should umount, false otherwise
 };
 
-struct ksu_get_manager_uid_cmd {
-    uint32_t uid; // Output: manager UID
-};
-
-struct ksu_set_manager_uid_cmd {
-    uint32_t uid; // Input: new manager UID
+struct ksu_get_manager_appid_cmd {
+    uint32_t appid; // Output: manager app id
 };
 
 struct ksu_get_app_profile_cmd {
@@ -178,7 +174,7 @@ bool is_enhanced_security_enabled();
 #define KSU_IOCTL_GET_DENY_LIST _IOC(_IOC_READ|_IOC_WRITE, 'K', 7, 0)
 #define KSU_IOCTL_UID_GRANTED_ROOT _IOC(_IOC_READ|_IOC_WRITE, 'K', 8, 0)
 #define KSU_IOCTL_UID_SHOULD_UMOUNT _IOC(_IOC_READ|_IOC_WRITE, 'K', 9, 0)
-#define KSU_IOCTL_GET_MANAGER_UID _IOC(_IOC_READ, 'K', 10, 0)
+#define KSU_IOCTL_GET_MANAGER_APPID _IOC(_IOC_READ, 'K', 10, 0)
 #define KSU_IOCTL_GET_APP_PROFILE _IOC(_IOC_READ|_IOC_WRITE, 'K', 11, 0)
 #define KSU_IOCTL_SET_APP_PROFILE _IOC(_IOC_WRITE, 'K', 12, 0)
 #define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
