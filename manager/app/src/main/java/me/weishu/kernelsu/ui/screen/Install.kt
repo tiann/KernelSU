@@ -67,7 +67,6 @@ import me.weishu.kernelsu.ui.util.getDefaultPartition
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.rootAvailable
-import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -75,7 +74,7 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
-import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
@@ -84,7 +83,6 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.icon.icons.useful.Edit
 import top.yukonga.miuix.kmp.icon.icons.useful.Move
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -280,20 +278,15 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                         }
                     )
                 }
-                Button(
+                TextButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp),
+                    text = stringResource(id = R.string.install_next),
                     enabled = installMethod != null,
-                    colors = ButtonDefaults.buttonColorsPrimary(),
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
                     onClick = { onClickNext() }
-                ) {
-                    Text(
-                        stringResource(id = R.string.install_next),
-                        color = colorScheme.onPrimary,
-                        fontSize = MiuixTheme.textStyles.body1.fontSize
-                    )
-                }
+                )
                 Spacer(
                     Modifier.height(
                         WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +

@@ -423,8 +423,8 @@ private fun ConfirmDialog(
                 content = {
                     visuals.content?.let { content ->
                         when {
-                            visuals.isMarkdown -> MarkdownContent(content = content)
-                            visuals.isHtml -> GithubMarkdownContent(content = content)
+                            visuals.isMarkdown -> Markdown(content = content)
+                            visuals.isHtml -> GithubMarkdown(content = content)
                             else -> Text(text = content)
                         }
                     }
