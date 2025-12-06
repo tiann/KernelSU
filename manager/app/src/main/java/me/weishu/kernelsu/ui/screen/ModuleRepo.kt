@@ -165,6 +165,7 @@ data class RepoModuleArg(
     val releases: List<ReleaseArg>
 ) : Parcelable
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
 fun ModuleRepoPager(
@@ -323,7 +324,7 @@ fun ModuleRepoPager(
                         }
                     ) {
                         Column {
-                            if (module.moduleName.isNotBlank()) {
+                            if (module.moduleName.isNotEmpty()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = module.moduleName,
@@ -364,7 +365,7 @@ fun ModuleRepoPager(
                                     }
                                 }
                             }
-                            if (module.moduleId.isNotBlank()) {
+                            if (module.moduleId.isNotEmpty()) {
                                 Text(
                                     text = "ID: ${module.moduleId}",
                                     fontSize = 12.sp,
@@ -379,7 +380,7 @@ fun ModuleRepoPager(
                                 fontWeight = FontWeight(550),
                                 color = colorScheme.onSurfaceVariantSummary,
                             )
-                            if (module.summary.isNotBlank()) {
+                            if (module.summary.isNotEmpty()) {
                                 Text(
                                     text = module.summary,
                                     fontSize = 14.sp,
@@ -524,7 +525,7 @@ fun ModuleRepoPager(
                                 }
                             ) {
                                 Column {
-                                    if (module.moduleName.isNotBlank()) {
+                                    if (module.moduleName.isNotEmpty()) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(
                                                 text = module.moduleName,
@@ -565,7 +566,7 @@ fun ModuleRepoPager(
                                             }
                                         }
                                     }
-                                    if (module.moduleId.isNotBlank()) {
+                                    if (module.moduleId.isNotEmpty()) {
                                         Text(
                                             text = "ID: ${module.moduleId}",
                                             fontSize = 12.sp,
@@ -580,7 +581,7 @@ fun ModuleRepoPager(
                                         fontWeight = FontWeight(550),
                                         color = colorScheme.onSurfaceVariantSummary,
                                     )
-                                    if (module.summary.isNotBlank()) {
+                                    if (module.summary.isNotEmpty()) {
                                         Text(
                                             text = module.summary,
                                             fontSize = 14.sp,
@@ -607,7 +608,7 @@ fun ModuleRepoPager(
                                                 fontWeight = FontWeight(550),
                                                 color = colorScheme.onSurfaceVariantSummary,
                                             )
-                                            if (module.latestReleaseTime.isNotBlank()) {
+                                            if (module.latestReleaseTime.isNotEmpty()) {
                                                 Text(
                                                     text = module.latestReleaseTime,
                                                     fontSize = 12.sp,
@@ -864,7 +865,7 @@ fun ReleasesPage(
                         ) {
                             Column {
                                 AnimatedVisibility(
-                                    visible = rel.descriptionHTML.isNotBlank(),
+                                    visible = rel.descriptionHTML.isNotEmpty(),
                                     enter = fadeIn() + expandVertically(),
                                     exit = fadeOut() + shrinkVertically()
                                 ) {
@@ -1001,7 +1002,6 @@ fun InfoPage(
     actionIconTint: Color,
     secondaryContainer: Color,
     uriHandler: UriHandler,
-    homepageUrl: String,
     sourceUrl: String,
 ) {
     LazyColumn(
@@ -1041,7 +1041,7 @@ fun InfoPage(
                                     color = colorScheme.onSurface,
                                     modifier = Modifier.weight(1f)
                                 )
-                                val clickable = author.link.isNotBlank()
+                                val clickable = author.link.isNotEmpty()
                                 val tint = if (clickable) actionIconTint else actionIconTint.copy(alpha = 0.35f)
                                 IconButton(
                                     backgroundColor = secondaryContainer,
@@ -1074,7 +1074,7 @@ fun InfoPage(
                 }
             }
         }
-        if (sourceUrl.isNotBlank() || homepageUrl.isNotBlank()) {
+        if (sourceUrl.isNotEmpty()) {
             item {
                 SmallTitle(
                     text = stringResource(R.string.module_repos_source_code),
@@ -1100,24 +1100,18 @@ fun InfoPage(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        val clickable = sourceUrl.isNotBlank() || homepageUrl.isNotBlank()
-                        val target = sourceUrl.ifBlank { homepageUrl }
-                        val tint = if (clickable) actionIconTint else actionIconTint.copy(alpha = 0.35f)
                         IconButton(
                             backgroundColor = secondaryContainer,
                             minHeight = 35.dp,
                             minWidth = 35.dp,
-                            enabled = clickable,
                             onClick = {
-                                if (target.isNotBlank()) {
-                                    uriHandler.openUri(target)
-                                }
+                                uriHandler.openUri(sourceUrl)
                             },
                         ) {
                             Icon(
                                 modifier = Modifier.size(20.dp),
                                 imageVector = Icons.Rounded.Link,
-                                tint = tint,
+                                tint = actionIconTint,
                                 contentDescription = null
                             )
                         }
@@ -1155,8 +1149,8 @@ fun ModuleRepoDetailScreen(
     var readmeHtml by remember(module.moduleId) { mutableStateOf<String?>(null) }
     var readmeLoaded by remember(module.moduleId) { mutableStateOf(false) }
     var detailReleases by remember(module.moduleId) { mutableStateOf<List<ReleaseArg>>(emptyList()) }
-    var homepageUrl by remember(module.moduleId) { mutableStateOf("") }
-    var sourceUrl by remember(module.moduleId) { mutableStateOf("") }
+    var webUrl by remember(module.moduleId) { mutableStateOf("https://modules.kernelsu.org/module/${module.moduleId}") }
+    var sourceUrl by remember(module.moduleId) { mutableStateOf("https://github.com/KernelSU-Modules-Repo/${module.moduleId}") }
 
 
     val scrollBehavior = MiuixScrollBehavior()
@@ -1193,10 +1187,10 @@ fun ModuleRepoDetailScreen(
                     }
                 },
                 actions = {
-                    if (homepageUrl.isNotBlank()) {
+                    if (webUrl.isNotEmpty()) {
                         IconButton(
                             modifier = Modifier.padding(end = 16.dp),
-                            onClick = { uriHandler.openUri(homepageUrl) }
+                            onClick = { uriHandler.openUri(webUrl) }
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Useful.NavigatorSwitch,
@@ -1216,8 +1210,7 @@ fun ModuleRepoDetailScreen(
                         val detail = fetchModuleDetail(module.moduleId)
                         if (detail != null) {
                             readmeHtml = detail.readmeHtml
-                            homepageUrl = (detail.homepageUrl ?: detail.url ?: "")
-                            sourceUrl = (detail.sourceUrl ?: "")
+                            if (detail.sourceUrl.isNotEmpty()) sourceUrl = detail.sourceUrl
                             detailReleases = detail.releases.map { r ->
                                 ReleaseArg(
                                     tagName = r.tagName,
@@ -1296,7 +1289,6 @@ fun ModuleRepoDetailScreen(
                         actionIconTint = actionIconTint,
                         secondaryContainer = secondaryContainer,
                         uriHandler = uriHandler,
-                        homepageUrl = homepageUrl,
                         sourceUrl = sourceUrl,
                     )
                 }

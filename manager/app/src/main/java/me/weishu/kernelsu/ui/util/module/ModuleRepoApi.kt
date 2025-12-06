@@ -13,16 +13,16 @@ data class RepoSummary(
 )
 
 data class ModuleDetail(
-    val readme: String?,
-    val readmeHtml: String?,
+    val readme: String,
+    val readmeHtml: String,
     val latestTag: String,
     val latestTime: String,
     val latestAssetName: String?,
     val latestAssetUrl: String?,
     val releases: List<ReleaseInfo>,
-    val homepageUrl: String?,
-    val sourceUrl: String?,
-    val url: String?
+    val homepageUrl: String,
+    val sourceUrl: String,
+    val url: String
 )
 
 data class ReleaseInfo(
@@ -111,11 +111,11 @@ fun fetchModuleDetail(moduleId: String): ModuleDetail? {
             if (!resp.isSuccessful) return@use null
             val body = resp.body?.string() ?: return@use null
             val obj = JSONObject(body)
-            val readme = obj.optString("readme", "").ifBlank { null }
-            val readmeHtml = obj.optString("readmeHTML", "").ifBlank { null }
-            val homepageUrl = stripTicks(obj.optString("homepageUrl", "")).ifBlank { null }
-            val sourceUrl = stripTicks(obj.optString("sourceUrl", "")).ifBlank { null }
-            val urlRepo = stripTicks(obj.optString("url", "")).ifBlank { null }
+            val readme = obj.optString("readme", "")
+            val readmeHtml = obj.optString("readmeHTML", "")
+            val homepageUrl = stripTicks(obj.optString("homepageUrl", ""))
+            val sourceUrl = stripTicks(obj.optString("sourceUrl", ""))
+            val url = stripTicks(obj.optString("url", ""))
             val lr = obj.optJSONObject("latestRelease")
             var latestTag: String
             var latestTime = ""
@@ -175,7 +175,7 @@ fun fetchModuleDetail(moduleId: String): ModuleDetail? {
                 releases = releases,
                 homepageUrl = homepageUrl,
                 sourceUrl = sourceUrl,
-                url = urlRepo
+                url = url
             )
         }
     }.getOrNull()
