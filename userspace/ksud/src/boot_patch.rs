@@ -215,6 +215,7 @@ pub struct BootRestoreArgs {
     pub boot: Option<PathBuf>,
 
     /// Flash it to boot partition after restore
+    #[cfg(target_os = "android")]
     #[arg(short, long, default_value = "false")]
     pub flash: bool,
 
@@ -230,9 +231,14 @@ pub struct BootRestoreArgs {
 pub fn restore(args: BootRestoreArgs) -> Result<()> {
     let BootRestoreArgs {
         boot: image,
-        flash,
         magiskboot: magiskboot_path,
         out_name,
+        ..
+    } = args;
+    #[cfg(target_os = "android")]
+    let BootRestoreArgs {
+        flash,
+        ..
     } = args;
 
     let tmpdir = tempfile::Builder::new()
@@ -244,7 +250,10 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
 
     let kmi = get_current_kmi().unwrap_or_default();
 
+    #[cfg(target_os = "android")]
     let (bootimage, bootdevice) = find_boot_image(&image, &kmi, false, false, workdir, &None)?;
+    #[cfg(not(target_os = "android"))]
+    let (bootimage, _) = find_boot_image(&image, &kmi, false, false, workdir, &None)?;
 
     println!("- Unpacking boot image");
     let status = Command::new(&magiskboot)
@@ -270,8 +279,12 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workdir, ramdisk)?;
     ensure!(is_kernelsu_patched, "boot image is not patched by KernelSU");
 
+    #[cfg(target_os = "android")]
     let mut new_boot = None;
+    #[cfg(target_os = "android")]
     let mut from_backup = false;
+    #[cfg(not(target_os = "android"))]
+    let from_backup = false;
 
     #[cfg(target_os = "android")]
     if do_cpio_cmd(
@@ -307,30 +320,31 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
         println!("- Backup info is absent!");
     }
 
-    let new_boot = new_boot.map_or_else(
-        || -> Result<_> {
-            // remove kernelsu.ko
-            do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm kernelsu.ko")?;
+    let remove_ksu = || -> Result<_> {
+        // remove kernelsu.ko
+        do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm kernelsu.ko")?;
 
-            // if init.real exists, restore it
-            let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init.real").is_ok();
-            if status {
-                do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init.real init")?;
-            }
+        // if init.real exists, restore it
+        let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init.real").is_ok();
+        if status {
+            do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init.real init")?;
+        }
 
-            println!("- Repacking boot image");
-            let status = Command::new(&magiskboot)
-                .current_dir(workdir)
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .arg("repack")
-                .arg(&bootimage)
-                .status()?;
-            ensure!(status.success(), "magiskboot repack failed");
-            Ok(workdir.join("new-boot.img"))
-        },
-        Ok,
-    )?;
+        println!("- Repacking boot image");
+        let status = Command::new(&magiskboot)
+            .current_dir(workdir)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .arg("repack")
+            .arg(&bootimage)
+            .status()?;
+        ensure!(status.success(), "magiskboot repack failed");
+        Ok(workdir.join("new-boot.img"))
+    };
+    #[cfg(target_os = "android")]
+    let new_boot = new_boot.map_or_else(remove_ksu, Ok)?;
+    #[cfg(not(target_os = "android"))]
+    let new_boot = remove_ksu()?;
 
     if image.is_some() {
         // if image is specified, write to output file
@@ -379,10 +393,12 @@ pub struct BootPatchArgs {
     pub init: Option<PathBuf>,
 
     /// will use another slot when boot image is not specified
+    #[cfg(target_os = "android")]
     #[arg(short = 'u', long, default_value = "false")]
     pub ota: bool,
 
     /// Flash it to boot partition after patch
+    #[cfg(target_os = "android")]
     #[arg(short, long, default_value = "false")]
     pub flash: bool,
 
@@ -399,6 +415,7 @@ pub struct BootPatchArgs {
     pub kmi: Option<String>,
 
     /// target partition override (init_boot | boot | vendor_boot)
+    #[cfg(target_os = "android")]
     #[arg(long, default_value = None)]
     pub partition: Option<String>,
 
@@ -414,13 +431,18 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             init,
             kernel,
             module: kmod,
-            ota,
-            flash,
             out,
             magiskboot: magiskboot_path,
             kmi,
-            partition,
             out_name,
+            ..
+        } = args;
+        #[cfg(target_os = "android")]
+        let BootPatchArgs {
+            ota,
+            flash,
+            partition,
+            ..
         } = args;
 
         println!(include_str!("banner"));
@@ -477,8 +499,13 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             Ok,
         )?;
 
+        #[cfg(target_os = "android")]
         let (bootimage, bootdevice) =
             find_boot_image(&image, &kmi, ota, is_replace_kernel, workdir, &partition)?;
+
+        #[cfg(not(target_os = "android"))]
+        let (bootimage, _) =
+            find_boot_image(&image, &kmi, false, is_replace_kernel, workdir, &None)?;
 
         let bootimage = bootimage.as_path();
 
@@ -538,14 +565,18 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         println!("- Adding KernelSU LKM");
         let is_kernelsu_patched = is_kernelsu_patched(&magiskboot, workdir, ramdisk)?;
 
-        let need_backup = if is_kernelsu_patched {
-            false
-        } else {
+        if !is_kernelsu_patched {
             // kernelsu.ko is not exist, backup init if necessary
             let status = do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists init");
             if status.is_ok() {
                 do_cpio_cmd(&magiskboot, workdir, ramdisk, "mv init init.real")?;
             }
+        }
+
+        #[cfg(target_os = "android")]
+        let need_backup = if is_kernelsu_patched {
+            false
+        } else {
             flash
         };
 
@@ -674,6 +705,7 @@ fn clean_backup(sha1: &str) -> Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "android")]
 fn flash_boot(bootdevice: &Option<String>, new_boot: PathBuf) -> Result<()> {
     let Some(bootdevice) = bootdevice else {
         bail!("boot device not found")
@@ -810,11 +842,6 @@ pub fn list_available_partitions() -> Vec<String> {
         .filter(|name| Path::new(&format!("/dev/block/by-name/{name}{slot_suffix}")).exists())
         .map(ToString::to_string)
         .collect()
-}
-
-#[cfg(not(target_os = "android"))]
-pub fn list_available_partitions() -> Vec<String> {
-    Vec::new()
 }
 
 #[cfg(target_os = "android")]
