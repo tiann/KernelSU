@@ -355,7 +355,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
         if (datum->u.xperms == NULL) {
             datum->u.xperms =
                 (struct avtab_extended_perms *)(kzalloc(
-                    sizeof(xperms), GFP_KERNEL));
+                    sizeof(xperms), GFP_ATOMIC));
             if (!datum->u.xperms) {
                 pr_err("alloc xperms failed\n");
                 return;
