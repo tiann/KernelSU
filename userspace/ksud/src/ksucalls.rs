@@ -1,6 +1,5 @@
 #![allow(clippy::unreadable_literal)]
 use std::fs;
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
 
@@ -102,15 +101,12 @@ const KSU_UMOUNT_ADD: u8 = 1;
 const KSU_UMOUNT_DEL: u8 = 2;
 
 // Global driver fd cache
-#[cfg(any(target_os = "linux", target_os = "android"))]
 static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
-#[cfg(any(target_os = "linux", target_os = "android"))]
 static INFO_CACHE: OnceLock<GetInfoCmd> = OnceLock::new();
 
 const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
 const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn scan_driver_fd() -> Option<RawFd> {
     let fd_dir = fs::read_dir("/proc/self/fd").ok()?;
 
@@ -130,7 +126,6 @@ fn scan_driver_fd() -> Option<RawFd> {
 }
 
 // Get cached driver fd
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn init_driver_fd() -> Option<RawFd> {
     let fd = scan_driver_fd();
     if fd.is_none() {
@@ -151,7 +146,6 @@ fn init_driver_fd() -> Option<RawFd> {
 }
 
 // ioctl wrapper using libc
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
     use std::io;
 
@@ -169,13 +163,7 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
     }
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn ksuctl<T>(_request: u32, _arg: *mut T) -> std::io::Result<i32> {
-    Err(std::io::Error::from_raw_os_error(libc::ENOSYS))
-}
-
 // API implementations
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn get_info() -> GetInfoCmd {
     *INFO_CACHE.get_or_init(|| {
         let mut cmd = GetInfoCmd {
@@ -187,35 +175,19 @@ fn get_info() -> GetInfoCmd {
     })
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn get_version() -> i32 {
     get_info().version as i32
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn get_version() -> i32 {
-    0
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn grant_root() -> std::io::Result<()> {
     ksuctl(KSU_IOCTL_GRANT_ROOT, std::ptr::null_mut::<u8>())?;
     Ok(())
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn grant_root() -> std::io::Result<()> {
-    Err(std::io::Error::from_raw_os_error(libc::ENOSYS))
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
 fn report_event(event: u32) {
     let mut cmd = ReportEventCmd { event };
     let _ = ksuctl(KSU_IOCTL_REPORT_EVENT, &raw mut cmd);
 }
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-fn report_event(_event: u32) {}
 
 pub fn report_post_fs_data() {
     report_event(EVENT_POST_FS_DATA);
@@ -229,16 +201,10 @@ pub fn report_module_mounted() {
     report_event(EVENT_MODULE_MOUNTED);
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn check_kernel_safemode() -> bool {
     let mut cmd = CheckSafemodeCmd { in_safe_mode: 0 };
     let _ = ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &raw mut cmd);
     cmd.in_safe_mode != 0
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn check_kernel_safemode() -> bool {
-    false
 }
 
 pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
@@ -266,7 +232,6 @@ pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
     let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
     let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &raw mut cmd)?;

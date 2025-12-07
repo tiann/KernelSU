@@ -28,7 +28,6 @@ fn set_kernel_param(uid: u32) -> Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "android")]
 fn get_pkg_uid(pkg: &str) -> Result<u32> {
     // stat /data/data/<pkg>
     let uid = rustix::fs::stat(format!("/data/data/{pkg}"))
@@ -43,10 +42,7 @@ pub fn set_manager(pkg: &str) -> Result<()> {
         "CONFIG_KSU_DEBUG is not enabled"
     );
 
-    #[cfg(target_os = "android")]
     let uid = get_pkg_uid(pkg)?;
-    #[cfg(not(target_os = "android"))]
-    let uid = 0;
     set_kernel_param(uid)?;
     // force-stop it
     let _ = Command::new("am").args(["force-stop", pkg]).status();
