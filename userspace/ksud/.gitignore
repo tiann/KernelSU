@@ -1,2 +1,2 @@
 /target
-.cargo/
+.cargo/config.toml

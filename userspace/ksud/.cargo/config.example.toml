@@ -1,0 +1,24 @@
+# This file contains required configuration to correctly build ksud across platforms.
+# Rename this file to `config.toml` to apply.
+# Replace all UPPERCASE variables (ANDROID_NDK_ROOT, CLANG_PATH, etc.) with real paths.
+
+# Linux
+# CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang
+# CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++
+
+# macOS
+# CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang
+# CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++
+
+# Windows
+# CLANG_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang.cmd
+# CLANG++_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang++.cmd
+
+# Run `cargo build --target aarch64-linux-android` to build.
+
+[target.aarch64-linux-android]
+linker = "CLANG_PATH"
+
+[env]
+CC_aarch64_linux_android = "CLANG_PATH"
+CXX_aarch64_linux_android = "CLANG++_PATH"

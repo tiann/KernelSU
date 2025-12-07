@@ -15,15 +15,12 @@ use std::{
     process::Command,
 };
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use crate::ksucalls::get_wrapped_fd;
-#[cfg(any(target_os = "linux", target_os = "android"))]
 use rustix::{
     process::getuid,
     thread::{Gid, Uid, set_thread_res_gid, set_thread_res_uid},
 };
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn grant_root(global_mnt: bool) -> Result<()> {
     crate::ksucalls::grant_root()?;
 
@@ -37,14 +34,8 @@ pub fn grant_root(global_mnt: bool) -> Result<()> {
         })
     };
     // add /data/adb/ksu/bin to PATH
-    #[cfg(any(target_os = "linux", target_os = "android"))]
     add_path_to_env(defs::BINARY_DIR)?;
     Err(command.exec().into())
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn grant_root(_global_mnt: bool) -> Result<()> {
-    unimplemented!("grant_root is only available on android");
 }
 
 fn print_usage(program: &str, opts: &Options) {
@@ -53,24 +44,20 @@ fn print_usage(program: &str, opts: &Options) {
 }
 
 fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
-    #[cfg(any(target_os = "linux", target_os = "android"))]
-    {
-        rustix::thread::set_thread_groups(
-            groups
-                .iter()
-                .map(|g| Gid::from_raw(*g))
-                .collect::<Vec<_>>()
-                .as_ref(),
-        )
-        .ok();
-        let gid = Gid::from_raw(gid);
-        let uid = Uid::from_raw(uid);
-        set_thread_res_gid(gid, gid, gid).ok();
-        set_thread_res_uid(uid, uid, uid).ok();
-    }
+    rustix::thread::set_thread_groups(
+        groups
+            .iter()
+            .map(|g| Gid::from_raw(*g))
+            .collect::<Vec<_>>()
+            .as_ref(),
+    )
+    .ok();
+    let gid = Gid::from_raw(gid);
+    let uid = Uid::from_raw(uid);
+    set_thread_res_gid(gid, gid, gid).ok();
+    set_thread_res_uid(uid, uid, uid).ok();
 }
 
-#[cfg(target_os = "android")]
 fn wrap_tty(fd: c_int) {
     let inner_fn = move || -> Result<()> {
         if unsafe { libc::isatty(fd) != 1 } {
@@ -91,12 +78,6 @@ fn wrap_tty(fd: c_int) {
     }
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn root_shell() -> Result<()> {
-    unimplemented!()
-}
-
-#[cfg(any(target_os = "linux", target_os = "android"))]
 #[allow(clippy::similar_names)]
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
@@ -270,7 +251,6 @@ pub fn root_shell() -> Result<()> {
     }
 
     // add /data/adb/ksu/bin to PATH
-    #[cfg(any(target_os = "linux", target_os = "android"))]
     add_path_to_env(defs::BINARY_DIR)?;
 
     // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
@@ -287,12 +267,10 @@ pub fn root_shell() -> Result<()> {
             utils::switch_cgroups();
 
             // switch to global mount namespace
-            #[cfg(any(target_os = "linux", target_os = "android"))]
             if mount_master {
                 let _ = utils::switch_mnt_ns(1);
             }
 
-            #[cfg(target_os = "android")]
             if use_fd_wrapper {
                 wrap_tty(0);
                 wrap_tty(1);
