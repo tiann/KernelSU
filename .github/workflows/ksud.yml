@@ -13,6 +13,10 @@ on:
         required: false
         type: boolean
         default: true
+      pack_ksuinit:
+        required: false
+        type: boolean
+        default: true
       use_cache:
         required: false
         type: boolean
@@ -34,9 +38,9 @@ jobs:
         cp android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
     
     - name: Prepare ksuinit
+      if: ${{ inputs.pack_ksuinit }}
       run: |
-        cp ksuinit-aarch64-linux-android/*/release/ksuinit ./userspace/ksud/bin/aarch64/
-        cp ksuinit-x86_64-linux-android/*/release/ksuinit ./userspace/ksud/bin/x86_64/
+        mv ksuinit/*/release/ksuinit ./userspace/ksud/bin/aarch64/
         
     - name: Setup rustup
       run: |

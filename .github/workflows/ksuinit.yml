@@ -2,9 +2,6 @@ name: Build ksuinit
 on:
   workflow_call:
     inputs:
-      target:
-        required: true
-        type: string
       os:
         required: false
         type: string
@@ -20,6 +17,7 @@ jobs:
     - name: Setup rustup
       run: |
         rustup update stable
+        rustup target add aarch64-unknown-linux-musl
 
     - uses: Swatinem/rust-cache@v2
       with:
@@ -28,27 +26,15 @@ jobs:
 
     - name: Build ksuinit
       run: |
-        TARGET=${{ inputs.target }}
         LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
-        if [ "$TARGET" == "aarch64-linux-android" ]; then
-          ARCH="aarch64"
-          TARGET="aarch64-unknown-linux-musl"
-          export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
-          export RUSTFLAGS="-C link-arg=-no-pie"
-        elif [ "$TARGET" == "x86_64-linux-android" ]; then
-          ARCH="x86_64"
-          TARGET="x86_64-unknown-linux-musl"
-          export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/x86_64-linux-android26-clang"
-        else
-          exit 1
-        fi
-        rustup target add $TARGET
+        export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
+        export RUSTFLAGS="-C link-arg=-no-pie"
         cd userspace/ksuinit
-        cargo build --target=$TARGET --release
-        cp target/$TARGET/release/ksuinit ../../userspace/ksud/bin/$ARCH
+        cargo build --target=aarch64-unknown-linux-musl --release
+        cp target/aarch64-unknown-linux-musl/release/ksuinit ../../userspace/ksud/bin/aarch64
 
     - name: Upload ksuinit artifact
       uses: actions/upload-artifact@v5
       with:
-        name: ksuinit-${{ inputs.target }}
+        name: ksuinit
         path: userspace/ksuinit/target/**/release/ksuinit*
