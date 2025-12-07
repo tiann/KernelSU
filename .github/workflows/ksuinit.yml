@@ -31,7 +31,6 @@ jobs:
         export RUSTFLAGS="-C link-arg=-no-pie"
         cd userspace/ksuinit
         cargo build --target=aarch64-unknown-linux-musl --release
-        cp target/aarch64-unknown-linux-musl/release/ksuinit ../../userspace/ksud/bin/aarch64
 
     - name: Upload ksuinit artifact
       uses: actions/upload-artifact@v5
