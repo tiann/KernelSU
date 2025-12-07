@@ -37,6 +37,11 @@ class WebViewInterface(
     }
 
     @JavascriptInterface
+    fun execBool(cmd: String): Boolean {
+        return withNewRootShell { ShellUtils.fastCmdResult(this, cmd) }
+    }
+    
+    @JavascriptInterface
     fun exec(cmd: String, callbackFunc: String) {
         exec(cmd, null, callbackFunc)
     }
