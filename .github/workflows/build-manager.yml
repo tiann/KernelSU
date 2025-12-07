@@ -26,8 +26,19 @@ jobs:
     uses: ./.github/workflows/build-lkm.yml
     secrets: inherit
 
+  build-ksuinit:
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-linux-android
+          - target: x86_64-linux-android
+    uses: ./.github/workflows/ksuinit.yml
+    with:
+      target: ${{ matrix.target }}
+      os: ubuntu-latest
+
   build-ksud:
-    needs: build-lkm
+    needs: [build-lkm, build-ksuinit]
     strategy:
       matrix:
         include:
@@ -41,7 +52,7 @@ jobs:
       os: ${{ matrix.os }}
   
   build-ksud-extra:
-    needs: build-lkm
+    needs: [build-lkm, build-ksuinit]
     strategy:
       matrix:
         include:
