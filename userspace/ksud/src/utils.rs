@@ -18,7 +18,7 @@ use std::os::unix::prelude::PermissionsExt;
 use std::path::PathBuf;
 
 use crate::boot_patch::BootRestoreArgs;
-#[cfg(any(target_os = "linux", target_os = "android"))]
+
 use rustix::{
     process,
     thread::{LinkNameSpaceType, move_into_link_name_space},
@@ -86,14 +86,8 @@ pub fn ensure_binary<T: AsRef<Path>>(
     Ok(())
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn getprop(prop: &str) -> Option<String> {
     android_properties::getprop(prop).value()
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn getprop(_prop: &str) -> Option<String> {
-    unimplemented!()
 }
 
 pub fn is_safe_mode() -> bool {
@@ -120,7 +114,6 @@ pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
     Ok(total)
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn switch_mnt_ns(pid: i32) -> Result<()> {
     use rustix::{
         fd::AsFd,
@@ -162,21 +155,14 @@ pub fn switch_cgroups() {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn umask(mask: u32) {
     process::umask(rustix::fs::Mode::from_raw_mode(mask));
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "android")))]
-pub fn umask(_mask: u32) {
-    unimplemented!("umask is not supported on this platform")
 }
 
 pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
 }
 
-#[cfg(target_os = "android")]
 fn link_ksud_to_bin() -> Result<()> {
     let ksu_bin = PathBuf::from(defs::DAEMON_PATH);
     let ksu_bin_link = PathBuf::from(defs::DAEMON_LINK_PATH);
@@ -196,7 +182,6 @@ pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     // install binary assets
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
-    #[cfg(target_os = "android")]
     link_ksud_to_bin()?;
 
     if let Some(magiskboot) = magiskboot {
