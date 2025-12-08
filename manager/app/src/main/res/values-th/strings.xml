@@ -63,7 +63,7 @@
     <string name="profile_capabilities">ความสามารถของแอป</string>
     <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปนี้ได้</string>
     <string name="profile_selinux_context">บริบท SELinux</string>
-    <string name="profile_umount_modules">Umount โมดูล</string>
+    <string name="profile_umount_modules">โมดูล Umount ตามค่าเริ่มต้น</string>
     <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s ได้</string>
     <string name="settings_umount_modules_default">Umount โมดูล</string>
     <string name="profile_selinux_domain">โดเมน</string>
@@ -182,7 +182,7 @@
     <string name="feature_status_managed_summary">คุณสมบัตินี้ถูกจัดการโดยโมดูล</string>
     <string name="module_repos">พื้นที่จัดเก็บโมดูล</string>
     <string name="module_repos_sort_update_first">อัปเดตก่อน</string>
-    <string name="module_repos_sort_name">เรียงตามชื่อ</string>
+    <string name="module_repos_sort_name">เรียงตามชื่อ (A → Z)</string>
     <string name="module_repos_source_code">ซอร์สโค้ด</string>
     <string name="home_gki_warning">ตั้งแต่เวอร์ชัน 3.0.0 เป็นต้นไป โหมด GKI จะถูกใช้สำหรับการทดสอบเท่านั้น เราไม่แนะนำให้ใช้โหมดนี้ในชีวิตประจำวัน และจะไม่มีไฟล์อิมเมจให้ดาวน์โหลดอีกต่อไป</string>
     <string name="module_reinstall">ติดตั้งใหม่</string>
