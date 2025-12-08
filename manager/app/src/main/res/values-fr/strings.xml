@@ -62,7 +62,7 @@
     <string name="profile_namespace_global">Global</string>
     <string name="profile_groups">Groupes</string>
     <string name="profile_capabilities">Capacités</string>
-    <string name="profile_umount_modules">Démonter les modules</string>
+    <string name="profile_umount_modules">Démonter par défaut les modules</string>
     <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>
     <string name="profile_umount_modules_summary">L\'activation de cette option permettra à KernelSU de restaurer tous les fichiers modifiés par les modules pour cette application.</string>
     <string name="settings_umount_modules_default">Démonter les modules</string>
@@ -182,7 +182,7 @@
     <string name="feature_status_managed_summary">Cette fonctionnalité est gérée par un module.</string>
     <string name="module_repos">Dépôt de modules</string>
     <string name="module_repos_sort_update_first">Par mise à jour</string>
-    <string name="module_repos_sort_name">Trier par nom</string>
+    <string name="module_repos_sort_name">Nom (A → Z)</string>
     <string name="module_repos_source_code">Code source</string>
     <string name="home_gki_warning">À partir de la version 3.0.0, le mode de fonctionnement GKI sera utilisé uniquement dans les environnements de test. Nous vous le déconseillons pour une utilisation quotidienne, et les fichiers images ne seront plus fournis.</string>
     <string name="module_reinstall">Réinstaller</string>
