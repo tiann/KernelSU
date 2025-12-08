@@ -28,7 +28,7 @@
     <string name="module_sort_enabled_first">Enabled first</string>
     <string name="module_repos">Repos</string>
     <string name="module_repos_sort_update_first">Update first</string>
-    <string name="module_repos_sort_name">Sort by name</string>
+    <string name="module_repos_sort_name">Name (A → Z)</string>
     <string name="module_repos_source_code">Source code</string>
     <string name="confirm">Confirm</string>
     <string name="uninstall">Uninstall</string>
