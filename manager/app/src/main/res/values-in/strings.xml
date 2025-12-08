@@ -63,7 +63,7 @@
     <string name="profile_groups">Kelompok</string>
     <string name="profile_capabilities">Kemampuan</string>
     <string name="profile_selinux_context">Konteks SELinux</string>
-    <string name="profile_umount_modules">Umount Modul</string>
+    <string name="profile_umount_modules">Umount modul secara bawaan</string>
     <string name="failed_to_update_app_profile">Gagal memperbarui Profil untuk %s</string>
     <string name="settings_umount_modules_default">Lepaskan modul</string>
     <string name="settings_umount_modules_default_summary">Menggunakan \"Umount Modul\" secara universal pada Profil Aplikasi. Jika diaktifkan, akan menghapus semua modifikasi sistem untuk aplikasi yang tidak memiliki set profil.</string>
@@ -129,8 +129,8 @@
     <string name="save_log">Simpan Log</string>
     <string name="action">Aksi</string>
     <string name="log_saved">Log disimpan</string>
-    <string name="module_sort_enabled_first">Urut (Aktif lebih dulu)</string>
-    <string name="module_sort_action_first">Urut (Aksi lebih dulu)</string>
+    <string name="module_sort_enabled_first">Aktif lebih dulu</string>
+    <string name="module_sort_action_first">Aksi lebih dulu</string>
     <string name="module_install_prompt_with_name">Modul berikut akan diinstal: %1$s</string>
     <string name="confirm">Oke</string>
     <string name="su_not_allowed">Tidak dapat memberikan akses SU untuk %s</string>
@@ -152,8 +152,8 @@
     <string name="refresh_refresh">Menyegarkan…</string>
     <string name="refresh_complete">Penyegaran berhasil</string>
     <string name="module_repos">Gudang</string>
-    <string name="module_repos_sort_update_first">Urut (Pembaruan dulu)</string>
-    <string name="module_repos_sort_name">Urut (A-Z)</string>
+    <string name="module_repos_sort_update_first">Waktu pembaruan</string>
+    <string name="module_repos_sort_name">Nama (A → Z)</string>
     <string name="module_repos_source_code">Sumber kode</string>
     <string name="metamodule_uninstall_confirm">Yakin ingin menghapus modul %s? Tindakan ini akan memengaruhi semua modul, dan fitur tertentu yang disediakan oleh metamodul (seperti mounting) tidak akan berfungsi lagi.</string>
     <string name="home_gki_warning">Mulai dari v3.0.0, fungsi mode GKI dibatasi untuk lingkungan pengujian. Kami tidak merekomendasikan untuk penggunaan harian, dan berkas image tidak akan lagi disediakan.</string>
