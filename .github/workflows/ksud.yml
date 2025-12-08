@@ -13,6 +13,10 @@ on:
         required: false
         type: boolean
         default: true
+      pack_ksuinit:
+        required: false
+        type: boolean
+        default: true
       use_cache:
         required: false
         type: boolean
@@ -32,6 +36,11 @@ jobs:
       if: ${{ inputs.pack_lkm }}
       run: |
         cp android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
+    
+    - name: Prepare ksuinit
+      if: ${{ inputs.pack_ksuinit }}
+      run: |
+        mv ksuinit/*/release/ksuinit ./userspace/ksud/bin/aarch64/
         
     - name: Setup rustup
       run: |
@@ -46,35 +55,6 @@ jobs:
     - name: Install cross
       run: |
         RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
-
-    - name: Build ksuinit
-      if: ${{ inputs.target == 'aarch64-linux-android' || inputs.target == 'x86_64-linux-android' }}
-      run: |
-        TARGET=${{ inputs.target }}
-        LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
-        if [ "$TARGET" == "aarch64-linux-android" ]; then
-          ARCH="aarch64"
-          TARGET="aarch64-unknown-linux-musl"
-          export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
-          export RUSTFLAGS="-C link-arg=-no-pie"
-        elif [ "$TARGET" == "x86_64-linux-android" ]; then
-          ARCH="x86_64"
-          TARGET="x86_64-unknown-linux-musl"
-          export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/x86_64-linux-android26-clang"
-        else
-          exit 1
-        fi
-        rustup target add $TARGET
-        cd userspace/ksuinit
-        cargo build --target=$TARGET --release
-        cp target/$TARGET/release/ksuinit ../../userspace/ksud/bin/$ARCH
-
-    - name: Upload ksuinit artifact
-      if: ${{ inputs.target == 'aarch64-linux-android' || inputs.target == 'x86_64-linux-android' }}
-      uses: actions/upload-artifact@v5
-      with:
-        name: ksuinit-${{ inputs.target }}
-        path: userspace/ksuinit/target/**/release/ksuinit*
 
     - name: Build ksud
       run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml

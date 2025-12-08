@@ -1,0 +1,39 @@
+name: Build ksuinit
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: false
+        type: string
+        default: ubuntu-latest
+jobs:
+  build:
+    runs-on: ${{ inputs.os }}
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        
+    - name: Setup rustup
+      run: |
+        rustup update stable
+        rustup target add aarch64-unknown-linux-musl
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: userspace/ksuinit
+        cache-targets: false
+
+    - name: Build ksuinit
+      run: |
+        LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
+        export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
+        export RUSTFLAGS="-C link-arg=-no-pie"
+        cd userspace/ksuinit
+        cargo build --target=aarch64-unknown-linux-musl --release
+
+    - name: Upload ksuinit artifact
+      uses: actions/upload-artifact@v5
+      with:
+        name: ksuinit
+        path: userspace/ksuinit/target/**/release/ksuinit*
