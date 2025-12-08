@@ -26,8 +26,11 @@ jobs:
     uses: ./.github/workflows/build-lkm.yml
     secrets: inherit
 
+  build-ksuinit:
+    uses: ./.github/workflows/ksuinit.yml
+
   build-ksud:
-    needs: build-lkm
+    needs: [build-lkm, build-ksuinit]
     strategy:
       matrix:
         include:
@@ -41,7 +44,7 @@ jobs:
       os: ${{ matrix.os }}
   
   build-ksud-extra:
-    needs: build-lkm
+    needs: [build-lkm, build-ksuinit]
     strategy:
       matrix:
         include:
