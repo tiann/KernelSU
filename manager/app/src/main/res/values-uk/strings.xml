@@ -63,7 +63,7 @@
     <string name="profile_groups">Групи</string>
     <string name="profile_capabilities">Можливості</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
-    <string name="profile_umount_modules">Розмонтувати модулі</string>
+    <string name="profile_umount_modules">Розмонтування модулів за замовчуванням</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
     <string name="settings_umount_modules_default">Розмонтування модулів</string>
     <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
@@ -180,7 +180,7 @@
     <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
     <string name="module_repos">Репозиторій модулів</string>
     <string name="module_repos_sort_update_first">Спочатку оновіть</string>
-    <string name="module_repos_sort_name">Сортувати за назвою</string>
+    <string name="module_repos_sort_name">Ім\'я (А → Я)</string>
     <string name="module_repos_source_code">Вихідний код</string>
     <string name="home_gki_warning">Починаючи з версії 3.0.0, робочий режим GKI використовуватиметься лише в тестових середовищах. Ми не рекомендуємо його для щоденного використання, а файли зображень більше не надаватимуться.</string>
     <string name="module_reinstall">Перевстановити</string>
