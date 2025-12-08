@@ -184,7 +184,7 @@
     <string name="color_brown">Brązowy</string>
     <string name="module_repos">Repozytoria</string>
     <string name="module_repos_sort_update_first">Najpierw zaktualizuj</string>
-    <string name="module_repos_sort_name">Uporządkuj według nazwy</string>
+    <string name="module_repos_sort_name">Nazwa (A → Z)</string>
     <string name="module_repos_source_code">Kod źródłowy</string>
     <string name="home_gki_warning">Począwszy od wersji 3.0.0, tryb pracy GKI będzie używany wyłącznie w środowiskach testowych. Nie zalecamy jego stosowania w codziennym użytkowaniu, a pliki obrazów nie będą już udostępniane.</string>
     <string name="module_reinstall">Przeinstaluj</string>
