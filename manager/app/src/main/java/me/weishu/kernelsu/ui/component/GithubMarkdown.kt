@@ -1,13 +1,16 @@
 package me.weishu.kernelsu.ui.component
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -65,25 +68,15 @@ fun GithubMarkdown(content: String) {
           <meta name='viewport' content='width=device-width, initial-scale=1'/>
           <link rel="stylesheet" href="$cssHref" />
           <style>
-            html, body { margin:0; padding:0; background:transparent; }
+            html, body { margin:0; padding:0; }
             img, video { max-width:100%; height:auto; }
-            pre { white-space: pre-wrap; }
-            * { scrollbar-width: none; }
-            *::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none; }
             .markdown-body {
-              box-sizing: border-box;
-              min-width: 200px;
-              max-width: 980px;
-              margin: 0 auto;
-              padding: 45px;
+              padding: 16px;
               --bgColor-default: $bgDefault;
               --bgColor-muted: $bgMuted;
               --bgColor-neutral-muted: $bgNeutralMuted;
               --bgColor-attention-muted: $bgAttentionMuted;
               --fgColor-accent: $fgLink;
-            }
-            @media (max-width: 767px) {
-              .markdown-body { padding: 15px; }
             }
           </style>
         </head>
@@ -96,76 +89,79 @@ fun GithubMarkdown(content: String) {
     AndroidView(
         factory = { context ->
             WebView(context).apply {
-                setBackgroundColor(Color.TRANSPARENT)
-                isVerticalScrollBarEnabled = false
-                isHorizontalScrollBarEnabled = false
-                overScrollMode = android.view.View.OVER_SCROLL_NEVER
-                settings.apply {
-                    offscreenPreRaster = true
-                    domStorageEnabled = true
-                    mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                    allowContentAccess = false
-                    allowFileAccessFromFileURLs = true
-                    allowFileAccess = false
-                    setSupportZoom(false)
-                    cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-                    textZoom = 80
-                }
-                webViewClient = object : WebViewClient() {
-                    private val assetLoader = WebViewAssetLoader.Builder().addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context)).build()
+                try {
+                    setBackgroundColor(Color.TRANSPARENT)
+                    isVerticalScrollBarEnabled = false
+                    isHorizontalScrollBarEnabled = false
+                    settings.apply {
+                        offscreenPreRaster = true
+                        domStorageEnabled = true
+                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        allowContentAccess = false
+                        allowFileAccessFromFileURLs = false
+                        allowFileAccess = false
+                        cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+                        textZoom = 90
+                        setSupportZoom(false)
+                        setGeolocationEnabled(false)
+                    }
+                    webViewClient = object : WebViewClient() {
+                        private val assetLoader = WebViewAssetLoader.Builder()
+                            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
+                            .build()
 
-                    override fun shouldOverrideUrlLoading(
-                        view: WebView, request: WebResourceRequest
-                    ): Boolean {
-                        // Open external URLs via system
-                        val url = request.url.toString()
-                        try {
-                            val intent = android.content.Intent(
-                                android.content.Intent.ACTION_VIEW, url.toUri()
-                            )
-                            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        override fun shouldOverrideUrlLoading(
+                            view: WebView, request: WebResourceRequest
+                        ): Boolean {
+                            val url = request.url.toString()
+                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent)
-                        } catch (_: Throwable) {
+                            return true
                         }
-                        return true
-                    }
 
-                    override fun shouldInterceptRequest(
-                        view: WebView, request: WebResourceRequest
-                    ): WebResourceResponse? {
-                        assetLoader.shouldInterceptRequest(request.url)?.let { return it }
-                        val scheme = request.url.scheme ?: return null
-                        if (!scheme.startsWith("http")) return null
-                        val client: OkHttpClient = ksuApp.okhttpClient
-                        val call = client.newCall(
-                            Request.Builder().url(request.url.toString()).method(request.method, null).headers(request.requestHeaders.toHeaders()).build()
-                        )
-                        return try {
-                            val reply: Response = call.execute()
-                            val header = reply.header("content-type", "text/plain; charset=utf-8")
-                            val contentTypes = header?.split(";\\s*".toRegex()) ?: emptyList()
-                            val mimeType = contentTypes.firstOrNull() ?: "image/*"
-                            val charset = contentTypes.getOrNull(1)?.split("=\\s*".toRegex())?.getOrNull(1) ?: "utf-8"
-                            val body = reply.body ?: return null
-                            WebResourceResponse(
-                                mimeType, charset, body.byteStream()
+                        override fun shouldInterceptRequest(
+                            view: WebView, request: WebResourceRequest
+                        ): WebResourceResponse? {
+                            assetLoader.shouldInterceptRequest(request.url)?.let { return it }
+                            val scheme = request.url.scheme ?: return null
+                            if (!scheme.startsWith("http")) return null
+                            val client: OkHttpClient = ksuApp.okhttpClient
+                            val call = client.newCall(
+                                Request.Builder()
+                                    .url(request.url.toString())
+                                    .method(request.method, null)
+                                    .headers(request.requestHeaders.toHeaders())
+                                    .build()
                             )
-                        } catch (e: IOException) {
-                            WebResourceResponse(
-                                "text/html", "utf-8", ByteArrayInputStream(
-                                    android.util.Log.getStackTraceString(e).toByteArray(StandardCharsets.UTF_8)
+                            return try {
+                                val reply: Response = call.execute()
+                                val header = reply.header("content-type", "text/plain; charset=utf-8")
+                                val contentTypes = header?.split(";\\s*".toRegex()) ?: emptyList()
+                                val mimeType = contentTypes.firstOrNull() ?: "image/*"
+                                val charset = contentTypes.getOrNull(1)?.split("=\\s*".toRegex())?.getOrNull(1) ?: "utf-8"
+                                val body = reply.body ?: return null
+                                WebResourceResponse(mimeType, charset, body.byteStream())
+                            } catch (e: IOException) {
+                                return WebResourceResponse(
+                                    "text/html", "utf-8",
+                                    ByteArrayInputStream(Log.getStackTraceString(e).toByteArray(StandardCharsets.UTF_8))
                                 )
-                            )
+                            }
                         }
                     }
+                    loadDataWithBaseURL(
+                        "https://appassets.androidplatform.net", html,
+                        "text/html", StandardCharsets.UTF_8.name(), null
+                    )
+                } catch (e: Throwable) {
+                    Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
-                loadDataWithBaseURL(
-                    "https://appassets.androidplatform.net", html, "text/html", StandardCharsets.UTF_8.name(), null
-                )
             }
         },
         modifier = Modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .clipToBounds(),
     )
 }

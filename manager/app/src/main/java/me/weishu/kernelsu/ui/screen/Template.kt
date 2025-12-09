@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
@@ -102,7 +104,6 @@ import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
-import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -110,6 +111,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @author weishu
  * @date 2023/10/20.
  */
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
 fun AppProfileTemplateScreen(
@@ -274,7 +276,7 @@ fun AppProfileTemplateScreen(
         ) {
             LazyColumn(
                 modifier = Modifier
-                    .height(getWindowSize().height.dp)
+                    .fillMaxHeight()
                     .scrollEndHaptic()
                     .overScrollVertical()
                     .nestedScroll(nestedScrollConnection)

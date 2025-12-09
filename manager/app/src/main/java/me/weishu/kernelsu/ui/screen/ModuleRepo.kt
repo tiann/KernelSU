@@ -16,13 +16,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -46,7 +54,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -125,7 +132,6 @@ import top.yukonga.miuix.kmp.icon.icons.useful.NavigatorSwitch
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
-import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import java.text.Collator
@@ -479,7 +485,7 @@ fun ModuleRepoPager(
                     }
                     LazyColumn(
                         modifier = Modifier
-                            .height(getWindowSize().height.dp)
+                            .fillMaxHeight()
                             .scrollEndHaptic()
                             .overScrollVertical()
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -745,15 +751,18 @@ private fun ReadmePage(
     scrollBehavior: ScrollBehavior,
     hazeState: HazeState
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     LazyColumn(
         modifier = Modifier
-            .height(getWindowSize().height.dp)
+            .fillMaxHeight()
             .scrollEndHaptic()
             .overScrollVertical()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .hazeSource(state = hazeState),
         contentPadding = PaddingValues(
             top = innerPadding.calculateTopPadding(),
+            start = innerPadding.calculateStartPadding(layoutDirection),
+            end = innerPadding.calculateEndPadding(layoutDirection),
             bottom = innerPadding.calculateBottomPadding(),
         ),
         overscrollEffect = null,
@@ -796,15 +805,18 @@ fun ReleasesPage(
     context: Context,
     setPendingDownload: ((() -> Unit)) -> Unit,
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     LazyColumn(
         modifier = Modifier
-            .height(getWindowSize().height.dp)
+            .fillMaxHeight()
             .scrollEndHaptic()
             .overScrollVertical()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .hazeSource(state = hazeState),
         contentPadding = PaddingValues(
             top = innerPadding.calculateTopPadding(),
+            start = innerPadding.calculateStartPadding(layoutDirection),
+            end = innerPadding.calculateEndPadding(layoutDirection),
             bottom = innerPadding.calculateBottomPadding(),
         ),
         overscrollEffect = null,
@@ -989,7 +1001,6 @@ fun ReleasesPage(
                 }
             }
         }
-        item { Spacer(Modifier.height(12.dp)) }
     }
 }
 
@@ -1004,15 +1015,18 @@ fun InfoPage(
     uriHandler: UriHandler,
     sourceUrl: String,
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     LazyColumn(
         modifier = Modifier
-            .height(getWindowSize().height.dp)
+            .fillMaxHeight()
             .scrollEndHaptic()
             .overScrollVertical()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .hazeSource(state = hazeState),
         contentPadding = PaddingValues(
             top = innerPadding.calculateTopPadding(),
+            start = innerPadding.calculateStartPadding(layoutDirection),
+            end = innerPadding.calculateEndPadding(layoutDirection),
             bottom = innerPadding.calculateBottomPadding(),
         ),
         overscrollEffect = null,
@@ -1201,7 +1215,8 @@ fun ModuleRepoDetailScreen(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         LaunchedEffect(module.moduleId) {
             if (module.moduleId.isNotEmpty()) {
@@ -1239,23 +1254,50 @@ fun ModuleRepoDetailScreen(
             stringResource(R.string.tab_info)
         )
         val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-        val density = LocalDensity.current
-        var tabRowHeight by remember { mutableStateOf(0.dp) }
+        LocalDensity.current
+        val tabRowHeight by remember { mutableStateOf(40.dp) }
         var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
         LaunchedEffect(scrollBehavior.state.collapsedFraction) {
             snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
         }
         val dynamicTopPadding = 12.dp * (1f - collapsedFraction)
+        val layoutDirection = LocalLayoutDirection.current
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
+            Column(
+                modifier = Modifier
+                    .hazeEffect(hazeState) {
+                        style = hazeStyle
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                    }
+                    .zIndex(1f)
+                    .padding(
+                        top = innerPadding.calculateTopPadding() + dynamicTopPadding,
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection),
+                        bottom = 6.dp
+                    )
+                    .padding(horizontal = 12.dp)
+            ) {
+                TabRow(
+                    tabs = tabs,
+                    selectedTabIndex = pagerState.currentPage,
+                    onTabSelected = { index -> scope.launch { pagerState.animateScrollToPage(index) } },
+                    colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
+                    height = tabRowHeight,
+                )
+            }
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 val innerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
-                    bottom = innerPadding.calculateBottomPadding()
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection),
+                    bottom = innerPadding.calculateBottomPadding() + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
                 )
                 when (page) {
                     0 -> ReadmePage(
@@ -1292,30 +1334,6 @@ fun ModuleRepoDetailScreen(
                         sourceUrl = sourceUrl,
                     )
                 }
-            }
-            Column(
-                modifier = Modifier
-                    .hazeEffect(hazeState) {
-                        style = hazeStyle
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                    }
-                    .zIndex(1f)
-                    .padding(top = innerPadding.calculateTopPadding() + dynamicTopPadding, bottom = 6.dp)
-                    .padding(horizontal = 12.dp)
-                    .onSizeChanged { size ->
-                        tabRowHeight = with(density) { size.height.toDp() }
-                    }
-            ) {
-                TabRow(
-                    tabs = tabs,
-                    selectedTabIndex = pagerState.currentPage,
-                    onTabSelected = { index -> scope.launch { pagerState.animateScrollToPage(index) } },
-                    colors = TabRowDefaults.tabRowColors(
-                        backgroundColor = Color.Transparent,
-                    ),
-                    height = 40.dp,
-                )
             }
         }
         DownloadListener(context, onInstallModule)
