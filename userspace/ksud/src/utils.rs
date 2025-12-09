@@ -31,6 +31,7 @@ macro_rules! debug_select {
     };
 }
 
+#[cfg(not(debug_assertions))]
 macro_rules! debug_select {
     ($debug:expr, $release:expr) => {
         $release
