@@ -398,7 +398,7 @@ enum UmountOp {
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
-            .with_max_level(utils::debug_select!(LevelFilter::Trace, LevelFilter::Info))
+            .with_max_level(debug_select!(LevelFilter::Trace, LevelFilter::Info))
             .with_tag("KernelSU"),
     );
 
