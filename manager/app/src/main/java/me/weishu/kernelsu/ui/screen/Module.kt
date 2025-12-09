@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
@@ -809,7 +810,8 @@ private fun ModuleList(
                 ),
             ) {
                 LazyColumn(
-                    modifier = modifier.height(getWindowSize().height.dp),
+                    modifier = modifier
+                        .fillMaxHeight(),
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
