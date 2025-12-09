@@ -24,20 +24,14 @@ use rustix::{
     thread::{LinkNameSpaceType, move_into_link_name_space},
 };
 
-#[macro_export]
 #[cfg(debug_assertions)]
 macro_rules! debug_select {
-    ($debug: expr, $release: expr) => {
-        $debug
-    };
+    ($debug:expr, $release:expr) => { $debug };
 }
 
-#[macro_export]
 #[cfg(not(debug_assertions))]
 macro_rules! debug_select {
-    ($debug: expr, $release: expr) => {
-        $release
-    };
+    ($debug:expr, $release:expr) => { $release };
 }
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
