@@ -24,17 +24,15 @@ use rustix::{
     thread::{LinkNameSpaceType, move_into_link_name_space},
 };
 
-#[cfg(debug_assertions)]
+#[macro_export]
 macro_rules! debug_select {
     ($debug:expr, $release:expr) => {
-        $debug
-    };
-}
-
-#[cfg(not(debug_assertions))]
-macro_rules! debug_select {
-    ($debug:expr, $release:expr) => {
-        $release
+        {
+            #[cfg(debug_assertions)]
+            { $debug }
+            #[cfg(not(debug_assertions))]
+            { $release }
+        }
     };
 }
 
