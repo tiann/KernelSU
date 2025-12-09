@@ -26,14 +26,16 @@ use rustix::{
 
 #[macro_export]
 macro_rules! debug_select {
-    ($debug:expr, $release:expr) => {
+    ($debug:expr, $release:expr) => {{
+        #[cfg(debug_assertions)]
         {
-            #[cfg(debug_assertions)]
-            { $debug }
-            #[cfg(not(debug_assertions))]
-            { $release }
+            $debug
         }
-    };
+        #[cfg(not(debug_assertions))]
+        {
+            $release
+        }
+    }};
 }
 
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
