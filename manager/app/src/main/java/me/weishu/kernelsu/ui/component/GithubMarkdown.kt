@@ -37,8 +37,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 
-private const val WEBVIEW_TAG = "githubMarkdownWebView"
-
 @Composable
 fun GithubMarkdown(content: String) {
     val context = LocalContext.current
@@ -93,7 +91,6 @@ fun GithubMarkdown(content: String) {
         factory = { context ->
             val frameLayout = FrameLayout(context)
             val webView = WebView(context).apply {
-                tag = WEBVIEW_TAG
                 try {
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
