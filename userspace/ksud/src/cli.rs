@@ -399,7 +399,7 @@ pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
             .with_max_level(utils::debug_select!(LevelFilter::Trace, LevelFilter::Info))
-            .with_tag("KernelSU")
+            .with_tag("KernelSU"),
     );
 
     // the kernel executes su with argv[0] = "su" and replace it with us
