@@ -9,6 +9,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
@@ -35,6 +36,8 @@ import okio.IOException
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
+
+private const val WEBVIEW_TAG = "githubMarkdownWebView"
 
 @Composable
 fun GithubMarkdown(content: String) {
@@ -88,7 +91,9 @@ fun GithubMarkdown(content: String) {
 
     AndroidView(
         factory = { context ->
-            WebView(context).apply {
+            val frameLayout = FrameLayout(context)
+            val webView = WebView(context).apply {
+                tag = WEBVIEW_TAG
                 try {
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
@@ -143,7 +148,7 @@ fun GithubMarkdown(content: String) {
                                 val body = reply.body ?: return null
                                 WebResourceResponse(mimeType, charset, body.byteStream())
                             } catch (e: IOException) {
-                                return WebResourceResponse(
+                                WebResourceResponse(
                                     "text/html", "utf-8",
                                     ByteArrayInputStream(Log.getStackTraceString(e).toByteArray(StandardCharsets.UTF_8))
                                 )
@@ -158,6 +163,8 @@ fun GithubMarkdown(content: String) {
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
             }
+            frameLayout.addView(webView)
+            frameLayout
         },
         modifier = Modifier
             .fillMaxWidth()
