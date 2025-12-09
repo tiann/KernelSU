@@ -24,6 +24,22 @@ use rustix::{
     thread::{LinkNameSpaceType, move_into_link_name_space},
 };
 
+#[macro_export]
+#[cfg(debug_assertions)]
+macro_rules! debug_select {
+    ($debug: expr, $release: expr) => {
+        $debug
+    };
+}
+
+#[macro_export]
+#[cfg(not(debug_assertions))]
+macro_rules! debug_select {
+    ($debug: expr, $release: expr) => {
+        $release
+    };
+}
+
 pub fn ensure_clean_dir(dir: impl AsRef<Path>) -> Result<()> {
     let path = dir.as_ref();
     log::debug!("ensure_clean_dir: {}", path.display());
