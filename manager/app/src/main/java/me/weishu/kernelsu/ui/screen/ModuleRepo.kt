@@ -63,7 +63,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -82,6 +81,7 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -171,9 +171,8 @@ data class RepoModuleArg(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
-fun ModuleRepoPager(
+fun ModuleRepoScreen(
     navigator: DestinationsNavigator,
-    bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleRepoViewModel>()
     val installedVm = viewModel<ModuleViewModel>()
@@ -245,6 +244,19 @@ fun ModuleRepoPager(
                             Icon(
                                 imageVector = MiuixIcons.Useful.ImmersionMore,
                                 contentDescription = stringResource(id = R.string.settings),
+                                tint = colorScheme.onSurface
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            modifier = Modifier.padding(start = 16.dp),
+                            onClick = { navigator.popBackStack() }
+
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Useful.Back,
+                                contentDescription = null,
                                 tint = colorScheme.onSurface
                             )
                         }
@@ -566,9 +578,6 @@ fun ModuleRepoPager(
                                     }
                                 }
                             }
-                        }
-                        item {
-                            Spacer(Modifier.height(bottomInnerPadding))
                         }
                     }
                 }
@@ -1099,6 +1108,16 @@ fun ModuleRepoDetailScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
+            var userScrollEnabled by remember { mutableStateOf(true) }
+            var animating by remember { mutableStateOf(false) }
+            var animateJob by remember { mutableStateOf<Job?>(null) }
+            var tabSelectedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
+            var lastRequestedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
+            LaunchedEffect(pagerState) {
+                snapshotFlow { pagerState.currentPage }.collectLatest { page ->
+                    if (!animating) tabSelectedIndex = page
+                }
+            }
             Column(
                 modifier = Modifier
                     .hazeEffect(hazeState) {
@@ -1117,15 +1136,49 @@ fun ModuleRepoDetailScreen(
             ) {
                 TabRow(
                     tabs = tabs,
-                    selectedTabIndex = pagerState.currentPage,
-                    onTabSelected = { index -> scope.launch { pagerState.animateScrollToPage(index) } },
+                    selectedTabIndex = tabSelectedIndex,
+                    onTabSelected = { index ->
+                        tabSelectedIndex = index
+                        if (index == pagerState.currentPage) {
+                            if (animateJob != null && lastRequestedIndex != index) {
+                                animateJob?.cancel()
+                                animateJob = null
+                                animating = false
+                                userScrollEnabled = true
+                            }
+                            lastRequestedIndex = index
+                        } else {
+                            if (animateJob != null && lastRequestedIndex == index) {
+                                // Already animating to the requested page
+                            } else {
+                                animateJob?.cancel()
+                                animating = true
+                                userScrollEnabled = false
+                                val job = scope.launch {
+                                    try {
+                                        pagerState.animateScrollToPage(index)
+                                    } finally {
+                                        if (animateJob === this) {
+                                            userScrollEnabled = true
+                                            animating = false
+                                            animateJob = null
+                                        }
+                                    }
+                                }
+                                animateJob = job
+                                lastRequestedIndex = index
+                            }
+                        }
+                    },
                     colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
                     height = tabRowHeight,
                 )
             }
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 3,
+                userScrollEnabled = userScrollEnabled,
             ) { page ->
                 val innerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,

@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavBackStackEntry
@@ -49,6 +50,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
@@ -58,7 +60,6 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.HomePager
 import me.weishu.kernelsu.ui.screen.ModulePager
-import me.weishu.kernelsu.ui.screen.ModuleRepoPager
 import me.weishu.kernelsu.ui.screen.SettingPager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
@@ -183,13 +184,19 @@ class MainActivity : ComponentActivity() {
 
 val LocalPagerState = compositionLocalOf<PagerState> { error("No pager state") }
 val LocalHandlePageChange = compositionLocalOf<(Int) -> Unit> { error("No handle page change") }
+val LocalSelectedPage = compositionLocalOf<Int> { error("No selected page") }
 
 @Composable
 @Destination<RootGraph>(start = true)
 fun MainScreen(navController: DestinationsNavigator) {
     val activity = LocalActivity.current
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = 2, pageCount = { 5 })
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
+    var userScrollEnabled by remember { mutableStateOf(true) }
+    var animating by remember { mutableStateOf(false) }
+    var uiSelectedPage by remember { mutableIntStateOf(0) }
+    var animateJob by remember { mutableStateOf<Job?>(null) }
+    var lastRequestedPage by remember { mutableIntStateOf(pagerState.currentPage) }
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = MiuixTheme.colorScheme.surface,
@@ -197,15 +204,49 @@ fun MainScreen(navController: DestinationsNavigator) {
     )
     val handlePageChange: (Int) -> Unit = remember(pagerState, coroutineScope) {
         { page ->
-            coroutineScope.launch { pagerState.animateScrollToPage(page) }
+            uiSelectedPage = page
+            if (page == pagerState.currentPage) {
+                if (animateJob != null && lastRequestedPage != page) {
+                    animateJob?.cancel()
+                    animateJob = null
+                    animating = false
+                    userScrollEnabled = true
+                }
+                lastRequestedPage = page
+            } else {
+                if (animateJob != null && lastRequestedPage == page) {
+                    // Already animating to the requested page
+                } else {
+                    animateJob?.cancel()
+                    animating = true
+                    userScrollEnabled = false
+                    val job = coroutineScope.launch {
+                        try {
+                            pagerState.animateScrollToPage(page)
+                        } finally {
+                            if (animateJob === this) {
+                                userScrollEnabled = true
+                                animating = false
+                                animateJob = null
+                            }
+                        }
+                    }
+                    animateJob = job
+                    lastRequestedPage = page
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            if (!animating) uiSelectedPage = page
         }
     }
 
     BackHandler {
-        if (pagerState.currentPage != 2) {
-            coroutineScope.launch {
-                pagerState.animateScrollToPage(2)
-            }
+        if (pagerState.currentPage != 0) {
+            handlePageChange(0)
         } else {
             activity?.moveTaskToBack(true)
         }
@@ -213,7 +254,8 @@ fun MainScreen(navController: DestinationsNavigator) {
 
     CompositionLocalProvider(
         LocalPagerState provides pagerState,
-        LocalHandlePageChange provides handlePageChange
+        LocalHandlePageChange provides handlePageChange,
+        LocalSelectedPage provides uiSelectedPage
     ) {
         Scaffold(
             bottomBar = {
@@ -223,14 +265,14 @@ fun MainScreen(navController: DestinationsNavigator) {
             HorizontalPager(
                 modifier = Modifier.hazeSource(state = hazeState),
                 state = pagerState,
-                beyondViewportPageCount = 2,
+                beyondViewportPageCount = 4,
+                userScrollEnabled = userScrollEnabled,
             ) {
                 when (it) {
-                    0 -> ModuleRepoPager(navController, innerPadding.calculateBottomPadding())
-                    1 -> ModulePager(navController, innerPadding.calculateBottomPadding())
-                    2 -> HomePager(pagerState, navController, innerPadding.calculateBottomPadding())
-                    3 -> SuperUserPager(navController, innerPadding.calculateBottomPadding())
-                    4 -> SettingPager(navController, innerPadding.calculateBottomPadding())
+                    0 -> HomePager(navController, innerPadding.calculateBottomPadding())
+                    1 -> SuperUserPager(navController, innerPadding.calculateBottomPadding())
+                    2 -> ModulePager(navController, innerPadding.calculateBottomPadding())
+                    3 -> SettingPager(navController, innerPadding.calculateBottomPadding())
                 }
             }
         }
