@@ -169,12 +169,12 @@ fun ModulePager(
                 viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
                 viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
                 viewModel.fetchModuleList()
-                scope.launch { viewModel.refreshRepoIndex(); viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
+                scope.launch {viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
             }
 
             viewModel.isNeedRefresh -> {
                 viewModel.fetchModuleList()
-                scope.launch { viewModel.refreshRepoIndex(); viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
+                scope.launch {viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
             }
         }
     }

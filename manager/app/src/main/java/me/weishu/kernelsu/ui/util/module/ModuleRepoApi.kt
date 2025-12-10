@@ -6,12 +6,6 @@ import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class RepoSummary(
-    val latestVersion: String,
-    val versionCode: Int,
-    val downloadUrl: String
-)
-
 data class ModuleDetail(
     val readme: String,
     val readmeHtml: String,
@@ -47,32 +41,6 @@ fun sanitizeVersionString(version: String): String {
 fun stripTicks(s: String): String {
     val t = s.trim()
     return if (t.startsWith("`") && t.endsWith("`") && t.length >= 2) t.substring(1, t.length - 1) else t
-}
-
-fun fetchRepoIndex(): Map<String, RepoSummary> {
-    if (!isNetworkAvailable(ksuApp)) return emptyMap()
-    val url = "https://modules.kernelsu.org/modules.json"
-    return runCatching {
-        ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-            if (!resp.isSuccessful) emptyMap() else {
-                val body = resp.body?.string() ?: return@use emptyMap()
-                val arr = JSONArray(body)
-                val result = mutableMapOf<String, RepoSummary>()
-                for (idx in 0 until arr.length()) {
-                    val obj = arr.optJSONObject(idx) ?: continue
-                    val id = obj.optString("moduleId", "").ifBlank { continue }
-                    val lr = obj.optJSONObject("latestRelease") ?: continue
-                    val ver = sanitizeVersionString(lr.optString("name", lr.optString("version", "")))
-                    val vcode = lr.optInt("versionCode", 0)
-                    val dl = lr.optString("downloadUrl", "")
-                    if (vcode > 0 && dl.isNotBlank()) {
-                        result[id] = RepoSummary(ver, vcode, dl)
-                    }
-                }
-                result
-            }
-        }
-    }.getOrDefault(emptyMap())
 }
 
 fun fetchReleaseDescriptionHtml(moduleId: String, latestTag: String): String? {
