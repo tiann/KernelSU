@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -192,19 +193,20 @@ fun ModuleRepoScreen(
         }
     }
 
-    val scrollBehavior = MiuixScrollBehavior()
-    var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
-    LaunchedEffect(scrollBehavior.state) {
-        snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
+    LaunchedEffect(searchStatus.searchText) {
+        viewModel.updateSearchText(searchStatus.searchText)
     }
-    val dynamicTopPadding = 12.dp * (1f - collapsedFraction)
+
+    val scrollBehavior = MiuixScrollBehavior()
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
 
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
-
 
     Scaffold(
         topBar = {
@@ -401,7 +403,6 @@ fun ModuleRepoScreen(
                 }
             }
         } else {
-            LaunchedEffect(searchStatus.searchText) { viewModel.updateSearchText(searchStatus.searchText) }
             searchStatus.SearchBox(
                 searchBarTopPadding = dynamicTopPadding,
                 contentPadding = PaddingValues(
@@ -578,6 +579,9 @@ fun ModuleRepoScreen(
                                     }
                                 }
                             }
+                        }
+                        item {
+                            Spacer(Modifier.height(WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()))
                         }
                     }
                 }
@@ -1103,7 +1107,7 @@ fun ModuleRepoDetailScreen(
         LaunchedEffect(scrollBehavior.state.collapsedFraction) {
             snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
         }
-        val dynamicTopPadding = 12.dp * (1f - collapsedFraction)
+        val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
         val layoutDirection = LocalLayoutDirection.current
         Box(
             modifier = Modifier.fillMaxSize()
