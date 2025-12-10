@@ -142,12 +142,13 @@ import top.yukonga.miuix.kmp.icon.icons.useful.Delete
 import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.icon.icons.useful.Save
 import top.yukonga.miuix.kmp.icon.icons.useful.Undo
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.getWindowSize
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-@SuppressLint("StringFormatInvalid")
+@SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 fun ModulePager(
     navigator: DestinationsNavigator,
@@ -169,12 +170,12 @@ fun ModulePager(
                 viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
                 viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
                 viewModel.fetchModuleList()
-                scope.launch {viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
+                scope.launch { viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
             }
 
             viewModel.isNeedRefresh -> {
                 viewModel.fetchModuleList()
-                scope.launch {viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
+                scope.launch { viewModel.syncModuleUpdateInfo(viewModel.moduleList) }
             }
         }
     }
@@ -549,7 +550,7 @@ fun ModulePager(
                             Icons.Rounded.Add,
                             moduleInstall,
                             modifier = Modifier.size(40.dp),
-                            tint = Color.White
+                            tint = colorScheme.onPrimary
                         )
                     },
                 )
