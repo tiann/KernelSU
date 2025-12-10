@@ -239,7 +239,7 @@ fun AppProfileTemplateScreen(
                         Icons.Rounded.Add,
                         null,
                         Modifier.size(40.dp),
-                        tint = Color.White
+                        tint = colorScheme.onPrimary
                     )
                 },
             )
