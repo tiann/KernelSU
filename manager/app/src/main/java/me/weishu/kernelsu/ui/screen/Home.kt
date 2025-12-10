@@ -67,6 +67,7 @@ import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
+import me.weishu.kernelsu.ui.LocalHandlePageChange
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -96,7 +97,6 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun HomePager(
-    pagerState: PagerState,
     navigator: DestinationsNavigator,
     bottomInnerPadding: Dp
 ) {
@@ -116,15 +116,6 @@ fun HomePager(
     Scaffold(
         topBar = {
             TopBar(
-                kernelVersion = kernelVersion,
-                onInstallClick = {
-                    navigator.navigate(InstallScreenDestination) {
-                        popUpTo(InstallScreenDestination) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                },
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
@@ -145,12 +136,12 @@ fun HomePager(
             overscrollEffect = null,
         ) {
             item {
-                val coroutineScope = rememberCoroutineScope()
                 val isManager = Natives.isManager
                 val ksuVersion = if (isManager) Natives.version else null
                 val lkmMode = ksuVersion?.let {
                     if (kernelVersion.isGKI()) Natives.isLkmMode else null
                 }
+                val handlePageChange = LocalHandlePageChange.current
 
                 Column(
                     modifier = Modifier.padding(vertical = 12.dp),
@@ -184,14 +175,10 @@ fun HomePager(
                             }
                         },
                         onClickSuperuser = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(3)
-                            }
+                            handlePageChange(1)
                         },
                         onclickModule = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
-                            }
+                            handlePageChange(2)
                         },
                         themeMode = themeMode
                     )
@@ -274,8 +261,6 @@ fun RebootDropdownItem(
 
 @Composable
 private fun TopBar(
-    kernelVersion: KernelVersion,
-    onInstallClick: () -> Unit,
     scrollBehavior: ScrollBehavior,
     hazeState: HazeState,
     hazeStyle: HazeStyle,

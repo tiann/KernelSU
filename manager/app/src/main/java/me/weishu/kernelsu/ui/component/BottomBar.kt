@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.component
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.Cottage
 import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.Security
@@ -19,7 +18,7 @@ import dev.chrisbanes.haze.hazeEffect
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalHandlePageChange
-import me.weishu.kernelsu.ui.LocalPagerState
+import me.weishu.kernelsu.ui.LocalSelectedPage
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationItem
@@ -33,7 +32,7 @@ fun BottomBar(
     val isManager = Natives.isManager
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
-    val page = LocalPagerState.current.targetPage
+    val page = LocalSelectedPage.current
     val handlePageChange = LocalHandlePageChange.current
 
     if (!fullFeatured) return
@@ -63,9 +62,8 @@ enum class BottomBarDestination(
     @get:StringRes val label: Int,
     val icon: ImageVector,
 ) {
-    ModuleRepo(R.string.module_repos, Icons.Rounded.CloudDownload),
-    Module(R.string.module, Icons.Rounded.Extension),
     Home(R.string.home, Icons.Rounded.Cottage),
     SuperUser(R.string.superuser, Icons.Rounded.Security),
+    Module(R.string.module, Icons.Rounded.Extension),
     Setting(R.string.settings, Icons.Rounded.Settings)
 }
