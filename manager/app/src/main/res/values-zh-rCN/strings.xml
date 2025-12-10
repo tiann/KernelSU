@@ -25,7 +25,7 @@
     <string name="module_sort_enabled_first">已启用优先</string>
     <string name="module_repos">模块仓库</string>
     <string name="module_repos_sort_update_first">可更新优先</string>
-    <string name="module_repos_sort_name">按名称排序</string>
+    <string name="module_repos_sort_name">姓名（A → Z)</string>
     <string name="module_repos_source_code">源码</string>
     <string name="uninstall">卸载</string>
     <string name="module_install">安装</string>
@@ -70,7 +70,7 @@
     <string name="profile_groups">组</string>
     <string name="profile_capabilities">权能</string>
     <string name="profile_selinux_context">SELinux</string>
-    <string name="profile_umount_modules">卸载模块</string>
+    <string name="profile_umount_modules">卸载模块默认情况下</string>
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
     <string name="require_kernel_version">当前 KernelSU 版本 %d 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %d 或以上！</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
