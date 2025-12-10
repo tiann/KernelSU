@@ -100,7 +100,6 @@ fun GithubMarkdown(content: String) {
                         domStorageEnabled = true
                         mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                         allowContentAccess = false
-                        allowFileAccessFromFileURLs = false
                         allowFileAccess = false
                         cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                         textZoom = 90

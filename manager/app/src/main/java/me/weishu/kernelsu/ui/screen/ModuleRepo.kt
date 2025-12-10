@@ -97,10 +97,7 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
-import me.weishu.kernelsu.ui.util.module.UpdateState
-import me.weishu.kernelsu.ui.util.module.compareVersionCode
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
-import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import top.yukonga.miuix.kmp.basic.Card
@@ -183,12 +180,8 @@ fun ModuleRepoPager(
     val searchStatus by viewModel.searchStatus
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
-    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
-    val updateBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-    val updateTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
-    val scope = rememberCoroutineScope()
-    val repoSortUpdateFirstState = remember { mutableStateOf(prefs.getBoolean("module_repo_sort_update_first", true)) }
+    val metaBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+    val metaTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
     val repoSortByNameState = remember { mutableStateOf(prefs.getBoolean("module_repo_sort_name", false)) }
 
     LaunchedEffect(Unit) {
@@ -213,16 +206,6 @@ fun ModuleRepoPager(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
-    val onInstallModule: (Uri) -> Unit = { uri ->
-        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-            launchSingleTop = true
-        }
-    }
-
-    val confirmTitle = stringResource(R.string.module_install)
-    val updateTitle = stringResource(R.string.module_update)
-    var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
 
     Scaffold(
         topBar = {
@@ -240,21 +223,8 @@ fun ModuleRepoPager(
                         ) {
                             ListPopupColumn {
                                 DropdownImpl(
-                                    text = stringResource(R.string.module_repos_sort_update_first),
-                                    optionSize = 2,
-                                    isSelected = repoSortUpdateFirstState.value,
-                                    onSelectedIndexChange = {
-                                        repoSortUpdateFirstState.value = !repoSortUpdateFirstState.value
-                                        prefs.edit {
-                                            putBoolean("module_repo_sort_update_first", repoSortUpdateFirstState.value)
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                                DropdownImpl(
                                     text = stringResource(R.string.module_repos_sort_name),
-                                    optionSize = 2,
+                                    optionSize = 1,
                                     isSelected = repoSortByNameState.value,
                                     onSelectedIndexChange = {
                                         repoSortByNameState.value = !repoSortByNameState.value
@@ -263,7 +233,7 @@ fun ModuleRepoPager(
                                         }
                                         showTopPopup.value = false
                                     },
-                                    index = 1
+                                    index = 0
                                 )
                             }
                         }
@@ -293,19 +263,9 @@ fun ModuleRepoPager(
                 }
                 val displaySearch = run {
                     val base = viewModel.searchResults.value
-                    val updateFirst = repoSortUpdateFirstState.value
                     val sortByName = repoSortByNameState.value
                     val collator = Collator.getInstance(Locale.getDefault())
-                    val sortedBase = if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
-                    if (!updateFirst) sortedBase else {
-                        val (updatable, others) = sortedBase.partition { module ->
-                            val installed = installedVm.moduleList.firstOrNull { it.id == module.moduleId }
-                            compareVersionCode(installed?.versionCode, module.latestVersionCode) == UpdateState.CAN_UPDATE
-                        }
-                        val up = if (!sortByName) updatable else updatable.sortedWith(compareBy(collator) { it.moduleName })
-                        val ot = if (!sortByName) others else others.sortedWith(compareBy(collator) { it.moduleName })
-                        up + ot
-                    }
+                    if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
                 }
                 items(displaySearch, key = { it.moduleId }) { module ->
                     Card(
@@ -342,11 +302,11 @@ fun ModuleRepoPager(
                                         Text(
                                             text = "META",
                                             fontSize = 12.sp,
-                                            color = updateTint,
+                                            color = metaTint,
                                             modifier = Modifier
                                                 .padding(start = 6.dp)
                                                 .clip(ContinuousRoundedRectangle(6.dp))
-                                                .background(updateBg)
+                                                .background(metaBg)
                                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                                             fontWeight = FontWeight(750),
                                             maxLines = 1
@@ -469,19 +429,9 @@ fun ModuleRepoPager(
                 ) {
                     val displayModules = run {
                         val base = viewModel.modules.value
-                        val updateFirst = repoSortUpdateFirstState.value
                         val sortByName = repoSortByNameState.value
                         val collator = Collator.getInstance(Locale.getDefault())
-                        val sortedBase = if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
-                        if (!updateFirst) sortedBase else {
-                            val (updatable, others) = sortedBase.partition { module ->
-                                val installed = installedVm.moduleList.firstOrNull { it.id == module.moduleId }
-                                compareVersionCode(installed?.versionCode, module.latestVersionCode) == UpdateState.CAN_UPDATE
-                            }
-                            val up = if (!sortByName) updatable else updatable.sortedWith(compareBy(collator) { it.moduleName })
-                            val ot = if (!sortByName) others else others.sortedWith(compareBy(collator) { it.moduleName })
-                            up + ot
-                        }
+                        if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
                     }
                     LazyColumn(
                         modifier = Modifier
@@ -502,9 +452,6 @@ fun ModuleRepoPager(
                             key = { it.moduleId },
                             contentType = { "module" }
                         ) { module ->
-                            val latestTag = module.latestRelease
-                            val latestAsset = module.latestAsset
-
                             val moduleAuthor = stringResource(id = R.string.module_author)
 
                             Card(
@@ -543,32 +490,15 @@ fun ModuleRepoPager(
                                                 Text(
                                                     text = "META",
                                                     fontSize = 12.sp,
-                                                    color = updateTint,
+                                                    color = metaTint,
                                                     modifier = Modifier
                                                         .padding(start = 6.dp)
                                                         .clip(ContinuousRoundedRectangle(6.dp))
-                                                        .background(updateBg)
+                                                        .background(metaBg)
                                                         .padding(horizontal = 6.dp, vertical = 2.dp),
                                                     fontWeight = FontWeight(750),
                                                     maxLines = 1
                                                 )
-                                            }
-                                            Spacer(Modifier.weight(1f))
-                                            if (module.stargazerCount > 0) {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Star,
-                                                        contentDescription = "stars",
-                                                        tint = colorScheme.onSurfaceVariantSummary,
-                                                        modifier = Modifier.size(16.dp)
-                                                    )
-                                                    Text(
-                                                        text = module.stargazerCount.toString(),
-                                                        fontSize = 12.sp,
-                                                        color = colorScheme.onSurfaceVariantSummary,
-                                                        modifier = Modifier.padding(start = 4.dp)
-                                                    )
-                                                }
                                             }
                                         }
                                     }
@@ -606,14 +536,24 @@ fun ModuleRepoPager(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Column {
-                                            Text(
-                                                text = latestTag,
-                                                fontSize = 12.sp,
-                                                modifier = Modifier.padding(top = 2.dp),
-                                                fontWeight = FontWeight(550),
-                                                color = colorScheme.onSurfaceVariantSummary,
-                                            )
+                                        Row {
+                                            if (module.stargazerCount > 0) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Star,
+                                                        contentDescription = "stars",
+                                                        tint = colorScheme.onSurfaceVariantSummary,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                    Text(
+                                                        text = module.stargazerCount.toString(),
+                                                        fontSize = 12.sp,
+                                                        color = colorScheme.onSurfaceVariantSummary,
+                                                        modifier = Modifier.padding(start = 4.dp)
+                                                    )
+                                                }
+                                            }
+                                            Spacer(Modifier.weight(1f))
                                             if (module.latestReleaseTime.isNotEmpty()) {
                                                 Text(
                                                     text = module.latestReleaseTime,
@@ -621,111 +561,6 @@ fun ModuleRepoPager(
                                                     color = colorScheme.onSurfaceVariantSummary,
                                                     textAlign = TextAlign.End
                                                 )
-                                            }
-                                        }
-                                        Spacer(Modifier.weight(1f))
-                                        if (latestAsset != null) {
-                                            val fileName = latestAsset.name
-                                            stringResource(R.string.module_downloading)
-                                            var isDownloading by remember(fileName, latestAsset.downloadUrl) { mutableStateOf(false) }
-                                            var progress by remember(fileName, latestAsset.downloadUrl) { mutableIntStateOf(0) }
-                                            val installed = installedVm.moduleList.firstOrNull { it.id == module.moduleId }
-                                            val repoCode = module.latestVersionCode
-                                            val state = compareVersionCode(installed?.versionCode, repoCode)
-                                            val canUpdateByCode = state == UpdateState.CAN_UPDATE
-                                            val equalByCode = state == UpdateState.EQUAL
-                                            val olderByCode = state == UpdateState.OLDER
-                                            IconButton(
-                                                backgroundColor = if (canUpdateByCode) updateBg else colorScheme.secondaryContainer.copy(
-                                                    alpha = 0.8f
-                                                ),
-                                                minHeight = 35.dp,
-                                                minWidth = 35.dp,
-                                                enabled = !isDownloading && !olderByCode,
-                                                onClick = {
-                                                    pendingDownload = {
-                                                        isDownloading = true
-                                                        scope.launch(Dispatchers.IO) {
-                                                            download(
-                                                                latestAsset.downloadUrl,
-                                                                fileName,
-                                                                onDownloaded = onInstallModule,
-                                                                onDownloading = { isDownloading = true },
-                                                                onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
-                                                            )
-                                                        }
-                                                    }
-                                                    val startDownloadingText =
-                                                        context.getString(R.string.module_start_downloading, fileName)
-                                                    if (canUpdateByCode) {
-                                                        var confirmContent = startDownloadingText
-                                                        var confirmHtml = false
-                                                        scope.launch(Dispatchers.IO) {
-                                                            runCatching {
-                                                                val html = fetchReleaseDescriptionHtml(module.moduleId, latestTag)
-                                                                if (html != null) {
-                                                                    confirmContent = html
-                                                                    confirmHtml = true
-                                                                }
-                                                            }.onSuccess {
-                                                                withContext(Dispatchers.Main) {
-                                                                    confirmDialog.showConfirm(
-                                                                        title = updateTitle,
-                                                                        content = confirmContent,
-                                                                        html = confirmHtml
-                                                                    )
-                                                                }
-                                                            }.onFailure {
-                                                                withContext(Dispatchers.Main) {
-                                                                    confirmDialog.showConfirm(
-                                                                        title = confirmTitle,
-                                                                        content = startDownloadingText
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-                                                    } else {
-                                                        confirmDialog.showConfirm(
-                                                            title = confirmTitle,
-                                                            content = startDownloadingText
-                                                        )
-                                                    }
-                                                },
-                                            ) {
-                                                if (isDownloading) {
-                                                    CircularProgressIndicator(
-                                                        progress = progress / 100f,
-                                                        size = 20.dp,
-                                                        strokeWidth = 2.dp
-                                                    )
-                                                } else {
-                                                    Row(
-                                                        modifier = Modifier.padding(horizontal = 10.dp),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                    ) {
-                                                        Icon(
-                                                            modifier = Modifier.size(20.dp),
-                                                            imageVector = MiuixIcons.Useful.Save,
-                                                            tint = if (canUpdateByCode) updateTint else actionIconTint,
-                                                            contentDescription = when {
-                                                                canUpdateByCode -> stringResource(R.string.module_update)
-                                                                equalByCode -> stringResource(R.string.module_reinstall)
-                                                                else -> stringResource(R.string.install)
-                                                            }
-                                                        )
-                                                        Text(
-                                                            modifier = Modifier.padding(start = 4.dp, end = 2.dp),
-                                                            text = when {
-                                                                canUpdateByCode -> stringResource(R.string.module_update)
-                                                                equalByCode -> stringResource(R.string.module_reinstall)
-                                                                else -> stringResource(R.string.install)
-                                                            },
-                                                            color = if (canUpdateByCode) updateTint else actionIconTint,
-                                                            fontWeight = FontWeight.Medium,
-                                                            fontSize = 15.sp
-                                                        )
-                                                    }
-                                                }
                                             }
                                         }
                                     }
@@ -738,7 +573,6 @@ fun ModuleRepoPager(
                     }
                 }
             }
-            DownloadListener(context, onInstallModule)
         }
     }
 }
