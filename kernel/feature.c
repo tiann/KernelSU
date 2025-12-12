@@ -20,7 +20,8 @@ int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
     }
 
     if (!handler->get_handler && !handler->set_handler) {
-        pr_err("feature: no handler provided for feature %u\n", handler->feature_id);
+        pr_err("feature: no handler provided for feature %u\n",
+               handler->feature_id);
         return -EINVAL;
     }
 
