@@ -61,13 +61,13 @@ static void setup_mount_namespace(int32_t ns_mode)
 {
     pr_info("setup mount namespace for pid: %d\n", current->pid);
     // inherit mode
-    if (ns_mode == 0) {
+    if (ns_mode == KSU_NS_INHERITED) {
         pr_info("mount namespace mode: inherit\n");
         // do nothing
         return;
     }
 
-    if (ns_mode > 2) {
+    if (ns_mode != KSU_NS_GLOBAL && ns_mode != KSU_NS_INDIVIDUAL) {
         pr_warn("unknown mount namespace mode: %d\n", ns_mode);
         return;
     }
@@ -93,7 +93,7 @@ static void setup_mount_namespace(int32_t ns_mode)
         old_cred = override_creds(new_cred);
     }
     // global mode , need CAP_SYS_ADMIN and CAP_SYS_CHROOT to perform setns
-    if (ns_mode == 1) {
+    if (ns_mode == KSU_NS_GLOBAL) {
         pr_info("mount namespace mode: global\n");
         struct file *ns_file;
         struct path ns_path;
@@ -152,13 +152,14 @@ static void setup_mount_namespace(int32_t ns_mode)
 #endif
     }
     // independent mode , need CAP_SYS_ADMIN to perform unshare
-    if (ns_mode == 2) {
+    if (ns_mode == KSU_NS_INDIVIDUAL) {
         long ret;
         pr_info("mount namespace mode: independent\n");
 
         ret = ksys_unshare(CLONE_NEWNS);
         if (ret) {
             pr_warn("call ksys_unshare failed: %ld\n", ret);
+            goto try_drop_caps;
         }
 
         // Make root mount private
