@@ -1,12 +1,9 @@
-#include <linux/err.h>
 #include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
-#include <linux/kprobes.h>
 #include <linux/proc_ns.h>
 #include <linux/pid.h>
-
 #include <linux/sched/task.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
@@ -16,28 +13,15 @@
 #include "klog.h" // IWYU pragma: keep
 #include "su_mount_ns.h"
 
-static long (*ksu_sys_setns_fn)(const struct pt_regs *);
-
 extern int path_mount(const char *dev_name, struct path *path,
                       const char *type_page, unsigned long flags,
                       void *data_page);
 
-void ksu_resolve_setns(void)
-{
-    int ret;
-    struct kprobe kp = {
-        .symbol_name = SYS_SETNS_SYMBOL,
-    };
-    ret = register_kprobe(&kp);
-    if (ret < 0) {
-        pr_err("register kprobe for resolve_setns failed: %d\n", ret);
-        return;
-    }
-    ksu_sys_setns_fn = (void *)kp.addr;
-    unregister_kprobe(&kp);
-    pr_info("resolved " SYS_SETNS_SYMBOL " addr: %p\n", ksu_sys_setns_fn);
-    return;
-}
+#if defined(__aarch64__)
+extern long __arm64_sys_setns(const struct pt_regs *regs);
+#elif defined(__x86_64__)
+extern long __x64_sys_setns(const struct pt_regs *regs);
+#endif
 
 static long ksu_sys_setns(int fd, int flags)
 {
@@ -47,14 +31,13 @@ static long ksu_sys_setns(int fd, int flags)
     PT_REGS_PARM1(&regs) = fd;
     PT_REGS_PARM2(&regs) = flags;
 
-    if (unlikely(!ksu_sys_setns_fn)) {
-        ksu_resolve_setns();
-    }
-    if (unlikely(!ksu_sys_setns_fn)) {
-        pr_err("resolve " SYS_SETNS_SYMBOL " addr faild!!\n");
-        return -ENOSYS;
-    }
-    return ksu_sys_setns_fn(&regs);
+#if defined(__aarch64__)
+    return __arm64_sys_setns(&regs);
+#elif defined(__x86_64__)
+    return __x64_sys_setns(&regs);
+#else
+#error "Unsupported arch"
+#endif
 }
 
 static void setup_mount_namespace(int32_t ns_mode)
