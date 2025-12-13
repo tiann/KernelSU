@@ -3,6 +3,8 @@
 #include <linux/sched.h>
 #include <linux/sched/signal.h>
 #include <linux/seccomp.h>
+#include <linux/slab.h>
+#include <linux/task_work.h>
 #include <linux/thread_info.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
@@ -11,6 +13,7 @@
 #include "app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
+#include "su_mount_ns.h"
 #include "syscall_hook_manager.h"
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
@@ -128,9 +131,18 @@ void escape_with_root_profile(void)
     spin_unlock_irq(&current->sighand->siglock);
 
     setup_selinux(profile->selinux_domain);
-
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
+    }
+    struct ksu_mns_tw *tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+    if (!tw)
+        return;
+    tw->cb.func = ksu_setup_mount_namespace_tw_func;
+    tw->ns_mode = profile->namespaces;
+    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+        kfree(tw);
+        pr_err("add task work faild! skip setup mount namespace for pid: %d.\n",
+               current->pid);
     }
 }
 
