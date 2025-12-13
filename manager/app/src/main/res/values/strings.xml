@@ -28,7 +28,7 @@
     <string name="module_sort_enabled_first">Enabled first</string>
     <string name="module_repos">Repos</string>
     <string name="module_repos_sort_update_first">Update first</string>
-    <string name="module_repos_sort_name">Sort by name</string>
+    <string name="module_repos_sort_name">Name (A → Z)</string>
     <string name="module_repos_source_code">Source code</string>
     <string name="confirm">Confirm</string>
     <string name="uninstall">Uninstall</string>
@@ -74,7 +74,7 @@
     <string name="profile_groups">Groups</string>
     <string name="profile_capabilities">Capabilities</string>
     <string name="profile_selinux_context">SELinux context</string>
-    <string name="profile_umount_modules">Umount modules</string>
+    <string name="profile_umount_modules">Umount modules by default</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
     <string name="require_kernel_version">The current KernelSU version %d is too low for the manager to work properly. Please upgrade to version %d or higher!</string>
     <string name="settings_umount_modules_default">Umount modules</string>

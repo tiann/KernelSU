@@ -153,4 +153,14 @@
     <string name="refresh_release">リリースしてリフレッシュ</string>
     <string name="refresh_refresh">爽やか…</string>
     <string name="refresh_complete">更新に成功しました</string>
+    <string name="module_repos">レポ</string>
+    <string name="module_repos_sort_update_first">最初に更新</string>
+    <string name="module_repos_sort_name">名前で並べ替え</string>
+    <string name="module_repos_source_code">ソースコード</string>
+    <string name="metamodule_uninstall_confirm">モジュール %s をアンインストールしてもよろしいですか? この操作はすべてのモジュールに影響し、メタモジュールによって提供される特定の機能 (マウントなど) は動作しなくなります。</string>
+    <string name="home_gki_warning">バージョン3.0.0以降、GKIワークモードはテスト環境でのみ使用されます。日常的な使用には推奨されません。また、画像ファイルの提供も停止されます。</string>
+    <string name="module_reinstall">再インストール</string>
+    <string name="app_profile_affects_following_apps">以下のアプリに影響します</string>
+    <string name="install_select_partition">パーティションを選択</string>
+    <string name="feature_status_unsupported_summary">カーネルはこの機能をサポートしていません。</string>
 </resources>

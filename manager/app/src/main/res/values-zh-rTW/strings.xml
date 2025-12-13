@@ -140,4 +140,17 @@
     <string name="refresh_release">鬆開刷新</string>
     <string name="refresh_refresh">正在刷新…</string>
     <string name="refresh_complete">刷新成功</string>
+    <string name="module_repos">模組倉庫</string>
+    <string name="module_repos_sort_update_first">可更新優先</string>
+    <string name="module_repos_source_code">源碼</string>
+    <string name="module_repos_sort_name">按名稱排序</string>
+    <string name="undo">撤銷</string>
+    <string name="settings_theme">主題</string>
+    <string name="settings_theme_mode_system">跟隨系統</string>
+    <string name="settings_theme_mode_monet_system">Monet (跟隨系統)</string>
+    <string name="settings_theme_mode_light">淺色</string>
+    <string name="settings_theme_mode_monet_light">Monet (淺色)</string>
+    <string name="settings_theme_mode_dark">深色</string>
+    <string name="settings_theme_mode_monet_dark">Monet (深色)</string>
+    <string name="settings_theme_summary">選擇應用的主題模式。</string>
 </resources>
