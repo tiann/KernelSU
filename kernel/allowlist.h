@@ -25,11 +25,13 @@ bool __ksu_is_allow_uid(uid_t uid);
 
 // Check if the uid is in allow list, or current is ksu domain root
 bool __ksu_is_allow_uid_for_current(uid_t uid);
-#define ksu_is_allow_uid_for_current(uid) unlikely(__ksu_is_allow_uid_for_current(uid))
+#define ksu_is_allow_uid_for_current(uid)                                      \
+    unlikely(__ksu_is_allow_uid_for_current(uid))
 
 bool ksu_get_allow_list(int *array, int *length, bool allow);
 
-void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, char *, void *), void *data);
+void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, char *, void *),
+                         void *data);
 
 bool ksu_get_app_profile(struct app_profile *);
 bool ksu_set_app_profile(struct app_profile *, bool persist);
