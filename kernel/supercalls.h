@@ -94,33 +94,32 @@ struct ksu_nuke_ext4_sysfs_cmd {
 };
 
 struct ksu_add_try_umount_cmd {
-	__aligned_u64 arg; // char ptr, this is the mountpoint
-	__u32 flags; // this is the flag we use for it
-	__u8 mode; // denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry
+    __aligned_u64 arg; // char ptr, this is the mountpoint
+    __u32 flags; // this is the flag we use for it
+    __u8 mode; // denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry
 };
 
-#define KSU_UMOUNT_WIPE 0  // ignore everything and wipe list
-#define KSU_UMOUNT_ADD 1   // add entry (path + flags)
-#define KSU_UMOUNT_DEL 2   // delete entry, strcmp
-
+#define KSU_UMOUNT_WIPE 0 // ignore everything and wipe list
+#define KSU_UMOUNT_ADD 1 // add entry (path + flags)
+#define KSU_UMOUNT_DEL 2 // delete entry, strcmp
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)
 #define KSU_IOCTL_GET_INFO _IOC(_IOC_READ, 'K', 2, 0)
 #define KSU_IOCTL_REPORT_EVENT _IOC(_IOC_WRITE, 'K', 3, 0)
-#define KSU_IOCTL_SET_SEPOLICY _IOC(_IOC_READ|_IOC_WRITE, 'K', 4, 0)
+#define KSU_IOCTL_SET_SEPOLICY _IOC(_IOC_READ | _IOC_WRITE, 'K', 4, 0)
 #define KSU_IOCTL_CHECK_SAFEMODE _IOC(_IOC_READ, 'K', 5, 0)
-#define KSU_IOCTL_GET_ALLOW_LIST _IOC(_IOC_READ|_IOC_WRITE, 'K', 6, 0)
-#define KSU_IOCTL_GET_DENY_LIST _IOC(_IOC_READ|_IOC_WRITE, 'K', 7, 0)
-#define KSU_IOCTL_UID_GRANTED_ROOT _IOC(_IOC_READ|_IOC_WRITE, 'K', 8, 0)
-#define KSU_IOCTL_UID_SHOULD_UMOUNT _IOC(_IOC_READ|_IOC_WRITE, 'K', 9, 0)
+#define KSU_IOCTL_GET_ALLOW_LIST _IOC(_IOC_READ | _IOC_WRITE, 'K', 6, 0)
+#define KSU_IOCTL_GET_DENY_LIST _IOC(_IOC_READ | _IOC_WRITE, 'K', 7, 0)
+#define KSU_IOCTL_UID_GRANTED_ROOT _IOC(_IOC_READ | _IOC_WRITE, 'K', 8, 0)
+#define KSU_IOCTL_UID_SHOULD_UMOUNT _IOC(_IOC_READ | _IOC_WRITE, 'K', 9, 0)
 #define KSU_IOCTL_GET_MANAGER_APPID _IOC(_IOC_READ, 'K', 10, 0)
-#define KSU_IOCTL_GET_APP_PROFILE _IOC(_IOC_READ|_IOC_WRITE, 'K', 11, 0)
+#define KSU_IOCTL_GET_APP_PROFILE _IOC(_IOC_READ | _IOC_WRITE, 'K', 11, 0)
 #define KSU_IOCTL_SET_APP_PROFILE _IOC(_IOC_WRITE, 'K', 12, 0)
-#define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ|_IOC_WRITE, 'K', 13, 0)
+#define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ | _IOC_WRITE, 'K', 13, 0)
 #define KSU_IOCTL_SET_FEATURE _IOC(_IOC_WRITE, 'K', 14, 0)
 #define KSU_IOCTL_GET_WRAPPER_FD _IOC(_IOC_WRITE, 'K', 15, 0)
-#define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ|_IOC_WRITE, 'K', 16, 0)
+#define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ | _IOC_WRITE, 'K', 16, 0)
 #define KSU_IOCTL_NUKE_EXT4_SYSFS _IOC(_IOC_WRITE, 'K', 17, 0)
 #define KSU_IOCTL_ADD_TRY_UMOUNT _IOC(_IOC_WRITE, 'K', 18, 0)
 

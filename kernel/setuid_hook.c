@@ -91,17 +91,18 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         // euid is what we care about here as it controls permission
         if (unlikely(euid == 0)) {
             if (!is_ksu_domain()) {
-                pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                    current->pid, current->comm, old_uid, new_uid);
+                pr_warn("find suspicious EoP: %d %s, from %d to %d\n",
+                        current->pid, current->comm, old_uid, new_uid);
                 force_sig(SIGKILL);
                 return 0;
             }
         }
         // disallow appuid decrease to any other uid if it is not allowed to su
         if (is_appuid(old_uid)) {
-            if (euid < current_euid().val && !ksu_is_allow_uid_for_current(old_uid)) {
-                pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                    current->pid, current->comm, old_uid, new_uid);
+            if (euid < current_euid().val &&
+                !ksu_is_allow_uid_for_current(old_uid)) {
+                pr_warn("find suspicious EoP: %d %s, from %d to %d\n",
+                        current->pid, current->comm, old_uid, new_uid);
                 force_sig(SIGKILL);
                 return 0;
             }
