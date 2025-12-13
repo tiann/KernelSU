@@ -11,11 +11,16 @@
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 #include <linux/task_work.h>
+#include <uapi/linux/mount.h>
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "su_mount_ns.h"
 
 static long (*ksu_sys_setns_fn)(const struct pt_regs *);
+
+extern int path_mount(const char *dev_name, struct path *path,
+                      const char *type_page, unsigned long flags,
+                      void *data_page);
 
 void ksu_resolve_setns(void)
 {
@@ -54,8 +59,6 @@ static long ksu_sys_setns(int fd, int flags)
 
 static void setup_mount_namespace(int32_t ns_mode)
 {
-    struct path saved_path;
-
     pr_info("setup mount namespace for pid: %d\n", current->pid);
     // inherit mode
     if (ns_mode == 0) {
@@ -71,6 +74,8 @@ static void setup_mount_namespace(int32_t ns_mode)
 
     const struct cred *old_cred = NULL;
     struct cred *new_cred = NULL;
+    struct path root_path;
+    struct path saved_path;
 
     // Save current working directory
     get_fs_pwd(current->fs, &saved_path);
@@ -155,6 +160,17 @@ static void setup_mount_namespace(int32_t ns_mode)
         if (ret) {
             pr_warn("call ksys_unshare failed: %ld\n", ret);
         }
+
+        // Make root mount private
+        get_fs_root(current->fs, &root_path);
+        int ret1;
+        ret1 = path_mount(NULL, &root_path, NULL, MS_PRIVATE | MS_REC, NULL);
+
+        if (ret1 < 0) {
+            pr_err("Failed to make root private, err: %d\n", ret1);
+        }
+
+        path_put(&root_path);
     }
 // finally drop capability
 try_drop_caps:
