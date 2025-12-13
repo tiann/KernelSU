@@ -4,6 +4,7 @@
 #include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/fs.h>
+#include <linux/fs_struct.h>
 #include <linux/kprobes.h>
 #include <linux/proc_ns.h>
 #include <linux/pid.h>
@@ -110,6 +111,11 @@ static long ksu_sys_setns(int fd, int flags)
 
 static void setup_mount_namespace(int32_t ns_mode)
 {
+    struct path saved_path;
+    
+    // Save current working directory
+    get_fs_pwd(current->fs, &saved_path);
+    
     pr_info("setup mount namespace for pid: %d\n", current->pid);
     // inherit mode
     if (ns_mode == 0) {
@@ -212,6 +218,8 @@ try_drop_caps:
         revert_creds(old_cred);
         put_cred(new_cred);
     }
+    // Restore working directory
+    set_fs_pwd(current->fs, &saved_path);
     return;
 }
 
