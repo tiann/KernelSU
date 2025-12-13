@@ -18,7 +18,6 @@ void ksu_mark_running_process(void);
 int ksu_get_task_mark(pid_t pid);
 int ksu_set_task_mark(pid_t pid, bool mark);
 
-
 static inline void ksu_set_task_tracepoint_flag(struct task_struct *t)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
