@@ -60,12 +60,12 @@ static void setup_mount_namespace(int32_t ns_mode)
     struct path root_path;
     struct path saved_path;
 
-    // Save current working directory
+    // save current working directory
     get_fs_pwd(current->fs, &saved_path);
 
     if (!(capable(CAP_SYS_ADMIN) && capable(CAP_SYS_CHROOT))) {
         pr_info(
-            "process dont have CAP_SYS_ADMIN or CAP_SYS_CHROOT, adding it temporarily.\n");
+            "process does not have CAP_SYS_ADMIN or CAP_SYS_CHROOT, adding it temporarily.\n");
         new_cred = prepare_creds();
         if (!new_cred) {
             pr_warn("failed to prepare new credentials\n");
@@ -134,10 +134,10 @@ static void setup_mount_namespace(int32_t ns_mode)
         close_fd(fd);
 #endif
     }
-    // independent mode , need CAP_SYS_ADMIN to perform unshare
+    // individual mode , need CAP_SYS_ADMIN to perform unshare
     if (ns_mode == KSU_NS_INDIVIDUAL) {
         long ret;
-        pr_info("mount namespace mode: independent\n");
+        pr_info("mount namespace mode: individual\n");
 
         ret = ksys_unshare(CLONE_NEWNS);
         if (ret) {
@@ -147,11 +147,11 @@ static void setup_mount_namespace(int32_t ns_mode)
 
         // Make root mount private
         get_fs_root(current->fs, &root_path);
-        int ret1;
-        ret1 = path_mount(NULL, &root_path, NULL, MS_PRIVATE | MS_REC, NULL);
+        int pm_ret;
+        pm_ret = path_mount(NULL, &root_path, NULL, MS_PRIVATE | MS_REC, NULL);
 
-        if (ret1 < 0) {
-            pr_err("Failed to make root private, err: %d\n", ret1);
+        if (pm_ret < 0) {
+            pr_err("failed to make root private, err: %d\n", pm_ret);
         }
 
         path_put(&root_path);

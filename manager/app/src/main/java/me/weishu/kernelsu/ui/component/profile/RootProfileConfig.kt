@@ -228,21 +228,17 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
 }
 
 @Composable
-fun MountNameSpacePanel(profile: Natives.Profile, onMntNamespaceChange: (namespaceType: Int) -> Unit) {
+fun MountNameSpacePanel(
+    profile: Natives.Profile, onMntNamespaceChange: (namespaceType: Int) -> Unit
+) {
     SuperDropdown(
-        title = stringResource(id = R.string.profile_namespace),
-        items = listOf(
+        title = stringResource(id = R.string.profile_namespace), items = listOf(
             stringResource(id = R.string.profile_namespace_inherited),
             stringResource(id = R.string.profile_namespace_global),
             stringResource(id = R.string.profile_namespace_individual),
-        ),
-        selectedIndex = profile.namespace,
-        onSelectedIndexChange = { index ->
+        ), selectedIndex = profile.namespace, onSelectedIndexChange = { index ->
             onMntNamespaceChange(index)
-        }
-    )
-
-
+        })
 }
 
 @Composable
