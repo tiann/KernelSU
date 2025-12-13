@@ -11,7 +11,9 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/seccomp.h>
+#include <linux/slab.h>
 #include <linux/syscalls.h>
+#include <linux/task_work.h>
 #include <linux/thread_info.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
@@ -66,6 +68,11 @@ void setup_groups(struct root_profile *profile, struct cred *cred)
 
 static long (*ksu_sys_setns_fn)(const struct pt_regs *);
 
+struct ksu_mns_tw {
+    struct callback_head cb;
+    int32_t ns_mode;
+};
+
 void ksu_resolve_setns(void)
 {
     int ret;
@@ -79,7 +86,7 @@ void ksu_resolve_setns(void)
     }
     ksu_sys_setns_fn = (void *)kp.addr;
     unregister_kprobe(&kp);
-    pr_info("resolved "SYS_SETNS_SYMBOL" addr: %p\n", ksu_sys_setns_fn);
+    pr_info("resolved " SYS_SETNS_SYMBOL " addr: %p\n", ksu_sys_setns_fn);
     return;
 }
 
@@ -97,7 +104,8 @@ static long ksu_sys_setns(int fd, int flags)
     return ksu_sys_setns_fn(&regs);
 }
 
-static void setup_mount_namespace(int32_t ns_mode) {
+static void setup_mount_namespace(int32_t ns_mode)
+{
     pr_info("setup mount namespace for pid: %d\n", current->pid);
     // inherit mode
     if (ns_mode == 0) {
@@ -113,7 +121,8 @@ static void setup_mount_namespace(int32_t ns_mode) {
     const struct cred *old_cred = NULL;
     struct cred *new_cred = NULL;
     if (!(capable(CAP_SYS_ADMIN) && capable(CAP_SYS_CHROOT))) {
-        pr_info("process dont have CAP_SYS_ADMIN or CAP_SYS_CHROOT, adding it temporarily.\n");
+        pr_info(
+            "process dont have CAP_SYS_ADMIN or CAP_SYS_CHROOT, adding it temporarily.\n");
         new_cred = prepare_creds();
         if (!new_cred) {
             pr_warn("failed to prepare new credentials\n");
@@ -149,14 +158,16 @@ static void setup_mount_namespace(int32_t ns_mode) {
         long ret = ns_get_path(&ns_path, pid1_task, &mntns_operations);
         put_task_struct(pid1_task);
         if (ret) {
-            pr_warn("failed to get path for init's mount namespace: %ld\n", ret);
+            pr_warn("failed to get path for init's mount namespace: %ld\n",
+                    ret);
             goto try_drop_caps;
         }
         ns_file = dentry_open(&ns_path, O_RDONLY, current_cred());
 
         path_put(&ns_path);
         if (IS_ERR(ns_file)) {
-            pr_warn("failed to open file for init's mount namespace: %ld\n", PTR_ERR(ns_file));
+            pr_warn("failed to open file for init's mount namespace: %ld\n",
+                    PTR_ERR(ns_file));
             goto try_drop_caps;
         }
 
@@ -190,14 +201,21 @@ static void setup_mount_namespace(int32_t ns_mode) {
             pr_warn("call ksys_unshare failed: %ld\n", ret);
         }
     }
-    // finally drop capability
-    try_drop_caps:
+// finally drop capability
+try_drop_caps:
     if (old_cred) {
         pr_info("dropping temporarily capability.\n");
         revert_creds(old_cred);
         put_cred(new_cred);
     }
     return;
+}
+
+static void ksu_setup_mount_namespace_tw_func(struct callback_head *cb)
+{
+    struct ksu_mns_tw *tw = container_of(cb, struct ksu_mns_tw, cb);
+    setup_mount_namespace(tw->ns_mode);
+    kfree(tw);
 }
 
 static void disable_seccomp(void)
@@ -274,9 +292,17 @@ void escape_with_root_profile(void)
     spin_unlock_irq(&current->sighand->siglock);
 
     setup_selinux(profile->selinux_domain);
-    setup_mount_namespace(profile->namespaces);
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
+    }
+    struct ksu_mns_tw *tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+    if (!tw)
+        return;
+    tw->cb.func = ksu_setup_mount_namespace_tw_func;
+    tw->ns_mode = profile->namespaces;
+    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+        kfree(tw);
+        pr_warn("setup mount namespace add task_work failed\n");
     }
 }
 
