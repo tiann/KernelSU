@@ -99,6 +99,10 @@ static long ksu_sys_setns(int fd, int flags)
     PT_REGS_PARM2(&regs) = flags;
 
     if (unlikely(!ksu_sys_setns_fn)) {
+        ksu_resolve_setns();
+    }
+    if (unlikely(!ksu_sys_setns_fn)) {
+        pr_err("resolve " SYS_SETNS_SYMBOL " addr faild!!\n");
         return -ENOSYS;
     }
     return ksu_sys_setns_fn(&regs);

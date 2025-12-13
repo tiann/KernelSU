@@ -5,7 +5,6 @@
 #include <linux/workqueue.h>
 
 #include "allowlist.h"
-#include "app_profile.h"
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "throne_tracker.h"
@@ -38,8 +37,6 @@ int __init kernelsu_init(void)
     ksu_supercalls_init();
 
     ksu_syscall_hook_manager_init();
-
-    ksu_resolve_setns();
 
     ksu_allowlist_init();
 
