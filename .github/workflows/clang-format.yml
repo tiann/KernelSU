@@ -15,6 +15,7 @@ on:
       - '.github/workflows/clang-format.yml'
       - 'kernel/**/*.c'
       - 'kernel/**/*.h'
+      - 'kernel/.clang-format'
 
 permissions:
   checks: write
