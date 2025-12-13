@@ -60,9 +60,6 @@ static void setup_mount_namespace(int32_t ns_mode)
     struct path root_path;
     struct path saved_path;
 
-    // save current working directory
-    get_fs_pwd(current->fs, &saved_path);
-
     if (!(capable(CAP_SYS_ADMIN) && capable(CAP_SYS_CHROOT))) {
         pr_info(
             "process does not have CAP_SYS_ADMIN or CAP_SYS_CHROOT, adding it temporarily.\n");
@@ -75,6 +72,8 @@ static void setup_mount_namespace(int32_t ns_mode)
         cap_raise(new_cred->cap_effective, CAP_SYS_CHROOT);
         old_cred = override_creds(new_cred);
     }
+    // save current working directory
+    get_fs_pwd(current->fs, &saved_path);
     // global mode , need CAP_SYS_ADMIN and CAP_SYS_CHROOT to perform setns
     if (ns_mode == KSU_NS_GLOBAL) {
         pr_info("mount namespace mode: global\n");
@@ -165,6 +164,7 @@ try_drop_caps:
     }
     // Restore working directory
     set_fs_pwd(current->fs, &saved_path);
+    path_put(&saved_path);
     return;
 }
 
