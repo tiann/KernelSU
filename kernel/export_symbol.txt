@@ -1,2 +1,0 @@
-register_kprobe
-unregister_kprobe
