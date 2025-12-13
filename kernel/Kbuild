@@ -9,6 +9,7 @@ kernelsu-objs += pkg_observer.o
 kernelsu-objs += setuid_hook.o
 kernelsu-objs += kernel_umount.o
 kernelsu-objs += supercalls.o
+kernelsu-objs += su_mount_ns.o
 kernelsu-objs += feature.o
 kernelsu-objs += ksud.o
 kernelsu-objs += seccomp_cache.o
