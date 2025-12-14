@@ -141,7 +141,7 @@ void escape_with_root_profile(void)
     tw->ns_mode = profile->namespaces;
     if (task_work_add(current, &tw->cb, TWA_RESUME)) {
         kfree(tw);
-        pr_err("add task work faild! skip setup mount namespace for pid: %d.\n",
+        pr_err("add task work faild! skip mnt_ns magic for pid: %d.\n",
                current->pid);
     }
 }
