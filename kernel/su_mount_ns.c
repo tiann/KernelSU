@@ -1,7 +1,10 @@
+#include <linux/dcache.h>
+#include <linux/errno.h>
 #include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
+#include <linux/namei.h>
 #include <linux/proc_ns.h>
 #include <linux/pid.h>
 #include <linux/sched/task.h>
@@ -48,9 +51,21 @@ static void ksu_setup_mount_ns(int32_t ns_mode)
 
     // global mode , need CAP_SYS_ADMIN and CAP_SYS_CHROOT to perform setns
     if (ns_mode == KSU_NS_GLOBAL) {
-        // save current working directory
+        // save current working directory as absolute path before setns
         struct path saved_pwd;
+        char pwd_buf[KSU_MAX_PWD_PATH];
         get_fs_pwd(current->fs, &saved_pwd);
+        char *pwd_path = d_path(&saved_pwd, pwd_buf, sizeof(pwd_buf));
+        if (IS_ERR(pwd_path)) {
+            if (PTR_ERR(pwd_path) == -ENAMETOOLONG) {
+                pr_warn("absolute pwd longer than: %zu\n,skip restore pwd!!",
+                        sizeof(pwd_buf));
+            } else {
+                pr_warn("get absolute pwd failed: %ld\n", PTR_ERR(pwd_path));
+            }
+            pwd_path = NULL;
+        }
+        path_put(&saved_pwd);
 
         rcu_read_lock();
         // &init_task is not init, but swapper/idle, which froks the init process
@@ -102,9 +117,17 @@ static void ksu_setup_mount_ns(int32_t ns_mode)
 #else
         close_fd(fd);
 #endif
-        // restore working directory
-        set_fs_pwd(current->fs, &saved_pwd);
-        path_put(&saved_pwd);
+        // try to restore working directory using absolute path after setns
+        if (pwd_path) {
+            struct path new_pwd;
+            int err = kern_path(pwd_path, 0, &new_pwd);
+            if (!err) {
+                set_fs_pwd(current->fs, &new_pwd);
+                path_put(&new_pwd);
+            } else {
+                pr_warn("restore pwd failed: %d, path: %s\n", err, pwd_path);
+            }
+        }
     }
     // individual mode , need CAP_SYS_ADMIN to perform unshare
     if (ns_mode == KSU_NS_INDIVIDUAL) {
