@@ -45,7 +45,6 @@ static void setup_mount_namespace(int32_t ns_mode)
 {
     // inherit mode
     if (ns_mode == KSU_NS_INHERITED) {
-        pr_info("pid: %d ,mount namespace mode: inherit\n", current->pid);
         // do nothing
         return;
     }
@@ -69,7 +68,6 @@ static void setup_mount_namespace(int32_t ns_mode)
 
     // global mode , need CAP_SYS_ADMIN and CAP_SYS_CHROOT to perform setns
     if (ns_mode == KSU_NS_GLOBAL) {
-        pr_info("pid: %d ,mount namespace mode: global\n", current->pid);
         rcu_read_lock();
         // &init_task is not init, but swapper/idle, which froks the init process
         // so we need find init process
@@ -124,7 +122,6 @@ static void setup_mount_namespace(int32_t ns_mode)
     // individual mode , need CAP_SYS_ADMIN to perform unshare
     if (ns_mode == KSU_NS_INDIVIDUAL) {
         long ret;
-        pr_info("pid: %d ,mount namespace mode: individual\n", current->pid);
 
         ret = ksys_unshare(CLONE_NEWNS);
         if (ret) {
