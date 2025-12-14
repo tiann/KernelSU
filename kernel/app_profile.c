@@ -3,8 +3,6 @@
 #include <linux/sched.h>
 #include <linux/sched/signal.h>
 #include <linux/seccomp.h>
-#include <linux/slab.h>
-#include <linux/task_work.h>
 #include <linux/thread_info.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
@@ -134,16 +132,8 @@ void escape_with_root_profile(void)
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
     }
-    struct ksu_mns_tw *tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-    if (!tw)
-        return;
-    tw->cb.func = ksu_setup_mount_namespace_tw_func;
-    tw->ns_mode = profile->namespaces;
-    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
-        kfree(tw);
-        pr_err("add task work faild! skip mnt_ns magic for pid: %d.\n",
-               current->pid);
-    }
+
+    setup_mount_ns(profile->namespaces);
 }
 
 void escape_to_root_for_init(void)

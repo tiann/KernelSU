@@ -10,6 +10,8 @@ struct ksu_mns_tw {
     int32_t ns_mode;
 };
 
-void ksu_setup_mount_namespace_tw_func(struct callback_head *cb);
+
+void setup_mount_ns(int32_t ns_mode);
+
 
 #endif
