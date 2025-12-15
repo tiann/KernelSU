@@ -140,7 +140,7 @@
     <string name="install_upload_lkm_file">Sử dụng file LKM cục bộ</string>
     <string name="install_only_support_ko_file">Chỉ hỗ trợ các file .ko</string>
     <string name="settings_disable_kernel_umount">Vô hiệu hoá Umount Kernel</string>
-    <string name="settings_disable_kernel_umount_summary">Vô hiệu hoá Umount Kernel-level được kiểm soát bởi KernelSU.</string>
+    <string name="settings_disable_kernel_umount_summary">Vô hiệu hoá Umount Kernel được kiểm soát bởi KernelSU.</string>
     <string name="settings_enable_enhanced_security">Kích hoạt bảo mật nâng cao</string>
     <string name="settings_enable_enhanced_security_summary">Cho phép chính sách bảo mật chặt chẽ hơn.</string>
     <string name="settings_mode_default">Mặc định</string>
