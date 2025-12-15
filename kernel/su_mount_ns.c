@@ -12,7 +12,9 @@
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 #include <linux/task_work.h>
+#include <linux/version.h>
 #include <uapi/linux/mount.h>
+
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
@@ -113,17 +115,18 @@ try_setns:
     }
 
     fd_install(fd, ns_file);
-
     ret = ksu_sys_setns(fd, CLONE_NEWNS);
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 11, 0)
     ksys_close(fd);
 #else
     close_fd(fd);
+#endif
+
     if (ret) {
         pr_warn("call setns failed: %ld\n", ret);
         goto out;
     }
-#endif
     // try to restore working directory using absolute path after setns
     if (pwd_path) {
         struct path new_pwd;
@@ -187,13 +190,15 @@ void setup_mount_ns(int32_t ns_mode)
     }
 
     if (!ksu_cred) {
-        pr_err("no ksu cred! skip mnt_ns magic.\n");
+        pr_err("no ksu cred! skip mnt_ns magic for pid: %d.\n", current->pid);
         return;
     }
 
     struct ksu_mns_tw *tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-    if (!tw)
+    if (!tw) {
+        pr_err("no mem for tw! skip mnt_ns magic for pid: %d.\n", current->pid);
         return;
+    }
     tw->cb.func = ksu_setup_mount_ns_tw_func;
     tw->ns_mode = ns_mode;
     if (task_work_add(current, &tw->cb, TWA_RESUME)) {
