@@ -4,6 +4,7 @@
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
+#include <linux/limits.h>
 #include <linux/namei.h>
 #include <linux/proc_ns.h>
 #include <linux/pid.h>
@@ -48,20 +49,29 @@ static long ksu_sys_setns(int fd, int flags)
 static void ksu_mnt_ns_global(void)
 {
     // save current working directory as absolute path before setns
+    char *pwd_path = NULL;
+    char *pwd_buf = kmalloc(PATH_MAX, GFP_KERNEL);
+    if (!pwd_buf) {
+        pr_warn("no mem for pwd buffer, skip restore pwd!!\n");
+        goto try_setns;
+    }
+
     struct path saved_pwd;
-    char pwd_buf[KSU_MAX_PWD_PATH];
     get_fs_pwd(current->fs, &saved_pwd);
-    char *pwd_path = d_path(&saved_pwd, pwd_buf, sizeof(pwd_buf));
+    pwd_path = d_path(&saved_pwd, pwd_buf, PATH_MAX);
+    path_put(&saved_pwd);
+
     if (IS_ERR(pwd_path)) {
         if (PTR_ERR(pwd_path) == -ENAMETOOLONG) {
-            pr_warn("absolute pwd longer than: %zu,skip restore pwd!!\n",
-                    sizeof(pwd_buf));
+            pr_warn("absolute pwd longer than: %d, skip restore pwd!!\n",
+                    PATH_MAX);
         } else {
             pr_warn("get absolute pwd failed: %ld\n", PTR_ERR(pwd_path));
         }
         pwd_path = NULL;
     }
-    path_put(&saved_pwd);
+
+try_setns:
 
     rcu_read_lock();
     // &init_task is not init, but swapper/idle, which forks the init process
@@ -70,21 +80,21 @@ static void ksu_mnt_ns_global(void)
     if (unlikely(!pid_struct)) {
         rcu_read_unlock();
         pr_warn("failed to find pid_struct for PID 1\n");
-        return;
+        goto out;
     }
 
     struct task_struct *pid1_task = get_pid_task(pid_struct, PIDTYPE_PID);
     rcu_read_unlock();
     if (unlikely(!pid1_task)) {
         pr_warn("failed to get task_struct for PID 1\n");
-        return;
+        goto out;
     }
     struct path ns_path;
     long ret = ns_get_path(&ns_path, pid1_task, &mntns_operations);
     put_task_struct(pid1_task);
     if (ret) {
         pr_warn("failed get path for init mount namespace: %ld\n", ret);
-        return;
+        goto out;
     }
     struct file *ns_file = dentry_open(&ns_path, O_RDONLY, ksu_cred);
 
@@ -92,27 +102,27 @@ static void ksu_mnt_ns_global(void)
     if (IS_ERR(ns_file)) {
         pr_warn("failed open file for init mount namespace: %ld\n",
                 PTR_ERR(ns_file));
-        return;
+        goto out;
     }
 
     int fd = get_unused_fd_flags(O_CLOEXEC);
     if (fd < 0) {
         pr_warn("failed to get an unused fd: %d\n", fd);
         fput(ns_file);
-        return;
+        goto out;
     }
 
     fd_install(fd, ns_file);
 
     ret = ksu_sys_setns(fd, CLONE_NEWNS);
-    if (ret) {
-        pr_warn("call setns failed: %ld\n", ret);
-        return;
-    }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 11, 0)
     ksys_close(fd);
 #else
     close_fd(fd);
+    if (ret) {
+        pr_warn("call setns failed: %ld\n", ret);
+        goto out;
+    }
 #endif
     // try to restore working directory using absolute path after setns
     if (pwd_path) {
@@ -125,6 +135,8 @@ static void ksu_mnt_ns_global(void)
             pr_warn("restore pwd failed: %d, path: %s\n", err, pwd_path);
         }
     }
+out:
+    kfree(pwd_buf);
 }
 
 // individual mode , need CAP_SYS_ADMIN to perform unshare and remount
