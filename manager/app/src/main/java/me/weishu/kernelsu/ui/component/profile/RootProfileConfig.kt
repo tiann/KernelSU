@@ -39,6 +39,7 @@ import top.yukonga.miuix.kmp.extra.CheckboxLocation
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 @Composable
@@ -108,6 +109,15 @@ fun RootProfileConfig(
             onProfileChange(
                 profile.copy(
                     capabilities = it.map { cap -> cap.cap },
+                    rootUseDefault = false
+                )
+            )
+        }
+
+        MountNameSpacePanel(profile = profile) {
+            onProfileChange(
+                profile.copy(
+                    namespace = it,
                     rootUseDefault = false
                 )
             )
@@ -215,6 +225,20 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         },
     )
 
+}
+
+@Composable
+fun MountNameSpacePanel(
+    profile: Natives.Profile, onMntNamespaceChange: (namespaceType: Int) -> Unit
+) {
+    SuperDropdown(
+        title = stringResource(id = R.string.profile_namespace), items = listOf(
+            stringResource(id = R.string.profile_namespace_inherited),
+            stringResource(id = R.string.profile_namespace_global),
+            stringResource(id = R.string.profile_namespace_individual),
+        ), selectedIndex = profile.namespace, onSelectedIndexChange = { index ->
+            onMntNamespaceChange(index)
+        })
 }
 
 @Composable
