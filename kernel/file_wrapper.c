@@ -430,6 +430,7 @@ static char *ksu_wrapper_d_dname(struct dentry *dentry, char *buffer,
 
 static void ksu_wrapper_d_release(struct dentry *dentry)
 {
+    pr_info("released wrapper dentry %p", dentry);
     struct file *orig_file = dentry->d_fsdata;
     fput(orig_file);
 }
@@ -474,6 +475,7 @@ int install_file_wrapper(int fd)
     }
 
     // configure dentry
+    pr_info("mutating wrapper dentry %p", wrapper_file->f_path.dentry);
     wrapper_file->f_path.dentry->d_op = &ksu_wrapper_d_ops;
     // add reference from dentry
     get_file(orig_file);
