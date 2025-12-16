@@ -28,4 +28,4 @@ jobs:
 
       - name: check
         working-directory: kernel
-        run: find . -name "*.c" -o -name "*.h" -print0 | xargs -0 clang-format --dry-run --Werror
+        run: make check-format

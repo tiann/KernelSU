@@ -148,10 +148,9 @@ int main(int argc, char *argv[])
                 find_symbol(&vmlinux, sym_name, vmlinux_symtab, vmlinux_strtab);
 
             if (!vmlinux_sym || vmlinux_sym->st_shndx == SHN_UNDEF) {
-                fprintf(
-                    stderr,
-                    "Error: Symbol '%s' not found or undefined in %s\n",
-                    sym_name, vmlinux_path);
+                fprintf(stderr,
+                        "Error: Symbol '%s' not found or undefined in %s\n",
+                        sym_name, vmlinux_path);
                 has_error = 1;
             } else {
                 int binding = ELF64_ST_BIND(vmlinux_sym->st_info);
