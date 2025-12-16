@@ -342,7 +342,7 @@ static int do_get_wrapper_fd(void __user *arg)
         return -EFAULT;
     }
 
-    return install_file_wrapper(cmd.fd);
+    return ksu_install_file_wrapper(cmd.fd);
 }
 
 static int do_manage_mark(void __user *arg)
