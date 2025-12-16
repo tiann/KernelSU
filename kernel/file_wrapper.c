@@ -1,3 +1,4 @@
+#include "linux/gfp.h"
 #include <linux/fdtable.h>
 #include <linux/export.h>
 #include <linux/anon_inodes.h>
@@ -426,14 +427,15 @@ static void ksu_release_file_wrapper(struct ksu_file_wrapper *data)
 static char *ksu_wrapper_d_dname(struct dentry *dentry, char *buffer,
                                  int buflen)
 {
-    struct file *orig_file = dentry->d_fsdata;
-    return d_path(&orig_file->f_path, buffer, buflen);
+    struct path *orig_path = dentry->d_fsdata;
+    return d_path(orig_path, buffer, buflen);
 }
 
 static void ksu_wrapper_d_release(struct dentry *dentry)
 {
-    struct file *orig_file = dentry->d_fsdata;
-    fput(orig_file);
+    struct path *orig_path = dentry->d_fsdata;
+    path_put(orig_path);
+    kfree(orig_path);
 }
 
 static const struct dentry_operations ksu_file_wrapper_d_ops = {
@@ -548,17 +550,24 @@ int ksu_install_file_wrapper(int fd)
         wrapper_sec->sid = ksu_file_sid;
     }
 
-    // add reference from dentry
-    get_file(orig_file);
+    struct path *orig_path = kmalloc(sizeof(struct path), GFP_KERNEL);
+    if (!orig_path) {
+        ret = -ENOMEM;
+        goto out_put_wrapper_file;
+    }
+    *orig_path = orig_file->f_path;
+    path_get(orig_path);
     // Some applications (such as screen) won't work if the tty's path is weird,
     // Therefore, we use d_dname to spoof it to return the path to the original file.
-    wrapper_file->f_path.dentry->d_fsdata = orig_file;
+    wrapper_file->f_path.dentry->d_fsdata = orig_path;
     wrapper_file->f_path.dentry->d_op = &ksu_file_wrapper_d_ops;
 
     fd_install(out_fd, wrapper_file);
     ret = out_fd;
     goto done;
 
+out_put_wrapper_file:
+    fput(wrapper_file);
 out_release_wrapper:
     ksu_release_file_wrapper(data);
 out_put_fd:
