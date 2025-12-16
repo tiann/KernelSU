@@ -1,5 +1,4 @@
 #include <linux/fdtable.h>
-#include <linux/syscalls.h>
 #include <linux/export.h>
 #include <linux/anon_inodes.h>
 #include <linux/capability.h>
@@ -355,7 +354,7 @@ static int ksu_wrapper_release(struct inode *inode, struct file *filp)
 static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
 {
     struct ksu_file_wrapper *p =
-        kcalloc(sizeof(struct ksu_file_wrapper), 1, GFP_KERNEL);
+        kcalloc(1, sizeof(struct ksu_file_wrapper), GFP_KERNEL);
     if (!p) {
         return NULL;
     }
@@ -549,12 +548,12 @@ int ksu_install_file_wrapper(int fd)
         wrapper_sec->sid = ksu_file_sid;
     }
 
-    // Some applications (such as screen) won't work if the tty's path is weird,
-    // Therefore, we use d_dname to spoof it to return the path to the original file.
-    wrapper_file->f_path.dentry->d_op = &ksu_file_wrapper_d_ops;
     // add reference from dentry
     get_file(orig_file);
+    // Some applications (such as screen) won't work if the tty's path is weird,
+    // Therefore, we use d_dname to spoof it to return the path to the original file.
     wrapper_file->f_path.dentry->d_fsdata = orig_file;
+    wrapper_file->f_path.dentry->d_op = &ksu_file_wrapper_d_ops;
 
     fd_install(out_fd, wrapper_file);
     ret = out_fd;
@@ -582,6 +581,9 @@ void ksu_file_wrapper_init(void)
         return;
     }
     anon_inode_mnt = dummy->f_path.mnt;
+    if (unlikely(!anon_inode_mnt)) {
+        pr_err("file_wrapper: initialize anon_inode_mnt failed, got NULL\n");
+    }
     fput(dummy);
 #endif
 }
