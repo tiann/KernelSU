@@ -12,7 +12,7 @@ static int transive_to_domain(const char *domain, struct cred *cred)
     int error;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
     struct task_security_struct *tsec;
-#else 
+#else
     struct cred_security_struct *tsec;
 #endif
     tsec = cred->security;
@@ -22,8 +22,8 @@ static int transive_to_domain(const char *domain, struct cred *cred)
     }
     error = security_secctx_to_secid(domain, strlen(domain), &sid);
     if (error) {
-        pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n",
-            domain, sid, error);
+        pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
+                sid, error);
     }
     if (!error) {
         tsec->sid = sid;
@@ -90,7 +90,7 @@ static void __security_release_secctx(struct lsm_context *cp)
 #define __security_release_secctx security_release_secctx
 #endif
 
-bool is_task_ksu_domain(const struct cred* cred)
+bool is_task_ksu_domain(const struct cred *cred)
 {
     struct lsm_context ctx;
     bool result;
@@ -98,8 +98,8 @@ bool is_task_ksu_domain(const struct cred* cred)
         return false;
     }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-    const struct task_security_struct * tsec = selinux_cred(cred);
-#else 
+    const struct task_security_struct *tsec = selinux_cred(cred);
+#else
     const struct cred_security_struct *tsec = selinux_cred(cred);
 #endif
     if (!tsec) {
@@ -120,7 +120,7 @@ bool is_ksu_domain()
     return is_task_ksu_domain(current_cred());
 }
 
-bool is_context(const struct cred* cred, const char* context)
+bool is_context(const struct cred *cred, const char *context)
 {
     struct lsm_context ctx;
     bool result;
@@ -128,8 +128,8 @@ bool is_context(const struct cred* cred, const char* context)
         return false;
     }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-    const struct task_security_struct * tsec = selinux_cred(cred);
-#else 
+    const struct task_security_struct *tsec = selinux_cred(cred);
+#else
     const struct cred_security_struct *tsec = selinux_cred(cred);
 #endif
     if (!tsec) {
@@ -144,20 +144,21 @@ bool is_context(const struct cred* cred, const char* context)
     return result;
 }
 
-bool is_zygote(const struct cred* cred)
+bool is_zygote(const struct cred *cred)
 {
     return is_context(cred, "u:r:zygote:s0");
 }
 
-bool is_init(const struct cred* cred) {
+bool is_init(const struct cred *cred)
+{
     return is_context(cred, "u:r:init:s0");
 }
 
 u32 ksu_get_ksu_file_sid()
 {
     u32 ksu_file_sid = 0;
-    int err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
-                       &ksu_file_sid);
+    int err = security_secctx_to_secid(KSU_FILE_CONTEXT,
+                                       strlen(KSU_FILE_CONTEXT), &ksu_file_sid);
     if (err) {
         pr_info("get ksufile sid err %d\n", err);
     }
