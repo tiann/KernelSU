@@ -63,9 +63,9 @@
     <string name="profile_groups">Групи</string>
     <string name="profile_capabilities">Можливості</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
-    <string name="profile_umount_modules">Розмонтування модулів за замовчуванням</string>
+    <string name="profile_umount_modules">Розмонтування модулів</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
-    <string name="settings_umount_modules_default">Розмонтування модулів</string>
+    <string name="settings_umount_modules_default">Розмонтування модулів за замовчуванням</string>
     <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
     <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU відновити будь-які змінені файли модулями для цієї програми.</string>
     <string name="profile_selinux_domain">Домен</string>
