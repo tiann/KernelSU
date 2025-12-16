@@ -1,4 +1,4 @@
-#include "linux/gfp.h"
+#include <linux/gfp.h>
 #include <linux/fdtable.h>
 #include <linux/export.h>
 #include <linux/anon_inodes.h>
@@ -25,6 +25,31 @@ struct ksu_file_wrapper {
     struct file *orig;
     struct file_operations ops;
 };
+
+static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp);
+
+static int ksu_wrapper_open(struct inode *ino, struct file *fp)
+{
+    struct path *orig_path = fp->f_path.dentry->d_fsdata;
+    struct file *orig_file =
+        dentry_open(orig_path, fp->f_flags, current_cred());
+    if (IS_ERR(orig_file)) {
+        return PTR_ERR(orig_file);
+    }
+    struct ksu_file_wrapper *wrapper = ksu_create_file_wrapper(orig_file);
+    if (IS_ERR(wrapper)) {
+        filp_close(orig_file, current->files);
+        return PTR_ERR(wrapper);
+    }
+    fp->private_data = wrapper;
+    const struct file_operations *new_fops = fops_get(&wrapper->ops);
+    replace_fops(fp, new_fops);
+    return 0;
+}
+
+struct file_operations ksu_file_wrapper_inode_fops = { .owner = THIS_MODULE,
+                                                       .open =
+                                                           ksu_wrapper_open };
 
 static loff_t ksu_wrapper_llseek(struct file *fp, loff_t off, int flags)
 {
@@ -128,16 +153,6 @@ static int ksu_wrapper_mmap(struct file *fp, struct vm_area_struct *vma)
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     return orig->f_op->mmap(orig, vma);
-}
-
-// static unsigned long mmap_supported_flags {}
-
-static int ksu_wrapper_open(struct inode *ino, struct file *fp)
-{
-    struct ksu_file_wrapper *data = fp->private_data;
-    struct file *orig = data->orig;
-    struct inode *orig_ino = file_inode(orig);
-    return orig->f_op->open(orig_ino, orig);
 }
 
 static int ksu_wrapper_flush(struct file *fp, fl_owner_t id)
@@ -357,7 +372,7 @@ static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
     struct ksu_file_wrapper *p =
         kcalloc(1, sizeof(struct ksu_file_wrapper), GFP_KERNEL);
     if (!p) {
-        return NULL;
+        return ERR_PTR(-ENOMEM);
     }
 
     get_file(fp);
@@ -386,7 +401,6 @@ static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
 #else
     p->ops.mmap_supported_flags = fp->f_op->mmap_supported_flags;
 #endif
-    p->ops.open = fp->f_op->open ? ksu_wrapper_open : NULL;
     p->ops.flush = fp->f_op->flush ? ksu_wrapper_flush : NULL;
     p->ops.release = ksu_wrapper_release;
     p->ops.fsync = fp->f_op->fsync ? ksu_wrapper_fsync : NULL;
@@ -485,6 +499,9 @@ static struct file *ksu_anon_inode_create_getfile_compat(
     struct inode *inode;
     struct file *file;
 
+    if (fops->owner && !try_module_get(fops->owner))
+        return ERR_PTR(-ENOENT);
+
     inode = ksu_anon_inode_make_secure_inode(name, context_inode);
     if (IS_ERR(inode)) {
         file = ERR_CAST(inode);
@@ -505,6 +522,7 @@ static struct file *ksu_anon_inode_create_getfile_compat(
 err_iput:
     iput(inode);
 err:
+    module_put(fops->owner);
     return file;
 }
 #endif
@@ -524,8 +542,8 @@ int ksu_install_file_wrapper(int fd)
     }
 
     struct ksu_file_wrapper *data = ksu_create_file_wrapper(orig_file);
-    if (!data) {
-        ret = -ENOMEM;
+    if (IS_ERR(data)) {
+        ret = PTR_ERR(data);
         goto out_put_fd;
     }
 
@@ -549,6 +567,8 @@ int ksu_install_file_wrapper(int fd)
     if (wrapper_sec) {
         wrapper_sec->sid = ksu_file_sid;
     }
+    // Install open file operation for inode.
+    wrapper_inode->i_fop = &ksu_file_wrapper_inode_fops;
 
     struct path *orig_path = kmalloc(sizeof(struct path), GFP_KERNEL);
     if (!orig_path) {
