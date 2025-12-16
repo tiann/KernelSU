@@ -363,6 +363,11 @@ static void ksu_release_file_wrapper(struct ksu_file_wrapper *data);
 
 static int ksu_wrapper_release(struct inode *inode, struct file *filp)
 {
+    // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/file_table.c;l=467-473;drc=3be0b283b562eabbc2b1f3bb534dc8903079bbaa
+    // f_op->release is called before fops_put(f_op), so manually put it.
+    // FIXME: is this safe?
+    fops_put(filp->f_op);
+    filp->f_op = NULL;
     ksu_release_file_wrapper(filp->private_data);
     return 0;
 }
