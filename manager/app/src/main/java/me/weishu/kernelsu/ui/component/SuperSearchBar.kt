@@ -224,10 +224,11 @@ fun SearchStatus.SearchPager(
     val searchStatus = this
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
     val topPadding by animateDpAsState(
-        if (searchStatus.shouldExpand()) systemBarsPadding + 5.dp else max(
-            searchStatus.offsetY,
-            0.dp
-        ),
+        targetValue = if (searchStatus.shouldExpand()) {
+            systemBarsPadding + 5.dp
+        } else {
+            max(searchStatus.offsetY, 0.dp)
+        },
         animationSpec = tween(300, easing = LinearOutSlowInEasing)
     ) {
         searchStatus.onAnimationComplete()
