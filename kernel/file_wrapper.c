@@ -10,10 +10,18 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
+#include "objsec.h"
+
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
+#include "ksud.h"
 
 #include "file_wrapper.h"
+
+struct ksu_file_wrapper {
+    struct file *orig;
+    struct file_operations ops;
+};
 
 static loff_t ksu_wrapper_llseek(struct file *fp, loff_t off, int flags)
 {
@@ -333,13 +341,15 @@ static int ksu_wrapper_fadvise(struct file *fp, loff_t off1, loff_t off2,
     return -EINVAL;
 }
 
+static void ksu_delete_file_wrapper(struct ksu_file_wrapper *data);
+
 static int ksu_wrapper_release(struct inode *inode, struct file *filp)
 {
     ksu_delete_file_wrapper(filp->private_data);
     return 0;
 }
 
-struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
+static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
 {
     struct ksu_file_wrapper *p =
         kcalloc(sizeof(struct ksu_file_wrapper), 1, GFP_KERNEL);
@@ -405,8 +415,76 @@ struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
     return p;
 }
 
-void ksu_delete_file_wrapper(struct ksu_file_wrapper *data)
+static void ksu_delete_file_wrapper(struct ksu_file_wrapper *data)
 {
     fput((struct file *)data->orig);
     kfree(data);
+}
+
+static char *ksu_wrapper_d_dname(struct dentry *dentry, char *buffer,
+                                 int buflen)
+{
+    struct file *orig_file = dentry->d_fsdata;
+    return d_path(&orig_file->f_path, buffer, buflen);
+}
+
+static void ksu_wrapper_d_release(struct dentry *dentry)
+{
+    struct file *orig_file = dentry->d_fsdata;
+    fput(orig_file);
+}
+
+struct dentry_operations ksu_wrapper_d_ops = { .d_dname = ksu_wrapper_d_dname,
+                                               .d_release =
+                                                   ksu_wrapper_d_release };
+
+int install_file_wrapper(int fd)
+{
+    int ret;
+    struct file *orig_file = fget(fd);
+    if (!orig_file) {
+        return -EBADF;
+    }
+
+    struct ksu_file_wrapper *data = ksu_create_file_wrapper(orig_file);
+    if (data == NULL) {
+        ret = -ENOMEM;
+        goto done;
+    }
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#define getfd_secure anon_inode_create_getfd
+#else
+#define getfd_secure anon_inode_getfd_secure
+#endif
+    ret = getfd_secure("[ksu_fdwrapper]", &data->ops, data, orig_file->f_flags,
+                       NULL);
+    if (ret < 0) {
+        pr_err("ksu_fdwrapper: getfd failed: %d\n", ret);
+        goto out_release_wrapper;
+    }
+    struct file *wrapper_file = fget(ret);
+
+    struct inode *wrapper_inode = file_inode(wrapper_file);
+    // copy original inode mode
+    wrapper_inode->i_mode = file_inode(orig_file)->i_mode;
+    struct inode_security_struct *wrapper_sec = selinux_inode(wrapper_inode);
+    if (wrapper_sec) {
+        wrapper_sec->sid = ksu_file_sid;
+    }
+
+    // configure dentry
+    wrapper_file->f_path.dentry->d_op = &ksu_wrapper_d_ops;
+    // add reference from dentry
+    get_file(orig_file);
+    wrapper_file->f_path.dentry->d_fsdata = orig_file;
+
+    fput(wrapper_file);
+    goto done;
+out_release_wrapper:
+    ksu_delete_file_wrapper(data);
+done:
+    fput(orig_file);
+
+    return ret;
 }
