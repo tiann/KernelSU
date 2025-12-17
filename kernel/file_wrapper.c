@@ -47,9 +47,10 @@ static int ksu_wrapper_open(struct inode *ino, struct file *fp)
     return 0;
 }
 
-struct file_operations ksu_file_wrapper_inode_fops = { .owner = THIS_MODULE,
-                                                       .open =
-                                                           ksu_wrapper_open };
+static const struct file_operations ksu_file_wrapper_inode_fops = {
+    .owner = THIS_MODULE,
+    .open = ksu_wrapper_open
+};
 
 static loff_t ksu_wrapper_llseek(struct file *fp, loff_t off, int flags)
 {
@@ -364,9 +365,9 @@ static void ksu_release_file_wrapper(struct ksu_file_wrapper *data);
 static int ksu_wrapper_release(struct inode *inode, struct file *filp)
 {
     // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/file_table.c;l=467-473;drc=3be0b283b562eabbc2b1f3bb534dc8903079bbaa
-    // f_op->release is called before fops_put(f_op), so manually put it.
-    // FIXME: is this safe?
+    // f_op->release is called before fops_put(f_op), so we put it manually.
     fops_put(filp->f_op);
+    // prevent it from being put again
     filp->f_op = NULL;
     ksu_release_file_wrapper(filp->private_data);
     return 0;
@@ -546,14 +547,16 @@ int ksu_install_file_wrapper(int fd)
         goto done;
     }
 
-    struct ksu_file_wrapper *data = ksu_create_file_wrapper(orig_file);
-    if (IS_ERR(data)) {
-        ret = PTR_ERR(data);
+    struct ksu_file_wrapper *file_wrapper_data =
+        ksu_create_file_wrapper(orig_file);
+    if (IS_ERR(file_wrapper_data)) {
+        ret = PTR_ERR(file_wrapper_data);
         goto out_put_fd;
     }
 
     struct file *wrapper_file = ksu_anon_inode_create_getfile_compat(
-        "[ksu_fdwrapper]", &data->ops, data, orig_file->f_flags, NULL);
+        "[ksu_fdwrapper]", &file_wrapper_data->ops, file_wrapper_data,
+        orig_file->f_flags, NULL);
     if (IS_ERR(wrapper_file)) {
         pr_err("ksu_fdwrapper: getfile failed: %ld\n", PTR_ERR(wrapper_file));
         ret = PTR_ERR(wrapper_file);
@@ -593,8 +596,10 @@ int ksu_install_file_wrapper(int fd)
 
 out_put_wrapper_file:
     fput(wrapper_file);
+    // file_wrapper will be released by fput
+    goto out_put_fd;
 out_release_wrapper:
-    ksu_release_file_wrapper(data);
+    ksu_release_file_wrapper(file_wrapper_data);
 out_put_fd:
     put_unused_fd(out_fd);
 done:
