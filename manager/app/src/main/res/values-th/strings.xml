@@ -63,9 +63,9 @@
     <string name="profile_capabilities">ความสามารถของแอป</string>
     <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปนี้ได้</string>
     <string name="profile_selinux_context">บริบท SELinux</string>
-    <string name="profile_umount_modules">โมดูล Umount ตามค่าเริ่มต้น</string>
+    <string name="profile_umount_modules">Umount โมดูล</string>
     <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s ได้</string>
-    <string name="settings_umount_modules_default">Umount โมดูล</string>
+    <string name="settings_umount_modules_default">Umount โมดูลตามค่าเริ่มต้น</string>
     <string name="profile_selinux_domain">โดเมน</string>
     <string name="module_update">อัปเดต</string>
     <string name="profile_selinux_rules">กฎ</string>
