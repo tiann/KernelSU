@@ -63,9 +63,9 @@
     <string name="profile_groups">Kelompok</string>
     <string name="profile_capabilities">Kemampuan</string>
     <string name="profile_selinux_context">Konteks SELinux</string>
-    <string name="profile_umount_modules">Umount modul secara bawaan</string>
+    <string name="profile_umount_modules">Umount modul</string>
     <string name="failed_to_update_app_profile">Gagal memperbarui Profil untuk %s</string>
-    <string name="settings_umount_modules_default">Lepaskan modul</string>
+    <string name="settings_umount_modules_default">Umount modul secara bawaan</string>
     <string name="settings_umount_modules_default_summary">Menggunakan \"Umount Modul\" secara universal pada Profil Aplikasi. Jika diaktifkan, akan menghapus semua modifikasi sistem untuk aplikasi yang tidak memiliki set profil.</string>
     <string name="profile_umount_modules_summary">Aktifkan opsi ini agar KernelSU dapat memulihkan kembali berkas termodifikasi oleh modul pada aplikasi ini.</string>
     <string name="profile_selinux_domain">Domain</string>
