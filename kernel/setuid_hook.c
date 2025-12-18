@@ -1,32 +1,16 @@
 #include <linux/compiler.h>
-#include <linux/sched/signal.h>
+#include <linux/version.h>
 #include <linux/slab.h>
 #include <linux/task_work.h>
 #include <linux/thread_info.h>
 #include <linux/seccomp.h>
-#include <linux/bpf.h>
-#include <linux/capability.h>
-#include <linux/cred.h>
-#include <linux/dcache.h>
-#include <linux/err.h>
-#include <linux/fs.h>
-#include <linux/init.h>
-#include <linux/init_task.h>
-#include <linux/kernel.h>
-#include <linux/kprobes.h>
-#include <linux/mm.h>
-#include <linux/mount.h>
-#include <linux/namei.h>
-#include <linux/nsproxy.h>
-#include <linux/path.h>
 #include <linux/printk.h>
 #include <linux/sched.h>
-#include <linux/stddef.h>
+#include <linux/sched/signal.h>
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
-#include <linux/version.h>
 
 #include "allowlist.h"
 #include "setuid_hook.h"
@@ -61,15 +45,6 @@ static const struct ksu_feature_handler enhanced_security_handler = {
     .get_handler = enhanced_security_feature_get,
     .set_handler = enhanced_security_feature_set,
 };
-
-static inline bool is_allow_su()
-{
-    if (is_manager()) {
-        // we are manager, allow!
-        return true;
-    }
-    return ksu_is_allow_uid_for_current(current_uid().val);
-}
 
 static void ksu_install_manager_fd_tw_func(struct callback_head *cb)
 {
