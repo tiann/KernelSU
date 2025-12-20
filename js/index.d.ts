@@ -35,6 +35,8 @@ declare function spawn(command: string, args: string[], options: SpawnOptions): 
 
 declare function fullScreen(isFullScreen: boolean);
 
+declare function enableInsets(enable: boolean)
+
 declare function toast(message: string);
 
 declare function moduleInfo(): string;
@@ -56,6 +58,7 @@ export {
     exec,
     spawn,
     fullScreen,
+    enableInsets,
     toast,
     moduleInfo,
     listPackages,
