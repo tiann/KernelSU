@@ -5,7 +5,7 @@
     <string name="home_click_to_install">Klik untuk menginstal</string>
     <string name="home_working">Berfungsi</string>
     <string name="home_working_version">Versi: %d</string>
-    <string name="home_superuser_count">SuperUser: %d</string>
+    <string name="home_superuser_count">Superuser: %d</string>
     <string name="home_module_count">Modul: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">KernelSU saat ini hanya mendukung kernel GKI.</string>
@@ -17,7 +17,7 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permisif</string>
     <string name="selinux_status_unknown">Tidak diketahui</string>
-    <string name="superuser">SuperUser</string>
+    <string name="superuser">Superuser</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
     <string name="module_empty">Tidak ada modul yang terpasang</string>
@@ -124,7 +124,7 @@
     <string name="settings_restore_stock_image_message">Pulihkan image pabrik bawaan (jika ada cadangan), biasanya digunakan sebelum pembaruan OTA; jika Anda perlu menghapus KernelSU, silakan gunakan \"Hapus secara permanen\".</string>
     <string name="flash_success">Pemasangan sukses</string>
     <string name="selected_lkm">LKM dipilih: %s</string>
-    <string name="flashing">Pasang</string>
+    <string name="flashing">Memasang</string>
     <string name="flash_failed">Pemasangan gagal</string>
     <string name="save_log">Simpan Log</string>
     <string name="action">Aksi</string>
@@ -133,7 +133,7 @@
     <string name="module_sort_action_first">Aksi lebih dulu</string>
     <string name="module_install_prompt_with_name">Modul berikut akan diinstal: %1$s</string>
     <string name="confirm">Oke</string>
-    <string name="su_not_allowed">Tidak dapat memberikan akses SU untuk %s</string>
+    <string name="su_not_allowed">Gagal memberikan akses SU untuk %s</string>
     <string name="settings_disable_su">Nonaktifkan kompatibilitas SU</string>
     <string name="settings_disable_su_summary">Nonaktifkan kemampuan aplikasi apa pun untuk mendapatkan hak akses root melalui perintah `su` (proses root yang sudah ada tidak akan terpengaruh).</string>
     <string name="settings_module_check_update">Periksa pembaruan modul</string>
@@ -182,7 +182,7 @@
     <string name="color_green">Hijau</string>
     <string name="color_purple">Ungu</string>
     <string name="color_orange">Jingga</string>
-    <string name="color_teal">Hijau toska</string>
+    <string name="color_teal">Hijau kebiruan</string>
     <string name="color_pink">Merah muda</string>
     <string name="color_brown">Coklat</string>
     <string name="network_offline">Tidak terhubung ke jaringan</string>
