@@ -67,8 +67,10 @@ static void disable_seccomp(void)
     struct task_struct *fake;
 
     fake = kmalloc(sizeof(*fake), GFP_ATOMIC);
-    if (!fake)
+    if (!fake) {
         pr_warn("failed to alloc fake task_struct\n");
+        return;
+    }
 
     // Refer to kernel/seccomp.c: seccomp_set_mode_strict
     // When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
@@ -81,16 +83,12 @@ static void disable_seccomp(void)
     clear_thread_flag(TIF_SECCOMP);
 #endif
 
-    if (fake)
-        memcpy(fake, current, sizeof(*fake));
+    memcpy(fake, current, sizeof(*fake));
 
     current->seccomp.mode = 0;
     current->seccomp.filter = NULL;
     atomic_set(&current->seccomp.filter_count, 0);
     spin_unlock_irq(&current->sighand->siglock);
-
-    if (!fake)
-        return;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
     // https://github.com/torvalds/linux/commit/bfafe5efa9754ebc991750da0bcca2a6694f3ed3#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R576-R577
