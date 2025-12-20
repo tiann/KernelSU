@@ -536,6 +536,7 @@ fun ModulePager(
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))) {
                             launchSingleTop = true
                         }
+                        viewModel.markNeedRefresh()
                     } else if (uris.size > 1) {
                         // multiple files selected
                         zipUris = uris
@@ -632,6 +633,7 @@ fun ModulePager(
                                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
                                             launchSingleTop = true
                                         }
+                                        viewModel.markNeedRefresh()
                                     }
                                 }
                                 Unit
@@ -741,6 +743,7 @@ fun ModulePager(
                                 navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
                                     launchSingleTop = true
                                 }
+                                viewModel.markNeedRefresh()
                             }
                         },
                         context = context,
