@@ -14,7 +14,6 @@ plugins {
 
 val managerVersionCode: Int by rootProject.extra
 val managerVersionName: String by rootProject.extra
-val androidCmakeVersion: String by rootProject.extra
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -60,7 +59,6 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = androidCmakeVersion
         }
     }
 
