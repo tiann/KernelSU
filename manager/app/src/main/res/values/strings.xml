@@ -53,6 +53,7 @@
     <string name="hide_system_apps">Hide system apps</string>
     <string name="send_log">Send logs</string>
     <string name="safe_mode">Safe mode</string>
+    <string name="safe_mode_module_disabled">Module installation is disabled in safe mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>
     <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
     <string name="home_learn_kernelsu">Learn KernelSU</string>

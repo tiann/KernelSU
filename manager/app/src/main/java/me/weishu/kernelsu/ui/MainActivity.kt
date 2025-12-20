@@ -295,6 +295,7 @@ private fun ZipFileIntentHandler(
 ) {
     val context = LocalActivity.current ?: return
     var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val isSafeMode = Natives.isSafeMode
 
     val confirmDialog = rememberConfirmDialog(
         onConfirm = {
@@ -310,13 +311,22 @@ private fun ZipFileIntentHandler(
             ?.takeIf { isManager && it.scheme == "content" && intent.type == "application/zip" }
             ?.also { zipUri = it }
             ?.let {
-                confirmDialog.showConfirm(
-                    title = context.getString(R.string.module),
-                    content = context.getString(
-                        R.string.module_install_prompt_with_name,
-                        "\n${it.getFileName(context) ?: it.lastPathSegment ?: "Unknown"}"
+                if (isSafeMode) {
+                    // In safe mode, show an alert dialog instead of allowing installation
+                    confirmDialog.showConfirm(
+                        title = context.getString(R.string.safe_mode),
+                        content = context.getString(R.string.safe_mode_module_disabled),
+                        onConfirm = { zipUri = null }
                     )
-                )
+                } else {
+                    confirmDialog.showConfirm(
+                        title = context.getString(R.string.module),
+                        content = context.getString(
+                            R.string.module_install_prompt_with_name,
+                            "\n${it.getFileName(context) ?: it.lastPathSegment ?: "Unknown"}"
+                        )
+                    )
+                }
             }
     }
 }
