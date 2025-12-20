@@ -1,6 +1,6 @@
 use anyhow::{Context, Ok, Result};
 use clap::Parser;
-use std::path::PathBuf;
+use std::{cell::Cell, path::PathBuf, thread_local};
 
 use android_logger::Config;
 use log::{LevelFilter, error, info};
@@ -489,12 +489,73 @@ enum Initrc {
     Refresh,
 }
 
+thread_local! {
+    static SVC_IN_FLIGHT: Cell<bool> = const { Cell::new(false) };
+    static SIGSYS_OCCURRED: Cell<bool> = const { Cell::new(false) };
+}
+
+const SYS_SECCOMP: libc::c_int = 1;
+
+pub(crate) fn with_svc_call<F, R>(call: F) -> (R, bool)
+where
+    F: FnOnce() -> R,
+{
+    SVC_IN_FLIGHT.with(|in_flight| in_flight.set(true));
+    let result = call();
+    let occurred = SIGSYS_OCCURRED.with(|flag| flag.replace(false));
+    SVC_IN_FLIGHT.with(|in_flight| in_flight.set(false));
+    (result, occurred)
+}
+
+extern "C" fn sigsys_handler(
+    _sig: libc::c_int,
+    info: *mut libc::siginfo_t,
+    ctx: *mut libc::c_void,
+) {
+    unsafe {
+        if info.is_null()
+            || ctx.is_null()
+            || (*info).si_code != SYS_SECCOMP
+            || !SVC_IN_FLIGHT.with(Cell::get)
+        {
+            return;
+        }
+        SIGSYS_OCCURRED.with(|occurred| occurred.set(true));
+
+        let ucontext = ctx.cast::<libc::ucontext_t>();
+        #[cfg(target_arch = "aarch64")]
+        {
+            (*ucontext).uc_mcontext.regs[0] = (-libc::EPERM) as u64;
+        }
+        #[cfg(target_arch = "x86_64")]
+        {
+            let rax = libc::REG_RAX as usize;
+            (*ucontext).uc_mcontext.gregs[rax] = i64::from(-libc::EPERM);
+        }
+    }
+}
+
+fn setup_sigsys_handler() {
+    unsafe {
+        let mut sa: libc::sigaction = std::mem::zeroed();
+        sa.sa_flags = libc::SA_SIGINFO;
+        sa.sa_sigaction = sigsys_handler as *const () as usize;
+        libc::sigemptyset(std::ptr::addr_of_mut!(sa.sa_mask));
+        if libc::sigaction(libc::SIGSYS, std::ptr::addr_of!(sa), std::ptr::null_mut()) != 0 {
+            let error = std::io::Error::last_os_error();
+            log::warn!("Failed to set SIGSYS handler: {}", error);
+        }
+    }
+}
+
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
             .with_max_level(crate::debug_select!(LevelFilter::Trace, LevelFilter::Info))
             .with_tag("KernelSU"),
     );
+
+    setup_sigsys_handler();
 
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
