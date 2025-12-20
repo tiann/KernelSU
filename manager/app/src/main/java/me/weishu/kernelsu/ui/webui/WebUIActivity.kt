@@ -5,10 +5,12 @@ import android.app.ActivityManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -36,6 +38,7 @@ class WebUIActivity : ComponentActivity() {
     private var rootShell: Shell? = null
     private lateinit var insets: Insets
     private var insetsContinuation: CancellableContinuation<Unit>? = null
+    private var isInsetsEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -83,11 +86,15 @@ class WebUIActivity : ComponentActivity() {
         val rootShell = createRootShell(true).also { this.rootShell = it }
         insets = Insets(0, 0, 0, 0)
 
+        val container = FrameLayout(this).apply {
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        }
+
         val webView = WebView(this).apply {
             setBackgroundColor(Color.TRANSPARENT)
             val density = resources.displayMetrics.density
 
-            ViewCompat.setOnApplyWindowInsetsListener(this) { _, windowInsets ->
+            ViewCompat.setOnApplyWindowInsetsListener(container) { view, windowInsets ->
                 val inset = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
                 insets = Insets(
                     top = (inset.top / density).toInt(),
@@ -95,13 +102,18 @@ class WebUIActivity : ComponentActivity() {
                     left = (inset.left / density).toInt(),
                     right = (inset.right / density).toInt()
                 )
+                if (isInsetsEnabled) {
+                    view.setPadding(0, 0, 0, 0)
+                } else {
+                    view.setPadding(inset.left, inset.top, inset.right, inset.bottom)
+                }
                 insetsContinuation?.resumeWith(Result.success(Unit))
                 insetsContinuation = null
                 WindowInsetsCompat.CONSUMED
             }
         }
-
-        setContentView(webView)
+        container.addView(webView)
+        setContentView(container)
 
         if (insets == Insets(0, 0, 0, 0)) {
             suspendCancellableCoroutine<Unit> { cont ->
@@ -116,7 +128,7 @@ class WebUIActivity : ComponentActivity() {
             .setDomain("mui.kernelsu.org")
             .addPathHandler(
                 "/",
-                SuFilePathHandler(this, webRoot, rootShell) { insets }
+                SuFilePathHandler(this, webRoot, rootShell, { insets }, { enable -> enableInsets(enable) })
             )
             .build()
 
@@ -153,6 +165,15 @@ class WebUIActivity : ComponentActivity() {
             addJavascriptInterface(webviewInterface, "ksu")
             setWebViewClient(webViewClient)
             loadUrl("https://mui.kernelsu.org/index.html")
+        }
+    }
+
+    fun enableInsets(enable: Boolean = true) {
+        runOnUiThread {
+            if (isInsetsEnabled != enable) {
+                isInsetsEnabled = enable
+                webView?.let { ViewCompat.requestApplyInsets(it) }
+            }
         }
     }
 
