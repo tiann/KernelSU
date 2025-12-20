@@ -402,11 +402,12 @@ extern "C" fn sigsys_handler(
 ) {
     unsafe {
         if info.is_null() || ctx.is_null() {
+            log::warn!("SIGSYS: invalid signal");
             return;
         }
         log::warn!("SIGSYS: syscall blocked by seccomp");
 
-        let ucontext = ctx as *mut libc::ucontext_t;
+        let ucontext = ctx.cast::<libc::ucontext_t>();
         #[cfg(target_arch = "aarch64")]
         {
             (*ucontext).uc_mcontext.regs[0] = (-libc::EPERM) as u64;
@@ -424,8 +425,13 @@ fn setup_sigsys_handler() {
         let mut sa: libc::sigaction = std::mem::zeroed();
         sa.sa_flags = libc::SA_SIGINFO;
         sa.sa_sigaction = sigsys_handler as usize;
-        libc::sigemptyset(&mut sa.sa_mask);
-        if libc::sigaction(libc::SIGSYS, &sa, std::ptr::null_mut()) != 0 {
+        libc::sigemptyset(std::ptr::addr_of_mut!(sa.sa_mask));
+        if libc::sigaction(
+            libc::SIGSYS,
+            std::ptr::addr_of!(sa),
+            std::ptr::null_mut(),
+        ) != 0
+        {
             log::warn!("Failed to set SIGSYS handler");
         }
     }
