@@ -34,7 +34,7 @@ import java.io.File
 @SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : ComponentActivity() {
     private lateinit var webviewInterface: WebViewInterface
-
+    private var webView: WebView? = null
     private var rootShell: Shell? = null
     private lateinit var insets: Insets
     private var insetsContinuation: CancellableContinuation<Unit>? = null
@@ -90,7 +90,7 @@ class WebUIActivity : ComponentActivity() {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
-        val webView = WebView(this).apply {
+        this.webView = WebView(this).apply {
             setBackgroundColor(Color.TRANSPARENT)
             val density = resources.displayMetrics.density
 
@@ -112,7 +112,7 @@ class WebUIActivity : ComponentActivity() {
                 WindowInsetsCompat.CONSUMED
             }
         }
-        container.addView(webView)
+        container.addView(this.webView)
         setContentView(container)
 
         if (insets == Insets(0, 0, 0, 0)) {
@@ -157,11 +157,11 @@ class WebUIActivity : ComponentActivity() {
             }
         }
 
-        webView.apply {
+        webView?.apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.allowFileAccess = false
-            webviewInterface = WebViewInterface(this@WebUIActivity, webView, moduleDir)
+            webviewInterface = WebViewInterface(this@WebUIActivity, this, moduleDir)
             addJavascriptInterface(webviewInterface, "ksu")
             setWebViewClient(webViewClient)
             loadUrl("https://mui.kernelsu.org/index.html")
@@ -179,6 +179,9 @@ class WebUIActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        runCatching { rootShell?.close() }
+        runCatching {
+            webView?.destroy()
+            rootShell?.close()
+        }
     }
 }
