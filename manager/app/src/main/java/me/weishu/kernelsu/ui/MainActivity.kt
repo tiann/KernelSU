@@ -192,7 +192,9 @@ fun MainScreen(navController: DestinationsNavigator) {
     val activity = LocalActivity.current
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
-    var userScrollEnabled by remember { mutableStateOf(true) }
+    val isManager = Natives.isManager
+    val isFullFeatured = isManager && !Natives.requireNewKernel()
+    var userScrollEnabled by remember(isFullFeatured) { mutableStateOf(isFullFeatured) }
     var animating by remember { mutableStateOf(false) }
     var uiSelectedPage by remember { mutableIntStateOf(0) }
     var animateJob by remember { mutableStateOf<Job?>(null) }
@@ -210,7 +212,7 @@ fun MainScreen(navController: DestinationsNavigator) {
                     animateJob?.cancel()
                     animateJob = null
                     animating = false
-                    userScrollEnabled = true
+                    userScrollEnabled = isFullFeatured
                 }
                 lastRequestedPage = page
             } else {
@@ -225,7 +227,7 @@ fun MainScreen(navController: DestinationsNavigator) {
                             pagerState.animateScrollToPage(page)
                         } finally {
                             if (animateJob === this) {
-                                userScrollEnabled = true
+                                userScrollEnabled = isFullFeatured
                                 animating = false
                                 animateJob = null
                             }
