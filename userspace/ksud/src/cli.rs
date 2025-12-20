@@ -426,12 +426,7 @@ fn setup_sigsys_handler() {
         sa.sa_flags = libc::SA_SIGINFO;
         sa.sa_sigaction = sigsys_handler as usize;
         libc::sigemptyset(std::ptr::addr_of_mut!(sa.sa_mask));
-        if libc::sigaction(
-            libc::SIGSYS,
-            std::ptr::addr_of!(sa),
-            std::ptr::null_mut(),
-        ) != 0
-        {
+        if libc::sigaction(libc::SIGSYS, std::ptr::addr_of!(sa), std::ptr::null_mut()) != 0 {
             log::warn!("Failed to set SIGSYS handler");
         }
     }
