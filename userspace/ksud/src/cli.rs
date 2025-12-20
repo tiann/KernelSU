@@ -415,7 +415,7 @@ extern "C" fn sigsys_handler(
         #[cfg(target_arch = "x86_64")]
         {
             let rax = libc::REG_RAX as usize;
-            (*ucontext).uc_mcontext.gregs[rax] = (-libc::EPERM) as i64;
+            (*ucontext).uc_mcontext.gregs[rax] = i64::from(-libc::EPERM);
         }
     }
 }
