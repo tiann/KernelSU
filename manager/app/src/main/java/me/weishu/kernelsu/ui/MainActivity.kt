@@ -283,7 +283,8 @@ fun MainScreen(navController: DestinationsNavigator) {
 
 /**
  * Handles ZIP file installation from external apps (e.g., file managers).
- * Shows a confirmation dialog to prevent accidental installation.
+ * - In normal mode: Shows a confirmation dialog before installation
+ * - In safe mode: Shows an alert dialog and prevents installation
  */
 @SuppressLint("StringFormatInvalid")
 @Composable
@@ -297,36 +298,57 @@ private fun ZipFileIntentHandler(
     var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
     val isSafeMode = Natives.isSafeMode
 
-    val confirmDialog = rememberConfirmDialog(
+    // Callback to clear the current ZIP URI state
+    val clearZipUri = { zipUri = null }
+
+    // Dialog for normal mode - allows installation after confirmation
+    val installDialog = rememberConfirmDialog(
         onConfirm = {
-            zipUri?.let { navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) }
-            zipUri = null
+            zipUri?.let { uri ->
+                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri))))
+            }
+            clearZipUri()
         },
-        onDismiss = { zipUri = null }
+        onDismiss = clearZipUri
     )
 
+    // Dialog for safe mode - only shows warning, no installation
+    val safeModeDialog = rememberConfirmDialog(
+        onDismiss = clearZipUri
+    )
+
+    // Helper function to get a user-friendly filename from URI
+    fun getDisplayName(uri: android.net.Uri): String {
+        return uri.getFileName(context) ?: uri.lastPathSegment ?: "Unknown"
+    }
+
+    // Monitor intent changes and handle ZIP file URIs
     val intentStateValue by intentState.collectAsState()
     LaunchedEffect(intentStateValue) {
-        intent?.data
-            ?.takeIf { isManager && it.scheme == "content" && intent.type == "application/zip" }
-            ?.also { zipUri = it }
-            ?.let {
-                if (isSafeMode) {
-                    // In safe mode, show an alert dialog instead of allowing installation
-                    confirmDialog.showConfirm(
-                        title = context.getString(R.string.safe_mode),
-                        content = context.getString(R.string.safe_mode_module_disabled),
-                        onConfirm = { zipUri = null }
-                    )
-                } else {
-                    confirmDialog.showConfirm(
-                        title = context.getString(R.string.module),
-                        content = context.getString(
-                            R.string.module_install_prompt_with_name,
-                            "\n${it.getFileName(context) ?: it.lastPathSegment ?: "Unknown"}"
-                        )
-                    )
-                }
-            }
+        val uri = intent?.data ?: return@LaunchedEffect
+        
+        // Validate: must be manager, content URI, and ZIP file
+        if (!isManager || uri.scheme != "content" || intent.type != "application/zip") {
+            return@LaunchedEffect
+        }
+
+        // Store URI for later use in callbacks
+        zipUri = uri
+
+        // Show appropriate dialog based on safe mode status
+        if (isSafeMode) {
+            safeModeDialog.showConfirm(
+                title = context.getString(R.string.safe_mode),
+                content = context.getString(R.string.safe_mode_module_disabled)
+            )
+        } else {
+            installDialog.showConfirm(
+                title = context.getString(R.string.module),
+                content = context.getString(
+                    R.string.module_install_prompt_with_name,
+                    "\n${getDisplayName(uri)}"
+                )
+            )
+        }
     }
 }
