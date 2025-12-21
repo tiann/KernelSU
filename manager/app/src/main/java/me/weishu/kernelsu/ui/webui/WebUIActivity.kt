@@ -35,6 +35,7 @@ import java.io.File
 class WebUIActivity : ComponentActivity() {
     private lateinit var webviewInterface: WebViewInterface
     private var webView: WebView? = null
+    private lateinit var container: FrameLayout
     private var rootShell: Shell? = null
     private lateinit var insets: Insets
     private var insetsContinuation: CancellableContinuation<Unit>? = null
@@ -86,7 +87,7 @@ class WebUIActivity : ComponentActivity() {
         val rootShell = createRootShell(true).also { this.rootShell = it }
         insets = Insets(0, 0, 0, 0)
 
-        val container = FrameLayout(this).apply {
+        container = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
@@ -172,7 +173,7 @@ class WebUIActivity : ComponentActivity() {
         runOnUiThread {
             if (isInsetsEnabled != enable) {
                 isInsetsEnabled = enable
-                webView?.let { ViewCompat.requestApplyInsets(it) }
+                ViewCompat.requestApplyInsets(container)
             }
         }
     }

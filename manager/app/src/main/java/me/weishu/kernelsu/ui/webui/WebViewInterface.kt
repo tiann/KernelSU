@@ -182,7 +182,7 @@ class WebViewInterface(
     @JavascriptInterface
     fun enableInsets(enable: Boolean = true) {
         if (context is WebUIActivity) {
-            context.runOnUiThread { context.enableInsets(enable) }
+            context.enableInsets(enable)
         }
     }
 
