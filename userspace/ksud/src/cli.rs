@@ -398,10 +398,10 @@ enum UmountOp {
 extern "C" fn sigsys_handler(
     _sig: libc::c_int,
     info: *mut libc::siginfo_t,
-    ctx: *mut libc::c_void,
+    _ctx: *mut libc::c_void,
 ) {
     unsafe {
-        if info.is_null() || ctx.is_null() {
+        if info.is_null() {
             log::warn!("SIGSYS: invalid signal");
             return;
         }
