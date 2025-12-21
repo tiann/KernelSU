@@ -398,7 +398,7 @@ enum UmountOp {
 extern "C" fn sigsys_handler(
     _sig: libc::c_int,
     info: *mut libc::siginfo_t,
-    _ctx: *mut libc::c_void,
+    ctx: *mut libc::c_void,
 ) {
     unsafe {
         if info.is_null() {
