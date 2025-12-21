@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -297,11 +298,8 @@ private fun ZipFileIntentHandler(
     val context = LocalActivity.current ?: return
     var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
     val isSafeMode = Natives.isSafeMode
-
-    // Callback to clear the current ZIP URI state
     val clearZipUri = { zipUri = null }
 
-    // Dialog for normal mode - allows installation after confirmation
     val installDialog = rememberConfirmDialog(
         onConfirm = {
             zipUri?.let { uri ->
@@ -312,36 +310,24 @@ private fun ZipFileIntentHandler(
         onDismiss = clearZipUri
     )
 
-    // Dialog for safe mode - only shows warning, no installation
-    val safeModeDialog = rememberConfirmDialog(
-        onDismiss = clearZipUri
-    )
-
-    // Helper function to get a user-friendly filename from URI
     fun getDisplayName(uri: android.net.Uri): String {
         return uri.getFileName(context) ?: uri.lastPathSegment ?: "Unknown"
     }
 
-    // Monitor intent changes and handle ZIP file URIs
     val intentStateValue by intentState.collectAsState()
     LaunchedEffect(intentStateValue) {
         val uri = intent?.data ?: return@LaunchedEffect
-        
-        // Validate: must be manager, content URI, and ZIP file
+
         if (!isManager || uri.scheme != "content" || intent.type != "application/zip") {
             return@LaunchedEffect
         }
 
-        // Store URI for later use in callbacks
-        zipUri = uri
-
-        // Show appropriate dialog based on safe mode status
         if (isSafeMode) {
-            safeModeDialog.showConfirm(
-                title = context.getString(R.string.safe_mode),
-                content = context.getString(R.string.safe_mode_module_disabled)
-            )
+            Toast.makeText(context,
+                context.getString(R.string.safe_mode_module_disabled), Toast.LENGTH_SHORT)
+                .show()
         } else {
+            zipUri = uri
             installDialog.showConfirm(
                 title = context.getString(R.string.module),
                 content = context.getString(
