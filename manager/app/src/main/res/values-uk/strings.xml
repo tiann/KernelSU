@@ -192,4 +192,5 @@
     <string name="tab_readme">Файл README</string>
     <string name="tab_releases">Релізи</string>
     <string name="tab_info">Інформація</string>
+    <string name="safe_mode_module_disabled">Встановлення модулів вимкнено в безпечному режимі</string>
 </resources>
