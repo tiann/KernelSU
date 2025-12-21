@@ -162,19 +162,6 @@ static void ksu_mnt_ns_individual(void)
     }
 }
 
-static void ksu_setup_mount_ns_tw_func(struct callback_head *cb)
-{
-    struct ksu_mns_tw *tw = container_of(cb, struct ksu_mns_tw, cb);
-    const struct cred *old_cred = override_creds(ksu_cred);
-    if (tw->ns_mode == KSU_NS_GLOBAL) {
-        ksu_mnt_ns_global();
-    } else {
-        ksu_mnt_ns_individual();
-    }
-    revert_creds(old_cred);
-    kfree(tw);
-}
-
 void setup_mount_ns(int32_t ns_mode)
 {
     // inherit mode
@@ -194,16 +181,11 @@ void setup_mount_ns(int32_t ns_mode)
         return;
     }
 
-    struct ksu_mns_tw *tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-    if (!tw) {
-        pr_err("no mem for tw! skip mnt_ns magic for pid: %d.\n", current->pid);
-        return;
+    const struct cred *old_cred = override_creds(ksu_cred);
+    if (ns_mode == KSU_NS_GLOBAL) {
+        ksu_mnt_ns_global();
+    } else {
+        ksu_mnt_ns_individual();
     }
-    tw->cb.func = ksu_setup_mount_ns_tw_func;
-    tw->ns_mode = ns_mode;
-    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
-        kfree(tw);
-        pr_err("add task work failed! skip mnt_ns magic for pid: %d.\n",
-               current->pid);
-    }
+    revert_creds(old_cred);
 }
