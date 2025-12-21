@@ -56,7 +56,7 @@
     <string name="profile_template">Templat</string>
     <string name="profile_custom">Khusus</string>
     <string name="profile_name">Nama profil</string>
-    <string name="profile_namespace">Gunakan Namespace</string>
+    <string name="profile_namespace">Mount namespace</string>
     <string name="profile_namespace_inherited">Diwariskan</string>
     <string name="profile_namespace_global">Universal</string>
     <string name="profile_namespace_individual">Individual</string>
@@ -190,4 +190,5 @@
     <string name="tab_readme">README</string>
     <string name="tab_releases">Rilis</string>
     <string name="tab_info">Info</string>
+    <string name="safe_mode_module_disabled">Instalasi modul dinonaktifkan di mode aman</string>
 </resources>
