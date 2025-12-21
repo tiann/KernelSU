@@ -21,6 +21,7 @@ sha256 = "1"
 tempfile = "3"
 chrono = "0.4"
 regex-lite = "0.1"
+nix = { version = "0.30.1", default-features = false, features = ["ioctl"] }
 
 [target.'cfg(target_os = "android")'.dependencies]
 rustix = { version = "=1.0.8", features = [

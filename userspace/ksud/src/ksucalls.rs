@@ -1,5 +1,6 @@
 #![allow(clippy::unreadable_literal)]
 use libc::{_IO, _IOR, _IOW, _IOWR};
+use nix::{ioctl_none_bad, ioctl_read_bad, ioctl_readwrite_bad, ioctl_write_ptr_bad};
 use std::fs;
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
@@ -21,6 +22,42 @@ const KSU_IOCTL_GET_WRAPPER_FD: i32 = _IOW::<()>(K, 15);
 const KSU_IOCTL_MANAGE_MARK: i32 = _IOWR::<()>(K, 16);
 const KSU_IOCTL_NUKE_EXT4_SYSFS: i32 = _IOW::<()>(K, 17);
 const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
+
+ioctl_write_ptr_bad!(
+    ksu_add_try_umount,
+    KSU_IOCTL_ADD_TRY_UMOUNT,
+    AddTryUmountCmd
+);
+ioctl_write_ptr_bad!(
+    ksu_nuke_ext4_sysfs,
+    KSU_IOCTL_NUKE_EXT4_SYSFS,
+    NukeExt4SysfsCmd
+);
+ioctl_write_ptr_bad!(
+    ksu_ioctl_get_wrapper_fd,
+    KSU_IOCTL_GET_WRAPPER_FD,
+    GetWrapperFdCmd
+);
+ioctl_readwrite_bad!(ksu_ioctl_manage_mark, KSU_IOCTL_MANAGE_MARK, ManageMarkCmd);
+ioctl_readwrite_bad!(
+    ksu_ioctl_set_sepolicy,
+    KSU_IOCTL_SET_SEPOLICY,
+    SetSepolicyCmd
+);
+ioctl_readwrite_bad!(ksu_ioctl_get_feature, KSU_IOCTL_SET_FEATURE, GetFeatureCmd);
+ioctl_write_ptr_bad!(ksu_ioctl_set_feature, KSU_IOCTL_GET_FEATURE, SetFeatureCmd);
+ioctl_write_ptr_bad!(
+    ksu_ioctl_report_event,
+    KSU_IOCTL_REPORT_EVENT,
+    ReportEventCmd
+);
+ioctl_read_bad!(ksu_ioctl_get_info, KSU_IOCTL_GET_INFO, GetInfoCmd);
+ioctl_read_bad!(
+    ksu_ioctl_check_safemode,
+    KSU_IOCTL_CHECK_SAFEMODE,
+    CheckSafemodeCmd
+);
+ioctl_none_bad!(ksu_ioctl_grant_root, KSU_IOCTL_GRANT_ROOT);
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
@@ -147,19 +184,8 @@ fn init_driver_fd() -> Option<RawFd> {
     }
 }
 
-// ioctl wrapper using libc
-fn ksuctl<T>(request: i32, arg: *mut T) -> std::io::Result<i32> {
-    use std::io;
-
-    let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
-    unsafe {
-        let ret = libc::ioctl(fd as libc::c_int, request, arg);
-        if ret < 0 {
-            Err(io::Error::last_os_error())
-        } else {
-            Ok(ret)
-        }
-    }
+fn fd() -> RawFd {
+    *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1))
 }
 
 // API implementations
@@ -169,7 +195,7 @@ fn get_info() -> GetInfoCmd {
             version: 0,
             flags: 0,
         };
-        let _ = ksuctl(KSU_IOCTL_GET_INFO, &raw mut cmd);
+        let _ = unsafe { ksu_ioctl_get_info(fd(), &raw mut cmd) };
         cmd
     })
 }
@@ -179,13 +205,13 @@ pub fn get_version() -> i32 {
 }
 
 pub fn grant_root() -> std::io::Result<()> {
-    ksuctl(KSU_IOCTL_GRANT_ROOT, std::ptr::null_mut::<u8>())?;
+    unsafe { ksu_ioctl_grant_root(fd())?; }
     Ok(())
 }
 
 fn report_event(event: u32) {
     let mut cmd = ReportEventCmd { event };
-    let _ = ksuctl(KSU_IOCTL_REPORT_EVENT, &raw mut cmd);
+    let _ = unsafe { ksu_ioctl_report_event(fd(), &raw mut cmd) };
 }
 
 pub fn report_post_fs_data() {
@@ -202,13 +228,15 @@ pub fn report_module_mounted() {
 
 pub fn check_kernel_safemode() -> bool {
     let mut cmd = CheckSafemodeCmd { in_safe_mode: 0 };
-    let _ = ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &raw mut cmd);
+    let _ = unsafe { ksu_ioctl_check_safemode(fd(), &raw mut cmd) };
     cmd.in_safe_mode != 0
 }
 
 pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
     let mut ioctl_cmd = *cmd;
-    ksuctl(KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)?;
+    unsafe {
+        ksu_ioctl_set_sepolicy(fd(), &raw mut ioctl_cmd)?;
+    }
     Ok(())
 }
 
@@ -220,20 +248,24 @@ pub fn get_feature(feature_id: u32) -> std::io::Result<(u64, bool)> {
         value: 0,
         supported: 0,
     };
-    ksuctl(KSU_IOCTL_GET_FEATURE, &raw mut cmd)?;
+    unsafe {
+        ksu_ioctl_get_feature(fd(), &raw mut cmd)?;
+    }
     Ok((cmd.value, cmd.supported != 0))
 }
 
 /// Set feature value in kernel
 pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     let mut cmd = SetFeatureCmd { feature_id, value };
-    ksuctl(KSU_IOCTL_SET_FEATURE, &raw mut cmd)?;
+    unsafe {
+        ksu_ioctl_set_feature(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
 
 pub fn get_wrapped_fd(fd: RawFd) -> std::io::Result<RawFd> {
     let mut cmd = GetWrapperFdCmd { fd, flags: 0 };
-    let result = ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &raw mut cmd)?;
+    let result = unsafe { ksu_ioctl_get_wrapper_fd(self::fd(), &raw mut cmd)? };
     Ok(result)
 }
 
@@ -244,7 +276,9 @@ pub fn mark_get(pid: i32) -> std::io::Result<u32> {
         pid,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
+    unsafe {
+        ksu_ioctl_manage_mark(fd(), &raw mut cmd)?;
+    }
     Ok(cmd.result)
 }
 
@@ -255,7 +289,9 @@ pub fn mark_set(pid: i32) -> std::io::Result<()> {
         pid,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
+    unsafe {
+        ksu_ioctl_manage_mark(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
 
@@ -266,7 +302,9 @@ pub fn mark_unset(pid: i32) -> std::io::Result<()> {
         pid,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
+    unsafe {
+        ksu_ioctl_manage_mark(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
 
@@ -277,7 +315,9 @@ pub fn mark_refresh() -> std::io::Result<()> {
         pid: 0,
         result: 0,
     };
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &raw mut cmd)?;
+    unsafe {
+        ksu_ioctl_manage_mark(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
 
@@ -286,7 +326,9 @@ pub fn nuke_ext4_sysfs(mnt: &str) -> anyhow::Result<()> {
     let mut ioctl_cmd = NukeExt4SysfsCmd {
         arg: c_mnt.as_ptr() as u64,
     };
-    ksuctl(KSU_IOCTL_NUKE_EXT4_SYSFS, &raw mut ioctl_cmd)?;
+    unsafe {
+        ksu_nuke_ext4_sysfs(fd(), &raw mut ioctl_cmd)?;
+    }
     Ok(())
 }
 
@@ -297,7 +339,9 @@ pub fn umount_list_wipe() -> std::io::Result<()> {
         flags: 0,
         mode: KSU_UMOUNT_WIPE,
     };
-    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
+    unsafe {
+        ksu_add_try_umount(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
 
@@ -309,7 +353,9 @@ pub fn umount_list_add(path: &str, flags: u32) -> anyhow::Result<()> {
         flags,
         mode: KSU_UMOUNT_ADD,
     };
-    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
+    unsafe {
+        ksu_add_try_umount(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
 
@@ -321,6 +367,8 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
         flags: 0,
         mode: KSU_UMOUNT_DEL,
     };
-    ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
+    unsafe {
+        ksu_add_try_umount(fd(), &raw mut cmd)?;
+    }
     Ok(())
 }
