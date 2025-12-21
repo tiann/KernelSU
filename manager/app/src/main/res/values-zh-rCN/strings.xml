@@ -49,6 +49,7 @@
     <string name="hide_system_apps">隐藏系统应用</string>
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>
+    <string name="safe_mode_module_disabled">处于安全模式下，禁止安装模块</string>
     <string name="reboot_to_apply">重启生效</string>
     <string name="module_magisk_conflict">因与 Magisk 有冲突，所有模块不可用！</string>
     <string name="home_module_count">模块数：%d</string>

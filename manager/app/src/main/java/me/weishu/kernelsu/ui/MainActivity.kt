@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -283,7 +284,8 @@ fun MainScreen(navController: DestinationsNavigator) {
 
 /**
  * Handles ZIP file installation from external apps (e.g., file managers).
- * Shows a confirmation dialog to prevent accidental installation.
+ * - In normal mode: Shows a confirmation dialog before installation
+ * - In safe mode: Shows a Toast notification and prevents installation
  */
 @SuppressLint("StringFormatInvalid")
 @Composable
@@ -295,28 +297,44 @@ private fun ZipFileIntentHandler(
 ) {
     val context = LocalActivity.current ?: return
     var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val isSafeMode = Natives.isSafeMode
+    val clearZipUri = { zipUri = null }
 
-    val confirmDialog = rememberConfirmDialog(
+    val installDialog = rememberConfirmDialog(
         onConfirm = {
-            zipUri?.let { navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) }
-            zipUri = null
+            zipUri?.let { uri ->
+                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri))))
+            }
+            clearZipUri()
         },
-        onDismiss = { zipUri = null }
+        onDismiss = clearZipUri
     )
+
+    fun getDisplayName(uri: android.net.Uri): String {
+        return uri.getFileName(context) ?: uri.lastPathSegment ?: "Unknown"
+    }
 
     val intentStateValue by intentState.collectAsState()
     LaunchedEffect(intentStateValue) {
-        intent?.data
-            ?.takeIf { isManager && it.scheme == "content" && intent.type == "application/zip" }
-            ?.also { zipUri = it }
-            ?.let {
-                confirmDialog.showConfirm(
-                    title = context.getString(R.string.module),
-                    content = context.getString(
-                        R.string.module_install_prompt_with_name,
-                        "\n${it.getFileName(context) ?: it.lastPathSegment ?: "Unknown"}"
-                    )
+        val uri = intent?.data ?: return@LaunchedEffect
+
+        if (!isManager || uri.scheme != "content" || intent.type != "application/zip") {
+            return@LaunchedEffect
+        }
+
+        if (isSafeMode) {
+            Toast.makeText(context,
+                context.getString(R.string.safe_mode_module_disabled), Toast.LENGTH_SHORT)
+                .show()
+        } else {
+            zipUri = uri
+            installDialog.showConfirm(
+                title = context.getString(R.string.module),
+                content = context.getString(
+                    R.string.module_install_prompt_with_name,
+                    "\n${getDisplayName(uri)}"
                 )
-            }
+            )
+        }
     }
 }
