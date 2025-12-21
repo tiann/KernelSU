@@ -190,4 +190,5 @@
     <string name="tab_readme">README</string>
     <string name="tab_releases">Releases</string>
     <string name="tab_info">Info</string>
+    <string name="safe_mode_module_disabled">Việc cài đặt module bị vô hiệu hoá ở chế độ an toàn</string>
 </resources>
