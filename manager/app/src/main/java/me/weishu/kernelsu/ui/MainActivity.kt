@@ -285,7 +285,7 @@ fun MainScreen(navController: DestinationsNavigator) {
 /**
  * Handles ZIP file installation from external apps (e.g., file managers).
  * - In normal mode: Shows a confirmation dialog before installation
- * - In safe mode: Shows an alert dialog and prevents installation
+ * - In safe mode: Shows a Toast notification and prevents installation
  */
 @SuppressLint("StringFormatInvalid")
 @Composable
