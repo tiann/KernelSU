@@ -18,6 +18,7 @@
 #include "ksu.h"
 #include "file_wrapper.h"
 #include "selinux/selinux.h"
+#include "syscall_hook.h"
 
 // workaround for A12-5.10 kernel
 // Some third-party kernel (e.g. linegaeOS) uses wrong toolchain, which supports
@@ -91,6 +92,8 @@ int __init kernelsu_init(void)
     if (!ksu_cred) {
         pr_err("prepare cred failed!\n");
     }
+
+    ksu_syscall_hook_init();
 
     ksu_feature_init();
 
