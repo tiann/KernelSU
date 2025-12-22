@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
         
@@ -33,7 +33,7 @@ jobs:
         cargo build --target=aarch64-unknown-linux-musl --release
 
     - name: Upload ksuinit artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: ksuinit
         path: userspace/ksuinit/target/**/release/ksuinit*
