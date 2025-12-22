@@ -31,7 +31,7 @@ source = "git+https://github.com/tiann/goblin#138d40d4c36471cfbb611eb493f0378ee9
 dependencies = [
  "log",
  "plain",
- "scroll",
+ "scroll 0.12.0",
 ]
 
 [[package]]
@@ -52,7 +52,7 @@ dependencies = [
  "kernlog",
  "log",
  "rustix",
- "scroll",
+ "scroll 0.13.0",
  "syscalls",
 ]
 
@@ -118,6 +118,12 @@ checksum = "6ab8598aa408498679922eff7fa985c25d58a90771bd6be794434c5277eab1a6"
 dependencies = [
  "scroll_derive",
 ]
+
+[[package]]
+name = "scroll"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1257cd4248b4132760d6524d6dda4e053bc648c9070b960929bf50cfb1e7add"
 
 [[package]]
 name = "scroll_derive"

@@ -9,7 +9,7 @@ edition = "2024"
 
 # for elf parsing
 goblin = { git = "https://github.com/tiann/goblin" }
-scroll = "0.12"
+scroll = "0.13"
 
 anyhow = "1"
 # If you want to use the following dependencies, please use aarch64-unknown-linux-musl & x86_64-unknown-linux-musl to compile statically
