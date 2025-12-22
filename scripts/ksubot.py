@@ -39,7 +39,10 @@ def get_caption():
         run_url=RUN_URL,
     )
     if len(msg) > 1024:
-        return COMMIT_URL
+        msg = COMMIT_URL
+    if BRANCH == "dev":
+        msg += "\n⚠️⚠️**DEV VERSION, PLEASE BACKUP BEFORE INSTALLATION**⚠️⚠️"
+        msg += "\n⚠️⚠️**测试版，安装前请备份**⚠️⚠️"
     return msg
 
 
