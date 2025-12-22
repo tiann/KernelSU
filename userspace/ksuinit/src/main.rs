@@ -12,6 +12,8 @@ use rustix::{cstr, runtime::execve};
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn main(_argc: i32, argv: *const *const u8, envp: *const *const u8) -> i32 {
     let _ = init::init();
-    execve(cstr!("/init"), argv, envp);
+    unsafe {
+        execve(cstr!("/init"), argv, envp);
+    }
     0
 }
