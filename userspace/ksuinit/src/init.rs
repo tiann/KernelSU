@@ -2,13 +2,13 @@ use std::io::{ErrorKind, Write};
 
 use crate::loader::load_module;
 use anyhow::Result;
-use rustix::fs::{symlink, unlink, Mode};
+use rustix::fs::{Mode, symlink, unlink};
 use rustix::{
     fd::AsFd,
-    fs::{access, makedev, mkdir, mknodat, Access, FileType, CWD},
+    fs::{Access, CWD, FileType, access, makedev, mkdir, mknodat},
     mount::{
-        fsconfig_create, fsmount, fsopen, move_mount, unmount, FsMountFlags, FsOpenFlags,
-        MountAttrFlags, MoveMountFlags, UnmountFlags,
+        FsMountFlags, FsOpenFlags, MountAttrFlags, MoveMountFlags, UnmountFlags, fsconfig_create,
+        fsmount, fsopen, move_mount, unmount,
     },
 };
 
@@ -133,7 +133,7 @@ pub fn init() -> Result<()> {
 }
 
 fn has_kernelsu_legacy() -> bool {
-    use syscalls::{syscall, Sysno};
+    use syscalls::{Sysno, syscall};
     let mut version = 0;
     const CMD_GET_VERSION: i32 = 2;
     unsafe {
@@ -151,7 +151,7 @@ fn has_kernelsu_legacy() -> bool {
 }
 
 fn has_kernelsu_v2() -> bool {
-    use syscalls::{syscall, Sysno};
+    use syscalls::{Sysno, syscall};
     const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
     const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
     const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
