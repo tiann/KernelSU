@@ -553,9 +553,29 @@ static bool add_genfscon(struct policydb *db, const char *fs_name,
 // https://github.com/torvalds/linux/commit/590b9d576caec6b4c46bba49ed36223a399c3fc5#diff-cc9aa90e094e6e0f47bd7300db4f33cf4366b98b55d8753744f31eb69c691016R844-R845
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 #define ksu_kvrealloc(p, new_size, _old_size) kvrealloc(p, new_size, GFP_ATOMIC)
-#else
+// https://github.com/torvalds/linux/commit/de2860f4636256836450c6543be744a50118fc66#diff-fa19cdd9c3369d7f59aa2e8404628109408dbf8e1b568d1157a27328f75b8410R638-R652
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
 #define ksu_kvrealloc(p, new_size, old_size)                                   \
     kvrealloc(p, old_size, new_size, GFP_ATOMIC)
+#else
+// https://cs.android.com/android/_/android/kernel/common/+/f5f3e54f811679761c33526e695bd296190faade
+// Some 5.10 kernel don't have this backport, so copy one.
+void *ksu_kvrealloc_compat(const void *p, size_t oldsize, size_t newsize,
+                           gfp_t flags)
+{
+    void *newp;
+
+    if (oldsize >= newsize)
+        return (void *)p;
+    newp = kvmalloc(newsize, flags);
+    if (!newp)
+        return NULL;
+    memcpy(newp, p, oldsize);
+    kvfree(p);
+    return newp;
+}
+#define ksu_kvrealloc(p, new_size, old_size)                                   \
+    ksu_kvrealloc_compat(p, old_size, new_size, GFP_ATOMIC)
 #endif
 
 static bool add_type(struct policydb *db, const char *type_name, bool attr)
