@@ -191,4 +191,5 @@
     <string name="tab_readme">โปรดอ่าน</string>
     <string name="tab_info">ข้อมูล</string>
     <string name="tab_releases">รายการที่เผยแพร่</string>
+    <string name="safe_mode_module_disabled">ไม่สามารถติดตั้งโมดูลได้ในโหมดปลอดภัย</string>
 </resources>
