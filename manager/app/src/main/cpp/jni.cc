@@ -28,16 +28,13 @@ Java_me_weishu_kernelsu_Natives_getVersion(JNIEnv *env, jobject) {
 }
 
 extern "C"
-JNIEXPORT jintArray JNICALL
-Java_me_weishu_kernelsu_Natives_getAllowList(JNIEnv *env, jobject) {
-    struct ksu_get_allow_list_cmd cmd = {};
+JNIEXPORT jint JNICALL
+Java_me_weishu_kernelsu_Natives_getSuperuserCount(JNIEnv *env, jobject) {
+    struct ksu_new_get_allow_list_cmd cmd = {
+        .count = 0
+    };
     bool result = get_allow_list(&cmd);
-    if (result) {
-        auto array = env->NewIntArray(cmd.count);
-        env->SetIntArrayRegion(array, 0, cmd.count, reinterpret_cast<const jint *>(cmd.uids));
-        return array;
-    }
-    return env->NewIntArray(0);
+    return result ? cmd.total_count : 0;
 }
 
 extern "C"
