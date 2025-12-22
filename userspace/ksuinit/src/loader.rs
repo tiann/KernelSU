@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
-use goblin::elf::{section_header, sym::Sym, Elf};
+use goblin::elf::{Elf, section_header, sym::Sym};
 use rustix::{cstr, system::init_module};
-use scroll::{ctx::SizeWith, Pwrite};
+use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
 use std::fs;
 
