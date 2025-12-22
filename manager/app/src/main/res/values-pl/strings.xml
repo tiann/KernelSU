@@ -193,4 +193,5 @@
     <string name="tab_readme">README</string>
     <string name="tab_releases">Wydania</string>
     <string name="tab_info">Informacje</string>
+    <string name="safe_mode_module_disabled">Instalacja modułów jest wyłączona w trybie awaryjnym</string>
 </resources>
