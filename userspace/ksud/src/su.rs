@@ -183,13 +183,13 @@ pub fn root_shell() -> Result<()> {
     let groups = matches
         .opt_strs("G")
         .into_iter()
-        .map(|g| g.parse::<u32>().map_err(|_| anyhow!("Invalid GID: {}", g)))
+        .map(|g| g.parse::<u32>().map_err(|_| anyhow!("Invalid GID: {g}")))
         .collect::<Result<Vec<_>, _>>()?;
 
     // if -g provided, use it.
     let mut gid = matches
         .opt_str("g")
-        .map(|g| g.parse::<u32>().map_err(|_| anyhow!("Invalid GID: {}", g)))
+        .map(|g| g.parse::<u32>().map_err(|_| anyhow!("Invalid GID: {g}")))
         .transpose()?;
 
     // otherwise, use the first gid of groups.

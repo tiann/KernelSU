@@ -58,7 +58,7 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
         "su_compat" | "0" => Ok(FeatureId::SuCompat),
         "kernel_umount" | "1" => Ok(FeatureId::KernelUmount),
         "enhanced_security" | "2" => Ok(FeatureId::EnhancedSecurity),
-        _ => bail!("Unknown feature: {}", name),
+        _ => bail!("Unknown feature: {name}"),
     }
 }
 

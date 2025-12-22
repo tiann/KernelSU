@@ -60,10 +60,7 @@ pub fn validate_config_key(key: &str) -> Result<()> {
     // Use same pattern as module_id for consistency
     let re = regex_lite::Regex::new(r"^[a-zA-Z][a-zA-Z0-9._-]+$")?;
     if !re.is_match(key) {
-        bail!(
-            "Invalid config key: '{}'. Must match /^[a-zA-Z][a-zA-Z0-9._-]+$/",
-            key
-        );
+        bail!("Invalid config key: '{key}'. Must match /^[a-zA-Z][a-zA-Z0-9._-]+$/");
     }
 
     Ok(())
@@ -135,11 +132,7 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
     let magic = u32::from_le_bytes(magic_buf);
 
     if magic != MODULE_CONFIG_MAGIC {
-        bail!(
-            "Invalid config magic: expected 0x{:08x}, got 0x{:08x}",
-            MODULE_CONFIG_MAGIC,
-            magic
-        );
+        bail!("Invalid config magic: expected 0x{MODULE_CONFIG_MAGIC:08x}, got 0x{magic:08x}");
     }
 
     // Read version
