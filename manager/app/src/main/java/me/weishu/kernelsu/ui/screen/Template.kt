@@ -209,9 +209,7 @@ fun AppProfileTemplateScreen(
                                 showToast(context.getString(R.string.app_profile_template_export_empty))
                             }
                         ) {
-                            scope.launch {
-                                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
-                            }
+                            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
                         }
                     }
                 },
