@@ -193,7 +193,8 @@ fun AppProfileTemplateScreen(
                                 return@let
                             }
                             viewModel.importTemplates(
-                                it, {
+                                it,
+                                {
                                     showToast(context.getString(R.string.app_profile_template_import_success))
                                     viewModel.fetchTemplates(false)
                                 },
@@ -207,10 +208,11 @@ fun AppProfileTemplateScreen(
                         viewModel.exportTemplates(
                             {
                                 showToast(context.getString(R.string.app_profile_template_export_empty))
+                            },
+                            {
+                                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
                             }
-                        ) {
-                            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
-                        }
+                        )
                     }
                 },
                 scrollBehavior = scrollBehavior,
