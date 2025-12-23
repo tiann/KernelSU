@@ -77,7 +77,7 @@
     <string name="profile_umount_modules_summary">Attivando questa opzione permetterai a KernelSU di ripristinare ogni file modificato dai moduli per questa app.</string>
     <string name="profile_selinux_domain">Dominio</string>
     <string name="settings_umount_modules_default_summary">Il valore predefinito per \"Scollega moduli\" in App Profile. Se attivato, rimuoverà tutte le modifiche al sistema da parte dei moduli per le applicazioni che non hanno un profilo impostato.</string>
-    <string name="require_kernel_version">La versione attualmente installata di KernelSU (%d) è troppo vecchia ed il gestore non può funzionare correttamente. Si prega di aggiornare alla versione %d o successiva!</string>
+    <string name="require_kernel_version">La versione attualmente installata di KernelSU (%1$d) è troppo vecchia ed il gestore non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
     <string name="module_changelog">Registro aggiornamenti</string>
     <string name="app_profile_template_create">Crea modello</string>
     <string name="app_profile_template_edit">Modifica modello</string>

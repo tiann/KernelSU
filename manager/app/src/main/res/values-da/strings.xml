@@ -77,7 +77,7 @@
     <string name="profile_selinux_domain">Domæne</string>
     <string name="profile_selinux_rules">Regler</string>
     <string name="restart_app">Genstart</string>
-    <string name="require_kernel_version">Den nuværende KernelSU-version %d er for lav til, at manageren fungerer korrekt. Opgrader venligst til version %d eller højere!</string>
+    <string name="require_kernel_version">Den nuværende KernelSU-version %1$d er for lav til, at manageren fungerer korrekt. Opgrader venligst til version %2$d eller højere!</string>
     <string name="save_log">Gem logs</string>
     <string name="module_install_prompt_with_name">Følgende moduler installeres: %1$s</string>
     <string name="module_sort_action_first">Sorter (Handling først)</string>

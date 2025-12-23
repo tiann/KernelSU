@@ -81,7 +81,7 @@
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
     <string name="launch_app">Запустить</string>
     <string name="restart_app">Перезапустить</string>
-    <string name="require_kernel_version">Текущая версия KernelSU %d слишком низкая для правильной работы менеджера. Пожалуйста, обновите до версии %d или выше!</string>
+    <string name="require_kernel_version">Текущая версия KernelSU %1$d слишком низкая для правильной работы менеджера. Пожалуйста, обновите до версии %2$d или выше!</string>
     <string name="module_changelog">Список изменений</string>
     <string name="app_profile_template_import_success">Успешный импорт</string>
     <string name="app_profile_export_to_clipboard">Экспортировать в буфер обмена</string>

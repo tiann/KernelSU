@@ -33,7 +33,7 @@
     <string name="profile_default">डिफॉल्ट</string>
     <string name="launch_app">लॉन्च करें</string>
     <string name="safe_mode">सेफ मोड</string>
-    <string name="require_kernel_version">मैनेजर के ठीक से काम करने के लिए वर्तमान KernelSU वर्जन %d बहुत कम है। कृपया वर्जन %d या उच्चतर में अपग्रेड करें!</string>
+    <string name="require_kernel_version">मैनेजर के ठीक से काम करने के लिए वर्तमान KernelSU वर्जन %1$d बहुत कम है। कृपया वर्जन %2$d या उच्चतर में अपग्रेड करें!</string>
     <string name="reboot_recovery">रिकवरी में रिबूट करें</string>
     <string name="reboot_userspace">सॉफ्ट रिबूट</string>
     <string name="profile_name">प्रोफाइल का नाम</string>

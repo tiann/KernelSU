@@ -78,7 +78,7 @@
     <string name="restart_app">Təkrar başlat</string>
     <string name="failed_to_update_sepolicy">%s görə SELinux qaydalarını güncəlləmək mümkün olmadı</string>
     <string name="save_log">Girişləri Saxla</string>
-    <string name="require_kernel_version">Cari KernelSU versiyası %d menecerin düzgün işləməsi üçün çox aşağıdır. Lütfən, %d və ya daha yüksək versiyaya təkmilləşdirin!</string>
+    <string name="require_kernel_version">Cari KernelSU versiyası %1$d menecerin düzgün işləməsi üçün çox aşağıdır. Lütfən, %2$d və ya daha yüksək versiyaya təkmilləşdirin!</string>
     <string name="module_install_prompt_with_name">Aşağıdakı modullar quraşdırılacaq: %1$s</string>
     <string name="confirm">Təsdiq edin</string>
     <string name="module_sort_action_first">Sıralama (ilk hərəkət)</string>

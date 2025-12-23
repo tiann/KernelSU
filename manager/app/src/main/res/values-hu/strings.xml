@@ -77,7 +77,7 @@
     <string name="settings_umount_modules_default_summary">A \"Modulok leválasztása\" globális alapértelmezett értéke az App Profile-ban. Ha engedélyezve van, eltávolít minden modulmódosítást a rendszerből azon alkalmazások esetében, amelyeknek nincs profilja beállítva.</string>
     <string name="new_version_available">Elérhető az új, %s verzió, kattintson a frissítéshez.</string>
     <string name="failed_to_update_sepolicy">Nem sikerült frissíteni az SELinux szabályokat a következőhöz: %s</string>
-    <string name="require_kernel_version">A jelenlegi KernelSU verzió %d túlságosan elavult a megfelelő működéshez. Kérjük frissítsen a %d verzióra vagy újabbra!</string>
+    <string name="require_kernel_version">A jelenlegi KernelSU verzió %1$d túlságosan elavult a megfelelő működéshez. Kérjük frissítsen a %2$d verzióra vagy újabbra!</string>
     <string name="app_profile_template_import_success">Sikeresen importálva</string>
     <string name="app_profile_export_to_clipboard">Exportálás a vágólapról</string>
     <string name="app_profile_template_export_empty">Nem található helyi sablon az exportáláshoz!</string>

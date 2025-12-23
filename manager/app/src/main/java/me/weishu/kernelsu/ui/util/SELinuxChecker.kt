@@ -8,7 +8,6 @@ import me.weishu.kernelsu.R
 @Composable
 fun getSELinuxStatus(): String {
     val shell = Shell.Builder.create()
-        .setFlags(Shell.FLAG_REDIRECT_STDERR)
         .build("sh")
 
     val list = ArrayList<String>()
