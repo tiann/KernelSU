@@ -7,15 +7,15 @@ import me.weishu.kernelsu.R
 
 @Composable
 fun getSELinuxStatus(): String {
-    val shell = Shell.Builder.create()
-        .build("sh")
+    val shell = Shell.Builder.create().build("sh")
 
-    val list = ArrayList<String>()
+    val stdoutList = ArrayList<String>()
+    val stderrList = ArrayList<String>()
     val result = shell.use {
-        it.newJob().add("getenforce").to(list, list).exec()
+        it.newJob().add("getenforce").to(stdoutList, stderrList).exec()
     }
-    val stdout = result.out.joinToString("\n").trim()
-    val stderr = result.err.joinToString("\n").trim()
+    val stdout = stdoutList.joinToString("\n").trim()
+    val stderr = stderrList.joinToString("\n").trim()
 
     if (result.isSuccess) {
         return when (stdout) {
