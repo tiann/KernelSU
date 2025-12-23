@@ -14,10 +14,11 @@ fun getSELinuxStatus(): String {
     val result = shell.use {
         it.newJob().add("getenforce").to(list, list).exec()
     }
-    val output = result.out.joinToString("\n").trim()
+    val stdout = result.out.joinToString("\n").trim()
+    val stderr = result.err.joinToString("\n").trim()
 
     if (result.isSuccess) {
-        return when (output) {
+        return when (stdout) {
             "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
             "Permissive" -> stringResource(R.string.selinux_status_permissive)
             "Disabled" -> stringResource(R.string.selinux_status_disabled)
@@ -25,7 +26,7 @@ fun getSELinuxStatus(): String {
         }
     }
 
-    return if (output.endsWith("Permission denied")) {
+    return if (stderr.endsWith("Permission denied")) {
         stringResource(R.string.selinux_status_enforcing)
     } else {
         stringResource(R.string.selinux_status_unknown)
