@@ -1,7 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.content.ClipData
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
