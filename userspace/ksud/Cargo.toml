@@ -23,7 +23,7 @@ chrono = "0.4"
 regex-lite = "0.1"
 
 [target.'cfg(target_os = "android")'.dependencies]
-rustix = { version = "=1.0.8", features = [
+rustix = { version = "1", features = [
     "all-apis",
 ] }
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
