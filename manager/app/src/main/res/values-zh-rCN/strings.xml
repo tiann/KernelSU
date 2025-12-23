@@ -73,7 +73,7 @@
     <string name="profile_selinux_context">SELinux</string>
     <string name="profile_umount_modules">卸载模块</string>
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
-    <string name="require_kernel_version">当前 KernelSU 版本 %d 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %d 或以上！</string>
+    <string name="require_kernel_version">当前 KernelSU 版本 %1$d 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %2$d 或以上！</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
     <string name="settings_umount_modules_default_summary">App Profile 中“卸载模块”的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改。</string>
     <string name="profile_umount_modules_summary">启用该选项后将允许 KernelSU 为本应用还原被模块修改过的文件。</string>

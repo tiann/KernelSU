@@ -69,7 +69,7 @@
     <string name="profile_selinux_context">SELinux контекст</string>
     <string name="profile_umount_modules">Разкачи модули</string>
     <string name="failed_to_update_app_profile">Неуспешно актуализиране на App Profile за %s</string>
-    <string name="require_kernel_version">Текущата версия %d на KernelSU е твърде ниска, за да работи правилно мениджърът. Моля, актуализирайте към версия %d или по-висока!</string>
+    <string name="require_kernel_version">Текущата версия %1$d на KernelSU е твърде ниска, за да работи правилно мениджърът. Моля, актуализирайте към версия %2$d или по-висока!</string>
     <string name="settings_umount_modules_default">Разкачи модули</string>
     <string name="settings_umount_modules_default_summary">Глобалната стойност по подразбиране за „Разкачи модули“ в профила на приложението. Ако е активирана, ще премахне всички модификации на модулите в системата за приложения, които нямат зададен профил.</string>
     <string name="profile_umount_modules_summary">Активирането на тази опция ще позволи на KernelSU да възстанови всички модифицирани файлове от модулите за това приложение.</string>

@@ -118,19 +118,16 @@ class TemplateViewModel : ViewModel() {
         }
     }
 
-    suspend fun exportTemplates(onTemplateEmpty: () -> Unit, callback: (String) -> Unit) {
-        withContext(Dispatchers.IO) {
-            val templates = listAppProfileTemplates().mapNotNull(::getTemplateInfoById).filter {
-                it.local
-            }
-            templates.ifEmpty {
-                onTemplateEmpty()
-                return@withContext
-            }
-            JSONArray(templates.map {
-                it.toJSON()
-            }).toString().let(callback)
+    suspend fun exportTemplates(onTemplateEmpty: suspend () -> Unit, callback: suspend (String) -> Unit) {
+        val result = withContext(Dispatchers.IO) {
+            val templates = listAppProfileTemplates()
+                .mapNotNull(::getTemplateInfoById)
+                .filter { it.local }
+            if (templates.isEmpty()) return@withContext null
+            JSONArray(templates.map { it.toJSON() }).toString()
         }
+
+        if (result == null) onTemplateEmpty() else callback(result)
     }
 }
 

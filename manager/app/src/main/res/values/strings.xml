@@ -77,7 +77,7 @@
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
-    <string name="require_kernel_version">The current KernelSU version %d is too low for the manager to work properly. Please upgrade to version %d or higher!</string>
+    <string name="require_kernel_version">The current KernelSU version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
     <string name="settings_umount_modules_default">Umount modules</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU to restore any modified files by the modules for this app.</string>

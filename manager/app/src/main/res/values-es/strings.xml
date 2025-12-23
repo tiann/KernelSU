@@ -78,7 +78,7 @@
     <string name="force_stop_app">Forzar detención</string>
     <string name="restart_app">Reiniciar</string>
     <string name="failed_to_update_sepolicy">Error al actualizar las reglas SELinux para: %s</string>
-    <string name="require_kernel_version">La versión %d actual de KernelSU es demasiado baja para que el gestor funcione correctamente. Por favor, ¡actualice a la versión %d o superior!</string>
+    <string name="require_kernel_version">La versión %1$d actual de KernelSU es demasiado baja para que el gestor funcione correctamente. Por favor, ¡actualice a la versión %2$d o superior!</string>
     <string name="module_changelog">Registro de cambios</string>
     <string name="app_profile_template_import_success">Importado con éxito</string>
     <string name="app_profile_export_to_clipboard">Exportar al portapapeles</string>

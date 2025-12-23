@@ -77,7 +77,7 @@
     <string name="settings_umount_modules_default_summary">หากเปิดใช้งานค่าเริ่มต้นโดยทั่วไปสำหรับ \"Umount โมดูล\" ในโปรไฟล์แอป จะเป็นการลบการแก้ไขโมดูลทั้งหมดในระบบสำหรับแอปพลิเคชันที่ไม่มีการตั้งค่าโปรไฟล์</string>
     <string name="launch_app">เปิด</string>
     <string name="failed_to_update_sepolicy">ไม่สามารถอัปเดตกฎ SElinux สำหรับ %s</string>
-    <string name="require_kernel_version">KernelSU เวอร์ชัน %d ต่ำเกินไป ทำให้ตัวจัดการไม่สามารถทำงานได้อย่างถูกต้อง โปรดอัปเกรดเป็นเวอร์ชัน %d หรือสูงกว่า!</string>
+    <string name="require_kernel_version">KernelSU เวอร์ชัน %1$d ต่ำเกินไป ทำให้ตัวจัดการไม่สามารถทำงานได้อย่างถูกต้อง โปรดอัปเกรดเป็นเวอร์ชัน %2$d หรือสูงกว่า!</string>
     <string name="module_changelog">บันทึกการเปลี่ยนแปลง</string>
     <string name="app_profile_template_import_success">นำเข้าเสร็จสิ้น</string>
     <string name="app_profile_export_to_clipboard">ส่งออกไปยังคลิปบอร์ด</string>

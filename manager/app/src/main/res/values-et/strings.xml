@@ -76,7 +76,7 @@
     <string name="profile_capabilities">Võimekused</string>
     <string name="app_profile_template_id_invalid">Sobimatu malli ID</string>
     <string name="profile_selinux_context">SELinux kontekst</string>
-    <string name="require_kernel_version">Praegune KernelSU versioon %d on liiga madal, haldur ei saa korrektselt töötada. Palun täienda versioonile %d või kõrgem!</string>
+    <string name="require_kernel_version">Praegune KernelSU versioon %1$d on liiga madal, haldur ei saa korrektselt töötada. Palun täienda versioonile %2$d või kõrgem!</string>
     <string name="profile_selinux_domain">Domeen</string>
     <string name="launch_app">Käivita</string>
     <string name="force_stop_app">Sundpeata</string>

@@ -79,7 +79,7 @@
     <string name="new_version_available">Доступна нова версія %s, натисніть, щоб оновити!</string>
     <string name="failed_to_update_sepolicy">Не вдалося оновити правила SELinux для %s</string>
     <string name="module_changelog">Журнал змін</string>
-    <string name="require_kernel_version">Поточна версія KernelSU %d занадто низька для належної роботи менеджера. Будь ласка, оновіть його до версії %d або вище!</string>
+    <string name="require_kernel_version">Поточна версія KernelSU %1$d занадто низька для належної роботи менеджера. Будь ласка, оновіть його до версії %2$d або вище!</string>
     <string name="app_profile_template_import_success">Успішно імпортовано</string>
     <string name="app_profile_export_to_clipboard">Експортувати в буфер обміну</string>
     <string name="app_profile_template_export_empty">Не вдається знайти локальний шаблон для експорту!</string>

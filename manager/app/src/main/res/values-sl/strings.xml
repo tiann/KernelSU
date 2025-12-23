@@ -69,7 +69,7 @@
     <string name="profile_selinux_context">SELinux kontekst</string>
     <string name="home_support_content">KernelSU je, in bo vedno brezplačen in odprtokoden. Kljub temu, nam lahko z donacijo pokažete, da vam je mar.</string>
     <string name="failed_to_update_app_profile">Napaka pri posodobitvi aplikacijskega profila za %s</string>
-    <string name="require_kernel_version">Za pravilno funkionalnost upravitelja je trenutna KernelSU verzija %d prenizka. Potrebna je nadgradnja na verzijo %d ali več!</string>
+    <string name="require_kernel_version">Za pravilno funkionalnost upravitelja je trenutna KernelSU verzija %1$d prenizka. Potrebna je nadgradnja na verzijo %2$d ali več!</string>
     <string name="settings_umount_modules_default_summary">Globalno privzeta vrednost za \"Izvrzi module\" v aplikacijskih profilih. Če je omogočena, bo to odstranilo vse sistemske modifikacije modulov za aplikacije, ki nimajo nastavljenega profila.</string>
     <string name="profile_umount_modules_summary">Omogočanje te opcije bo dovolilo KernelSU, da obnovi vse zaradi modulov spremenjene datoteke za to aplikacijo.</string>
     <string name="force_stop_app">Prisilna ustavitev</string>

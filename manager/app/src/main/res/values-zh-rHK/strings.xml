@@ -60,7 +60,7 @@
     <string name="profile_umount_modules">卸載模組</string>
     <string name="failed_to_update_app_profile">無法更新 %s 應用程式設定檔</string>
     <string name="profile_selinux_rules">規則</string>
-    <string name="require_kernel_version">目前 KernelSU 版本 %d 過低，管理器無法正常運作。請升級至 %d 或更高版本！</string>
+    <string name="require_kernel_version">目前 KernelSU 版本 %1$d 過低，管理器無法正常運作。請升級至 %2$d 或更高版本！</string>
     <string name="settings_umount_modules_default_summary">應用程式設定檔中「解除安裝模組」的全域預設值，如果啟用，將會為沒有設定檔的應用程式移除所有模組針對系統的修改。</string>
     <string name="profile_umount_modules_summary">啟用此選項將允許 KernelSU 為這個應用程式還原任何被模組修改過的檔案。</string>
     <string name="profile_selinux_domain">網域</string>

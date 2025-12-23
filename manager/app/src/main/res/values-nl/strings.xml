@@ -78,7 +78,7 @@
     <string name="restart_app">Herstart</string>
     <string name="module_start_downloading">Begin met downloaden: %s</string>
     <string name="failed_to_update_sepolicy">Kan SELinux-regels niet bijwerken voor %s</string>
-    <string name="require_kernel_version">De huidige KernelSU-versie %d is te laag voor de manager om goed te werken. Upgrade naar versie %d of hoger!</string>
+    <string name="require_kernel_version">De huidige KernelSU-versie %1$d is te laag voor de manager om goed te werken. Upgrade naar versie %2$d of hoger!</string>
     <string name="module_changelog">wijzigings logboek</string>
     <string name="settings_profile_template">App-profiel sjabloon</string>
     <string name="app_profile_template_create">Maken sjabloon</string>

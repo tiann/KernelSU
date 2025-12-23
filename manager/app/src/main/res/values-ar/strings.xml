@@ -77,7 +77,7 @@
     <string name="restart_app">إعادة تشغيل التطبيق</string>
     <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لـ %s</string>
     <string name="profile_name">اسم الملف الشخصي</string>
-    <string name="require_kernel_version">إصدار KernelSU الحالي %d منخفض جدًا بحيث لا يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %d أو أعلى!</string>
+    <string name="require_kernel_version">إصدار KernelSU الحالي %1$d منخفض جدًا بحيث لا يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %2$d أو أعلى!</string>
     <string name="module_changelog">سجل التغييرات</string>
     <string name="app_profile_template_import_success">تم الاستيراد بنجاح</string>
     <string name="app_profile_export_to_clipboard">تصدير إلى الحافظة</string>
