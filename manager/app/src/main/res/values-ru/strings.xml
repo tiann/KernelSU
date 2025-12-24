@@ -66,7 +66,7 @@
     <string name="profile_groups">Группы</string>
     <string name="profile_capabilities">Возможности</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
-    <string name="profile_umount_modules">Размонтировать модули</string>
+    <string name="profile_umount_modules">Размонтировать модули по умолчанию</string>
     <string name="failed_to_update_app_profile">Не удалось обновить App Profile для %s</string>
     <string name="settings_umount_modules_default">Размонтировать модули</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
@@ -184,5 +184,16 @@
     <string name="settings_theme_mode_monet_dark">Monet (Тёмная)</string>
     <string name="settings_theme_mode_light">Светлая</string>
     <string name="settings_theme_mode_dark">Тёмная</string>
-    <string name="module_repos">Репозиторий модулей</string>
+    <string name="module_repos">Репозиторий</string>
+    <string name="module_repos_sort_update_first">Сначала с обновлением</string>
+    <string name="module_repos_sort_name">Имя (А → Я)</string>
+    <string name="module_repos_source_code">Исходный код</string>
+    <string name="home_gki_warning">Начиная с версии 3.0.0, режим работы GKI будет использоваться только в тестовых средах. Мы не рекомендуем его для ежедневного использования, а image файлы больше предоставляться не будут.</string>
+    <string name="module_reinstall">Переустановить</string>
+    <string name="network_offline">Нет подключения к сети</string>
+    <string name="network_retry">Повторить</string>
+    <string name="tab_readme">README</string>
+    <string name="tab_releases">Релизы</string>
+    <string name="tab_info">Информация</string>
+    <string name="safe_mode_module_disabled">В безопасном режиме установка модулей отключена</string>
 </resources>

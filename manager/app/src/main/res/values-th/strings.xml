@@ -65,7 +65,7 @@
     <string name="profile_selinux_context">บริบท SELinux</string>
     <string name="profile_umount_modules">Umount โมดูล</string>
     <string name="failed_to_update_app_profile">ไม่สามารถอัปเดตโปรไฟล์แอปสำหรับ %s ได้</string>
-    <string name="settings_umount_modules_default">Umount โมดูล</string>
+    <string name="settings_umount_modules_default">Umount โมดูลตามค่าเริ่มต้น</string>
     <string name="profile_selinux_domain">โดเมน</string>
     <string name="module_update">อัปเดต</string>
     <string name="profile_selinux_rules">กฎ</string>
@@ -181,4 +181,15 @@
     <string name="feature_status_unsupported_summary">เคอร์เนลของคุณไม่รองรับฟีเจอร์นี้</string>
     <string name="feature_status_managed_summary">คุณสมบัตินี้ถูกจัดการโดยโมดูล</string>
     <string name="module_repos">พื้นที่จัดเก็บโมดูล</string>
+    <string name="module_repos_sort_update_first">อัปเดตก่อน</string>
+    <string name="module_repos_sort_name">เรียงตามชื่อ (A → Z)</string>
+    <string name="module_repos_source_code">ซอร์สโค้ด</string>
+    <string name="home_gki_warning">ตั้งแต่เวอร์ชัน 3.0.0 เป็นต้นไป โหมด GKI จะถูกใช้สำหรับการทดสอบเท่านั้น เราไม่แนะนำให้ใช้โหมดนี้ในชีวิตประจำวัน และจะไม่มีไฟล์อิมเมจให้ดาวน์โหลดอีกต่อไป</string>
+    <string name="module_reinstall">ติดตั้งใหม่</string>
+    <string name="network_offline">ไม่ได้เชื่อมต่อกับเครือข่าย</string>
+    <string name="network_retry">ลองอีกครั้ง</string>
+    <string name="tab_readme">โปรดอ่าน</string>
+    <string name="tab_info">ข้อมูล</string>
+    <string name="tab_releases">รายการที่เผยแพร่</string>
+    <string name="safe_mode_module_disabled">ไม่สามารถติดตั้งโมดูลได้ในโหมดปลอดภัย</string>
 </resources>

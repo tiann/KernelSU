@@ -27,7 +27,7 @@
     <string name="module_failed_to_enable">Neuspješno uključivanje module: %s</string>
     <string name="module_failed_to_disable">Neuspješno isključivanje module: %s</string>
     <string name="module_empty">Nema instaliranih modula</string>
-    <string name="module">Modula</string>
+    <string name="module">Br. modula</string>
     <string name="uninstall">Deinstalirajte</string>
     <string name="module_install">Instalirajte</string>
     <string name="install">Instalirajte</string>
@@ -66,7 +66,7 @@
     <string name="profile_capabilities">Sposobnosti</string>
     <string name="profile_selinux_context">SELinux kontekst</string>
     <string name="require_kernel_version">Trenutna verzija KernelSU-a %1$d je preniska da bi upravitelj ispravno radio. Molimo vas da nadogradite na verziju %2$d ili noviju!</string>
-    <string name="settings_umount_modules_default">Umontiraj module</string>
+    <string name="settings_umount_modules_default">Umontiraj module prema zadanim postavkama</string>
     <string name="settings_umount_modules_default_summary">Globalna zadana vrijednost za \"Umontiraj module\" u profilu aplikacije. Ako je omogućeno, uklonit će sve modifikacije modula sustava za aplikacije koje nemaju postavljen profil.</string>
     <string name="profile_selinux_domain">Domena</string>
     <string name="profile_umount_modules_summary">Omogućavanje ove opcije omogućit će KernelSU-u da vrati sve izmijenjene datoteke od strane modula za ovu aplikaciju.</string>
@@ -178,4 +178,16 @@
     <string name="color_teal">Tirkizna</string>
     <string name="color_pink">Ružičasta</string>
     <string name="color_brown">Smeđa</string>
+    <string name="module_repos">Repozitoriji</string>
+    <string name="module_repos_sort_update_first">Prvo ažuriraj</string>
+    <string name="module_repos_sort_name">Naziv (A → Z)</string>
+    <string name="module_repos_source_code">Izvorni kod</string>
+    <string name="safe_mode_module_disabled">Instalacija modula je onemogućena u sigurnom načinu rada</string>
+    <string name="home_gki_warning">Počevši od verzije 3.0.0, GKI način rada koristit će se samo u testnim okruženjima. Ne preporučujemo ga za svakodnevnu upotrebu, a image datoteke više neće biti dostupne.</string>
+    <string name="module_reinstall">Ponovno instaliraj</string>
+    <string name="network_offline">Nije povezano s mrežom</string>
+    <string name="network_retry">Pokušaj ponovno</string>
+    <string name="tab_readme">PROČITAJ ME</string>
+    <string name="tab_releases">Izdanja</string>
+    <string name="tab_info">Info</string>
 </resources>

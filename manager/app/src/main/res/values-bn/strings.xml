@@ -9,7 +9,7 @@
     <string name="home_module_count">মডিউল: %d</string>
     <string name="home_unsupported">অসমর্থিত</string>
     <string name="home_unsupported_reason">KernelSU শুধুমাত্র GKI কার্নেল সমর্থন করে</string>
-    <string name="home_kernel">কার্নেল</string>
+    <string name="home_kernel">কার্নেল সংস্করণ</string>
     <string name="home_manager_version">ম্যানেজার সংস্করণ</string>
     <string name="home_fingerprint">ফিঙ্গারপ্রিন্ট</string>
     <string name="home_selinux_status">SELinux স্টেটাস</string>
@@ -47,9 +47,9 @@
     <string name="module_magisk_conflict">মডিউলগুলি অক্ষম কারণ তারা ম্যাজিস্কের সাথে বিরোধিতা করে!</string>
     <string name="home_learn_kernelsu">লার্ন কার্নেলএসইউ</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">কিভাবে কার্নেলএসইউ ইনস্টল করতে হয় এবং মডিউল ব্যবহার করতে হয় তা শিখুন</string>
+    <string name="home_click_to_learn_kernelsu">কিভাবে কার্নেলএসইউ ইনস্টল করতে হয় এবং মডিউল ব্যবহার করতে হয় তা শিখুন।</string>
     <string name="home_support_title">সাপোর্ট টাইটেল</string>
-    <string name="home_support_content">কার্নেলএসইউ বিনামূল্যে এবং ওপেন সোর্স, এবং সবসময় থাকবে। আপনি সবসময় একটি অনুদান দিয়ে আপনার কৃতজ্ঞতা প্রদর্শন করতে পারেন.</string>
+    <string name="home_support_content">কার্নেলএসইউ ফ্রি ও ওপেন সোর্স, এবং সবসময় এমনই থাকবে। তবে, আপনি অনুদান দিয়ে আপনার কৃতজ্ঞতা প্রদর্শন করতে পারেন।</string>
     <string name="about_source_code"><![CDATA[Bekijk source code op %1$s<br/>আমাদের %2$s চ্যানেল মার্জ করুন]]></string>
     <string name="profile_name">প্রফাইলের নাম</string>
     <string name="profile_namespace">নেমস্পেস মাউন্ট</string>
@@ -64,4 +64,11 @@
     <string name="profile_umount_modules">আনমাউন্ট মোডিউল</string>
     <string name="require_kernel_version">ম্যানেজার সঠিকভাবে কাজ করার জন্য বর্তমান KernelSU সংস্করণ %1$d খুবই কম। অনুগ্রহ করে %2$d বা উচ্চতর সংস্করণে আপগ্রেড করুন!</string>
     <string name="save_log">লগ সংরক্ষণ করুন</string>
+    <string name="module_install_prompt_with_name">এই মডিউলগুলো ইনস্টল করা হবেঃ %1$s</string>
+    <string name="module_sort_enabled_first">চালুগুলো আগে</string>
+    <string name="module_repos_source_code">সোর্স কোড</string>
+    <string name="confirm">নিশ্চিত</string>
+    <string name="metamodule_uninstall_confirm">আপনি কি নিশ্চিত আপনি মডিউল %s আনইনস্টল করতে চান? এটি সকল মডিউলকে প্রভাবিত করবে, এবং মেটামডিউল দ্বারা প্রদত্ত কিছু বৈশিষ্ট্য (যেমন মাউন্ট করা) আর কাজ করবে না।</string>
+    <string name="home_gki_warning">v3.0.0 থেকে শুরু করে, GKI মোড শুধুমাত্র নিরীক্ষণ এর জন্য ব্যবহার করা যাবে। আমরা দৈনন্দিন ব্যবহারের জন্য এটি সুপারিশ করি না, এবং ইমেজ ফাইল আর প্রদান করা হবে না।</string>
+    <string name="failed_to_update_app_profile">%s এর জন্য অ্যাপ প্রোফাইল আপডেট করতে ব্যর্থ হয়েছে</string>
 </resources>

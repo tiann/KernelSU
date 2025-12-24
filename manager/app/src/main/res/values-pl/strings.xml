@@ -66,7 +66,7 @@
     <string name="profile_selinux_context">Kontekst SELinux</string>
     <string name="profile_umount_modules">Odmontuj moduły</string>
     <string name="failed_to_update_app_profile">Nie udało się zaktualizować profilu aplikacji dla %s</string>
-    <string name="settings_umount_modules_default">Odmontuj moduły</string>
+    <string name="settings_umount_modules_default">Domyślnie odmontowuj moduły</string>
     <string name="settings_umount_modules_default_summary">Globalna wartość domyślna opcji \"Odmontuj moduły\" w profilu aplikacji. Jeśli jest włączona, wycofuje wszystkie modyfikacje dokonane przez moduły dla aplikacji, które nie mają ustawionego profilu.</string>
     <string name="profile_umount_modules_summary">Włączenie tej opcji umożliwi KernelSU przywrócenie wszelkich zmodyfikowanych plików przez moduły dla tej aplikacji.</string>
     <string name="profile_selinux_domain">Domena</string>
@@ -182,4 +182,16 @@
     <string name="color_teal">Turkusowy</string>
     <string name="color_pink">Różowy</string>
     <string name="color_brown">Brązowy</string>
+    <string name="module_repos">Repozytoria</string>
+    <string name="module_repos_sort_update_first">Najpierw zaktualizuj</string>
+    <string name="module_repos_sort_name">Nazwa (A → Z)</string>
+    <string name="module_repos_source_code">Kod źródłowy</string>
+    <string name="home_gki_warning">Począwszy od wersji 3.0.0, tryb pracy GKI będzie używany wyłącznie w środowiskach testowych. Nie zalecamy jego stosowania w codziennym użytkowaniu, a pliki obrazów nie będą już udostępniane.</string>
+    <string name="module_reinstall">Przeinstaluj</string>
+    <string name="network_offline">Brak połączenia z siecią</string>
+    <string name="network_retry">Ponów</string>
+    <string name="tab_readme">README</string>
+    <string name="tab_releases">Wydania</string>
+    <string name="tab_info">Informacje</string>
+    <string name="safe_mode_module_disabled">Instalacja modułów jest wyłączona w trybie awaryjnym</string>
 </resources>
