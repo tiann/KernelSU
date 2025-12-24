@@ -358,7 +358,7 @@ where
         if let Ok((_, statement)) = PolicyStatement::parse(trimmed_line) {
             statements.push(statement);
         } else if strict {
-            bail!("Failed to parse policy statement: {}", line)
+            bail!("Failed to parse policy statement: {line}")
         }
     }
     Ok(statements)
@@ -703,7 +703,7 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
         if let Err(e) = crate::ksucalls::set_sepolicy(&cmd) {
             log::warn!("apply rule {statement:?} failed: {e}");
             if strict {
-                return Err(anyhow::anyhow!("apply rule {:?} failed: {}", statement, e));
+                return Err(anyhow::anyhow!("apply rule {statement:?} failed: {e}"));
             }
         }
     }

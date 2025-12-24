@@ -270,9 +270,9 @@ rm -f /data/adb/post-fs-data.d/post_ota.sh
             .status()?;
         ensure!(
             status.success(),
-            "dd if={:?} of={:?} failed",
-            ifile.as_ref(),
-            ofile.as_ref()
+            "dd if={} of={} failed",
+            ifile.as_ref().display(),
+            ofile.as_ref().display()
         );
         Ok(())
     }
@@ -329,7 +329,7 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
         .context("Failed to execute magiskboot command")?;
 
     if !status.success() {
-        bail!("magiskboot unpack failed with status: {:?}", status);
+        bail!("magiskboot unpack failed with status: {status:?}");
     }
 
     parse_kmi_from_kernel(&image_path, workdir)
@@ -344,7 +344,7 @@ fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cpio_path: &Path, cmd: &str) -
         .arg(cpio_path)
         .arg(cmd)
         .status()?;
-    ensure!(status.success(), "magiskboot cpio {} failed", cmd);
+    ensure!(status.success(), "magiskboot cpio {cmd} failed");
     Ok(())
 }
 
@@ -390,7 +390,7 @@ fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<P
                     .context("copy magiskboot failed")?;
                 magiskboot_path
             };
-            ensure!(magiskboot.exists(), "{magiskboot:?} is not exist");
+            ensure!(magiskboot.exists(), "{} is not exist", magiskboot.display());
             #[cfg(unix)]
             let _ = std::fs::set_permissions(&magiskboot, std::fs::Permissions::from_mode(0o755));
             magiskboot
