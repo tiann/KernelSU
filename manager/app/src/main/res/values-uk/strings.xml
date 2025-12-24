@@ -63,9 +63,9 @@
     <string name="profile_groups">Групи</string>
     <string name="profile_capabilities">Можливості</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
-    <string name="profile_umount_modules">Розмонтувати модулі</string>
+    <string name="profile_umount_modules">Розмонтування модулів</string>
     <string name="failed_to_update_app_profile">Не вдалося оновити профіль додатка для %s</string>
-    <string name="settings_umount_modules_default">Розмонтування модулів</string>
+    <string name="settings_umount_modules_default">Розмонтування модулів за замовчуванням</string>
     <string name="settings_umount_modules_default_summary">Загальне значення за замовчуванням для \"Розмонтувати модулі\" у профілях додатків. Якщо ввімкнено, буде видалено всі модифікації модулів у системі для додатків, які не мають встановленого профілю.</string>
     <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU відновити будь-які змінені файли модулями для цієї програми.</string>
     <string name="profile_selinux_domain">Домен</string>
@@ -179,4 +179,18 @@
     <string name="feature_status_unsupported_summary">Ядро не підтримує цю функцію.</string>
     <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
     <string name="module_repos">Репозиторій модулів</string>
+    <string name="module_repos_sort_update_first">Спочатку оновіть</string>
+    <string name="module_repos_sort_name">Ім\'я (А → Я)</string>
+    <string name="module_repos_source_code">Вихідний код</string>
+    <string name="home_gki_warning">Починаючи з версії 3.0.0, робочий режим GKI використовуватиметься лише в тестових середовищах. Ми не рекомендуємо його для щоденного використання, а файли зображень більше не надаватимуться.</string>
+    <string name="module_reinstall">Перевстановити</string>
+    <string name="undo">Відмінити</string>
+    <string name="module_undo_uninstall_success">Видалення %s успішно скасовано</string>
+    <string name="module_undo_uninstall_failed">Не вдалося відмінити видалення: %s</string>
+    <string name="network_offline">Не підключено до мережі</string>
+    <string name="network_retry">Повторити спробу</string>
+    <string name="tab_readme">Файл README</string>
+    <string name="tab_releases">Релізи</string>
+    <string name="tab_info">Інформація</string>
+    <string name="safe_mode_module_disabled">Встановлення модулів вимкнено в безпечному режимі</string>
 </resources>
