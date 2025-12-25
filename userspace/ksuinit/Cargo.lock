@@ -26,8 +26,9 @@ dependencies = [
 
 [[package]]
 name = "goblin"
-version = "0.8.0"
-source = "git+https://github.com/tiann/goblin#138d40d4c36471cfbb611eb493f0378ee9fc63f5"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4db6758c546e6f81f265638c980e5e84dfbda80cfd8e89e02f83454c8e8124bd"
 dependencies = [
  "log",
  "plain",
@@ -37,7 +38,7 @@ dependencies = [
 [[package]]
 name = "kernlog"
 version = "0.3.1"
-source = "git+https://github.com/tiann/kernlog.rs#ff0b1bd6d5261eae0fa297cec6951fe8d982151a"
+source = "git+https://github.com/kstep/kernlog.rs#68caa7bf1e27baea35b00ebba786cafae0bca90f"
 dependencies = [
  "libc",
  "log",
@@ -112,18 +113,18 @@ dependencies = [
 
 [[package]]
 name = "scroll"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ab8598aa408498679922eff7fa985c25d58a90771bd6be794434c5277eab1a6"
+checksum = "c1257cd4248b4132760d6524d6dda4e053bc648c9070b960929bf50cfb1e7add"
 dependencies = [
  "scroll_derive",
 ]
 
 [[package]]
 name = "scroll_derive"
-version = "0.12.1"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1783eabc414609e28a5ba76aee5ddd52199f7107a0b24c2e9746a1ecc34a683d"
+checksum = "ed76efe62313ab6610570951494bdaa81568026e0318eaa55f167de70eeea67d"
 dependencies = [
  "proc-macro2",
  "quote",
