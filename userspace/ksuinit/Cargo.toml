@@ -8,8 +8,8 @@ edition = "2024"
 [dependencies]
 
 # for elf parsing
-goblin = { git = "https://github.com/tiann/goblin" }
-scroll = "0.12"
+goblin = "0.10"
+scroll = "0.13"
 
 anyhow = "1"
 # If you want to use the following dependencies, please use aarch64-unknown-linux-musl & x86_64-unknown-linux-musl to compile statically
@@ -23,7 +23,7 @@ syscalls = { version = "0.7", default-features = false, features = [
 
 # for kmsg logging
 log = "0.4"
-kernlog = { git = "https://github.com/tiann/kernlog.rs" }
+kernlog = { git = "https://github.com/kstep/kernlog.rs" }
 
 [profile.release]
 strip = true
