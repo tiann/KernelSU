@@ -283,8 +283,7 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
     if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
         return ret;
     } else {
-        pr_info("read_proxy: orig read finished (ret %ld), start append rc\n",
-                ret);
+        pr_info("read_proxy: orig read finished, start append rc\n");
     }
 append_ksu_rc:
     append_count = ksu_rc_len - ksu_rc_pos;
@@ -317,9 +316,7 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
     if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
         return ret;
     } else {
-        pr_info(
-            "read_iter_proxy: orig read finished (ret %ld), start append rc\n",
-            ret);
+        pr_info("read_iter_proxy: orig read finished, start append rc\n");
     }
 append_ksu_rc:
     // copy_to_iter returns the number of copied bytes
@@ -389,10 +386,8 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
     // `/system/etc/init/init.rc`
     count = *count_ptr;
 
-    size_t rc_count = strlen(KERNEL_SU_RC);
-
     pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
-            current->comm, count, rc_count);
+            current->comm, count, ksu_rc_len);
 
     // Now we need to proxy the read and modify the result!
     // But, we can not modify the file_operations directly, because it's in read-only memory.
