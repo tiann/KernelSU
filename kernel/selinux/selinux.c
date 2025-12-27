@@ -15,7 +15,7 @@ static int transive_to_domain(const char *domain, struct cred *cred)
 #else
     struct cred_security_struct *tsec;
 #endif
-    tsec = cred->security;
+    tsec = selinux_cred(cred);
     if (!tsec) {
         pr_err("tsec == NULL!\n");
         return -1;
