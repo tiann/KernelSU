@@ -67,7 +67,7 @@
     <string name="profile_groups">Групи</string>
     <string name="profile_capabilities">Възможности</string>
     <string name="profile_selinux_context">SELinux контекст</string>
-    <string name="profile_umount_modules">Разкачи модули</string>
+    <string name="profile_umount_modules">Разкачи модули по подразбиране</string>
     <string name="failed_to_update_app_profile">Неуспешно актуализиране на App Profile за %s</string>
     <string name="require_kernel_version">Текущата версия %1$d на KernelSU е твърде ниска, за да работи правилно мениджърът. Моля, актуализирайте към версия %2$d или по-висока!</string>
     <string name="settings_umount_modules_default">Разкачи модули</string>
@@ -178,4 +178,15 @@
     <string name="color_teal">Тил</string>
     <string name="color_pink">Розово</string>
     <string name="color_brown">Кафяво</string>
+    <string name="module_repos">Репота</string>
+    <string name="module_repos_sort_update_first">Първо актуализирайте</string>
+    <string name="module_repos_sort_name">По име (А → Я)</string>
+    <string name="module_repos_source_code">Изходен код</string>
+    <string name="home_gki_warning">Започвайки от v3.0.0, работният режим на GKI ще се използва само в тестови среди. Не го препоръчваме за ежедневна употреба и файлове с изображения вече няма да се предоставят.</string>
+    <string name="module_reinstall">Реинсталирай</string>
+    <string name="network_offline">Не е свързан с интернет</string>
+    <string name="network_retry">Пробвай отново</string>
+    <string name="tab_readme">ПРОЧЕТИ МЕ</string>
+    <string name="tab_releases">Версии</string>
+    <string name="tab_info">Информация</string>
 </resources>

@@ -7,7 +7,7 @@
     <string name="home_working_version">版本：%d</string>
     <string name="home_superuser_count">超级用户数：%d</string>
     <string name="home_unsupported">不支持</string>
-    <string name="home_unsupported_reason">KernelSU 现在只支持 GKI 内核</string>
+    <string name="home_unsupported_reason">KernelSU 现在只支持 GKI 内核。</string>
     <string name="home_kernel">内核版本</string>
     <string name="home_manager_version">管理器版本</string>
     <string name="home_fingerprint">系统指纹</string>
@@ -39,7 +39,7 @@
     <string name="reboot_edl">重启到 EDL</string>
     <string name="about">关于</string>
     <string name="module_uninstall_confirm">确定要卸载模块 %s 吗？</string>
-    <string name="metamodule_uninstall_confirm">"您确定要卸载模块 %s 吗？此操作将影响所有模块，并且元模块提供的某些功能（如挂载）将不再工作。  "</string>
+    <string name="metamodule_uninstall_confirm">您确定要卸载模块 %s 吗？此操作将影响所有模块，并且元模块提供的某些功能（如挂载）将不再工作。</string>
     <string name="module_uninstall_success">%s 已卸载</string>
     <string name="module_uninstall_failed">卸载失败：%s</string>
     <string name="module_version">版本</string>
@@ -55,7 +55,7 @@
     <string name="home_module_count">模块数：%d</string>
     <string name="home_learn_kernelsu">了解 KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_CN/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">了解如何安装 KernelSU 以及如何开发模块</string>
+    <string name="home_click_to_learn_kernelsu">了解如何安装 KernelSU 以及如何开发模块。</string>
     <string name="home_support_title">支持开发</string>
     <string name="home_support_content">KernelSU 将保持免费开源，向开发者捐赠以表示支持。</string>
     <string name="home_gki_warning">自 v3.0.0 起 GKI 工作模式将仅用于测试环境，我们不建议用于日常使用，也不再提供镜像文件。</string>
@@ -67,7 +67,7 @@
     <string name="profile_namespace">挂载命名空间</string>
     <string name="profile_namespace_inherited">继承</string>
     <string name="profile_namespace_global">全局</string>
-    <string name="profile_namespace_individual">私有</string>
+    <string name="profile_namespace_individual">独立</string>
     <string name="profile_groups">组</string>
     <string name="profile_capabilities">权能</string>
     <string name="profile_selinux_context">SELinux</string>
@@ -163,7 +163,7 @@
     <string name="undo">撤销</string>
     <string name="module_undo_uninstall_success">成功撤销卸载 %s</string>
     <string name="module_undo_uninstall_failed">撤销卸载 %s 失败</string>
-    <string name="group_contains_apps">包含 %1$d 个应用</string>
+    <string name="group_contains_apps">包含 %d 个应用</string>
     <string name="settings_theme">主题</string>
     <string name="settings_theme_summary">选择应用的主题模式。</string>
     <string name="settings_theme_mode_system">跟随系统</string>
@@ -188,4 +188,6 @@
     <string name="tab_readme">自述</string>
     <string name="tab_releases">版本</string>
     <string name="tab_info">信息</string>
+    <string name="feature_status_unsupported_summary">内核不支持此特性。</string>
+    <string name="feature_status_managed_summary">此功能由一个模块管理。</string>
 </resources>
