@@ -87,7 +87,7 @@
     <string name="install_next">다음</string>
     <string name="settings_uninstall_permanent_message">완전하고 영구적으로 KernelSU(루트 권한 및 모든 모듈)를 제거합니다.</string>
     <string name="enable_web_debugging">WebView 디버깅</string>
-    <string name="require_kernel_version">현재 KernelSU %d 버전은 매니저가 정상 작동하기에 너무 낮습니다. %d 버전 이상으로 업그레이드하세요!</string>
+    <string name="require_kernel_version">현재 KernelSU %1$d 버전은 매니저가 정상 작동하기에 너무 낮습니다. %2$d 버전 이상으로 업그레이드하세요!</string>
     <string name="action">액션</string>
     <string name="settings_uninstall_temporary">임시 제거</string>
     <string name="module_changelog_failed">업데이트 내역 불러오기 실패: %s</string>

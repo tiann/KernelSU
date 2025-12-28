@@ -53,7 +53,7 @@
     <string name="about_source_code"><![CDATA[前往 %1$s 檢閱原始碼<br/>前往 %2$s 加入頻道]]></string>
     <string name="profile_umount_modules">解除掛載模組功能</string>
     <string name="failed_to_update_app_profile">無法更新「%s」App Profile</string>
-    <string name="require_kernel_version">管理工具無法以老舊的 KernelSU %d 版本正常運作。請升級至 %d 以上的版本！</string>
+    <string name="require_kernel_version">管理工具無法以老舊的 KernelSU %1$d 版本正常運作。請升級至 %2$d 以上的版本！</string>
     <string name="settings_umount_modules_default">預設解除掛載模組功能</string>
     <string name="settings_umount_modules_default_summary">將 App Profile 的全域預設行為設作「解除掛載模組功能」。啟用後，將向未指派 Profile 的應用程式移除模組功能。</string>
     <string name="profile_umount_modules_summary">啟用選項後，KernelSU 會將應用程式內遭模組修改的檔案恢復原狀。</string>

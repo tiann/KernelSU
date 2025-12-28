@@ -99,7 +99,7 @@
     <string name="home_support_content">KernelSU ir un vienmēr būs bezmaksas un atvērtā koda. Tomēr jūs varat parādīt mums, ka jums rūp, veicot ziedojumu.</string>
     <string name="profile_groups">Grupas</string>
     <string name="profile_namespace_global">Globāli</string>
-    <string name="require_kernel_version">Pašreizējā KernelSU versija %d ir pārāk zema, lai pārvaldnieks darbotos pareizi. Lūdzu, atjauniniet uz versiju %d vai jaunāku!</string>
+    <string name="require_kernel_version">Pašreizējā KernelSU versija %1$d ir pārāk zema, lai pārvaldnieks darbotos pareizi. Lūdzu, atjauniniet uz versiju %2$d vai jaunāku!</string>
     <string name="enable_web_debugging">Iespējot WebView atkļūdošanu</string>
     <string name="select_file_tip">Ieteicams %1$s nodalījuma attēls</string>
     <string name="install_next">Nākamais</string>

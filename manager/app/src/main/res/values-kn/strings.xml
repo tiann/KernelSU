@@ -28,7 +28,7 @@
     <string name="profile_default">ಡೀಫಾಲ್ಟ್</string>
     <string name="launch_app">ಲಾಂಚ್</string>
     <string name="safe_mode">ಸುರಕ್ಷಿತ ಮೋಡ್</string>
-    <string name="require_kernel_version">ಪ್ರಸ್ತುತ KernelSU ಆವೃತ್ತಿ %d ಮ್ಯಾನೇಜರ್ ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸಲು ತುಂಬಾ ಕಡಿಮೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಆವೃತ್ತಿ %d ಅಥವಾ ಹೆಚ್ಚಿನದಕ್ಕೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ!</string>
+    <string name="require_kernel_version">ಪ್ರಸ್ತುತ KernelSU ಆವೃತ್ತಿ %1$d ಮ್ಯಾನೇಜರ್ ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸಲು ತುಂಬಾ ಕಡಿಮೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಆವೃತ್ತಿ %2$d ಅಥವಾ ಹೆಚ್ಚಿನದಕ್ಕೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ!</string>
     <string name="reboot_userspace">ಸಾಫ್ಟ್ ರೀಬೂಟ್</string>
     <string name="profile_name">ಪ್ರೊಫೈಲ್ ಹೆಸರು</string>
     <string name="home_support_content">KernelSU ಉಚಿತ ಮತ್ತು ಮುಕ್ತ ಮೂಲವಾಗಿದೆ ಮತ್ತು ಯಾವಾಗಲೂ ಇರುತ್ತದೆ. ಆದಾಗ್ಯೂ ನೀವು ದೇಣಿಗೆ ನೀಡುವ ಮೂಲಕ ನೀವು ಕಾಳಜಿ ವಹಿಸುತ್ತೀರಿ ಎಂದು ನಮಗೆ ತೋರಿಸಬಹುದು.</string>

@@ -77,7 +77,7 @@
     <string name="reboot_userspace">Soft-Reboot</string>
     <string name="module_uninstall_confirm">Möchtest du wirklich Modul %s deinstallieren?</string>
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
-    <string name="require_kernel_version">Die aktuelle KernelSU-Version %d ist zu alt für diese Manager-Version. Bitte auf Version %d oder höher aktualisieren!</string>
+    <string name="require_kernel_version">Die aktuelle KernelSU-Version %1$d ist zu alt für diese Manager-Version. Bitte auf Version %2$d oder höher aktualisieren!</string>
     <string name="module_changelog">Änderungsprotokoll</string>
     <string name="app_profile_template_import_success">Erfolgreich importiert</string>
     <string name="app_profile_export_to_clipboard">In Zwischenablage exportieren</string>

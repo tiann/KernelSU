@@ -45,7 +45,7 @@
     <string name="profile_selinux_context">Konteksto ng SELinux</string>
     <string name="profile_umount_modules">I-unmount ang mga module</string>
     <string name="failed_to_update_app_profile">Nabigong i-update ang App Profile para sa %s</string>
-    <string name="require_kernel_version">Ang kasalukuyang bersyon ng KernelSU %d ay masyadong mababa para gumana nang maayos ang manager. Mangyaring mag-upgrade sa bersyon %d o mas mataas!</string>
+    <string name="require_kernel_version">Ang kasalukuyang bersyon ng KernelSU %1$d ay masyadong mababa para gumana nang maayos ang manager. Mangyaring mag-upgrade sa bersyon %2$d o mas mataas!</string>
     <string name="profile_umount_modules_summary">Ang pag-enable sa opsyong ito ay magbibigay-daan sa KernelSU na ibalik ang anumang binagong file ng mga module para sa app na ito.</string>
     <string name="profile_selinux_rules">Mga Tuntunin</string>
     <string name="module_downloading">Nagda-download ng modyul: %s</string>

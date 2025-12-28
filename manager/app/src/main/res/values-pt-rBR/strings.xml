@@ -78,7 +78,7 @@
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
     <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para %s</string>
-    <string name="require_kernel_version">A versão atual do KernelSU %d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %d ou superior!</string>
+    <string name="require_kernel_version">A versão atual do KernelSU %1$d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %2$d ou superior!</string>
     <string name="module_changelog">Registro de alterações</string>
     <string name="app_profile_template_import_success">Importado com sucesso</string>
     <string name="app_profile_export_to_clipboard">Exportar para a área de transferência</string>

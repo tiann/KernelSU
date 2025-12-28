@@ -16,6 +16,7 @@
 #include <linux/uaccess.h>
 #include <linux/namei.h>
 #include <linux/workqueue.h>
+#include <linux/uio.h>
 
 #include "manager.h"
 #include "allowlist.h"
@@ -262,27 +263,76 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 static ssize_t (*orig_read)(struct file *, char __user *, size_t, loff_t *);
 static ssize_t (*orig_read_iter)(struct kiocb *, struct iov_iter *);
 static struct file_operations fops_proxy;
-static ssize_t read_count_append = 0;
+static ssize_t ksu_rc_pos = 0;
+const size_t ksu_rc_len = sizeof(KERNEL_SU_RC) - 1;
+
+// https://cs.android.com/android/platform/superproject/main/+/main:system/core/init/parser.cpp;l=144;drc=61197364367c9e404c7da6900658f1b16c42d0da
+// https://cs.android.com/android/platform/superproject/main/+/main:system/libbase/file.cpp;l=241-243;drc=61197364367c9e404c7da6900658f1b16c42d0da
+// The system will read init.rc file until EOF, whenever read() returns 0,
+// so we begin append ksu rc when we meet EOF.
 
 static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
                           loff_t *pos)
 {
-    bool first_read = file->f_pos == 0;
-    ssize_t ret = orig_read(file, buf, count, pos);
-    if (first_read) {
-        pr_info("read_proxy append %ld + %ld\n", ret, read_count_append);
-        ret += read_count_append;
+    ssize_t ret = 0;
+    size_t append_count;
+    if (ksu_rc_pos && ksu_rc_pos < ksu_rc_len)
+        goto append_ksu_rc;
+
+    ret = orig_read(file, buf, count, pos);
+    if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
+        return ret;
+    } else {
+        pr_info("read_proxy: orig read finished, start append rc\n");
     }
+append_ksu_rc:
+    append_count = ksu_rc_len - ksu_rc_pos;
+    if (append_count > count - ret)
+        append_count = count - ret;
+    // copy_to_user returns the number of not copied
+    if (copy_to_user(buf + ret, KERNEL_SU_RC + ksu_rc_pos, append_count)) {
+        pr_info("read_proxy: append error, totally appended %ld\n", ksu_rc_pos);
+    } else {
+        pr_info("read_proxy: append %ld\n", append_count);
+
+        ksu_rc_pos += append_count;
+        if (ksu_rc_pos == ksu_rc_len) {
+            pr_info("read_proxy: append done\n");
+        }
+        ret += append_count;
+    }
+
     return ret;
 }
 
 static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 {
-    bool first_read = iocb->ki_pos == 0;
-    ssize_t ret = orig_read_iter(iocb, to);
-    if (first_read) {
-        pr_info("read_iter_proxy append %ld + %ld\n", ret, read_count_append);
-        ret += read_count_append;
+    ssize_t ret = 0;
+    size_t append_count;
+    if (ksu_rc_pos && ksu_rc_pos < ksu_rc_len)
+        goto append_ksu_rc;
+
+    ret = orig_read_iter(iocb, to);
+    if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
+        return ret;
+    } else {
+        pr_info("read_iter_proxy: orig read finished, start append rc\n");
+    }
+append_ksu_rc:
+    // copy_to_iter returns the number of copied bytes
+    append_count =
+        copy_to_iter(KERNEL_SU_RC + ksu_rc_pos, ksu_rc_len - ksu_rc_pos, to);
+    if (!append_count) {
+        pr_info("read_iter_proxy: append error, totally appended %ld\n",
+                ksu_rc_pos);
+    } else {
+        pr_info("read_iter_proxy: append %ld\n", append_count);
+
+        ksu_rc_pos += append_count;
+        if (ksu_rc_pos == ksu_rc_len) {
+            pr_info("read_iter_proxy: append done\n");
+        }
+        ret += append_count;
     }
     return ret;
 }
@@ -291,7 +341,6 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
                                size_t *count_ptr, loff_t **pos)
 {
     struct file *file;
-    char __user *buf;
     size_t count;
 
     if (strcmp(current->comm, "init")) {
@@ -309,8 +358,8 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
     }
 
     const char *short_name = file->f_path.dentry->d_name.name;
-    if (strcmp(short_name, "atrace.rc")) {
-        // we are only interest `atrace.rc` file name file
+    if (strcmp(short_name, "init.rc")) {
+        // we are only interest `init.rc` file name file
         return 0;
     }
     char path[256];
@@ -320,41 +369,27 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
         return 0;
     }
 
-    if (strcmp(dpath, "/system/etc/init/atrace.rc")) {
+    if (strcmp(dpath, "/system/etc/init/hw/init.rc")) {
         return 0;
     }
 
     // we only process the first read
-    static bool rc_inserted = false;
-    if (rc_inserted) {
+    static bool rc_hooked = false;
+    if (rc_hooked) {
         // we don't need this kprobe, unregister it!
         stop_vfs_read_hook();
         return 0;
     }
-    rc_inserted = true;
+    rc_hooked = true;
 
     // now we can sure that the init process is reading
-    // `/system/etc/init/atrace.rc`
-    buf = *buf_ptr;
+    // `/system/etc/init/init.rc`
     count = *count_ptr;
 
-    size_t rc_count = strlen(KERNEL_SU_RC);
-
     pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
-            current->comm, count, rc_count);
+            current->comm, count, ksu_rc_len);
 
-    if (count < rc_count) {
-        pr_err("count: %zu < rc_count: %zu\n", count, rc_count);
-        return 0;
-    }
-
-    size_t ret = copy_to_user(buf, KERNEL_SU_RC, rc_count);
-    if (ret) {
-        pr_err("copy ksud.rc failed: %zu\n", ret);
-        return 0;
-    }
-
-    // we've succeed to insert ksud.rc, now we need to proxy the read and modify the result!
+    // Now we need to proxy the read and modify the result!
     // But, we can not modify the file_operations directly, because it's in read-only memory.
     // We just replace the whole file_operations with a proxy one.
     memcpy(&fops_proxy, file->f_op, sizeof(struct file_operations));
@@ -368,10 +403,6 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
     }
     // replace the file_operations
     file->f_op = &fops_proxy;
-    read_count_append = rc_count;
-
-    *buf_ptr = buf + rc_count;
-    *count_ptr = count - rc_count;
 
     return 0;
 }

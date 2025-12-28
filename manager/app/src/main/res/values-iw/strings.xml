@@ -33,7 +33,7 @@
     <string name="profile_default">ברירת מחדל</string>
     <string name="launch_app">להשיק</string>
     <string name="safe_mode">מצב בטוח</string>
-    <string name="require_kernel_version">גרסת KernelSU הנוכחית %d נמוכה מדי כדי שהמנהל יפעל כראוי. אנא שדרג לגרסה %d ומעלה!</string>
+    <string name="require_kernel_version">גרסת KernelSU הנוכחית %1$d נמוכה מדי כדי שהמנהל יפעל כראוי. אנא שדרג לגרסה %2$d ומעלה!</string>
     <string name="reboot_recovery">הפעלה מחדש לריקברי</string>
     <string name="reboot_userspace">רך Reboot</string>
     <string name="profile_name">שם פרופיל</string>
