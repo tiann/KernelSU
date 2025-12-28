@@ -3,9 +3,10 @@
 
 #include <linux/cred.h>
 #include <linux/types.h>
+#include <linux/uidgid.h>
 #include "allowlist.h"
 
-#define KSU_INVALID_APPID -1
+#define KSU_INVALID_APPID INVALID_UID
 
 extern uid_t ksu_manager_appid; // DO NOT DIRECT USE
 
