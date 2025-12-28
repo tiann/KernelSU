@@ -193,6 +193,31 @@ static void on_post_fs_data_cbfun(struct callback_head *cb)
 static struct callback_head on_post_fs_data_cb = { .func =
                                                        on_post_fs_data_cbfun };
 
+static bool check_argv(struct user_arg_ptr argv, int index,
+                       const char *expected, char *buf, size_t buf_len)
+{
+    const char __user *p;
+    int argc;
+
+    argc = count(argv, MAX_ARG_STRINGS);
+    if (argc <= index)
+        return false;
+
+    p = get_user_arg_ptr(argv, index);
+    if (!p || IS_ERR(p))
+        goto fail;
+
+    if (strncpy_from_user_nofault(buf, p, buf_len) <= 0)
+        goto fail;
+
+    buf[buf_len - 1] = '\0';
+    return !strcmp(buf, expected);
+
+fail:
+    pr_err("check_argv failed\n");
+    return false;
+}
+
 // IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
                              struct user_arg_ptr *argv,
@@ -201,7 +226,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
     struct filename *filename;
 
     static const char app_process[] = "/system/bin/app_process";
-    static bool first_app_process = true;
+    static bool first_zygote = true;
 
     /* This applies to versions Android 10+ */
     static const char system_bin_init[] = "/system/bin/init";
@@ -219,42 +244,33 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
     if (unlikely(!memcmp(filename->name, system_bin_init,
                          sizeof(system_bin_init) - 1) &&
                  argv)) {
-        // /system/bin/init executed
-        int argc = count(*argv, MAX_ARG_STRINGS);
-        pr_info("/system/bin/init argc: %d\n", argc);
-        if (argc > 1 && !init_second_stage_executed) {
-            const char __user *p = get_user_arg_ptr(*argv, 1);
-            if (p && !IS_ERR(p)) {
-                char first_arg[16];
-                strncpy_from_user_nofault(first_arg, p, sizeof(first_arg));
-                pr_info("/system/bin/init first arg: %s\n", first_arg);
-                if (!strcmp(first_arg, "second_stage")) {
-                    pr_info("/system/bin/init second_stage executed\n");
-                    apply_kernelsu_rules();
-                    setup_ksu_cred();
-                    init_second_stage_executed = true;
-                }
-            } else {
-                pr_err("/system/bin/init parse args err!\n");
-            }
+        char buf[16];
+        if (!init_second_stage_executed &&
+            check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
+            pr_info("/system/bin/init second_stage executed\n");
+            apply_kernelsu_rules();
+            setup_ksu_cred();
+            init_second_stage_executed = true;
         }
     }
 
-    if (unlikely(first_app_process && !memcmp(filename->name, app_process,
-                                              sizeof(app_process) - 1))) {
-        first_app_process = false;
-        pr_info("exec app_process, /data prepared, second_stage: %d\n",
-                init_second_stage_executed);
-        struct task_struct *init_task;
-        rcu_read_lock();
-        init_task = rcu_dereference(current->real_parent);
-        // fallback for initial installation, ksud is not there
-        if (init_task) {
-            task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
+    if (unlikely(
+            first_zygote &&
+            !memcmp(filename->name, app_process, sizeof(app_process) - 1) &&
+            argv)) {
+        char buf[16];
+        if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
+            pr_info("exec zygote, /data prepared, second_stage: %d\n",
+                    init_second_stage_executed);
+            rcu_read_lock();
+            struct task_struct *init_task =
+                rcu_dereference(current->real_parent);
+            if (init_task)
+                task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
+            rcu_read_unlock();
+            first_zygote = false;
+            stop_execve_hook();
         }
-        rcu_read_unlock();
-
-        stop_execve_hook();
     }
 
     return 0;
