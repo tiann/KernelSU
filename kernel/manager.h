@@ -6,7 +6,7 @@
 #include <linux/uidgid.h>
 #include "allowlist.h"
 
-#define KSU_INVALID_APPID ((uid_t)-1)
+#define KSU_INVALID_APPID ((uid_t) -1)
 
 extern uid_t ksu_manager_appid; // DO NOT DIRECT USE
 
