@@ -257,6 +257,13 @@ class WebViewInterface(
         }
         return jsonArray.toString()
     }
+
+    @JavascriptInterface
+    fun exit() {
+        if (context is Activity) {
+            context.finish()
+        }
+    }
 }
 
 fun hideSystemUI(window: Window) =

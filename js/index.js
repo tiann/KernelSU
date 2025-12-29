@@ -140,3 +140,7 @@ export function getPackagesInfo(packages) {
     return [];
   }
 }
+
+export function exit() {
+  ksu.exit();
+}

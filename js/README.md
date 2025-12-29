@@ -177,3 +177,12 @@ An object contains:
 - `appLabel` `<string>` Display name of the application.
 - `isSystem` `<boolean>` Whether the application is a system app.
 - `uid` `<number>` UID of the application.
+
+### exit
+
+Exit the current WebUI activity.
+
+```javascript
+import { exit } from 'kernelsu';
+exit();
+```
