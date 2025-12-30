@@ -1,9 +1,12 @@
 package me.weishu.kernelsu.ui.component
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.util.Log
+import android.view.MotionEvent
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -37,6 +40,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 
+@SuppressLint("ClickableViewAccessibility")
 @Composable
 fun GithubMarkdown(content: String) {
     val context = LocalContext.current
@@ -111,6 +115,20 @@ fun GithubMarkdown(content: String) {
                             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
                             .build()
 
+                        override fun onPageFinished(view: WebView, url: String) {
+                            super.onPageFinished(view, url)
+                            view.evaluateJavascript(
+                                "(function(){return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);})()"
+                            ) { value ->
+                                val raw = value.trim().trim('"')
+                                val cssPx = raw.toFloatOrNull() ?: return@evaluateJavascript
+                                val density = view.resources.displayMetrics.density
+                                val heightPx = (cssPx * density).toInt().coerceAtLeast(1)
+                                view.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightPx)
+                                view.requestLayout()
+                            }
+                        }
+
                         override fun shouldOverrideUrlLoading(
                             view: WebView, request: WebResourceRequest
                         ): Boolean {
@@ -150,6 +168,9 @@ fun GithubMarkdown(content: String) {
                                 )
                             }
                         }
+                    }
+                    setOnTouchListener { _, ev ->
+                        ev.action == MotionEvent.ACTION_MOVE
                     }
                     loadDataWithBaseURL(
                         "https://appassets.androidplatform.net", html,
