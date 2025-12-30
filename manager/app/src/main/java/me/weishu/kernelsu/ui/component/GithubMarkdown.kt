@@ -6,7 +6,9 @@ import android.content.Intent
 import android.graphics.Color
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
@@ -41,8 +44,9 @@ import okio.IOException
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
+import kotlin.math.abs
 
-@SuppressLint("ClickableViewAccessibility")
+@SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
 @Composable
 fun GithubMarkdown(
     content: String,
@@ -50,6 +54,7 @@ fun GithubMarkdown(
 ) {
     isLoading.value = true
     val context = LocalContext.current
+    val scrollInterface = remember { MarkdownScrollInterface() }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
     val isDark = isInDarkTheme(themeMode)
@@ -108,6 +113,7 @@ fun GithubMarkdown(
 
                     settings.apply {
                         offscreenPreRaster = true
+                        javaScriptEnabled = true
                         domStorageEnabled = true
                         mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                         allowContentAccess = false
@@ -117,6 +123,7 @@ fun GithubMarkdown(
                         setSupportZoom(false)
                         setGeolocationEnabled(false)
                     }
+                    addJavascriptInterface(scrollInterface, "AndroidScroll")
                     webViewClient = object : WebViewClient() {
                         private val assetLoader = WebViewAssetLoader.Builder()
                             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
@@ -134,6 +141,69 @@ fun GithubMarkdown(
                                 view.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightPx)
                                 view.requestLayout()
                             }
+
+                            val js = """
+                                (function() {
+                                    if (window.androidScrollInjected) return;
+                                    window.androidScrollInjected = true;
+                                
+                                    function checkScroll(target) {
+                                        if (!target || target === document.body || target === document.documentElement) return {l: false, r: false};
+                                        var style = window.getComputedStyle(target);
+                                        if (style.overflowX !== 'auto' && style.overflowX !== 'scroll') return {l: false, r: false};
+                                        if (target.scrollWidth <= target.clientWidth) return {l: false, r: false};
+                                        
+                                        var atLeft = target.scrollLeft <= 0;
+                                        var atRight = Math.ceil(target.scrollLeft + target.clientWidth) >= target.scrollWidth;
+                                        
+                                        return {l: !atLeft, r: !atRight};
+                                    }
+                                
+                                    var lastTarget = null;
+                                    var lastState = {l: false, r: false};
+                                    
+                                    function update(l, r) {
+                                        if (lastState.l !== l || lastState.r !== r) {
+                                            lastState = {l: l, r: r};
+                                            AndroidScroll.updateScrollState(l, r);
+                                        }
+                                    }
+                                
+                                    document.addEventListener('touchstart', function(e) {
+                                        var t = e.target;
+                                        var found = false;
+                                        while(t && t !== document.body) {
+                                            var s = checkScroll(t);
+                                            if (s.l || s.r) { 
+                                                 lastTarget = t;
+                                                 update(s.l, s.r);
+                                                 found = true;
+                                                 break;
+                                            }
+                                            t = t.parentElement;
+                                        }
+                                        if (!found) {
+                                            lastTarget = null;
+                                            update(false, false);
+                                        }
+                                    }, {passive: true});
+                                
+                                    document.addEventListener('touchmove', function(e) {
+                                        if (lastTarget) {
+                                             var s = checkScroll(lastTarget);
+                                             update(s.l, s.r);
+                                        }
+                                    }, {passive: true});
+                                    
+                                    document.addEventListener('scroll', function(e) {
+                                        if (lastTarget && (e.target === lastTarget || e.target.contains(lastTarget))) {
+                                              var s = checkScroll(lastTarget);
+                                              update(s.l, s.r);
+                                        }
+                                    }, {passive: true, capture: true});
+                                })();
+                            """.trimIndent()
+                            view.evaluateJavascript(js, null)
                         }
 
                         override fun shouldOverrideUrlLoading(
@@ -180,9 +250,48 @@ fun GithubMarkdown(
                             }
                         }
                     }
-                    setOnTouchListener { _, ev ->
-                        ev.action == MotionEvent.ACTION_MOVE
-                    }
+                    setOnTouchListener(object : View.OnTouchListener {
+                        private var isHorizontalScrollLocked = false
+                        private var initialDownX = 0f
+                        private var initialDownY = 0f
+
+                        override fun onTouch(v: View, event: MotionEvent): Boolean {
+                            when (event.action) {
+                                MotionEvent.ACTION_DOWN -> {
+                                    initialDownX = event.x
+                                    initialDownY = event.y
+                                    isHorizontalScrollLocked = false
+                                    v.parent.requestDisallowInterceptTouchEvent(true)
+                                }
+
+                                MotionEvent.ACTION_MOVE -> {
+                                    if (isHorizontalScrollLocked) {
+                                        v.parent.requestDisallowInterceptTouchEvent(true)
+                                    } else {
+                                        val dx = event.x - initialDownX
+                                        val dy = event.y - initialDownY
+                                        if (abs(dx) > abs(dy)) {
+                                            val canScroll = if (dx < 0) scrollInterface.canScrollRight else scrollInterface.canScrollLeft
+                                            if (canScroll) {
+                                                isHorizontalScrollLocked = true
+                                                v.parent.requestDisallowInterceptTouchEvent(true)
+                                            } else {
+                                                v.parent.requestDisallowInterceptTouchEvent(false)
+                                            }
+                                        } else {
+                                            v.parent.requestDisallowInterceptTouchEvent(false)
+                                        }
+                                    }
+                                }
+
+                                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                                    v.parent.requestDisallowInterceptTouchEvent(false)
+                                    isHorizontalScrollLocked = false
+                                }
+                            }
+                            return false
+                        }
+                    })
                     loadDataWithBaseURL(
                         "https://appassets.androidplatform.net", html,
                         "text/html", StandardCharsets.UTF_8.name(), null
@@ -199,4 +308,18 @@ fun GithubMarkdown(
             .wrapContentHeight()
             .clipToBounds(),
     )
+}
+
+class MarkdownScrollInterface {
+    @Volatile
+    var canScrollLeft = false
+
+    @Volatile
+    var canScrollRight = false
+
+    @JavascriptInterface
+    fun updateScrollState(left: Boolean, right: Boolean) {
+        canScrollLeft = left
+        canScrollRight = right
+    }
 }
