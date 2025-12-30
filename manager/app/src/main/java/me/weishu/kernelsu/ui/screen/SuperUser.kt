@@ -56,7 +56,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -87,6 +86,7 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -297,11 +297,7 @@ fun SuperUserPager(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = if (viewModel.isRefreshing) "Loading..." else "Empty",
-                        textAlign = TextAlign.Center,
-                        color = Color.Gray,
-                    )
+                    InfiniteProgressIndicator()
                 }
             } else {
                 val filteredApps = remember(SuperUserViewModel.apps) {

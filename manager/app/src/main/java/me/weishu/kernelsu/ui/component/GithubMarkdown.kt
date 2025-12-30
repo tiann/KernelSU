@@ -16,6 +16,8 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
@@ -42,7 +44,11 @@ import java.nio.charset.StandardCharsets
 
 @SuppressLint("ClickableViewAccessibility")
 @Composable
-fun GithubMarkdown(content: String) {
+fun GithubMarkdown(
+    content: String,
+    isLoading: MutableState<Boolean> = mutableStateOf(true)
+) {
+    isLoading.value = true
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
@@ -99,6 +105,7 @@ fun GithubMarkdown(content: String) {
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
                     isHorizontalScrollBarEnabled = false
+
                     settings.apply {
                         offscreenPreRaster = true
                         domStorageEnabled = true
@@ -137,6 +144,10 @@ fun GithubMarkdown(content: String) {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent)
                             return true
+                        }
+
+                        override fun onPageCommitVisible(view: WebView?, url: String?) {
+                            isLoading.value = false
                         }
 
                         override fun shouldInterceptRequest(

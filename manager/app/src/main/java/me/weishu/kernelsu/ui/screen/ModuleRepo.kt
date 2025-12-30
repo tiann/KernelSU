@@ -620,6 +620,22 @@ private fun ReadmePage(
         overscrollEffect = null,
     ) {
         item {
+            val isLoading = remember { mutableStateOf(true) }
+            if (isLoading.value) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = innerPadding.calculateTopPadding(),
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection),
+                            bottom = innerPadding.calculateBottomPadding(),
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    InfiniteProgressIndicator()
+                }
+            }
             AnimatedVisibility(
                 visible = readmeLoaded && readmeHtml != null,
                 enter = expandVertically() + fadeIn(),
@@ -631,7 +647,7 @@ private fun ReadmePage(
                         modifier = Modifier.padding(horizontal = 12.dp),
                     ) {
                         Column {
-                            GithubMarkdown(content = readmeHtml!!)
+                            GithubMarkdown(content = readmeHtml!!, isLoading)
                         }
                     }
                 }
@@ -743,7 +759,7 @@ fun ReleasesPage(
                                     }
                                 }
                                 HorizontalDivider(
-                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 4.dp),
+                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                                     thickness = 0.5.dp,
                                     color = colorScheme.outline.copy(alpha = 0.5f)
                                 )
@@ -781,6 +797,7 @@ fun ReleasesPage(
                                             confirmDialog.showConfirm(title = confirmTitle, content = startText)
                                         }
                                     }
+                                    val bottomPadding = if (index == rel.assets.lastIndex) 16.dp else 8.dp
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically,
@@ -788,7 +805,7 @@ fun ReleasesPage(
                                     ) {
                                         Column(
                                             modifier = Modifier
-                                                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                                                .padding(start = 16.dp, end = 16.dp, bottom = bottomPadding)
                                                 .weight(1f)
                                         ) {
                                             Text(
@@ -804,7 +821,7 @@ fun ReleasesPage(
                                             )
                                         }
                                         IconButton(
-                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = bottomPadding),
                                             backgroundColor = secondaryContainer,
                                             minHeight = 35.dp,
                                             minWidth = 35.dp,
@@ -841,7 +858,7 @@ fun ReleasesPage(
                                     }
                                     if (index != rel.assets.lastIndex) {
                                         HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = 8.dp),
+                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                                             thickness = 0.5.dp,
                                             color = colorScheme.outline.copy(alpha = 0.5f)
                                         )
