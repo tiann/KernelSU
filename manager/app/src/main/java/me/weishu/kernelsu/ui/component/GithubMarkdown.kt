@@ -280,6 +280,7 @@ fun GithubMarkdown(
                                             }
                                         } else {
                                             v.parent.requestDisallowInterceptTouchEvent(false)
+                                            return true
                                         }
                                     }
                                 }
