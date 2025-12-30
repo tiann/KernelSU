@@ -5,7 +5,6 @@
     <string name="home_click_to_install">點選開始安裝</string>
     <string name="home_working">已開始運作</string>
     <string name="home_working_version">版本：%d</string>
-    <string name="home_superuser_count">授權：%d 個應用程式</string>
     <string name="home_unsupported">未受支援</string>
     <string name="home_unsupported_reason">KernelSU 目前僅支援 GKI 核心</string>
     <string name="home_kernel">核心版本</string>
@@ -37,14 +36,11 @@
     <string name="module_uninstall_failed">無法解除安裝：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="refresh">重新載入</string>
     <string name="show_system_apps">顯示系統程式</string>
-    <string name="hide_system_apps">隱藏系統程式</string>
     <string name="send_log">傳送日誌</string>
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">將在重新啟動時生效</string>
     <string name="module_magisk_conflict">與 Magisk 發生衝突，無法使用模組功能！</string>
-    <string name="home_module_count">掛載：%d 個模組</string>
     <string name="home_learn_kernelsu">深入瞭解 KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/zh_TW/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">知曉安裝、使用 KernelSU 本體與其模組功能的方法</string>
@@ -90,10 +86,7 @@
     <string name="app_profile_template_export_empty">查無可供匯出的本地範本！</string>
     <string name="app_profile_template_id_exist">編號已由其他範本領有！</string>
     <string name="app_profile_import_from_clipboard">自剪貼簿匯入</string>
-    <string name="module_changelog_failed">無法取得更新說明：%s</string>
     <string name="app_profile_template_name">名稱</string>
-    <string name="app_profile_template_sync">同步線上範本</string>
-    <string name="app_profile_template_readonly">唯讀</string>
     <string name="app_profile_import_export">匯入／匯出</string>
     <string name="app_profile_template_save_failed">無法儲存範本</string>
     <string name="app_profile_template_description">說明</string>
@@ -141,7 +134,6 @@
     <string name="refresh_refresh">正在刷新…</string>
     <string name="refresh_complete">刷新成功</string>
     <string name="module_repos">模組倉庫</string>
-    <string name="module_repos_sort_update_first">可更新優先</string>
     <string name="module_repos_source_code">源碼</string>
     <string name="module_repos_sort_name">按名稱排序</string>
     <string name="undo">撤銷</string>

@@ -5,9 +5,7 @@
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Суперюзеры: %d</string>
     <!--Don't translate this string!-->
-    <string name="home_module_count">Модули: %d</string>
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">KernelSU поддерживает только GKI ядра.</string>
     <string name="home_kernel">Версия ядра</string>
@@ -40,9 +38,7 @@
     <string name="module_uninstall_failed">Не удалось удалить %s</string>
     <string name="module_version">Версия</string>
     <string name="module_author">Автор</string>
-    <string name="refresh">Обновить страницу</string>
     <string name="show_system_apps">Показать системные приложения</string>
-    <string name="hide_system_apps">Скрыть системные приложения</string>
     <string name="send_log">Отправить логи</string>
     <string name="safe_mode">Безопасный режим</string>
     <string name="reboot_to_apply">Перезагрузите, чтобы изменения вступили в силу</string>
@@ -88,12 +84,9 @@
     <string name="app_profile_template_export_empty">Нет локальных шаблонов для экспорта!</string>
     <string name="app_profile_template_id_exist">Шаблон с таким ID уже существует!</string>
     <string name="app_profile_import_from_clipboard">Импортировать из буфера обмена</string>
-    <string name="module_changelog_failed">Не удалось получить список изменений: %s</string>
     <string name="app_profile_template_name">Название</string>
     <string name="app_profile_template_id_invalid">Неверный ID шаблона</string>
-    <string name="app_profile_template_sync">Синхронизировать онлайн-шаблоны</string>
     <string name="app_profile_template_create">Создать шаблон</string>
-    <string name="app_profile_template_readonly">Только чтение</string>
     <string name="app_profile_import_export">Импорт/Экспорт</string>
     <string name="app_profile_template_save_failed">Не удалось сохранить шаблон</string>
     <string name="app_profile_template_edit">Редактирование шаблона</string>
@@ -185,11 +178,9 @@
     <string name="settings_theme_mode_light">Светлая</string>
     <string name="settings_theme_mode_dark">Тёмная</string>
     <string name="module_repos">Репозиторий</string>
-    <string name="module_repos_sort_update_first">Сначала с обновлением</string>
     <string name="module_repos_sort_name">Имя (А → Я)</string>
     <string name="module_repos_source_code">Исходный код</string>
     <string name="home_gki_warning">Начиная с версии 3.0.0, режим работы GKI будет использоваться только в тестовых средах. Мы не рекомендуем его для ежедневного использования, а image файлы больше предоставляться не будут.</string>
-    <string name="module_reinstall">Переустановить</string>
     <string name="network_offline">Нет подключения к сети</string>
     <string name="network_retry">Повторить</string>
     <string name="tab_readme">README</string>

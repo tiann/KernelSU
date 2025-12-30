@@ -129,6 +129,8 @@ dependencies {
     implementation(libs.lsposed.cxx)
 
     implementation(libs.miuix)
+    implementation(libs.miuix.icons)
+
     implementation(libs.haze)
     implementation(libs.capsule)
 }

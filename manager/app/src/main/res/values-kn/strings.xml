@@ -19,11 +19,9 @@
     <string name="force_stop_app">ಫೋರ್ಸ್ ಸ್ಟಾಪ್</string>
     <string name="reboot_edl">EDL ಗೆ ರೀಬೂಟ್</string>
     <string name="profile_capabilities">ಸಾಮರ್ಥ್ಯಗಳು</string>
-    <string name="home_superuser_count">ಸೂಪರ್‌ಯೂಸರ್‌ಗಳು: %d</string>
     <string name="module_start_downloading">ಡೌನ್‌ಲೋಡ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಿ: %s</string>
     <string name="profile_namespace_global">ಜಾಗತಿಕ</string>
     <string name="settings_umount_modules_default_summary">ಅಪ್ಲಿಕೇಶನ್ ಪ್ರೊಫೈಲ್‌ಗಳಲ್ಲಿ \"Umount ಮಾಡ್ಯೂಲ್\" ಗಾಗಿ ಜಾಗತಿಕ ಡೀಫಾಲ್ಟ್ ಮೌಲ್ಯ. ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ, ಪ್ರೊಫೈಲ್ ಸೆಟ್ ಅನ್ನು ಹೊಂದಿರದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗಾಗಿ ಸಿಸ್ಟಮ್‌ಗೆ ಎಲ್ಲಾ ಮಾಡ್ಯೂಲ್ ಮಾರ್ಪಾಡುಗಳನ್ನು ಇದು ತೆಗೆದುಹಾಕುತ್ತದೆ.</string>
-    <string name="home_module_count">ಮಾಡ್ಯೂಲ್‌ಗಳು: %d</string>
     <string name="profile_selinux_context">SELinux ಸಂದರ್ಭ</string>
     <string name="profile_default">ಡೀಫಾಲ್ಟ್</string>
     <string name="launch_app">ಲಾಂಚ್</string>
@@ -43,14 +41,12 @@
     <string name="reboot">ರೀಬೂಟ್</string>
     <string name="home_unsupported_reason">KernelSU ಈಗ GKI ಕರ್ನಲ್‌ಗಳನ್ನು ಮಾತ್ರ ಬೆಂಬಲಿಸುತ್ತದೆ</string>
     <string name="home_selinux_status">SELinux ಸ್ಥಿತಿ</string>
-    <string name="hide_system_apps">ಸಿಸ್ಟಮ್ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ</string>
     <string name="module_version">ವರ್ಷನ್</string>
     <string name="home_unsupported">ಬೆಂಬಲಿತವಾಗಿಲ್ಲ</string>
     <string name="profile_selinux_domain">ಡೊಮೇನ್</string>
     <string name="home">ಮನೆ</string>
     <string name="profile_custom">ಕಸ್ಟಮ್</string>
     <string name="profile_template">ಟೆಂಪ್ಲೇಟ್</string>
-    <string name="refresh">ರಿಫ್ರೆಶ್</string>
     <string name="module_downloading">ಮಾಡ್ಯೂಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ: %s</string>
     <string name="home_learn_kernelsu">KernelSU ಕಲಿಯಿರಿ</string>
     <string name="module_uninstall_confirm">%s ಮಾಡ್ಯೂಲ್ ಅನ್ನು ಅಸ್ಥಾಪಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ\?</string>

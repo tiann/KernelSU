@@ -22,11 +22,9 @@
     <string name="reboot_edl">הפעלה מחדש למצב EDL</string>
     <string name="restart_app">איתחול</string>
     <string name="profile_capabilities">יכולת</string>
-    <string name="home_superuser_count">משתמשי על: %d</string>
     <string name="module_start_downloading">מפעיל מודל: %s</string>
     <string name="profile_namespace_global">גלובלי</string>
     <string name="settings_umount_modules_default_summary">ערך ברירת המחדל הגלובלי עבור \"טעינת מודולים\" בפרופילי אפליקציה. אם מופעל, זה יסיר את כל שינויי המודול למערכת עבור יישומים שאין להם ערכת פרופיל.</string>
-    <string name="home_module_count">מודלים:%d</string>
     <string name="selinux_status_enforcing">אכיפה</string>
     <string name="profile_selinux_context">הקשר SELinux</string>
     <string name="home_fingerprint">טביעת אצבע</string>
@@ -51,14 +49,12 @@
     <string name="reboot">הפעלה מחדש</string>
     <string name="home_unsupported_reason">KernelSU תומך רק בליבת GKI כעת</string>
     <string name="home_selinux_status">סטטוס SELinux</string>
-    <string name="hide_system_apps">הסתר אפליקציות מערכת</string>
     <string name="module_version">גרסה</string>
     <string name="home_unsupported">אינו נתמך</string>
     <string name="profile_selinux_domain">תחום</string>
     <string name="home">בית</string>
     <string name="profile_custom">מותאם אישית</string>
     <string name="profile_template">תבנית</string>
-    <string name="refresh">רענון</string>
     <string name="module_downloading">מוריד מודל: %s</string>
     <string name="module_update">עדכון</string>
     <string name="home_learn_kernelsu">למד אודות KernelSU</string>

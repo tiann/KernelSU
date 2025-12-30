@@ -323,8 +323,10 @@ private fun ZipFileIntentHandler(
         }
 
         if (isSafeMode) {
-            Toast.makeText(context,
-                context.getString(R.string.safe_mode_module_disabled), Toast.LENGTH_SHORT)
+            Toast.makeText(
+                context,
+                context.getString(R.string.safe_mode_module_disabled), Toast.LENGTH_SHORT
+            )
                 .show()
         } else {
             zipUri = uri

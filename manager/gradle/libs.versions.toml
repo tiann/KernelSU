@@ -1,7 +1,7 @@
 [versions]
 agp = "8.13.2"
 kotlin = "2.3.0"
-ksp = "2.3.3"
+ksp = "2.3.4"
 compose-bom = "2025.12.01"
 lifecycle = "2.10.0"
 navigation = "2.9.6"
@@ -16,7 +16,7 @@ ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
-miuix = "0.7.2"
+miuix = "0.8.0-rc01"
 haze = "1.7.1"
 capsule = "2.1.2"
 
@@ -68,6 +68,7 @@ markwon = { group = "io.noties.markwon", name = "core", version.ref = "markwon" 
 lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 
 miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" }
+miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.ref = "miuix" }
 
 haze = { module = "dev.chrisbanes.haze:haze-android", version.ref = "haze" }
 

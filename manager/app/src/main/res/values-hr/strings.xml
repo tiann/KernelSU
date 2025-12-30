@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="show_system_apps">Prikažite sistemske aplikacije</string>
-    <string name="hide_system_apps">Sakrijte sistemske aplikacije</string>
     <string name="send_log">Pošaljite izvještaje</string>
     <string name="safe_mode">Sigurnosni mod</string>
     <string name="reboot_to_apply">Ponovno pokrenite da bi proradilo</string>
@@ -11,8 +10,6 @@
     <string name="home_working_version">Verzija: %d</string>
     <string name="home_click_to_install">Kliknite da instalirate</string>
     <string name="home_working">Radi</string>
-    <string name="home_superuser_count">Superkorisnici: %d</string>
-    <string name="home_module_count">Moduli: %d</string>
     <string name="home_unsupported">Nepodržano</string>
     <string name="home_unsupported_reason">KernelSU sada samo podržava GKI kernele.</string>
     <string name="home_kernel">Verzija kernela</string>
@@ -44,7 +41,6 @@
     <string name="module_uninstall_failed">Neuspješna deinstalacija: %s</string>
     <string name="module_version">Verzija</string>
     <string name="module_author">Autor</string>
-    <string name="refresh">Osvježi</string>
     <string name="module_magisk_conflict">Module su isključene jer je u sukobu sa Magisk-om!</string>
     <string name="home_learn_kernelsu">Naučite KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
@@ -94,17 +90,14 @@
     <string name="app_profile_template_save">Spremi</string>
     <string name="app_profile_template_delete">Izbriši</string>
     <string name="app_profile_template_view">Prikaži predložak</string>
-    <string name="app_profile_template_readonly">Samo za čitanje</string>
     <string name="app_profile_template_id_exist">ID predloška već postoji!</string>
     <string name="app_profile_import_export">Uvoz/Izvoz</string>
     <string name="app_profile_import_from_clipboard">Uvezi iz međuspremnika</string>
     <string name="app_profile_export_to_clipboard">Izvezi u međuspremnik</string>
     <string name="app_profile_template_export_empty">Nije moguće pronaći lokalni predložak za izvoz!</string>
     <string name="app_profile_template_import_success">Uspješno uvezeno</string>
-    <string name="app_profile_template_sync">Sinkronizacija online predložaka</string>
     <string name="app_profile_template_save_failed">Spremanje predloška nije uspjelo</string>
     <string name="app_profile_template_import_empty">Međuspremnik je prazan!</string>
-    <string name="module_changelog_failed">Dohvaćanje popisa promjena nije uspjelo: %s</string>
     <string name="settings_check_update">Provjeri za ažuriranja</string>
     <string name="settings_check_update_summary">Automatski provjeri za ažuriranja prilikom otvaranja aplikacije.</string>
     <string name="grant_root_failed">Dodjeljivanje root pristupa nije uspjelo!</string>
@@ -179,12 +172,10 @@
     <string name="color_pink">Ružičasta</string>
     <string name="color_brown">Smeđa</string>
     <string name="module_repos">Repozitoriji</string>
-    <string name="module_repos_sort_update_first">Prvo ažuriraj</string>
     <string name="module_repos_sort_name">Naziv (A → Z)</string>
     <string name="module_repos_source_code">Izvorni kod</string>
     <string name="safe_mode_module_disabled">Instalacija modula je onemogućena u sigurnom načinu rada</string>
     <string name="home_gki_warning">Počevši od verzije 3.0.0, GKI način rada koristit će se samo u testnim okruženjima. Ne preporučujemo ga za svakodnevnu upotrebu, a image datoteke više neće biti dostupne.</string>
-    <string name="module_reinstall">Ponovno instaliraj</string>
     <string name="network_offline">Nije povezano s mrežom</string>
     <string name="network_retry">Pokušaj ponovno</string>
     <string name="tab_readme">PROČITAJ ME</string>

@@ -6,8 +6,6 @@
     <string name="reboot_download">Reboot ke Download</string>
     <string name="module_failed_to_enable">Modul tidak berjaya diaktifkan: %s</string>
     <string name="reboot_edl">Reboot ke EDL</string>
-    <string name="home_superuser_count">Superusers: %d</string>
-    <string name="home_module_count">Modul: %d</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="home_fingerprint">Cap Jari</string>
     <string name="reboot_recovery">Reboot ke Recovery</string>

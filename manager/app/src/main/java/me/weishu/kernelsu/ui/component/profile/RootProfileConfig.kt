@@ -170,7 +170,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
                         title = group.display,
                         summary = group.desc,
                         insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
-                        checkboxLocation = CheckboxLocation.Right,
+                        checkboxLocation = CheckboxLocation.End,
                         checked = currentSelection.value.contains(group),
                         holdDownState = currentSelection.value.contains(group),
                         onCheckedChange = { isChecked ->
@@ -270,7 +270,7 @@ fun CapsPanel(
                             title = cap.display,
                             summary = cap.desc,
                             insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
-                            checkboxLocation = CheckboxLocation.Right,
+                            checkboxLocation = CheckboxLocation.End,
                             checked = currentSelection.value.contains(cap),
                             holdDownState = currentSelection.value.contains(cap),
                             onCheckedChange = { isChecked ->

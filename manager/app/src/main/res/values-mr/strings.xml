@@ -5,8 +5,6 @@
     <string name="home_click_to_install">इंस्टॉल साठी क्लिक करा</string>
     <string name="home_working">कार्यरत</string>
     <string name="home_working_version">आवृत्ती: %d</string>
-    <string name="home_module_count">मॉड्यूल्स: %d</string>
-    <string name="home_superuser_count">सुपरयूझर: %d</string>
     <string name="home_unsupported">असमर्थित</string>
     <string name="home_unsupported_reason">KernelSU आता फक्त GKI कर्नलचे समर्थन करते</string>
     <string name="home_kernel">कर्नल</string>
@@ -37,12 +35,10 @@
     <string name="module_uninstall_success">%s विस्थापित</string>
     <string name="module_version">आवृत्ती</string>
     <string name="module_author">लेखक</string>
-    <string name="refresh">रिफ्रेश करा</string>
     <string name="reboot_recovery">रिकवरी मध्ये रिबुट करा</string>
     <string name="reboot_download">डाउनलोड करण्यासाठी रीबूट करा</string>
     <string name="send_log">लॉग पाठवा</string>
     <string name="safe_mode">सुरक्षित मोड</string>
-    <string name="hide_system_apps">सिस्टम अॅप्स लपवा</string>
     <string name="reboot_to_apply">प्रभावी होण्यासाठी रीबूट करा</string>
     <string name="home_learn_kernelsu">KernelSU शिका</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>

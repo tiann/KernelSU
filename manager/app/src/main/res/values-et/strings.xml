@@ -2,7 +2,6 @@
 <resources>
     <string name="home_working">Töötamine</string>
     <string name="home_working_version">Versioon: %d</string>
-    <string name="home_module_count">Mooduleid: %d</string>
     <string name="home_kernel">Tuum</string>
     <string name="home_manager_version">Manageri versioon</string>
     <string name="home_fingerprint">Sõrmejälg</string>
@@ -28,16 +27,12 @@
     <string name="app_profile_template_edit">Muuda malli</string>
     <string name="settings_profile_template">Rakenduseprofiili mall</string>
     <string name="app_profile_template_id">ID</string>
-    <string name="app_profile_template_readonly">Vaid lugemiseks</string>
     <string name="app_profile_template_id_exist">Malli ID juba eksisteerib!</string>
     <string name="app_profile_export_to_clipboard">Ekspordi lõikelauale</string>
-    <string name="app_profile_template_sync">Sünkrooni võrgumallid</string>
-    <string name="module_changelog_failed">Muudatuste logi hankimine ebaõnnestus: %s</string>
     <string name="home">Kodu</string>
     <string name="home_click_to_install">Klõpsa paigaldamiseks</string>
     <string name="home_not_installed">Pole paigaldatud</string>
     <string name="home_unsupported">Mittetoetatud</string>
-    <string name="home_superuser_count">Superkasutajaid: %d</string>
     <string name="home_unsupported_reason">KernelSU toetab hetkel vaid GSI tuumasid</string>
     <string name="home_selinux_status">SELinuxi olek</string>
     <string name="selinux_status_disabled">Keelatud</string>
@@ -55,12 +50,10 @@
     <string name="reboot_userspace">Pehme taaskäivitus</string>
     <string name="reboot_download">Taaskäivita allalaadimisrežiimi</string>
     <string name="reboot_edl">Taaskäivita EDL-i</string>
-    <string name="refresh">Värskenda</string>
     <string name="module_author">Autor</string>
     <string name="module_uninstall_failed">Eemaldamine ebaõnnestus: %s</string>
     <string name="module_version">Versioon</string>
     <string name="show_system_apps">Kuva süsteemirakendused</string>
-    <string name="hide_system_apps">Peida süsteemirakendused</string>
     <string name="module_magisk_conflict">Moodulid pole saadaval Magiski konflikti tõttu!</string>
     <string name="home_click_to_learn_kernelsu">Õpi KernelSUd paigaldama ja mooduleid kasutama</string>
     <string name="home_support_title">Toeta meid</string>

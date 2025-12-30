@@ -4,8 +4,6 @@
     <string name="home">Início</string>
     <string name="home_click_to_install">Clique para instalar</string>
     <string name="home_working">Funcionando</string>
-    <string name="home_superuser_count">Super Usuário: %d</string>
-    <string name="home_module_count">Módulos: %d</string>
     <string name="home_working_version">Versão: %d</string>
     <string name="home_kernel">Kernel</string>
     <string name="install">Instalar</string>
@@ -33,8 +31,6 @@
     <string name="module_uninstall_failed">Falha ao desinstalar: %s</string>
     <string name="module_version">Versão</string>
     <string name="module_author">Autor</string>
-    <string name="refresh">Atualizar</string>
-    <string name="hide_system_apps">Esconder apps do sistema</string>
     <string name="reboot_download">Reiniciar para baixar</string>
     <string name="reboot_edl">Reiniciar em EDL</string>
     <string name="module_uninstall_confirm">Tem certeza de que deseja desinstalar o módulo %s\?</string>

@@ -5,8 +5,6 @@
     <string name="home_click_to_install">Натисніть щоб встановити</string>
     <string name="home_working">Працює</string>
     <string name="home_working_version">Версія: %d</string>
-    <string name="home_superuser_count">Суперкористувачі: %d</string>
-    <string name="home_module_count">Модулі: %d</string>
     <string name="home_unsupported">Не підтримується</string>
     <string name="home_unsupported_reason">KernelSU зараз підтримує лише ядра GKI.</string>
     <string name="home_kernel">Версія ядра</string>
@@ -38,9 +36,7 @@
     <string name="module_uninstall_failed">Не вдалося видалити: %s</string>
     <string name="module_version">Версія</string>
     <string name="module_author">Автор</string>
-    <string name="refresh">Освіжати(Оновити)</string>
     <string name="show_system_apps">Показати системні додатки</string>
-    <string name="hide_system_apps">Сховати системні додатки</string>
     <string name="send_log">Надіслати журнали</string>
     <string name="safe_mode">Безпечний режим</string>
     <string name="reboot_to_apply">Перезавантажте, щоб застосувати</string>
@@ -85,12 +81,9 @@
     <string name="app_profile_template_export_empty">Не вдається знайти локальний шаблон для експорту!</string>
     <string name="app_profile_template_id_exist">Ідентифікатор шаблону вже існує!</string>
     <string name="app_profile_import_from_clipboard">Імпортувати з буферу обміну</string>
-    <string name="module_changelog_failed">Невдача при завантаженні списку змін: %s</string>
     <string name="app_profile_template_name">Ім\'я</string>
     <string name="app_profile_template_id_invalid">Недійсний ідентифікатор шаблону</string>
-    <string name="app_profile_template_sync">Синхронізувати мережеві шаблони</string>
     <string name="app_profile_template_create">Створити шаблон</string>
-    <string name="app_profile_template_readonly">Тільки для читання</string>
     <string name="app_profile_import_export">Імпорт/Експорт</string>
     <string name="app_profile_template_save_failed">Помилка при збереженні шаблону</string>
     <string name="app_profile_template_edit">Редагувати шаблон</string>
@@ -179,11 +172,9 @@
     <string name="feature_status_unsupported_summary">Ядро не підтримує цю функцію.</string>
     <string name="feature_status_managed_summary">Цією функцією керує модуль.</string>
     <string name="module_repos">Репозиторій модулів</string>
-    <string name="module_repos_sort_update_first">Спочатку оновіть</string>
     <string name="module_repos_sort_name">Ім\'я (А → Я)</string>
     <string name="module_repos_source_code">Вихідний код</string>
     <string name="home_gki_warning">Починаючи з версії 3.0.0, робочий режим GKI використовуватиметься лише в тестових середовищах. Ми не рекомендуємо його для щоденного використання, а файли зображень більше не надаватимуться.</string>
-    <string name="module_reinstall">Перевстановити</string>
     <string name="undo">Відмінити</string>
     <string name="module_undo_uninstall_success">Видалення %s успішно скасовано</string>
     <string name="module_undo_uninstall_failed">Не вдалося відмінити видалення: %s</string>

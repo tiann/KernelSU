@@ -5,8 +5,6 @@
     <string name="home_click_to_install">Klik om te installeren</string>
     <string name="home_working">Werkend</string>
     <string name="home_working_version">Versie: %d</string>
-    <string name="home_superuser_count">Supergebruikers: %d</string>
-    <string name="home_module_count">Modules: %d</string>
     <string name="home_unsupported">Niet ondersteund</string>
     <string name="home_unsupported_reason">KernelSU ondersteunt alleen GKI kernels</string>
     <string name="home_kernel">Kernel version</string>
@@ -38,9 +36,7 @@
     <string name="module_uninstall_failed">Mislukt om te verwijderen: %s</string>
     <string name="module_version">Versie</string>
     <string name="module_author">Auteur</string>
-    <string name="refresh">Vernieuwen</string>
     <string name="show_system_apps">Toon systeem apps</string>
-    <string name="hide_system_apps">Verberg systeem apps</string>
     <string name="send_log">Verzenden Logs</string>
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Herstart om effect te hebben</string>
@@ -91,14 +87,11 @@
     <string name="app_profile_template_description">Beschrijving</string>
     <string name="settings_profile_template_summary">Beheer lokale en online sjabloon van app-profiel.</string>
     <string name="app_profile_template_delete">Verwijderen</string>
-    <string name="app_profile_template_readonly">Alleen lezen</string>
     <string name="app_profile_template_id_exist">Sjabloon ID bestaat al!</string>
-    <string name="app_profile_template_sync">Synchroniseer online-sjablonen</string>
     <string name="app_profile_template_save_failed">Mislukt naar opslaan sjabloon</string>
     <string name="app_profile_template_import_empty">Klembord is leeg!</string>
     <string name="app_profile_import_export">Importeren/Exporteren</string>
     <string name="app_profile_import_from_clipboard">Importeren vanaf klembord</string>
-    <string name="module_changelog_failed">Ophalen van wijzigingslogboek mislukt: %s</string>
     <string name="app_profile_export_to_clipboard">Exporteren naar klembord</string>
     <string name="settings_check_update">Controleer for updates</string>
     <string name="enable_web_debugging">WebView foutopsporing</string>

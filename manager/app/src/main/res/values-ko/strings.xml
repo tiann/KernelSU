@@ -5,8 +5,6 @@
     <string name="home_click_to_install">이 곳을 눌러 설치하기</string>
     <string name="home_working">작동 중</string>
     <string name="home_working_version">버전: %d</string>
-    <string name="home_superuser_count">슈퍼유저: %d개</string>
-    <string name="home_module_count">모듈: %d개</string>
     <string name="home_unsupported">지원되지 않음</string>
     <string name="home_unsupported_reason">KernelSU는 현재 GKI 커널만 지원합니다.</string>
     <string name="home_kernel">커널 버전</string>
@@ -38,9 +36,7 @@
     <string name="module_uninstall_failed">모듈 삭제 실패: %s</string>
     <string name="module_version">버전</string>
     <string name="module_author">제작자</string>
-    <string name="refresh">새로고침</string>
     <string name="show_system_apps">시스템 앱 표시</string>
-    <string name="hide_system_apps">시스템 앱 숨기기</string>
     <string name="send_log">로그 보내기</string>
     <string name="safe_mode">안전 모드</string>
     <string name="reboot_to_apply">다시 시작하여 변경 사항 적용</string>
@@ -90,7 +86,6 @@
     <string name="require_kernel_version">현재 KernelSU %1$d 버전은 매니저가 정상 작동하기에 너무 낮습니다. %2$d 버전 이상으로 업그레이드하세요!</string>
     <string name="action">액션</string>
     <string name="settings_uninstall_temporary">임시 제거</string>
-    <string name="module_changelog_failed">업데이트 내역 불러오기 실패: %s</string>
     <string name="open">열기</string>
     <string name="install_inactive_slot_warning">재부팅 후 기기가 **강제로** 비활성 슬롯으로 부팅합니다!\nOTA가 완료된 후에만 이 옵션을 사용하세요.\n계속할까요?</string>
     <string name="flash_success">플래싱 성공</string>
@@ -106,13 +101,11 @@
     <string name="app_profile_template_description">설명</string>
     <string name="app_profile_template_save">저장</string>
     <string name="app_profile_template_delete">삭제</string>
-    <string name="app_profile_template_readonly">읽기 전용</string>
     <string name="app_profile_template_id_exist">템플릿 ID가 이미 존재합니다!</string>
     <string name="app_profile_import_export">불러오기/내보내기</string>
     <string name="app_profile_import_from_clipboard">클립보드에서 불러오기</string>
     <string name="app_profile_export_to_clipboard">클립보드로 내보내기</string>
     <string name="app_profile_template_import_success">불러오기 성공</string>
-    <string name="app_profile_template_sync">온라인 템플릿 동기화</string>
     <string name="app_profile_template_save_failed">템플릿 저장 실패</string>
     <string name="app_profile_template_import_empty">클립보드가 비어 있습니다!</string>
     <string name="grant_root_failed">루트 권한 부여 실패!</string>
@@ -152,12 +145,10 @@
     <string name="refresh_complete">새로 고침 성공</string>
     <string name="install_select_partition">파티션 선택</string>
     <string name="module_repos">리포지토리</string>
-    <string name="module_repos_sort_update_first">업데이트 우선</string>
     <string name="module_repos_sort_name">이름 (A → Z)</string>
     <string name="module_repos_source_code">소스 코드</string>
     <string name="metamodule_uninstall_confirm">정말 %s 모듈을 제거할까요? 이 동작은 모든 모듈에 영향을 미치며, 메타모듈에서 제공하는 일부 기능(마운트 등)은 더 이상 작동하지 않습니다.</string>
     <string name="home_gki_warning">v3.0.0 부터, GKI 동작 모드는 테스트 환경에서만 사용됩니다. 일상적인 사용은 권장하지 않으며, 이미지 파일은 더 이상 제공되지 않습니다.</string>
-    <string name="module_reinstall">재설치</string>
     <string name="app_profile_affects_following_apps">다음 앱에 영향</string>
     <string name="feature_status_unsupported_summary">커널이 이 기능을 지원하지 않습니다.</string>
     <string name="feature_status_managed_summary">이 기능은 모듈에 의해 관리됩니다.</string>

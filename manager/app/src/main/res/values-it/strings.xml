@@ -5,8 +5,6 @@
     <string name="home_click_to_install">Clicca per installare</string>
     <string name="home_working">In esecuzione</string>
     <string name="home_working_version">Versione: %d</string>
-    <string name="home_superuser_count">Applicazioni con accesso root: %d</string>
-    <string name="home_module_count">Moduli installati: %d</string>
     <string name="home_unsupported">Non supportato</string>
     <string name="home_unsupported_reason">KernelSU ora supporta solo i kernel GKI</string>
     <string name="home_kernel">Kernel</string>
@@ -38,9 +36,7 @@
     <string name="module_uninstall_failed">Impossibile disinstallare: %s</string>
     <string name="module_version">Versione</string>
     <string name="module_author">Autore</string>
-    <string name="refresh">Ricarica</string>
     <string name="show_system_apps">Mostra app di sistema</string>
-    <string name="hide_system_apps">Nascondi app di sistema</string>
     <string name="send_log">Invia log</string>
     <string name="safe_mode">Modalità provvisoria</string>
     <string name="reboot_to_apply">Riavvia per applicare la modifica</string>
@@ -85,14 +81,12 @@
     <string name="app_profile_template_id_invalid">Identificativo modello non valido</string>
     <string name="app_profile_template_name">Nome</string>
     <string name="app_profile_template_view">Visualizza modello</string>
-    <string name="app_profile_template_readonly">Sola lettura</string>
     <string name="app_profile_template_id_exist">L\'identificatore del modello è già in uso!</string>
     <string name="app_profile_import_export">Importa/Esporta</string>
     <string name="app_profile_import_from_clipboard">Importa dagli appunti</string>
     <string name="app_profile_export_to_clipboard">Esporta negli appunti</string>
     <string name="app_profile_template_export_empty">Impossibile trovare un modello locale da esportare!</string>
     <string name="app_profile_template_import_success">Importato con successo</string>
-    <string name="app_profile_template_sync">Sincronizza i modelli remoti</string>
     <string name="app_profile_template_import_empty">Gli appunti sono vuoti!</string>
     <string name="grant_root_failed">Impossibile ottenere l\'accesso root!</string>
     <string name="settings_profile_template">Modelli App Profile</string>
@@ -102,7 +96,6 @@
     <string name="app_profile_template_save">Salva</string>
     <string name="app_profile_template_save_failed">Impossibile salvare il modello</string>
     <string name="open">Apri</string>
-    <string name="module_changelog_failed">Impossibile reperire il changelog: %s</string>
     <string name="settings_check_update">Controlla aggiornamenti</string>
     <string name="settings_check_update_summary">Controlla automaticamente la disponibilità di aggiornamenti all\'apertura dell\'applicazione</string>
     <string name="enable_web_debugging">Abilita il debug di WebView</string>

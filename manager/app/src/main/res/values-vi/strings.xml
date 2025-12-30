@@ -57,14 +57,10 @@
     <string name="module_uninstall_failed">Gỡ cài đặt thất bại: %s</string>
     <string name="module_version">Phiên bản</string>
     <string name="module_author">Tác giả</string>
-    <string name="refresh">Làm mới</string>
     <string name="show_system_apps">Hiển thị các ứng dụng hệ thống</string>
-    <string name="hide_system_apps">Ẩn các ứng dụng hệ thống</string>
     <string name="safe_mode">Chế độ an toàn</string>
     <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_superuser_count">Superusers: %d</string>
-    <string name="home_module_count">Modules: %d</string>
     <string name="profile_selinux_domain">Tên miền</string>
     <string name="profile_selinux_rules">Quy tắc</string>
     <string name="launch_app">Khởi chạy</string>
@@ -85,10 +81,8 @@
     <string name="app_profile_template_id_exist">ID mẫu đã tồn tại!</string>
     <string name="module_changelog">Nhật ký thay đổi</string>
     <string name="app_profile_import_from_clipboard">Nhập từ bộ nhớ tạm</string>
-    <string name="module_changelog_failed">Lấy nhật ký thay đổi thất bại: %s</string>
     <string name="app_profile_template_name">Tên</string>
     <string name="app_profile_template_id_invalid">ID mẫu không hợp lệ</string>
-    <string name="app_profile_template_sync">Đồng bộ hoá các mẫu trực tuyến</string>
     <string name="app_profile_template_create">Tạo mẫu</string>
     <string name="app_profile_import_export">Nhập/Xuất</string>
     <string name="app_profile_template_save_failed">Lưu mẫu thất bại</string>
@@ -100,7 +94,6 @@
     <string name="app_profile_template_delete">Xóa</string>
     <string name="app_profile_template_import_empty">Bộ nhớ tạm đang trống!</string>
     <string name="app_profile_template_view">Xem mẫu</string>
-    <string name="app_profile_template_readonly">Chỉ đọc</string>
     <string name="app_profile_template_id">ID</string>
     <string name="enable_web_debugging">Gỡ lỗi WebView</string>
     <string name="enable_web_debugging_summary">Có thể sử dụng để gỡ lỗi WebUI. Vui lòng chỉ bật khi cần thiết.</string>
@@ -180,11 +173,9 @@
     <string name="feature_status_managed_summary">Tính năng này được quản lý bởi một module.</string>
     <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này.</string>
     <string name="module_repos">Thư viện</string>
-    <string name="module_repos_sort_update_first">Cập nhật trước</string>
     <string name="module_repos_sort_name">Tên (A → Z)</string>
     <string name="module_repos_source_code">Mã nguồn</string>
     <string name="home_gki_warning">Bắt đầu từ v3.0.0, chế độ GKI sẽ chỉ được sử dụng trong môi trường thử nghiệm. Chúng tôi không khuyến nghị sử dụng chế độ này và các file image sẽ không còn được cung cấp nữa.</string>
-    <string name="module_reinstall">Cài đặt lại</string>
     <string name="network_offline">Không có kết nối Internet</string>
     <string name="network_retry">Thử lại</string>
     <string name="tab_readme">README</string>

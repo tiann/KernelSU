@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Ana səhifə</string>
-    <string name="home_superuser_count">Super istifadəçilər: %d</string>
     <string name="home_kernel">Nüvə</string>
     <string name="home_not_installed">Yüklənmədi</string>
     <string name="home_click_to_install">Yükləmək üçün toxunun</string>
     <string name="home_working">İşləyir</string>
     <string name="home_working_version">Versiya: %d</string>
-    <string name="home_module_count">Modullar: %d</string>
     <string name="home_unsupported_reason">Hal-hazırda KernelSU yalnız GKI nüvələrini dəstəkləyir</string>
     <string name="home_unsupported">Dəstəklənmir</string>
     <string name="module_install">Yüklə</string>
@@ -39,9 +37,7 @@
     <string name="reboot_edl">EDL rejimində yenidən başlat</string>
     <string name="module_uninstall_failed">Silmək mümkün olmadı: %s</string>
     <string name="module_uninstall_success">%s silindi</string>
-    <string name="hide_system_apps">Sistem proqramlarını gizlət</string>
     <string name="send_log">Log-u göndər</string>
-    <string name="refresh">Yenilə</string>
     <string name="safe_mode">Təhlükəsiz rejimi</string>
     <string name="reboot_to_apply">Qüvvəyə minməsi üçün yenidən başlat</string>
     <string name="module_magisk_conflict">Modular deaktiv edilir,çünki o Magisk-in modulları ilə toqquşur!</string>
@@ -96,6 +92,5 @@
     <string name="app_profile_template_save">Yadda saxla</string>
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_view">Şablonu göstər</string>
-    <string name="app_profile_template_readonly">Yalnız oxu</string>
     <string name="app_profile_template_id_exist">Şablon ID-si artıq mövcuddur!</string>
 </resources>

@@ -5,8 +5,6 @@
     <string name="home_click_to_install">Klik untuk menginstal</string>
     <string name="home_working">Berfungsi</string>
     <string name="home_working_version">Versi: %d</string>
-    <string name="home_superuser_count">Superuser: %d</string>
-    <string name="home_module_count">Modul: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">KernelSU saat ini hanya mendukung kernel GKI.</string>
     <string name="home_kernel">Versi kernel</string>
@@ -38,9 +36,7 @@
     <string name="module_uninstall_failed">Gagal menghapus: %s</string>
     <string name="module_version">Versi</string>
     <string name="module_author">Oleh</string>
-    <string name="refresh">Segarkan</string>
     <string name="show_system_apps">Tampilkan apl sistem</string>
-    <string name="hide_system_apps">Sembunyikan apl sistem</string>
     <string name="send_log">Kirim Log</string>
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Reboot agar berfungsi</string>
@@ -85,10 +81,8 @@
     <string name="app_profile_template_export_empty">Tidak ditemukan templat lokal untuk diekspor!</string>
     <string name="app_profile_template_id_exist">ID templat sudah ada!</string>
     <string name="app_profile_import_from_clipboard">Impor dari papan klip</string>
-    <string name="module_changelog_failed">Gagal mengambil catatan: %s</string>
     <string name="app_profile_template_name">Nama</string>
     <string name="app_profile_template_id_invalid">ID templat tidak valid</string>
-    <string name="app_profile_template_sync">Sinkronkan templat online</string>
     <string name="app_profile_template_create">Buat templat</string>
     <string name="app_profile_import_export">Impor/Ekspor</string>
     <string name="app_profile_template_save_failed">Gagal menyimpan templat</string>
@@ -101,7 +95,6 @@
     <string name="app_profile_template_delete">Hapus</string>
     <string name="app_profile_template_import_empty">Papan klip kosong!</string>
     <string name="app_profile_template_view">Lihat templat</string>
-    <string name="app_profile_template_readonly">readonly</string>
     <string name="enable_web_debugging">Debugging WebView</string>
     <string name="enable_web_debugging_summary">Dapat digunakan untuk mendebug antarmuka web (WebUI). Harap aktifkan hanya saat diperlukan.</string>
     <string name="select_file_tip">%1$s partisi image terekomendasi</string>
@@ -152,12 +145,10 @@
     <string name="refresh_refresh">Menyegarkan…</string>
     <string name="refresh_complete">Penyegaran berhasil</string>
     <string name="module_repos">Gudang</string>
-    <string name="module_repos_sort_update_first">Waktu pembaruan</string>
     <string name="module_repos_sort_name">Nama (A → Z)</string>
     <string name="module_repos_source_code">Sumber kode</string>
     <string name="metamodule_uninstall_confirm">Yakin ingin menghapus modul %s? Tindakan ini akan memengaruhi semua modul, dan fitur tertentu yang disediakan oleh metamodul (seperti mounting) tidak akan berfungsi lagi.</string>
     <string name="home_gki_warning">Mulai dari v3.0.0, fungsi mode GKI dibatasi untuk lingkungan pengujian. Kami tidak merekomendasikan untuk penggunaan harian, dan berkas image tidak akan lagi disediakan.</string>
-    <string name="module_reinstall">Instal ulang</string>
     <string name="app_profile_affects_following_apps">Mempengaruhi apl berikut</string>
     <string name="install_select_partition">Pilih partisi</string>
     <string name="feature_status_unsupported_summary">Kernel tidak mendukung fitur ini.</string>

@@ -24,8 +24,6 @@
     <string name="home">Početna</string>
     <string name="home_not_installed">Nije instalirano</string>
     <string name="home_click_to_install">Kliknite da instalirate</string>
-    <string name="home_superuser_count">Superkorisnici: %d</string>
-    <string name="home_module_count">Module: %d</string>
     <string name="home_unsupported">Nepodržano</string>
     <string name="home_unsupported_reason">KernelSU samo podržava GKI kernele sad</string>
     <string name="home_manager_version">Verzija Upravitelja</string>
@@ -37,9 +35,7 @@
     <string name="settings">Podešavanja</string>
     <string name="module_version">Verzija</string>
     <string name="module_author">Autor</string>
-    <string name="refresh">Osvježi</string>
     <string name="show_system_apps">Prikažite sistemske aplikacije</string>
-    <string name="hide_system_apps">Sakrijte sistemske aplikacije</string>
     <string name="safe_mode">Sigurnosni mod</string>
     <string name="reboot_to_apply">Ponovo pokrenite da bi proradilo</string>
     <string name="module_magisk_conflict">"Moduli su nedostupni  jer su u sukobu sa Magisk-om!"</string>

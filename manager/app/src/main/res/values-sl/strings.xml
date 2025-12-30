@@ -3,7 +3,6 @@
     <string name="home_click_to_install">Klikni za namestitev</string>
     <string name="home_working">V obdelavi</string>
     <string name="home_working_version">Verzija: %d</string>
-    <string name="home_superuser_count">Superuporabniki: %d</string>
     <string name="home_unsupported_reason">KernelSU podpira samo GKI kernele</string>
     <string name="home_kernel">Kernel</string>
     <string name="home_manager_version">Verzija upravitelja</string>
@@ -24,7 +23,6 @@
     <string name="module_uninstall_confirm">Ste prepričani, da želite odstraniti modul %s?</string>
     <string name="module_uninstall_success">%s je odmeščen</string>
     <string name="module_author">Avtor</string>
-    <string name="hide_system_apps">Skrij prikaz sistemskih aplikacij</string>
     <string name="send_log">Prijavite dnevnik</string>
     <string name="home_learn_kernelsu">Naučite se KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
@@ -47,7 +45,6 @@
     <string name="module_changelog">Dnevnik sprememb</string>
     <string name="settings_profile_template">Predloga za aplikacijski profil</string>
     <string name="home">Domov</string>
-    <string name="home_module_count">Moduli: %d</string>
     <string name="home_unsupported">Ne podpira</string>
     <string name="superuser">SuperUporabnik</string>
     <string name="module_failed_to_enable">Napaka pri omogočanju modula: %s</string>
@@ -57,7 +54,6 @@
     <string name="about">O nas</string>
     <string name="module_version">Verzija</string>
     <string name="module_uninstall_failed">Napaka pri odmeščanju: %s</string>
-    <string name="refresh">Osveži</string>
     <string name="safe_mode">Varni način</string>
     <string name="reboot_to_apply">Za uveljavitev je potreben ponovni zagon</string>
     <string name="show_system_apps">Prikaz sistemskih aplikacij</string>
@@ -86,7 +82,6 @@
     <string name="app_profile_template_description">Opis</string>
     <string name="app_profile_template_save">Shrani</string>
     <string name="app_profile_template_delete">Odstrani</string>
-    <string name="app_profile_template_readonly">le za branje</string>
     <string name="app_profile_template_id_exist">id predloge že obstaja!</string>
     <string name="app_profile_import_from_clipboard">Uvoz iz odložišča</string>
     <string name="app_profile_export_to_clipboard">Izvoz v odložišče</string>
@@ -98,8 +93,6 @@
     <string name="app_profile_template_name">Ime</string>
     <string name="app_profile_template_view">Ogled predloge</string>
     <string name="app_profile_template_import_success">Uvoz uspešen</string>
-    <string name="app_profile_template_sync">Sinhroniziraj predloge iz spleta</string>
     <string name="app_profile_import_export">Uvoz/Izvoz</string>
-    <string name="module_changelog_failed">Napaka pri pridobivanju dnevnika sprememb: %s</string>
     <string name="save_log">Shrani Dnevnike</string>
 </resources>
