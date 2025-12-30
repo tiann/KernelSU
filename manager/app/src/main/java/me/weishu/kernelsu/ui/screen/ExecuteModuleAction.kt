@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen
 
 import android.os.Environment
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -52,6 +53,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.component.navigation.popBackStackEx
 import me.weishu.kernelsu.ui.util.runModuleAction
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -107,14 +109,17 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                 actionResult = it
             }
         }
-        if (actionResult) navigator.popBackStack()
+        if (actionResult) navigator.popBackStackEx()
+    }
+    BackHandler {
+        navigator.popBackStackEx()
     }
 
     Scaffold(
         topBar = {
             TopBar(
                 onBack = dropUnlessResumed {
-                    navigator.popBackStack()
+                    navigator.popBackStackEx()
                 },
                 onSave = {
                     scope.launch {

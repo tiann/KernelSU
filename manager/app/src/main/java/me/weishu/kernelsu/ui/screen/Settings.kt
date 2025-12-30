@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -64,6 +65,8 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.SendLogDialog
 import me.weishu.kernelsu.ui.component.UninstallDialog
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
+import me.weishu.kernelsu.ui.component.navigation.popBackStackEx
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.getFeaturePersistValue
@@ -96,6 +99,11 @@ fun SettingPager(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+
+
+    BackHandler {
+        navigator.popBackStackEx()
+    }
 
     Scaffold(
         topBar = {
@@ -293,7 +301,7 @@ fun SettingPager(
                                 )
                             },
                             onClick = {
-                                navigator.navigate(AppProfileTemplateScreenDestination) {
+                                navigator.navigateEx(AppProfileTemplateScreenDestination) {
                                     launchSingleTop = true
                                 }
                             }
@@ -602,7 +610,7 @@ fun SettingPager(
                             )
                         },
                         onClick = {
-                            navigator.navigate(AboutScreenDestination) {
+                            navigator.navigateEx(AboutScreenDestination) {
                                 launchSingleTop = true
                             }
                         }

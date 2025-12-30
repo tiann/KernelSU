@@ -107,6 +107,7 @@ import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -485,7 +486,7 @@ fun ModulePager(
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
                             onClick = {
-                                navigator.navigate(ModuleRepoScreenDestination) {
+                                navigator.navigateEx(ModuleRepoScreenDestination) {
                                     launchSingleTop = true
                                 }
                             },
@@ -508,7 +509,7 @@ fun ModulePager(
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(
                     onConfirm = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
+                        navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
                             launchSingleTop = true
                         }
                         viewModel.markNeedRefresh()
@@ -533,7 +534,7 @@ fun ModulePager(
                     }
 
                     if (uris.size == 1) {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))) {
+                        navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))) {
                             launchSingleTop = true
                         }
                         viewModel.markNeedRefresh()
@@ -630,7 +631,7 @@ fun ModulePager(
                                         "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
                                         context
                                     ) { uri ->
-                                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
+                                        navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
                                             launchSingleTop = true
                                         }
                                         viewModel.markNeedRefresh()
@@ -641,7 +642,7 @@ fun ModulePager(
                         }
                         val onExecuteActionClick = remember(module.id, navigator, viewModel) {
                             {
-                                navigator.navigate(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
+                                navigator.navigateEx(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
                                     launchSingleTop = true
                                 }
                                 viewModel.markNeedRefresh()
@@ -716,7 +717,7 @@ fun ModulePager(
                         scope = scope,
                         modules = modules,
                         onInstallModule = {
-                            navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
+                            navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
                                 launchSingleTop = true
                             }
                         },
@@ -740,7 +741,7 @@ fun ModulePager(
                                 fileName,
                                 context
                             ) { uri ->
-                                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
+                                navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
                                     launchSingleTop = true
                                 }
                                 viewModel.markNeedRefresh()
@@ -886,7 +887,7 @@ private fun ModuleList(
                         }
                         val onExecuteActionClick = remember(module.id, navigator, viewModel) {
                             {
-                                navigator.navigate(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
+                                navigator.navigateEx(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
                                     launchSingleTop = true
                                 }
                                 viewModel.markNeedRefresh()

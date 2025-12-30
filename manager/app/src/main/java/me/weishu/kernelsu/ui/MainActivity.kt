@@ -11,7 +11,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -37,15 +36,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavBackStackEntry
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.MainScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ModuleRepoDetailScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingPagerDestination
+import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TemplateScreenDestination
+import com.ramcosta.composedestinations.generated.navArgs
+import com.ramcosta.composedestinations.navargs.primitives.booleanNavType
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.scope.resultBackNavigator
+import com.ramcosta.composedestinations.scope.resultRecipient
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -57,12 +70,27 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.BottomBar
+import me.weishu.kernelsu.ui.component.navigation.miuixComposable
+import me.weishu.kernelsu.ui.component.navigation.SharedDestinationsNavHost
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
+import me.weishu.kernelsu.ui.component.navigation.noAnimated
+import me.weishu.kernelsu.ui.component.navigation.slideFromRightTransition
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.screen.AboutScreen
+import me.weishu.kernelsu.ui.screen.AppProfileScreen
+import me.weishu.kernelsu.ui.screen.AppProfileTemplateScreen
+import me.weishu.kernelsu.ui.screen.ExecuteModuleActionScreen
 import me.weishu.kernelsu.ui.screen.FlashIt
+import me.weishu.kernelsu.ui.screen.FlashScreen
 import me.weishu.kernelsu.ui.screen.HomePager
+import me.weishu.kernelsu.ui.screen.InstallScreen
 import me.weishu.kernelsu.ui.screen.ModulePager
+import me.weishu.kernelsu.ui.screen.ModuleRepoDetailScreen
+import me.weishu.kernelsu.ui.screen.ModuleRepoScreen
 import me.weishu.kernelsu.ui.screen.SettingPager
 import me.weishu.kernelsu.ui.screen.SuperUserPager
+import me.weishu.kernelsu.ui.screen.TemplateEditorScreen
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.install
@@ -131,44 +159,47 @@ class MainActivity : ComponentActivity() {
                 )
 
                 Scaffold {
-                    DestinationsNavHost(
-                        modifier = Modifier,
+                    SharedDestinationsNavHost(
                         navGraph = NavGraphs.root,
                         navController = navController,
-                        defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                            override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
-                                {
-                                    slideInHorizontally(
-                                        initialOffsetX = { it },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
-
-                            override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
-                                {
-                                    slideOutHorizontally(
-                                        targetOffsetX = { -it / 5 },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
-
-                            override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
-                                {
-                                    slideInHorizontally(
-                                        initialOffsetX = { -it / 5 },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
-
-                            override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
-                                {
-                                    slideOutHorizontally(
-                                        targetOffsetX = { it },
-                                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
-                                    )
-                                }
+                    ){
+                        miuixComposable(MainScreenDestination){ MainScreen( destinationsNavigator) }
+                        miuixComposable(AboutScreenDestination){ AboutScreen(destinationsNavigator) }
+                        miuixComposable(InstallScreenDestination){ InstallScreen(destinationsNavigator) }
+                        miuixComposable(ModuleRepoScreenDestination){ ModuleRepoScreen(destinationsNavigator) }
+                        miuixComposable(ModuleRepoDetailScreenDestination){ ModuleRepoDetailScreen(destinationsNavigator,navArgs.module) }
+                        miuixComposable(AppProfileScreenDestination){ AppProfileScreen(destinationsNavigator, navArgs.appInfo) }
+                        miuixComposable(SettingPagerDestination){ SettingPager(destinationsNavigator,0.dp) }
+                        miuixComposable(ExecuteModuleActionScreenDestination){ ExecuteModuleActionScreen(destinationsNavigator,navArgs.moduleId) }
+                        miuixComposable(FlashScreenDestination){ FlashScreen(destinationsNavigator,navArgs.flashIt) }
+                        miuixComposable(FlashScreenDestination){ FlashScreen(destinationsNavigator, navArgs.flashIt) }
+                        miuixComposable(TemplateScreenDestination){
+                            val (initialTemplate,transitionSource, readOnly) = navArgs
+                            TemplateEditorScreen(
+                                navigator = resultBackNavigator(booleanNavType),
+                                animatedVisibilityScope = this@miuixComposable,
+                                initialTemplate = initialTemplate,
+                                transitionSource = transitionSource,
+                                readOnly = readOnly
+                            )
                         }
-                    )
+                        miuixComposable(TemplateEditorScreenDestination, noAnimated){
+                            val (initialTemplate,transitionSource, readOnly) = navArgs
+                            TemplateEditorScreen(
+                                navigator = resultBackNavigator(booleanNavType),
+                                animatedVisibilityScope = this@miuixComposable,
+                                initialTemplate = initialTemplate,
+                                transitionSource = transitionSource,
+                                readOnly = readOnly
+                            )
+                        }
+                        miuixComposable(AppProfileTemplateScreenDestination, slideFromRightTransition){
+                            AppProfileTemplateScreen(
+                                navigator = destinationsNavigator,
+                                resultRecipient = resultRecipient(booleanNavType)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -303,7 +334,7 @@ private fun ZipFileIntentHandler(
     val installDialog = rememberConfirmDialog(
         onConfirm = {
             zipUri?.let { uri ->
-                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri))))
+                navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(listOf(uri))))
             }
             clearZipUri()
         },

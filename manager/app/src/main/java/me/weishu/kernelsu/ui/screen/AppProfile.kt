@@ -3,6 +3,8 @@ package me.weishu.kernelsu.ui.screen
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -55,7 +57,9 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TemplateScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.scope.AnimatedDestinationScope
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -66,9 +70,16 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
+import me.weishu.kernelsu.ui.component.SharedTransitionCard
+import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
+import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
+import me.weishu.kernelsu.ui.component.navigation.popBackStackEx
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.component.sharedTransition.cardShareBounds
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
@@ -110,7 +121,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @Destination<RootGraph>
 fun AppProfileScreen(
     navigator: DestinationsNavigator,
-    appInfo: SuperUserViewModel.AppInfo,
+    appInfo: SuperUserViewModel.AppInfo
 ) {
     val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
@@ -119,6 +130,8 @@ fun AppProfileScreen(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current!!
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label).format(appInfo.uid)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
@@ -149,7 +162,7 @@ fun AppProfileScreen(
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.popBackStackEx() },
                 packageName = packageName,
                 showActions = !isUidGroup,
                 scrollBehavior = scrollBehavior,
@@ -174,6 +187,8 @@ fun AppProfileScreen(
             item {
                 AppProfileInner(
                     packageName = if (isUidGroup) "" else appInfo.packageName,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     appLabel = if (isUidGroup) ownerNameForUid(appInfo.uid) else appInfo.label,
                     appIcon = {
                         val iconApp = if (isUidGroup) primaryForIcon else appInfo
@@ -197,13 +212,13 @@ fun AppProfileScreen(
                     affectedApps = sameUidApps,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
-                            navigator.navigate(TemplateEditorScreenDestination(info)) {
+                            navigator.navigateEx(TemplateScreenDestination(info,TransitionSource.NULL)) {
                                 launchSingleTop = true
                             }
                         }
                     },
                     onManageTemplate = {
-                        navigator.navigate(AppProfileTemplateScreenDestination()) {
+                        navigator.navigateEx(AppProfileTemplateScreenDestination()) {
                             launchSingleTop = true
                         }
                     },
@@ -241,6 +256,8 @@ fun AppProfileScreen(
 @Composable
 private fun AppProfileInner(
     modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     packageName: String,
     appLabel: String,
     appIcon: @Composable (() -> Unit),
@@ -262,7 +279,7 @@ private fun AppProfileInner(
     Column(
         modifier = modifier
     ) {
-        Card(
+        SharedTransitionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
@@ -460,6 +477,8 @@ private fun AppProfileInner(
                 ) {
                     TemplateConfig(
                         profile = profile,
+                        sharedTransitionScope =  sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
                         onViewTemplate = onViewTemplate,
                         onManageTemplate = onManageTemplate,
                         onProfileChange = onProfileChange

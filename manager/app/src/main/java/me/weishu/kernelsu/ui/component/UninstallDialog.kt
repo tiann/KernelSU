@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.UninstallType
 import me.weishu.kernelsu.ui.screen.UninstallType.NONE
@@ -50,14 +51,14 @@ fun UninstallDialog(
 
     val run = { type: UninstallType ->
         when (type) {
-            PERMANENT -> navigator.navigate(FlashScreenDestination(FlashIt.FlashUninstall)) {
+            PERMANENT -> navigator.navigateEx(FlashScreenDestination(FlashIt.FlashUninstall)) {
                 popUpTo(FlashScreenDestination) {
                     inclusive = true
                 }
                 launchSingleTop = true
             }
 
-            RESTORE_STOCK_IMAGE -> navigator.navigate(FlashScreenDestination(FlashIt.FlashRestore)) {
+            RESTORE_STOCK_IMAGE -> navigator.navigateEx(FlashScreenDestination(FlashIt.FlashRestore)) {
                 popUpTo(FlashScreenDestination) {
                     inclusive = true
                 }

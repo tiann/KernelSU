@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -92,6 +93,8 @@ import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
+import me.weishu.kernelsu.ui.component.navigation.popBackStackEx
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
@@ -202,13 +205,15 @@ fun ModuleRepoScreen(
     val dynamicTopPadding by remember {
         derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
-
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
+    BackHandler {
+        navigator.popBackStackEx()
+    }
     Scaffold(
         topBar = {
             searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
@@ -254,7 +259,7 @@ fun ModuleRepoScreen(
                     navigationIcon = {
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
-                            onClick = { navigator.popBackStack() }
+                            onClick = { navigator.popBackStackEx() }
 
                         ) {
                             val layoutDirection = LocalLayoutDirection.current
@@ -305,7 +310,7 @@ fun ModuleRepoScreen(
                                 latestReleaseTime = module.latestReleaseTime,
                                 releases = emptyList()
                             )
-                            navigator.navigate(ModuleRepoDetailScreenDestination(args)) { launchSingleTop = true }
+                            navigator.navigateEx(ModuleRepoDetailScreenDestination(args)) { launchSingleTop = true }
                         }
                     ) {
                         Column {
@@ -490,7 +495,7 @@ fun ModuleRepoScreen(
                                         latestReleaseTime = module.latestReleaseTime,
                                         releases = emptyList()
                                     )
-                                    navigator.navigate(ModuleRepoDetailScreenDestination(args)) {
+                                    navigator.navigateEx(ModuleRepoDetailScreenDestination(args)) {
                                         launchSingleTop = true
                                     }
                                 }
@@ -1024,7 +1029,7 @@ fun ModuleRepoDetailScreen(
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
     val onInstallModule: (Uri) -> Unit = { uri ->
-        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
+        navigator.navigateEx(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
             launchSingleTop = true
         }
     }
@@ -1043,6 +1048,9 @@ fun ModuleRepoDetailScreen(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+    BackHandler {
+        navigator.popBackStackEx()
+    }
 
     Scaffold(
         topBar = {
@@ -1059,7 +1067,7 @@ fun ModuleRepoDetailScreen(
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
                         onClick = {
-                            navigator.popBackStack()
+                            navigator.popBackStackEx()
                         }
                     ) {
                         val layoutDirection = LocalLayoutDirection.current

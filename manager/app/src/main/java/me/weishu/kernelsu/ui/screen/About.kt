@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -50,6 +51,7 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.navigation.popBackStackEx
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -81,6 +83,9 @@ fun AboutScreen(navigator: DestinationsNavigator) {
     )
     val result = extractLinks(htmlString)
 
+    BackHandler {
+        navigator.popBackStackEx()
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,7 +99,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
-                        onClick = dropUnlessResumed { navigator.popBackStack() }
+                        onClick = dropUnlessResumed { navigator.popBackStackEx() }
                     ) {
                         val layoutDirection = LocalLayoutDirection.current
                         Icon(

@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -55,6 +56,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.component.navigation.popBackStackEx
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.flashModule
@@ -151,11 +153,14 @@ fun FlashScreen(
         }
     }
 
+    BackHandler {
+        navigator.popBackStackEx()
+    }
     Scaffold(
         topBar = {
             TopBar(
                 flashing,
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.popBackStackEx() },
                 onSave = {
                     scope.launch {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())

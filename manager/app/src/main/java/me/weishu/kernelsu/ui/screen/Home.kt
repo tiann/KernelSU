@@ -66,6 +66,7 @@ import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.LocalHandlePageChange
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.RebootListPopup
+import me.weishu.kernelsu.ui.component.navigation.navigateEx
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.checkNewVersion
@@ -168,7 +169,7 @@ fun HomePager(
                     StatusCard(
                         kernelVersion, ksuVersion, lkmMode,
                         onClickInstall = {
-                            navigator.navigate(InstallScreenDestination) {
+                            navigator.navigateEx(InstallScreenDestination) {
                                 launchSingleTop = true
                             }
                         },

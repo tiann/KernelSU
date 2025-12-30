@@ -1,5 +1,7 @@
 package me.weishu.kernelsu.ui.component.profile
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -14,6 +16,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.component.sharedTransition.cardShareBounds
 import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
@@ -29,6 +33,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 fun TemplateConfig(
     modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     profile: Natives.Profile,
     onViewTemplate: (id: String) -> Unit = {},
     onManageTemplate: () -> Unit = {},
@@ -82,6 +88,12 @@ fun TemplateConfig(
             )
             SuperArrow(
                 title = stringResource(R.string.app_profile_template_view),
+//                modifier = Modifier
+//                    .cardShareBounds(
+//                        key = template,
+//                        sharedTransitionScope = sharedTransitionScope,
+//                        animatedVisibilityScope = animatedVisibilityScope
+//                    ),
                 onClick = { onViewTemplate(template) }
             )
         }
