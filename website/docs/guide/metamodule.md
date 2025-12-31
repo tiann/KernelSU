@@ -1,4 +1,4 @@
-# Metamodule
+mon# Metamodule
 
 Metamodules are a revolutionary feature in KernelSU that transfers critical module system capabilities from the core to pluggable modules. This architectural shift maintains KernelSU's stability and security while unleashing greater innovation potential for the module ecosystem.
 
