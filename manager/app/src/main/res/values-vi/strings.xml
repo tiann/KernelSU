@@ -134,8 +134,6 @@
     <string name="install_only_support_ko_file">Chỉ hỗ trợ các file .ko</string>
     <string name="settings_disable_kernel_umount">Vô hiệu hoá Umount Kernel</string>
     <string name="settings_disable_kernel_umount_summary">Vô hiệu hoá Umount Kernel được kiểm soát bởi KernelSU.</string>
-    <string name="settings_enable_enhanced_security">Kích hoạt bảo mật nâng cao</string>
-    <string name="settings_enable_enhanced_security_summary">Cho phép chính sách bảo mật chặt chẽ hơn.</string>
     <string name="settings_mode_default">Mặc định</string>
     <string name="settings_mode_temp_enable">Tạm thời kích hoạt</string>
     <string name="settings_mode_always_enable">Luôn luôn kích hoạt</string>

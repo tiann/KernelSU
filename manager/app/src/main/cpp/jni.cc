@@ -326,18 +326,6 @@ Java_me_weishu_kernelsu_Natives_setKernelUmountEnabled(JNIEnv *env, jobject thiz
 }
 
 extern "C"
-JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_isEnhancedSecurityEnabled(JNIEnv *env, jobject thiz) {
-    return is_enhanced_security_enabled();
-}
-
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_me_weishu_kernelsu_Natives_setEnhancedSecurityEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
-    return set_enhanced_security_enabled(enabled);
-}
-
-extern "C"
 JNIEXPORT jstring JNICALL
 Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid) {
     struct passwd *pw = getpwuid((uid_t) uid);
