@@ -113,7 +113,6 @@ ksud module config set override.description "在管理器中显示的自定义�
 **支持的功能:**
 - `su_compat` - SU 兼容模式
 - `kernel_umount` - 内核自动卸载
-- `enhanced_security` - 增强安全模式
 
 ```bash
 # 声明此模块管理 SU 兼容性并将其启用
@@ -137,5 +136,5 @@ ksud module config delete manage.su_compat
 - 更好地协调模块与核心 KernelSU 功能之间的关系
 
 ::: warning 仅支持预定义功能
-仅使用上面列出的预定义功能名称(`su_compat`、`kernel_umount`、`enhanced_security`)。这些对应于实际的 KernelSU 内部功能。使用其他功能名称不会导致错误,但没有任何功能作用。
+仅使用上面列出的预定义功能名称(`su_compat`、`kernel_umount`)。这些对应于实际的 KernelSU 内部功能。使用其他功能名称不会导致错误,但没有任何功能作用。
 :::

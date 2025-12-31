@@ -113,7 +113,6 @@ Modul dapat mendeklarasikan fitur KernelSU mana yang mereka kelola menggunakan p
 **Fitur yang Didukung:**
 - `su_compat` - Mode kompatibilitas SU
 - `kernel_umount` - Unmount otomatis kernel
-- `enhanced_security` - Mode keamanan yang ditingkatkan
 
 ```bash
 # Mendeklarasikan bahwa modul ini mengelola kompatibilitas SU dan mengaktifkannya
@@ -137,5 +136,5 @@ Fitur yang dikelola diekspos melalui API daftar modul sebagai field `managedFeat
 - Koordinasi yang lebih baik antara modul dan fungsionalitas inti KernelSU
 
 ::: warning HANYA FITUR YANG DIDUKUNG
-Gunakan hanya nama fitur yang telah ditentukan sebelumnya yang tercantum di atas (`su_compat`, `kernel_umount`, `enhanced_security`). Ini sesuai dengan fitur internal KernelSU yang sebenarnya. Menggunakan nama fitur lain tidak akan menyebabkan error, tetapi tidak memiliki tujuan fungsional.
+Gunakan hanya nama fitur yang telah ditentukan sebelumnya yang tercantum di atas (`su_compat`, `kernel_umount`). Ini sesuai dengan fitur internal KernelSU yang sebenarnya. Menggunakan nama fitur lain tidak akan menyebabkan error, tetapi tidak memiliki tujuan fungsional.
 :::

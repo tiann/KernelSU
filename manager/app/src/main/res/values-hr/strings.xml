@@ -141,8 +141,6 @@
     <string name="app_profile_affects_following_apps">Utječe na sljedeće aplikacije</string>
     <string name="settings_module_check_update">Provjerite ažuriranja modula</string>
     <string name="install_select_partition">Odaberite particiju</string>
-    <string name="settings_enable_enhanced_security">Omogući poboljšanu sigurnost</string>
-    <string name="settings_enable_enhanced_security_summary">Omogući strože sigurnosne politike.</string>
     <string name="feature_status_unsupported_summary">Kernel ne podržava ovu značajku.</string>
     <string name="feature_status_managed_summary">Ovom značajkom upravlja modul.</string>
     <string name="settings_mode_default">Zadano</string>

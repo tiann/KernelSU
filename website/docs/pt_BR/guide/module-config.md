@@ -113,7 +113,6 @@ Os módulos podem declarar quais recursos do KernelSU eles gerenciam usando o pa
 **Recursos Suportados:**
 - `su_compat` - Modo de compatibilidade SU
 - `kernel_umount` - Desmontagem automática do kernel
-- `enhanced_security` - Modo de segurança aprimorada
 
 ```bash
 # Declarar que este módulo gerencia a compatibilidade SU e a habilita
@@ -137,5 +136,5 @@ Os recursos gerenciados são expostos através da API de lista de módulos como 
 - Melhor coordenação entre módulos e funcionalidade central do KernelSU
 
 ::: warning APENAS RECURSOS SUPORTADOS
-Use apenas os nomes de recursos predefinidos listados acima (`su_compat`, `kernel_umount`, `enhanced_security`). Eles correspondem aos recursos internos reais do KernelSU. Usar outros nomes de recursos não causará erros, mas não terá nenhum propósito funcional.
+Use apenas os nomes de recursos predefinidos listados acima (`su_compat`, `kernel_umount`). Eles correspondem aos recursos internos reais do KernelSU. Usar outros nomes de recursos não causará erros, mas não terá nenhum propósito funcional.
 :::

@@ -73,15 +73,6 @@ object Natives {
     external fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
     /**
-     * Enhanced security can be enabled/disabled.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isEnhancedSecurityEnabled(): Boolean
-    external fun setEnhancedSecurityEnabled(enabled: Boolean): Boolean
-
-    /**
      * Get the user name for the uid.
      */
     external fun getUserName(uid: Int): String?
