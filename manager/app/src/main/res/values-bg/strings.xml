@@ -136,8 +136,6 @@
     <string name="settings_disable_su_summary">Деактивирайте възможността на всяко приложение да получава root права чрез командата ⁠SU (съществуващите root процеси няма да бъдат засегнати).</string>
     <string name="settings_disable_kernel_umount">Деактивирайте кернелово разкачане</string>
     <string name="settings_disable_kernel_umount_summary">Деактивирани на кернел-ниво разкачщо поведение контролирано от KernelSU.</string>
-    <string name="settings_enable_enhanced_security">Активиране на подобрена защита</string>
-    <string name="settings_enable_enhanced_security_summary">Активирайте по-строги политики за сигурност.</string>
     <string name="feature_status_unsupported_summary">Кърнълът не поддържа тази функция.</string>
     <string name="feature_status_managed_summary">Тази функция е управлявана от модул.</string>
     <string name="settings_mode_default">По подразбиране</string>

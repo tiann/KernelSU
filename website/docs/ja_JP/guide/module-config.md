@@ -113,7 +113,6 @@ ksud module config set override.description "マネージャーに表示され�
 **サポートされている機能:**
 - `su_compat` - SU 互換モード
 - `kernel_umount` - カーネル自動アンマウント
-- `enhanced_security` - 強化されたセキュリティモード
 
 ```bash
 # このモジュールが SU 互換性を管理し、有効にすることを宣言
@@ -137,5 +136,5 @@ ksud module config delete manage.su_compat
 - モジュールとコア KernelSU 機能間のより良い調整
 
 ::: warning サポートされている機能のみ
-上記にリストされた事前定義された機能名(`su_compat`、`kernel_umount`、`enhanced_security`)のみを使用してください。これらは実際の KernelSU 内部機能に対応しています。他の機能名を使用してもエラーにはなりませんが、機能的な目的はありません。
+上記にリストされた事前定義された機能名(`su_compat`、`kernel_umount`)のみを使用してください。これらは実際の KernelSU 内部機能に対応しています。他の機能名を使用してもエラーにはなりませんが、機能的な目的はありません。
 :::

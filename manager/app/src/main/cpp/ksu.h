@@ -83,7 +83,6 @@ int get_app_profile(app_profile *profile);
 enum ksu_feature_id {
     KSU_FEATURE_SU_COMPAT = 0,
     KSU_FEATURE_KERNEL_UMOUNT = 1,
-    KSU_FEATURE_ENHANCED_SECURITY = 2,
 };
 
 // Generic feature API
@@ -158,11 +157,6 @@ bool is_su_enabled();
 bool set_kernel_umount_enabled(bool enabled);
 
 bool is_kernel_umount_enabled();
-
-// Enhanced security
-bool set_enhanced_security_enabled(bool enabled);
-
-bool is_enhanced_security_enabled();
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)

@@ -113,7 +113,6 @@ Các mô-đun có thể khai báo tính năng KernelSU nào mà chúng quản l�
 **Tính năng được Hỗ trợ:**
 - `su_compat` - Chế độ tương thích SU
 - `kernel_umount` - Tự động unmount kernel
-- `enhanced_security` - Chế độ bảo mật nâng cao
 
 ```bash
 # Khai báo rằng mô-đun này quản lý khả năng tương thích SU và bật nó
@@ -137,5 +136,5 @@ Các tính năng được quản lý được hiển thị thông qua API danh s
 - Phối hợp tốt hơn giữa các mô-đun và chức năng cốt lõi của KernelSU
 
 ::: warning CHỈ CÁC TÍNH NĂNG ĐƯỢC HỖ TRỢ
-Chỉ sử dụng các tên tính năng được xác định trước được liệt kê ở trên (`su_compat`, `kernel_umount`, `enhanced_security`). Chúng tương ứng với các tính năng nội bộ thực tế của KernelSU. Sử dụng các tên tính năng khác sẽ không gây lỗi nhưng không có mục đích chức năng nào.
+Chỉ sử dụng các tên tính năng được xác định trước được liệt kê ở trên (`su_compat`, `kernel_umount`). Chúng tương ứng với các tính năng nội bộ thực tế của KernelSU. Sử dụng các tên tính năng khác sẽ không gây lỗi nhưng không có mục đích chức năng nào.
 :::

@@ -113,7 +113,6 @@ Modules can declare which KernelSU features they manage using the `manage.<featu
 **Supported Features:**
 - `su_compat` - SU compatibility mode
 - `kernel_umount` - Kernel automatic unmount
-- `enhanced_security` - Enhanced security mode
 
 ```bash
 # Declare that this module manages SU compatibility and enables it
@@ -137,5 +136,5 @@ Managed features are exposed through the module list API as a `managedFeatures` 
 - Better coordination between modules and core KernelSU functionality
 
 ::: warning SUPPORTED FEATURES ONLY
-Only use the predefined feature names listed above (`su_compat`, `kernel_umount`, `enhanced_security`). These correspond to actual KernelSU internal features. Using other feature names will not cause errors but serves no functional purpose.
+Only use the predefined feature names listed above (`su_compat`, `kernel_umount`). These correspond to actual KernelSU internal features. Using other feature names will not cause errors but serves no functional purpose.
 :::
