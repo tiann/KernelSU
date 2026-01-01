@@ -40,7 +40,7 @@
     <string name="send_log">Kirim Log</string>
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Reboot agar berfungsi</string>
-    <string name="module_magisk_conflict">Konflik dengan Magisk, fungsi modul dinonaktifkan!</string>
+    <string name="module_magisk_conflict">Modul tidak tersedia karena konflik dengan Magisk!</string>
     <string name="home_learn_kernelsu">Pelajari KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/id_ID/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Pelajari cara memasang KernelSU dan menggunakan modul.</string>
@@ -72,7 +72,7 @@
     <string name="new_version_available">Versi baru %s tersedia, klik untuk memperbarui!</string>
     <string name="launch_app">Luncurkan</string>
     <string name="force_stop_app">Paksa berhenti</string>
-    <string name="restart_app">Mulai ulang</string>
+    <string name="restart_app">Mulai ulang apl</string>
     <string name="failed_to_update_sepolicy">Gagal memperbarui aturan SELinux untuk %s</string>
     <string name="require_kernel_version">Versi KernelSU saat ini %1$d terlalu rendah untuk manajer berfungsi normal. Harap memperbarui ke versi %2$d atau di atasnya!</string>
     <string name="module_changelog">Catatan perubahan</string>
@@ -146,7 +146,7 @@
     <string name="module_repos_sort_name">Nama (A → Z)</string>
     <string name="module_repos_source_code">Sumber kode</string>
     <string name="metamodule_uninstall_confirm">Yakin ingin menghapus modul %s? Tindakan ini akan memengaruhi semua modul, dan fitur tertentu yang disediakan oleh metamodul (seperti mounting) tidak akan berfungsi lagi.</string>
-    <string name="home_gki_warning">Mulai dari v3.0.0, fungsi mode GKI dibatasi untuk lingkungan pengujian. Kami tidak merekomendasikan untuk penggunaan harian, dan berkas image tidak akan lagi disediakan.</string>
+    <string name="home_gki_warning">Mulai dari v3.0.0, fungsi mode GKI dibatasi untuk lingkungan pengujian. Kami tidak menyarankan untuk penggunaan harian, dan berkas image tidak akan lagi disediakan.</string>
     <string name="app_profile_affects_following_apps">Mempengaruhi apl berikut</string>
     <string name="install_select_partition">Pilih partisi</string>
     <string name="feature_status_unsupported_summary">Kernel tidak mendukung fitur ini.</string>
