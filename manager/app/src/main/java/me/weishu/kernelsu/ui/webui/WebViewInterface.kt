@@ -177,6 +177,7 @@ class WebViewInterface(
                 }
             }
         }
+        enableInsets(enable)
     }
 
     @JavascriptInterface
