@@ -73,7 +73,6 @@ void on_post_fs_data(void)
     done = true;
     pr_info("on_post_fs_data!\n");
 
-    ksu_selinux_init();
     ksu_load_allow_list();
     ksu_observer_init();
     // sanity check, this may influence the performance
@@ -251,6 +250,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
             pr_info("/system/bin/init second_stage executed\n");
             apply_kernelsu_rules();
+            ksu_selinux_init();
             setup_ksu_cred();
             init_second_stage_executed = true;
         }
