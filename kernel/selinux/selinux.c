@@ -118,7 +118,7 @@ void ksu_selinux_init(void)
     err = security_secctx_to_secid(KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT),
                                    &cached_su_sid);
     if (err) {
-        pr_warn("Failed to cache su SID: %d\n", err);
+        pr_warn("Failed to cache kernel su domain SID: %d\n", err);
         cached_su_sid = 0;
     } else {
         pr_info("Cached su SID: %u\n", cached_su_sid);
