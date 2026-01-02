@@ -118,9 +118,15 @@ fun SuperUserPager(
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     LaunchedEffect(Unit) {
-        if (viewModel.appList.value.isEmpty()) {
-            viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
-            viewModel.loadAppList()
+        when {
+            viewModel.appList.value.isEmpty() -> {
+                viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
+                viewModel.loadAppList()
+            }
+
+            viewModel.isNeedRefresh -> {
+                viewModel.loadAppList()
+            }
         }
     }
 
@@ -165,7 +171,7 @@ fun SuperUserPager(
                                             putBoolean("show_system_apps", viewModel.showSystemApps)
                                         }
                                         scope.launch {
-                                            viewModel.fetchAppList()
+                                            viewModel.loadAppList()
                                         }
                                         showTopPopup.value = false
                                     },
@@ -236,6 +242,7 @@ fun SuperUserPager(
                                 navigator.navigate(AppProfileScreenDestination(group.primary)) {
                                     launchSingleTop = true
                                 }
+                                viewModel.markNeedRefresh()
                             }
                             AnimatedVisibility(
                                 visible = expanded && group.apps.size > 1,
@@ -275,7 +282,7 @@ fun SuperUserPager(
             LaunchedEffect(isRefreshing) {
                 if (isRefreshing) {
                     delay(350)
-                    viewModel.loadAppList()
+                    viewModel.loadAppList(force = true)
                     isRefreshing = false
                 }
             }
@@ -352,6 +359,7 @@ fun SuperUserPager(
                                         navigator.navigate(AppProfileScreenDestination(group.primary)) {
                                             launchSingleTop = true
                                         }
+                                        viewModel.markNeedRefresh()
                                     }
                                     AnimatedVisibility(
                                         visible = expanded && group.apps.size > 1,
@@ -487,7 +495,7 @@ private fun GroupItem(
     val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
     val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
             || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-    val tags = remember(group.uid, group.anyAllowSu, group.anyCustom, colorScheme, isDark) {
+    val tags = remember(group, colorScheme, isDark) {
         buildList {
             if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
             if (Natives.uidShouldUmount(group.uid)) add(StatusMeta("UMOUNT", unmountBg, unmountFg))

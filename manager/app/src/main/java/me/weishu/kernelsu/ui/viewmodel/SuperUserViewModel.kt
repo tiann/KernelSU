@@ -55,7 +55,6 @@ class SuperUserViewModel : ViewModel() {
         }
     }
 
-
     private var _appList = mutableStateOf<List<AppInfo>>(emptyList())
     val appList: State<List<AppInfo>> = _appList
 
@@ -92,6 +91,13 @@ class SuperUserViewModel : ViewModel() {
     var showSystemApps by mutableStateOf(false)
     var isRefreshing by mutableStateOf(false)
         private set
+
+    var isNeedRefresh by mutableStateOf(false)
+        private set
+
+    fun markNeedRefresh() {
+        isNeedRefresh = true
+    }
 
     private val _searchResults = mutableStateOf<List<AppInfo>>(emptyList())
     val searchResults: State<List<AppInfo>> = _searchResults
@@ -154,6 +160,23 @@ class SuperUserViewModel : ViewModel() {
         RootService.stop(intent)
     }
 
+    private fun filterAndSort(list: List<AppInfo>): List<AppInfo> {
+        val comparator = compareBy<AppInfo> {
+            when {
+                it.allowSu -> 0
+                it.hasCustomProfile -> 1
+                else -> 2
+            }
+        }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
+        return list.sortedWith(comparator).filter {
+            it.uid == 2000
+                    || showSystemApps
+                    || it.allowSu
+                    || it.hasCustomProfile
+                    || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
+        }
+    }
+
     suspend fun fetchAppList() {
         Mutex().withLock {
             withContext(Dispatchers.Main) { isRefreshing = true }
@@ -193,20 +216,7 @@ class SuperUserViewModel : ViewModel() {
                     if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
                 }
 
-                val comparator = compareBy<AppInfo> {
-                    when {
-                        it.allowSu -> 0
-                        it.hasCustomProfile -> 1
-                        else -> 2
-                    }
-                }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
-                val sortedFiltered = newApps.sortedWith(comparator).filter {
-                    it.uid == 2000
-                            || showSystemApps
-                            || it.allowSu
-                            || it.hasCustomProfile
-                            || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
-                }
+                val sortedFiltered = filterAndSort(newApps)
 
                 Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
 
@@ -219,14 +229,45 @@ class SuperUserViewModel : ViewModel() {
                 }
                 _appList.value = allPackagesSlice.second
                 isRefreshing = false
+                isNeedRefresh = false
                 stopKsuService()
             }
         }
     }
 
-    fun loadAppList() {
+    private suspend fun refreshAppList() {
+        Mutex().withLock {
+            val currentApps = synchronized(appsLock) { apps }
+            if (currentApps.isEmpty()) return
+
+            val updatedApps = withContext(Dispatchers.IO) {
+                currentApps.map {
+                    val profile = Natives.getAppProfile(it.packageName, it.uid)
+                    it.copy(profile = profile)
+                }
+            }
+
+            val sortedFiltered = withContext(Dispatchers.IO) {
+                filterAndSort(updatedApps)
+            }
+
+            withContext(Dispatchers.Main) {
+                synchronized(appsLock) {
+                    apps = updatedApps
+                }
+                _appList.value = sortedFiltered
+                isNeedRefresh = false
+            }
+        }
+    }
+
+    fun loadAppList(force: Boolean = false) {
         viewModelScope.launch {
-            fetchAppList()
+            if (force || apps.isEmpty()) {
+                fetchAppList()
+            } else {
+                refreshAppList()
+            }
         }
     }
 }
