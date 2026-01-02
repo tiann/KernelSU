@@ -10,8 +10,13 @@
  * Cached SID values for frequently checked contexts.
  * These are resolved once at init and used for fast u32 comparison
  * instead of expensive string operations on every check.
- * 
- * A value of 0 means "not yet cached" - we fall back to string comparison.
+ *
+ * A value of 0 means "no cached SID is available" for that context.
+ * This covers both the initial "not yet cached" state and any case
+ * where resolving the SID (e.g. via security_secctx_to_secid) failed.
+ * In all such cases we intentionally fall back to the slower
+ * string-based comparison path; this degrades performance only and
+ * does not cause a functional failure.
  */
 static u32 cached_su_sid __read_mostly = 0;
 static u32 cached_zygote_sid __read_mostly = 0;
