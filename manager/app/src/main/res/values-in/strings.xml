@@ -178,6 +178,6 @@
     <string name="network_retry">Coba lagi</string>
     <string name="tab_readme">Baca Aku</string>
     <string name="tab_releases">Rilis</string>
-    <string name="tab_info">Info</string>
+    <string name="tab_info">Informasi</string>
     <string name="safe_mode_module_disabled">Pemasangan modul dinonaktifkan pada mode aman</string>
 </resources>
