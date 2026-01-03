@@ -152,49 +152,110 @@ static int do_check_safemode(void __user *arg)
     return 0;
 }
 
-static int do_get_allow_list(void __user *arg)
+static int do_new_get_allow_list_common(void __user *arg, bool allow)
 {
-    struct ksu_get_allow_list_cmd cmd;
+    struct ksu_new_get_allow_list_cmd cmd;
+    int *arr = NULL;
+    int err = 0;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
         return -EFAULT;
     }
 
-    bool success = ksu_get_allow_list((int *)cmd.uids, (int *)&cmd.count, true);
+    if (cmd.count) {
+        arr = kmalloc(sizeof(int) * cmd.count, GFP_KERNEL);
+        if (!arr) {
+            return -ENOMEM;
+        }
+    }
+
+    bool success =
+        ksu_get_allow_list(arr, cmd.count, &cmd.count, &cmd.total_count, allow);
 
     if (!success) {
-        return -EFAULT;
+        err = -EFAULT;
+        goto out;
     }
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_allow_list: copy_to_user failed\n");
-        return -EFAULT;
+        pr_err("new_get_allow_list: copy_to_user count failed\n");
+        err = -EFAULT;
+        goto out;
     }
 
-    return 0;
+    if (cmd.count &&
+        copy_to_user(&((struct ksu_new_get_allow_list_cmd *)arg)->uids, arr,
+                     sizeof(int) * cmd.count)) {
+        pr_err("new_get_allow_list: copy_to_user uids failed\n");
+        err = -EFAULT;
+    }
+
+out:
+    if (arr) {
+        kfree(arr);
+    }
+    return err;
+}
+
+static int do_new_get_deny_list(void __user *arg)
+{
+    return do_new_get_allow_list_common(arg, false);
+}
+
+static int do_new_get_allow_list(void __user *arg)
+{
+    return do_new_get_allow_list_common(arg, true);
+}
+
+static int do_get_allow_list_common(void __user *arg, bool allow)
+{
+    int *arr = NULL;
+    int err = 0;
+    u16 count;
+    u32 out_count;
+    static const u16 kSize = 128;
+
+    arr = kmalloc(sizeof(int) * kSize, GFP_KERNEL);
+    if (!arr) {
+        return -ENOMEM;
+    }
+
+    bool success = ksu_get_allow_list(arr, kSize, &count, NULL, allow);
+
+    if (!success) {
+        err = -EFAULT;
+        goto out;
+    }
+
+    out_count = count;
+
+    if (copy_to_user(arg + offsetof(struct ksu_get_allow_list_cmd, count),
+                     &out_count, sizeof(u32))) {
+        pr_err("get_allow_list: copy_to_user count failed\n");
+        err = -EFAULT;
+        goto out;
+    }
+
+    if (copy_to_user(arg, arr, sizeof(u32) * count)) {
+        pr_err("get_allow_list: copy_to_user uids failed\n");
+        err = -EFAULT;
+    }
+
+out:
+    if (arr) {
+        kfree(arr);
+    }
+    return err;
 }
 
 static int do_get_deny_list(void __user *arg)
 {
-    struct ksu_get_allow_list_cmd cmd;
+    return do_get_allow_list_common(arg, false);
+}
 
-    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        return -EFAULT;
-    }
-
-    bool success =
-        ksu_get_allow_list((int *)cmd.uids, (int *)&cmd.count, false);
-
-    if (!success) {
-        return -EFAULT;
-    }
-
-    if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_deny_list: copy_to_user failed\n");
-        return -EFAULT;
-    }
-
-    return 0;
+static int do_get_allow_list(void __user *arg)
+{
+    return do_get_allow_list_common(arg, true);
 }
 
 static int do_uid_granted_root(void __user *arg)
@@ -271,17 +332,19 @@ static int do_get_app_profile(void __user *arg)
 static int do_set_app_profile(void __user *arg)
 {
     struct ksu_set_app_profile_cmd cmd;
+    int ret;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
         pr_err("set_app_profile: copy_from_user failed\n");
         return -EFAULT;
     }
 
-    if (!ksu_set_app_profile(&cmd.profile, true)) {
-        return -EFAULT;
+    ret = ksu_set_app_profile(&cmd.profile);
+    if (!ret) {
+        ksu_persistent_allow_list();
+        ksu_mark_running_process();
     }
-
-    return 0;
+    return ret;
 }
 
 static int do_get_feature(void __user *arg)
@@ -577,6 +640,14 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GET_DENY_LIST,
       .name = "GET_DENY_LIST",
       .handler = do_get_deny_list,
+      .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_NEW_GET_ALLOW_LIST,
+      .name = "NEW_GET_ALLOW_LIST",
+      .handler = do_new_get_allow_list,
+      .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_NEW_GET_DENY_LIST,
+      .name = "NEW_GET_DENY_LIST",
+      .handler = do_new_get_deny_list,
       .perm_check = manager_or_root },
     { .cmd = KSU_IOCTL_UID_GRANTED_ROOT,
       .name = "UID_GRANTED_ROOT",
