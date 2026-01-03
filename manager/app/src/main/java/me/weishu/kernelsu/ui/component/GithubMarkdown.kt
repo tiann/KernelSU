@@ -131,16 +131,6 @@ fun GithubMarkdown(
 
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
-                            view.evaluateJavascript(
-                                "(function(){return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);})()"
-                            ) { value ->
-                                val raw = value.trim().trim('"')
-                                val cssPx = raw.toFloatOrNull() ?: return@evaluateJavascript
-                                val density = view.resources.displayMetrics.density
-                                val heightPx = (cssPx * density).toInt().coerceAtLeast(1)
-                                view.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightPx)
-                                view.requestLayout()
-                            }
 
                             val js = """
                                 (function() {
@@ -303,6 +293,14 @@ fun GithubMarkdown(
             }
             frameLayout.addView(webView)
             frameLayout
+        },
+        onRelease = { frameLayout ->
+            val webView = frameLayout.getChildAt(0) as? WebView
+            frameLayout.removeAllViews()
+            webView?.apply {
+                stopLoading()
+                destroy()
+            }
         },
         modifier = Modifier
             .fillMaxWidth()
