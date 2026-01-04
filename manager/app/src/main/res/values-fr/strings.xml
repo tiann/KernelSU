@@ -180,4 +180,5 @@
     <string name="tab_readme">README</string>
     <string name="tab_releases">Versions</string>
     <string name="tab_info">Infos</string>
+    <string name="safe_mode_module_disabled">L\'installation de modules est désactivée en mode sans échec</string>
 </resources>

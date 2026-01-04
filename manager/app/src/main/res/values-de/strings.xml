@@ -16,7 +16,7 @@
     <string name="about">Über KernelSU</string>
     <string name="module_magisk_conflict">Module sind aufgrund eines Konfliktes mit Magisk nicht verfügbar!</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
-    <string name="home_click_to_learn_kernelsu">Erfahre, wie KernelSU installiert wird und wie Module verwendet werden</string>
+    <string name="home_click_to_learn_kernelsu">Erfahre, wie KernelSU installiert wird und wie Module verwendet werden.</string>
     <string name="home_support_title">Unterstütze uns</string>
     <string name="home_support_content">KernelSU ist und wird immer frei und quelloffen sein. Du kannst uns jedoch deine Unterstützung zeigen, indem du eine Spende tätigst.</string>
     <string name="profile_selinux_context">SELinux-Kontext</string>
@@ -34,9 +34,9 @@
     <string name="profile_umount_modules_summary">Wenn du diese Option aktivierst, kann KernelSU alle von den Modulen für diese App geänderten Dateien wiederherstellen.</string>
     <string name="profile_selinux_rules">Regeln</string>
     <string name="module_start_downloading">Starte Download: %s</string>
-    <string name="failed_to_update_sepolicy">Aktualisieren der SELinux-Regeln schlug fehl für: %s</string>
+    <string name="failed_to_update_sepolicy">Aktualisieren der SELinux-Regeln schlug fehl für %s</string>
     <string name="launch_app">Starten</string>
-    <string name="new_version_available">Neue Version %s verfügbar, tippen zum Aktualisieren.</string>
+    <string name="new_version_available">Neue Version %s verfügbar, tippen zum Aktualisieren!</string>
     <string name="force_stop_app">Stopp erzwingen</string>
     <string name="restart_app">Neustarten</string>
     <string name="home_manager_version">Manager-Version</string>
@@ -66,11 +66,11 @@
     <string name="profile_umount_modules">Module aushängen</string>
     <string name="module_downloading">Lädt Modul %s herunter</string>
     <string name="home_unsupported">Nicht unterstützt</string>
-    <string name="home_unsupported_reason">KernelSU unterstützt derzeit nur GKI-Kernel</string>
-    <string name="home_kernel">Kernel</string>
+    <string name="home_unsupported_reason">KernelSU unterstützt derzeit nur GKI-Kernel.</string>
+    <string name="home_kernel">Kernelversion</string>
     <string name="home_fingerprint">Fingerabdruck</string>
     <string name="module_install">Installieren</string>
-    <string name="reboot_userspace">Soft-Reboot</string>
+    <string name="reboot_userspace">Soft Reboot</string>
     <string name="module_uninstall_confirm">Möchtest du wirklich Modul %s deinstallieren?</string>
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
     <string name="require_kernel_version">Die aktuelle KernelSU-Version %1$d ist zu alt für diese Manager-Version. Bitte auf Version %2$d oder höher aktualisieren!</string>
@@ -87,15 +87,15 @@
     <string name="app_profile_template_save_failed">Schlug beim Speichern der Vorlage fehl</string>
     <string name="app_profile_template_edit">Vorlage bearbeiten</string>
     <string name="app_profile_template_id">ID</string>
-    <string name="settings_profile_template">App-Profil-Vorlage</string>
+    <string name="settings_profile_template">App Profil-Vorlage</string>
     <string name="app_profile_template_description">Beschreibung</string>
     <string name="app_profile_template_save">Speichern</string>
-    <string name="settings_profile_template_summary">Verwalte die lokale und online Vorlage des App-Profils</string>
+    <string name="settings_profile_template_summary">Verwalte die lokale und online Vorlage des App-Profils.</string>
     <string name="app_profile_template_delete">Löschen</string>
     <string name="app_profile_template_import_empty">Zwischenablage ist leer!</string>
     <string name="app_profile_template_view">Vorlage ansehen</string>
-    <string name="enable_web_debugging">WebView-Debugging aktivieren</string>
-    <string name="enable_web_debugging_summary">Kann zum Fehlerbeheben der WebUI verwendet werden, bitte nur im Notfall aktivieren.</string>
+    <string name="enable_web_debugging">WebView-Debugging</string>
+    <string name="enable_web_debugging_summary">Kann zum Fehlerbeheben der WebUI verwendet werden. Bitte nur im Notfall aktivieren.</string>
     <string name="select_file_tip">%1$s Partitionsabbild empfohlen</string>
     <string name="select_kmi">KMI auswählen</string>
     <string name="install_next">Weiter</string>
@@ -107,8 +107,8 @@
 \nFortfahren?</string>
     <string name="grant_root_failed">Root-Zugriff konnte nicht gewährt werden!</string>
     <string name="open">Öffnen</string>
-    <string name="settings_check_update">Auf Aktualisierung prüfen</string>
-    <string name="settings_check_update_summary">Prüfe automatisch auf Aktualisierungen, wenn die App geöffnet wird</string>
+    <string name="settings_check_update">Auf Aktualisierungen prüfen</string>
+    <string name="settings_check_update_summary">Prüfe automatisch auf Aktualisierungen, wenn die App geöffnet wird.</string>
     <string name="settings_uninstall_temporary">Temporär deinstallieren</string>
     <string name="settings_uninstall">Deinstallieren</string>
     <string name="settings_uninstall_permanent_message">KernelSU (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
@@ -125,4 +125,18 @@
     <string name="log_saved">Protokolle gespeichert</string>
     <string name="module_install_prompt_with_name">Folgende Module werden installiert: %1$s</string>
     <string name="confirm">Bestätigen</string>
+    <string name="module_sort_action_first">Aktion zuerst</string>
+    <string name="module_sort_enabled_first">Aktiviert zuerst</string>
+    <string name="module_repos">Repos</string>
+    <string name="module_repos_sort_name">Name (A → Z)</string>
+    <string name="module_repos_source_code">Quellcode</string>
+    <string name="metamodule_uninstall_confirm">Sind Sie sich sicher, das Modul %s zu deinstallieren? Diese Aktion wirkt sich auf alle Module aus und spezielle Funktionen, welche von dem Metamodul bereitgestellt werden (sowie montieren), werden nicnt mehr funktioneren.</string>
+    <string name="safe_mode_module_disabled">Modulinstallation ist im sicheren Modus deaktiviert</string>
+    <string name="home_gki_warning">Ab v3.0.0 wird der GKI Arbeitsmodus nur in Testumgebungen genutzt werden. Wir empfehlen es nicht für die tägliche Nutzung und Bilddateien werden nicht mehr bereitgestellt werden.</string>
+    <string name="su_not_allowed">Es konnte für %s keine Superuser-Berechtigung gegeben werden</string>
+    <string name="app_profile_affects_following_apps">Wirkt sich auf folgende Apps aus</string>
+    <string name="settings_module_check_update">Auf Modulaktualisierungen prüfen</string>
+    <string name="install_select_partition">Partition wählen</string>
+    <string name="install_upload_lkm_file">Nutze lokale LKM Datei</string>
+    <string name="install_only_support_ko_file">Nur .ko Dateien unterstützt</string>
 </resources>
