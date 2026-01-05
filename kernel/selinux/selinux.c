@@ -6,6 +6,23 @@
 #include "../klog.h" // IWYU pragma: keep
 #include "../ksu.h"
 
+/*
+ * Cached SID values for frequently checked contexts.
+ * These are resolved once at init and used for fast u32 comparison
+ * instead of expensive string operations on every check.
+ *
+ * A value of 0 means "no cached SID is available" for that context.
+ * This covers both the initial "not yet cached" state and any case
+ * where resolving the SID (e.g. via security_secctx_to_secid) failed.
+ * In all such cases we intentionally fall back to the slower
+ * string-based comparison path; this degrades performance only and
+ * does not cause a functional failure.
+ */
+static u32 cached_su_sid __read_mostly = 0;
+static u32 cached_zygote_sid __read_mostly = 0;
+static u32 cached_init_sid __read_mostly = 0;
+u32 ksu_file_sid __read_mostly = 0;
+
 static int transive_to_domain(const char *domain, struct cred *cred)
 {
     u32 sid;
@@ -90,10 +107,59 @@ static void __security_release_secctx(struct lsm_context *cp)
 #define __security_release_secctx security_release_secctx
 #endif
 
-bool is_task_ksu_domain(const struct cred *cred)
+/*
+ * Initialize cached SID values for frequently checked SELinux contexts.
+ * Called once after SELinux policy is loaded (post-fs-data).
+ * This eliminates expensive string comparisons in hot paths.
+ */
+void cache_sid(void)
 {
-    struct lsm_context ctx;
-    bool result;
+    int err;
+
+    err = security_secctx_to_secid(KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT),
+                                   &cached_su_sid);
+    if (err) {
+        pr_warn("Failed to cache kernel su domain SID: %d\n", err);
+        cached_su_sid = 0;
+    } else {
+        pr_info("Cached su SID: %u\n", cached_su_sid);
+    }
+
+    err = security_secctx_to_secid(ZYGOTE_CONTEXT, strlen(ZYGOTE_CONTEXT),
+                                   &cached_zygote_sid);
+    if (err) {
+        pr_warn("Failed to cache zygote SID: %d\n", err);
+        cached_zygote_sid = 0;
+    } else {
+        pr_info("Cached zygote SID: %u\n", cached_zygote_sid);
+    }
+
+    err = security_secctx_to_secid(INIT_CONTEXT, strlen(INIT_CONTEXT),
+                                   &cached_init_sid);
+    if (err) {
+        pr_warn("Failed to cache init SID: %d\n", err);
+        cached_init_sid = 0;
+    } else {
+        pr_info("Cached init SID: %u\n", cached_init_sid);
+    }
+
+    err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
+                                   &ksu_file_sid);
+    if (err) {
+        pr_warn("Failed to cache ksu_file SID: %d\n", err);
+        ksu_file_sid = 0;
+    } else {
+        pr_info("Cached ksu_file SID: %u\n", ksu_file_sid);
+    }
+}
+
+/*
+ * Fast path: compare task's SID directly against cached value.
+ * Falls back to string comparison if cache is not initialized.
+ */
+static bool is_sid_match(const struct cred *cred, u32 cached_sid,
+                         const char *fallback_context)
+{
     if (!cred) {
         return false;
     }
@@ -105,62 +171,40 @@ bool is_task_ksu_domain(const struct cred *cred)
     if (!tsec) {
         return false;
     }
+
+    // Fast path: use cached SID if available
+    if (likely(cached_sid != 0)) {
+        return tsec->sid == cached_sid;
+    }
+
+    // Slow path fallback: string comparison (only before cache is initialized)
+    struct lsm_context ctx;
+    bool result;
     int err = __security_secid_to_secctx(tsec->sid, &ctx);
     if (err) {
         return false;
     }
-    result = strncmp(KERNEL_SU_CONTEXT, ctx.context, ctx.len) == 0;
+    result = strncmp(fallback_context, ctx.context, ctx.len) == 0;
     __security_release_secctx(&ctx);
     return result;
+}
+
+bool is_task_ksu_domain(const struct cred *cred)
+{
+    return is_sid_match(cred, cached_su_sid, KERNEL_SU_CONTEXT);
 }
 
 bool is_ksu_domain()
 {
-    current_sid();
     return is_task_ksu_domain(current_cred());
-}
-
-bool is_context(const struct cred *cred, const char *context)
-{
-    struct lsm_context ctx;
-    bool result;
-    if (!cred) {
-        return false;
-    }
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-    const struct task_security_struct *tsec = selinux_cred(cred);
-#else
-    const struct cred_security_struct *tsec = selinux_cred(cred);
-#endif
-    if (!tsec) {
-        return false;
-    }
-    int err = __security_secid_to_secctx(tsec->sid, &ctx);
-    if (err) {
-        return false;
-    }
-    result = strncmp(context, ctx.context, ctx.len) == 0;
-    __security_release_secctx(&ctx);
-    return result;
 }
 
 bool is_zygote(const struct cred *cred)
 {
-    return is_context(cred, "u:r:zygote:s0");
+    return is_sid_match(cred, cached_zygote_sid, ZYGOTE_CONTEXT);
 }
 
 bool is_init(const struct cred *cred)
 {
-    return is_context(cred, "u:r:init:s0");
-}
-
-u32 ksu_get_ksu_file_sid()
-{
-    u32 ksu_file_sid = 0;
-    int err = security_secctx_to_secid(KSU_FILE_CONTEXT,
-                                       strlen(KSU_FILE_CONTEXT), &ksu_file_sid);
-    if (err) {
-        pr_info("get ksufile sid err %d\n", err);
-    }
-    return ksu_file_sid;
+    return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
 }
