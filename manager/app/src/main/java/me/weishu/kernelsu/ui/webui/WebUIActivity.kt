@@ -201,6 +201,7 @@ class WebUIActivity : ComponentActivity() {
                     filePathCallback: ValueCallback<Array<Uri>>?,
                     fileChooserParams: FileChooserParams?
                 ): Boolean {
+                    this@WebUIActivity.filePathCallback?.onReceiveValue(null)
                     this@WebUIActivity.filePathCallback = filePathCallback
                     val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" }
                     if (fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE) {
