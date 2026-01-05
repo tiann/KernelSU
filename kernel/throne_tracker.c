@@ -7,6 +7,7 @@
 #include <linux/version.h>
 
 #include "allowlist.h"
+#include "apk_sign.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager.h"
 #include "throne_tracker.h"
@@ -21,45 +22,6 @@ struct uid_data {
     char package[KSU_MAX_PACKAGE_NAME];
 };
 
-static int get_pkg_from_apk_path(char *pkg, const char *path)
-{
-    int len = strlen(path);
-    if (len >= KSU_MAX_PACKAGE_NAME || len < 1)
-        return -1;
-
-    const char *last_slash = NULL;
-    const char *second_last_slash = NULL;
-
-    int i;
-    for (i = len - 1; i >= 0; i--) {
-        if (path[i] == '/') {
-            if (!last_slash) {
-                last_slash = &path[i];
-            } else {
-                second_last_slash = &path[i];
-                break;
-            }
-        }
-    }
-
-    if (!last_slash || !second_last_slash)
-        return -1;
-
-    const char *last_hyphen = strchr(second_last_slash, '-');
-    if (!last_hyphen || last_hyphen > last_slash)
-        return -1;
-
-    int pkg_len = last_hyphen - second_last_slash - 1;
-    if (pkg_len >= KSU_MAX_PACKAGE_NAME || pkg_len <= 0)
-        return -1;
-
-    // Copying the package name
-    strncpy(pkg, second_last_slash + 1, pkg_len);
-    pkg[pkg_len] = '\0';
-
-    return 0;
-}
-
 static void crown_manager(const char *apk, struct list_head *uid_data)
 {
     char pkg[KSU_MAX_PACKAGE_NAME];
@@ -70,14 +32,6 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 
     pr_info("manager pkg: %s\n", pkg);
 
-#ifdef KSU_MANAGER_PACKAGE
-    // pkg is `/<real package>`
-    if (strncmp(pkg, KSU_MANAGER_PACKAGE, sizeof(KSU_MANAGER_PACKAGE))) {
-        pr_info("manager package is inconsistent with kernel build: %s\n",
-                KSU_MANAGER_PACKAGE);
-        return;
-    }
-#endif
     struct list_head *list = (struct list_head *)uid_data;
     struct uid_data *np;
 
