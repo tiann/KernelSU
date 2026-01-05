@@ -21,7 +21,7 @@ struct uid_data {
     char package[KSU_MAX_PACKAGE_NAME];
 };
 
-static int get_pkg_from_apk_path(char *pkg, const char *path)
+int get_pkg_from_apk_path(char *pkg, const char *path)
 {
     int len = strlen(path);
     if (len >= KSU_MAX_PACKAGE_NAME || len < 1)
