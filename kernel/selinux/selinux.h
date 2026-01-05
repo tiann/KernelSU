@@ -20,7 +20,7 @@ void setenforce(bool);
 
 bool getenforce();
 
-void ksu_selinux_init(void);
+void cache_sid(void);
 
 bool is_task_ksu_domain(const struct cred *cred);
 
@@ -31,8 +31,6 @@ bool is_zygote(const struct cred *cred);
 bool is_init(const struct cred *cred);
 
 void apply_kernelsu_rules();
-
-u32 ksu_get_ksu_file_sid();
 
 int handle_sepolicy(unsigned long arg3, void __user *arg4);
 

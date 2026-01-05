@@ -21,6 +21,7 @@
 static u32 cached_su_sid __read_mostly = 0;
 static u32 cached_zygote_sid __read_mostly = 0;
 static u32 cached_init_sid __read_mostly = 0;
+u32 ksu_file_sid __read_mostly = 0;
 
 static int transive_to_domain(const char *domain, struct cred *cred)
 {
@@ -111,7 +112,7 @@ static void __security_release_secctx(struct lsm_context *cp)
  * Called once after SELinux policy is loaded (post-fs-data).
  * This eliminates expensive string comparisons in hot paths.
  */
-void ksu_selinux_init(void)
+void cache_sid(void)
 {
     int err;
 
@@ -140,6 +141,15 @@ void ksu_selinux_init(void)
         cached_init_sid = 0;
     } else {
         pr_info("Cached init SID: %u\n", cached_init_sid);
+    }
+
+    err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
+                                   &ksu_file_sid);
+    if (err) {
+        pr_warn("Failed to cache ksu_file SID: %d\n", err);
+        ksu_file_sid = 0;
+    } else {
+        pr_info("Cached ksu_file SID: %u\n", ksu_file_sid);
     }
 }
 
@@ -197,15 +207,4 @@ bool is_zygote(const struct cred *cred)
 bool is_init(const struct cred *cred)
 {
     return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
-}
-
-u32 ksu_get_ksu_file_sid()
-{
-    u32 ksu_file_sid = 0;
-    int err = security_secctx_to_secid(KSU_FILE_CONTEXT,
-                                       strlen(KSU_FILE_CONTEXT), &ksu_file_sid);
-    if (err) {
-        pr_info("get ksufile sid err %d\n", err);
-    }
-    return ksu_file_sid;
 }
