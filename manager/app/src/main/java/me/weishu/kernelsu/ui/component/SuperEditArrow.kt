@@ -33,7 +33,7 @@ fun SuperEditArrow(
     titleColor: BasicComponentColors = BasicComponentDefaults.titleColor(),
     defaultValue: Int = -1,
     summaryColor: BasicComponentColors = BasicComponentDefaults.summaryColor(),
-    leftAction: @Composable (() -> Unit)? = null,
+    startAction: @Composable (() -> Unit)? = null,
     insideMargin: PaddingValues = BasicComponentDefaults.InsideMargin,
     enabled: Boolean = true,
     onValueChange: ((Int) -> Unit)? = null
@@ -46,7 +46,7 @@ fun SuperEditArrow(
         titleColor = titleColor,
         summary = dialogTextFieldValue.intValue.toString(),
         summaryColor = summaryColor,
-        leftAction = leftAction,
+        startAction = startAction,
         modifier = modifier,
         insideMargin = insideMargin,
         onClick = {
