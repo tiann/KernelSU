@@ -66,6 +66,7 @@ import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.LocalHandlePageChange
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.RebootListPopup
+import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.checkNewVersion
@@ -95,7 +96,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun HomePager(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     bottomInnerPadding: Dp
 ) {
     val kernelVersion = getKernelVersion()

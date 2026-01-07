@@ -1,8 +1,10 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.annotation.SuppressLint
 import android.content.ClipData
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
@@ -70,7 +72,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
 import dev.chrisbanes.haze.HazeState
@@ -83,9 +84,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
+import me.weishu.kernelsu.ui.component.FloatingActionButton
+import me.weishu.kernelsu.ui.component.SharedTransitionCard
+import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.component.sharedTransition.fabShareBounds
+import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
+import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
-import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -113,16 +119,18 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @author weishu
  * @date 2023/10/20.
  */
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
 fun AppProfileTemplateScreen(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
 ) {
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current!!
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
+
+    val sharedTransitionScope = LocalSharedTransitionScope.current
 
     LaunchedEffect(Unit) {
         if (viewModel.templateList.isEmpty()) {
@@ -172,6 +180,9 @@ fun AppProfileTemplateScreen(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
+    BackHandler {
+        navigator.popBackStack()
+    }
     Scaffold(
         topBar = {
             val clipboard = LocalClipboard.current
@@ -226,18 +237,30 @@ fun AppProfileTemplateScreen(
                 containerColor = colorScheme.primary,
                 shadowElevation = 0.dp,
                 onClick = {
-                    navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
+                    navigator.navigate(
+                        TemplateEditorScreenDestination(
+                            TemplateViewModel.TemplateInfo(),
+                            TransitionSource.FAB, false)
+                    ){
                         launchSingleTop = true
                     }
                 },
                 modifier = Modifier
                     .offset(y = offsetHeight)
                     .padding(
-                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
+                        bottom = WindowInsets.navigationBars.asPaddingValues()
+                            .calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues()
+                                    .calculateBottomPadding() + 20.dp,
                         end = 20.dp
                     )
                     .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                contentModifier = Modifier
+                    .fabShareBounds(
+                        key = "",
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ),
                 content = {
                     Icon(
                         Icons.Rounded.Add,
@@ -294,7 +317,12 @@ fun AppProfileTemplateScreen(
                     Spacer(Modifier.height(12.dp))
                 }
                 items(viewModel.templateList, key = { it.id }) { app ->
-                    TemplateItem(navigator, app)
+                    TemplateItem(
+                        navigator = navigator,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        template = app
+                    )
                 }
                 item {
                     Spacer(
@@ -311,13 +339,17 @@ fun AppProfileTemplateScreen(
 
 @Composable
 private fun TemplateItem(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     template: TemplateViewModel.TemplateInfo
 ) {
-    Card(
+    sharedTransitionScope.SharedTransitionCard(
+        key = template.id,
+        animatedVisibilityScope = animatedVisibilityScope,
         modifier = Modifier.padding(bottom = 12.dp),
         onClick = {
-            navigator.navigate(TemplateEditorScreenDestination(template, !template.local)) {
+            navigator.navigate(TemplateEditorScreenDestination(template, TransitionSource.LIST_CARD,!template.local)) {
                 popUpTo(TemplateEditorScreenDestination) {
                     inclusive = true
                 }

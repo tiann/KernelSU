@@ -1,11 +1,14 @@
 package me.weishu.kernelsu.ui.component
 
+import android.R
 import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.State
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -14,9 +17,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -35,17 +36,16 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +54,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -68,6 +69,7 @@ import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import me.weishu.kernelsu.ui.component.isTransitioning
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text
@@ -81,162 +83,146 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Stable
 class SearchStatus(val label: String) {
     var searchText by mutableStateOf("")
-    var current by mutableStateOf(Status.COLLAPSED)
-
+    val expandState = MutableTransitionState(false)
     var offsetY by mutableStateOf(0.dp)
     var resultStatus by mutableStateOf(ResultStatus.DEFAULT)
-
-    fun isExpand() = current == Status.EXPANDED
-    fun isCollapsed() = current == Status.COLLAPSED
-    fun shouldExpand() = current == Status.EXPANDED || current == Status.EXPANDING
-    fun shouldCollapsed() = current == Status.COLLAPSED || current == Status.COLLAPSING
-    fun isAnimatingExpand() = current == Status.EXPANDING
-
-    // 动画完成回调
-    fun onAnimationComplete() {
-        current = when (current) {
-            Status.EXPANDING -> Status.EXPANDED
-            Status.COLLAPSING -> {
-                searchText = ""
-                Status.COLLAPSED
-            }
-
-            else -> current
-        }
-    }
-
-    @Composable
-    fun TopAppBarAnim(
-        modifier: Modifier = Modifier,
-        visible: Boolean = shouldCollapsed(),
-        hazeState: HazeState? = null,
-        hazeStyle: HazeStyle? = null,
-        content: @Composable () -> Unit
-    ) {
-        val topAppBarAlpha = animateFloatAsState(
-            if (visible) 1f else 0f,
-            animationSpec = tween(if (visible) 550 else 0, easing = FastOutSlowInEasing),
-        )
-        Box(modifier = modifier) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .then(
-                        if (hazeState != null && hazeStyle != null) {
-                            Modifier.hazeEffect(hazeState) {
-                                style = hazeStyle
-                                blurRadius = 30.dp
-                                noiseFactor = 0f
-                            }
-                        } else {
-                            Modifier.background(colorScheme.surface)
-                        }
-                    )
-            )
-            Box(
-                modifier = Modifier
-                    .alpha(topAppBarAlpha.value)
-            ) { content() }
-        }
-    }
-
-    enum class Status { EXPANDED, EXPANDING, COLLAPSED, COLLAPSING }
     enum class ResultStatus { DEFAULT, EMPTY, LOAD, SHOW }
+}
+
+@Composable
+fun Transition<Boolean>.TopAppBarAnim(
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null,
+    hazeStyle: HazeStyle? = null,
+    content: @Composable () -> Unit
+) {
+    val topAppBarAlpha = animateFloat({ tween(600, easing = LinearOutSlowInEasing) },"TopAppBarAlphaAnim"){
+        if (!it) 1f else 0f
+    }
+    Box(
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .then(
+                    if (this@TopAppBarAnim.isTransitioning || this@TopAppBarAnim.currentState) {
+                        Modifier
+                    } else {
+                        if (hazeState != null && hazeStyle != null) {
+                            Modifier
+                                .hazeEffect(hazeState) {
+                                    style = hazeStyle
+                                    blurRadius = 30.dp
+                                    noiseFactor = 0f
+                                }
+                        } else {
+                            Modifier
+                            //.background(colorScheme.surface)
+                        }
+                    }
+                )
+        )
+        Box(
+            modifier = Modifier
+                .alpha(topAppBarAlpha.value)
+        ){
+            content()
+        }
+    }
 }
 
 // Search Box Composable
 @Composable
-fun SearchStatus.SearchBox(
-    collapseBar: @Composable (SearchStatus, Dp, PaddingValues) -> Unit = { searchStatus, topPadding, innerPadding ->
-        SearchBarFake(searchStatus.label, topPadding, innerPadding)
+fun Transition<Boolean>.SearchBox(
+    searchStatus:SearchStatus,
+    collapseBar: @Composable (SearchStatus) -> Unit = { searchStatus ->
+        SearchBarFake(searchStatus.label)
     },
     searchBarTopPadding: Dp = 12.dp,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     hazeState: HazeState,
     hazeStyle: HazeStyle,
-    content: @Composable (MutableState<Dp>) -> Unit
+    content: @Composable (State<Dp>) -> Unit
 ) {
-    val searchStatus = this
+
     val density = LocalDensity.current
-
-    animateFloatAsState(if (searchStatus.shouldCollapsed()) 1f else 0f)
-
-    val offsetY = remember { mutableIntStateOf(0) }
-    val boxHeight = remember { mutableStateOf(0.dp) }
+    val layoutDirection = LocalLayoutDirection.current
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
+    val searchBarHeight = remember { mutableStateOf(0.dp) }
+    val contentTopPadding = derivedStateOf {
+        contentPadding.calculateTopPadding() + searchBarHeight.value + searchBarTopPadding + 6.dp
+    }
+    val contentOffsetY by animateDp({ tween(300, easing = LinearOutSlowInEasing) }) {
+        if (it) systemBarsPadding + 5.dp - contentTopPadding.value else 0.dp
+    }
 
     Box(
         modifier = Modifier
+            .offset(
+                y = contentOffsetY
+            ),
+    ) {
+        content(contentTopPadding)
+    }
+    Box(
+        modifier = Modifier
             .fillMaxWidth()
-            .zIndex(10f)
-            .alpha(if (searchStatus.isCollapsed()) 1f else 0f)
             .offset(y = contentPadding.calculateTopPadding())
-            .onGloballyPositioned {
-                it.positionInWindow().y.apply {
-                    offsetY.intValue = (this@apply * 0.9).toInt()
-                    with(density) {
-                        searchStatus.offsetY = this@apply.toDp()
-                        boxHeight.value = it.size.height.toDp()
-                    }
-                }
-            }
             .pointerInput(Unit) {
-                detectTapGestures { searchStatus.current = SearchStatus.Status.EXPANDING }
+                detectTapGestures { searchStatus.expandState.targetState = true }
             }
+            .alpha(if (this@SearchBox.isTransitioning || this.currentState) 0f else 1f)
             .hazeEffect(hazeState) {
                 style = hazeStyle
                 blurRadius = 30.dp
                 noiseFactor = 0f
             }
+            .padding(
+                top = searchBarTopPadding,
+                start = contentPadding.calculateStartPadding(layoutDirection) + 12.dp,
+                end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp,
+                bottom = 6.dp
+            )
+            .onSizeChanged {
+                with(density) {
+                    searchBarHeight.value = it.height.toDp()
+                }
+            }
+            .onGloballyPositioned {
+                with(density) {
+                    it.positionInWindow().y.apply {
+                        searchStatus.offsetY = this@apply.toDp()
+                    }
+                }
+            },
     ) {
-        collapseBar(searchStatus, searchBarTopPadding, contentPadding)
-    }
-    Box {
-        AnimatedVisibility(
-            visible = searchStatus.shouldCollapsed(),
-            enter = fadeIn(tween(300, easing = LinearOutSlowInEasing)) + slideInVertically(
-                tween(
-                    300,
-                    easing = LinearOutSlowInEasing
-                )
-            ) { -offsetY.intValue },
-            exit = fadeOut(tween(300, easing = LinearOutSlowInEasing)) + slideOutVertically(
-                tween(
-                    300,
-                    easing = LinearOutSlowInEasing
-                )
-            ) { -offsetY.intValue }
-        ) {
-            content(boxHeight)
-        }
+        collapseBar(searchStatus)
     }
 }
 
 // Search Pager Composable
 @Composable
-fun SearchStatus.SearchPager(
+fun Transition<Boolean>.SearchPager(
+    searchStatus:SearchStatus,
     defaultResult: @Composable () -> Unit,
-    expandBar: @Composable (SearchStatus, Dp) -> Unit = { searchStatus, padding ->
-        SearchBar(searchStatus, padding)
+    expandBar: @Composable (SearchStatus) -> Unit = { searchStatus ->
+        SearchBar(searchStatus)
     },
     searchBarTopPadding: Dp = 12.dp,
     result: LazyListScope.() -> Unit
 ) {
-    val searchStatus = this
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
-    val topPadding by animateDpAsState(
-        targetValue = if (searchStatus.shouldExpand()) {
+    val topPadding by animateDp({tween(300, easing = LinearOutSlowInEasing)}) {
+        if (it) {
             systemBarsPadding + 5.dp
         } else {
             max(searchStatus.offsetY, 0.dp)
-        },
-        animationSpec = tween(300, easing = LinearOutSlowInEasing)
-    ) {
-        searchStatus.onAnimationComplete()
+        }
     }
-    val surfaceAlpha by animateFloatAsState(
-        if (searchStatus.shouldExpand()) 1f else 0f,
-        animationSpec = tween(200, easing = FastOutSlowInEasing)
-    )
+    val surfaceAlpha by animateFloat({ tween(200, easing = LinearOutSlowInEasing) }) {
+        if (it) 1f else 0f
+    }
 
     Column(
         modifier = Modifier
@@ -245,56 +231,53 @@ fun SearchStatus.SearchPager(
             .background(colorScheme.surface.copy(alpha = surfaceAlpha))
             .semantics { onClick { false } }
             .then(
-                if (!searchStatus.isCollapsed()) Modifier.pointerInput(Unit) { } else Modifier
-            )
+                if (this@SearchPager.targetState) Modifier.pointerInput(Unit) { } else Modifier
+            ),
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(top = topPadding)
-                .then(
-                    if (!searchStatus.isCollapsed()) Modifier.background(colorScheme.surface)
-                    else Modifier
-                ),
+                .padding(top = topPadding, bottom = 6.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (!searchStatus.isCollapsed()) {
+
+            if (this@SearchPager.isTransitioning || this@SearchPager.currentState) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
+                        .padding(horizontal = 12.dp)
                         .background(colorScheme.surface)
                 ) {
-                    expandBar(searchStatus, searchBarTopPadding)
+                    expandBar(searchStatus)
                 }
             }
-            AnimatedVisibility(
-                visible = searchStatus.isExpand() || searchStatus.isAnimatingExpand(),
+
+            this@SearchPager.AnimatedVisibility(
+                visible = { it },
+                modifier = Modifier.wrapContentHeight(),
                 enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
                 exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it })
             ) {
                 Text(
-                    text = stringResource(android.R.string.cancel),
+                    text = stringResource(R.string.cancel),
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary,
                     modifier = Modifier
-                        .padding(start = 4.dp, end = 16.dp, top = searchBarTopPadding)
+                        .padding(start = 4.dp, end = 16.dp)
                         .clickable(
                             interactionSource = null,
-                            enabled = searchStatus.isExpand(),
                             indication = null
-                        ) { searchStatus.current = SearchStatus.Status.COLLAPSING }
+                        ) { searchStatus.expandState.targetState = false }
                 )
                 BackHandler(enabled = true) {
-                    searchStatus.current = SearchStatus.Status.COLLAPSING
+                    searchStatus.expandState.targetState = false
                 }
             }
         }
-        AnimatedVisibility(
-            visible = searchStatus.isExpand(),
-            modifier = Modifier
-                .fillMaxSize()
-                .zIndex(1f),
+        this@SearchPager.AnimatedVisibility(
+            visible = { it },
+            modifier = Modifier.fillMaxSize(),
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -317,10 +300,8 @@ fun SearchStatus.SearchPager(
 @Composable
 fun SearchBar(
     searchStatus: SearchStatus,
-    searchBarTopPadding: Dp = 12.dp,
 ) {
     val focusRequester = remember { FocusRequester() }
-    var expanded by rememberSaveable { mutableStateOf(false) }
 
     InputField(
         query = searchStatus.searchText,
@@ -360,19 +341,16 @@ fun SearchBar(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-            .padding(top = searchBarTopPadding, bottom = 6.dp)
             .focusRequester(focusRequester),
         onSearch = { it },
-        expanded = searchStatus.shouldExpand(),
+        expanded = searchStatus.expandState.currentState,
         onExpandedChange = {
-            searchStatus.current = if (it) SearchStatus.Status.EXPANDED else SearchStatus.Status.COLLAPSED
+            searchStatus.expandState.targetState = it
         }
     )
     LaunchedEffect(Unit) {
-        if (!expanded && searchStatus.shouldExpand()) {
+        if (searchStatus.expandState.targetState) {
             focusRequester.requestFocus()
-            expanded = true
         }
     }
 }
@@ -380,10 +358,7 @@ fun SearchBar(
 @Composable
 fun SearchBarFake(
     label: String,
-    searchBarTopPadding: Dp = 12.dp,
-    innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {
-    val layoutDirection = LocalLayoutDirection.current
     InputField(
         query = "",
         onQueryChange = { },
@@ -398,13 +373,7 @@ fun SearchBarFake(
                 tint = colorScheme.onSurfaceContainerHigh,
             )
         },
-        modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .padding(
-                start = innerPadding.calculateStartPadding(layoutDirection),
-                end = innerPadding.calculateEndPadding(layoutDirection)
-            )
-            .padding(top = searchBarTopPadding, bottom = 6.dp),
+        modifier = Modifier,
         onSearch = { },
         enabled = false,
         expanded = false,

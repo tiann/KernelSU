@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
@@ -51,7 +52,7 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -90,7 +91,6 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -107,6 +107,8 @@ import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
+import me.weishu.kernelsu.ui.component.TopAppBarAnim
+import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -151,12 +153,13 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 fun ModulePager(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleViewModel>()
     val scope = rememberCoroutineScope()
     val searchStatus by viewModel.searchStatus
+    val searchTransition = rememberTransition(searchStatus.expandState)
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -416,7 +419,7 @@ fun ModulePager(
 
     Scaffold(
         topBar = {
-            searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
+            searchTransition.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
                     color = Color.Transparent,
                     title = stringResource(R.string.module),
@@ -574,7 +577,8 @@ fun ModulePager(
             }
         },
         popupHost = {
-            searchStatus.SearchPager(
+            searchTransition.SearchPager(
+                searchStatus = searchStatus,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
@@ -693,8 +697,8 @@ fun ModulePager(
 
             else -> {
                 val layoutDirection = LocalLayoutDirection.current
-                searchStatus.SearchBox(
-                    searchBarTopPadding = dynamicTopPadding,
+                searchTransition.SearchBox(
+                    searchStatus = searchStatus,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding(),
                         start = innerPadding.calculateStartPadding(layoutDirection),
@@ -702,7 +706,7 @@ fun ModulePager(
                     ),
                     hazeState = hazeState,
                     hazeStyle = hazeStyle
-                ) { boxHeight ->
+                ) { contentTopPadding ->
                     ModuleList(
                         navigator,
                         viewModel = viewModel,
@@ -749,7 +753,7 @@ fun ModulePager(
                         context = context,
                         innerPadding = innerPadding,
                         bottomInnerPadding = bottomInnerPadding,
-                        boxHeight = boxHeight
+                        contentTopPadding = contentTopPadding
                     )
                 }
             }
@@ -759,7 +763,7 @@ fun ModulePager(
 
 @Composable
 private fun ModuleList(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     scope: CoroutineScope,
@@ -773,7 +777,7 @@ private fun ModuleList(
     context: Context,
     innerPadding: PaddingValues,
     bottomInnerPadding: Dp,
-    boxHeight: MutableState<Dp>
+    contentTopPadding: State<Dp>
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val updateInfoMap = viewModel.updateInfo
@@ -802,7 +806,7 @@ private fun ModuleList(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = innerPadding.calculateTopPadding(),
+                        top = contentTopPadding.value + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                         bottom = bottomInnerPadding
@@ -824,7 +828,7 @@ private fun ModuleList(
                 onRefresh = { if (!isRefreshing) isRefreshing = true },
                 refreshTexts = refreshTexts,
                 contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                    top = contentTopPadding.value + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
                 ),
@@ -833,7 +837,7 @@ private fun ModuleList(
                     modifier = modifier
                         .fillMaxHeight(),
                     contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                        top = contentTopPadding.value + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                     ),

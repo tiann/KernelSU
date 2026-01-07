@@ -54,8 +54,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.generated.destinations.TemplateScreenDestination
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -66,9 +65,13 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
+import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
+import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
+import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
@@ -109,7 +112,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @Composable
 @Destination<RootGraph>
 fun AppProfileScreen(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     appInfo: SuperUserViewModel.AppInfo,
 ) {
     val context = LocalContext.current
@@ -119,6 +122,8 @@ fun AppProfileScreen(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current!!
     val scope = rememberCoroutineScope()
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label).format(appInfo.uid)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
@@ -197,7 +202,7 @@ fun AppProfileScreen(
                     affectedApps = sameUidApps,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
-                            navigator.navigate(TemplateEditorScreenDestination(info)) {
+                            navigator.navigate(TemplateScreenDestination(info,TransitionSource.NULL)) {
                                 launchSingleTop = true
                             }
                         }
