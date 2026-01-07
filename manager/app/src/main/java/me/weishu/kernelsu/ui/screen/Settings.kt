@@ -17,11 +17,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DeveloperMode
-import androidx.compose.material.icons.rounded.EnhancedEncryption
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material.icons.rounded.Palette
@@ -31,7 +31,6 @@ import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +65,6 @@ import me.weishu.kernelsu.ui.component.SendLogDialog
 import me.weishu.kernelsu.ui.component.UninstallDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.util.execKsud
-import me.weishu.kernelsu.ui.util.getFeaturePersistValue
 import me.weishu.kernelsu.ui.util.getFeatureStatus
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -146,7 +144,7 @@ fun SettingPager(
                     SuperSwitch(
                         title = stringResource(id = R.string.settings_check_update),
                         summary = stringResource(id = R.string.settings_check_update_summary),
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 Icons.Rounded.Update,
                                 modifier = Modifier.padding(end = 16.dp),
@@ -169,7 +167,7 @@ fun SettingPager(
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_module_check_update),
                             summary = stringResource(id = R.string.settings_check_update_summary),
-                            leftAction = {
+                            startAction = {
                                 Icon(
                                     Icons.Rounded.UploadFile,
                                     modifier = Modifier.padding(end = 16.dp),
@@ -208,7 +206,7 @@ fun SettingPager(
                         title = stringResource(id = R.string.settings_theme),
                         summary = stringResource(id = R.string.settings_theme_summary),
                         items = themeItems,
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 Icons.Rounded.Palette,
                                 modifier = Modifier.padding(end = 16.dp),
@@ -257,9 +255,9 @@ fun SettingPager(
                             title = stringResource(id = R.string.settings_key_color),
                             summary = stringResource(id = R.string.settings_key_color_summary),
                             items = colorItems,
-                            leftAction = {
+                            startAction = {
                                 Icon(
-                                    Icons.Rounded.Palette,
+                                    Icons.Rounded.Colorize,
                                     modifier = Modifier.padding(end = 16.dp),
                                     contentDescription = stringResource(id = R.string.settings_key_color),
                                     tint = colorScheme.onBackground
@@ -284,7 +282,7 @@ fun SettingPager(
                         SuperArrow(
                             title = profileTemplate,
                             summary = stringResource(id = R.string.settings_profile_template_summary),
-                            leftAction = {
+                            startAction = {
                                 Icon(
                                     Icons.Rounded.Fence,
                                     modifier = Modifier.padding(end = 16.dp),
@@ -307,143 +305,11 @@ fun SettingPager(
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
-                        val modeItems = listOf(
-                            stringResource(id = R.string.settings_mode_default),
-                            stringResource(id = R.string.settings_mode_temp_enable),
-                            stringResource(id = R.string.settings_mode_always_enable),
-                        )
-
-                        val currentSuEnabled = Natives.isSuEnabled()
-                        var suCompatMode by rememberSaveable { mutableIntStateOf(if (!currentSuEnabled) 1 else 0) }
-                        val suPersistValue by produceState(initialValue = null as Long?) {
-                            value = getFeaturePersistValue("su_compat")
-                        }
-                        LaunchedEffect(suPersistValue) {
-                            suPersistValue?.let { v ->
-                                suCompatMode = if (v == 0L) 2 else if (!currentSuEnabled) 1 else 0
-                            }
-                        }
-                        val suStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("su_compat")
-                        }
-                        val suSummary = when (suStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_su_summary)
-                        }
-                        SuperDropdown(
-                            title = stringResource(id = R.string.settings_disable_su),
-                            summary = suSummary,
-                            items = modeItems,
-                            leftAction = {
-                                Icon(
-                                    Icons.Rounded.RemoveModerator,
-                                    modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_disable_su),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            enabled = suStatus == "supported",
-                            selectedIndex = suCompatMode,
-                            onSelectedIndexChange = { index ->
-                                when (index) {
-                                    // Default: enable and save to persist
-                                    0 -> if (Natives.setSuEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("su_compat_mode", 0) }
-                                        suCompatMode = 0
-                                    }
-
-                                    // Temporarily disable: save enabled state first, then disable
-                                    1 -> if (Natives.setSuEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        if (Natives.setSuEnabled(false)) {
-                                            prefs.edit { putInt("su_compat_mode", 0) }
-                                            suCompatMode = 1
-                                        }
-                                    }
-
-                                    // Permanently disable: disable and save
-                                    2 -> if (Natives.setSuEnabled(false)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("su_compat_mode", 2) }
-                                        suCompatMode = 2
-                                    }
-                                }
-                            }
-                        )
-
-                        val currentUmountEnabled = Natives.isKernelUmountEnabled()
-                        var kernelUmountMode by rememberSaveable { mutableIntStateOf(if (!currentUmountEnabled) 1 else 0) }
-                        val umountPersistValue by produceState(initialValue = null as Long?) {
-                            value = getFeaturePersistValue("kernel_umount")
-                        }
-                        LaunchedEffect(umountPersistValue) {
-                            umountPersistValue?.let { v ->
-                                kernelUmountMode = if (v == 0L) 2 else if (!currentUmountEnabled) 1 else 0
-                            }
-                        }
-                        val umountStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("kernel_umount")
-                        }
-                        val umountSummary = when (umountStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_kernel_umount_summary)
-                        }
-                        SuperDropdown(
-                            title = stringResource(id = R.string.settings_disable_kernel_umount),
-                            summary = umountSummary,
-                            items = modeItems,
-                            leftAction = {
-                                Icon(
-                                    Icons.Rounded.RemoveCircle,
-                                    modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            enabled = umountStatus == "supported",
-                            selectedIndex = kernelUmountMode,
-                            onSelectedIndexChange = { index ->
-                                when (index) {
-                                    // Default: enable and save to persist
-                                    0 -> if (Natives.setKernelUmountEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("kernel_umount_mode", 0) }
-                                        kernelUmountMode = 0
-                                    }
-
-                                    // Temporarily disable: save enabled state first, then disable
-                                    1 -> if (Natives.setKernelUmountEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        if (Natives.setKernelUmountEnabled(false)) {
-                                            prefs.edit { putInt("kernel_umount_mode", 0) }
-                                            kernelUmountMode = 1
-                                        }
-                                    }
-
-                                    // Permanently disable: disable and save
-                                    2 -> if (Natives.setKernelUmountEnabled(false)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("kernel_umount_mode", 2) }
-                                        kernelUmountMode = 2
-                                    }
-                                }
-                            }
-                        )
-                    }
-
-                    Card(
-                        modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
-                    ) {
                         var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_umount_modules_default),
                             summary = stringResource(id = R.string.settings_umount_modules_default_summary),
-                            leftAction = {
+                            startAction = {
                                 Icon(
                                     Icons.Rounded.FolderDelete,
                                     modifier = Modifier.padding(end = 16.dp),
@@ -458,14 +324,89 @@ fun SettingPager(
                                 }
                             }
                         )
+                        var suEnabled by rememberSaveable { mutableStateOf(Natives.isSuEnabled()) }
+                        val suStatus by produceState(initialValue = "") { value = getFeatureStatus("su_compat") }
+                        val suSummary = when (suStatus) {
+                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                            else -> stringResource(id = R.string.settings_disable_su_summary)
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_disable_su),
+                            summary = suSummary,
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.RemoveModerator,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_disable_su),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            enabled = suStatus == "supported",
+                            checked = !suEnabled,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    if (Natives.setSuEnabled(false)) {
+                                        execKsud("feature save", true)
+                                        suEnabled = false
+                                    }
+                                } else {
+                                    if (Natives.setSuEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        suEnabled = true
+                                    }
+                                }
+                            }
+                        )
 
+                        var kernelUmountEnabled by rememberSaveable { mutableStateOf(Natives.isKernelUmountEnabled()) }
+                        val umountStatus by produceState(initialValue = "") { value = getFeatureStatus("kernel_umount") }
+                        val umountSummary = when (umountStatus) {
+                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                            else -> stringResource(id = R.string.settings_disable_kernel_umount_summary)
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_disable_kernel_umount),
+                            summary = umountSummary,
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.RemoveCircle,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            enabled = umountStatus == "supported",
+                            checked = !kernelUmountEnabled,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    if (Natives.setKernelUmountEnabled(false)) {
+                                        execKsud("feature save", true)
+                                        kernelUmountEnabled = false
+                                    }
+                                } else {
+                                    if (Natives.setKernelUmountEnabled(true)) {
+                                        execKsud("feature save", true)
+                                        kernelUmountEnabled = true
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
+                    ) {
                         var enableWebDebugging by rememberSaveable {
                             mutableStateOf(prefs.getBoolean("enable_web_debugging", false))
                         }
                         SuperSwitch(
                             title = stringResource(id = R.string.enable_web_debugging),
                             summary = stringResource(id = R.string.enable_web_debugging_summary),
-                            leftAction = {
+                            startAction = {
                                 Icon(
                                     Icons.Rounded.DeveloperMode,
                                     modifier = Modifier.padding(end = 16.dp),
@@ -493,7 +434,7 @@ fun SettingPager(
                             val uninstall = stringResource(id = R.string.settings_uninstall)
                             SuperArrow(
                                 title = uninstall,
-                                leftAction = {
+                                startAction = {
                                     Icon(
                                         Icons.Rounded.Delete,
                                         modifier = Modifier.padding(end = 16.dp),
@@ -517,7 +458,7 @@ fun SettingPager(
                 ) {
                     SuperArrow(
                         title = stringResource(id = R.string.send_log),
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 Icons.Rounded.BugReport,
                                 modifier = Modifier.padding(end = 16.dp),
@@ -533,7 +474,7 @@ fun SettingPager(
                     val about = stringResource(id = R.string.about)
                     SuperArrow(
                         title = about,
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 Icons.Rounded.ContactPage,
                                 modifier = Modifier.padding(end = 16.dp),
