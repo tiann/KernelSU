@@ -367,7 +367,7 @@ private fun AppProfileInner(
                 .padding(bottom = 12.dp),
         ) {
             SuperSwitch(
-                leftAction = {
+                startAction = {
                     Icon(
                         imageVector = Icons.Rounded.Security,
                         contentDescription = null,
@@ -518,7 +518,7 @@ private fun AppProfileInner(
                 Spacer(Modifier.height(3.dp))
                 affectedApps.forEach { app ->
                     BasicComponent(
-                        leftAction = {
+                        startAction = {
                             AppIconImage(
                                 packageInfo = app.packageInfo,
                                 label = app.label,
@@ -665,7 +665,7 @@ private fun ProfileBox(
         SuperDropdown(
             title = stringResource(R.string.profile),
             items = list,
-            leftAction = {
+            startAction = {
                 Icon(
                     Icons.Rounded.AccountCircle,
                     modifier = Modifier.padding(end = 16.dp),

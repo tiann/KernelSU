@@ -407,7 +407,7 @@ private fun SimpleAppItem(
             BasicComponent(
                 title = app.label,
                 summary = app.packageName,
-                leftAction = {
+                startAction = {
                     AppIconImage(
                         packageInfo = app.packageInfo,
                         label = app.label,

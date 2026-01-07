@@ -86,14 +86,14 @@ fun UninstallDialog(
                 textAlign = TextAlign.Center,
                 color = MiuixTheme.colorScheme.onSurface
             )
-            options.forEachIndexed { index, type ->
+            options.forEach { type ->
                 SuperArrow(
                     onClick = {
                         showConfirmDialog.value = true
                         runType.value = type
                     },
                     title = stringResource(type.title),
-                    leftAction = {
+                    startAction = {
                         Icon(
                             imageVector = type.icon,
                             contentDescription = null,

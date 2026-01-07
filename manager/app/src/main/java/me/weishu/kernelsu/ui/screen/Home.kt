@@ -452,7 +452,7 @@ private fun StatusCard(
                     BasicComponent(
                         title = stringResource(R.string.home_not_installed),
                         summary = stringResource(R.string.home_click_to_install),
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 Icons.Rounded.ErrorOutline,
                                 stringResource(R.string.home_not_installed),
@@ -476,7 +476,7 @@ private fun StatusCard(
                     BasicComponent(
                         title = stringResource(R.string.home_unsupported),
                         summary = stringResource(R.string.home_unsupported_reason),
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 Icons.Rounded.ErrorOutline,
                                 stringResource(R.string.home_unsupported),
@@ -539,7 +539,7 @@ fun LearnMoreCard() {
         BasicComponent(
             title = stringResource(R.string.home_learn_kernelsu),
             summary = stringResource(R.string.home_click_to_learn_kernelsu),
-            rightActions = {
+            endActions = {
                 Icon(
                     imageVector = MiuixIcons.Link,
                     tint = colorScheme.onSurface,
@@ -564,7 +564,7 @@ fun DonateCard() {
         BasicComponent(
             title = stringResource(R.string.home_support_title),
             summary = stringResource(R.string.home_support_content),
-            rightActions = {
+            endActions = {
                 Icon(
                     imageVector = MiuixIcons.Link,
                     tint = colorScheme.onSurface,

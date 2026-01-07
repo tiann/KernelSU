@@ -248,7 +248,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                                 hasCustomSelected = true
                                 partitionSelectionIndex = index
                             },
-                            leftAction = {
+                            startAction = {
                                 Icon(
                                     MiuixIcons.ConvertFile,
                                     tint = colorScheme.onSurface,
@@ -273,7 +273,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                             )
                         },
                         onClick = onLkmUpload,
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 MiuixIcons.MoveFile,
                                 tint = colorScheme.onSurface,

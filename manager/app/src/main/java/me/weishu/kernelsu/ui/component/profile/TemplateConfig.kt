@@ -41,7 +41,7 @@ fun TemplateConfig(
         SuperArrow(
             modifier = modifier,
             title = stringResource(R.string.app_profile_template_create),
-            leftAction = {
+            startAction = {
                 Icon(
                     Icons.Rounded.Create,
                     null,
