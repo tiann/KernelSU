@@ -116,10 +116,7 @@ fun Transition<Boolean>.TopAppBarAnim(
                                     blurRadius = 30.dp
                                     noiseFactor = 0f
                                 }
-                        } else {
-                            Modifier
-                            //.background(colorScheme.surface)
-                        }
+                        } else Modifier
                     }
                 )
         )
