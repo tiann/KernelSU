@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -127,11 +126,11 @@ fun AppProfileTemplateScreen(
     navigator: MiuixDestinationsNavigator,
     resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
 ) {
-    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current!!
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
 
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val sharedTransitionScope = LocalSharedTransitionScope.current
 
     LaunchedEffect(Unit) {
@@ -172,9 +171,10 @@ fun AppProfileTemplateScreen(
             }
         }
     }
-    val offsetHeight by animateDpAsState(
+    val offsetHeightState = animateDpAsState(
         targetValue = if (fabVisible) 0.dp else 100.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        animationSpec = tween(durationMillis = 350)
+        animationSpec = tween(durationMillis = 350),
+        label = "fabOffset"
     )
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
@@ -232,45 +232,44 @@ fun AppProfileTemplateScreen(
             )
         },
         floatingActionButton = {
-            with(sharedTransitionScope) {
-                FloatingActionButton(
-                    containerColor = colorScheme.primary,
-                    shadowElevation = 0.dp,
-                    onClick = {
-                        navigator.navigate(
-                            TemplateEditorScreenDestination(
-                                TemplateViewModel.TemplateInfo(),
-                                TransitionSource.FAB, false
-                            )
-                        ) {
-                            launchSingleTop = true
-                        }
-                    },
-                    modifier = Modifier
-                        .offset(y = offsetHeight)
-                        .padding(
-                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
-                            end = 20.dp
+            FloatingActionButton(
+                containerColor = colorScheme.primary,
+                shadowElevation = 0.dp,
+                onClick = {
+                    navigator.navigate(
+                        TemplateEditorScreenDestination(
+                            TemplateViewModel.TemplateInfo(),
+                            TransitionSource.FAB, false
                         )
-                        .renderInSharedTransitionScopeOverlay()
-                        .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                    contentModifier = Modifier
-                        .fabShareBounds(
-                            key = "",
-                            sharedTransitionScope = sharedTransitionScope,
-                            animatedVisibilityScope = animatedVisibilityScope
-                        ),
-                    content = {
-                        Icon(
-                            Icons.Rounded.Add,
-                            null,
-                            Modifier.size(40.dp),
-                            tint = colorScheme.onPrimary
-                        )
-                    },
-                )
-            }
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+                    .graphicsLayer {
+                        translationY = offsetHeightState.value.toPx()
+                    }
+                    .padding(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
+                        end = 20.dp
+                    )
+                    .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                contentModifier = Modifier
+                    .fabShareBounds(
+                        key = "",
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ),
+                content = {
+                    Icon(
+                        Icons.Rounded.Add,
+                        null,
+                        Modifier.size(40.dp),
+                        tint = colorScheme.onPrimary
+                    )
+                },
+            )
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)

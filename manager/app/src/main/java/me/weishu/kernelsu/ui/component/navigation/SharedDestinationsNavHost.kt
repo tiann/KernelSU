@@ -21,7 +21,7 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("SharedTransitionScope not provided") }
 val localPopState = compositionLocalOf { false }
-val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope?> { null }
+val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope> { error("AnimatedVisibilityScope not provided") }
 val LocalRoutePopupStack = compositionLocalOf<RoutePopupStack> {
     error("RoutePopupStack not provided")
 }

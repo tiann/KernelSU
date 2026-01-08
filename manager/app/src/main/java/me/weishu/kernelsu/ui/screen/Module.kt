@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -68,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -406,9 +406,10 @@ fun ModulePager(
             }
         }
     }
-    val offsetHeight by animateDpAsState(
+    val offsetHeightState = animateDpAsState(
         targetValue = if (fabVisible) 0.dp else 180.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        animationSpec = tween(durationMillis = 350)
+        animationSpec = tween(durationMillis = 350),
+        label = "fabOffset"
     )
 
     val hazeState = remember { HazeState() }
@@ -553,7 +554,9 @@ fun ModulePager(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .offset(y = offsetHeight)
+                        .graphicsLayer {
+                            translationY = offsetHeightState.value.toPx()
+                        }
                         .padding(bottom = bottomInnerPadding + 20.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                     shadowElevation = 0.dp,
