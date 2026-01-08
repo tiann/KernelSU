@@ -22,10 +22,10 @@ import com.ramcosta.composedestinations.scope.AnimatedDestinationScope
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.spec.TypedDestinationSpec
 import dev.chrisbanes.haze.hazeEffect
+import me.weishu.kernelsu.ui.component.getSystemCornerRadius
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
     destination: TypedDestinationSpec<T>,
@@ -43,7 +43,7 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
             val currentState = desTransition.currentState
             val targetState = desTransition.targetState
             val isPop = routePopupState.getValue(destination.route.substringBefore('/'))
-            val screenCornerRadius = getRoundedCorner()
+            val screenCornerRadius = getSystemCornerRadius()
 
             with(desTransition) {
                 val dim = animateColor({ tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }) { enterExitState ->
@@ -51,7 +51,6 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                         EnterExitState.Visible -> {
                             Color.Transparent
                         }
-
                         else -> {
                             if (isPop) {
                                 colorScheme.windowDimming
@@ -72,14 +71,12 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                                 EnterExitState.PreEnter, EnterExitState.PostExit -> if (isPop) 20.dp else 0.dp
                                 EnterExitState.Visible -> 0.dp
                             }
-
                         }
                         val scale = animateFloat({ tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }) { enterExitState ->
                             when (enterExitState) {
                                 EnterExitState.PreEnter, EnterExitState.PostExit -> if (isPop) 0.88f else 1f
                                 EnterExitState.Visible -> 1f
                             }
-
                         }
                         Modifier
                             .hazeEffect {

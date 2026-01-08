@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -13,6 +14,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -21,13 +23,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -50,13 +52,13 @@ import com.ramcosta.composedestinations.generated.destinations.SettingPagerDesti
 import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.TemplateScreenDestination
 import com.ramcosta.composedestinations.navargs.primitives.booleanNavType
+import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.scope.resultBackNavigator
 import com.ramcosta.composedestinations.scope.resultRecipient
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -137,65 +139,84 @@ class MainActivity : ComponentActivity() {
             }
 
             KernelSUTheme(colorMode = colorMode, keyColor = keyColor) {
-                val navController = rememberNavController()
                 Scaffold {
-                    SharedDestinationsNavHost(
-                        navGraph = NavGraphs.root,
-                        navController = navController,
-                        overlayContent = {
-                            // Handle ZIP file installation from external apps
-                            ZipFileIntentHandler(
-                                isManager = isManager,
-                                navigator = this
-                            )
+                    val engine = rememberNavHostEngine()
+                    val navController = engine.rememberNavController()
+                    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
+                    val coroutineScope = rememberCoroutineScope()
+
+                    BackHandler(enabled = true) {
+                        if (pagerState.currentPage != 0) {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        } else {
+                            this.moveTaskToBack(true)
                         }
+                    }
+
+                    CompositionLocalProvider(
+                        LocalPagerState provides pagerState
                     ) {
-                        miuixComposable(MainScreenDestination) { MainScreen(miuixDestinationsNavigator()) }
-                        miuixComposable(AboutScreenDestination) { AboutScreen(miuixDestinationsNavigator()) }
-                        miuixComposable(InstallScreenDestination) { InstallScreen(miuixDestinationsNavigator()) }
-                        miuixComposable(AppProfileScreenDestination) { AppProfileScreen(miuixDestinationsNavigator(), navArgs.appInfo) }
-                        miuixComposable(SettingPagerDestination) { SettingPager(miuixDestinationsNavigator(), 0.dp) }
-                        miuixComposable(ExecuteModuleActionScreenDestination) { ExecuteModuleActionScreen(miuixDestinationsNavigator(), navArgs.moduleId) }
-                        miuixComposable(FlashScreenDestination) { FlashScreen(miuixDestinationsNavigator(), navArgs.flashIt) }
-                        miuixComposable(AppProfileTemplateScreenDestination, slideFromRightTransition, PopTransitionStyle.Depth) {
-                            AppProfileTemplateScreen(
-                                navigator = miuixDestinationsNavigator(),
-                                resultRecipient = resultRecipient(booleanNavType)
-                            )
-                        }
-                        miuixComposable(ModuleRepoScreenDestination, slideFromRightTransition, PopTransitionStyle.Depth) {
-                            ModuleRepoScreen(
-                                miuixDestinationsNavigator(),
-                                this@miuixComposable
-                            )
-                        }
-                        miuixComposable(ModuleRepoDetailScreenDestination, noAnimated) {
-                            val (module) = navArgs
-                            ModuleRepoDetailScreen(
-                                navigator = miuixDestinationsNavigator(),
-                                animatedVisibilityScope = this@miuixComposable,
-                                module = module
-                            )
-                        }
-                        miuixComposable(TemplateScreenDestination) {
-                            val (initialTemplate, transitionSource, readOnly) = navArgs
-                            TemplateEditorScreen(
-                                navigator = resultBackNavigator(booleanNavType),
-                                animatedVisibilityScope = this@miuixComposable,
-                                initialTemplate = initialTemplate,
-                                transitionSource = transitionSource,
-                                readOnly = readOnly
-                            )
-                        }
-                        miuixComposable(TemplateEditorScreenDestination, noAnimated) {
-                            val (initialTemplate, transitionSource, readOnly) = navArgs
-                            TemplateEditorScreen(
-                                navigator = resultBackNavigator(booleanNavType),
-                                animatedVisibilityScope = this@miuixComposable,
-                                initialTemplate = initialTemplate,
-                                transitionSource = transitionSource,
-                                readOnly = readOnly
-                            )
+                        SharedDestinationsNavHost(
+                            engine = engine,
+                            navGraph = NavGraphs.root,
+                            navController = navController,
+                            overlayContent = {
+                                // Handle ZIP file installation from external apps
+                                ZipFileIntentHandler(
+                                    isManager = isManager,
+                                    navigator = this
+                                )
+                            }
+                        ) {
+                            miuixComposable(MainScreenDestination) { MainScreen(miuixDestinationsNavigator()) }
+                            miuixComposable(AboutScreenDestination) { AboutScreen(miuixDestinationsNavigator()) }
+                            miuixComposable(InstallScreenDestination) { InstallScreen(miuixDestinationsNavigator()) }
+                            miuixComposable(AppProfileScreenDestination) { AppProfileScreen(miuixDestinationsNavigator(), navArgs.appInfo) }
+                            miuixComposable(SettingPagerDestination) { SettingPager(miuixDestinationsNavigator(), 0.dp) }
+                            miuixComposable(ExecuteModuleActionScreenDestination) { ExecuteModuleActionScreen(miuixDestinationsNavigator(), navArgs.moduleId) }
+                            miuixComposable(FlashScreenDestination) { FlashScreen(miuixDestinationsNavigator(), navArgs.flashIt) }
+                            miuixComposable(AppProfileTemplateScreenDestination, slideFromRightTransition, PopTransitionStyle.Depth) {
+                                AppProfileTemplateScreen(
+                                    navigator = miuixDestinationsNavigator(),
+                                    resultRecipient = resultRecipient(booleanNavType)
+                                )
+                            }
+                            miuixComposable(ModuleRepoScreenDestination, slideFromRightTransition, PopTransitionStyle.Depth) {
+                                ModuleRepoScreen(
+                                    miuixDestinationsNavigator(),
+                                    this@miuixComposable
+                                )
+                            }
+                            miuixComposable(ModuleRepoDetailScreenDestination, noAnimated) {
+                                val (module) = navArgs
+                                ModuleRepoDetailScreen(
+                                    navigator = miuixDestinationsNavigator(),
+                                    animatedVisibilityScope = this@miuixComposable,
+                                    module = module
+                                )
+                            }
+                            miuixComposable(TemplateScreenDestination) {
+                                val (initialTemplate, transitionSource, readOnly) = navArgs
+                                TemplateEditorScreen(
+                                    navigator = resultBackNavigator(booleanNavType),
+                                    animatedVisibilityScope = this@miuixComposable,
+                                    initialTemplate = initialTemplate,
+                                    transitionSource = transitionSource,
+                                    readOnly = readOnly
+                                )
+                            }
+                            miuixComposable(TemplateEditorScreenDestination, noAnimated) {
+                                val (initialTemplate, transitionSource, readOnly) = navArgs
+                                TemplateEditorScreen(
+                                    navigator = resultBackNavigator(booleanNavType),
+                                    animatedVisibilityScope = this@miuixComposable,
+                                    initialTemplate = initialTemplate,
+                                    transitionSource = transitionSource,
+                                    readOnly = readOnly
+                                )
+                            }
                         }
                     }
                 }
@@ -208,102 +229,37 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 val LocalPagerState = compositionLocalOf<PagerState> { error("No pager state") }
-val LocalHandlePageChange = compositionLocalOf<(Int) -> Unit> { error("No handle page change") }
-val LocalSelectedPage = compositionLocalOf<Int> { error("No selected page") }
 
 @Composable
 @Destination<RootGraph>(start = true)
 fun MainScreen(navController: MiuixDestinationsNavigator) {
-    val activity = LocalActivity.current
-    val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
+    val pagerState = LocalPagerState.current
     val isManager = Natives.isManager
-    val isFullFeatured = isManager && !Natives.requireNewKernel()
-    var userScrollEnabled by remember(isFullFeatured) { mutableStateOf(isFullFeatured) }
-    var animating by remember { mutableStateOf(false) }
-    var uiSelectedPage by remember { mutableIntStateOf(0) }
-    var animateJob by remember { mutableStateOf<Job?>(null) }
-    var lastRequestedPage by remember { mutableIntStateOf(pagerState.currentPage) }
+    val isFullFeatured by remember { derivedStateOf{ isManager && !Natives.requireNewKernel() } }
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = MiuixTheme.colorScheme.surface,
         tint = HazeTint(MiuixTheme.colorScheme.surface.copy(0.8f))
     )
-    val handlePageChange: (Int) -> Unit = remember(pagerState, coroutineScope) {
-        { page ->
-            uiSelectedPage = page
-            if (page == pagerState.currentPage) {
-                if (animateJob != null && lastRequestedPage != page) {
-                    animateJob?.cancel()
-                    animateJob = null
-                    animating = false
-                    userScrollEnabled = isFullFeatured
-                }
-                lastRequestedPage = page
-            } else {
-                if (animateJob != null && lastRequestedPage == page) {
-                    // Already animating to the requested page
-                } else {
-                    animateJob?.cancel()
-                    animating = true
-                    userScrollEnabled = false
-                    val job = coroutineScope.launch {
-                        try {
-                            pagerState.animateScrollToPage(page)
-                        } finally {
-                            if (animateJob === this) {
-                                userScrollEnabled = isFullFeatured
-                                animating = false
-                                animateJob = null
-                            }
-                        }
-                    }
-                    animateJob = job
-                    lastRequestedPage = page
-                }
-            }
-        }
-    }
 
-    // Handle ZIP file installation from external apps
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            if (!animating) uiSelectedPage = page
-        }
-    }
-
-    BackHandler {
-        if (pagerState.currentPage != 0) {
-            handlePageChange(0)
-        } else {
-            activity?.moveTaskToBack(true)
-        }
-    }
-
-    CompositionLocalProvider(
-        LocalPagerState provides pagerState,
-        LocalHandlePageChange provides handlePageChange,
-        LocalSelectedPage provides uiSelectedPage
-    ) {
-        Scaffold(
-            bottomBar = {
-                BottomBar(hazeState, hazeStyle)
-            },
-        ) { innerPadding ->
-            HorizontalPager(
-                modifier = Modifier.hazeSource(state = hazeState),
-                state = pagerState,
-                beyondViewportPageCount = 4,
-                userScrollEnabled = userScrollEnabled,
-            ) {
-                when (it) {
-                    0 -> HomePager(navController, innerPadding.calculateBottomPadding())
-                    1 -> SuperUserPager(navController, innerPadding.calculateBottomPadding())
-                    2 -> ModulePager(navController, innerPadding.calculateBottomPadding())
-                    3 -> SettingPager(navController, innerPadding.calculateBottomPadding())
-                }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            BottomBar(hazeState, hazeStyle)
+        },
+    ) { innerPadding ->
+        HorizontalPager(
+            modifier = Modifier.hazeSource(state = hazeState),
+            state = pagerState,
+            beyondViewportPageCount = 4,
+            userScrollEnabled = isFullFeatured,
+        ) {
+            when (it) {
+                0 -> HomePager(navController, innerPadding.calculateBottomPadding())
+                1 -> SuperUserPager(navController, innerPadding.calculateBottomPadding())
+                2 -> ModulePager(navController, innerPadding.calculateBottomPadding())
+                3 -> SettingPager(navController, innerPadding.calculateBottomPadding())
             }
         }
     }
@@ -321,7 +277,7 @@ private fun ZipFileIntentHandler(
     navigator: MiuixDestinationsNavigator
 ) {
     val activity = LocalActivity.current as ComponentActivity
-    var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    var zipUri by remember { mutableStateOf<Uri?>(null) }
     val isSafeMode = Natives.isSafeMode
     val clearZipUri = { zipUri = null }
 
@@ -337,7 +293,7 @@ private fun ZipFileIntentHandler(
         onDismiss = clearZipUri
     )
 
-    fun getDisplayName(uri: android.net.Uri): String {
+    fun getDisplayName(uri: Uri): String {
         return uri.getFileName(activity) ?: uri.lastPathSegment ?: "Unknown"
     }
 

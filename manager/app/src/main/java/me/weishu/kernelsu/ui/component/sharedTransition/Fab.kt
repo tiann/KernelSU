@@ -5,6 +5,7 @@ import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.RemeasureToBounds
+import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -14,9 +15,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousRoundedRectangle
+import me.weishu.kernelsu.ui.component.getSystemCornerRadius
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
-import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 @Composable
 fun Modifier.fabShareBounds(
@@ -33,14 +34,48 @@ fun Modifier.fabShareBounds(
                 tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
             }) { enterExitState ->
                 when (enterExitState) {
-                    EnterExitState.PreEnter, EnterExitState.PostExit -> getRoundedCorner()
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> getSystemCornerRadius()
+                    EnterExitState.Visible -> with(LocalDensity.current) {
+                        fabRadius
+                    }
+                }
+            }
+
+            Modifier.sharedBounds(
+                sharedContentState = rememberSharedContentState(key = "${TransitionSource.FAB}/$key"),
+                animatedVisibilityScope = animatedVisibilityScope,
+                resizeMode = RemeasureToBounds,
+                clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),
+                boundsTransform = defaultBoundsTransform
+            )
+        }
+    )
+}
+
+
+@Composable
+fun Modifier.fabShareBounds(
+    sharedContentState: SharedContentState,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    fabRadius: Dp = 30.dp
+): Modifier {
+    return this.then(
+        with(sharedTransitionScope) {
+            if (this == null) return Modifier
+
+            val pagerCorner: State<Dp> = animatedVisibilityScope.transition.animateDp({
+                tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
+            }) { enterExitState ->
+                when (enterExitState) {
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> getSystemCornerRadius()
                     EnterExitState.Visible -> with(LocalDensity.current) {
                         fabRadius
                     }
                 }
             }
             Modifier.sharedBounds(
-                sharedContentState = rememberSharedContentState(key = "${TransitionSource.FAB}/$key"),
+                sharedContentState = sharedContentState,
                 animatedVisibilityScope = animatedVisibilityScope,
                 resizeMode = RemeasureToBounds,
                 clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),

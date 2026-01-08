@@ -77,7 +77,7 @@ import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
-import me.weishu.kernelsu.ui.component.SharedTransitionCard
+import me.weishu.kernelsu.ui.component.sharedTransition.SharedTransitionCard
 import me.weishu.kernelsu.ui.component.TopAppBarAnim
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator

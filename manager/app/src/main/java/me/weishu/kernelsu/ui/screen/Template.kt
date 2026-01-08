@@ -2,11 +2,14 @@ package me.weishu.kernelsu.ui.screen
 
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +45,7 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +55,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -85,10 +91,12 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.FloatingActionButton
-import me.weishu.kernelsu.ui.component.SharedTransitionCard
+import me.weishu.kernelsu.ui.component.sharedTransition.SharedTransitionCard
 import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
+import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
+import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
 import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
 import me.weishu.kernelsu.ui.component.sharedTransition.fabShareBounds
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
@@ -181,160 +189,182 @@ fun AppProfileTemplateScreen(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+    val itemSharedIsMatchFound = rememberSaveable {  mutableStateOf(false)}
 
     BackHandler {
+        itemSharedIsMatchFound.value = false
         navigator.popBackStack()
     }
-    Scaffold(
-        topBar = {
-            val clipboard = LocalClipboard.current
-            val context = LocalContext.current
-            val showToast = fun(msg: String) {
-                scope.launch(Dispatchers.Main) {
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    with(sharedTransitionScope){
+        Scaffold(
+            topBar = {
+                val clipboard = LocalClipboard.current
+                val context = LocalContext.current
+                val showToast = fun(msg: String) {
+                    scope.launch(Dispatchers.Main) {
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-            TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
-                onImport = {
-                    scope.launch {
-                        clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
-                            if (it.isEmpty()) {
-                                showToast(context.getString(R.string.app_profile_template_import_empty))
-                                return@let
+                TopBar(
+                    onBack = dropUnlessResumed {
+                        itemSharedIsMatchFound.value = false
+                        navigator.popBackStack()
+                                               },
+                    onImport = {
+                        scope.launch {
+                            clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
+                                if (it.isEmpty()) {
+                                    showToast(context.getString(R.string.app_profile_template_import_empty))
+                                    return@let
+                                }
+                                viewModel.importTemplates(
+                                    it,
+                                    {
+                                        showToast(context.getString(R.string.app_profile_template_import_success))
+                                        viewModel.fetchTemplates(false)
+                                    },
+                                    showToast
+                                )
                             }
-                            viewModel.importTemplates(
-                                it,
+                        }
+                    },
+                    onExport = {
+                        scope.launch {
+                            viewModel.exportTemplates(
                                 {
-                                    showToast(context.getString(R.string.app_profile_template_import_success))
-                                    viewModel.fetchTemplates(false)
+                                    showToast(context.getString(R.string.app_profile_template_export_empty))
                                 },
-                                showToast
+                                {
+                                    clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
+                                }
                             )
                         }
-                    }
-                },
-                onExport = {
-                    scope.launch {
-                        viewModel.exportTemplates(
-                            {
-                                showToast(context.getString(R.string.app_profile_template_export_empty))
-                            },
-                            {
-                                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
-                            }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    hazeState = hazeState,
+                    hazeStyle = hazeStyle,
+                )
+            },
+            floatingActionButton = {
+                val fabScale = animatedVisibilityScope.transition.animateFloat(
+                    { tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }
+                ) {
+                    if ( it != EnterExitState.Visible && itemSharedIsMatchFound.value ) 0f else 1f
+                }
+                val fabAlpha = animatedVisibilityScope.transition.animateFloat(
+                    { tween(100, 0, NavAnimationEasing) }
+                ) {
+                    if ( it != EnterExitState.Visible && itemSharedIsMatchFound.value ) 0f else 1f
+                }
+
+                FloatingActionButton(
+                    containerColor = colorScheme.primary,
+                    shadowElevation = 0.dp,
+                    onClick = {
+                        itemSharedIsMatchFound.value = false
+                        navigator.navigate(
+                            TemplateEditorScreenDestination(
+                                TemplateViewModel.TemplateInfo(),
+                                TransitionSource.FAB, false
+                            )
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = Modifier
+                        .graphicsLayer {
+                            translationY = offsetHeightState.value.toPx()
+                        }
+                        .renderInSharedTransitionScopeOverlay(1f) { isTransitionActive && itemSharedIsMatchFound.value }
+                        .alpha(fabAlpha.value)
+                        .scale(fabScale.value)
+                        .padding(
+                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
+                            end = 20.dp
                         )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle,
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                containerColor = colorScheme.primary,
-                shadowElevation = 0.dp,
-                onClick = {
-                    navigator.navigate(
-                        TemplateEditorScreenDestination(
-                            TemplateViewModel.TemplateInfo(),
-                            TransitionSource.FAB, false
+                        .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                    contentModifier = Modifier
+                        .fabShareBounds(
+                            key = "",
+                            sharedTransitionScope = sharedTransitionScope,
+                            animatedVisibilityScope = animatedVisibilityScope
+                        ),
+                    content = {
+                        Icon(
+                            Icons.Rounded.Add,
+                            null,
+                            Modifier.size(40.dp),
+                            tint = colorScheme.onPrimary
                         )
-                    ) {
-                        launchSingleTop = true
-                    }
-                },
-                modifier = Modifier
-                    .graphicsLayer {
-                        translationY = offsetHeightState.value.toPx()
-                    }
-                    .padding(
-                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
-                        end = 20.dp
-                    )
-                    .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                contentModifier = Modifier
-                    .fabShareBounds(
-                        key = "",
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedVisibilityScope = animatedVisibilityScope
-                    ),
-                content = {
-                    Icon(
-                        Icons.Rounded.Add,
-                        null,
-                        Modifier.size(40.dp),
-                        tint = colorScheme.onPrimary
-                    )
-                },
-            )
-        },
-        popupHost = { },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
-    ) { innerPadding ->
-        var isRefreshing by rememberSaveable { mutableStateOf(false) }
-        val pullToRefreshState = rememberPullToRefreshState()
-        LaunchedEffect(isRefreshing) {
-            if (isRefreshing) {
-                delay(350)
-                viewModel.fetchTemplates()
-                isRefreshing = false
+                    },
+                )
+            },
+            popupHost = { },
+            contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+        ) { innerPadding ->
+            var isRefreshing by rememberSaveable { mutableStateOf(false) }
+            val pullToRefreshState = rememberPullToRefreshState()
+            LaunchedEffect(isRefreshing) {
+                if (isRefreshing) {
+                    delay(350)
+                    viewModel.fetchTemplates()
+                    isRefreshing = false
+                }
             }
-        }
-        val refreshTexts = listOf(
-            stringResource(R.string.refresh_pulling),
-            stringResource(R.string.refresh_release),
-            stringResource(R.string.refresh_refresh),
-            stringResource(R.string.refresh_complete),
-        )
-        val layoutDirection = LocalLayoutDirection.current
-        PullToRefresh(
-            isRefreshing = isRefreshing,
-            pullToRefreshState = pullToRefreshState,
-            onRefresh = { isRefreshing = true },
-            refreshTexts = refreshTexts,
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 6.dp,
-                start = innerPadding.calculateStartPadding(layoutDirection),
-                end = innerPadding.calculateEndPadding(layoutDirection)
-            ),
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .scrollEndHaptic()
-                    .overScrollVertical()
-                    .nestedScroll(nestedScrollConnection)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .hazeSource(state = hazeState)
-                    .padding(horizontal = 12.dp),
+            val refreshTexts = listOf(
+                stringResource(R.string.refresh_pulling),
+                stringResource(R.string.refresh_release),
+                stringResource(R.string.refresh_refresh),
+                stringResource(R.string.refresh_complete),
+            )
+            val layoutDirection = LocalLayoutDirection.current
+            PullToRefresh(
+                isRefreshing = isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = { isRefreshing = true },
+                refreshTexts = refreshTexts,
                 contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
+                    top = innerPadding.calculateTopPadding() + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection)
                 ),
-                overscrollEffect = null
             ) {
-                item {
-                    Spacer(Modifier.height(12.dp))
-                }
-                items(viewModel.templateList, key = { it.id }) { app ->
-                    TemplateItem(
-                        navigator = navigator,
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        template = app
-                    )
-                }
-                item {
-                    Spacer(
-                        Modifier.height(
-                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .scrollEndHaptic()
+                        .overScrollVertical()
+                        .nestedScroll(nestedScrollConnection)
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .hazeSource(state = hazeState)
+                        .padding(horizontal = 12.dp),
+                    contentPadding = PaddingValues(
+                        top = innerPadding.calculateTopPadding(),
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        end = innerPadding.calculateEndPadding(layoutDirection)
+                    ),
+                    overscrollEffect = null
+                ) {
+                    item {
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    items(viewModel.templateList, key = { it.id }) { app ->
+                        this@with.TemplateItem(
+                            navigator = navigator,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            itemSharedIsMatchFound = itemSharedIsMatchFound,
+                            template = app
                         )
-                    )
+                    }
+                    item {
+                        Spacer(
+                            Modifier.height(
+                                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                        WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -342,17 +372,18 @@ fun AppProfileTemplateScreen(
 }
 
 @Composable
-private fun TemplateItem(
+private fun SharedTransitionScope.TemplateItem(
     navigator: MiuixDestinationsNavigator,
-    sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    itemSharedIsMatchFound: MutableState<Boolean>,
     template: TemplateViewModel.TemplateInfo
 ) {
-    sharedTransitionScope.SharedTransitionCard(
+    SharedTransitionCard(
         key = template.id,
         animatedVisibilityScope = animatedVisibilityScope,
         modifier = Modifier.padding(bottom = 12.dp),
         onClick = {
+            itemSharedIsMatchFound.value = true
             navigator.navigate(TemplateEditorScreenDestination(template, TransitionSource.LIST_CARD, !template.local)) {
                 popUpTo(TemplateEditorScreenDestination) {
                     inclusive = true

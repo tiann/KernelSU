@@ -1,7 +1,8 @@
-package me.weishu.kernelsu.ui.component
+package me.weishu.kernelsu.ui.component.sharedTransition
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -25,7 +26,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.kyant.capsule.continuities.G1Continuity
-import me.weishu.kernelsu.ui.component.sharedTransition.cardShareBounds
 import top.yukonga.miuix.kmp.basic.CardColors
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.theme.LocalContentColor
@@ -81,6 +81,84 @@ fun SharedTransitionScope.SharedTransitionCard(
                 }
                 .cardShareBounds(
                     key = key,
+                    sharedTransitionScope = this,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    cardRadius = cornerRadius
+                )
+                .pressable(
+                    interactionSource = usedInteractionSource,
+                    indication = pressFeedback,
+                    delay = null
+                )
+                .background(color = colors.color, shape = shape)
+                .clip(clipShape)
+                .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = indicationToUse,
+                    onClick = { currentOnClick?.invoke() },
+                    onLongClick = currentOnLongPress
+                ),
+            contentAlignment = Alignment.TopCenter,
+            propagateMinConstraints = true,
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(insideMargin)
+                    .skipToLookaheadSize(),
+                content = content
+            )
+        }
+    }
+}
+
+
+@Composable
+fun SharedTransitionScope.SharedTransitionCard(
+    sharedContentState: SharedContentState,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+    cornerRadius: Dp = CardDefaults.CornerRadius,
+    insideMargin: PaddingValues = CardDefaults.InsideMargin,
+    colors: CardColors = CardDefaults.defaultColors(),
+    pressFeedbackType: PressFeedbackType = PressFeedbackType.None,
+    showIndication: Boolean? = false,
+    onClick: (() -> Unit)? = null,
+    onLongPress: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
+
+    val pressFeedback = remember(pressFeedbackType) {
+        when (pressFeedbackType) {
+            PressFeedbackType.None -> null
+            PressFeedbackType.Sink -> SinkFeedback()
+            PressFeedbackType.Tilt -> TiltFeedback()
+        }
+    }
+
+    val usedInteractionSource by remember(pressFeedback) {
+        derivedStateOf { if (pressFeedback != null) interactionSource else null }
+    }
+    val indicationLocal = LocalIndication.current
+    val indicationToUse = remember(showIndication, indicationLocal) {
+        if (showIndication == true) indicationLocal else null
+    }
+
+    val shape = remember(cornerRadius) { ContinuousRoundedRectangle(cornerRadius) }
+    val clipShape = remember(cornerRadius) { ContinuousRoundedRectangle(cornerRadius, G1Continuity) }
+
+    CompositionLocalProvider(
+        LocalContentColor provides colors.contentColor,
+    ) {
+        Box(
+            modifier = modifier
+                .semantics(mergeDescendants = false) {
+                    isTraversalGroup = true
+                }
+                .cardShareBounds(
+                    sharedContentState = sharedContentState,
                     sharedTransitionScope = this,
                     animatedVisibilityScope = animatedVisibilityScope,
                     cardRadius = cornerRadius

@@ -6,6 +6,7 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
 import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.RemeasureToBounds
+import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -14,10 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import com.kyant.capsule.ContinuousRoundedRectangle
+import me.weishu.kernelsu.ui.component.getSystemCornerRadius
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
 import top.yukonga.miuix.kmp.basic.CardDefaults
-import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 @Composable
 fun Modifier.cardShareBounds(
@@ -34,12 +35,43 @@ fun Modifier.cardShareBounds(
                 tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
             }) { enterExitState ->
                 when (enterExitState) {
-                    EnterExitState.PreEnter, EnterExitState.PostExit -> getRoundedCorner()
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> getSystemCornerRadius()
                     EnterExitState.Visible -> with(LocalDensity.current) { cardRadius }
                 }
             }
             Modifier.sharedBounds(
                 sharedContentState = rememberSharedContentState(key = "${TransitionSource.LIST_CARD}/${key}"),
+                animatedVisibilityScope = animatedVisibilityScope,
+                resizeMode = RemeasureToBounds,
+                clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),
+                placeholderSize = ContentSize,
+                boundsTransform = defaultBoundsTransform
+            )
+        }
+    )
+}
+
+@Composable
+fun Modifier.cardShareBounds(
+    sharedContentState: SharedContentState,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    cardRadius: Dp = CardDefaults.CornerRadius
+): Modifier {
+    return this.then(
+        with(sharedTransitionScope) {
+            if (this == null) return Modifier
+
+            val pagerCorner: State<Dp> = animatedVisibilityScope.transition.animateDp({
+                tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
+            }) { enterExitState ->
+                when (enterExitState) {
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> getSystemCornerRadius()
+                    EnterExitState.Visible -> with(LocalDensity.current) { cardRadius }
+                }
+            }
+            Modifier.sharedBounds(
+                sharedContentState = sharedContentState,
                 animatedVisibilityScope = animatedVisibilityScope,
                 resizeMode = RemeasureToBounds,
                 clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),

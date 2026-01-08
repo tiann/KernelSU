@@ -28,6 +28,7 @@ class ResultBackMiuixNavigator<R>(
 ) {
 
     fun navigateBack(result: R) {
+        if (routePopupStack._keyOrder.size <= 1) return
         routePopupStack.removeLast()
         resultBackNavigator.navigateBack(result)
     }
@@ -37,6 +38,7 @@ class ResultBackMiuixNavigator<R>(
     }
 
     fun navigateBack() {
+        if (routePopupStack._keyOrder.size <= 1) return
         routePopupStack.removeLast()
         resultBackNavigator.navigateBack()
     }

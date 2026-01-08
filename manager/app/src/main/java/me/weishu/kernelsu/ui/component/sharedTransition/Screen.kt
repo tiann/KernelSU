@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousRoundedRectangle
+import me.weishu.kernelsu.ui.component.getSystemCornerRadius
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
 import top.yukonga.miuix.kmp.basic.CardDefaults
-import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 @Composable
 fun Modifier.screenShareBounds(
@@ -39,8 +39,7 @@ fun Modifier.screenShareBounds(
                         TransitionSource.FAB -> 30.dp
                         TransitionSource.LIST_CARD -> CardDefaults.CornerRadius
                     }
-
-                    EnterExitState.Visible -> getRoundedCorner()
+                    EnterExitState.Visible -> getSystemCornerRadius()
                 }
             }
             val resizeMode: SharedTransitionScope.ResizeMode = when (transitionSource) {
@@ -54,10 +53,8 @@ fun Modifier.screenShareBounds(
                 resizeMode = resizeMode,
                 clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),
                 placeholderSize = ContentSize,
-                boundsTransform = BoundsTransform { _, _ ->
-                    tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
-                }
-            )
+                boundsTransform = defaultBoundsTransform
+            ).skipToLookaheadSize()
         }
     )
 }

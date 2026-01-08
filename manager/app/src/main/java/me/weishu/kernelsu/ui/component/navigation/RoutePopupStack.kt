@@ -24,12 +24,10 @@ class RoutePopupStack {
     }
 
     fun removeLast(): String? {
-        if (_keyOrder.isNotEmpty()) {
-            val lastKey = _keyOrder.removeAt(_keyOrder.size - 1)
-            _state.remove(lastKey)
-            return lastKey
-        }
-        return null
+        if (_keyOrder.size <= 1) return null
+        val lastKey = _keyOrder.removeAt(_keyOrder.size - 1)
+        _state.remove(lastKey)
+        return lastKey
     }
 
     fun remove(key: String) {

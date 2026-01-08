@@ -45,6 +45,7 @@ class MiuixDestinationsNavigator(
 
     @MainThread
     fun popBackStack(): Boolean {
+        if (routePopupState._keyOrder.size <= 1) return false
         routePopupState.removeLast()
         return destinationsNavigator.popBackStack()
     }
