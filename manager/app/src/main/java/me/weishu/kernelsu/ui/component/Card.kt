@@ -103,8 +103,7 @@ fun SharedTransitionScope?.SharedTransitionCard(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(insideMargin)
-                ,
+                    .padding(insideMargin),
                 content = content
             )
         }
