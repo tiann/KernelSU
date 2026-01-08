@@ -202,7 +202,7 @@ fun AppProfileScreen(
                     affectedApps = sameUidApps,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
-                            navigator.navigate(TemplateScreenDestination(info,TransitionSource.NULL)) {
+                            navigator.navigate(TemplateScreenDestination(info, TransitionSource.NULL)) {
                                 launchSingleTop = true
                             }
                         }
