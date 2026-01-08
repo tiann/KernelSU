@@ -15,7 +15,7 @@ fun <R> DestinationScopeWithNoDependencies<*>.resultBackMiuixNavigator(
 )
 
 @Composable
-fun  <R> resultBackMiuixNavigator(
+fun <R> resultBackMiuixNavigator(
     resultBackNavigator: ResultBackNavigator<R>,
 ): ResultBackMiuixNavigator<R> = ResultBackMiuixNavigator(
     resultBackNavigator,
@@ -27,16 +27,16 @@ class ResultBackMiuixNavigator<R>(
     val routePopupStack: RoutePopupStack
 ) {
 
-    fun navigateBack(result: R){
+    fun navigateBack(result: R) {
         routePopupStack.removeLast()
         resultBackNavigator.navigateBack(result)
     }
 
-    fun setResult(result: R){
+    fun setResult(result: R) {
         resultBackNavigator.setResult(result)
     }
 
-    fun navigateBack(){
+    fun navigateBack() {
         routePopupStack.removeLast()
         resultBackNavigator.navigateBack()
     }

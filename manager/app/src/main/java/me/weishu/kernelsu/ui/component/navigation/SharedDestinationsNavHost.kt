@@ -5,7 +5,6 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -22,10 +21,11 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { null }
 val localPopState = compositionLocalOf { false }
-val LocalAnimatedVisibilityScope =  compositionLocalOf<AnimatedVisibilityScope?> { null }
+val LocalAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope?> { null }
 val LocalRoutePopupStack = compositionLocalOf<RoutePopupStack> {
     error("RoutePopupStack not provided")
 }
+
 @Composable
 fun SharedDestinationsNavHost(
     navGraph: NavHostGraphSpec,
@@ -37,9 +37,9 @@ fun SharedDestinationsNavHost(
     overlayContent: @Composable MiuixDestinationsNavigator.() -> Unit = {},
     dependenciesContainerBuilder: @Composable DependenciesContainerBuilder<*>.() -> Unit = {},
     manualComposableCallsBuilder: MiuixManualComposableCallsBuilder.() -> Unit = {},
-){
+) {
 
-    SharedTransitionLayout{
+    SharedTransitionLayout {
         val routePopupState = rememberSaveable(saver = RoutePopupStack.Saver) {
             RoutePopupStack().apply {
                 put(navGraph.startRoute.route, true)
@@ -57,10 +57,10 @@ fun SharedDestinationsNavHost(
                 navController = navController,
                 defaultTransitions = defaultTransitions,
                 dependenciesContainerBuilder = dependenciesContainerBuilder,
-                manualComposableCallsBuilder = { MiuixManualComposableCallsBuilder(this,routePopupState).manualComposableCallsBuilder() }
+                manualComposableCallsBuilder = { MiuixManualComposableCallsBuilder(this, routePopupState).manualComposableCallsBuilder() }
             )
             val navigator = navController.rememberDestinationsNavigator()
-            MiuixDestinationsNavigator(navigator,routePopupState).overlayContent()
+            MiuixDestinationsNavigator(navigator, routePopupState).overlayContent()
         }
     }
 }

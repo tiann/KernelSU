@@ -87,10 +87,10 @@ import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.FloatingActionButton
 import me.weishu.kernelsu.ui.component.SharedTransitionCard
 import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
-import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
-import me.weishu.kernelsu.ui.component.sharedTransition.fabShareBounds
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.component.sharedTransition.fabShareBounds
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
@@ -240,8 +240,9 @@ fun AppProfileTemplateScreen(
                     navigator.navigate(
                         TemplateEditorScreenDestination(
                             TemplateViewModel.TemplateInfo(),
-                            TransitionSource.FAB, false)
-                    ){
+                            TransitionSource.FAB, false
+                        )
+                    ) {
                         launchSingleTop = true
                     }
                 },
@@ -349,7 +350,7 @@ private fun TemplateItem(
         animatedVisibilityScope = animatedVisibilityScope,
         modifier = Modifier.padding(bottom = 12.dp),
         onClick = {
-            navigator.navigate(TemplateEditorScreenDestination(template, TransitionSource.LIST_CARD,!template.local)) {
+            navigator.navigate(TemplateEditorScreenDestination(template, TransitionSource.LIST_CARD, !template.local)) {
                 popUpTo(TemplateEditorScreenDestination) {
                     inclusive = true
                 }

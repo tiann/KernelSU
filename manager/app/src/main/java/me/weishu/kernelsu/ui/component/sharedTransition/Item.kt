@@ -14,17 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import com.kyant.capsule.ContinuousRoundedRectangle
-import me.weishu.kernelsu.ui.component.getCornerRadiusTop
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 @Composable
 fun Modifier.cardShareBounds(
     key: Any,
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    cardRadius : Dp = CardDefaults.CornerRadius
+    cardRadius: Dp = CardDefaults.CornerRadius
 ): Modifier {
     return this.then(
         with(sharedTransitionScope) {
@@ -34,7 +34,7 @@ fun Modifier.cardShareBounds(
                 tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
             }) { enterExitState ->
                 when (enterExitState) {
-                    EnterExitState.PreEnter, EnterExitState.PostExit -> getCornerRadiusTop()
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> getRoundedCorner()
                     EnterExitState.Visible -> with(LocalDensity.current) { cardRadius }
                 }
             }

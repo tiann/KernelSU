@@ -49,11 +49,11 @@ import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.EditText
-import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
-import me.weishu.kernelsu.ui.component.sharedTransition.screenShareBounds
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.resultBackMiuixNavigator
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.component.sharedTransition.screenShareBounds
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
@@ -120,8 +120,7 @@ fun TemplateEditorScreen(
                 transitionSource = transitionSource,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
-            )
-        ,
+            ),
     ) {
         Scaffold(
             modifier = Modifier,

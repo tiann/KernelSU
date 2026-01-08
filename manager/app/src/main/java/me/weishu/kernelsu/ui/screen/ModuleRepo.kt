@@ -596,7 +596,6 @@ fun ModuleRepoScreen(
 }
 
 
-
 @SuppressLint("DefaultLocale")
 @Composable
 fun ReleasesPage(

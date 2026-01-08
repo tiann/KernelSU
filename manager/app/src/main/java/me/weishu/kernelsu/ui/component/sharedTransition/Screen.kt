@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousRoundedRectangle
-import me.weishu.kernelsu.ui.component.getCornerRadiusTop
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 @Composable
 fun Modifier.screenShareBounds(
@@ -35,14 +35,15 @@ fun Modifier.screenShareBounds(
                     tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
                 }) { enterExitState ->
                 when (enterExitState) {
-                    EnterExitState.PreEnter, EnterExitState.PostExit -> when(transitionSource) {
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> when (transitionSource) {
                         TransitionSource.FAB -> 30.dp
                         TransitionSource.LIST_CARD -> CardDefaults.CornerRadius
                     }
-                    EnterExitState.Visible -> getCornerRadiusTop()
+
+                    EnterExitState.Visible -> getRoundedCorner()
                 }
             }
-            val resizeMode: SharedTransitionScope.ResizeMode = when(transitionSource) {
+            val resizeMode: SharedTransitionScope.ResizeMode = when (transitionSource) {
                 TransitionSource.FAB -> scaleToBounds(ContentScale.FillBounds, Alignment.TopCenter)
                 TransitionSource.LIST_CARD -> scaleToBounds(ContentScale.FillWidth, Alignment.TopCenter)
             }

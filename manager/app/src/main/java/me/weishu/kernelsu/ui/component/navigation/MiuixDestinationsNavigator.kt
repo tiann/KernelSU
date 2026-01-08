@@ -14,37 +14,37 @@ import com.ramcosta.composedestinations.spec.RouteOrDirection
 class MiuixDestinationsNavigator(
     private val destinationsNavigator: DestinationsNavigator,
     private val routePopupState: RoutePopupStack,
-)  {
+) {
     fun navigate(
         direction: Direction,
         builder: DestinationsNavOptionsBuilder.() -> Unit
-    ){
+    ) {
         routePopupState.apply {
-            putLast( true)
-            put(direction.route.substringBefore('/'),false)
+            putLast(true)
+            put(direction.route.substringBefore('/'), false)
         }
-        destinationsNavigator.navigate(direction,builder)
+        destinationsNavigator.navigate(direction, builder)
     }
 
     fun navigate(
         direction: Direction,
         navOptions: NavOptions? = null,
         navigatorExtras: Navigator.Extras? = null
-    ){
+    ) {
         routePopupState.apply {
-            putLast( true)
-            put(direction.route.substringBefore('/'),false)
+            putLast(true)
+            put(direction.route.substringBefore('/'), false)
         }
-        destinationsNavigator.navigate(direction,navOptions,navigatorExtras)
+        destinationsNavigator.navigate(direction, navOptions, navigatorExtras)
     }
 
     @MainThread
-    fun navigateUp(): Boolean{
+    fun navigateUp(): Boolean {
         return destinationsNavigator.navigateUp()
     }
 
     @MainThread
-    fun popBackStack(): Boolean{
+    fun popBackStack(): Boolean {
         routePopupState.removeLast()
         return destinationsNavigator.popBackStack()
     }
@@ -54,25 +54,26 @@ class MiuixDestinationsNavigator(
         route: RouteOrDirection,
         inclusive: Boolean,
         saveState: Boolean = false,
-    ): Boolean{
+    ): Boolean {
         routePopupState.remove(route.route)
-        return destinationsNavigator.popBackStack(route,inclusive,saveState)
+        return destinationsNavigator.popBackStack(route, inclusive, saveState)
     }
 
     @MainThread
-    fun clearBackStack(route: RouteOrDirection): Boolean{
+    fun clearBackStack(route: RouteOrDirection): Boolean {
         routePopupState.clear()
         return destinationsNavigator.clearBackStack(route)
     }
 
     fun getBackStackEntry(
         route: RouteOrDirection
-    ): NavBackStackEntry?{
-        return  destinationsNavigator.getBackStackEntry(route)
+    ): NavBackStackEntry? {
+        return destinationsNavigator.getBackStackEntry(route)
     }
 
 
 }
 
 @Composable
-fun <T> DestinationScope<T>.miuixDestinationsNavigator(): MiuixDestinationsNavigator = MiuixDestinationsNavigator(destinationsNavigator,LocalRoutePopupStack.current)
+fun <T> DestinationScope<T>.miuixDestinationsNavigator(): MiuixDestinationsNavigator =
+    MiuixDestinationsNavigator(destinationsNavigator, LocalRoutePopupStack.current)

@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.component
 
 import android.R
 import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.State
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
@@ -42,6 +41,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +69,6 @@ import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
-import me.weishu.kernelsu.ui.component.isTransitioning
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text
@@ -86,6 +85,7 @@ class SearchStatus(val label: String) {
     val expandState = MutableTransitionState(false)
     var offsetY by mutableStateOf(0.dp)
     var resultStatus by mutableStateOf(ResultStatus.DEFAULT)
+
     enum class ResultStatus { DEFAULT, EMPTY, LOAD, SHOW }
 }
 
@@ -96,7 +96,7 @@ fun Transition<Boolean>.TopAppBarAnim(
     hazeStyle: HazeStyle? = null,
     content: @Composable () -> Unit
 ) {
-    val topAppBarAlpha = animateFloat({ tween(600, easing = LinearOutSlowInEasing) },"TopAppBarAlphaAnim"){
+    val topAppBarAlpha = animateFloat({ tween(600, easing = LinearOutSlowInEasing) }, "TopAppBarAlphaAnim") {
         if (!it) 1f else 0f
     }
     Box(
@@ -126,7 +126,7 @@ fun Transition<Boolean>.TopAppBarAnim(
         Box(
             modifier = Modifier
                 .alpha(topAppBarAlpha.value)
-        ){
+        ) {
             content()
         }
     }
@@ -135,7 +135,7 @@ fun Transition<Boolean>.TopAppBarAnim(
 // Search Box Composable
 @Composable
 fun Transition<Boolean>.SearchBox(
-    searchStatus:SearchStatus,
+    searchStatus: SearchStatus,
     collapseBar: @Composable (SearchStatus) -> Unit = { searchStatus ->
         SearchBarFake(searchStatus.label)
     },
@@ -204,7 +204,7 @@ fun Transition<Boolean>.SearchBox(
 // Search Pager Composable
 @Composable
 fun Transition<Boolean>.SearchPager(
-    searchStatus:SearchStatus,
+    searchStatus: SearchStatus,
     defaultResult: @Composable () -> Unit,
     expandBar: @Composable (SearchStatus) -> Unit = { searchStatus ->
         SearchBar(searchStatus)
@@ -213,7 +213,7 @@ fun Transition<Boolean>.SearchPager(
     result: LazyListScope.() -> Unit
 ) {
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
-    val topPadding by animateDp({tween(300, easing = LinearOutSlowInEasing)}) {
+    val topPadding by animateDp({ tween(300, easing = LinearOutSlowInEasing) }) {
         if (it) {
             systemBarsPadding + 5.dp
         } else {

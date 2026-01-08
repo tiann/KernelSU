@@ -49,6 +49,7 @@ class NavTransitionEasing @JvmOverloads constructor(
     }
 
 }
+
 fun defaultTransitions() = object : NavHostAnimatedDestinationStyle() {
     override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
         {
@@ -84,7 +85,7 @@ fun defaultTransitions() = object : NavHostAnimatedDestinationStyle() {
     override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { null }
 }
 
-val noAnimated =  object : NavHostAnimatedDestinationStyle() {
+val noAnimated = object : NavHostAnimatedDestinationStyle() {
     override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = { EnterTransition.None }
     override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = { ExitTransition.None }
     override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = { EnterTransition.None }
@@ -92,7 +93,7 @@ val noAnimated =  object : NavHostAnimatedDestinationStyle() {
     override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { null }
 }
 
-val slideFromRightTransition =  object : NavHostAnimatedDestinationStyle() {
+val slideFromRightTransition = object : NavHostAnimatedDestinationStyle() {
     override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
         slideInHorizontally(
             initialOffsetX = { it },

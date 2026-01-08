@@ -37,7 +37,7 @@ class RoutePopupStack {
         _state.remove(key)
     }
 
-    fun clear(){
+    fun clear() {
         _keyOrder.clear()
         _state.clear()
     }

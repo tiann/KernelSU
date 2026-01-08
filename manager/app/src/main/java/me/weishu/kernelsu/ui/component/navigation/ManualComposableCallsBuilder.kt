@@ -22,35 +22,36 @@ import com.ramcosta.composedestinations.scope.AnimatedDestinationScope
 import com.ramcosta.composedestinations.spec.DestinationStyle
 import com.ramcosta.composedestinations.spec.TypedDestinationSpec
 import dev.chrisbanes.haze.hazeEffect
-import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import me.weishu.kernelsu.ui.component.getCornerRadiusTop
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
+import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
     destination: TypedDestinationSpec<T>,
-    animation: DestinationStyle.Animated? =  null ,
+    animation: DestinationStyle.Animated? = null,
     popTransitionStyle: PopTransitionStyle = PopTransitionStyle.None,
     content: @Composable AnimatedDestinationScope<T>.() -> Unit
 ) {
-    val (destinationsNavigator,routePopupState) = this
+    val (destinationsNavigator, routePopupState) = this
     destinationsNavigator.run {
         animation?.let {
             destination.animateWith(it)
         }
-        composable(destination){
+        composable(destination) {
             val desTransition = this.transition
             val currentState = desTransition.currentState
             val targetState = desTransition.targetState
             val isPop = routePopupState.getValue(destination.route.substringBefore('/'))
-            val screenCornerRadius = getCornerRadiusTop()
+            val screenCornerRadius = getRoundedCorner()
 
-            with(desTransition){
+            with(desTransition) {
                 val dim = animateColor({ tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }) { enterExitState ->
-                    when(enterExitState){
-                        EnterExitState.Visible ->{
+                    when (enterExitState) {
+                        EnterExitState.Visible -> {
                             Color.Transparent
                         }
+
                         else -> {
                             if (isPop) {
                                 colorScheme.windowDimming
@@ -60,13 +61,13 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                         }
                     }
                 }
-                val screenRadius = remember(currentState,targetState) {
+                val screenRadius = remember(currentState, targetState) {
                     derivedStateOf { if (currentState == targetState) 0.dp else screenCornerRadius }
                 }
 
-                val popModifier = when(popTransitionStyle){
+                val popModifier = when (popTransitionStyle) {
                     PopTransitionStyle.Depth -> {
-                        val blur = animateDp( { tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }) { enterExitState ->
+                        val blur = animateDp({ tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }) { enterExitState ->
                             when (enterExitState) {
                                 EnterExitState.PreEnter, EnterExitState.PostExit -> if (isPop) 20.dp else 0.dp
                                 EnterExitState.Visible -> 0.dp
@@ -89,6 +90,7 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                             }
                             .scale(scale.value)
                     }
+
                     else -> Modifier
                 }
 

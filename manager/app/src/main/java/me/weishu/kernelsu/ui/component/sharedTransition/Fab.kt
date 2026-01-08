@@ -14,16 +14,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousRoundedRectangle
-import me.weishu.kernelsu.ui.component.getCornerRadiusTop
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
+import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
 @Composable
 fun Modifier.fabShareBounds(
     key: Any,
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    fabRadius : Dp = 30.dp
+    fabRadius: Dp = 30.dp
 ): Modifier {
     return this.then(
         with(sharedTransitionScope) {
@@ -33,7 +33,7 @@ fun Modifier.fabShareBounds(
                 tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing)
             }) { enterExitState ->
                 when (enterExitState) {
-                    EnterExitState.PreEnter, EnterExitState.PostExit -> getCornerRadiusTop()
+                    EnterExitState.PreEnter, EnterExitState.PostExit -> getRoundedCorner()
                     EnterExitState.Visible -> with(LocalDensity.current) {
                         fabRadius
                     }
