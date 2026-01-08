@@ -340,8 +340,9 @@ private fun ZipFileIntentHandler(
     val context = LocalContext.current
 
     DisposableEffect(Unit) {
-        // 使用 object 避免 lambda 实例不一致问题
-        val listener = Consumer<Intent> { intent -> // 处理 Deep Link / Shortcut 等val uri = intent?.data ?: return@LaunchedEffect
+        // Use a dedicated listener instance to avoid inconsistent lambda instances.
+        // Handle Deep Link / Shortcut, etc.
+        val listener = Consumer<Intent> { intent ->
 
             val uri = intent.data ?:return@Consumer
             if (!isManager || uri.scheme != "content" || intent.type != "application/zip") return@Consumer
