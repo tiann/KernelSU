@@ -232,42 +232,45 @@ fun AppProfileTemplateScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                containerColor = colorScheme.primary,
-                shadowElevation = 0.dp,
-                onClick = {
-                    navigator.navigate(
-                        TemplateEditorScreenDestination(
-                            TemplateViewModel.TemplateInfo(),
-                            TransitionSource.FAB, false
+            with(sharedTransitionScope) {
+                FloatingActionButton(
+                    containerColor = colorScheme.primary,
+                    shadowElevation = 0.dp,
+                    onClick = {
+                        navigator.navigate(
+                            TemplateEditorScreenDestination(
+                                TemplateViewModel.TemplateInfo(),
+                                TransitionSource.FAB, false
+                            )
+                        ) {
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = Modifier
+                        .offset(y = offsetHeight)
+                        .padding(
+                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
+                            end = 20.dp
                         )
-                    ) {
-                        launchSingleTop = true
-                    }
-                },
-                modifier = Modifier
-                    .offset(y = offsetHeight)
-                    .padding(
-                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
-                        end = 20.dp
-                    )
-                    .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                contentModifier = Modifier
-                    .fabShareBounds(
-                        key = "",
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedVisibilityScope = animatedVisibilityScope
-                    ),
-                content = {
-                    Icon(
-                        Icons.Rounded.Add,
-                        null,
-                        Modifier.size(40.dp),
-                        tint = colorScheme.onPrimary
-                    )
-                },
-            )
+                        .renderInSharedTransitionScopeOverlay()
+                        .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                    contentModifier = Modifier
+                        .fabShareBounds(
+                            key = "",
+                            sharedTransitionScope = sharedTransitionScope,
+                            animatedVisibilityScope = animatedVisibilityScope
+                        ),
+                    content = {
+                        Icon(
+                            Icons.Rounded.Add,
+                            null,
+                            Modifier.size(40.dp),
+                            tint = colorScheme.onPrimary
+                        )
+                    },
+                )
+            }
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
