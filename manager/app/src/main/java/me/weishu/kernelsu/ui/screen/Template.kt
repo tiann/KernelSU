@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -119,6 +120,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @author weishu
  * @date 2023/10/20.
  */
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
 fun AppProfileTemplateScreen(
@@ -194,9 +196,6 @@ fun AppProfileTemplateScreen(
             }
             TopBar(
                 onBack = dropUnlessResumed { navigator.popBackStack() },
-                onSync = {
-                    scope.launch { viewModel.fetchTemplates(true) }
-                },
                 onImport = {
                     scope.launch {
                         clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
@@ -249,10 +248,8 @@ fun AppProfileTemplateScreen(
                 modifier = Modifier
                     .offset(y = offsetHeight)
                     .padding(
-                        bottom = WindowInsets.navigationBars.asPaddingValues()
-                            .calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues()
-                                    .calculateBottomPadding() + 20.dp,
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
                         end = 20.dp
                     )
                     .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
@@ -297,7 +294,7 @@ fun AppProfileTemplateScreen(
             onRefresh = { isRefreshing = true },
             refreshTexts = refreshTexts,
             contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 12.dp,
+                top = innerPadding.calculateTopPadding() + 6.dp,
                 start = innerPadding.calculateStartPadding(layoutDirection),
                 end = innerPadding.calculateEndPadding(layoutDirection)
             ),
@@ -311,7 +308,11 @@ fun AppProfileTemplateScreen(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .hazeSource(state = hazeState)
                     .padding(horizontal = 12.dp),
-                contentPadding = innerPadding,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection)
+                ),
                 overscrollEffect = null
             ) {
                 item {
@@ -341,7 +342,7 @@ fun AppProfileTemplateScreen(
 @Composable
 private fun TemplateItem(
     navigator: MiuixDestinationsNavigator,
-    sharedTransitionScope: SharedTransitionScope?,
+    sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     template: TemplateViewModel.TemplateInfo
 ) {
@@ -456,7 +457,6 @@ private fun InfoChip(icon: ImageVector, text: String) {
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
-    onSync: () -> Unit = {},
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
     scrollBehavior: ScrollBehavior,

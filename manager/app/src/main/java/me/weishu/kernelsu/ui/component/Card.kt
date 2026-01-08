@@ -35,7 +35,7 @@ import top.yukonga.miuix.kmp.utils.TiltFeedback
 import top.yukonga.miuix.kmp.utils.pressable
 
 @Composable
-fun SharedTransitionScope?.SharedTransitionCard(
+fun SharedTransitionScope.SharedTransitionCard(
     key: String,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
@@ -103,7 +103,8 @@ fun SharedTransitionScope?.SharedTransitionCard(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(insideMargin),
+                    .padding(insideMargin)
+                    .skipToLookaheadSize(),
                 content = content
             )
         }
