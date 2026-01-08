@@ -57,11 +57,11 @@ class RoutePopupStack {
     companion object {
         val Saver = Saver<RoutePopupStack, Pair<List<String>, Map<String, Boolean>>>(
             save = { stack ->
-                stack.keys to stack.state // ✅ 只用 public getter
+                stack.keys to stack.state // Use public getters only
             },
             restore = { (keys, stateMap) ->
                 RoutePopupStack().apply {
-                    _keyOrder.addAll(keys)     // ✅ internal，同模块可写
+                    _keyOrder.addAll(keys)     // Internal properties are writable within the same module
                     _state.putAll(stateMap)
                 }
             }
