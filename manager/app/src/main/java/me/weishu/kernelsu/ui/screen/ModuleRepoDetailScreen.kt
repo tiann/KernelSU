@@ -145,7 +145,6 @@ fun ModuleRepoDetailScreen(
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
             )
-        ,
     ) {
 
         Scaffold(
