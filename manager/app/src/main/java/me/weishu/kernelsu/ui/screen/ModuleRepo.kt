@@ -75,6 +75,7 @@ import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.GithubMarkdown
+import me.weishu.kernelsu.ui.component.LazyGithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.TopAppBarAnim
@@ -693,7 +694,7 @@ fun ReleasesPage(
                                             thickness = 0.5.dp,
                                             color = colorScheme.outline.copy(alpha = 0.5f)
                                         )
-                                        GithubMarkdown(content = rel.descriptionHTML)
+                                        LazyGithubMarkdown(content = rel.descriptionHTML)
                                     }
                                 }
                                 HorizontalDivider(

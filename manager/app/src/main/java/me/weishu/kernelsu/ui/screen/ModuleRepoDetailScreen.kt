@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.GithubMarkdown
+import me.weishu.kernelsu.ui.component.LazyGithubMarkdown
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -270,7 +271,7 @@ fun ModuleRepoDetailScreen(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 0,
+                    beyondViewportPageCount = 3,
                     userScrollEnabled = true,
                 ) { page ->
                     val innerPagePadding = PaddingValues(
@@ -331,45 +332,50 @@ private fun ReadmePage(
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val isLoading = remember { mutableStateOf(true) }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .scrollEndHaptic()
-            .overScrollVertical()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .hazeSource(state = hazeState),
-        contentPadding = PaddingValues(
-            top = innerPadding.calculateTopPadding(),
-            start = innerPadding.calculateStartPadding(layoutDirection),
-            end = innerPadding.calculateEndPadding(layoutDirection),
-            bottom = innerPadding.calculateBottomPadding() + 12.dp,
-        ),
-        overscrollEffect = null,
-    ) {
-        if (isLoading.value) {
+    Box {
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .scrollEndHaptic()
+                .overScrollVertical()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(state = hazeState),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection),
+                bottom = innerPadding.calculateBottomPadding() + 12.dp,
+            ),
+            overscrollEffect = null,
+        ) {
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                AnimatedVisibility(
+                    visible = readmeLoaded && readmeHtml != null,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
                 ) {
-                    InfiniteProgressIndicator()
+                    Card(
+                        modifier = Modifier.padding(top = 6.dp).padding(horizontal = 12.dp),
+                    ) {
+                        LazyGithubMarkdown(content = readmeHtml!!, isLoading)
+                    }
+
                 }
             }
         }
-        item {
-            AnimatedVisibility(
-                visible = readmeLoaded && readmeHtml != null,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Card(
-                    modifier = Modifier.padding(top = 6.dp).padding(horizontal = 12.dp),
-                ) {
-                    GithubMarkdown(content = readmeHtml!!, isLoading)
-                }
 
+        if (isLoading.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1f)
+                    .padding(top = innerPadding.calculateTopPadding()),
+                contentAlignment = Alignment.Center
+            ) {
+                InfiniteProgressIndicator()
             }
+
         }
     }
 }

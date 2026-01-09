@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -16,8 +15,11 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -51,6 +53,33 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 
+
+@SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
+@Composable
+fun LazyGithubMarkdown(
+    content: String,
+    isLoading: MutableState<Boolean> = mutableStateOf(true)
+){
+    val density = LocalDensity.current
+    val height = remember { mutableStateOf(0.dp) } // 不是 0！
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            //.then(if (height.value != 0.dp) Modifier.heightIn(max = height.value) else Modifier.wrapContentHeight())
+            .onSizeChanged {
+                Log.d("GithubMarkdown", "GithubMarkdown: ${it.height} ${it.width}")
+                if (it.height == 0) return@onSizeChanged
+                height.value = with(density) {
+                    it.height.toDp()
+                }
+                Log.d("GithubMarkdown", "height: ${height.value}")
+            }
+    ){
+        GithubMarkdown(content,isLoading)
+    }
+}
+
 @SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
 @Composable
 fun GithubMarkdown(
@@ -59,7 +88,6 @@ fun GithubMarkdown(
 ) {
     isLoading.value = true
     val context = LocalContext.current
-    val density = LocalDensity.current
     val scrollInterface = remember { MarkdownScrollInterface() }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
@@ -76,6 +104,7 @@ fun GithubMarkdown(
         return ensureVisibleByMix(bgArgb, candidate, 1.15, madeLighter)
     }
 
+    val cc = remember { mutableStateOf(0.dp) }
     val bgDefault = cssColorFromArgb(bgArgb)
     val bgMuted = cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.06f else 0.06f))
     val bgNeutralMuted = cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.12f else 0.12f))
@@ -310,20 +339,10 @@ fun GithubMarkdown(
             }
         },
         modifier = Modifier
-            .fillMaxWidth()
-            .then(
-                if (height.value == 0.dp) Modifier.wrapContentHeight() else Modifier.height(height.value)
-            )
-            .animateContentSize()
-            .onSizeChanged {
-                Log.d("GithubMarkdown", "GithubMarkdown: ${it.height}")
-                if (it.height == 0) return@onSizeChanged
-                height.value = with(density) {
-                    it.height.toDp()
-                }
-            }
+            .fillMaxSize()
             .clipToBounds(),
     )
+
 }
 
 class MarkdownScrollInterface {
