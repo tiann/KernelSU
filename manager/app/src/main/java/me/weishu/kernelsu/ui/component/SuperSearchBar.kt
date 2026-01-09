@@ -3,6 +3,8 @@ package me.weishu.kernelsu.ui.component
 import android.R
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Transition
@@ -151,12 +153,14 @@ fun Transition<Boolean>.SearchBox(
     val searchBarScaleY by animateFloat({ tween(300, easing = LinearOutSlowInEasing) }) {
         if (it) 0f else 1f
     }
-
-    Box(
+    AnimatedVisibility(
+        visible = { !it },
         modifier = Modifier
             .offset(
                 y = contentOffsetY
             ),
+        enter = EnterTransition.None,
+        exit = ExitTransition.None,
     ) {
         content(contentTopPadding)
     }
