@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.component.sharedTransition
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
@@ -47,14 +46,14 @@ fun Modifier.screenShareBounds(
                 TransitionSource.LIST_CARD -> scaleToBounds(ContentScale.FillWidth, Alignment.TopCenter)
             }
 
-            Modifier.sharedBounds(
+            Modifier.skipToLookaheadSize().sharedBounds(
                 sharedContentState = rememberSharedContentState(key = "$transitionSource/$key"),
                 animatedVisibilityScope = animatedVisibilityScope,
                 resizeMode = resizeMode,
                 clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),
                 placeholderSize = ContentSize,
                 boundsTransform = defaultBoundsTransform
-            ).skipToLookaheadSize()
+            )
         }
     )
 }

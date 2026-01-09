@@ -11,9 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -65,7 +62,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.LazyGithubMarkdown
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
@@ -137,7 +133,8 @@ fun ModuleRepoDetailScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .screenShareBounds(
                 key = module.moduleId,
                 transitionSource = TransitionSource.LIST_CARD,
@@ -242,7 +239,8 @@ fun ModuleRepoDetailScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Box(
-                    modifier = Modifier.wrapContentHeight()
+                    modifier = Modifier
+                        .wrapContentHeight()
                         .hazeEffect(hazeState) {
                             style = hazeStyle
                             blurRadius = 30.dp
@@ -333,7 +331,6 @@ private fun ReadmePage(
     val layoutDirection = LocalLayoutDirection.current
     val isLoading = remember { mutableStateOf(true) }
     Box {
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -356,21 +353,20 @@ private fun ReadmePage(
                     exit = shrinkVertically() + fadeOut()
                 ) {
                     Card(
-                        modifier = Modifier.padding(top = 6.dp).padding(horizontal = 12.dp),
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(top = 6.dp)
+                            .padding(horizontal = 12.dp)
                     ) {
                         LazyGithubMarkdown(content = readmeHtml!!, isLoading)
                     }
-
                 }
             }
         }
 
         if (isLoading.value) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(1f)
-                    .padding(top = innerPadding.calculateTopPadding()),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 InfiniteProgressIndicator()

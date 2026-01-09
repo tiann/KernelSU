@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -14,17 +15,16 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.adjustLightnessArgb
@@ -61,22 +63,25 @@ fun LazyGithubMarkdown(
     isLoading: MutableState<Boolean> = mutableStateOf(true)
 ){
     val density = LocalDensity.current
-    val height = remember { mutableStateOf(0.dp) } // 不是 0！
+    val height = remember { mutableStateOf(0.dp) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            //.then(if (height.value != 0.dp) Modifier.heightIn(max = height.value) else Modifier.wrapContentHeight())
-            .onSizeChanged {
-                Log.d("GithubMarkdown", "GithubMarkdown: ${it.height} ${it.width}")
-                if (it.height == 0) return@onSizeChanged
-                height.value = with(density) {
-                    it.height.toDp()
-                }
-                Log.d("GithubMarkdown", "height: ${height.value}")
-            }
+            .then(
+                if (isLoading.value && height.value == 0.dp)
+                    Modifier.wrapContentHeight()
+                        .onSizeChanged { with(density) { height.value = it.height.toDp() } }
+                else Modifier.height(height.value)
+            )
     ){
-        GithubMarkdown(content,isLoading)
+        GithubMarkdown(content){
+            coroutineScope.launch {
+                delay(30)
+                isLoading.value = it
+            }
+        }
     }
 }
 
@@ -84,9 +89,11 @@ fun LazyGithubMarkdown(
 @Composable
 fun GithubMarkdown(
     content: String,
-    isLoading: MutableState<Boolean> = mutableStateOf(true)
+    onLoader: (Boolean)-> Unit
 ) {
-    isLoading.value = true
+    LaunchedEffect(Unit) {
+        onLoader(true)
+    }
     val context = LocalContext.current
     val scrollInterface = remember { MarkdownScrollInterface() }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -96,7 +103,6 @@ fun GithubMarkdown(
 
     val bgArgb = MiuixTheme.colorScheme.surfaceContainer.toArgb()
     val bgLuminance = relativeLuminance(bgArgb)
-    val height = remember { mutableStateOf(0.dp) }
 
     fun makeVariant(delta: Float): Int {
         val candidate = adjustLightnessArgb(bgArgb, delta)
@@ -104,7 +110,6 @@ fun GithubMarkdown(
         return ensureVisibleByMix(bgArgb, candidate, 1.15, madeLighter)
     }
 
-    val cc = remember { mutableStateOf(0.dp) }
     val bgDefault = cssColorFromArgb(bgArgb)
     val bgMuted = cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.06f else 0.06f))
     val bgNeutralMuted = cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.12f else 0.12f))
@@ -140,7 +145,12 @@ fun GithubMarkdown(
 
     AndroidView(
         factory = { context ->
-            val frameLayout = FrameLayout(context)
+            val frameLayout = FrameLayout(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
             val webView = WebView(context).apply {
                 try {
                     setBackgroundColor(Color.TRANSPARENT)
@@ -243,7 +253,7 @@ fun GithubMarkdown(
                         }
 
                         override fun onPageCommitVisible(view: WebView?, url: String?) {
-                            isLoading.value = false
+                            onLoader(false)
                         }
 
                         override fun shouldInterceptRequest(
@@ -327,19 +337,22 @@ fun GithubMarkdown(
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
             }
-            frameLayout.addView(webView)
+            frameLayout.addView(webView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT))
             frameLayout
         },
         onRelease = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView
-            frameLayout.removeAllViews()
             webView?.apply {
                 stopLoading()
                 destroy()
             }
+            frameLayout.removeAllViews()
         },
+
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .wrapContentHeight()
             .clipToBounds(),
     )
 
