@@ -50,6 +50,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -104,18 +106,14 @@ fun Transition<Boolean>.TopAppBarAnim(
             modifier = Modifier
                 .matchParentSize()
                 .then(
-                    if (this@TopAppBarAnim.isTransitioning || this@TopAppBarAnim.currentState) {
+                    if (hazeState != null && hazeStyle != null) {
                         Modifier
-                    } else {
-                        if (hazeState != null && hazeStyle != null) {
-                            Modifier
-                                .hazeEffect(hazeState) {
-                                    style = hazeStyle
-                                    blurRadius = 30.dp
-                                    noiseFactor = 0f
-                                }
-                        } else Modifier
-                    }
+                            .hazeEffect(hazeState) {
+                                style = hazeStyle
+                                blurRadius = 30.dp
+                                noiseFactor = 0f
+                            }
+                    } else Modifier
                 )
         )
         Box(
@@ -145,10 +143,13 @@ fun Transition<Boolean>.SearchBox(
     val layoutDirection = LocalLayoutDirection.current
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
     val searchBarHeight = remember { mutableStateOf(0.dp) }
-    val contentTopPadding = contentPadding.calculateTopPadding() + searchBarHeight.value + searchBarTopPadding + 6.dp
+    val contentTopPadding = contentPadding.calculateTopPadding() + searchBarHeight.value
 
     val contentOffsetY by animateDp({ tween(300, easing = LinearOutSlowInEasing) }) {
         if (it) systemBarsPadding + 5.dp - contentTopPadding else 0.dp
+    }
+    val contentScale by animateFloat({ tween(300, easing = LinearOutSlowInEasing) }) {
+        if (it) 0f else 1f
     }
 
     Box(
@@ -162,21 +163,11 @@ fun Transition<Boolean>.SearchBox(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .offset(y = contentPadding.calculateTopPadding())
             .pointerInput(Unit) {
                 detectTapGestures { searchStatus.expandState.targetState = true }
             }
-            .alpha(if (this@SearchBox.isTransitioning || this.currentState) 0f else 1f)
-            .hazeEffect(hazeState) {
-                style = hazeStyle
-                blurRadius = 30.dp
-                noiseFactor = 0f
-            }
             .padding(
-                top = searchBarTopPadding,
-                start = contentPadding.calculateStartPadding(layoutDirection) + 12.dp,
-                end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp,
-                bottom = 6.dp
+                top = contentPadding.calculateTopPadding()
             )
             .onSizeChanged {
                 with(density) {
@@ -186,12 +177,36 @@ fun Transition<Boolean>.SearchBox(
             .onGloballyPositioned {
                 with(density) {
                     it.positionInWindow().y.apply {
-                        searchStatus.offsetY = this@apply.toDp()
+                        searchStatus.offsetY = this@apply.toDp() + searchBarTopPadding
                     }
                 }
+            }
+            .graphicsLayer {
+                scaleY = contentScale
+                // 👇 关键：设置缩放锚点为底部中心 (x=0.5, y=1.0)
+                transformOrigin = TransformOrigin(
+                    pivotFractionX = 0.5f, // 水平居中
+                    pivotFractionY = 0.0f  // 垂直底部（1.0 = 底边）
+                )
+            }
+            //.scale(scaleX = 1f,scaleY = contentScale)
+            .hazeEffect(hazeState) {
+                style = hazeStyle
+                blurRadius = 30.dp
+                noiseFactor = 0f
             },
+        contentAlignment = Alignment.TopCenter,
     ) {
-        collapseBar(searchStatus)
+        Box(
+            modifier = Modifier.padding(
+                top = searchBarTopPadding,
+                start = contentPadding.calculateStartPadding(layoutDirection) + 12.dp,
+                end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp,
+                bottom = 6.dp
+            ).alpha(if (isTransitioning || currentState) 0f else 1f)
+        ){
+            collapseBar(searchStatus)
+        }
     }
 }
 
@@ -213,14 +228,14 @@ fun Transition<Boolean>.SearchPager(
             max(searchStatus.offsetY, 0.dp)
         }
     }
-    val surfaceAlpha by animateFloat({ tween(200, easing = LinearOutSlowInEasing) }) {
+    val surfaceAlpha by animateFloat({ tween(150, easing = LinearOutSlowInEasing) }) {
         if (it) 1f else 0f
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .zIndex(5f)
+            .zIndex(1f)
             .background(colorScheme.surface.copy(alpha = surfaceAlpha))
             .semantics { onClick { false } }
             .then(
@@ -240,7 +255,6 @@ fun Transition<Boolean>.SearchPager(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 12.dp)
-                        .background(colorScheme.surface)
                 ) {
                     expandBar(searchStatus)
                 }
@@ -261,10 +275,18 @@ fun Transition<Boolean>.SearchPager(
                         .clickable(
                             interactionSource = null,
                             indication = null
-                        ) { searchStatus.expandState.targetState = false }
+                        ) {
+                            searchStatus.apply {
+                                searchText = ""
+                                expandState.targetState = false
+                            }
+                        }
                 )
                 BackHandler(enabled = true) {
-                    searchStatus.expandState.targetState = false
+                    searchStatus.apply {
+                        searchText = ""
+                        expandState.targetState = false
+                    }
                 }
             }
         }
