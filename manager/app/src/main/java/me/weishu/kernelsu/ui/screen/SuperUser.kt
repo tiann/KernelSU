@@ -221,7 +221,6 @@ fun SuperUserPager(
             searchTransition.SearchPager(
                 searchStatus = searchStatus,
                 defaultResult = {},
-                searchBarTopPadding = dynamicTopPadding,
             ) {
                 item {
                     Spacer(Modifier.height(6.dp))

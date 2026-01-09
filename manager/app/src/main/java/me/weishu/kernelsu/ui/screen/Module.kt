@@ -51,7 +51,6 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -583,7 +582,6 @@ fun ModulePager(
             searchTransition.SearchPager(
                 searchStatus = searchStatus,
                 defaultResult = {},
-                searchBarTopPadding = dynamicTopPadding,
             ) {
                 item {
                     Spacer(Modifier.height(6.dp))

@@ -41,8 +41,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -205,7 +203,6 @@ fun Transition<Boolean>.SearchPager(
     expandBar: @Composable (SearchStatus) -> Unit = { searchStatus ->
         SearchBar(searchStatus)
     },
-    searchBarTopPadding: Dp = 12.dp,
     result: LazyListScope.() -> Unit
 ) {
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
