@@ -148,7 +148,7 @@ fun Transition<Boolean>.SearchBox(
     val contentOffsetY by animateDp({ tween(300, easing = LinearOutSlowInEasing) }) {
         if (it) systemBarsPadding + 5.dp - contentTopPadding else 0.dp
     }
-    val contentScale by animateFloat({ tween(300, easing = LinearOutSlowInEasing) }) {
+    val searchBarScaleY by animateFloat({ tween(300, easing = LinearOutSlowInEasing) }) {
         if (it) 0f else 1f
     }
 
@@ -182,20 +182,17 @@ fun Transition<Boolean>.SearchBox(
                 }
             }
             .graphicsLayer {
-                scaleY = contentScale
-                // 👇 关键：设置缩放锚点为底部中心 (x=0.5, y=1.0)
+                scaleY = searchBarScaleY
                 transformOrigin = TransformOrigin(
-                    pivotFractionX = 0.5f, // 水平居中
-                    pivotFractionY = 0.0f  // 垂直底部（1.0 = 底边）
+                    pivotFractionX = 0.5f,
+                    pivotFractionY = 0.0f
                 )
             }
-            //.scale(scaleX = 1f,scaleY = contentScale)
             .hazeEffect(hazeState) {
                 style = hazeStyle
                 blurRadius = 30.dp
                 noiseFactor = 0f
-            },
-        contentAlignment = Alignment.TopCenter,
+            }
     ) {
         Box(
             modifier = Modifier.padding(

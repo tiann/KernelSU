@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.component.navigation
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -50,7 +51,7 @@ fun SharedDestinationsNavHost(
             LocalRoutePopupStack provides routePopupState
         ) {
             DestinationsNavHost(
-                modifier = modifier,
+                modifier = modifier.fillMaxSize(),
                 engine = engine,
                 start = start,
                 navGraph = navGraph,

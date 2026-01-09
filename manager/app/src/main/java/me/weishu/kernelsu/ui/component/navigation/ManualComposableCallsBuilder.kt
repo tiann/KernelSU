@@ -1,11 +1,13 @@
 package me.weishu.kernelsu.ui.component.navigation
 
+import android.util.Log
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
@@ -92,13 +94,15 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                 }
 
                 Box(
-                    modifier = Modifier.drawWithContent {
-                        drawContent()
-                        drawRect(
-                            color = dim.value,
-                            size = size
-                        )
-                    }
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithContent {
+                            drawContent()
+                            drawRect(
+                                color = dim.value,
+                                size = size
+                            )
+                        }
                 ) {
                     CompositionLocalProvider(
                         LocalAnimatedVisibilityScope provides this@composable,
@@ -106,6 +110,7 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                     ) {
                         Box(
                             modifier = Modifier
+                                .fillMaxSize()
                                 .clip(ContinuousRoundedRectangle(screenRadius.value))
                                 .then(popModifier)
                         ) {

@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -14,7 +15,9 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -23,9 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
@@ -53,6 +59,7 @@ fun GithubMarkdown(
 ) {
     isLoading.value = true
     val context = LocalContext.current
+    val density = LocalDensity.current
     val scrollInterface = remember { MarkdownScrollInterface() }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
@@ -61,6 +68,7 @@ fun GithubMarkdown(
 
     val bgArgb = MiuixTheme.colorScheme.surfaceContainer.toArgb()
     val bgLuminance = relativeLuminance(bgArgb)
+    val height = remember { mutableStateOf(0.dp) }
 
     fun makeVariant(delta: Float): Int {
         val candidate = adjustLightnessArgb(bgArgb, delta)
@@ -303,7 +311,17 @@ fun GithubMarkdown(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .then(
+                if (height.value == 0.dp) Modifier.wrapContentHeight() else Modifier.height(height.value)
+            )
+            .animateContentSize()
+            .onSizeChanged {
+                Log.d("GithubMarkdown", "GithubMarkdown: ${it.height}")
+                if (it.height == 0) return@onSizeChanged
+                height.value = with(density) {
+                    it.height.toDp()
+                }
+            }
             .clipToBounds(),
     )
 }

@@ -21,12 +21,12 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -35,7 +35,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,7 +61,6 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -103,6 +101,7 @@ fun ModuleRepoDetailScreen(
 ) {
     val context = LocalContext.current
     val sharedTransitionScope = LocalSharedTransitionScope.current
+    val coroutineScope = rememberCoroutineScope()
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
     val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
@@ -137,7 +136,7 @@ fun ModuleRepoDetailScreen(
     }
 
     Box(
-        modifier = Modifier
+        modifier = Modifier.fillMaxSize()
             .screenShareBounds(
                 key = module.moduleId,
                 transitionSource = TransitionSource.LIST_CARD,
@@ -146,6 +145,7 @@ fun ModuleRepoDetailScreen(
             )
     ) {
         Scaffold(
+            modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
                     modifier = Modifier.hazeEffect(hazeState) {
@@ -191,7 +191,9 @@ fun ModuleRepoDetailScreen(
                 )
             },
             contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
-        ) { innerPadding ->
+        ) {
+                innerPaddings ->
+            val innerPadding by remember { mutableStateOf(innerPaddings) }
             LaunchedEffect(module.moduleId) {
                 if (module.moduleId.isNotEmpty()) {
                     withContext(Dispatchers.IO) {
@@ -238,18 +240,8 @@ fun ModuleRepoDetailScreen(
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
-                var userScrollEnabled by remember { mutableStateOf(true) }
-                var animating by remember { mutableStateOf(false) }
-                var animateJob by remember { mutableStateOf<Job?>(null) }
-                var tabSelectedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
-                var lastRequestedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
-                LaunchedEffect(pagerState) {
-                    snapshotFlow { pagerState.currentPage }.collectLatest { page ->
-                        if (!animating) tabSelectedIndex = page
-                    }
-                }
-                Column(
-                    modifier = Modifier
+                Box(
+                    modifier = Modifier.wrapContentHeight()
                         .hazeEffect(hazeState) {
                             style = hazeStyle
                             blurRadius = 30.dp
@@ -258,46 +250,17 @@ fun ModuleRepoDetailScreen(
                         .zIndex(1f)
                         .padding(
                             top = innerPadding.calculateTopPadding() + dynamicTopPadding,
-                            start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
+                            start = innerPadding.calculateStartPadding(layoutDirection) + 12.dp,
+                            end = innerPadding.calculateEndPadding(layoutDirection) + 12.dp,
                             bottom = 6.dp
                         )
-                        .padding(horizontal = 12.dp)
                 ) {
                     TabRow(
                         tabs = tabs,
-                        selectedTabIndex = tabSelectedIndex,
+                        selectedTabIndex = pagerState.targetPage,
                         onTabSelected = { index ->
-                            tabSelectedIndex = index
-                            if (index == pagerState.currentPage) {
-                                if (animateJob != null && lastRequestedIndex != index) {
-                                    animateJob?.cancel()
-                                    animateJob = null
-                                    animating = false
-                                    userScrollEnabled = true
-                                }
-                                lastRequestedIndex = index
-                            } else {
-                                if (animateJob != null && lastRequestedIndex == index) {
-                                    // Already animating to the requested page
-                                } else {
-                                    animateJob?.cancel()
-                                    animating = true
-                                    userScrollEnabled = false
-                                    val job = scope.launch {
-                                        try {
-                                            pagerState.animateScrollToPage(index)
-                                        } finally {
-                                            if (animateJob === this) {
-                                                userScrollEnabled = true
-                                                animating = false
-                                                animateJob = null
-                                            }
-                                        }
-                                    }
-                                    animateJob = job
-                                    lastRequestedIndex = index
-                                }
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
                             }
                         },
                         colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
@@ -307,10 +270,10 @@ fun ModuleRepoDetailScreen(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 3,
-                    userScrollEnabled = userScrollEnabled,
+                    beyondViewportPageCount = 0,
+                    userScrollEnabled = true,
                 ) { page ->
-                    val innerPadding = PaddingValues(
+                    val innerPagePadding = PaddingValues(
                         top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
@@ -320,14 +283,14 @@ fun ModuleRepoDetailScreen(
                         0 -> ReadmePage(
                             readmeHtml = readmeHtml,
                             readmeLoaded = readmeLoaded,
-                            innerPadding = innerPadding,
+                            innerPadding = innerPagePadding,
                             scrollBehavior = scrollBehavior,
                             hazeState = hazeState
                         )
 
                         1 -> ReleasesPage(
                             detailReleases = detailReleases,
-                            innerPadding = innerPadding,
+                            innerPadding = innerPagePadding,
                             scrollBehavior = scrollBehavior,
                             hazeState = hazeState,
                             actionIconTint = actionIconTint,
@@ -342,7 +305,7 @@ fun ModuleRepoDetailScreen(
 
                         2 -> InfoPage(
                             module = module,
-                            innerPadding = innerPadding,
+                            innerPadding = innerPagePadding,
                             scrollBehavior = scrollBehavior,
                             hazeState = hazeState,
                             actionIconTint = actionIconTint,
@@ -367,9 +330,10 @@ private fun ReadmePage(
     hazeState: HazeState
 ) {
     val layoutDirection = LocalLayoutDirection.current
+    val isLoading = remember { mutableStateOf(true) }
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight()
+            .fillMaxSize()
             .scrollEndHaptic()
             .overScrollVertical()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -378,44 +342,34 @@ private fun ReadmePage(
             top = innerPadding.calculateTopPadding(),
             start = innerPadding.calculateStartPadding(layoutDirection),
             end = innerPadding.calculateEndPadding(layoutDirection),
-            bottom = innerPadding.calculateBottomPadding(),
+            bottom = innerPadding.calculateBottomPadding() + 12.dp,
         ),
         overscrollEffect = null,
     ) {
-        item {
-            val isLoading = remember { mutableStateOf(true) }
-            if (isLoading.value) {
+        if (isLoading.value) {
+            item {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
-                            bottom = innerPadding.calculateBottomPadding(),
-                        ),
+                        .fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     InfiniteProgressIndicator()
                 }
             }
+        }
+        item {
             AnimatedVisibility(
                 visible = readmeLoaded && readmeHtml != null,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                Column {
-                    Spacer(Modifier.height(6.dp))
-                    Card(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                    ) {
-                        Column {
-                            GithubMarkdown(content = readmeHtml!!, isLoading)
-                        }
-                    }
+                Card(
+                    modifier = Modifier.padding(top = 6.dp).padding(horizontal = 12.dp),
+                ) {
+                    GithubMarkdown(content = readmeHtml!!, isLoading)
                 }
+
             }
         }
-        item { Spacer(Modifier.height(12.dp)) }
     }
 }
