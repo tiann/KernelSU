@@ -81,7 +81,7 @@ fun SendLogDialog(
             )
             SuperArrow(
                 title = stringResource(id = R.string.save_log),
-                leftAction = {
+                startAction = {
                     Icon(
                         Icons.Rounded.Save,
                         contentDescription = null,
@@ -99,7 +99,7 @@ fun SendLogDialog(
             )
             SuperArrow(
                 title = stringResource(id = R.string.send_log),
-                leftAction = {
+                startAction = {
                     Icon(
                         Icons.Rounded.Share,
                         contentDescription = null,

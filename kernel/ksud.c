@@ -62,7 +62,6 @@ static struct work_struct stop_vfs_read_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
 
-u32 ksu_file_sid;
 void on_post_fs_data(void)
 {
     static bool done = false;
@@ -72,13 +71,11 @@ void on_post_fs_data(void)
     }
     done = true;
     pr_info("on_post_fs_data!\n");
+
     ksu_load_allow_list();
     ksu_observer_init();
     // sanity check, this may influence the performance
     stop_input_hook();
-
-    ksu_file_sid = ksu_get_ksu_file_sid();
-    pr_info("ksu_file sid: %d\n", ksu_file_sid);
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
@@ -249,6 +246,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
             check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
             pr_info("/system/bin/init second_stage executed\n");
             apply_kernelsu_rules();
+            cache_sid();
             setup_ksu_cred();
             init_second_stage_executed = true;
         }

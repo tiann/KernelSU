@@ -16,7 +16,7 @@ ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
-miuix = "0.8.0-rc01"
+miuix = "0.8.0-rc04"
 haze = "1.7.1"
 capsule = "2.1.2"
 
