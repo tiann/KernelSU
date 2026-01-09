@@ -780,7 +780,7 @@ private fun ModuleList(
     context: Context,
     innerPadding: PaddingValues,
     bottomInnerPadding: Dp,
-    contentTopPadding: State<Dp>
+    contentTopPadding: Dp
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val updateInfoMap = viewModel.updateInfo
@@ -809,7 +809,7 @@ private fun ModuleList(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = contentTopPadding.value + 6.dp,
+                        top = contentTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                         bottom = bottomInnerPadding
@@ -831,7 +831,7 @@ private fun ModuleList(
                 onRefresh = { if (!isRefreshing) isRefreshing = true },
                 refreshTexts = refreshTexts,
                 contentPadding = PaddingValues(
-                    top = contentTopPadding.value + 6.dp,
+                    top = contentTopPadding + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
                 ),
@@ -840,7 +840,7 @@ private fun ModuleList(
                     modifier = modifier
                         .fillMaxHeight(),
                     contentPadding = PaddingValues(
-                        top = contentTopPadding.value + 6.dp,
+                        top = contentTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                     ),

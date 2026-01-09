@@ -438,7 +438,7 @@ fun ModuleRepoScreen(
                     onRefresh = { if (!isRefreshing) isRefreshing = true },
                     refreshTexts = refreshTexts,
                     contentPadding = PaddingValues(
-                        top = contentTopPadding.value + 6.dp,
+                        top = contentTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection)
                     ),
@@ -457,7 +457,7 @@ fun ModuleRepoScreen(
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
                             .hazeSource(state = hazeState),
                         contentPadding = PaddingValues(
-                            top = contentTopPadding.value + 6.dp,
+                            top = contentTopPadding + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
                             end = innerPadding.calculateEndPadding(layoutDirection)
                         ),

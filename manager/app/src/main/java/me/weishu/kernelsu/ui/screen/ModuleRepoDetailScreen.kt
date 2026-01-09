@@ -47,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -146,7 +145,6 @@ fun ModuleRepoDetailScreen(
                 animatedVisibilityScope = animatedVisibilityScope,
             )
     ) {
-
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -230,7 +228,6 @@ fun ModuleRepoDetailScreen(
                 stringResource(R.string.tab_info)
             )
             val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-            LocalDensity.current
             val tabRowHeight by remember { mutableStateOf(40.dp) }
             var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
             LaunchedEffect(scrollBehavior.state.collapsedFraction) {

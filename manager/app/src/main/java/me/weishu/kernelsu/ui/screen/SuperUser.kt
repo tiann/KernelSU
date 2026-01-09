@@ -301,7 +301,7 @@ fun SuperUserPager(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(
-                            top = contentTopPadding.value + 6.dp,
+                            top = contentTopPadding + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
                             end = innerPadding.calculateEndPadding(layoutDirection),
                             bottom = bottomInnerPadding
@@ -323,7 +323,7 @@ fun SuperUserPager(
                     onRefresh = { isRefreshing = true },
                     refreshTexts = refreshTexts,
                     contentPadding = PaddingValues(
-                        top = contentTopPadding.value + 6.dp,
+                        top = contentTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection)
                     ),
@@ -336,7 +336,7 @@ fun SuperUserPager(
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
                             .hazeSource(state = hazeState),
                         contentPadding = PaddingValues(
-                            top = contentTopPadding.value + 6.dp,
+                            top = contentTopPadding + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
                             end = innerPadding.calculateEndPadding(layoutDirection)
                         ),

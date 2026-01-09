@@ -140,18 +140,17 @@ fun Transition<Boolean>.SearchBox(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     hazeState: HazeState,
     hazeStyle: HazeStyle,
-    content: @Composable (State<Dp>) -> Unit
+    content: @Composable (Dp) -> Unit
 ) {
 
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
     val searchBarHeight = remember { mutableStateOf(0.dp) }
-    val contentTopPadding = derivedStateOf {
-        contentPadding.calculateTopPadding() + searchBarHeight.value + searchBarTopPadding + 6.dp
-    }
+    val contentTopPadding = contentPadding.calculateTopPadding() + searchBarHeight.value + searchBarTopPadding + 6.dp
+
     val contentOffsetY by animateDp({ tween(300, easing = LinearOutSlowInEasing) }) {
-        if (it) systemBarsPadding + 5.dp - contentTopPadding.value else 0.dp
+        if (it) systemBarsPadding + 5.dp - contentTopPadding else 0.dp
     }
 
     Box(
