@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen
 
 import android.annotation.SuppressLint
 import android.content.ClipData
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -91,12 +90,12 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.FloatingActionButton
-import me.weishu.kernelsu.ui.component.sharedTransition.SharedTransitionCard
 import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
 import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
+import me.weishu.kernelsu.ui.component.sharedTransition.SharedTransitionCard
 import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
 import me.weishu.kernelsu.ui.component.sharedTransition.fabShareBounds
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
