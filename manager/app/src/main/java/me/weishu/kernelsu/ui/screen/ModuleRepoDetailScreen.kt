@@ -62,7 +62,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.LazyGithubMarkdown
+import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -128,11 +128,8 @@ fun ModuleRepoDetailScreen(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
-    BackHandler {
-        navigator.popBackStack()
-    }
 
-    Box(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .screenShareBounds(
@@ -140,181 +137,188 @@ fun ModuleRepoDetailScreen(
                 transitionSource = TransitionSource.LIST_CARD,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
+            ),
+        topBar = {
+            TopAppBar(
+                modifier = Modifier.hazeEffect(hazeState) {
+                    style = hazeStyle
+                    blurRadius = 30.dp
+                    noiseFactor = 0f
+                },
+                color = Color.Transparent,
+                title = module.moduleName,
+                scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(
+                        modifier = Modifier.padding(start = 16.dp),
+                        onClick = {
+                            navigator.popBackStack()
+                        }
+                    ) {
+                        val layoutDirection = LocalLayoutDirection.current
+                        Icon(
+                            modifier = Modifier.graphicsLayer {
+                                if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
+                            },
+                            imageVector = MiuixIcons.Back,
+                            contentDescription = null,
+                            tint = colorScheme.onSurface
+                        )
+                    }
+                },
+                actions = {
+                    if (webUrl.isNotEmpty()) {
+                        IconButton(
+                            modifier = Modifier.padding(end = 16.dp),
+                            onClick = { uriHandler.openUri(webUrl) }
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.HorizontalSplit,
+                                contentDescription = null,
+                                tint = colorScheme.onBackground
+                            )
+                        }
+                    }
+                }
             )
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {
-                TopAppBar(
-                    modifier = Modifier.hazeEffect(hazeState) {
+        },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
+    ) { innerPadding ->
+        LaunchedEffect(module.moduleId) {
+            if (module.moduleId.isNotEmpty()) {
+                withContext(Dispatchers.IO) {
+                    runCatching {
+                        val detail = fetchModuleDetail(module.moduleId)
+                        if (detail != null) {
+                            readmeHtml = detail.readmeHtml
+                            if (detail.sourceUrl.isNotEmpty()) sourceUrl = detail.sourceUrl
+                            detailReleases = detail.releases.map { r ->
+                                ReleaseArg(
+                                    tagName = r.tagName,
+                                    name = r.name,
+                                    publishedAt = r.publishedAt,
+                                    assets = r.assets.map { a -> ReleaseAssetArg(a.name, a.downloadUrl, a.size, a.downloadCount) },
+                                    descriptionHTML = r.descriptionHTML
+                                )
+                            }
+                        } else {
+                            detailReleases = emptyList()
+                        }
+                    }.onSuccess {
+                        readmeLoaded = true
+                    }.onFailure {
+                        readmeLoaded = true
+                    }
+                }
+            } else {
+                readmeLoaded = true
+            }
+        }
+        val tabs = listOf(
+            stringResource(R.string.tab_readme),
+            stringResource(R.string.tab_releases),
+            stringResource(R.string.tab_info)
+        )
+        val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+        val tabRowHeight by remember { mutableStateOf(40.dp) }
+        var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
+        LaunchedEffect(scrollBehavior.state.collapsedFraction) {
+            snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
+        }
+        val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
+        val layoutDirection = LocalLayoutDirection.current
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .hazeEffect(hazeState) {
                         style = hazeStyle
                         blurRadius = 30.dp
                         noiseFactor = 0f
-                    },
-                    color = Color.Transparent,
-                    title = module.moduleName,
-                    scrollBehavior = scrollBehavior,
-                    navigationIcon = {
-                        IconButton(
-                            modifier = Modifier.padding(start = 16.dp),
-                            onClick = {
-                                navigator.popBackStack()
-                            }
-                        ) {
-                            val layoutDirection = LocalLayoutDirection.current
-                            Icon(
-                                modifier = Modifier.graphicsLayer {
-                                    if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
-                                },
-                                imageVector = MiuixIcons.Back,
-                                contentDescription = null,
-                                tint = colorScheme.onSurface
-                            )
-                        }
-                    },
-                    actions = {
-                        if (webUrl.isNotEmpty()) {
-                            IconButton(
-                                modifier = Modifier.padding(end = 16.dp),
-                                onClick = { uriHandler.openUri(webUrl) }
-                            ) {
-                                Icon(
-                                    imageVector = MiuixIcons.HorizontalSplit,
-                                    contentDescription = null,
-                                    tint = colorScheme.onBackground
-                                )
-                            }
-                        }
                     }
-                )
-            },
-            contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
-        ) { innerPadding ->
-            LaunchedEffect(module.moduleId) {
-                if (module.moduleId.isNotEmpty()) {
-                    withContext(Dispatchers.IO) {
-                        runCatching {
-                            val detail = fetchModuleDetail(module.moduleId)
-                            if (detail != null) {
-                                readmeHtml = detail.readmeHtml
-                                if (detail.sourceUrl.isNotEmpty()) sourceUrl = detail.sourceUrl
-                                detailReleases = detail.releases.map { r ->
-                                    ReleaseArg(
-                                        tagName = r.tagName,
-                                        name = r.name,
-                                        publishedAt = r.publishedAt,
-                                        assets = r.assets.map { a -> ReleaseAssetArg(a.name, a.downloadUrl, a.size, a.downloadCount) },
-                                        descriptionHTML = r.descriptionHTML
-                                    )
-                                }
-                            } else {
-                                detailReleases = emptyList()
-                            }
-                        }.onSuccess {
-                            readmeLoaded = true
-                        }.onFailure {
-                            readmeLoaded = true
-                        }
-                    }
-                } else {
-                    readmeLoaded = true
-                }
-            }
-            val tabs = listOf(
-                stringResource(R.string.tab_readme),
-                stringResource(R.string.tab_releases),
-                stringResource(R.string.tab_info)
-            )
-            val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-            val tabRowHeight by remember { mutableStateOf(40.dp) }
-            var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
-            LaunchedEffect(scrollBehavior.state.collapsedFraction) {
-                snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
-            }
-            val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
-            val layoutDirection = LocalLayoutDirection.current
-            Box(
-                modifier = Modifier.fillMaxSize()
+                    .zIndex(1f)
+                    .padding(
+                        top = innerPadding.calculateTopPadding() + dynamicTopPadding,
+                        start = innerPadding.calculateStartPadding(layoutDirection) + 12.dp,
+                        end = innerPadding.calculateEndPadding(layoutDirection) + 12.dp,
+                        bottom = 6.dp
+                    )
             ) {
-                Box(
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .hazeEffect(hazeState) {
-                            style = hazeStyle
-                            blurRadius = 30.dp
-                            noiseFactor = 0f
+                TabRow(
+                    tabs = tabs,
+                    selectedTabIndex = pagerState.targetPage,
+                    onTabSelected = { index ->
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
                         }
-                        .zIndex(1f)
-                        .padding(
-                            top = innerPadding.calculateTopPadding() + dynamicTopPadding,
-                            start = innerPadding.calculateStartPadding(layoutDirection) + 12.dp,
-                            end = innerPadding.calculateEndPadding(layoutDirection) + 12.dp,
-                            bottom = 6.dp
-                        )
-                ) {
-                    TabRow(
-                        tabs = tabs,
-                        selectedTabIndex = pagerState.targetPage,
-                        onTabSelected = { index ->
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        },
-                        colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
-                        height = tabRowHeight,
-                    )
-                }
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize(),
-                    beyondViewportPageCount = 3,
-                    userScrollEnabled = true,
-                ) { page ->
-                    val innerPagePadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection),
-                        bottom = innerPadding.calculateBottomPadding() + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
-                    )
-                    when (page) {
-                        0 -> ReadmePage(
-                            readmeHtml = readmeHtml,
-                            readmeLoaded = readmeLoaded,
-                            innerPadding = innerPagePadding,
-                            scrollBehavior = scrollBehavior,
-                            hazeState = hazeState
-                        )
+                    },
+                    colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
+                    height = tabRowHeight,
+                )
+            }
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 3,
+                userScrollEnabled = true,
+            ) { page ->
+                val innerPagePadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection),
+                    bottom = innerPadding.calculateBottomPadding() + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
+                )
 
-                        1 -> ReleasesPage(
-                            detailReleases = detailReleases,
-                            innerPadding = innerPagePadding,
-                            scrollBehavior = scrollBehavior,
-                            hazeState = hazeState,
-                            actionIconTint = actionIconTint,
-                            secondaryContainer = secondaryContainer,
-                            confirmTitle = confirmTitle,
-                            confirmDialog = confirmDialog,
-                            scope = scope,
-                            onInstallModule = onInstallModule,
-                            context = context,
-                            setPendingDownload = { pendingDownload = it }
-                        )
-
-                        2 -> InfoPage(
-                            module = module,
-                            innerPadding = innerPagePadding,
-                            scrollBehavior = scrollBehavior,
-                            hazeState = hazeState,
-                            actionIconTint = actionIconTint,
-                            secondaryContainer = secondaryContainer,
-                            uriHandler = uriHandler,
-                            sourceUrl = sourceUrl,
-                        )
+                BackHandler(enabled = true) {
+                    if (pagerState.currentPage != 0) {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(0)
+                        }
+                    } else {
+                        navigator.popBackStack()
                     }
                 }
+
+                when (page) {
+                    0 -> ReadmePage(
+                        readmeHtml = readmeHtml,
+                        readmeLoaded = readmeLoaded,
+                        innerPadding = innerPagePadding,
+                        scrollBehavior = scrollBehavior,
+                        hazeState = hazeState
+                    )
+
+                    1 -> ReleasesPage(
+                        detailReleases = detailReleases,
+                        innerPadding = innerPagePadding,
+                        scrollBehavior = scrollBehavior,
+                        hazeState = hazeState,
+                        actionIconTint = actionIconTint,
+                        secondaryContainer = secondaryContainer,
+                        confirmTitle = confirmTitle,
+                        confirmDialog = confirmDialog,
+                        scope = scope,
+                        onInstallModule = onInstallModule,
+                        context = context,
+                        setPendingDownload = { pendingDownload = it }
+                    )
+
+                    2 -> InfoPage(
+                        module = module,
+                        innerPadding = innerPagePadding,
+                        scrollBehavior = scrollBehavior,
+                        hazeState = hazeState,
+                        actionIconTint = actionIconTint,
+                        secondaryContainer = secondaryContainer,
+                        uriHandler = uriHandler,
+                        sourceUrl = sourceUrl,
+                    )
+                }
             }
-            DownloadListener(context, onInstallModule)
         }
+        DownloadListener(context, onInstallModule)
     }
 }
 
@@ -327,7 +331,6 @@ private fun ReadmePage(
     hazeState: HazeState
 ) {
     val layoutDirection = LocalLayoutDirection.current
-    val isLoading = remember { mutableStateOf(true) }
     Box {
         LazyColumn(
             modifier = Modifier
@@ -345,31 +348,40 @@ private fun ReadmePage(
             overscrollEffect = null,
         ) {
             item {
-                AnimatedVisibility(
-                    visible = readmeLoaded && readmeHtml != null,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
+                Box(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Card(
-                        modifier = Modifier
-                            .wrapContentHeight()
-                            .padding(top = 6.dp)
-                            .padding(horizontal = 12.dp)
+                    val isLoading = remember { mutableStateOf(true) }
+                    AnimatedVisibility(
+                        visible = isLoading.value,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
                     ) {
-                        LazyGithubMarkdown(content = readmeHtml!!, isLoading)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    top = innerPadding.calculateTopPadding(),
+                                    start = innerPadding.calculateStartPadding(layoutDirection),
+                                    end = innerPadding.calculateEndPadding(layoutDirection),
+                                    bottom = innerPadding.calculateBottomPadding(),
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            InfiniteProgressIndicator()
+                        }
+                    }
+                    if (readmeLoaded && readmeHtml != null) {
+                        Card(
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                                .padding(horizontal = 12.dp)
+                        ) {
+                            GithubMarkdown(content = readmeHtml, isLoading)
+                        }
                     }
                 }
             }
-        }
-
-        if (isLoading.value) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                InfiniteProgressIndicator()
-            }
-
         }
     }
 }

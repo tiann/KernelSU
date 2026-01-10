@@ -207,6 +207,15 @@ fun ModulePager(
     val hideInstallButton = isSafeMode || magiskInstalled
 
     val scrollBehavior = MiuixScrollBehavior()
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.surface,
+        tint = HazeTint(colorScheme.surface.copy(0.8f))
+    )
+
     val listState = rememberLazyListState()
     var fabVisible by remember { mutableStateOf(true) }
     var scrollDistance by remember { mutableFloatStateOf(0f) }
@@ -408,12 +417,6 @@ fun ModulePager(
         label = "fabOffset"
     )
 
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
-
     Scaffold(
         topBar = {
             searchTransition.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
@@ -579,6 +582,7 @@ fun ModulePager(
             searchTransition.SearchPager(
                 searchStatus = searchStatus,
                 defaultResult = {},
+                searchBarTopPadding = dynamicTopPadding,
             ) {
                 item {
                     Spacer(Modifier.height(6.dp))
@@ -697,6 +701,7 @@ fun ModulePager(
                 val layoutDirection = LocalLayoutDirection.current
                 searchTransition.SearchBox(
                     searchStatus = searchStatus,
+                    searchBarTopPadding = dynamicTopPadding,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding(),
                         start = innerPadding.calculateStartPadding(layoutDirection),

@@ -218,9 +218,10 @@ fun Transition<Boolean>.SearchBox(
 fun Transition<Boolean>.SearchPager(
     searchStatus: SearchStatus,
     defaultResult: @Composable () -> Unit,
-    expandBar: @Composable (SearchStatus) -> Unit = { searchStatus ->
-        SearchBar(searchStatus)
+    expandBar: @Composable (SearchStatus, Dp) -> Unit = { searchStatus, padding ->
+        SearchBar(searchStatus, padding)
     },
+    searchBarTopPadding: Dp = 12.dp,
     result: LazyListScope.() -> Unit
 ) {
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
@@ -259,7 +260,7 @@ fun Transition<Boolean>.SearchPager(
                         .weight(1f)
                         .padding(horizontal = 12.dp)
                 ) {
-                    expandBar(searchStatus)
+                    expandBar(searchStatus, searchBarTopPadding)
                 }
             }
 
@@ -274,7 +275,7 @@ fun Transition<Boolean>.SearchPager(
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary,
                     modifier = Modifier
-                        .padding(start = 4.dp, end = 16.dp)
+                        .padding(start = 4.dp, end = 16.dp, top = searchBarTopPadding)
                         .clickable(
                             interactionSource = null,
                             indication = null
@@ -318,6 +319,7 @@ fun Transition<Boolean>.SearchPager(
 @Composable
 fun SearchBar(
     searchStatus: SearchStatus,
+    searchBarTopPadding: Dp = 12.dp,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -359,6 +361,7 @@ fun SearchBar(
         },
         modifier = Modifier
             .fillMaxWidth()
+            .padding(top = searchBarTopPadding)
             .focusRequester(focusRequester),
         onSearch = { it },
         expanded = searchStatus.expandState.currentState,

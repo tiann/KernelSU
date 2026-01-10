@@ -16,12 +16,9 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,13 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -56,49 +53,20 @@ import kotlin.math.abs
 
 @SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
 @Composable
-fun LazyGithubMarkdown(
-    content: String,
-    isLoading: MutableState<Boolean> = mutableStateOf(true),
-    onHeightChanged: (Int) -> Unit = {}
-) {
-    val density = LocalDensity.current
-    val height = remember { mutableStateOf(0.dp) }
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(
-                if (height.value == 0.dp) Modifier.wrapContentHeight() else Modifier.height(height.value)
-            )
-    ) {
-        GithubMarkdown(
-            content, onLoader = {
-                coroutineScope.launch { isLoading.value = it }
-            },
-            onHeightChanged = { px -> height.value = with(density) { px.toDp() }; onHeightChanged(px) }
-        )
-    }
-}
-
-@SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
-@Composable
 fun GithubMarkdown(
     content: String,
-    onLoader: (Boolean) -> Unit,
-    onHeightChanged: (Int) -> Unit = {}
+    isLoading: MutableState<Boolean> = mutableStateOf(true)
 ) {
-    LaunchedEffect(Unit) {
-        onLoader(true)
-    }
+    isLoading.value = true
     val context = LocalContext.current
     val scrollInterface = remember { MarkdownScrollInterface() }
-    val density = LocalDensity.current.density
     val coroutineScope = rememberCoroutineScope()
 
-    scrollInterface.onHeightChange = { height ->
+    val height = remember { mutableStateOf(0.dp) }
+
+    scrollInterface.onHeightChange = {
         coroutineScope.launch {
-            onHeightChanged((height * density).toInt())
+            height.value = it.dp
         }
     }
 
@@ -161,12 +129,10 @@ fun GithubMarkdown(
             }
             val webView = WebView(context).apply {
                 var lastMeasuredHeight = -1
-                var pageFinished = false
                 var readyDispatched = false
                 val tryNotifyReady = { height: Int ->
                     if (height > 0 && !readyDispatched) {
                         readyDispatched = true
-                        onLoader(false)
                     }
                 }
                 try {
@@ -264,11 +230,14 @@ fun GithubMarkdown(
                                 })();
                             """.trimIndent()
                             view.evaluateJavascript(js, null)
-                            pageFinished = true
                             tryNotifyReady(lastMeasuredHeight)
                         }
 
-                        override fun onPageCommitVisible(view: WebView?, url: String?) {
+                        override fun onPageCommitVisible(view: WebView, url: String) {
+                            coroutineScope.launch {
+                                delay(30)
+                                isLoading.value = false
+                            }
                             tryNotifyReady(lastMeasuredHeight)
                         }
 
@@ -316,7 +285,6 @@ fun GithubMarkdown(
                         val newHeight = this.height
                         if (newHeight > 0 && newHeight != lastMeasuredHeight) {
                             lastMeasuredHeight = newHeight
-                            onHeightChanged(newHeight)
                             tryNotifyReady(newHeight)
                         }
                     }
@@ -397,7 +365,7 @@ fun GithubMarkdown(
 
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .height(height.value)
             .clipToBounds(),
     )
 

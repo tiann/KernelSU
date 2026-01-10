@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.content.Context
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -97,10 +96,6 @@ fun SettingPager(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
-
-    BackHandler {
-        navigator.popBackStack()
-    }
 
     Scaffold(
         topBar = {

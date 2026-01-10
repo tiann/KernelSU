@@ -424,7 +424,7 @@ private fun ConfirmDialog(
                     visuals.content?.let { content ->
                         when {
                             visuals.isMarkdown -> Markdown(content = content)
-                            visuals.isHtml -> LazyGithubMarkdown(content = content)
+                            visuals.isHtml -> GithubMarkdown(content = content)
                             else -> Text(text = content)
                         }
                     }

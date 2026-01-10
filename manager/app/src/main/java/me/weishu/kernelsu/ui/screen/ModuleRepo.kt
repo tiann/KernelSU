@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.rememberTransition
@@ -74,7 +73,7 @@ import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
-import me.weishu.kernelsu.ui.component.LazyGithubMarkdown
+import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.TopAppBarAnim
@@ -184,6 +183,9 @@ fun ModuleRepoScreen(
     }
 
     val scrollBehavior = MiuixScrollBehavior()
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
 
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
@@ -191,9 +193,6 @@ fun ModuleRepoScreen(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
-    BackHandler {
-        navigator.popBackStack()
-    }
     Scaffold(
         topBar = {
             searchTransition.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
@@ -261,6 +260,7 @@ fun ModuleRepoScreen(
             searchTransition.SearchPager(
                 searchStatus = searchStatus,
                 defaultResult = {},
+                searchBarTopPadding = dynamicTopPadding,
             ) {
                 item {
                     Spacer(Modifier.height(6.dp))
@@ -405,6 +405,7 @@ fun ModuleRepoScreen(
         } else {
             searchTransition.SearchBox(
                 searchStatus = searchStatus,
+                searchBarTopPadding = dynamicTopPadding,
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding(),
                     start = innerPadding.calculateStartPadding(layoutDirection),
@@ -690,7 +691,7 @@ fun ReleasesPage(
                                             thickness = 0.5.dp,
                                             color = colorScheme.outline.copy(alpha = 0.5f)
                                         )
-                                        LazyGithubMarkdown(content = rel.descriptionHTML)
+                                        GithubMarkdown(content = rel.descriptionHTML)
                                     }
                                 }
                                 HorizontalDivider(
