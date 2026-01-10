@@ -156,9 +156,7 @@ fun Transition<Boolean>.SearchBox(
     AnimatedVisibility(
         visible = { !it },
         modifier = Modifier
-            .offset(
-                y = contentOffsetY
-            ),
+            .offset(y = contentOffsetY),
         enter = EnterTransition.None,
         exit = ExitTransition.None,
     ) {
@@ -181,7 +179,7 @@ fun Transition<Boolean>.SearchBox(
             .onGloballyPositioned {
                 with(density) {
                     it.positionInWindow().y.apply {
-                        searchStatus.offsetY = this@apply.toDp() + searchBarTopPadding
+                        searchStatus.offsetY = this@apply.toDp()
                     }
                 }
             }
