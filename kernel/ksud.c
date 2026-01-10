@@ -54,11 +54,11 @@ static const char KERNEL_SU_RC[] =
 
     "\n";
 
-static void stop_vfs_read_hook();
+static void stop_init_rc_hook();
 static void stop_execve_hook();
 static void stop_input_hook();
 
-static struct work_struct stop_vfs_read_work;
+static struct work_struct stop_init_rc_hook_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
 
@@ -351,57 +351,61 @@ append_ksu_rc:
     return ret;
 }
 
-static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
-                               size_t *count_ptr, loff_t **pos)
+static bool is_init_rc(struct file *fp)
 {
-    struct file *file;
-    size_t count;
-
     if (strcmp(current->comm, "init")) {
         // we are only interest in `init` process
-        return 0;
+        return false;
     }
 
-    file = *file_ptr;
-    if (IS_ERR(file)) {
-        return 0;
+    if (!d_is_reg(fp->f_path.dentry)) {
+        return false;
     }
 
-    if (!d_is_reg(file->f_path.dentry)) {
-        return 0;
-    }
-
-    const char *short_name = file->f_path.dentry->d_name.name;
+    const char *short_name = fp->f_path.dentry->d_name.name;
     if (strcmp(short_name, "init.rc")) {
         // we are only interest `init.rc` file name file
-        return 0;
+        return false;
     }
     char path[256];
-    char *dpath = d_path(&file->f_path, path, sizeof(path));
+    char *dpath = d_path(&fp->f_path, path, sizeof(path));
 
     if (IS_ERR(dpath)) {
-        return 0;
+        return false;
     }
 
     if (strcmp(dpath, "/system/etc/init/hw/init.rc")) {
-        return 0;
+        return false;
+    }
+
+    return true;
+}
+
+static void ksu_handle_sys_read(unsigned int fd)
+{
+    struct file *file = fget(fd);
+    if (!file) {
+        return;
+    }
+
+    if (!is_init_rc(file)) {
+        goto skip;
     }
 
     // we only process the first read
     static bool rc_hooked = false;
     if (rc_hooked) {
-        // we don't need this kprobe, unregister it!
-        stop_vfs_read_hook();
-        return 0;
+        // we don't need these kprobe, unregister it!
+        stop_init_rc_hook();
+        goto skip;
     }
     rc_hooked = true;
 
     // now we can sure that the init process is reading
     // `/system/etc/init/init.rc`
-    count = *count_ptr;
 
-    pr_info("vfs_read: %s, comm: %s, count: %zu, rc_count: %zu\n", dpath,
-            current->comm, count, ksu_rc_len);
+    pr_info("read init.rc, comm: %s, rc_count: %zu\n", current->comm,
+            ksu_rc_len);
 
     // Now we need to proxy the read and modify the result!
     // But, we can not modify the file_operations directly, because it's in read-only memory.
@@ -418,19 +422,8 @@ static int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
     // replace the file_operations
     file->f_op = &fops_proxy;
 
-    return 0;
-}
-
-static int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
-                               size_t *count_ptr)
-{
-    struct file *file = fget(fd);
-    if (!file) {
-        return 0;
-    }
-    int result = ksu_handle_vfs_read(&file, buf_ptr, count_ptr, NULL);
+skip:
     fput(file);
-    return result;
 }
 
 static unsigned int volumedown_pressed_count = 0;
@@ -519,10 +512,54 @@ static int sys_read_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
     struct pt_regs *real_regs = PT_REAL_REGS(regs);
     unsigned int fd = PT_REGS_PARM1(real_regs);
-    char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(real_regs);
-    size_t count_ptr = (size_t *)&PT_REGS_PARM3(real_regs);
 
-    return ksu_handle_sys_read(fd, buf_ptr, count_ptr);
+    ksu_handle_sys_read(fd);
+    return 0;
+}
+
+static int sys_fstat_handler_pre(struct kretprobe_instance *p,
+                                 struct pt_regs *regs)
+{
+    struct pt_regs *real_regs = PT_REAL_REGS(regs);
+    unsigned int fd = PT_REGS_PARM1(real_regs);
+    void *statbuf = PT_REGS_PARM2(real_regs);
+    *(void **)&p->data = NULL;
+
+    struct file *file = fget(fd);
+    if (!file)
+        return 1;
+    if (is_init_rc(file)) {
+        pr_info("stat init.rc");
+        fput(file);
+        *(void **)&p->data = statbuf;
+        return 0;
+    }
+    fput(file);
+    return 1;
+}
+
+static int sys_fstat_handler_post(struct kretprobe_instance *p,
+                                  struct pt_regs *regs)
+{
+    void __user *statbuf = *(void **)&p->data;
+    if (statbuf) {
+        void __user *st_size_ptr = statbuf + offsetof(struct stat, st_size);
+        long size, new_size;
+        if (!copy_from_user_nofault(&size, st_size_ptr, sizeof(long))) {
+            new_size = size + ksu_rc_len;
+            pr_info("adding ksu_rc_len: %ld -> %ld", size, new_size);
+            if (!copy_to_user_nofault(st_size_ptr, &new_size, sizeof(long))) {
+                pr_info("added ksu_rc_len");
+            } else {
+                pr_err("add ksu_rc_len failed: statbuf 0x%lx",
+                       (unsigned long)st_size_ptr);
+            }
+        } else {
+            pr_err("read statbuf 0x%lx failed", (unsigned long)st_size_ptr);
+        }
+    }
+
+    return 0;
 }
 
 static int input_handle_event_handler_pre(struct kprobe *p,
@@ -539,9 +576,16 @@ static struct kprobe execve_kp = {
     .pre_handler = sys_execve_handler_pre,
 };
 
-static struct kprobe vfs_read_kp = {
+static struct kprobe sys_read_kp = {
     .symbol_name = SYS_READ_SYMBOL,
     .pre_handler = sys_read_handler_pre,
+};
+
+static struct kretprobe sys_fstat_kp = {
+    .kp.symbol_name = SYS_FSTAT_SYMBOL,
+    .entry_handler = sys_fstat_handler_pre,
+    .handler = sys_fstat_handler_post,
+    .data_size = sizeof(void *),
 };
 
 static struct kprobe input_event_kp = {
@@ -549,9 +593,10 @@ static struct kprobe input_event_kp = {
     .pre_handler = input_handle_event_handler_pre,
 };
 
-static void do_stop_vfs_read_hook(struct work_struct *work)
+static void do_stop_init_rc_hook(struct work_struct *work)
 {
-    unregister_kprobe(&vfs_read_kp);
+    unregister_kprobe(&sys_read_kp);
+    unregister_kretprobe(&sys_fstat_kp);
 }
 
 static void do_stop_execve_hook(struct work_struct *work)
@@ -564,10 +609,10 @@ static void do_stop_input_hook(struct work_struct *work)
     unregister_kprobe(&input_event_kp);
 }
 
-static void stop_vfs_read_hook()
+static void stop_init_rc_hook()
 {
-    bool ret = schedule_work(&stop_vfs_read_work);
-    pr_info("unregister vfs_read kprobe: %d!\n", ret);
+    bool ret = schedule_work(&stop_init_rc_hook_work);
+    pr_info("unregister init_rc_hook kprobe: %d!\n", ret);
 }
 
 static void stop_execve_hook()
@@ -595,13 +640,16 @@ void ksu_ksud_init()
     ret = register_kprobe(&execve_kp);
     pr_info("ksud: execve_kp: %d\n", ret);
 
-    ret = register_kprobe(&vfs_read_kp);
-    pr_info("ksud: vfs_read_kp: %d\n", ret);
+    ret = register_kprobe(&sys_read_kp);
+    pr_info("ksud: sys_read_kp: %d\n", ret);
+
+    ret = register_kretprobe(&sys_fstat_kp);
+    pr_info("ksud: sys_fstat_kp: %d\n", ret);
 
     ret = register_kprobe(&input_event_kp);
     pr_info("ksud: input_event_kp: %d\n", ret);
 
-    INIT_WORK(&stop_vfs_read_work, do_stop_vfs_read_hook);
+    INIT_WORK(&stop_init_rc_hook_work, do_stop_init_rc_hook);
     INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
     INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 }
@@ -609,7 +657,7 @@ void ksu_ksud_init()
 void ksu_ksud_exit()
 {
     unregister_kprobe(&execve_kp);
-    // this should be done before unregister vfs_read_kp
-    // unregister_kprobe(&vfs_read_kp);
+    // this should be done before unregister sys_read_kp
+    // unregister_kprobe(&sys_read_kp);
     unregister_kprobe(&input_event_kp);
 }

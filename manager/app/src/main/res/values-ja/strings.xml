@@ -72,7 +72,7 @@
     <string name="profile_capabilities">ケーパビリティ</string>
     <string name="module_downloading">モジュールをダウンロード中: %s</string>
     <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリのモジュールによって変更されたファイルを復元できるようになります。</string>
-    <string name="settings_umount_modules_default">既定でモジュールのマウントを解除</string>
+    <string name="settings_umount_modules_default">デフォルトでモジュールをアンマウントする</string>
     <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのアンマウント」の共通のデフォルト値です。 有効にすると、プロファイルセットを持たないアプリのシステムに対するすべてのモジュールの変更が削除されます。</string>
     <string name="require_kernel_version">現在の KernelSU バージョン %1$d はマネージャーが適切に機能するには低すぎます。 バージョン %2$d 以降にアップグレードしてください！</string>
     <string name="module_changelog">変更履歴</string>
@@ -145,11 +145,17 @@
     <string name="refresh_refresh">爽やか…</string>
     <string name="refresh_complete">更新に成功しました</string>
     <string name="module_repos">レポ</string>
-    <string name="module_repos_sort_name">名前で並べ替え</string>
+    <string name="module_repos_sort_name">名前（A→Z）</string>
     <string name="module_repos_source_code">ソースコード</string>
     <string name="metamodule_uninstall_confirm">モジュール %s をアンインストールしてもよろしいですか? この操作はすべてのモジュールに影響し、メタモジュールによって提供される特定の機能 (マウントなど) は動作しなくなります。</string>
     <string name="home_gki_warning">バージョン3.0.0以降、GKIワークモードはテスト環境でのみ使用されます。日常的な使用には推奨されません。また、画像ファイルの提供も停止されます。</string>
     <string name="app_profile_affects_following_apps">以下のアプリに影響します</string>
     <string name="install_select_partition">パーティションを選択</string>
     <string name="feature_status_unsupported_summary">カーネルはこの機能をサポートしていません。</string>
+    <string name="safe_mode_module_disabled">セーフモードではモジュールのインストールが無効になっています</string>
+    <string name="feature_status_managed_summary">この機能はモジュールによって管理されます。</string>
+    <string name="undo">元に戻す</string>
+    <string name="module_undo_uninstall_success">%s のアンインストールを正常にキャンセルしました</string>
+    <string name="module_undo_uninstall_failed">アンインストールを元に戻すことができませんでした: %s</string>
+    <string name="group_contains_apps">%d 個のアプリが含まれています</string>
 </resources>
