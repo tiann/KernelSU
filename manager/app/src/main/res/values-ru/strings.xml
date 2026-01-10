@@ -62,9 +62,9 @@
     <string name="profile_groups">Группы</string>
     <string name="profile_capabilities">Возможности</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
-    <string name="profile_umount_modules">Размонтировать модули по умолчанию</string>
+    <string name="profile_umount_modules">Размонтировать модули</string>
     <string name="failed_to_update_app_profile">Не удалось обновить App Profile для %s</string>
-    <string name="settings_umount_modules_default">Размонтировать модули</string>
+    <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в App Profile. При включении будут удалены все модификации модулей в системе для приложений, у которых не задан Profile.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые изменённые модулями файлы для данного приложения.</string>
     <string name="profile_selinux_domain">Домен</string>

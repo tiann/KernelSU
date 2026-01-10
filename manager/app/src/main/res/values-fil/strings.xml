@@ -11,7 +11,7 @@
     <string name="home_working_version">Bersyon: %d</string>
     <string name="selinux_status_unknown">Hindi matukoy</string>
     <string name="home_unsupported">Hindi Suportado</string>
-    <string name="home_unsupported_reason">Sinusuportahan lamang ng KernelSU ang mga GKI na kernel</string>
+    <string name="home_unsupported_reason">Sinusuportahan lamang ng KernelSU ang mga GKI na kernel.</string>
     <string name="module_failed_to_enable">Nabigong paganahin ang module: %s</string>
     <string name="module_failed_to_disable">Nabigong i-disable ang module: %s</string>
     <string name="module_empty">Walang naka-install na modyul</string>
@@ -67,8 +67,8 @@
     <string name="home_fingerprint">Fingerprint</string>
     <string name="superuser">Superuser</string>
     <string name="module_install_prompt_with_name">Ii-install ang mga sumusunod na module: %1$s</string>
-    <string name="module_sort_action_first">Isaayos (Aksyon muna)</string>
-    <string name="module_sort_enabled_first">Isaayos (Pinagana muna)</string>
+    <string name="module_sort_action_first">Aksyon muna</string>
+    <string name="module_sort_enabled_first">Pinagana muna</string>
     <string name="confirm">Kumpirmahin</string>
     <string name="safe_mode">Safe mode</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
@@ -128,4 +128,9 @@
     <string name="log_saved">Nai-save ang mga log</string>
     <string name="settings_disable_su">I-disable ang su compatibility</string>
     <string name="settings_disable_su_summary">Pansamantalang i-disable ang kakayahan ng anumang app na makakuha ng pribilehiyong root sa pamamagitan ng su command (hindi maaapektuhan ang mga umiiral na root process).</string>
+    <string name="module_repos">Mga Repo</string>
+    <string name="module_repos_sort_name">Pangalan (A → Z)</string>
+    <string name="module_repos_source_code">Source code</string>
+    <string name="metamodule_uninstall_confirm">Sigurado ka ba gusto mong i-uninstall ang module na %s? Aapektuhan ng aksyon na ito ang lahat ng mga module, at hindi na gagana ang mga feature na ibinigay ng metamodule (tulad ng pag-mount).</string>
+    <string name="safe_mode_module_disabled">Naka-disable sa safe mode ang pag-install ng mga module</string>
 </resources>
