@@ -38,6 +38,7 @@ fun Modifier.screenShareBounds(
                         TransitionSource.FAB -> 30.dp
                         TransitionSource.LIST_CARD -> CardDefaults.CornerRadius
                     }
+
                     EnterExitState.Visible -> getSystemCornerRadius()
                 }
             }
@@ -46,14 +47,16 @@ fun Modifier.screenShareBounds(
                 TransitionSource.LIST_CARD -> scaleToBounds(ContentScale.FillWidth, Alignment.TopCenter)
             }
 
-            Modifier.skipToLookaheadSize().sharedBounds(
-                sharedContentState = rememberSharedContentState(key = "$transitionSource/$key"),
-                animatedVisibilityScope = animatedVisibilityScope,
-                resizeMode = resizeMode,
-                clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),
-                placeholderSize = ContentSize,
-                boundsTransform = defaultBoundsTransform
-            )
+            Modifier
+                .skipToLookaheadSize()
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(key = "$transitionSource/$key"),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    resizeMode = resizeMode,
+                    clipInOverlayDuringTransition = OverlayClip(ContinuousRoundedRectangle(pagerCorner.value)),
+                    placeholderSize = ContentSize,
+                    boundsTransform = defaultBoundsTransform
+                )
         }
     )
 }

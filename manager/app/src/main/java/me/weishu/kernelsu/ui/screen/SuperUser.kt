@@ -138,9 +138,6 @@ fun SuperUserPager(
     }
 
     val scrollBehavior = MiuixScrollBehavior()
-    val dynamicTopPadding by remember {
-        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
-    }
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = colorScheme.surface,

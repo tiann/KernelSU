@@ -188,13 +188,13 @@ fun AppProfileTemplateScreen(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
-    val itemSharedIsMatchFound = rememberSaveable {  mutableStateOf(false)}
+    val itemSharedIsMatchFound = rememberSaveable { mutableStateOf(false) }
 
     BackHandler {
         itemSharedIsMatchFound.value = false
         navigator.popBackStack()
     }
-    with(sharedTransitionScope){
+    with(sharedTransitionScope) {
         Scaffold(
             topBar = {
                 val clipboard = LocalClipboard.current
@@ -208,7 +208,7 @@ fun AppProfileTemplateScreen(
                     onBack = dropUnlessResumed {
                         itemSharedIsMatchFound.value = false
                         navigator.popBackStack()
-                                               },
+                    },
                     onImport = {
                         scope.launch {
                             clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
@@ -248,12 +248,12 @@ fun AppProfileTemplateScreen(
                 val fabScale = animatedVisibilityScope.transition.animateFloat(
                     { tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }
                 ) {
-                    if ( it != EnterExitState.Visible && itemSharedIsMatchFound.value ) 0f else 1f
+                    if (it != EnterExitState.Visible && itemSharedIsMatchFound.value) 0f else 1f
                 }
                 val fabAlpha = animatedVisibilityScope.transition.animateFloat(
                     { tween(100, 0, NavAnimationEasing) }
                 ) {
-                    if ( it != EnterExitState.Visible && itemSharedIsMatchFound.value ) 0f else 1f
+                    if (it != EnterExitState.Visible && itemSharedIsMatchFound.value) 0f else 1f
                 }
 
                 FloatingActionButton(

@@ -141,7 +141,7 @@ fun HomePager(
                 val lkmMode = ksuVersion?.let {
                     if (kernelVersion.isGKI()) Natives.isLkmMode else null
                 }
-                val pageState =  LocalPagerState.current
+                val pageState = LocalPagerState.current
                 val coroutineScope = rememberCoroutineScope()
 
                 Column(

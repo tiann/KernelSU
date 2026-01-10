@@ -82,7 +82,7 @@ fun defaultTransitions() = object : NavHostAnimatedDestinationStyle() {
                 animationSpec = tween(TRANSITION_DURATION, 0, NavAnimationEasing)
             )
         }
-    override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { null }
+    override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { SizeTransform(clip = false) }
 }
 
 val noAnimated = object : NavHostAnimatedDestinationStyle() {
@@ -90,7 +90,7 @@ val noAnimated = object : NavHostAnimatedDestinationStyle() {
     override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = { ExitTransition.None }
     override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = { EnterTransition.None }
     override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = { ExitTransition.None }
-    override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { null }
+    override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { SizeTransform(clip = false) }
 }
 
 val slideFromRightTransition = object : NavHostAnimatedDestinationStyle() {
@@ -108,5 +108,5 @@ val slideFromRightTransition = object : NavHostAnimatedDestinationStyle() {
             animationSpec = tween(TRANSITION_DURATION, 0, NavAnimationEasing)
         )
     }
-    override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { null }
+    override val sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?) = { SizeTransform(clip = false) }
 }

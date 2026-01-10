@@ -74,7 +74,6 @@ import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
-import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.LazyGithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
@@ -185,9 +184,6 @@ fun ModuleRepoScreen(
     }
 
     val scrollBehavior = MiuixScrollBehavior()
-    val dynamicTopPadding by remember {
-        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
-    }
 
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(

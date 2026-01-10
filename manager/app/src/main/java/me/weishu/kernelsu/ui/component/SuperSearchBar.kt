@@ -199,13 +199,15 @@ fun Transition<Boolean>.SearchBox(
             }
     ) {
         Box(
-            modifier = Modifier.padding(
-                top = searchBarTopPadding,
-                start = contentPadding.calculateStartPadding(layoutDirection) + 12.dp,
-                end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp,
-                bottom = 6.dp
-            ).alpha(if (isTransitioning || currentState) 0f else 1f)
-        ){
+            modifier = Modifier
+                .padding(
+                    top = searchBarTopPadding,
+                    start = contentPadding.calculateStartPadding(layoutDirection) + 12.dp,
+                    end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp,
+                    bottom = 6.dp
+                )
+                .alpha(if (isTransitioning || currentState) 0f else 1f)
+        ) {
             collapseBar(searchStatus)
         }
     }

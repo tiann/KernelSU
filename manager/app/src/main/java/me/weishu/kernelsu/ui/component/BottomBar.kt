@@ -33,7 +33,7 @@ fun BottomBar(
     val isManager = Natives.isManager
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
-    val pageState =  LocalPagerState.current
+    val pageState = LocalPagerState.current
     val coroutineScope = rememberCoroutineScope()
 
     if (!fullFeatured) return

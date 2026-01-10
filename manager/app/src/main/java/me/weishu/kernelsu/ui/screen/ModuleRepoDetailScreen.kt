@@ -189,9 +189,7 @@ fun ModuleRepoDetailScreen(
                 )
             },
             contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
-        ) {
-                innerPaddings ->
-            val innerPadding by remember { mutableStateOf(innerPaddings) }
+        ) { innerPadding ->
             LaunchedEffect(module.moduleId) {
                 if (module.moduleId.isNotEmpty()) {
                     withContext(Dispatchers.IO) {

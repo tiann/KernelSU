@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.component.navigation
 
-import android.util.Log
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateDp
@@ -53,6 +52,7 @@ fun <T> MiuixManualComposableCallsBuilder.miuixComposable(
                         EnterExitState.Visible -> {
                             Color.Transparent
                         }
+
                         else -> {
                             if (isPop) {
                                 colorScheme.windowDimming

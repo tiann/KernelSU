@@ -65,8 +65,6 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
-import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
-import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
 import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig

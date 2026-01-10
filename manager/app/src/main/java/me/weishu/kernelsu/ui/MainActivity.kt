@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -35,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.util.Consumer
-import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
@@ -236,7 +234,7 @@ val LocalPagerState = compositionLocalOf<PagerState> { error("No pager state") }
 fun MainScreen(navController: MiuixDestinationsNavigator) {
     val pagerState = LocalPagerState.current
     val isManager = Natives.isManager
-    val isFullFeatured by remember { derivedStateOf{ isManager && !Natives.requireNewKernel() } }
+    val isFullFeatured by remember { derivedStateOf { isManager && !Natives.requireNewKernel() } }
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = MiuixTheme.colorScheme.surface,
