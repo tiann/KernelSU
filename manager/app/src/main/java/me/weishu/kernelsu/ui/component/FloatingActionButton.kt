@@ -23,7 +23,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun FloatingActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    contentModifier: Modifier,
+    contentModifier: Modifier = Modifier,
     shape: Shape = ContinuousCapsule,
     containerColor: Color = MiuixTheme.colorScheme.primary,
     shadowElevation: Dp = 4.dp,
