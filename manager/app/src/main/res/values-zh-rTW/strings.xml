@@ -124,9 +124,9 @@
     <string name="module_sort_action_first">執行優先</string>
     <string name="module_install_prompt_with_name">將安裝以下模組：%1$s</string>
     <string name="confirm">確認</string>
-    <string name="settings_disable_su_summary">暫時禁用任何應用程式通過⁠ su 命令獲得 root 權限的能力（現有的 root 進程不會受到影響）。</string>
+
     <string name="su_not_allowed">無法授予「%s」超級使用者存取</string>
-    <string name="settings_disable_su">停用 su 相容性</string>
+
     <string name="log_saved">已儲存運作日誌</string>
     <string name="processing">處理中…</string>
     <string name="refresh_pulling">下拉刷新</string>
@@ -145,4 +145,10 @@
     <string name="settings_theme_mode_dark">深色</string>
     <string name="settings_theme_mode_monet_dark">Monet (深色)</string>
     <string name="settings_theme_summary">選擇應用的主題模式。</string>
+    <string name="settings_mode_disable">停用</string>
+    <string name="settings_mode_default_brackets">(預設)</string>
+    <string name="settings_sucompat">重新導向 su 二進位檔</string>
+    <string name="settings_sucompat_summary">針對在應用程式設定檔擁有超級使用者權限的應用程式，將 /system/bin/su 重新導向至 ksud；僅對新進程生效。</string>
+    <string name="settings_kernel_umount">核心卸載</string>
+    <string name="settings_kernel_umount_summary">由 KernelSU 控制的核心層級卸載行為</string>
 </resources>

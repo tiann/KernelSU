@@ -126,6 +126,10 @@
     <string name="flash_failed">Nabigo ang pag-flash</string>
     <string name="selected_lkm">Piniling LKM: %s</string>
     <string name="log_saved">Nai-save ang mga log</string>
-    <string name="settings_disable_su">I-disable ang su compatibility</string>
-    <string name="settings_disable_su_summary">Pansamantalang i-disable ang kakayahan ng anumang app na makakuha ng pribilehiyong root sa pamamagitan ng su command (hindi maaapektuhan ang mga umiiral na root process).</string>
+    <string name="settings_mode_disable">I-disable</string>
+    <string name="settings_mode_default_brackets">(Default)</string>
+    <string name="settings_sucompat">I-reroute ang su binary</string>
+    <string name="settings_sucompat_summary">I-redirect ang /system/bin/su sa ksud para sa mga app na binigyan ng pahintulot ng Superuser sa App Profile; epektibo lang para sa mga bagong proseso.</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
+    <string name="settings_kernel_umount_summary">Kernel-level umount behavior na kontrolado ng KernelSU</string>
 </resources>

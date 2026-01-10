@@ -125,9 +125,13 @@
     <string name="log_saved">السجلات محفوظة</string>
     <string name="module_sort_enabled_first">فرز (الممكن أولاً)</string>
     <string name="module_sort_action_first">فرز (الإجراء أولاً)</string>
-    <string name="settings_disable_su">تعطيل توافق su</string>
-    <string name="settings_disable_su_summary">قم بتعطيل قدره التطبيقات مؤقتا من الحصول على امتيازات المسخدم الخارق عبر الأمر su (لن تتأثر عمليات الجذر الحالية).</string>
     <string name="module_install_prompt_with_name">الحزم الاتيه سيتم تثبيتها %1$s</string>
     <string name="confirm">تأكيد</string>
     <string name="su_not_allowed">من الغير ممكن اعطاء صلاحيات (المسخدم الخارق) لـ %s</string>
+    <string name="settings_mode_disable">تعطيل</string>
+    <string name="settings_mode_default_brackets">(افتراضي)</string>
+    <string name="settings_sucompat">إعادة توجيه ثنائي su</string>
+    <string name="settings_sucompat_summary">إعادة توجيه /system/bin/su إلى ksud للتطبيقات الممنوحة إذن Superuser في ملف تعريف التطبيق؛ فعال للعمليات الجديدة فقط.</string>
+    <string name="settings_kernel_umount">إلغاء تحميل النواة</string>
+    <string name="settings_kernel_umount_summary">سلوك إلغاء تحميل مستوى النواة الذي يسيطر عليه KernelSU</string>
 </resources>

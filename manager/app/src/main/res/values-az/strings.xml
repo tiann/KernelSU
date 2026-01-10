@@ -93,4 +93,10 @@
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_view">Şablonu göstər</string>
     <string name="app_profile_template_id_exist">Şablon ID-si artıq mövcuddur!</string>
+    <string name="settings_mode_disable">Deaktiv et</string>
+    <string name="settings_mode_default_brackets">(Defolt)</string>
+    <string name="settings_sucompat">su binary yönləndirmə</string>
+    <string name="settings_sucompat_summary">Tətbiq Profilində Superuser icazəsi verilmiş tətbiqlər üçün /system/bin/su-nu ksud-a yönləndirin; yalnız yeni proseslər üçün effektivdir.</string>
+    <string name="settings_kernel_umount">Nüvə umount</string>
+    <string name="settings_kernel_umount_summary">KernelSU tərəfindən idarə olunan nüvə səviyyəsində umount davranışı</string>
 </resources>

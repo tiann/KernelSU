@@ -119,4 +119,10 @@
     <string name="settings_uninstall_temporary">Eemalda ajutiselt</string>
     <string name="settings_uninstall_permanent">Eemalda püsivalt</string>
     <string name="settings_restore_stock_image">Taasta vaikimisi tõmmis</string>
+    <string name="settings_mode_disable">Keela</string>
+    <string name="settings_mode_default_brackets">(Vaikimisi)</string>
+    <string name="settings_sucompat">Suuna su binaarfail ümber</string>
+    <string name="settings_sucompat_summary">Suuna /system/bin/su ksud-le rakenduste jaoks, millele on antud Superuser luba rakenduse profiilis; kehtib ainult uute protsesside puhul.</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
+    <string name="settings_kernel_umount_summary">Kerneli tasemel lahtihaakimise käitumine, mida kontrollib KernelSU</string>
 </resources>

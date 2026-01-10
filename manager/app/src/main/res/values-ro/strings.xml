@@ -121,4 +121,10 @@
     <string name="flash_success">Instalare reușită</string>
     <string name="flash_failed">Instalarea a eșuat</string>
     <string name="save_log">Salvează Jurnale</string>
+    <string name="settings_mode_disable">Dezactivare</string>
+    <string name="settings_mode_default_brackets">(Implicit)</string>
+    <string name="settings_sucompat">Redirecționare binar su</string>
+    <string name="settings_sucompat_summary">Redirecționați /system/bin/su către ksud pentru aplicațiile cu permisiune de Superutilizator în Profilul Aplicației; eficient doar pentru procesele noi.</string>
+    <string name="settings_kernel_umount">Demontare kernel</string>
+    <string name="settings_kernel_umount_summary">Comportament de demontare la nivel de kernel controlat de KernelSU</string>
 </resources>

@@ -125,4 +125,10 @@
     <string name="log_saved">Protokolle gespeichert</string>
     <string name="module_install_prompt_with_name">Folgende Module werden installiert: %1$s</string>
     <string name="confirm">Bestätigen</string>
+    <string name="settings_mode_disable">Deaktivieren</string>
+    <string name="settings_mode_default_brackets">(Standard)</string>
+    <string name="settings_sucompat">su-Binary umleiten</string>
+    <string name="settings_sucompat_summary">/system/bin/su zu ksud umleiten für Apps mit Superuser-Berechtigung im App-Profil; nur für neue Prozesse wirksam.</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
+    <string name="settings_kernel_umount_summary">Kernel-Level-Umount-Verhalten gesteuert von KernelSU</string>
 </resources>
