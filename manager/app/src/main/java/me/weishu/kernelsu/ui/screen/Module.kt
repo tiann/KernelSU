@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
@@ -36,7 +37,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,7 +51,6 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -67,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -90,7 +90,6 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -107,6 +106,8 @@ import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
+import me.weishu.kernelsu.ui.component.TopAppBarAnim
+import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -151,12 +152,13 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 fun ModulePager(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleViewModel>()
     val scope = rememberCoroutineScope()
     val searchStatus by viewModel.searchStatus
+    val searchTransition = rememberTransition(searchStatus.expandState)
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -205,12 +207,18 @@ fun ModulePager(
     val hideInstallButton = isSafeMode || magiskInstalled
 
     val scrollBehavior = MiuixScrollBehavior()
-    val listState = rememberLazyListState()
-    var fabVisible by remember { mutableStateOf(true) }
-    var scrollDistance by remember { mutableFloatStateOf(0f) }
     val dynamicTopPadding by remember {
         derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.surface,
+        tint = HazeTint(colorScheme.surface.copy(0.8f))
+    )
+
+    val listState = rememberLazyListState()
+    var fabVisible by remember { mutableStateOf(true) }
+    var scrollDistance by remember { mutableFloatStateOf(0f) }
 
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -403,20 +411,15 @@ fun ModulePager(
             }
         }
     }
-    val offsetHeight by animateDpAsState(
+    val offsetHeightState = animateDpAsState(
         targetValue = if (fabVisible) 0.dp else 180.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        animationSpec = tween(durationMillis = 350)
-    )
-
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
+        animationSpec = tween(durationMillis = 350),
+        label = "fabOffset"
     )
 
     Scaffold(
         topBar = {
-            searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
+            searchTransition.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
                     color = Color.Transparent,
                     title = stringResource(R.string.module),
@@ -550,7 +553,9 @@ fun ModulePager(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .offset(y = offsetHeight)
+                        .graphicsLayer {
+                            translationY = offsetHeightState.value.toPx()
+                        }
                         .padding(bottom = bottomInnerPadding + 20.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                     shadowElevation = 0.dp,
@@ -574,7 +579,8 @@ fun ModulePager(
             }
         },
         popupHost = {
-            searchStatus.SearchPager(
+            searchTransition.SearchPager(
+                searchStatus = searchStatus,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
@@ -693,7 +699,8 @@ fun ModulePager(
 
             else -> {
                 val layoutDirection = LocalLayoutDirection.current
-                searchStatus.SearchBox(
+                searchTransition.SearchBox(
+                    searchStatus = searchStatus,
                     searchBarTopPadding = dynamicTopPadding,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding(),
@@ -702,7 +709,7 @@ fun ModulePager(
                     ),
                     hazeState = hazeState,
                     hazeStyle = hazeStyle
-                ) { boxHeight ->
+                ) { contentTopPadding ->
                     ModuleList(
                         navigator,
                         viewModel = viewModel,
@@ -749,7 +756,7 @@ fun ModulePager(
                         context = context,
                         innerPadding = innerPadding,
                         bottomInnerPadding = bottomInnerPadding,
-                        boxHeight = boxHeight
+                        contentTopPadding = contentTopPadding
                     )
                 }
             }
@@ -759,7 +766,7 @@ fun ModulePager(
 
 @Composable
 private fun ModuleList(
-    navigator: DestinationsNavigator,
+    navigator: MiuixDestinationsNavigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     scope: CoroutineScope,
@@ -773,7 +780,7 @@ private fun ModuleList(
     context: Context,
     innerPadding: PaddingValues,
     bottomInnerPadding: Dp,
-    boxHeight: MutableState<Dp>
+    contentTopPadding: Dp
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val updateInfoMap = viewModel.updateInfo
@@ -802,7 +809,7 @@ private fun ModuleList(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = innerPadding.calculateTopPadding(),
+                        top = contentTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                         bottom = bottomInnerPadding
@@ -824,7 +831,7 @@ private fun ModuleList(
                 onRefresh = { if (!isRefreshing) isRefreshing = true },
                 refreshTexts = refreshTexts,
                 contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                    top = contentTopPadding + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
                 ),
@@ -833,7 +840,7 @@ private fun ModuleList(
                     modifier = modifier
                         .fillMaxHeight(),
                     contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                        top = contentTopPadding + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                     ),

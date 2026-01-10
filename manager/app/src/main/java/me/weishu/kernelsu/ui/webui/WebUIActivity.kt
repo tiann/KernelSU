@@ -87,10 +87,14 @@ class WebUIActivity : ComponentActivity() {
                                 data.clipData!!.getItemAt(i).uri // Multiple files
                             }
                         }
-                        data.data != null -> { arrayOf(data.data!!) } // Single file
+
+                        data.data != null -> {
+                            arrayOf(data.data!!)
+                        } // Single file
                         else -> null
                     }
                 }
+
                 else -> null
             }
             filePathCallback?.onReceiveValue(uris)
