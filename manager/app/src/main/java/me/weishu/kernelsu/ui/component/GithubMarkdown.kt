@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -28,7 +29,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -55,13 +54,13 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 
-
 @SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
 @Composable
 fun LazyGithubMarkdown(
     content: String,
-    isLoading: MutableState<Boolean> = mutableStateOf(true)
-){
+    isLoading: MutableState<Boolean> = mutableStateOf(true),
+    onHeightChanged: (Int) -> Unit = {}
+) {
     val density = LocalDensity.current
     val height = remember { mutableStateOf(0.dp) }
     val coroutineScope = rememberCoroutineScope()
@@ -70,18 +69,15 @@ fun LazyGithubMarkdown(
         modifier = Modifier
             .fillMaxWidth()
             .then(
-                if (isLoading.value && height.value == 0.dp)
-                    Modifier.wrapContentHeight()
-                        .onSizeChanged { with(density) { height.value = it.height.toDp() } }
-                else Modifier.height(height.value)
+                if (height.value == 0.dp) Modifier.wrapContentHeight() else Modifier.height(height.value)
             )
-    ){
-        GithubMarkdown(content){
-            coroutineScope.launch {
-                delay(30)
-                isLoading.value = it
-            }
-        }
+    ) {
+        GithubMarkdown(
+            content, onLoader = {
+                coroutineScope.launch { isLoading.value = it }
+            },
+            onHeightChanged = { px -> height.value = with(density) { px.toDp() }; onHeightChanged(px) }
+        )
     }
 }
 
@@ -89,13 +85,23 @@ fun LazyGithubMarkdown(
 @Composable
 fun GithubMarkdown(
     content: String,
-    onLoader: (Boolean)-> Unit
+    onLoader: (Boolean) -> Unit,
+    onHeightChanged: (Int) -> Unit = {}
 ) {
     LaunchedEffect(Unit) {
         onLoader(true)
     }
     val context = LocalContext.current
     val scrollInterface = remember { MarkdownScrollInterface() }
+    val density = LocalDensity.current.density
+    val coroutineScope = rememberCoroutineScope()
+
+    scrollInterface.onHeightChange = { height ->
+        coroutineScope.launch {
+            onHeightChanged((height * density).toInt())
+        }
+    }
+
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
     val isDark = isInDarkTheme(themeMode)
@@ -143,6 +149,8 @@ fun GithubMarkdown(
         </html>
     """.trimIndent()
 
+    var layoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+
     AndroidView(
         factory = { context ->
             val frameLayout = FrameLayout(context).apply {
@@ -152,6 +160,15 @@ fun GithubMarkdown(
                 )
             }
             val webView = WebView(context).apply {
+                var lastMeasuredHeight = -1
+                var pageFinished = false
+                var readyDispatched = false
+                val tryNotifyReady = { height: Int ->
+                    if (height > 0 && !readyDispatched) {
+                        readyDispatched = true
+                        onLoader(false)
+                    }
+                }
                 try {
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
@@ -237,9 +254,22 @@ fun GithubMarkdown(
                                               update(s.l, s.r);
                                         }
                                     }, {passive: true, capture: true});
+
+                                    if (window.ResizeObserver) {
+                                        const resizeObserver = new ResizeObserver(entries => {
+                                            AndroidScroll.updateHeight(document.body.scrollHeight);
+                                        });
+                                        resizeObserver.observe(document.body);
+                                    }
                                 })();
                             """.trimIndent()
                             view.evaluateJavascript(js, null)
+                            pageFinished = true
+                            tryNotifyReady(lastMeasuredHeight)
+                        }
+
+                        override fun onPageCommitVisible(view: WebView?, url: String?) {
+                            tryNotifyReady(lastMeasuredHeight)
                         }
 
                         override fun shouldOverrideUrlLoading(
@@ -250,10 +280,6 @@ fun GithubMarkdown(
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent)
                             return true
-                        }
-
-                        override fun onPageCommitVisible(view: WebView?, url: String?) {
-                            onLoader(false)
                         }
 
                         override fun shouldInterceptRequest(
@@ -286,6 +312,15 @@ fun GithubMarkdown(
                             }
                         }
                     }
+                    layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+                        val newHeight = this.height
+                        if (newHeight > 0 && newHeight != lastMeasuredHeight) {
+                            lastMeasuredHeight = newHeight
+                            onHeightChanged(newHeight)
+                            tryNotifyReady(newHeight)
+                        }
+                    }
+                    viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
                     setOnTouchListener(object : View.OnTouchListener {
                         private var isHorizontalScrollLocked = false
                         private var initialDownX = 0f
@@ -337,16 +372,26 @@ fun GithubMarkdown(
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
             }
-            frameLayout.addView(webView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT))
+            frameLayout.addView(
+                webView, ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
             frameLayout
         },
         onRelease = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView
             webView?.apply {
+                layoutListener?.let { listener ->
+                    if (viewTreeObserver.isAlive) {
+                        viewTreeObserver.removeOnGlobalLayoutListener(listener)
+                    }
+                }
                 stopLoading()
                 destroy()
             }
+            layoutListener = null
             frameLayout.removeAllViews()
         },
 
@@ -365,9 +410,16 @@ class MarkdownScrollInterface {
     @Volatile
     var canScrollRight = false
 
+    var onHeightChange: ((Float) -> Unit)? = null
+
     @JavascriptInterface
     fun updateScrollState(left: Boolean, right: Boolean) {
         canScrollLeft = left
         canScrollRight = right
+    }
+
+    @JavascriptInterface
+    fun updateHeight(height: Float) {
+        onHeightChange?.invoke(height)
     }
 }
