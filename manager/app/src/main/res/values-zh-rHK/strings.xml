@@ -119,7 +119,7 @@
     <string name="settings_mode_disable">停用</string>
     <string name="settings_mode_default_brackets">(預設)</string>
     <string name="settings_sucompat">重新導向 su 二進位檔</string>
-    <string name="settings_sucompat_summary">針對在應用程式設定檔擁有超級使用者權限的應用程式，將 /system/bin/su 重新導向至 ksud；僅對新進程生效。</string>
+    <string name="settings_sucompat_summary">對在應用程式設定檔擁有超級使用者權限的應用程式，將 /system/bin/su 重新導向至 ksud；僅對新進程生效。</string>
     <string name="settings_kernel_umount">核心卸載</string>
     <string name="settings_kernel_umount_summary">由 KernelSU 控制的核心層級卸載行為</string>
 </resources>
