@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.component
 
-import android.R
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -269,7 +268,7 @@ fun Transition<Boolean>.SearchPager(
                 exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it })
             ) {
                 Text(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(android.R.string.cancel),
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary,
                     modifier = Modifier
