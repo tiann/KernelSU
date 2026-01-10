@@ -139,7 +139,7 @@
     <string name="settings_mode_disable">Désactiver</string>
     <string name="settings_mode_default_brackets">(Par défaut)</string>
     <string name="settings_sucompat">Rediriger le binaire su</string>
-    <string name="settings_sucompat_summary">Rediriger /system/bin/su vers ksud pour les applications ayant l'autorisation Superutilisateur dans le profil d'application ; effectif uniquement pour les nouveaux processus.</string>
+    <string name="settings_sucompat_summary">Rediriger /system/bin/su vers ksud pour les applications ayant l\'autorisation Superutilisateur dans le profil d\'application ; effectif uniquement pour les nouveaux processus.</string>
     <string name="settings_kernel_umount">Démontage du noyau</string>
     <string name="settings_kernel_umount_summary">Comportement de démontage au niveau du noyau contrôlé par KernelSU</string>
     <string name="settings_mode_temp_enable">Activer temporairement</string>
