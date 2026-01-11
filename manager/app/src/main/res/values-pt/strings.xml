@@ -40,7 +40,8 @@
     <string name="show_system_apps">Mostrar aplicativos do sistema</string>
     <string name="home_click_to_learn_kernelsu">Aprenda a instalar o KernelSU e usar os módulos</string>
     <string name="home_support_content">O KernelSU é, e sempre será, gratuito e de código aberto. No entanto, você pode nos mostrar que se importa fazendo uma doação.</string>
-    <string name="about_source_code">Veja o código-fonte em %1$s<br/>Junte-se ao nosso canal %2$s</string>
+    <string name="about_source_code">Veja o código-fonte em %1$s<br/>
+Junte-se ao nosso canal %2$s</string>
     <string name="profile_namespace_individual">Individual</string>
     <string name="profile_namespace_global">Global</string>
     <string name="profile_namespace_inherited">Herdado</string>
@@ -78,7 +79,9 @@
     <string name="settings_mode_disable">Desativar</string>
     <string name="settings_mode_default_brackets">(Predefinição)</string>
     <string name="settings_sucompat">Redirecionar binário su</string>
-    <string name="settings_sucompat_summary">Redirecionar /system/bin/su para ksud para apps com permissão de Superutilizador no Perfil da App; eficaz apenas para novos processos.</string>
+    <string name="settings_sucompat_summary">Permite que apps com permissão de Superutilizador no Perfil da App obtenham um shell de superutilizador executando /system/bin/su; eficaz apenas para novos processos.</string>
+    <string name="settings_mode_temp_enable">Até o próximo reinício</string>
+    <string name="settings_mode_always_enable">Sempre</string>
     <string name="settings_kernel_umount">Desmontar kernel</string>
     <string name="settings_kernel_umount_summary">Comportamento de desmontagem ao nível do kernel controlado pelo KernelSU</string>
 </resources>

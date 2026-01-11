@@ -140,7 +140,7 @@
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
     <string name="settings_sucompat">Reroute su binary</string>
-    <string name="settings_sucompat_summary">Redirect /system/bin/su to ksud for apps granted Superuser permission in App Profile; effective for new processes only.</string>
+    <string name="settings_sucompat_summary">Allows applications with App Profile granted to obtain a superuser shell by executing /system/bin/su; effective for new processes only.</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Kernel-level umount behavior controlled by KernelSU</string>
     <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>

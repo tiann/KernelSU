@@ -138,7 +138,9 @@
     <string name="settings_mode_disable">Devre Dışı</string>
     <string name="settings_mode_default_brackets">(Varsayılan)</string>
     <string name="settings_sucompat">su ikili dosyasını yeniden yönlendir</string>
-    <string name="settings_sucompat_summary">Uygulama Profilinde Süper Kullanıcı izni verilen uygulamalar için /system/bin/su\'yu ksud\'a yönlendir; yalnızca yeni işlemler için etkilidir.</string>
+    <string name="settings_sucompat_summary">Uygulama Profilinde Süper Kullanıcı izni verilen uygulamaların /system/bin/su yürütülerek süper kullanıcı kabuğu almasına izin verir; yalnızca yeni işlemler için etkilidir.</string>
+    <string name="settings_mode_temp_enable">Sonraki Yeniden Başlatmaya Kadar</string>
+    <string name="settings_mode_always_enable">Her Zaman</string>
     <string name="settings_kernel_umount">Çekirdek bağlantısını kes</string>
     <string name="settings_kernel_umount_summary">KernelSU tarafından kontrol edilen çekirdek seviyesinde bağlantı kesme davranışı</string>
 </resources>

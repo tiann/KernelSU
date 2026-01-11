@@ -99,6 +99,8 @@
     <string name="settings_mode_default_brackets">(Privzeto)</string>
     <string name="settings_sucompat">Preusmeri su binarno datoteko</string>
     <string name="settings_sucompat_summary">Preusmeri /system/bin/su na ksud za aplikacije z dovoljenjem Superuporabnika v profilu aplikacije; velja samo za nove procese.</string>
+    <string name="settings_mode_temp_enable">Do naslednjega zagona</string>
+    <string name="settings_mode_always_enable">Vedno</string>
     <string name="settings_kernel_umount">Jedrno odklapljanje</string>
     <string name="settings_kernel_umount_summary">Vedenje odklapljanja na ravni jedra, ki ga nadzoruje KernelSU</string>
 </resources>
