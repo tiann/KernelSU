@@ -307,9 +307,9 @@ fun SettingPager(
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
-                        // TODO: By a unknown issue, the MIUIX's SuperDropmenu's BasicComponent cannot break the line. Therefore, I cannot show the default value currenly. Maybe we will have better way to show this.
+                        // TODO: By a unknown issue, the MIUIX's SuperDropmenu's BasicComponent cannot break the line. Therefore, I cannot show the default value currently. Maybe we will have better way to show this.
                         //  "${stringResource(id = R.string.settings_mode_disable)} ${stringResource(id = R.string.settings_mode_default_brackets)}",
-                        val suCompateModeItems = listOf(
+                        val suCompatModeItems = listOf(
                             stringResource(id = R.string.settings_mode_disable),
                             stringResource(id = R.string.settings_mode_temp_enable),
                             stringResource(id = R.string.settings_mode_always_enable),
@@ -336,7 +336,7 @@ fun SettingPager(
                         SuperDropdown(
                             title = stringResource(id = R.string.settings_sucompat),
                             summary = suSummary,
-                            items = suCompateModeItems,
+                            items = suCompatModeItems,
                             startAction = {
                                 Icon(
                                     Icons.Rounded.RemoveModerator,
