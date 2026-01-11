@@ -129,13 +129,9 @@
     <string name="settings_module_check_update">모듈 업데이트 확인</string>
     <string name="install_upload_lkm_file">로컬 LKM 파일 사용</string>
     <string name="install_only_support_ko_file">.ko 파일만 지원됩니다</string>
-    <string name="settings_disable_su">su 호환 비활성화</string>
-    <string name="settings_disable_su_summary">su 명령어로 아무 앱이 루트 권한을 획득하는 것을 비활성화합니다 (이미 존재하는 루트 프로세스는 영향을 받지 않음).</string>
-    <string name="settings_disable_kernel_umount">커널 마운트 해제 비활성화</string>
-    <string name="settings_disable_kernel_umount_summary">KernelSU에서 제어하는 커널 수준 마운트 해제 동작을 비활성화합니다.</string>
     <string name="settings_mode_default">기본값</string>
-    <string name="settings_mode_temp_enable">임시 활성화</string>
-    <string name="settings_mode_always_enable">항상 활성화</string>
+    <string name="settings_mode_temp_enable">다음 재부팅까지</string>
+    <string name="settings_mode_always_enable">항상</string>
     <string name="processing">처리 중…</string>
     <string name="refresh_pulling">당겨서 새로 고침</string>
     <string name="refresh_release">놓아서 새로 고침</string>
@@ -179,4 +175,10 @@
     <string name="tab_releases">릴리즈</string>
     <string name="tab_info">정보</string>
     <string name="safe_mode_module_disabled">안전 모드에서 모듈 설치가 비활성화됨</string>
+    <string name="settings_mode_disable">비활성화</string>
+    <string name="settings_mode_default_brackets">(기본)</string>
+    <string name="settings_sucompat">su 바이너리 리라우팅</string>
+    <string name="settings_sucompat_summary">앱 프로필에서 슈퍼유저 권한이 부여된 앱이 /system/bin/su를 실행하여 슈퍼유저 셸을 얻을 수 있도록 허용합니다. 새 프로세스에만 적용됩니다.</string>
+    <string name="settings_kernel_umount">커널 마운트 해제</string>
+    <string name="settings_kernel_umount_summary">KernelSU에 의해 제어되는 커널 수준 마운트 해제 동작</string>
 </resources>
