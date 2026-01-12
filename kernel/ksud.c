@@ -582,7 +582,7 @@ static struct kprobe sys_read_kp = {
 };
 
 static struct kretprobe sys_fstat_kp = {
-    .kp.symbol_name = SYS_NEWFSTATAT_SYMBOL,
+    .kp.symbol_name = SYS_FSTAT_SYMBOL,
     .entry_handler = sys_fstat_handler_pre,
     .handler = sys_fstat_handler_post,
     .data_size = sizeof(void *),
