@@ -103,7 +103,7 @@
     <string name="enable_web_debugging_summary">WebUI のデバッグに使用できます。必要な場合にのみ有効にしてください。</string>
     <string name="select_file_tip">%1$s パーティション イメージが推奨されます</string>
     <string name="select_kmi">KMI を選択してください</string>
-    <string name="install_next">次に</string>
+    <string name="install_next">次へ</string>
     <string name="install_inactive_slot">非アクティブなスロットにインストール (OTA 後)</string>
     <string name="install_inactive_slot_warning">再起動後、デバイスは**強制的に**、現在非アクティブなスロットから起動します。\nこのオプションは、OTA が完了した後にのみ使用してください。\n続行しますか？</string>
     <string name="direct_install">直接インストール (推奨)</string>
@@ -142,7 +142,7 @@
     <string name="refresh_release">リリースして更新</string>
     <string name="refresh_refresh">更新中…</string>
     <string name="refresh_complete">更新に成功しました</string>
-    <string name="module_repos">レポ</string>
+    <string name="module_repos">リポジトリ</string>
     <string name="module_repos_sort_name">名前（A→Z）</string>
     <string name="module_repos_source_code">ソースコード</string>
     <string name="metamodule_uninstall_confirm">モジュール %s をアンインストールしてもよろしいですか? この操作はすべてのモジュールに影響し、メタモジュールによって提供される特定の機能 (マウントなど) は動作しなくなります。</string>
