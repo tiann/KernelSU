@@ -245,7 +245,7 @@ fun ModulePager(
                     runCatching {
                         ksuApp.okhttpClient.newCall(
                             okhttp3.Request.Builder().url(changelogUrl).build()
-                        ).execute().body!!.string()
+                        ).execute().body.string()
                     }
                 }
             }

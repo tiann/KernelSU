@@ -7,7 +7,6 @@ lifecycle = "2.10.0"
 navigation = "2.9.6"
 activity-compose = "1.12.2"
 kotlinx-coroutines = "1.10.2"
-coil-compose = "2.7.0"
 compose-destination = "2.3.0"
 markwon = "4.6.2"
 webkit = "1.15.0"
@@ -19,6 +18,7 @@ cmaker = "1.2"
 miuix = "0.8.0-rc04"
 haze = "1.7.1"
 capsule = "2.1.2"
+okhttp = "5.3.2"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -56,8 +56,6 @@ com-github-topjohnwu-libsu-io = { group = "com.github.topjohnwu.libsu", name = "
 
 dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:parcelablelist", version.ref = "parcelablelist" }
 
-io-coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil-compose" }
-
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 compose-destinations-core = { group = "io.github.raamcosta.compose-destinations", name = "core", version.ref = "compose-destination" }
@@ -73,3 +71,6 @@ miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.re
 haze = { module = "dev.chrisbanes.haze:haze-android", version.ref = "haze" }
 
 capsule = { module = "io.github.kyant0:capsule", version.ref = "capsule" }
+
+okhttp = { module = "com.squareup.okhttp3:okhttp" }
+okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
