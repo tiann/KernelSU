@@ -230,7 +230,7 @@ fun GithubMarkdown(
                                 val contentTypes = header?.split(";\\s*".toRegex()) ?: emptyList()
                                 val mimeType = contentTypes.firstOrNull() ?: "image/*"
                                 val charset = contentTypes.getOrNull(1)?.split("=\\s*".toRegex())?.getOrNull(1) ?: "utf-8"
-                                val body = reply.body ?: return null
+                                val body = reply.body
                                 WebResourceResponse(mimeType, charset, body.byteStream())
                             } catch (e: IOException) {
                                 WebResourceResponse(
