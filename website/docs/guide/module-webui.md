@@ -1,20 +1,20 @@
-# Module WebUI
+# وحدة WebUI
 
-In addition to executing boot scripts and modifying system files, KernelSU modules can display user interfaces and interact directly with users.
+بالإضافة إلى تنفيذ البرامج النصية للتمهيد وتعديل ملفات النظام، يمكن لوحدات KernelSU عرض واجهات المستخدم والتفاعل مباشرة مع المستخدمين.
 
-Modules can define HTML + CSS + JavaScript pages with any web technology. KernelSU's manager displays these pages via WebView and exposes APIs for interacting with the system, such as executing shell commands.
+يمكن للوحدات تحديد صفحات HTML + CSS + JavaScript باستخدام أي تقنية ويب. يعرض مدير KernelSU هذه الصفحات عبر WebView ويكشف واجهات برمجة التطبيقات للتفاعل مع النظام، مثل تنفيذ أوامر القشرة.
 
-## `webroot` directory
+## 'webroot` directory
 
-Web resource files should be placed in the `webroot` subdirectory of the module root directory, and there **MUST** be a file named `index.html`, which is the module page entry. The simplest module structure containing a web interface is as follows:
+ يجب وضع ملفات موارد الويب في... 'webroot`index.html   الدليل الفرعي لدليل جذر الوحدة، وهناك.   **'** be a file named   , which is the module page entry. The simplest module structure containing a web interface is as follows:
 
-```txt
-❯ tree .
-.
-|-- module.prop
+"'
+'- Webroot.
+|- وحدة.prop
+شجرة.
 `-- webroot
-    `-- index.html
-```
+ '-- index.html `-- index.html
+"'
 
 ::: warning
 When installing the module, KernelSU will automatically set the permissions and SELinux context for this directory. If you don't know what you're doing, do not set the permissions for this directory yourself!
