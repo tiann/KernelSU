@@ -94,11 +94,8 @@ Kanalımıza %2$s qoşulun</string>
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_view">Şablonu göstər</string>
     <string name="app_profile_template_id_exist">Şablon ID-si artıq mövcuddur!</string>
-    <string name="settings_mode_disable_by_default">Deaktiv et</string>
     <string name="settings_sucompat">su binary yönləndirmə</string>
     <string name="settings_sucompat_summary">Tətbiq Profilinə Superuser icazəsi verilmiş proqramları /system/bin/su vasitəsilə superuser shell əldə etməyə icazə verir; yalnız yeni proseslər üçün effektivdir.</string>
-    <string name="settings_mode_enable_until_reboot">Sonrakı Yenidən Başlatmaya Qədər</string>
-    <string name="settings_mode_enable_always">Həmişə</string>
     <string name="settings_kernel_umount">Nüvə umount</string>
     <string name="settings_kernel_umount_summary">KernelSU tərəfindən idarə olunan nüvə səviyyəsində umount davranışı</string>
 </resources>

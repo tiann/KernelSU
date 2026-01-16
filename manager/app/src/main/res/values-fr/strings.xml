@@ -136,13 +136,10 @@
     <string name="refresh_refresh">Actualisation…</string>
     <string name="refresh_complete">Actualisé avec succès</string>
     <string name="settings_module_check_update">Rechercher des mises à jour des modules</string>
-    <string name="settings_mode_disable_by_default">Désactiver (par défaut)</string>
     <string name="settings_sucompat">Rediriger le binaire su</string>
     <string name="settings_sucompat_summary">Permet aux applications ayant l\'autorisation Superutilisateur dans le profil d\'application d\'obtenir un shell superutilisateur en exécutant /system/bin/su; effectif uniquement pour les nouveaux processus.</string>
     <string name="settings_kernel_umount">Démontage du noyau</string>
     <string name="settings_kernel_umount_summary">Comportement de démontage au niveau du noyau contrôlé par KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">Jusqu\'au redémarrage</string>
-    <string name="settings_mode_enable_always">Toujours</string>
     <string name="install_select_partition">Sélectionner une partition</string>
     <string name="metamodule_uninstall_confirm">Voulez-vous vraiment désinstaller le module %s ? Cette action affectera tous les modules, et certaines fonctionnalités fournies par le métamodule (telles que le montage) ne fonctionneront plus.</string>
     <string name="app_profile_affects_following_apps">Affecte les applis suivantes</string>

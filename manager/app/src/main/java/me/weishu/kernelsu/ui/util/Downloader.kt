@@ -39,7 +39,7 @@ fun download(
         try {
             ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
                 if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
-                val body = resp.body ?: throw IOException("Empty body")
+                val body = resp.body
                 val total = body.contentLength()
                 target.parentFile?.mkdirs()
                 FileOutputStream(target).use { fos ->
@@ -80,7 +80,7 @@ fun checkNewVersion(): LatestVersionInfo {
                 if (!response.isSuccessful) {
                     return defaultValue
                 }
-                val body = response.body?.string() ?: return defaultValue
+                val body = response.body.string()
                 val json = org.json.JSONObject(body)
                 val changelog = json.optString("body")
 

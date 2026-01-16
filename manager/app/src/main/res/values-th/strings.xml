@@ -131,13 +131,10 @@
     <string name="settings_module_check_update">ตรวจสอบการอัปเดตโมดูล</string>
     <string name="install_upload_lkm_file">ใช้ไฟล์ LKM ในเครื่อง</string>
     <string name="install_only_support_ko_file">รองรับเฉพาะไฟล์ .ko เท่านั้น</string>
-    <string name="settings_mode_disable_by_default">ปิดใช้งาน</string>
     <string name="settings_sucompat">เปลี่ยนเส้นทางไบนารี su</string>
     <string name="settings_sucompat_summary">อนุญาตให้แอปที่ได้รับอนุญาต Superuser ในโปรไฟล์แอปได้รับเชล superuser โดยการเรียกใช้ /system/bin/su; มีผลเฉพาะกับกระบวนการใหม่เท่านั้น</string>
     <string name="settings_kernel_umount">การเลิกเมานต์เคอร์เนล</string>
     <string name="settings_kernel_umount_summary">พฤติกรรมการเลิกเมานต์ระดับเคอร์เนลที่ควบคุมโดย KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">จนกว่าจะรีบูต</string>
-    <string name="settings_mode_enable_always">เสมอ</string>
     <string name="processing">กำลังประมวลผล…</string>
     <string name="refresh_pulling">ดึงลงเพื่อรีเฟรช</string>
     <string name="refresh_release">ปล่อยเพื่อรีเฟรช</string>

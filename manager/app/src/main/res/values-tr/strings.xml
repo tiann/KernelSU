@@ -135,11 +135,8 @@
     <string name="module_repos_source_code">Kaynak kodu</string>
     <string name="metamodule_uninstall_confirm">%s modülünü kaldırmak istediğinizden emin misiniz? Bu eylem tüm modülleri etkileyecek ve metamodül (örneğin bağlama özelliği) tarafından sunulan belli özellikler artık çalışmayacaktır.</string>
     <string name="home_gki_warning">v3.0.0 sürümünden itibaren GKI çalışma modu yalnızca test ortamlarında kullanılacaktır. Günlük kullanım için tavsiye etmiyoruz ve imaj dosyaları artık sunulmayacaktır.</string>
-    <string name="settings_mode_disable_by_default">Devre Dışı (Varsayılan)</string>
     <string name="settings_sucompat">su ikili dosyasını yeniden yönlendir</string>
     <string name="settings_sucompat_summary">Uygulama Profilinde Süper Kullanıcı izni verilen uygulamaların /system/bin/su yürütülerek süper kullanıcı kabuğu almasına izin verir; yalnızca yeni işlemler için etkilidir.</string>
-    <string name="settings_mode_enable_until_reboot">Sonraki Yeniden Başlatmaya Kadar</string>
-    <string name="settings_mode_enable_always">Her Zaman</string>
     <string name="settings_kernel_umount">Çekirdek bağlantısını kes</string>
     <string name="settings_kernel_umount_summary">KernelSU tarafından kontrol edilen çekirdek seviyesinde bağlantı kesme davranışı</string>
 </resources>

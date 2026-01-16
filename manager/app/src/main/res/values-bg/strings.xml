@@ -134,13 +134,10 @@
     <string name="log_saved">Логовете бяха запазени</string>
     <string name="feature_status_unsupported_summary">Кърнълът не поддържа тази функция.</string>
     <string name="feature_status_managed_summary">Тази функция е управлявана от модул.</string>
-    <string name="settings_mode_disable_by_default">Деактивиране</string>
     <string name="settings_sucompat">Пренасочване на su бинарния файл</string>
     <string name="settings_sucompat_summary">Позволяет приложениям с предоставени права на Superuser в профила на приложението да получат superuser shell чрез изпълнение на /system/bin/su; в сила само за нови процеси.</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Поведение за umount на ниво ядро, контролирано от KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">До следващо рестартиране</string>
-    <string name="settings_mode_enable_always">Винаги</string>
     <string name="processing">Обработва се…</string>
     <string name="refresh_pulling">Опънете надолу за да обновите</string>
     <string name="refresh_release">Пуснете за да обновите</string>

@@ -308,9 +308,9 @@ fun SettingPager(
                             .fillMaxWidth(),
                     ) {
                         val suCompatModeItems = listOf(
-                            stringResource(id = R.string.settings_mode_disable_by_default),
-                            stringResource(id = R.string.settings_mode_enable_until_reboot),
-                            stringResource(id = R.string.settings_mode_enable_always),
+                            stringResource(id = R.string.settings_mode_enable_by_default),
+                            stringResource(id = R.string.settings_mode_disable_until_reboot),
+                            stringResource(id = R.string.settings_mode_disable_always),
                         )
 
                         val currentSuEnabled = Natives.isSuEnabled()

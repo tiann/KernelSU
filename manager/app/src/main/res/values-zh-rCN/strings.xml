@@ -135,9 +135,9 @@
     <string name="selected_lkm">已选择的 LKM：%s</string>
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
-    <string name="settings_mode_disable_by_default">禁用（默认）</string>
-    <string name="settings_mode_enable_until_reboot">直到下次重启前</string>
-    <string name="settings_mode_enable_always">始终启用</string>
+    <string name="settings_mode_enable_by_default">启用（默认）</string>
+    <string name="settings_mode_disable_until_reboot">禁用直到下次重启</string>
+    <string name="settings_mode_disable_always">始终禁用</string>
     <string name="settings_sucompat">传统 su 命令支持</string>
     <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限</string>
     <string name="settings_kernel_umount">内核处理卸载模块</string>

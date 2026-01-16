@@ -120,11 +120,8 @@ Liitu meie %2$si kanaliga</string>
     <string name="settings_uninstall_temporary">Eemalda ajutiselt</string>
     <string name="settings_uninstall_permanent">Eemalda püsivalt</string>
     <string name="settings_restore_stock_image">Taasta vaikimisi tõmmis</string>
-    <string name="settings_mode_disable_by_default">Keela</string>
     <string name="settings_sucompat">Suuna su binaarfail ümber</string>
     <string name="settings_sucompat_summary">Võimaldab rakendustel, kellele on antud Superuser luba rakenduse profiilis, saada superuser shell, käivitades /system/bin/su; kehtib ainult uute protsesside puhul.</string>
-    <string name="settings_mode_enable_until_reboot">Järgmise käivitamiseni</string>
-    <string name="settings_mode_enable_always">Alati</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Kerneli tasemel lahtihaakimise käitumine, mida kontrollib KernelSU</string>
 </resources>

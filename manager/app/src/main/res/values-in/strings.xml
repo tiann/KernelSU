@@ -130,13 +130,10 @@
     <string name="settings_module_check_update">Periksa pembaruan modul</string>
     <string name="install_upload_lkm_file">Gunakan berkas LKM lokal</string>
     <string name="install_only_support_ko_file">Hanya berkas .ko yang didukung</string>
-    <string name="settings_mode_disable_by_default">Nonaktifkan</string>
     <string name="settings_sucompat">Rutekan ulang biner su</string>
     <string name="settings_sucompat_summary">Memungkinkan aplikasi yang diberi izin Superuser di Profil Aplikasi mendapatkan shell superuser dengan menjalankan /system/bin/su; efektif hanya untuk proses baru.</string>
     <string name="settings_kernel_umount">Umount kernel</string>
     <string name="settings_kernel_umount_summary">Perilaku umount tingkat kernel dikendalikan oleh KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">Hingga Reboot</string>
-    <string name="settings_mode_enable_always">Selalu</string>
     <string name="processing">Memproses…</string>
     <string name="refresh_pulling">Tarik ke bawah untuk menyegarkan</string>
     <string name="refresh_release">Lepaskan untuk menyegarkan</string>

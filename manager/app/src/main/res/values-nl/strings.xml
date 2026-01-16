@@ -132,13 +132,10 @@
     <string name="settings_module_check_update">Controleer op module-updates</string>
     <string name="install_upload_lkm_file">Gebruik lokaal LKM-bestand</string>
     <string name="install_only_support_ko_file">Alleen .ko bestanden worden ondersteund</string>
-    <string name="settings_mode_disable_by_default">Uitschakelen</string>
     <string name="settings_sucompat">su binary omleiden</string>
     <string name="settings_sucompat_summary">Stelt apps met Superuser-toestemming in App Profiel in staat om een superuser-shell te verkrijgen door /system/bin/su uit te voeren; alleen effectief voor nieuwe processen.</string>
     <string name="settings_kernel_umount">Kernel ontkoppelen</string>
     <string name="settings_kernel_umount_summary">Kernel-niveau ontkoppelgedrag beheerd door KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">Tot volgende herstart</string>
-    <string name="settings_mode_enable_always">Altijd</string>
     <string name="processing">Verwerken…</string>
     <string name="refresh_pulling">Trek omlaag om te vernieuwen</string>
     <string name="refresh_release">Vrijgeven om te vernieuwen</string>

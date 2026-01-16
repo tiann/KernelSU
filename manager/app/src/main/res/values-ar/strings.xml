@@ -128,9 +128,6 @@
     <string name="module_install_prompt_with_name">الحزم الاتيه سيتم تثبيتها %1$s</string>
     <string name="confirm">تأكيد</string>
     <string name="su_not_allowed">من الغير ممكن اعطاء صلاحيات (المسخدم الخارق) لـ %s</string>
-    <string name="settings_mode_disable_by_default">تعطيل (افتراضي)</string>
-    <string name="settings_mode_enable_until_reboot">حتى إعادة التشغيل التالية</string>
-    <string name="settings_mode_enable_always">دائماً</string>
     <string name="settings_sucompat">إعادة توجيه ثنائي su</string>
     <string name="settings_sucompat_summary">يسمح للتطبيقات التي تم منحها صلاحيات Superuser في ملف تعريف التطبيق بالحصول على shell superuser من خلال تنفيذ /system/bin/su؛ فعال فقط للعمليات الجديدة.</string>
     <string name="settings_kernel_umount">إلغاء تحميل النواة</string>

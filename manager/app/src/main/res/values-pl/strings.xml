@@ -138,13 +138,10 @@
     <string name="refresh_refresh">Odświeżanie…</string>
     <string name="refresh_complete">Odświeżono pomyślnie</string>
     <string name="settings_module_check_update">Sprawdź aktualizację modułów</string>
-    <string name="settings_mode_disable_by_default">Wyłącz</string>
     <string name="settings_sucompat">Przekieruj binarkę su</string>
     <string name="settings_sucompat_summary">Pozwala aplikacjom z uprawnieniami Superużytkownika w profilu aplikacji uzyskać shell superużytkownika przez wykonanie /system/bin/su; skuteczne tylko dla nowych procesów.</string>
     <string name="settings_kernel_umount">Odmontowanie jądra</string>
     <string name="settings_kernel_umount_summary">Zachowanie odmontowania na poziomie jądra kontrolowane przez KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">Do następnego ponownego uruchomienia</string>
-    <string name="settings_mode_enable_always">Zawsze</string>
     <string name="app_profile_affects_following_apps">Wpływa na następujące aplikacje</string>
     <string name="install_select_partition">Wybierz partycję</string>
     <string name="group_contains_apps">Zawiera %d aplikacji</string>

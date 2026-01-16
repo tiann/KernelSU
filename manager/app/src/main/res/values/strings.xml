@@ -145,9 +145,9 @@
     <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile</string>
     <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
     <string name="feature_status_managed_summary">This feature is managed by a module</string>
-    <string name="settings_mode_disable_by_default">Disable (Default)</string>
-    <string name="settings_mode_enable_until_reboot">Until Reboot</string>
-    <string name="settings_mode_enable_always">Always</string>
+    <string name="settings_mode_enable_by_default">Enable (Default)</string>
+    <string name="settings_mode_disable_until_reboot">Disable until Reboot</string>
+    <string name="settings_mode_disable_always">Always disable</string>
     <string name="processing">Processing…</string>
     <string name="refresh_pulling">Pull down to refresh</string>
     <string name="refresh_release">Release to refresh</string>

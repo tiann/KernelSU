@@ -139,13 +139,10 @@
     <string name="processing">Обработка…</string>
     <string name="install_upload_lkm_file">Использовать локальный LKM файл</string>
     <string name="install_only_support_ko_file">Поддерживаются только .ko файлы</string>
-    <string name="settings_mode_disable_by_default">Отключить (по умолчанию)</string>
     <string name="settings_sucompat">Классическая команда su</string>
     <string name="settings_sucompat_summary">Разрешить root-доступ через /system/bin/su в новых процессах.</string>
     <string name="settings_kernel_umount">Размонтирование модулей</string>
     <string name="settings_kernel_umount_summary">Размонтировать модули в ядре для профиля приложения</string>
-    <string name="settings_mode_enable_until_reboot">До следующей перезагрузки</string>
-    <string name="settings_mode_enable_always">Всегда</string>
     <string name="settings_module_check_update">Проверять обновления модулей</string>
     <string name="install_select_partition">Выбрать раздел</string>
     <string name="app_profile_affects_following_apps">Влияет на следующие приложения</string>

@@ -129,9 +129,6 @@
     <string name="settings_module_check_update">모듈 업데이트 확인</string>
     <string name="install_upload_lkm_file">로컬 LKM 파일 사용</string>
     <string name="install_only_support_ko_file">.ko 파일만 지원됩니다</string>
-    <string name="settings_mode_default">기본값</string>
-    <string name="settings_mode_enable_until_reboot">다음 재부팅까지</string>
-    <string name="settings_mode_enable_always">항상</string>
     <string name="processing">처리 중…</string>
     <string name="refresh_pulling">당겨서 새로 고침</string>
     <string name="refresh_release">놓아서 새로 고침</string>
@@ -175,7 +172,6 @@
     <string name="tab_releases">릴리즈</string>
     <string name="tab_info">정보</string>
     <string name="safe_mode_module_disabled">안전 모드에서 모듈 설치가 비활성화됨</string>
-    <string name="settings_mode_disable_by_default">비활성화 (기본값)</string>
     <string name="settings_sucompat">기존 su 명령</string>
     <string name="settings_sucompat_summary">/system/bin/su를 통한 루트 권한 획득 허용 (새 프로세스 전용)</string>
     <string name="settings_kernel_umount">모듈 언마운트</string>

@@ -43,7 +43,7 @@
 #define REBOOT_SYMBOL "__x64_sys_reboot"
 #define SYS_READ_SYMBOL "__x64_sys_read"
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
-#define SYS_NEWFSTATAT_SYMBOL "__x64_sys_newfstat"
+#define SYS_FSTAT_SYMBOL "__x64_sys_newfstat"
 
 #else
 #error "Unsupported arch"

@@ -122,11 +122,8 @@ Csatlakozzon a %2$s csatornánkhoz</string>
     <string name="settings_check_update">Frissítés ellenőrzése</string>
     <string name="settings_check_update_summary">Automatikusan keressen frissítéseket az alkalmazás megnyitásakor</string>
     <string name="log_saved">Mentett naplók</string>
-    <string name="settings_mode_disable_by_default">Letiltás</string>
     <string name="settings_sucompat">su bináris átirányítása</string>
     <string name="settings_sucompat_summary">Lehetővé teszi az App Profile-ban Superuser engedéllyel rendelkező alkalmazások számára, hogy superuser shell-t kapjanak a /system/bin/su végrehajtásával; csak új folyamatoknál hatékony.</string>
-    <string name="settings_mode_enable_until_reboot">Следующей перезагрузки</string>
-    <string name="settings_mode_enable_always">Mindig</string>
     <string name="settings_kernel_umount">Kernel leválasztása</string>
     <string name="settings_kernel_umount_summary">KernelSU által vezérelt kernel szintű leválasztási viselkedés</string>
 </resources>

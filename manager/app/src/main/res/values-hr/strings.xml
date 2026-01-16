@@ -139,13 +139,10 @@
     <string name="install_select_partition">Odaberite particiju</string>
     <string name="feature_status_unsupported_summary">Kernel ne podržava ovu značajku.</string>
     <string name="feature_status_managed_summary">Ovom značajkom upravlja modul.</string>
-    <string name="settings_mode_disable_by_default">Onemogući</string>
     <string name="settings_sucompat">Preusmjeri su binarnu datoteku</string>
     <string name="settings_sucompat_summary">Omogućava aplikacijama kojima je dodijeljeno dopuštenje Superuser u Profilu aplikacije da dobiju superuser shell izvršavanjem /system/bin/su; učinkovito samo za nove procese.</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Ponašanje umount na razini kernela koje kontrolira KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">Do idućeg pokretanja</string>
-    <string name="settings_mode_enable_always">Uvijek</string>
     <string name="undo">Poništi</string>
     <string name="module_undo_uninstall_success">Deinstalacija %s uspješno otkazana</string>
     <string name="module_undo_uninstall_failed">Poništavanje deinstalacije nije uspjelo: %s</string>

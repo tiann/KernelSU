@@ -130,13 +130,10 @@
     <string name="settings_module_check_update">Kiểm tra cập nhật module</string>
     <string name="install_upload_lkm_file">Sử dụng file LKM cục bộ</string>
     <string name="install_only_support_ko_file">Chỉ hỗ trợ các file .ko</string>
-    <string name="settings_mode_disable_by_default">Tắt (Mặc định)</string>
     <string name="settings_sucompat">Lệnh su truyền thống</string>
     <string name="settings_sucompat_summary">Cho phép truy cập root qua /system/bin/su, trong các quy trình mới.</string>
     <string name="settings_kernel_umount">Gỡ kết nối mô-đun</string>
     <string name="settings_kernel_umount_summary">Gỡ kết nối các mô-đun khỏi hạt nhân trong Hồ sơ ứng dụng</string>
-    <string name="settings_mode_enable_until_reboot">Cho đến lần khởi động lại tiếp theo</string>
-    <string name="settings_mode_enable_always">Luôn luôn</string>
     <string name="processing">Đang xử lý…</string>
     <string name="refresh_pulling">Kéo xuống để làm mới</string>
     <string name="refresh_release">Thả để làm mới</string>

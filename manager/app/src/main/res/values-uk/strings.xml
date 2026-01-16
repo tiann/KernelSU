@@ -132,13 +132,10 @@
     <string name="settings_module_check_update">Перевірити наявність оновлень модулів</string>
     <string name="install_upload_lkm_file">Використовувати локальний LKM-файл</string>
     <string name="install_only_support_ko_file">Підтримуються лише файли .ko</string>
-    <string name="settings_mode_disable_by_default">Вимкнути</string>
     <string name="settings_sucompat">Перенаправлення бінарного файлу su</string>
     <string name="settings_sucompat_summary">Дозволяє програмам з правами Суперкористувача в профілі програми отримати оболонку суперкористувача шляхом виконання /system/bin/su; діє тільки для нових процесів.</string>
     <string name="settings_kernel_umount">Розмонтування ядра</string>
     <string name="settings_kernel_umount_summary">Поведінка розмонтування на рівні ядра, контрольована KernelSU</string>
-    <string name="settings_mode_enable_until_reboot">До наступного перезавантаження</string>
-    <string name="settings_mode_enable_always">Завжди</string>
     <string name="processing">Обробка…</string>
     <string name="refresh_pulling">Потягніть униз, щоб оновити</string>
     <string name="refresh_release">Відпустіть для оновлення</string>

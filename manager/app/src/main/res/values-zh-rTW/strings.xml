@@ -143,11 +143,8 @@
     <string name="settings_theme_mode_dark">深色</string>
     <string name="settings_theme_mode_monet_dark">Monet (深色)</string>
     <string name="settings_theme_summary">選擇應用的主題模式。</string>
-    <string name="settings_mode_disable_by_default">停用（預設）</string>
     <string name="settings_sucompat">傳統 su 命令支援</string>
     <string name="settings_sucompat_summary">允許透過 /system/bin/su 獲取 Root 權限，僅對新行程生效。</string>
-    <string name="settings_mode_enable_until_reboot">至下次重新開機</string>
-    <string name="settings_mode_enable_always">總是</string>
     <string name="settings_kernel_umount">核心處理解除掛載模組</string>
     <string name="settings_kernel_umount_summary">在核心為需要的應用程式解除掛載模組</string>
 </resources>
