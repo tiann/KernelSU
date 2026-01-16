@@ -115,21 +115,16 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
             }
         }
         if (actionResult) {
-            if (fromShortcut && activity != null && activity.isTaskRoot) {
+            if (fromShortcut) {
                 Toast.makeText(
                     context,
                     context.getString(R.string.module_action_success),
                     Toast.LENGTH_SHORT
                 ).show()
+            }
+            if (fromShortcut && activity != null && activity.isTaskRoot) {
                 activity.finish()
             } else {
-                if (fromShortcut) {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.module_action_success),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
                 navigator.popBackStack()
             }
         }
