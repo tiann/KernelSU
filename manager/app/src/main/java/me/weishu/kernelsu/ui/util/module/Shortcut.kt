@@ -254,7 +254,7 @@ object Shortcut {
                 if (path.isNotBlank()) {
                     val shell = getRootShell(true)
                     val suFile = SuFile(path)
-                    suFile.setShell(shell)
+                    suFile.shell = shell
                     SuFileInputStream.open(suFile).use { input ->
                         BitmapFactory.decodeStream(input)
                     }
