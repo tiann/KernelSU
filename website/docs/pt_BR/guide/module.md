@@ -105,6 +105,7 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - `id` deve corresponder a esta expressão regular: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>

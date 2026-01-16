@@ -105,6 +105,7 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - `id` phải khớp với biểu thức chính quy này: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>

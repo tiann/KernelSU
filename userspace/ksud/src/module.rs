@@ -721,6 +721,40 @@ fn list_module(path: &str) -> Vec<HashMap<String, String>> {
         module_prop_map.insert("action".to_owned(), action.to_string());
         module_prop_map.insert("mount".to_owned(), need_mount.to_string());
 
+        // Resolve actionIcon path if specified, validate and convert to absolute path
+        if let Some(icon_value) = module_prop_map.get("actionIcon") {
+            let icon_value = icon_value.trim();
+            if !icon_value.is_empty() {
+                let has_parent = std::path::Path::new(icon_value)
+                    .components()
+                    .any(|c| matches!(c, std::path::Component::ParentDir));
+                if has_parent {
+                    log::warn!(
+                        "Rejected actionIcon with parent traversal for module {}: {}",
+                        module_prop_map.get("id").map_or("", String::as_str),
+                        icon_value
+                    );
+                } else {
+                    let candidate = if std::path::Path::new(icon_value).is_absolute() {
+                        std::path::PathBuf::from(icon_value)
+                    } else {
+                        path.join(icon_value)
+                    };
+                    if candidate.exists() && candidate.is_file() {
+                        if let Some(s) = candidate.to_str() {
+                            module_prop_map.insert("actionIcon".to_owned(), s.to_string());
+                        }
+                    } else {
+                        log::debug!(
+                            "actionIcon not found for module {}: {}",
+                            module_prop_map.get("id").map_or("", String::as_str),
+                            candidate.display()
+                        );
+                    }
+                }
+            }
+        }
+
         // Apply module config overrides and extract managed features
         if let Some(module_id) = module_prop_map.get("id")
             && let Some(config) = all_configs.get(module_id.as_str())

@@ -111,6 +111,7 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - id 必须与这个正则表达式匹配：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a  module`，✗ `1_module`，✗ `-a-module`。这是您的模块的唯一标识符，发布后不应更改。

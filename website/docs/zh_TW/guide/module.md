@@ -108,6 +108,7 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - id 必須與這個正則表達式相符：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a  module`，✗ `1_module`，✗ `-a-module`。這是您的模組的唯一識別碼，發表後將無法變更。

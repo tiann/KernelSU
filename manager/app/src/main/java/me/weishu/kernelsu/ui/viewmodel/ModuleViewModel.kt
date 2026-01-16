@@ -53,6 +53,7 @@ class ModuleViewModel : ViewModel() {
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
         val metamodule: Boolean,
+        val actionIconPath: String?,
     )
 
     @Immutable
@@ -200,7 +201,8 @@ class ModuleViewModel : ViewModel() {
                                 obj.optString("updateJson"),
                                 obj.optBoolean("web"),
                                 obj.optBoolean("action"),
-                                (obj.optInt("metamodule") != 0) or obj.optBoolean("metamodule")
+                                (obj.optInt("metamodule") != 0) or obj.optBoolean("metamodule"),
+                                obj.optString("actionIcon").takeIf { it.isNotBlank() }
                             )
                         }.toList()
                 }.getOrElse {

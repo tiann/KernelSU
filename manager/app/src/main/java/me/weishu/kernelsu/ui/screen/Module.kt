@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -69,6 +70,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -87,6 +90,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -104,6 +108,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
@@ -117,6 +122,7 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
+import me.weishu.kernelsu.ui.util.getRootShell
 import me.weishu.kernelsu.ui.util.hasMagisk
 import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
@@ -126,6 +132,8 @@ import me.weishu.kernelsu.ui.util.undoUninstallModule
 import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
+import com.topjohnwu.superuser.io.SuFile
+import com.topjohnwu.superuser.io.SuFileInputStream
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -156,11 +164,7 @@ import top.yukonga.miuix.kmp.icon.extended.UploadCloud
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-import android.graphics.BitmapFactory
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.core.net.toUri
+import java.io.File
 
 private enum class ShortcutType {
     Action,
@@ -251,6 +255,7 @@ fun ModulePager(
     var shortcutModuleId by rememberSaveable { mutableStateOf<String?>(null) }
     var shortcutName by rememberSaveable { mutableStateOf("") }
     var shortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var defaultShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedShortcutType by rememberSaveable { mutableStateOf<ShortcutType?>(null) }
     val showShortcutDialog = remember { mutableStateOf(false) }
     val showShortcutTypeDialog = remember { mutableStateOf(false) }
@@ -267,12 +272,29 @@ fun ModulePager(
         val uriStr = shortcutIconUri
         if (!uriStr.isNullOrBlank()) {
             withContext(Dispatchers.IO) {
-                runCatching {
-                    context.contentResolver.openInputStream(uriStr.toUri())?.use { input ->
-                        BitmapFactory.decodeStream(input)?.asImageBitmap()
+                val parsed = uriStr.toUri()
+                if (parsed.scheme.equals("su", ignoreCase = true)) {
+                    runCatching {
+                        val path = parsed.path ?: ""
+                        if (path.isNotBlank()) {
+                            val shell = getRootShell(true)
+                            val suFile = SuFile(path)
+                            suFile.shell = shell
+                            SuFileInputStream.open(suFile).use { input ->
+                                BitmapFactory.decodeStream(input)?.asImageBitmap()
+                            }
+                        } else null
+                    }.onSuccess { bitmap ->
+                        shortcutPreviewIcon.value = bitmap
                     }
-                }.onSuccess { bitmap ->
-                    shortcutPreviewIcon.value = bitmap
+                } else {
+                    runCatching {
+                        context.contentResolver.openInputStream(parsed)?.use { input ->
+                            BitmapFactory.decodeStream(input)?.asImageBitmap()
+                        }
+                    }.onSuccess { bitmap ->
+                        shortcutPreviewIcon.value = bitmap
+                    }
                 }
             }
         }
@@ -394,6 +416,17 @@ fun ModulePager(
         }
 
         if (success) {
+            withContext(Dispatchers.IO) {
+                val cacheDir = File(ksuApp.cacheDir, "module_icons")
+                cacheDir.listFiles()?.forEach { f ->
+                    if (f.name.startsWith(module.id)) {
+                        runCatching { f.delete() }
+                    }
+                }
+            }
+        }
+
+        if (success) {
             viewModel.fetchModuleList()
         }
         val message = if (success) {
@@ -434,6 +467,13 @@ fun ModulePager(
         shortcutModuleId = module.id
         shortcutName = module.name
         shortcutIconUri = null
+        defaultShortcutIconUri = null
+        val defaultIconPath = module.actionIconPath
+        if (!defaultIconPath.isNullOrBlank()) {
+            val suUri = "su:$defaultIconPath"
+            defaultShortcutIconUri = suUri
+            shortcutIconUri = suUri
+        }
         if (module.hasActionScript && module.hasWebUi) {
             selectedShortcutType = null
             showShortcutTypeDialog.value = true
@@ -909,7 +949,7 @@ fun ModulePager(
                             Image(
                                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
                                 contentDescription = "icon",
-                                contentScale = FixedScale(1f)
+                                contentScale = FixedScale(1.5f)
                             )
                         }
                     }
@@ -920,7 +960,7 @@ fun ModulePager(
                 ) {
                     TextButton(
                         text = stringResource(id = R.string.module_shortcut_icon_default),
-                        onClick = { shortcutIconUri = null },
+                        onClick = { shortcutIconUri = defaultShortcutIconUri },
                         modifier = Modifier.fillMaxWidth(),
                     )
                     TextButton(

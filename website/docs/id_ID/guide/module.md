@@ -103,6 +103,7 @@ version=<string>
 versioncode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - `id` harus cocok dengan ekspresi reguler ini: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>

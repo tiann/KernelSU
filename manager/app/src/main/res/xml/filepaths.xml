@@ -2,5 +2,5 @@
 
 <paths>
     <cache-path name="cache" path="."/>
-    <root-path name="root" path="." />
+    <files-path name="files" path="." />
 </paths>

@@ -103,6 +103,7 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - `id` はこの正規表現に一致していなければいけません: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>

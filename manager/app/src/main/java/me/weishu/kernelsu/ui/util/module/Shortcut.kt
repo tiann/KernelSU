@@ -4,6 +4,7 @@ import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
@@ -16,6 +17,8 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.util.getRootShell
+import com.topjohnwu.superuser.io.SuFile
+import com.topjohnwu.superuser.io.SuFileInputStream
 import java.util.Locale
 
 object Shortcut {
@@ -246,16 +249,47 @@ object Shortcut {
         return try {
             val uri = iconUri.toUri()
             Log.d(TAG, "createShortcutIcon: loading bitmap from uri=$uri")
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                val bitmap = BitmapFactory.decodeStream(input)
-                if (bitmap != null) {
-                    Log.d(TAG, "createShortcutIcon: decoded bitmap successfully")
-                    IconCompat.createWithBitmap(bitmap)
-                } else {
-                    Log.w(TAG, "createShortcutIcon: bitmap decode returned null, using default icon")
-                    IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+            val bitmap = if (uri.scheme.equals("su", ignoreCase = true)) {
+                val path = uri.path ?: ""
+                if (path.isNotBlank()) {
+                    val shell = getRootShell(true)
+                    val suFile = SuFile(path)
+                    suFile.setShell(shell)
+                    SuFileInputStream.open(suFile).use { input ->
+                        BitmapFactory.decodeStream(input)
+                    }
+                } else null
+            } else {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    BitmapFactory.decodeStream(input)
                 }
-            } ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+            }
+            if (bitmap != null) {
+                Log.d(TAG, "createShortcutIcon: decoded bitmap successfully")
+                val w = bitmap.width
+                val h = bitmap.height
+                val side = minOf(w, h)
+                val x = (w - side) / 2
+                val y = (h - side) / 2
+                val square = try {
+                    Bitmap.createBitmap(bitmap, x, y, side, side)
+                } catch (t: Throwable) {
+                    bitmap
+                }
+                val finalBmp = if (side > 512) {
+                    try {
+                        Bitmap.createScaledBitmap(square, 512, 512, true)
+                    } catch (_: Throwable) {
+                        square
+                    }
+                } else {
+                    square
+                }
+                IconCompat.createWithBitmap(finalBmp)
+            } else {
+                Log.w(TAG, "createShortcutIcon: bitmap decode returned null, using default icon")
+                IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+            }
         } catch (t: Throwable) {
             Log.w(TAG, "createShortcutIcon: exception when creating icon from uri=$iconUri: ${t.message}", t)
             IconCompat.createWithResource(context, R.mipmap.ic_launcher)
@@ -418,4 +452,3 @@ object Shortcut {
         }
     }
 }
-

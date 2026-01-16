@@ -103,6 +103,7 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+actionIcon=<path>
 ```
 
 - `id` должно соответствовать данному регулярному выражению: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
