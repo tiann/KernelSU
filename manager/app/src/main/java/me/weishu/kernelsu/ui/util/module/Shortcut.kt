@@ -18,6 +18,7 @@ import androidx.core.net.toUri
 import com.topjohnwu.superuser.io.SuFile
 import com.topjohnwu.superuser.io.SuFileInputStream
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.MainActivity
 import me.weishu.kernelsu.ui.util.getRootShell
 import java.util.Locale
 
@@ -31,103 +32,22 @@ object Shortcut {
         name: String,
         iconUri: String?
     ) {
-        Log.d(
-            TAG,
-            "createModuleActionShortcut start, moduleId=$moduleId, name=$name, iconUri=$iconUri, " +
-                    "manufacturer=${Build.MANUFACTURER}, sdk=${Build.VERSION.SDK_INT}"
-        )
         val shortcutId = "module_action_$moduleId"
-        val hasPinned = hasPinnedShortcut(context, shortcutId)
-        Log.d(TAG, "createModuleActionShortcut: shortcutId=$shortcutId, hasPinned=$hasPinned")
-
-        val shortcutIntent = Intent(context, me.weishu.kernelsu.ui.MainActivity::class.java).apply {
+        val shortcutIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             putExtra("shortcut_type", "module_action")
             putExtra("module_id", moduleId)
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
-
-        val iconCompat = createShortcutIcon(context, iconUri)
-
-        Log.d(
-            TAG,
-            "creating ShortcutInfoCompat, hasCustomIcon=${iconCompat != null}"
+        createModuleShortcut(
+            context = context,
+            moduleId = moduleId,
+            name = name,
+            iconUri = iconUri,
+            shortcutId = shortcutId,
+            shortcutIntent = shortcutIntent,
+            logPrefix = "createModuleActionShortcut"
         )
-
-        val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
-
-        val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
-            .setShortLabel(name)
-            .setIntent(shortcutIntent)
-            .setIcon(finalIcon)
-            .build()
-
-        try {
-            Log.d(TAG, "pushDynamicShortcut() called for moduleId=$moduleId")
-            ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
-        } catch (t: Throwable) {
-            Log.w(TAG, "pushDynamicShortcut() threw exception for moduleId=$moduleId: ${t.message}", t)
-        }
-
-        if (hasPinned) {
-            Log.d(TAG, "createModuleActionShortcut: detected existing pinned shortcut, updating only")
-            Toast.makeText(context, context.getString(R.string.module_shortcut_updated), Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val manufacturer = Build.MANUFACTURER.lowercase(Locale.ROOT)
-        val initialState = getShortcutPermissionState(context)
-        Log.d(TAG, "createModuleActionShortcut: initial permission state=$initialState")
-        if (manufacturer.contains("xiaomi") && initialState != ShortcutPermissionState.Granted) {
-            Log.d(TAG, "createModuleActionShortcut: device is Xiaomi, trying to grant via root shell")
-            val rootSuccess = tryGrantMiuiShortcutPermissionByRoot(context)
-            Log.d(TAG, "createModuleActionShortcut: root grant attempt success=$rootSuccess")
-            val afterState = getShortcutPermissionState(context)
-            Log.d(TAG, "createModuleActionShortcut: state after root attempt=$afterState")
-            if (afterState != ShortcutPermissionState.Granted) {
-                Log.d(TAG, "createModuleActionShortcut: still not Granted after root, showing hint")
-                showShortcutPermissionHint(context)
-                return
-            }
-        } else if (initialState == ShortcutPermissionState.Denied || initialState == ShortcutPermissionState.Ask) {
-            Log.d(
-                TAG,
-                "createModuleActionShortcut: permission not granted (state=$initialState), showing hint first"
-            )
-            showShortcutPermissionHint(context)
-            return
-        }
-        if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
-            Log.w(TAG, "requestPinShortcut not supported on this launcher")
-            Toast.makeText(
-                context,
-                context.getString(R.string.module_shortcut_not_supported),
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
-        val pinned = try {
-            Log.d(TAG, "requestPinShortcut() called for moduleId=$moduleId")
-            val result = ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
-            Log.d(TAG, "requestPinShortcut() result=$result")
-            result
-        } catch (t: Throwable) {
-            Log.w(TAG, "requestPinShortcut() threw exception: ${t.message}", t)
-            false
-        }
-
-        if (pinned) {
-            Log.d(TAG, "pinned shortcut created successfully for moduleId=$moduleId")
-            Toast.makeText(
-                context,
-                context.getString(R.string.module_shortcut_created),
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            Log.w(TAG, "pinned shortcut not created, showing permission hint for moduleId=$moduleId")
-            showShortcutPermissionHint(context)
-        }
     }
 
     fun createModuleWebUiShortcut(
@@ -136,15 +56,7 @@ object Shortcut {
         name: String,
         iconUri: String?
     ) {
-        Log.d(
-            TAG,
-            "createModuleWebUiShortcut start, moduleId=$moduleId, name=$name, iconUri=$iconUri, " +
-                    "manufacturer=${Build.MANUFACTURER}, sdk=${Build.VERSION.SDK_INT}"
-        )
         val shortcutId = "module_webui_$moduleId"
-        val hasPinned = hasPinnedShortcut(context, shortcutId)
-        Log.d(TAG, "createModuleWebUiShortcut: shortcutId=$shortcutId, hasPinned=$hasPinned")
-
         val shortcutIntent = Intent(context, me.weishu.kernelsu.ui.webui.WebUIActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             data = "kernelsu://webui/$moduleId".toUri()
@@ -153,14 +65,30 @@ object Shortcut {
             putExtra("from_webui_shortcut", true)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
+        createModuleShortcut(
+            context = context,
+            moduleId = moduleId,
+            name = name,
+            iconUri = iconUri,
+            shortcutId = shortcutId,
+            shortcutIntent = shortcutIntent,
+            logPrefix = "createModuleWebUiShortcut"
+        )
+    }
+
+    private fun createModuleShortcut(
+        context: Context,
+        moduleId: String,
+        name: String,
+        iconUri: String?,
+        shortcutId: String,
+        shortcutIntent: Intent,
+        logPrefix: String
+    ) {
+        val hasPinned = hasPinnedShortcut(context, shortcutId)
+        Log.d(TAG, "$logPrefix: shortcutId=$shortcutId, hasPinned=$hasPinned")
 
         val iconCompat = createShortcutIcon(context, iconUri)
-
-        Log.d(
-            TAG,
-            "creating WebUI ShortcutInfoCompat, hasCustomIcon=${iconCompat != null}"
-        )
-
         val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
 
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
@@ -170,42 +98,39 @@ object Shortcut {
             .build()
 
         try {
-            Log.d(TAG, "pushDynamicShortcut() called for WebUI moduleId=$moduleId")
+            Log.d(TAG, "$logPrefix: pushDynamicShortcut() called for moduleId=$moduleId")
             ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
         } catch (t: Throwable) {
-            Log.w(TAG, "pushDynamicShortcut() threw exception for WebUI moduleId=$moduleId: ${t.message}", t)
+            Log.w(TAG, "$logPrefix: pushDynamicShortcut() threw exception for moduleId=$moduleId: ${t.message}", t)
         }
 
         if (hasPinned) {
-            Log.d(TAG, "createModuleWebUiShortcut: detected existing pinned shortcut, updating only")
+            Log.d(TAG, "$logPrefix: detected existing pinned shortcut, updating only")
             Toast.makeText(context, context.getString(R.string.module_shortcut_updated), Toast.LENGTH_SHORT).show()
             return
         }
 
         val manufacturer = Build.MANUFACTURER.lowercase(Locale.ROOT)
         val initialState = getShortcutPermissionState(context)
-        Log.d(TAG, "createModuleWebUiShortcut: initial permission state=$initialState")
+        Log.d(TAG, "$logPrefix: initial permission state=$initialState")
         if (manufacturer.contains("xiaomi") && initialState != ShortcutPermissionState.Granted) {
-            Log.d(TAG, "createModuleWebUiShortcut: device is Xiaomi, trying to grant via root shell")
+            Log.d(TAG, "$logPrefix: device is Xiaomi, trying to grant via root shell")
             val rootSuccess = tryGrantMiuiShortcutPermissionByRoot(context)
-            Log.d(TAG, "createModuleWebUiShortcut: root grant attempt success=$rootSuccess")
+            Log.d(TAG, "$logPrefix: root grant attempt success=$rootSuccess")
             val afterState = getShortcutPermissionState(context)
-            Log.d(TAG, "createModuleWebUiShortcut: state after root attempt=$afterState")
+            Log.d(TAG, "$logPrefix: state after root attempt=$afterState")
             if (afterState != ShortcutPermissionState.Granted) {
-                Log.d(TAG, "createModuleWebUiShortcut: still not Granted after root, showing hint")
+                Log.d(TAG, "$logPrefix: still not Granted after root, showing hint")
                 showShortcutPermissionHint(context)
                 return
             }
         } else if (initialState == ShortcutPermissionState.Denied || initialState == ShortcutPermissionState.Ask) {
-            Log.d(
-                TAG,
-                "createModuleWebUiShortcut: permission not granted (state=$initialState), showing hint first"
-            )
+            Log.d(TAG, "$logPrefix: permission not granted (state=$initialState), showing hint first")
             showShortcutPermissionHint(context)
             return
         }
         if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
-            Log.w(TAG, "requestPinShortcut not supported on this launcher")
+            Log.w(TAG, "$logPrefix: requestPinShortcut not supported on this launcher")
             Toast.makeText(
                 context,
                 context.getString(R.string.module_shortcut_not_supported),
@@ -215,24 +140,24 @@ object Shortcut {
         }
 
         val pinned = try {
-            Log.d(TAG, "requestPinShortcut() called for WebUI moduleId=$moduleId")
+            Log.d(TAG, "$logPrefix: requestPinShortcut() called for moduleId=$moduleId")
             val result = ShortcutManagerCompat.requestPinShortcut(context, shortcut, null)
-            Log.d(TAG, "requestPinShortcut() result for WebUI=$result")
+            Log.d(TAG, "$logPrefix: requestPinShortcut() result=$result")
             result
         } catch (t: Throwable) {
-            Log.w(TAG, "requestPinShortcut() threw exception for WebUI: ${t.message}", t)
+            Log.w(TAG, "$logPrefix: requestPinShortcut() threw exception for moduleId=$moduleId: ${t.message}", t)
             false
         }
 
         if (pinned) {
-            Log.d(TAG, "pinned WebUI shortcut created successfully for moduleId=$moduleId")
+            Log.d(TAG, "$logPrefix: pinned shortcut created successfully for moduleId=$moduleId")
             Toast.makeText(
                 context,
                 context.getString(R.string.module_shortcut_created),
                 Toast.LENGTH_SHORT
             ).show()
         } else {
-            Log.w(TAG, "pinned WebUI shortcut not created, showing permission hint for WebUI moduleId=$moduleId")
+            Log.w(TAG, "$logPrefix: pinned shortcut not created, showing permission hint for moduleId=$moduleId")
             showShortcutPermissionHint(context)
         }
     }
@@ -422,11 +347,7 @@ object Shortcut {
         return try {
             val shell = getRootShell()
             val result = shell.newJob().add(cmd).exec()
-            Log.d(
-                TAG,
-                "tryGrantMiuiShortcutPermissionByRoot: cmd=$cmd, code=${result.code}, " +
-                        "isSuccess=${result.isSuccess}"
-            )
+            Log.d(TAG, "tryGrantMiuiShortcutPermissionByRoot: cmd=$cmd, code=${result.code}, isSuccess=${result.isSuccess}")
             result.isSuccess
         } catch (t: Throwable) {
             Log.w(TAG, "tryGrantMiuiShortcutPermissionByRoot: exception=${t.message}", t)

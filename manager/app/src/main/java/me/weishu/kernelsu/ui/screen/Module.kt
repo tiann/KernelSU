@@ -887,7 +887,7 @@ fun ModulePager(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TextButton(
-                    text = stringResource(id = R.string.module_shortcut_type_action),
+                    text = "Action",
                     onClick = {
                         selectedShortcutType = ShortcutType.Action
                         showShortcutTypeDialog.value = false
@@ -896,7 +896,7 @@ fun ModulePager(
                     modifier = Modifier.fillMaxWidth()
                 )
                 TextButton(
-                    text = stringResource(id = R.string.module_shortcut_type_webui),
+                    text = "WebUI",
                     onClick = {
                         selectedShortcutType = ShortcutType.WebUI
                         showShortcutTypeDialog.value = false
@@ -916,137 +916,121 @@ fun ModulePager(
             }
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                TextField(
-                    value = shortcutName,
-                    onValueChange = { shortcutName = it },
-                    modifier = Modifier,
-                    label = stringResource(id = R.string.module_shortcut_name_label)
-                )
-
-            }
-            Row(
-                modifier = Modifier.padding(vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(0.35f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .size(105.dp)
+                        .clip(ContinuousRoundedRectangle(24.dp))
+                        .background(Color.White)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(105.dp)
-                            .clip(ContinuousRoundedRectangle(24.dp))
-                            .background(Color.White)
-                    ) {
-                        val preview = shortcutPreviewIcon.value
-                        if (preview != null) {
-                            Image(
-                                bitmap = preview,
-                                modifier = Modifier.size(80.dp),
-                                contentDescription = null,
-                            )
-                        } else {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                                contentDescription = null,
-                                contentScale = FixedScale(1.5f)
-                            )
-                        }
+                    val preview = shortcutPreviewIcon.value
+                    if (preview != null) {
+                        Image(
+                            bitmap = preview,
+                            modifier = Modifier.size(80.dp),
+                            contentDescription = null,
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            contentScale = FixedScale(1.5f)
+                        )
                     }
                 }
-                Column(
-                    modifier = Modifier.weight(0.65f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    TextButton(
-                        text = stringResource(id = R.string.module_shortcut_icon_default),
-                        onClick = { shortcutIconUri = defaultShortcutIconUri },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
                     TextButton(
                         text = stringResource(id = R.string.module_shortcut_icon_pick),
                         onClick = { pickShortcutIconLauncher.launch("image/*") },
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(
+                        text = stringResource(id = R.string.module_shortcut_icon_default),
+                        onClick = { shortcutIconUri = defaultShortcutIconUri },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                TextField(
+                    value = shortcutName,
+                    onValueChange = { shortcutName = it },
+                    label = stringResource(id = R.string.module_shortcut_name_label)
+                )
+                if (hasExistingShortcut) {
+                    TextButton(
+                        text = stringResource(id = R.string.module_shortcut_delete),
+                        onClick = {
+                            val moduleId = shortcutModuleId
+                            val type = selectedShortcutType
+                            if (!moduleId.isNullOrBlank() && type != null) {
+                                when (type) {
+                                    ShortcutType.Action -> {
+                                        Shortcut.deleteModuleActionShortcut(context, moduleId)
+                                    }
+
+                                    ShortcutType.WebUI -> {
+                                        Shortcut.deleteModuleWebUiShortcut(context, moduleId)
+                                    }
+                                }
+                            }
+                            showShortcutDialog.value = false
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-            }
-            if (hasExistingShortcut) {
-                TextButton(
-                    text = stringResource(id = R.string.module_shortcut_delete),
-                    onClick = {
-                        val moduleId = shortcutModuleId
-                        val type = selectedShortcutType
-                        if (!moduleId.isNullOrBlank() && type != null) {
-                            when (type) {
-                                ShortcutType.Action -> {
-                                    Shortcut.deleteModuleActionShortcut(context, moduleId)
-                                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    TextButton(
+                        text = stringResource(id = android.R.string.cancel),
+                        onClick = { showShortcutDialog.value = false },
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(
+                        text = if (hasExistingShortcut) {
+                            stringResource(id = R.string.module_update)
+                        } else {
+                            stringResource(id = android.R.string.ok)
+                        },
+                        onClick = {
+                            val moduleId = shortcutModuleId
+                            val type = selectedShortcutType
+                            if (!moduleId.isNullOrBlank() && shortcutName.isNotBlank() && type != null) {
+                                when (type) {
+                                    ShortcutType.Action -> {
+                                        Shortcut.createModuleActionShortcut(
+                                            context,
+                                            moduleId,
+                                            shortcutName,
+                                            shortcutIconUri
+                                        )
+                                    }
 
-                                ShortcutType.WebUI -> {
-                                    Shortcut.deleteModuleWebUiShortcut(context, moduleId)
+                                    ShortcutType.WebUI -> {
+                                        Shortcut.createModuleWebUiShortcut(
+                                            context,
+                                            moduleId,
+                                            shortcutName,
+                                            shortcutIconUri
+                                        )
+                                    }
                                 }
                             }
-                        }
-                        showShortcutDialog.value = false
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                )
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TextButton(
-                    text = stringResource(id = android.R.string.cancel),
-                    onClick = { showShortcutDialog.value = false },
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(
-                    text = if (hasExistingShortcut) {
-                        stringResource(id = R.string.module_update)
-                    } else {
-                        stringResource(id = android.R.string.ok)
-                    },
-                    onClick = {
-                        val moduleId = shortcutModuleId
-                        val type = selectedShortcutType
-                        if (!moduleId.isNullOrBlank() && shortcutName.isNotBlank() && type != null) {
-                            when (type) {
-                                ShortcutType.Action -> {
-                                    Shortcut.createModuleActionShortcut(
-                                        context,
-                                        moduleId,
-                                        shortcutName,
-                                        shortcutIconUri
-                                    )
-                                }
-
-                                ShortcutType.WebUI -> {
-                                    Shortcut.createModuleWebUiShortcut(
-                                        context,
-                                        moduleId,
-                                        shortcutName,
-                                        shortcutIconUri
-                                    )
-                                }
-                            }
-                        }
-                        showShortcutDialog.value = false
-                    },
-                    colors = ButtonDefaults.textButtonColorsPrimary(),
-                    modifier = Modifier.weight(1f),
-                )
+                            showShortcutDialog.value = false
+                        },
+                        colors = ButtonDefaults.textButtonColorsPrimary(),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
 }
-
 
 @Composable
 private fun ModuleList(
