@@ -183,7 +183,7 @@
     <string name="tab_readme">README</string>
     <string name="tab_releases">Releases</string>
     <string name="tab_info">Info</string>
-    <string name="module_shortcut_title">Create desktop shortcut</string>
+    <string name="module_shortcut_title">Create shortcut</string>
     <string name="module_shortcut_name_label">Shortcut name</string>
     <string name="module_shortcut_icon_default">Use default icon</string>
     <string name="module_shortcut_icon_pick">Choose custom icon</string>

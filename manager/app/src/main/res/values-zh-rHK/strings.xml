@@ -116,7 +116,7 @@
     <string name="refresh_release">鬆開刷新</string>
     <string name="refresh_refresh">正在刷新…</string>
     <string name="refresh_complete">刷新成功</string>
-    <string name="module_shortcut_title">建立桌面捷徑</string>
+    <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
     <string name="module_shortcut_icon_default">使用預設圖示</string>
     <string name="module_shortcut_icon_pick">選擇自訂圖示</string>

@@ -145,7 +145,7 @@
     <string name="settings_theme_mode_dark">深色</string>
     <string name="settings_theme_mode_monet_dark">Monet (深色)</string>
     <string name="settings_theme_summary">選擇應用的主題模式。</string>
-    <string name="module_shortcut_title">建立桌面捷徑</string>
+    <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
     <string name="module_shortcut_icon_default">使用預設圖示</string>
     <string name="module_shortcut_icon_pick">選擇自訂圖示</string>

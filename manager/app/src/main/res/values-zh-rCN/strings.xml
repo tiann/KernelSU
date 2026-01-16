@@ -179,7 +179,7 @@
     <string name="tab_info">信息</string>
     <string name="feature_status_unsupported_summary">内核不支持此特性。</string>
     <string name="feature_status_managed_summary">此功能由一个模块管理。</string>
-    <string name="module_shortcut_title">创建桌面快捷方式</string>
+    <string name="module_shortcut_title">创建快捷方式</string>
     <string name="module_shortcut_name_label">快捷方式名称</string>
     <string name="module_shortcut_icon_default">使用默认图标</string>
     <string name="module_shortcut_icon_pick">选择自定义图标</string>
