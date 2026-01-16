@@ -3,4 +3,5 @@
 <paths>
     <cache-path name="cache" path="."/>
     <files-path name="files" path="." />
+    <files-path name="root" path="." />
 </paths>
