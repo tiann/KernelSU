@@ -16,9 +16,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
@@ -51,7 +49,6 @@ class WebUIActivity : ComponentActivity() {
     private var isInsetsEnabled = false
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
-    private var fromShortcut: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -72,35 +69,11 @@ class WebUIActivity : ComponentActivity() {
             }
         }
 
-        fromShortcut = intent?.getBooleanExtra("from_webui_shortcut", false) == true
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (fromShortcut) {
-                    val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                        addCategory(Intent.CATEGORY_HOME)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    startActivity(homeIntent)
-                    finish()
-                } else {
-                    finish()
-                }
-            }
-        })
-
         lifecycleScope.launch {
             if (SuperUserViewModel.apps.isEmpty()) {
                 SuperUserViewModel().fetchAppList()
             }
             setupWebView()
-            if (fromShortcut) {
-                Toast.makeText(
-                    this@WebUIActivity,
-                    getString(me.weishu.kernelsu.R.string.module_webui_opened_from_shortcut),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         }
 
         fileChooserLauncher = registerForActivityResult(

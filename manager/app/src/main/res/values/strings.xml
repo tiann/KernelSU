@@ -191,10 +191,11 @@
     <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts.</string>
     <string name="module_shortcut_created">Shortcut created on desktop.</string>
     <string name="module_shortcut_updated">Shortcut updated.</string>
+    <string name="module_shortcut_delete">Delete shortcut</string>
     <string name="module_shortcut_type_title">Select shortcut type</string>
     <string name="module_shortcut_type_action">Action script</string>
     <string name="module_shortcut_type_webui">WebUI</string>
-    <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Create desktop shortcuts\" permission for this app in MIUI settings.</string>
+    <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Create desktop shortcuts\" permission for this app in Xiaomi settings.</string>
     <string name="module_shortcut_permission_tip_oppo">Please enable \"Desktop shortcut\" permission for this app in OPPO settings.</string>
     <string name="module_shortcut_permission_tip_default">If shortcut creation fails, please enable desktop shortcut permission for this app in system settings.</string>
 </resources>

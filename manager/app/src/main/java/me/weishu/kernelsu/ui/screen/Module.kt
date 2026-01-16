@@ -90,7 +90,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -99,6 +98,8 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.topjohnwu.superuser.io.SuFile
+import com.topjohnwu.superuser.io.SuFileInputStream
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -108,7 +109,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
@@ -132,8 +132,6 @@ import me.weishu.kernelsu.ui.util.undoUninstallModule
 import me.weishu.kernelsu.ui.util.uninstallModule
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
-import com.topjohnwu.superuser.io.SuFile
-import com.topjohnwu.superuser.io.SuFileInputStream
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -164,7 +162,6 @@ import top.yukonga.miuix.kmp.icon.extended.UploadCloud
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-import java.io.File
 
 private enum class ShortcutType {
     Action,
@@ -266,38 +263,55 @@ fun ModulePager(
         shortcutIconUri = uri?.toString()
     }
 
-    val shortcutPreviewIcon = remember(shortcutIconUri) { mutableStateOf<ImageBitmap?>(null) }
+    val shortcutPreviewIcon = remember { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(shortcutIconUri) {
-        shortcutPreviewIcon.value = null
         val uriStr = shortcutIconUri
-        if (!uriStr.isNullOrBlank()) {
-            withContext(Dispatchers.IO) {
-                val parsed = uriStr.toUri()
-                if (parsed.scheme.equals("su", ignoreCase = true)) {
-                    runCatching {
-                        val path = parsed.path ?: ""
-                        if (path.isNotBlank()) {
-                            val shell = getRootShell(true)
-                            val suFile = SuFile(path)
-                            suFile.shell = shell
-                            SuFileInputStream.open(suFile).use { input ->
-                                BitmapFactory.decodeStream(input)?.asImageBitmap()
-                            }
-                        } else null
-                    }.onSuccess { bitmap ->
-                        shortcutPreviewIcon.value = bitmap
-                    }
-                } else {
-                    runCatching {
-                        context.contentResolver.openInputStream(parsed)?.use { input ->
+        if (uriStr.isNullOrBlank()) {
+            shortcutPreviewIcon.value = null
+            return@LaunchedEffect
+        }
+        val bitmap = withContext(Dispatchers.IO) {
+            val parsed = uriStr.toUri()
+            if (parsed.scheme.equals("su", ignoreCase = true)) {
+                runCatching {
+                    val path = parsed.path ?: ""
+                    if (path.isNotBlank()) {
+                        val shell = getRootShell(true)
+                        val suFile = SuFile(path)
+                        suFile.shell = shell
+                        SuFileInputStream.open(suFile).use { input ->
                             BitmapFactory.decodeStream(input)?.asImageBitmap()
                         }
-                    }.onSuccess { bitmap ->
-                        shortcutPreviewIcon.value = bitmap
+                    } else null
+                }.getOrNull()
+            } else {
+                runCatching {
+                    context.contentResolver.openInputStream(parsed)?.use { input ->
+                        BitmapFactory.decodeStream(input)?.asImageBitmap()
                     }
-                }
+                }.getOrNull()
             }
         }
+        if (bitmap != null) {
+            shortcutPreviewIcon.value = bitmap
+        }
+    }
+
+    var hasExistingShortcut by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(shortcutModuleId, selectedShortcutType, showShortcutDialog.value) {
+        val moduleId = shortcutModuleId
+        val type = selectedShortcutType
+        if (!showShortcutDialog.value || moduleId.isNullOrBlank() || type == null) {
+            hasExistingShortcut = false
+            return@LaunchedEffect
+        }
+        val exists = withContext(Dispatchers.IO) {
+            when (type) {
+                ShortcutType.Action -> Shortcut.hasModuleActionShortcut(context, moduleId)
+                ShortcutType.WebUI -> Shortcut.hasModuleWebUiShortcut(context, moduleId)
+            }
+        }
+        hasExistingShortcut = exists
     }
 
     suspend fun onModuleUpdate(
@@ -412,17 +426,6 @@ fun ModulePager(
         val success = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
                 uninstallModule(module.id)
-            }
-        }
-
-        if (success) {
-            withContext(Dispatchers.IO) {
-                val cacheDir = File(ksuApp.cacheDir, "module_icons")
-                cacheDir.listFiles()?.forEach { f ->
-                    if (f.name.startsWith(module.id)) {
-                        runCatching { f.delete() }
-                    }
-                }
             }
         }
 
@@ -943,12 +946,12 @@ fun ModulePager(
                             Image(
                                 bitmap = preview,
                                 modifier = Modifier.size(80.dp),
-                                contentDescription = "icon",
+                                contentDescription = null,
                             )
                         } else {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                                contentDescription = "icon",
+                                contentDescription = null,
                                 contentScale = FixedScale(1.5f)
                             )
                         }
@@ -970,6 +973,30 @@ fun ModulePager(
                     )
                 }
             }
+            if (hasExistingShortcut) {
+                TextButton(
+                    text = stringResource(id = R.string.module_shortcut_delete),
+                    onClick = {
+                        val moduleId = shortcutModuleId
+                        val type = selectedShortcutType
+                        if (!moduleId.isNullOrBlank() && type != null) {
+                            when (type) {
+                                ShortcutType.Action -> {
+                                    Shortcut.deleteModuleActionShortcut(context, moduleId)
+                                }
+
+                                ShortcutType.WebUI -> {
+                                    Shortcut.deleteModuleWebUiShortcut(context, moduleId)
+                                }
+                            }
+                        }
+                        showShortcutDialog.value = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                )
+            }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -979,7 +1006,11 @@ fun ModulePager(
                     modifier = Modifier.weight(1f),
                 )
                 TextButton(
-                    text = stringResource(id = android.R.string.ok),
+                    text = if (hasExistingShortcut) {
+                        stringResource(id = R.string.module_update)
+                    } else {
+                        stringResource(id = android.R.string.ok)
+                    },
                     onClick = {
                         val moduleId = shortcutModuleId
                         val type = selectedShortcutType

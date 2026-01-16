@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.annotation.SuppressLint
 import android.os.Environment
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -69,6 +70,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
 fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String) {
@@ -122,7 +124,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            if (fromShortcut && activity != null && activity.isTaskRoot) {
+            if (fromShortcut && activity != null) {
                 activity.finish()
             } else {
                 navigator.popBackStack()

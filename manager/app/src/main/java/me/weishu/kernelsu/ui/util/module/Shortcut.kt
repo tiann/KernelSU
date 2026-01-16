@@ -3,7 +3,6 @@ package me.weishu.kernelsu.ui.util.module
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -14,11 +13,12 @@ import android.widget.Toast
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.core.graphics.scale
 import androidx.core.net.toUri
-import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.util.getRootShell
 import com.topjohnwu.superuser.io.SuFile
 import com.topjohnwu.superuser.io.SuFileInputStream
+import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.util.getRootShell
 import java.util.Locale
 
 object Shortcut {
@@ -34,7 +34,7 @@ object Shortcut {
         Log.d(
             TAG,
             "createModuleActionShortcut start, moduleId=$moduleId, name=$name, iconUri=$iconUri, " +
-                "manufacturer=${Build.MANUFACTURER}, sdk=${Build.VERSION.SDK_INT}"
+                    "manufacturer=${Build.MANUFACTURER}, sdk=${Build.VERSION.SDK_INT}"
         )
         val shortcutId = "module_action_$moduleId"
         val hasPinned = hasPinnedShortcut(context, shortcutId)
@@ -51,17 +51,15 @@ object Shortcut {
 
         Log.d(
             TAG,
-            "creating ShortcutInfoCompat, hasCustomIcon=${iconCompat != null && !iconUri.isNullOrBlank()}"
+            "creating ShortcutInfoCompat, hasCustomIcon=${iconCompat != null}"
         )
+
+        val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
 
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
             .setShortLabel(name)
             .setIntent(shortcutIntent)
-            .apply {
-                if (iconCompat != null) {
-                    setIcon(iconCompat)
-                }
-            }
+            .setIcon(finalIcon)
             .build()
 
         try {
@@ -141,7 +139,7 @@ object Shortcut {
         Log.d(
             TAG,
             "createModuleWebUiShortcut start, moduleId=$moduleId, name=$name, iconUri=$iconUri, " +
-                "manufacturer=${Build.MANUFACTURER}, sdk=${Build.VERSION.SDK_INT}"
+                    "manufacturer=${Build.MANUFACTURER}, sdk=${Build.VERSION.SDK_INT}"
         )
         val shortcutId = "module_webui_$moduleId"
         val hasPinned = hasPinnedShortcut(context, shortcutId)
@@ -153,24 +151,22 @@ object Shortcut {
             putExtra("id", moduleId)
             putExtra("name", name)
             putExtra("from_webui_shortcut", true)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
 
         val iconCompat = createShortcutIcon(context, iconUri)
 
         Log.d(
             TAG,
-            "creating WebUI ShortcutInfoCompat, hasCustomIcon=${iconCompat != null && !iconUri.isNullOrBlank()}"
+            "creating WebUI ShortcutInfoCompat, hasCustomIcon=${iconCompat != null}"
         )
+
+        val finalIcon = iconCompat ?: IconCompat.createWithResource(context, R.mipmap.ic_launcher)
 
         val shortcut = ShortcutInfoCompat.Builder(context, shortcutId)
             .setShortLabel(name)
             .setIntent(shortcutIntent)
-            .apply {
-                if (iconCompat != null) {
-                    setIcon(iconCompat)
-                }
-            }
+            .setIcon(finalIcon)
             .build()
 
         try {
@@ -241,10 +237,27 @@ object Shortcut {
         }
     }
 
+    fun hasModuleActionShortcut(context: Context, moduleId: String): Boolean {
+        val id = "module_action_$moduleId"
+        return hasPinnedShortcut(context, id)
+    }
+
+    fun hasModuleWebUiShortcut(context: Context, moduleId: String): Boolean {
+        val id = "module_webui_$moduleId"
+        return hasPinnedShortcut(context, id)
+    }
+
+    fun deleteModuleActionShortcut(context: Context, moduleId: String) {
+        deleteShortcut(context, "module_action_$moduleId")
+    }
+
+    fun deleteModuleWebUiShortcut(context: Context, moduleId: String) {
+        deleteShortcut(context, "module_webui_$moduleId")
+    }
+
     private fun createShortcutIcon(context: Context, iconUri: String?): IconCompat? {
         if (iconUri.isNullOrBlank()) {
-            Log.d(TAG, "createShortcutIcon: iconUri is null/blank, using default launcher icon")
-            return IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+            return null
         }
         return try {
             val uri = iconUri.toUri()
@@ -273,12 +286,12 @@ object Shortcut {
                 val y = (h - side) / 2
                 val square = try {
                     Bitmap.createBitmap(bitmap, x, y, side, side)
-                } catch (t: Throwable) {
+                } catch (_: Throwable) {
                     bitmap
                 }
                 val finalBmp = if (side > 512) {
                     try {
-                        Bitmap.createScaledBitmap(square, 512, 512, true)
+                        square.scale(512, 512)
                     } catch (_: Throwable) {
                         square
                     }
@@ -287,30 +300,42 @@ object Shortcut {
                 }
                 IconCompat.createWithBitmap(finalBmp)
             } else {
-                Log.w(TAG, "createShortcutIcon: bitmap decode returned null, using default icon")
-                IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+                Log.w(TAG, "createShortcutIcon: bitmap decode returned null")
+                null
             }
         } catch (t: Throwable) {
             Log.w(TAG, "createShortcutIcon: exception when creating icon from uri=$iconUri: ${t.message}", t)
-            IconCompat.createWithResource(context, R.mipmap.ic_launcher)
+            null
         }
     }
 
     private fun hasPinnedShortcut(context: Context, id: String): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) {
-            return false
-        }
         return try {
             val shortcuts = ShortcutManagerCompat.getShortcuts(
                 context,
-                ShortcutManager.FLAG_MATCH_PINNED
+                ShortcutManagerCompat.FLAG_MATCH_PINNED
             )
-            val exists = shortcuts.any { it.id == id }
+            val exists = shortcuts.any { it.id == id && it.isEnabled }
             Log.d(TAG, "hasPinnedShortcut: id=$id, exists=$exists")
             exists
         } catch (t: Throwable) {
             Log.w(TAG, "hasPinnedShortcut: exception for id=$id: ${t.message}", t)
             false
+        }
+    }
+
+    private fun deleteShortcut(context: Context, id: String) {
+        try {
+            ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id))
+            Log.d(TAG, "deleteShortcut: removed dynamic shortcut id=$id")
+        } catch (t: Throwable) {
+            Log.w(TAG, "deleteShortcut: removeDynamicShortcuts exception for id=$id: ${t.message}", t)
+        }
+        try {
+            ShortcutManagerCompat.disableShortcuts(context, listOf(id), "")
+            Log.d(TAG, "deleteShortcut: disabled shortcut id=$id")
+        } catch (t: Throwable) {
+            Log.w(TAG, "deleteShortcut: disableShortcuts exception for id=$id: ${t.message}", t)
         }
     }
 
@@ -322,10 +347,6 @@ object Shortcut {
     }
 
     private fun checkMiuiShortcutPermission(context: Context): ShortcutPermissionState {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            Log.d(TAG, "checkMiuiShortcutPermission: sdk < KITKAT, returning Unknown")
-            return ShortcutPermissionState.Unknown
-        }
         return try {
             val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager
                 ?: return ShortcutPermissionState.Unknown
@@ -364,7 +385,7 @@ object Shortcut {
             Log.w(TAG, "checkOppoShortcutPermission: contentResolver is null")
             return ShortcutPermissionState.Unknown
         }
-        val uri = Uri.parse("content://settings/secure/launcher_shortcut_permission_settings")
+        val uri = "content://settings/secure/launcher_shortcut_permission_settings".toUri()
         val cursor = resolver.query(uri, null, null, null, null) ?: run {
             Log.w(TAG, "checkOppoShortcutPermission: query returned null cursor, uri=$uri")
             return ShortcutPermissionState.Unknown
@@ -404,7 +425,7 @@ object Shortcut {
             Log.d(
                 TAG,
                 "tryGrantMiuiShortcutPermissionByRoot: cmd=$cmd, code=${result.code}, " +
-                    "isSuccess=${result.isSuccess}"
+                        "isSuccess=${result.isSuccess}"
             )
             result.isSuccess
         } catch (t: Throwable) {

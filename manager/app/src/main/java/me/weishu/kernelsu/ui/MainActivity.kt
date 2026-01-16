@@ -38,6 +38,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -49,7 +50,6 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
-import androidx.core.net.toUri
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -366,6 +366,7 @@ private fun ShortcutIntentHandler(
                     launchSingleTop = true
                 }
             }
+
             "module_webui" -> {
                 val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
                 val moduleName = intent.getStringExtra("module_name") ?: moduleId
@@ -374,8 +375,13 @@ private fun ShortcutIntentHandler(
                     .putExtra("id", moduleId)
                     .putExtra("name", moduleName)
                     .putExtra("from_webui_shortcut", true)
+                    .addFlags(
+                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    )
                 context.startActivity(webIntent)
             }
+
             else -> return@LaunchedEffect
         }
     }

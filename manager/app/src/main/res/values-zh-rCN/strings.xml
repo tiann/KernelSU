@@ -179,4 +179,19 @@
     <string name="tab_info">信息</string>
     <string name="feature_status_unsupported_summary">内核不支持此特性。</string>
     <string name="feature_status_managed_summary">此功能由一个模块管理。</string>
+    <string name="module_shortcut_title">创建桌面快捷方式</string>
+    <string name="module_shortcut_name_label">快捷方式名称</string>
+    <string name="module_shortcut_icon_default">使用默认图标</string>
+    <string name="module_shortcut_icon_pick">选择自定义图标</string>
+    <string name="module_shortcut_add">添加快捷方式</string>
+    <string name="module_shortcut_not_supported">启动器不支持桌面快捷方式。</string>
+    <string name="module_shortcut_created">已在桌面创建快捷方式。</string>
+    <string name="module_shortcut_updated">快捷方式已更新。</string>
+    <string name="module_shortcut_delete">删除快捷方式</string>
+    <string name="module_shortcut_type_title">选择快捷方式类型</string>
+    <string name="module_shortcut_type_action">操作脚本</string>
+    <string name="module_shortcut_type_webui">WebUI</string>
+    <string name="module_shortcut_permission_tip_xiaomi">请在 Xiaomi 设置中为本应用启用“创建桌面快捷方式”权限。</string>
+    <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为本应用启用“桌面快捷方式”权限。</string>
+    <string name="module_shortcut_permission_tip_default">若创建快捷方式失败，请在系统设置中为本应用启用桌面快捷方式权限。</string>
 </resources>
