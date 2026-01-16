@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,6 +17,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -98,8 +99,6 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.topjohnwu.superuser.io.SuFile
-import com.topjohnwu.superuser.io.SuFileInputStream
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -122,7 +121,6 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
-import me.weishu.kernelsu.ui.util.getRootShell
 import me.weishu.kernelsu.ui.util.hasMagisk
 import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
@@ -271,30 +269,9 @@ fun ModulePager(
             return@LaunchedEffect
         }
         val bitmap = withContext(Dispatchers.IO) {
-            val parsed = uriStr.toUri()
-            if (parsed.scheme.equals("su", ignoreCase = true)) {
-                runCatching {
-                    val path = parsed.path ?: ""
-                    if (path.isNotBlank()) {
-                        val shell = getRootShell(true)
-                        val suFile = SuFile(path)
-                        suFile.shell = shell
-                        SuFileInputStream.open(suFile).use { input ->
-                            BitmapFactory.decodeStream(input)?.asImageBitmap()
-                        }
-                    } else null
-                }.getOrNull()
-            } else {
-                runCatching {
-                    context.contentResolver.openInputStream(parsed)?.use { input ->
-                        BitmapFactory.decodeStream(input)?.asImageBitmap()
-                    }
-                }.getOrNull()
-            }
+            Shortcut.loadShortcutBitmap(context, uriStr)
         }
-        if (bitmap != null) {
-            shortcutPreviewIcon.value = bitmap
-        }
+        shortcutPreviewIcon.value = bitmap?.asImageBitmap()
     }
 
     var hasExistingShortcut by rememberSaveable { mutableStateOf(false) }
@@ -923,18 +900,22 @@ fun ModulePager(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .padding(vertical = 16.dp)
-                        .size(105.dp)
-                        .clip(ContinuousRoundedRectangle(24.dp))
-                        .background(Color.White)
+                        .size(100.dp)
+                        .clip(ContinuousRoundedRectangle(25.dp))
                 ) {
                     val preview = shortcutPreviewIcon.value
                     if (preview != null) {
                         Image(
                             bitmap = preview,
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(100.dp),
                             contentDescription = null,
                         )
                     } else {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .background(Color.White)
+                        )
                         Image(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
                             contentDescription = null,
@@ -942,19 +923,30 @@ fun ModulePager(
                         )
                     }
                 }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row {
                     TextButton(
+                        modifier = Modifier.weight(1f),
                         text = stringResource(id = R.string.module_shortcut_icon_pick),
                         onClick = { pickShortcutIconLauncher.launch("image/*") },
-                        modifier = Modifier.weight(1f),
                     )
-                    TextButton(
-                        text = stringResource(id = R.string.module_shortcut_icon_default),
-                        onClick = { shortcutIconUri = defaultShortcutIconUri },
-                        modifier = Modifier.weight(1f),
-                    )
+                    AnimatedVisibility(
+                        visible = shortcutIconUri != defaultShortcutIconUri,
+                        enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
+                        exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                    ) {
+                        IconButton(
+                            onClick = { shortcutIconUri = defaultShortcutIconUri },
+                            modifier = Modifier.padding(start = 12.dp)
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Undo,
+                                contentDescription = null,
+                                tint = colorScheme.onSurface,
+                                modifier = Modifier.size(28.dp),
+                            )
+                        }
+                    }
                 }
                 TextField(
                     value = shortcutName,

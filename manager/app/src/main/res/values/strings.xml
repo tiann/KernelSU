@@ -185,8 +185,7 @@
     <string name="tab_info">Info</string>
     <string name="module_shortcut_title">Create shortcut</string>
     <string name="module_shortcut_name_label">Shortcut name</string>
-    <string name="module_shortcut_icon_default">Use default icon</string>
-    <string name="module_shortcut_icon_pick">Custom icon</string>
+    <string name="module_shortcut_icon_pick">Choose custom icon</string>
     <string name="module_shortcut_add">Add shortcut</string>
     <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts.</string>
     <string name="module_shortcut_created">Shortcut created on desktop.</string>

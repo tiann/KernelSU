@@ -180,14 +180,14 @@ object Shortcut {
         deleteShortcut(context, "module_webui_$moduleId")
     }
 
-    private fun createShortcutIcon(context: Context, iconUri: String?): IconCompat? {
+    fun loadShortcutBitmap(context: Context, iconUri: String?): Bitmap? {
         if (iconUri.isNullOrBlank()) {
             return null
         }
         return try {
             val uri = iconUri.toUri()
-            Log.d(TAG, "createShortcutIcon: loading bitmap from uri=$uri")
-            val bitmap = if (uri.scheme.equals("su", ignoreCase = true)) {
+            Log.d(TAG, "loadShortcutBitmap: loading bitmap from uri=$uri")
+            val rawBitmap = if (uri.scheme.equals("su", ignoreCase = true)) {
                 val path = uri.path ?: ""
                 if (path.isNotBlank()) {
                     val shell = getRootShell(true)
@@ -202,19 +202,19 @@ object Shortcut {
                     BitmapFactory.decodeStream(input)
                 }
             }
-            if (bitmap != null) {
-                Log.d(TAG, "createShortcutIcon: decoded bitmap successfully")
-                val w = bitmap.width
-                val h = bitmap.height
+            if (rawBitmap != null) {
+                Log.d(TAG, "loadShortcutBitmap: decoded bitmap successfully")
+                val w = rawBitmap.width
+                val h = rawBitmap.height
                 val side = minOf(w, h)
                 val x = (w - side) / 2
                 val y = (h - side) / 2
                 val square = try {
-                    Bitmap.createBitmap(bitmap, x, y, side, side)
+                    Bitmap.createBitmap(rawBitmap, x, y, side, side)
                 } catch (_: Throwable) {
-                    bitmap
+                    rawBitmap
                 }
-                val finalBmp = if (side > 512) {
+                if (side > 512) {
                     try {
                         square.scale(512, 512)
                     } catch (_: Throwable) {
@@ -223,15 +223,19 @@ object Shortcut {
                 } else {
                     square
                 }
-                IconCompat.createWithBitmap(finalBmp)
             } else {
-                Log.w(TAG, "createShortcutIcon: bitmap decode returned null")
+                Log.w(TAG, "loadShortcutBitmap: bitmap decode returned null")
                 null
             }
         } catch (t: Throwable) {
-            Log.w(TAG, "createShortcutIcon: exception when creating icon from uri=$iconUri: ${t.message}", t)
+            Log.w(TAG, "loadShortcutBitmap: exception when loading icon from uri=$iconUri: ${t.message}", t)
             null
         }
+    }
+
+    private fun createShortcutIcon(context: Context, iconUri: String?): IconCompat? {
+        val bitmap = loadShortcutBitmap(context, iconUri) ?: return null
+        return IconCompat.createWithBitmap(bitmap)
     }
 
     private fun hasPinnedShortcut(context: Context, id: String): Boolean {
