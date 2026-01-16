@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen
 
 import android.os.Environment
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -75,6 +76,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
     val context = LocalContext.current
+    val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var actionResult: Boolean
@@ -83,6 +85,11 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+
+    val fromShortcut = remember(activity) {
+        val intent = activity?.intent
+        intent?.getStringExtra("shortcut_type") == "module_action"
+    }
 
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
@@ -107,7 +114,25 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                 actionResult = it
             }
         }
-        if (actionResult) navigator.popBackStack()
+        if (actionResult) {
+            if (fromShortcut && activity != null && activity.isTaskRoot) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.module_action_success),
+                    Toast.LENGTH_SHORT
+                ).show()
+                activity.finish()
+            } else {
+                if (fromShortcut) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.module_action_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                navigator.popBackStack()
+            }
+        }
     }
 
     Scaffold(

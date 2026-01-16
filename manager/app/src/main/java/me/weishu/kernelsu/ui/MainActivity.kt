@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -44,9 +45,11 @@ import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationSty
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
+import androidx.core.net.toUri
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -66,6 +69,7 @@ import me.weishu.kernelsu.ui.screen.SuperUserPager
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.install
+import me.weishu.kernelsu.ui.webui.WebUIActivity
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -122,11 +126,13 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navigator = navController.rememberDestinationsNavigator()
 
-                // Handle ZIP file installation from external apps
                 ZipFileIntentHandler(
                     intentState = intentState,
-                    intent = intent,
                     isManager = isManager,
+                    navigator = navigator
+                )
+                ShortcutIntentHandler(
+                    intentState = intentState,
                     navigator = navigator
                 )
 
@@ -287,15 +293,15 @@ fun MainScreen(navController: DestinationsNavigator) {
  * - In normal mode: Shows a confirmation dialog before installation
  * - In safe mode: Shows a Toast notification and prevents installation
  */
-@SuppressLint("StringFormatInvalid")
+@SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 private fun ZipFileIntentHandler(
     intentState: MutableStateFlow<Int>,
-    intent: android.content.Intent?,
     isManager: Boolean,
     navigator: DestinationsNavigator
 ) {
-    val context = LocalActivity.current ?: return
+    val activity = LocalActivity.current ?: return
+    val context = LocalContext.current
     var zipUri by remember { mutableStateOf<android.net.Uri?>(null) }
     val isSafeMode = Natives.isSafeMode
     val clearZipUri = { zipUri = null }
@@ -316,9 +322,10 @@ private fun ZipFileIntentHandler(
 
     val intentStateValue by intentState.collectAsState()
     LaunchedEffect(intentStateValue) {
-        val uri = intent?.data ?: return@LaunchedEffect
+        val currentIntent = activity.intent
+        val uri = currentIntent?.data ?: return@LaunchedEffect
 
-        if (!isManager || uri.scheme != "content" || intent.type != "application/zip") {
+        if (!isManager || uri.scheme != "content" || currentIntent.type != "application/zip") {
             return@LaunchedEffect
         }
 
@@ -337,6 +344,39 @@ private fun ZipFileIntentHandler(
                     "\n${getDisplayName(uri)}"
                 )
             )
+        }
+    }
+}
+
+@Composable
+private fun ShortcutIntentHandler(
+    intentState: MutableStateFlow<Int>,
+    navigator: DestinationsNavigator
+) {
+    val activity = LocalActivity.current ?: return
+    val context = LocalContext.current
+    val intentStateValue by intentState.collectAsState()
+    LaunchedEffect(intentStateValue) {
+        val intent = activity.intent
+        val type = intent?.getStringExtra("shortcut_type") ?: return@LaunchedEffect
+        when (type) {
+            "module_action" -> {
+                val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
+                navigator.navigate(ExecuteModuleActionScreenDestination(moduleId)) {
+                    launchSingleTop = true
+                }
+            }
+            "module_webui" -> {
+                val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
+                val moduleName = intent.getStringExtra("module_name") ?: moduleId
+                val webIntent = android.content.Intent(context, WebUIActivity::class.java)
+                    .setData("kernelsu://webui/$moduleId".toUri())
+                    .putExtra("id", moduleId)
+                    .putExtra("name", moduleName)
+                    .putExtra("from_webui_shortcut", true)
+                context.startActivity(webIntent)
+            }
+            else -> return@LaunchedEffect
         }
     }
 }

@@ -310,7 +310,7 @@ class ModuleViewModel : ViewModel() {
             ).execute()
             Log.d(TAG, "checkUpdate code: ${response.code}")
             if (response.isSuccessful) {
-                response.body?.string() ?: ""
+                response.body.string()
             } else {
                 ""
             }
