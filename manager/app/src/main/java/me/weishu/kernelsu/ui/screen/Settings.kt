@@ -307,10 +307,10 @@ fun SettingPager(
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
-                        val modeItems = listOf(
-                            stringResource(id = R.string.settings_mode_default),
-                            stringResource(id = R.string.settings_mode_temp_enable),
-                            stringResource(id = R.string.settings_mode_always_enable),
+                        val suCompatModeItems = listOf(
+                            stringResource(id = R.string.settings_mode_disable_by_default),
+                            stringResource(id = R.string.settings_mode_enable_until_reboot),
+                            stringResource(id = R.string.settings_mode_enable_always),
                         )
 
                         val currentSuEnabled = Natives.isSuEnabled()
@@ -329,17 +329,17 @@ fun SettingPager(
                         val suSummary = when (suStatus) {
                             "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_su_summary)
+                            else -> stringResource(id = R.string.settings_sucompat_summary)
                         }
                         SuperDropdown(
-                            title = stringResource(id = R.string.settings_disable_su),
+                            title = stringResource(id = R.string.settings_sucompat),
                             summary = suSummary,
-                            items = modeItems,
+                            items = suCompatModeItems,
                             startAction = {
                                 Icon(
                                     Icons.Rounded.RemoveModerator,
                                     modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_disable_su),
+                                    contentDescription = stringResource(id = R.string.settings_sucompat),
                                     tint = colorScheme.onBackground
                                 )
                             },
@@ -373,62 +373,32 @@ fun SettingPager(
                             }
                         )
 
-                        val currentUmountEnabled = Natives.isKernelUmountEnabled()
-                        var kernelUmountMode by rememberSaveable { mutableIntStateOf(if (!currentUmountEnabled) 1 else 0) }
-                        val umountPersistValue by produceState(initialValue = null as Long?) {
-                            value = getFeaturePersistValue("kernel_umount")
-                        }
-                        LaunchedEffect(umountPersistValue) {
-                            umountPersistValue?.let { v ->
-                                kernelUmountMode = if (v == 0L) 2 else if (!currentUmountEnabled) 1 else 0
-                            }
-                        }
+                        var isKernelUmountEnabled by rememberSaveable { mutableStateOf(Natives.isKernelUmountEnabled()) }
                         val umountStatus by produceState(initialValue = "") {
                             value = getFeatureStatus("kernel_umount")
                         }
                         val umountSummary = when (umountStatus) {
                             "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_kernel_umount_summary)
+                            else -> stringResource(id = R.string.settings_kernel_umount_summary)
                         }
-                        SuperDropdown(
-                            title = stringResource(id = R.string.settings_disable_kernel_umount),
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_kernel_umount),
                             summary = umountSummary,
-                            items = modeItems,
                             startAction = {
                                 Icon(
                                     Icons.Rounded.RemoveCircle,
                                     modifier = Modifier.padding(end = 16.dp),
-                                    contentDescription = stringResource(id = R.string.settings_disable_kernel_umount),
+                                    contentDescription = stringResource(id = R.string.settings_kernel_umount),
                                     tint = colorScheme.onBackground
                                 )
                             },
                             enabled = umountStatus == "supported",
-                            selectedIndex = kernelUmountMode,
-                            onSelectedIndexChange = { index ->
-                                when (index) {
-                                    // Default: enable and save to persist
-                                    0 -> if (Natives.setKernelUmountEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("kernel_umount_mode", 0) }
-                                        kernelUmountMode = 0
-                                    }
-
-                                    // Temporarily disable: save enabled state first, then disable
-                                    1 -> if (Natives.setKernelUmountEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        if (Natives.setKernelUmountEnabled(false)) {
-                                            prefs.edit { putInt("kernel_umount_mode", 0) }
-                                            kernelUmountMode = 1
-                                        }
-                                    }
-
-                                    // Permanently disable: disable and save
-                                    2 -> if (Natives.setKernelUmountEnabled(false)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("kernel_umount_mode", 2) }
-                                        kernelUmountMode = 2
-                                    }
+                            checked = isKernelUmountEnabled,
+                            onCheckedChange = { checked ->
+                                if (Natives.setKernelUmountEnabled(checked)) {
+                                    execKsud("feature save", true)
+                                    isKernelUmountEnabled = checked
                                 }
                             }
                         )
