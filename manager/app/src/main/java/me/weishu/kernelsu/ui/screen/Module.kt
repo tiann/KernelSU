@@ -934,8 +934,8 @@ fun ModulePager(
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(ContinuousRoundedRectangle(16.dp))
+                            .size(105.dp)
+                            .clip(ContinuousRoundedRectangle(24.dp))
                             .background(Color.White)
                     ) {
                         val preview = shortcutPreviewIcon.value
