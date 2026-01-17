@@ -105,7 +105,9 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
-actionIcon=<path>
+updateJson=<url> (opcional)
+actionIcon=<path> (opcional)
+webuiIcon=<path> (opcional)
 ```
 
 - `id` deve corresponder a esta expressão regular: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
@@ -114,6 +116,11 @@ actionIcon=<path>
 - `versionCode` deve ser um **número inteiro**. Isso é usado para comparar versões.
 - Outros que não foram mencionados acima podem ser qualquer string de **linha única**.
 - Certifique-se de usar o tipo de quebra de linha `UNIX (LF)` e não o `Windows (CR+LF)` ou `Macintosh (CR)`.
+- `actionIcon` e `webuiIcon` são caminhos de imagem opcionais usados como ícones
+  padrão para o atalho de ação do módulo e o atalho WebUI do módulo no
+  aplicativo gerenciador. Recomenda-se usar apenas caminhos relativos; eles serão
+  resolvidos diretamente a partir do diretório raiz do módulo. Por exemplo,
+  `actionIcon=icon/icon.png` será resolvido como `<MODDIR>/icon/icon.png`.
 
 ::: tip DESCRIÇÃO DINÂMICA
 O campo `description` pode ser substituído dinamicamente em tempo de execução usando o sistema de configuração de módulos. Veja [Substituindo a Descrição do Módulo](module-config.md#overriding-module-description) para detalhes.

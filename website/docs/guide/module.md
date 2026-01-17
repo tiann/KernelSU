@@ -105,7 +105,9 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
-actionIcon=<path>
+updateJson=<url> (optional)
+actionIcon=<path> (optional)
+webuiIcon=<path> (optional)
 ```
 
 - `id` has to match this regular expression: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
@@ -114,6 +116,11 @@ actionIcon=<path>
 - `versionCode` has to be an **integer**. This is used to compare versions.
 - Others that were not mentioned above can be any **single line** string.
 - Make sure to use the `UNIX (LF)` line break type and not the `Windows (CR+LF)` or `Macintosh (CR)`.
+- `actionIcon` and `webuiIcon` are optional image paths used as the default
+  icons for the module action shortcut and WebUI shortcut in the Manager. It is
+  recommended to use relative paths, which are resolved from the module root
+  directory. For example, `actionIcon=icon/icon.png` will be resolved as
+  `<MODDIR>/icon/icon.png`.
 
 ::: tip DYNAMIC DESCRIPTION
 The `description` field can be dynamically overridden at runtime using the module configuration system. See [Overriding Module Description](module-config.md#overriding-module-description) for details.

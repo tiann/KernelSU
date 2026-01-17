@@ -251,9 +251,64 @@ fun ModulePager(
     var shortcutName by rememberSaveable { mutableStateOf("") }
     var shortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
     var defaultShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var defaultActionShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var defaultWebUiShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedShortcutType by rememberSaveable { mutableStateOf<ShortcutType?>(null) }
     val showShortcutDialog = remember { mutableStateOf(false) }
     val showShortcutTypeDialog = remember { mutableStateOf(false) }
+
+    fun openShortcutDialogForType(type: ShortcutType) {
+        selectedShortcutType = type
+        val defaultIcon = when (type) {
+            ShortcutType.Action -> defaultActionShortcutIconUri ?: defaultWebUiShortcutIconUri
+            ShortcutType.WebUI -> defaultWebUiShortcutIconUri ?: defaultActionShortcutIconUri
+        }
+        defaultShortcutIconUri = defaultIcon
+        shortcutIconUri = defaultIcon
+        showShortcutDialog.value = true
+    }
+
+    fun hasModuleShortcut(context: Context, moduleId: String, type: ShortcutType): Boolean {
+        return when (type) {
+            ShortcutType.Action -> Shortcut.hasModuleActionShortcut(context, moduleId)
+            ShortcutType.WebUI -> Shortcut.hasModuleWebUiShortcut(context, moduleId)
+        }
+    }
+
+    fun deleteModuleShortcut(context: Context, moduleId: String, type: ShortcutType) {
+        when (type) {
+            ShortcutType.Action -> Shortcut.deleteModuleActionShortcut(context, moduleId)
+            ShortcutType.WebUI -> Shortcut.deleteModuleWebUiShortcut(context, moduleId)
+        }
+    }
+
+    fun createModuleShortcut(
+        context: Context,
+        moduleId: String,
+        name: String,
+        iconUri: String?,
+        type: ShortcutType
+    ) {
+        when (type) {
+            ShortcutType.Action -> {
+                Shortcut.createModuleActionShortcut(
+                    context = context,
+                    moduleId = moduleId,
+                    name = name,
+                    iconUri = iconUri
+                )
+            }
+
+            ShortcutType.WebUI -> {
+                Shortcut.createModuleWebUiShortcut(
+                    context = context,
+                    moduleId = moduleId,
+                    name = name,
+                    iconUri = iconUri
+                )
+            }
+        }
+    }
 
     val pickShortcutIconLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -283,10 +338,7 @@ fun ModulePager(
             return@LaunchedEffect
         }
         val exists = withContext(Dispatchers.IO) {
-            when (type) {
-                ShortcutType.Action -> Shortcut.hasModuleActionShortcut(context, moduleId)
-                ShortcutType.WebUI -> Shortcut.hasModuleWebUiShortcut(context, moduleId)
-            }
+            hasModuleShortcut(context, moduleId, type)
         }
         hasExistingShortcut = exists
     }
@@ -450,21 +502,19 @@ fun ModulePager(
         shortcutName = module.name
         shortcutIconUri = null
         defaultShortcutIconUri = null
-        val defaultIconPath = module.actionIconPath
-        if (!defaultIconPath.isNullOrBlank()) {
-            val suUri = "su:$defaultIconPath"
-            defaultShortcutIconUri = suUri
-            shortcutIconUri = suUri
-        }
+        defaultActionShortcutIconUri = module.actionIconPath
+            ?.takeIf { it.isNotBlank() }
+            ?.let { "su:$it" }
+        defaultWebUiShortcutIconUri = module.webUiIconPath
+            ?.takeIf { it.isNotBlank() }
+            ?.let { "su:$it" }
         if (module.hasActionScript && module.hasWebUi) {
             selectedShortcutType = null
             showShortcutTypeDialog.value = true
         } else if (module.hasActionScript) {
-            selectedShortcutType = ShortcutType.Action
-            showShortcutDialog.value = true
+            openShortcutDialogForType(ShortcutType.Action)
         } else if (module.hasWebUi) {
-            selectedShortcutType = ShortcutType.WebUI
-            showShortcutDialog.value = true
+            openShortcutDialogForType(ShortcutType.WebUI)
         }
     }
 
@@ -866,18 +916,16 @@ fun ModulePager(
                 TextButton(
                     text = "Action",
                     onClick = {
-                        selectedShortcutType = ShortcutType.Action
                         showShortcutTypeDialog.value = false
-                        showShortcutDialog.value = true
+                        openShortcutDialogForType(ShortcutType.Action)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
                 TextButton(
                     text = "WebUI",
                     onClick = {
-                        selectedShortcutType = ShortcutType.WebUI
                         showShortcutTypeDialog.value = false
-                        showShortcutDialog.value = true
+                        openShortcutDialogForType(ShortcutType.WebUI)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -960,15 +1008,7 @@ fun ModulePager(
                             val moduleId = shortcutModuleId
                             val type = selectedShortcutType
                             if (!moduleId.isNullOrBlank() && type != null) {
-                                when (type) {
-                                    ShortcutType.Action -> {
-                                        Shortcut.deleteModuleActionShortcut(context, moduleId)
-                                    }
-
-                                    ShortcutType.WebUI -> {
-                                        Shortcut.deleteModuleWebUiShortcut(context, moduleId)
-                                    }
-                                }
+                                deleteModuleShortcut(context, moduleId, type)
                             }
                             showShortcutDialog.value = false
                         },
@@ -993,25 +1033,13 @@ fun ModulePager(
                             val moduleId = shortcutModuleId
                             val type = selectedShortcutType
                             if (!moduleId.isNullOrBlank() && shortcutName.isNotBlank() && type != null) {
-                                when (type) {
-                                    ShortcutType.Action -> {
-                                        Shortcut.createModuleActionShortcut(
-                                            context,
-                                            moduleId,
-                                            shortcutName,
-                                            shortcutIconUri
-                                        )
-                                    }
-
-                                    ShortcutType.WebUI -> {
-                                        Shortcut.createModuleWebUiShortcut(
-                                            context,
-                                            moduleId,
-                                            shortcutName,
-                                            shortcutIconUri
-                                        )
-                                    }
-                                }
+                                createModuleShortcut(
+                                    context = context,
+                                    moduleId = moduleId,
+                                    name = shortcutName,
+                                    iconUri = shortcutIconUri,
+                                    type = type
+                                )
                             }
                             showShortcutDialog.value = false
                         },

@@ -103,15 +103,22 @@ version=<string>
 versioncode=<int>
 author=<string>
 description=<string>
-actionIcon=<path>
+updateJson=<url> (opsional)
+actionIcon=<path> (opsional)
+webuiIcon=<path> (opsional)
 ```
 
 - `id` harus cocok dengan ekspresi reguler ini: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
    contoh: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
    Ini adalah **pengidentifikasi unik** modul Anda. Anda tidak boleh mengubahnya setelah dipublikasikan.
-- `versionCode` harus berupa **integer**. Ini digunakan untuk membandingkan versi
+- `versionCode` harus berupa **integer**. Ini digunakan untuk membandingkan versi.
 - Lainnya yang tidak disebutkan di atas dapat berupa string **satu baris**.
 - Pastikan untuk menggunakan tipe jeda baris `UNIX (LF)` dan bukan `Windows (CR+LF)` atau `Macintosh (CR)`.
+- `actionIcon` dan `webuiIcon` adalah path gambar opsional yang digunakan
+  sebagai ikon default untuk pintasan aksi modul dan pintasan WebUI modul di
+  aplikasi pengelola. Disarankan hanya menggunakan path relatif; path tersebut
+  akan di-resolve langsung berdasarkan direktori root modul. Contohnya,
+  `actionIcon=icon/icon.png` akan dipetakan ke `<MODDIR>/icon/icon.png`.
 
 ::: tip DESKRIPSI DINAMIS
 Field `description` dapat diganti secara dinamis saat runtime menggunakan sistem konfigurasi modul. Lihat [Mengganti Deskripsi Modul](module-config.md#overriding-module-description) untuk detailnya.
