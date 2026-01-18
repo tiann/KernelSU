@@ -113,7 +113,7 @@ actionIcon=<path> (optional)
 webuiIcon=<path> (optional)
 ```
 
-- id 必須與這個正則表達式相符：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a  module`，✗ `1_module`，✗ `-a-module`。這是您的模組的唯一識別碼，發表後將無法變更。
+- id 必須與這個正則表達式相符：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a module`，✗ `1_module`，✗ `-a-module`。這是您的模組的唯一識別碼，發表後將無法變更。
 - versionCode 必須是一個整數，用於比較版本。
 - 其他未在上方提到的內容可以是任何單行字串。
 - 請確保使用 `UNIX (LF)` 分行符號類型，而非 `Windows (CR + LF)` 或 `Macintosh (CR)`。

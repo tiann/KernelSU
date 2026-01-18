@@ -116,7 +116,7 @@ actionIcon=<path> (optional)
 webuiIcon=<path> (optional)
 ```
 
-- id 必须与这个正则表达式匹配：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a  module`，✗ `1_module`，✗ `-a-module`。这是您的模块的唯一标识符，发布后不应更改。
+- id 必须与这个正则表达式匹配：`^[a-zA-Z][a-zA-Z0-9._-]+$` 例如：✓ `a_module`，✓ `a.module`，✓ `module-101`，✗ `a module`，✗ `1_module`，✗ `-a-module`。这是您的模块的唯一标识符，发布后不应更改。
 - versionCode 必须是一个整数，用于比较版本。
 - 其他未在上面提到的内容可以是任何单行字符串。
 - 请确保使用 UNIX（LF）换行类型，而不是 Windows（CR + LF）或 Macintosh（CR）。
