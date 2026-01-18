@@ -19,6 +19,11 @@ static inline bool is_manager()
     return unlikely(ksu_manager_appid == current_uid().val % PER_USER_RANGE);
 }
 
+static inline bool is_uid_manager(uid_t uid)
+{
+    return unlikely(ksu_manager_appid == uid % PER_USER_RANGE);
+}
+
 static inline uid_t ksu_get_manager_appid()
 {
     return ksu_manager_appid;
