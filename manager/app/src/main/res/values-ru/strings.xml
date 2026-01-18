@@ -129,8 +129,6 @@
     <string name="log_saved">Логи сохранены</string>
     <string name="module_sort_action_first">Сначала с действием</string>
     <string name="module_sort_enabled_first">Сначала включённые</string>
-    <string name="settings_disable_su">Отключить su совместимость</string>
-    <string name="settings_disable_su_summary">Отключить возможность получения root привилегий любым приложениям с помощью команды su (существующие root процессы не будут затронуты).</string>
     <string name="module_install_prompt_with_name">Будут установлены следующие модули: %1$s</string>
     <string name="confirm">Подтвердить</string>
     <string name="su_not_allowed">Не удалось предоставить права Суперпользователя к %s</string>
@@ -139,13 +137,12 @@
     <string name="refresh_release">Отпустите чтобы обновить</string>
     <string name="refresh_pulling">Потяните вниз чтобы обновить</string>
     <string name="processing">Обработка…</string>
-    <string name="settings_disable_kernel_umount_summary">Отключить поведение размонтирования на уровне ядра, контролируемое KernelSU.</string>
-    <string name="settings_disable_kernel_umount">Отключить размонтирование ядра</string>
     <string name="install_upload_lkm_file">Использовать локальный LKM файл</string>
     <string name="install_only_support_ko_file">Поддерживаются только .ko файлы</string>
-    <string name="settings_mode_default">По умолчанию</string>
-    <string name="settings_mode_temp_enable">Включить временно</string>
-    <string name="settings_mode_always_enable">Включить постоянно</string>
+    <string name="settings_sucompat">Классическая команда su</string>
+    <string name="settings_sucompat_summary">Разрешить root-доступ через /system/bin/su в новых процессах.</string>
+    <string name="settings_kernel_umount">Размонтирование модулей</string>
+    <string name="settings_kernel_umount_summary">Размонтировать модули в ядре для профиля приложения</string>
     <string name="settings_module_check_update">Проверять обновления модулей</string>
     <string name="install_select_partition">Выбрать раздел</string>
     <string name="app_profile_affects_following_apps">Влияет на следующие приложения</string>

@@ -1,2 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="settings_sucompat">su binary လမ်းကြောင်းပြောင်းမည်</string>
+    <string name="settings_sucompat_summary">အက်ပ်ပရိုဖိုင်တွင် Superuser ခွင့်ပြုချက် ပေးထားသော အက်ပ်များအတွက် /system/bin/su ကို ksud သို့ လမ်းကြောင်းပြောင်းမည်; လုပ်ငန်းစဉ်အသစ်များအတွက်သာ ထိရောက်မှုရှိသည်။</string>
+    <string name="settings_kernel_umount">Kernel ဖြုတ်မည်</string>
+    <string name="settings_kernel_umount_summary">KernelSU မှ ထိန်းချုပ်ထားသော Kernel အဆင့် ဖြုတ်မည့် အပြုအမူ</string>
+</resources>

@@ -124,9 +124,7 @@
     <string name="module_sort_action_first">執行優先</string>
     <string name="module_install_prompt_with_name">將安裝以下模組：%1$s</string>
     <string name="confirm">確認</string>
-    <string name="settings_disable_su_summary">暫時禁用任何應用程式通過⁠ su 命令獲得 root 權限的能力（現有的 root 進程不會受到影響）。</string>
     <string name="su_not_allowed">無法授予「%s」超級使用者存取</string>
-    <string name="settings_disable_su">停用 su 相容性</string>
     <string name="log_saved">已儲存運作日誌</string>
     <string name="processing">處理中…</string>
     <string name="refresh_pulling">下拉刷新</string>
@@ -145,6 +143,10 @@
     <string name="settings_theme_mode_dark">深色</string>
     <string name="settings_theme_mode_monet_dark">Monet (深色)</string>
     <string name="settings_theme_summary">選擇應用的主題模式。</string>
+    <string name="settings_sucompat">傳統 su 命令支援</string>
+    <string name="settings_sucompat_summary">允許透過 /system/bin/su 獲取 Root 權限，僅對新行程生效。</string>
+    <string name="settings_kernel_umount">核心處理解除掛載模組</string>
+    <string name="settings_kernel_umount_summary">在核心為需要的應用程式解除掛載模組</string>
     <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
     <string name="module_shortcut_icon_pick">選擇自訂圖示</string>

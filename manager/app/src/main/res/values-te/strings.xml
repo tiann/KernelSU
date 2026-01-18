@@ -16,4 +16,8 @@
     <string name="home_working">పని చేస్తోంది</string>
     <string name="home_working_version">వెర్షన్: %d</string>
     <string name="save_log">లాగ్‌లు సేవ్ చేయండి</string>
+    <string name="settings_sucompat">su బైనరీని మళ్ళించండి</string>
+    <string name="settings_sucompat_summary">యాప్ ప్రొఫైల్‌లో సూపర్‌యూజర్ అనుమతి ఉన్న యాప్‌ల కోసం /system/bin/su ని ksud కి మళ్ళించండి; కొత్త ప్రాసెస్‌లకు మాత్రమే పని చేస్తుంది.</string>
+    <string name="settings_kernel_umount">కెర్నల్ అన్‌మౌంట్</string>
+    <string name="settings_kernel_umount_summary">KernelSU ద్వారా నియంత్రించబడే కెర్నల్-స్థాయి అన్‌మౌంట్ ప్రవర్తన</string>
 </resources>

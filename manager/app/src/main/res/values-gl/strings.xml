@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="home">Inicio</string>
+    <string name="settings_sucompat">Redirixir o binario su</string>
+    <string name="settings_sucompat_summary">Permite que as aplicacións con permiso de Superusuario no perfil da aplicación obteñan un shell de superusuario executando /system/bin/su; efectivo só para novos procesos.</string>
+    <string name="settings_kernel_umount">Desmontar núcleo</string>
+    <string name="settings_kernel_umount_summary">Comportamento de desmontaxe a nivel de núcleo controlado por KernelSU</string>
 </resources>

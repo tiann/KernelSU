@@ -47,7 +47,8 @@
     <string name="home_click_to_learn_kernelsu">Aprende a instalar KernelSU y a utilizar módulos</string>
     <string name="home_support_title">Apóyanos</string>
     <string name="home_support_content">KernelSU es, y siempre será, gratuito y de código abierto. Sin embargo, puedes demostrarnos que te importamos haciendo una donación.</string>
-    <string name="about_source_code">Ver código fuente en %1$s<br/>Únete a nuestro canal %2$s</string>
+    <string name="about_source_code">Ver código fuente en %1$s<br/>
+Únete a nuestro canal %2$s</string>
     <string name="profile_default">Predeterminado</string>
     <string name="profile_template">Plantilla</string>
     <string name="profile_custom">Personalizado</string>
@@ -119,4 +120,8 @@
     <string name="settings_check_update_summary">Comprobación automática de actualizaciones al abrir la aplicación</string>
     <string name="enable_web_debugging_summary">Puede ser usado para depurar WebUI, por favor habilítalo sólo cuando sea necesario.</string>
     <string name="settings_restore_stock_image_message">Restaurar la imagen de fábrica stock (Si existe una copia de seguridad), por lo general se utiliza antes de OTA; si necesita desinstalar KernelSU, por favor, utilice \"Desinstalar permanentemente\".</string>
+    <string name="settings_sucompat">Redirigir binario su</string>
+    <string name="settings_sucompat_summary">Permite que las aplicaciones con permiso de Superusuario en el perfil de la aplicación obtengan un shell de superusuario ejecutando /system/bin/su; efectivo solo para nuevos procesos.</string>
+    <string name="settings_kernel_umount">Desmontaje del kernel</string>
+    <string name="settings_kernel_umount_summary">Comportamiento de desmontaje a nivel de kernel controlado por KernelSU</string>
 </resources>

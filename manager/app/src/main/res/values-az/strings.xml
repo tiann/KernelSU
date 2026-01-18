@@ -49,7 +49,8 @@
     <string name="profile_default">Defolt</string>
     <string name="profile_custom">Özəl</string>
     <string name="home_support_content">KernelSU pulsuz və açıq mənbəlidir,həmişə belə olacaqdır. Bununla belə, ianə etməklə bizə qayğı göstərdiyinizi göstərə bilərsiniz.</string>
-    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br/>Kanalımıza %2$s qoşulun</string>
+    <string name="about_source_code">Mənbə kodlarımıza baxın %1$s<br/>
+Kanalımıza %2$s qoşulun</string>
     <string name="profile_name">Profil adı</string>
     <string name="profile_capabilities">Bacarıqlar</string>
     <string name="profile_umount_modules">Modulları umount et</string>
@@ -93,4 +94,8 @@
     <string name="app_profile_template_delete">Sil</string>
     <string name="app_profile_template_view">Şablonu göstər</string>
     <string name="app_profile_template_id_exist">Şablon ID-si artıq mövcuddur!</string>
+    <string name="settings_sucompat">su binary yönləndirmə</string>
+    <string name="settings_sucompat_summary">Tətbiq Profilinə Superuser icazəsi verilmiş proqramları /system/bin/su vasitəsilə superuser shell əldə etməyə icazə verir; yalnız yeni proseslər üçün effektivdir.</string>
+    <string name="settings_kernel_umount">Nüvə umount</string>
+    <string name="settings_kernel_umount_summary">KernelSU tərəfindən idarə olunan nüvə səviyyəsində umount davranışı</string>
 </resources>

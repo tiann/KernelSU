@@ -127,14 +127,16 @@
     <string name="log_saved">Günlükler kaydedildi</string>
     <string name="confirm">Onayla</string>
     <string name="su_not_allowed">%s için Superuser erişimi verilemedi</string>
-    <string name="settings_disable_su_summary">Herhangi bir uygulamanın ⁠su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini geçici olarak devre dışı bırakın (mevcut kök işlemleri etkilenmeyecektir)</string>
     <string name="module_install_prompt_with_name">Aşağıdaki modüller yüklenecek: %1$s</string>
     <string name="module_sort_action_first">Sırala (Action önce)</string>
     <string name="module_sort_enabled_first">Sırala (Etkin olanlar önce)</string>
-    <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
     <string name="module_repos">Depolar</string>
     <string name="module_repos_sort_name">Ad (A → Z)</string>
     <string name="module_repos_source_code">Kaynak kodu</string>
     <string name="metamodule_uninstall_confirm">%s modülünü kaldırmak istediğinizden emin misiniz? Bu eylem tüm modülleri etkileyecek ve metamodül (örneğin bağlama özelliği) tarafından sunulan belli özellikler artık çalışmayacaktır.</string>
     <string name="home_gki_warning">v3.0.0 sürümünden itibaren GKI çalışma modu yalnızca test ortamlarında kullanılacaktır. Günlük kullanım için tavsiye etmiyoruz ve imaj dosyaları artık sunulmayacaktır.</string>
+    <string name="settings_sucompat">su ikili dosyasını yeniden yönlendir</string>
+    <string name="settings_sucompat_summary">Uygulama Profilinde Süper Kullanıcı izni verilen uygulamaların /system/bin/su yürütülerek süper kullanıcı kabuğu almasına izin verir; yalnızca yeni işlemler için etkilidir.</string>
+    <string name="settings_kernel_umount">Çekirdek bağlantısını kes</string>
+    <string name="settings_kernel_umount_summary">KernelSU tarafından kontrol edilen çekirdek seviyesinde bağlantı kesme davranışı</string>
 </resources>

@@ -76,4 +76,8 @@
     <string name="module_changelog">Keitimų žurnalas</string>
     <string name="require_kernel_version">Ši KernelSU versija %1$d yra per žema, kad šis vadybininkas galėtų tinkamai funkcionuoti. Prašome atsinaujinti į versiją %2$d ar aukščiau!</string>
     <string name="save_log">Saglabāt Žurnālus</string>
+    <string name="settings_sucompat">Nukreipti su dvejetainį failą</string>
+    <string name="settings_sucompat_summary">Nukreipti /system/bin/su į ksud programoms, kurioms suteiktas Superuser leidimas programos profilyje; veiksminga tik naujiems procesams.</string>
+    <string name="settings_kernel_umount">Branduolio atjungimas</string>
+    <string name="settings_kernel_umount_summary">Branduolio lygio atjungimo elgsena, valdoma KernelSU</string>
 </resources>

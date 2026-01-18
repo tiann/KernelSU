@@ -135,6 +135,8 @@
     <string name="home_gki_warning">Ab v3.0.0 wird der GKI Arbeitsmodus nur in Testumgebungen genutzt werden. Wir empfehlen es nicht für die tägliche Nutzung und Bilddateien werden nicht mehr bereitgestellt werden.</string>
     <string name="su_not_allowed">Es konnte für %s keine Superuser-Berechtigung gegeben werden</string>
     <string name="app_profile_affects_following_apps">Wirkt sich auf folgende Apps aus</string>
+    <string name="settings_sucompat">Su-Binärdatei umleiten</string>
+    <string name="settings_sucompat_summary">Ermöglicht Anwendungen mit Superuser-Berechtigung im App-Profil, eine Superuser-Shell durch Ausführung von /system/bin/su zu erhalten; wirksam nur für neue Prozesse.</string>
     <string name="settings_module_check_update">Auf Modulaktualisierungen prüfen</string>
     <string name="install_select_partition">Partition wählen</string>
     <string name="install_upload_lkm_file">Nutze lokale LKM Datei</string>

@@ -129,13 +129,6 @@
     <string name="settings_module_check_update">모듈 업데이트 확인</string>
     <string name="install_upload_lkm_file">로컬 LKM 파일 사용</string>
     <string name="install_only_support_ko_file">.ko 파일만 지원됩니다</string>
-    <string name="settings_disable_su">su 호환 비활성화</string>
-    <string name="settings_disable_su_summary">su 명령어로 아무 앱이 루트 권한을 획득하는 것을 비활성화합니다 (이미 존재하는 루트 프로세스는 영향을 받지 않음).</string>
-    <string name="settings_disable_kernel_umount">커널 마운트 해제 비활성화</string>
-    <string name="settings_disable_kernel_umount_summary">KernelSU에서 제어하는 커널 수준 마운트 해제 동작을 비활성화합니다.</string>
-    <string name="settings_mode_default">기본값</string>
-    <string name="settings_mode_temp_enable">임시 활성화</string>
-    <string name="settings_mode_always_enable">항상 활성화</string>
     <string name="processing">처리 중…</string>
     <string name="refresh_pulling">당겨서 새로 고침</string>
     <string name="refresh_release">놓아서 새로 고침</string>
@@ -179,4 +172,8 @@
     <string name="tab_releases">릴리즈</string>
     <string name="tab_info">정보</string>
     <string name="safe_mode_module_disabled">안전 모드에서 모듈 설치가 비활성화됨</string>
+    <string name="settings_sucompat">기존 su 명령</string>
+    <string name="settings_sucompat_summary">/system/bin/su를 통한 루트 권한 획득 허용 (새 프로세스 전용)</string>
+    <string name="settings_kernel_umount">모듈 언마운트</string>
+    <string name="settings_kernel_umount_summary">앱 프로필에 따라 커널에서 모듈을 언마운트합니다</string>
 </resources>
