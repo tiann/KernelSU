@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
@@ -945,16 +947,23 @@ fun ModuleItem(
     val textDecoration by remember(module.remove) {
         mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
     }
+    val hasDescription by remember(module.description) {
+        derivedStateOf { module.description.isNotBlank() }
+    }
+    var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp),
-        insideMargin = PaddingValues(16.dp)
+        insideMargin = PaddingValues(16.dp),
+        onClick = {
+            if (hasDescription) expanded = !expanded
+        }
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
                 modifier = Modifier
@@ -1035,16 +1044,26 @@ fun ModuleItem(
             )
         }
 
-        if (module.description.isNotBlank()) {
-            Text(
-                text = module.description,
-                fontSize = 14.sp,
-                color = colorScheme.onSurfaceVariantSummary,
-                modifier = Modifier.padding(top = 2.dp),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 4,
-                textDecoration = textDecoration
-            )
+        if (hasDescription) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 250,
+                            easing = FastOutSlowInEasing
+                        )
+                    )
+            ) {
+                Text(
+                    text = module.description,
+                    fontSize = 14.sp,
+                    color = colorScheme.onSurfaceVariantSummary,
+                    overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                    maxLines = if (expanded) Int.MAX_VALUE else 4,
+                    textDecoration = textDecoration
+                )
+            }
         }
 
         HorizontalDivider(
