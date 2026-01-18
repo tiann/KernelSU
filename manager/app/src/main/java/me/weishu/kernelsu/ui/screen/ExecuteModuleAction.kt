@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.screen
 import android.annotation.SuppressLint
 import android.os.Environment
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -43,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.util.runModuleAction
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -73,7 +74,11 @@ import java.util.Locale
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 @Destination<RootGraph>
-fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String) {
+fun ExecuteModuleActionScreen(
+    navigator: MiuixDestinationsNavigator,
+    moduleId: String,
+    fromShortcut: Boolean
+) {
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
@@ -88,9 +93,14 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
-    val fromShortcut = remember(activity) {
-        val intent = activity?.intent
-        intent?.getStringExtra("shortcut_type") == "module_action"
+    val onBack: () -> Unit = remember(fromShortcut, activity, navigator) {
+        {
+            if (fromShortcut) {
+                activity?.finishAndRemoveTask()
+            } else {
+                navigator.popBackStack()
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -124,19 +134,18 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            if (fromShortcut && activity != null) {
-                activity.finish()
-            } else {
-                navigator.popBackStack()
-            }
+            onBack()
         }
+    }
+    BackHandler {
+        onBack()
     }
 
     Scaffold(
         topBar = {
             TopBar(
                 onBack = dropUnlessResumed {
-                    navigator.popBackStack()
+                    onBack()
                 },
                 onSave = {
                     scope.launch {
