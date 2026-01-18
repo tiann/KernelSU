@@ -118,9 +118,9 @@ webuiIcon=<path> (optional)
 - 其他未在上方提到的內容可以是任何單行字串。
 - 請確保使用 `UNIX (LF)` 分行符號類型，而非 `Windows (CR + LF)` 或 `Macintosh (CR)`。
 - actionIcon 與 webuiIcon 是可選的圖示路徑，會作為管理器中模組
-  Action 捷徑與 WebUI 捷徑的預設圖示。建議僅填寫相對路徑，路徑會
-  直接以模組根目錄作為解析基準。例如：`actionIcon=icon/icon.png` 會
-  解析為 `<MODDIR>/icon/icon.png`。
+  Action 捷徑與 WebUI 捷徑的預設圖示。這些路徑必須是以模組根目錄為
+  基準的相對路徑。例如：`actionIcon=icon/icon.png`
+  會解析為 `<MODDIR>/icon/icon.png`。
 
 ::: tip 動態描述
 `description` 欄位可以在執行階段使用模組配置系統動態覆蓋。詳情請參閱[覆蓋模組描述](module-config.md#overriding-module-description)。

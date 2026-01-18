@@ -121,8 +121,8 @@ webuiIcon=<path> (optional)
 - 其他未在上面提到的内容可以是任何单行字符串。
 - 请确保使用 UNIX（LF）换行类型，而不是 Windows（CR + LF）或 Macintosh（CR）。
 - actionIcon 和 webuiIcon 是可选的图标路径，用作管理器中模块
-  Action 快捷方式和 WebUI 快捷方式的默认图标。建议仅填写相对路径，
-  路径会直接基于模块根目录进行解析。例如 `actionIcon=icon/icon.png`
+  Action 快捷方式和 WebUI 快捷方式的默认图标。这些路径必须是基于模
+  块根目录的相对路径。例如 `actionIcon=icon/icon.png`
   将会解析为 `<MODDIR>/icon/icon.png`。
 
 ::: tip 动态描述

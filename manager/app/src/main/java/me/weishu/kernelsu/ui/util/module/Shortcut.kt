@@ -214,9 +214,16 @@ object Shortcut {
                 } catch (_: Throwable) {
                     rawBitmap
                 }
+                if (square !== rawBitmap && !rawBitmap.isRecycled) {
+                    rawBitmap.recycle()
+                }
                 if (side > 512) {
                     try {
-                        square.scale(512, 512)
+                        val scaled = square.scale(512, 512)
+                        if (scaled !== square && !square.isRecycled) {
+                            square.recycle()
+                        }
+                        scaled
                     } catch (_: Throwable) {
                         square
                     }

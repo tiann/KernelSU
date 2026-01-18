@@ -672,7 +672,17 @@ fn resolve_module_icon_path(
         if icon_value.is_empty() {
             return;
         }
-        let has_parent = std::path::Path::new(icon_value)
+        let path = std::path::Path::new(icon_value);
+        if path.is_absolute() {
+            log::warn!(
+                "Rejected {} with absolute path for module {}: {}",
+                key,
+                module_prop_map.get("id").map_or("", String::as_str),
+                icon_value
+            );
+            return;
+        }
+        let has_parent = path
             .components()
             .any(|c| matches!(c, std::path::Component::ParentDir));
         if has_parent {
@@ -684,11 +694,7 @@ fn resolve_module_icon_path(
             );
             return;
         }
-        let candidate = if std::path::Path::new(icon_value).is_absolute() {
-            std::path::PathBuf::from(icon_value)
-        } else {
-            module_path.join(icon_value)
-        };
+        let candidate = module_path.join(path);
         if candidate.exists() && candidate.is_file() {
             if let Some(s) = candidate.to_str() {
                 module_prop_map.insert(key.to_owned(), s.to_string());

@@ -114,10 +114,9 @@ webuiIcon=<path> (opsional)
 - `versionCode` harus berupa **integer**. Ini digunakan untuk membandingkan versi.
 - Lainnya yang tidak disebutkan di atas dapat berupa string **satu baris**.
 - Pastikan untuk menggunakan tipe jeda baris `UNIX (LF)` dan bukan `Windows (CR+LF)` atau `Macintosh (CR)`.
-- `actionIcon` dan `webuiIcon` adalah path gambar opsional yang digunakan
-  sebagai ikon default untuk pintasan aksi modul dan pintasan WebUI modul di
-  aplikasi pengelola. Disarankan hanya menggunakan path relatif; path tersebut
-  akan di-resolve langsung berdasarkan direktori root modul. Contohnya,
+- `actionIcon` dan `webuiIcon` adalah path ikon opsional yang digunakan sebagai
+  ikon default untuk pintasan aksi modul dan pintasan WebUI modul di aplikasi
+  pengelola. Path ini harus relatif terhadap direktori root modul. Contohnya,
   `actionIcon=icon/icon.png` akan dipetakan ke `<MODDIR>/icon/icon.png`.
 
 ::: tip DESKRIPSI DINAMIS
