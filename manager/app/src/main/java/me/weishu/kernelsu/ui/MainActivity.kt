@@ -274,7 +274,7 @@ fun MainScreen(navController: DestinationsNavigator) {
             HorizontalPager(
                 modifier = Modifier.hazeSource(state = hazeState),
                 state = pagerState,
-                beyondViewportPageCount = 4,
+                beyondViewportPageCount = 1,
                 userScrollEnabled = userScrollEnabled,
             ) {
                 when (it) {
