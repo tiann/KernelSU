@@ -402,13 +402,7 @@ fun SettingPager(
                                 }
                             }
                         )
-                    }
 
-                    Card(
-                        modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
-                    ) {
                         var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_umount_modules_default),
