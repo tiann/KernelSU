@@ -105,14 +105,21 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+updateJson=<url> (optional)
+actionIcon=<path> (optional)
+webuiIcon=<path> (optional)
 ```
 
 - `id` phải khớp với biểu thức chính quy này: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
    ví dụ: ✓ `a_module`, ✓ `a.module`, ✓ `module-101`, ✗ `a module`, ✗ `1_module`, ✗ `-a-module`<br>
    Đây là **mã định danh duy nhất** của mô-đun của bạn. Bạn không nên thay đổi nó sau khi được xuất bản.
-- `versionCode` phải là **số nguyên**. Điều này được sử dụng để so sánh các phiên bản
+- `versionCode` phải là **số nguyên**. Điều này được sử dụng để so sánh các phiên bản.
 - Các chuỗi khác không được đề cập ở trên có thể là chuỗi **một dòng** bất kỳ.
 - Đảm bảo sử dụng kiểu ngắt dòng `UNIX (LF)` chứ không phải `Windows (CR+LF)` hoặc `Macintosh (CR)`.
+- `actionIcon` và `webuiIcon` là các đường dẫn hình ảnh tùy chọn, được dùng làm
+  biểu tượng mặc định cho phím tắt hành động và phím tắt WebUI của mô-đun trong
+  ứng dụng quản lý. Các đường dẫn này phải là đường dẫn tương đối so với thư mục gốc
+  của mô-đun. Ví dụ, `actionIcon=icon/icon.png` sẽ được ánh xạ thành `<MODDIR>/icon/icon.png`.
 
 ::: tip MÔ TẢ ĐỘNG
 Trường `description` có thể được ghi đè động khi chạy bằng hệ thống cấu hình mô-đun. Xem [Ghi đè Mô tả Mô-đun](module-config.md#overriding-module-description) để biết chi tiết.
