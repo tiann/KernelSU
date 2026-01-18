@@ -2,6 +2,8 @@ package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -47,7 +49,11 @@ import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.EditText
+import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
+import me.weishu.kernelsu.ui.component.navigation.resultBackMiuixNavigator
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
+import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.component.sharedTransition.screenShareBounds
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
@@ -73,13 +79,22 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @date 2023/10/20.
  */
 @Composable
-@Destination<RootGraph>
+@Destination<RootGraph>(
+    route = "TemplateScreen"
+)
+@Destination<RootGraph>(
+    route = "TemplateEditorScreen"
+)
 fun TemplateEditorScreen(
     navigator: ResultBackNavigator<Boolean>,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     initialTemplate: TemplateViewModel.TemplateInfo,
+    transitionSource: TransitionSource = TransitionSource.NULL,
     readOnly: Boolean = true,
 ) {
 
+    val miuixNavigator = resultBackMiuixNavigator(navigator)
+    val sharedTransitionScope = LocalSharedTransitionScope.current
     val isCreation = initialTemplate.id.isBlank()
     val autoSave = !isCreation
 
@@ -95,148 +110,97 @@ fun TemplateEditorScreen(
     )
 
     BackHandler {
-        navigator.navigateBack(result = !readOnly)
+        miuixNavigator.navigateBack(result = !readOnly)
     }
 
-    Scaffold(
-        topBar = {
-            val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
-            val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
-            val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
-            val context = LocalContext.current
+    Box(
+        modifier = Modifier
+            .screenShareBounds(
+                key = template.id,
+                transitionSource = transitionSource,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
+            ),
+    ) {
+        Scaffold(
+            modifier = Modifier,
+            topBar = {
+                val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
+                val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
+                val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
+                val context = LocalContext.current
 
-            TopBar(
-                title = if (isCreation) {
-                    stringResource(R.string.app_profile_template_create)
-                } else if (readOnly) {
-                    stringResource(R.string.app_profile_template_view)
-                } else {
-                    stringResource(R.string.app_profile_template_edit)
-                },
-                readOnly = readOnly,
-                isCreation = isCreation,
-                onBack = dropUnlessResumed { navigator.navigateBack(result = !readOnly) },
-                onDelete = {
-                    if (deleteAppProfileTemplate(template.id)) {
-                        navigator.navigateBack(result = true)
-                    }
-                },
-                onSave = {
-                    when (idCheck(template.id)) {
-                        0 -> Unit
-
-                        1 -> {
-                            Toast.makeText(context, idConflictError, Toast.LENGTH_SHORT).show()
-                            return@TopBar
-                        }
-
-                        2 -> {
-                            Toast.makeText(context, idInvalidError, Toast.LENGTH_SHORT).show()
-                            return@TopBar
-                        }
-                    }
-                    if (saveTemplate(template, isCreation)) {
-                        navigator.navigateBack(result = true)
+                TopBar(
+                    title = if (isCreation) {
+                        stringResource(R.string.app_profile_template_create)
+                    } else if (readOnly) {
+                        stringResource(R.string.app_profile_template_view)
                     } else {
-                        Toast.makeText(context, saveTemplateFailed, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle,
-            )
-        },
-        popupHost = { },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .scrollEndHaptic()
-                .overScrollVertical()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(state = hazeState)
-                .pointerInteropFilter {
-                    // disable click and ripple if readOnly
-                    readOnly
-                },
-            contentPadding = innerPadding,
-            overscrollEffect = null
-        ) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                ) {
-                    var errorHint by rememberSaveable { mutableStateOf(false) }
-
-                    TextEdit(
-                        label = stringResource(id = R.string.app_profile_template_name),
-                        text = template.name
-                    ) { value ->
-                        template.copy(name = value).run {
-                            if (autoSave) {
-                                if (!saveTemplate(this)) {
-                                    // failed
-                                    return@run
-                                }
-                            }
-                            template = this
+                        stringResource(R.string.app_profile_template_edit)
+                    },
+                    readOnly = readOnly,
+                    isCreation = isCreation,
+                    onBack = dropUnlessResumed { miuixNavigator.navigateBack(result = !readOnly) },
+                    onDelete = {
+                        if (deleteAppProfileTemplate(template.id)) {
+                            miuixNavigator.navigateBack(result = true)
                         }
-                    }
+                    },
+                    onSave = {
+                        when (idCheck(template.id)) {
+                            0 -> Unit
 
-                    TextEdit(
-                        label = stringResource(id = R.string.app_profile_template_id),
-                        text = template.id,
-                        isError = errorHint
-                    ) { value ->
-                        errorHint = value.isNotEmpty() && (isTemplateExist(value) || !isValidTemplateId(value))
-                        template = template.copy(id = value)
-                    }
-                    TextEdit(
-                        label = stringResource(R.string.module_author),
-                        text = template.author
-                    ) { value ->
-                        template.copy(author = value).run {
-                            if (autoSave) {
-                                if (!saveTemplate(this)) {
-                                    // failed
-                                    return@run
-                                }
+                            1 -> {
+                                Toast.makeText(context, idConflictError, Toast.LENGTH_SHORT).show()
+                                return@TopBar
                             }
-                            template = this
-                        }
-                    }
 
-                    TextEdit(
-                        label = stringResource(id = R.string.app_profile_template_description),
-                        text = template.description
-                    ) { value ->
-                        template.copy(description = value).run {
-                            if (autoSave) {
-                                if (!saveTemplate(this)) {
-                                    // failed
-                                    return@run
-                                }
+                            2 -> {
+                                Toast.makeText(context, idInvalidError, Toast.LENGTH_SHORT).show()
+                                return@TopBar
                             }
-                            template = this
                         }
-                    }
+                        if (saveTemplate(template, isCreation)) {
+                            miuixNavigator.navigateBack(result = true)
+                        } else {
+                            Toast.makeText(context, saveTemplateFailed, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    hazeState = hazeState,
+                    hazeStyle = hazeStyle,
+                )
+            },
+            popupHost = { },
+            contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .scrollEndHaptic()
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .hazeSource(state = hazeState)
+                    .pointerInteropFilter {
+                        // disable click and ripple if readOnly
+                        readOnly
+                    },
+                contentPadding = innerPadding,
+                overscrollEffect = null
+            ) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                    ) {
+                        var errorHint by rememberSaveable { mutableStateOf(false) }
 
-                    RootProfileConfig(
-                        fixedName = true,
-                        profile = toNativeProfile(template),
-                        onProfileChange = {
-                            template.copy(
-                                uid = it.uid,
-                                gid = it.gid,
-                                groups = it.groups,
-                                capabilities = it.capabilities,
-                                context = it.context,
-                                namespace = it.namespace,
-                                rules = it.rules.split("\n")
-                            ).run {
+                        TextEdit(
+                            label = stringResource(id = R.string.app_profile_template_name),
+                            text = template.name
+                        ) { value ->
+                            template.copy(name = value).run {
                                 if (autoSave) {
                                     if (!saveTemplate(this)) {
                                         // failed
@@ -246,14 +210,76 @@ fun TemplateEditorScreen(
                                 template = this
                             }
                         }
+
+                        TextEdit(
+                            label = stringResource(id = R.string.app_profile_template_id),
+                            text = template.id,
+                            isError = errorHint
+                        ) { value ->
+                            errorHint = value.isNotEmpty() && (isTemplateExist(value) || !isValidTemplateId(value))
+                            template = template.copy(id = value)
+                        }
+                        TextEdit(
+                            label = stringResource(R.string.module_author),
+                            text = template.author
+                        ) { value ->
+                            template.copy(author = value).run {
+                                if (autoSave) {
+                                    if (!saveTemplate(this)) {
+                                        // failed
+                                        return@run
+                                    }
+                                }
+                                template = this
+                            }
+                        }
+
+                        TextEdit(
+                            label = stringResource(id = R.string.app_profile_template_description),
+                            text = template.description
+                        ) { value ->
+                            template.copy(description = value).run {
+                                if (autoSave) {
+                                    if (!saveTemplate(this)) {
+                                        // failed
+                                        return@run
+                                    }
+                                }
+                                template = this
+                            }
+                        }
+
+                        RootProfileConfig(
+                            fixedName = true,
+                            profile = toNativeProfile(template),
+                            onProfileChange = {
+                                template.copy(
+                                    uid = it.uid,
+                                    gid = it.gid,
+                                    groups = it.groups,
+                                    capabilities = it.capabilities,
+                                    context = it.context,
+                                    namespace = it.namespace,
+                                    rules = it.rules.split("\n")
+                                ).run {
+                                    if (autoSave) {
+                                        if (!saveTemplate(this)) {
+                                            // failed
+                                            return@run
+                                        }
+                                    }
+                                    template = this
+                                }
+                            }
+                        )
+                    }
+                    Spacer(
+                        Modifier.height(
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                        )
                     )
                 }
-                Spacer(
-                    Modifier.height(
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
-                    )
-                )
             }
         }
     }
