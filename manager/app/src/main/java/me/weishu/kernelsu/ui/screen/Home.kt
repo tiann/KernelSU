@@ -37,7 +37,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -146,11 +148,21 @@ fun HomePager(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    if (ksuVersion != null && !Natives.isLkmMode) {
+                    val gkiWarningDismissed = prefs.getBoolean("gki_warning_dismissed", false)
+                    var showGkiWarning by remember { mutableStateOf(!gkiWarningDismissed) }
+                    
+                    AnimatedVisibility(
+                        visible = ksuVersion != null && !Natives.isLkmMode && showGkiWarning,
+                        enter = fadeIn() + expandVertically(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
                         WarningCard(
                             stringResource(id = R.string.home_gki_warning),
                             themeMode
-                        )
+                        ) {
+                            showGkiWarning = false
+                            prefs.edit().putBoolean("gki_warning_dismissed", true).apply()
+                        }
                     }
                     if (isManager && Natives.requireNewKernel()) {
                         WarningCard(
