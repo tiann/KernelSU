@@ -44,6 +44,7 @@
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="false"
+            android:taskAffinity="${applicationId}.webui"
             android:theme="@style/Theme.KernelSU.WebUI" />
 
         <provider

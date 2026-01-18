@@ -122,7 +122,7 @@ class ModuleRepoViewModel : ViewModel() {
             val request = Request.Builder().url(MODULES_URL).build()
             ksuApp.okhttpClient.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) return emptyList()
-                val body = resp.body?.string() ?: return emptyList()
+                val body = resp.body.string()
                 val json = JSONArray(body)
                 (0 until json.length()).mapNotNull { idx ->
                     val item = json.optJSONObject(idx) ?: return@mapNotNull null

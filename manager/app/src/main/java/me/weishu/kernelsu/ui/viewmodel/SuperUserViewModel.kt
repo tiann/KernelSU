@@ -133,26 +133,28 @@ class SuperUserViewModel : ViewModel() {
 
     private suspend inline fun connectKsuService(
         crossinline onDisconnect: () -> Unit = {}
-    ): Pair<IBinder, ServiceConnection> = suspendCoroutine {
-        val connection = object : ServiceConnection {
-            override fun onServiceDisconnected(name: ComponentName?) {
-                onDisconnect()
+    ): Pair<IBinder, ServiceConnection> = withContext(Dispatchers.Main) {
+        suspendCoroutine { cont ->
+            val connection = object : ServiceConnection {
+                override fun onServiceDisconnected(name: ComponentName?) {
+                    onDisconnect()
+                }
+
+                override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+                    cont.resume(binder as IBinder to this)
+                }
             }
 
-            override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                it.resume(binder as IBinder to this)
-            }
+            val intent = Intent(ksuApp, KsuService::class.java)
+
+            val task = RootService.bindOrTask(
+                intent,
+                Shell.EXECUTOR,
+                connection,
+            )
+            val shell = KsuCli.SHELL
+            task?.let { shell.execTask(it) }
         }
-
-        val intent = Intent(ksuApp, KsuService::class.java)
-
-        val task = RootService.bindOrTask(
-            intent,
-            Shell.EXECUTOR,
-            connection,
-        )
-        val shell = KsuCli.SHELL
-        task?.let { it1 -> shell.execTask(it1) }
     }
 
     private fun stopKsuService() {

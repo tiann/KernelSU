@@ -103,6 +103,9 @@ version=<string>
 versionCode=<int>
 author=<string>
 description=<string>
+updateJson=<url> (optional)
+actionIcon=<path> (optional)
+webuiIcon=<path> (optional)
 ```
 
 - `id` はこの正規表現に一致していなければいけません: `^[a-zA-Z][a-zA-Z0-9._-]+$`<br>
@@ -111,6 +114,7 @@ description=<string>
 - `versionCode` は **integer** です。バージョンの比較に使います。
 - 他のものには**単一行** の文字であれば何でも使えます。
 - 改行文字は `UNIX (LF)` を使ってください。`Windows (CR+LF)` や `Macintosh (CR)` は使ってはいけません。
+- `actionIcon` と `webuiIcon` は、マネージャーアプリ内に表示される**モジュールアクションのショートカット**および**WebUI ショートカット**の既定アイコンとして使用される、任意指定の画像パスです。これらのパスは、モジュール ディレクトリを基準として指定する必要があります。例えば、`actionIcon=icon/icon.png` は `<MODDIR>/icon/icon.png` を指します。
 
 ::: tip 動的説明
 `description` フィールドは、モジュール設定システムを使用して実行時に動的にオーバーライドできます。詳細は[モジュール説明のオーバーライド](module-config.md#overriding-module-description)を参照してください。
