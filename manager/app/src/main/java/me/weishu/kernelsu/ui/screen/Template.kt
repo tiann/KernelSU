@@ -3,12 +3,7 @@ package me.weishu.kernelsu.ui.screen
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -44,7 +40,6 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,8 +49,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -77,6 +70,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
 import com.ramcosta.composedestinations.result.getOr
 import dev.chrisbanes.haze.HazeState
@@ -89,16 +83,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
-import me.weishu.kernelsu.ui.component.FloatingActionButton
-import me.weishu.kernelsu.ui.component.navigation.LocalAnimatedVisibilityScope
-import me.weishu.kernelsu.ui.component.navigation.LocalSharedTransitionScope
-import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
-import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.NavAnimationEasing
-import me.weishu.kernelsu.ui.component.navigation.MiuixNavHostDefaults.SHARETRANSITION_DURATION
-import me.weishu.kernelsu.ui.component.sharedTransition.SharedTransitionCard
-import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
-import me.weishu.kernelsu.ui.component.sharedTransition.fabShareBounds
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -130,15 +117,12 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @Composable
 @Destination<RootGraph>
 fun AppProfileTemplateScreen(
-    navigator: MiuixDestinationsNavigator,
+    navigator: DestinationsNavigator,
     resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
 ) {
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
-
-    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
-    val sharedTransitionScope = LocalSharedTransitionScope.current
 
     LaunchedEffect(Unit) {
         if (viewModel.templateList.isEmpty()) {
@@ -178,192 +162,147 @@ fun AppProfileTemplateScreen(
             }
         }
     }
-    val offsetHeightState = animateDpAsState(
+    val offsetHeight by animateDpAsState(
         targetValue = if (fabVisible) 0.dp else 100.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        animationSpec = tween(durationMillis = 350),
-        label = "fabOffset"
+        animationSpec = tween(durationMillis = 350)
     )
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
-    val itemSharedIsMatchFound = rememberSaveable { mutableStateOf(false) }
 
-    BackHandler {
-        itemSharedIsMatchFound.value = false
-        navigator.popBackStack()
-    }
-    with(sharedTransitionScope) {
-        Scaffold(
-            topBar = {
-                val clipboard = LocalClipboard.current
-                val context = LocalContext.current
-                val showToast = fun(msg: String) {
-                    scope.launch(Dispatchers.Main) {
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    }
-                }
-                TopBar(
-                    onBack = dropUnlessResumed {
-                        itemSharedIsMatchFound.value = false
-                        navigator.popBackStack()
-                    },
-                    onImport = {
-                        scope.launch {
-                            clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
-                                if (it.isEmpty()) {
-                                    showToast(context.getString(R.string.app_profile_template_import_empty))
-                                    return@let
-                                }
-                                viewModel.importTemplates(
-                                    it,
-                                    {
-                                        showToast(context.getString(R.string.app_profile_template_import_success))
-                                        viewModel.fetchTemplates(false)
-                                    },
-                                    showToast
-                                )
-                            }
-                        }
-                    },
-                    onExport = {
-                        scope.launch {
-                            viewModel.exportTemplates(
-                                {
-                                    showToast(context.getString(R.string.app_profile_template_export_empty))
-                                },
-                                {
-                                    clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
-                                }
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    hazeState = hazeState,
-                    hazeStyle = hazeStyle,
-                )
-            },
-            floatingActionButton = {
-                val fabScale = animatedVisibilityScope.transition.animateFloat(
-                    { tween(SHARETRANSITION_DURATION, 0, NavAnimationEasing) }
-                ) {
-                    if (it != EnterExitState.Visible && itemSharedIsMatchFound.value) 0f else 1f
-                }
-                val fabAlpha = animatedVisibilityScope.transition.animateFloat(
-                    { tween(100, 0, NavAnimationEasing) }
-                ) {
-                    if (it != EnterExitState.Visible && itemSharedIsMatchFound.value) 0f else 1f
-                }
-
-                FloatingActionButton(
-                    containerColor = colorScheme.primary,
-                    shadowElevation = 0.dp,
-                    onClick = {
-                        itemSharedIsMatchFound.value = false
-                        navigator.navigate(
-                            TemplateEditorScreenDestination(
-                                TemplateViewModel.TemplateInfo(),
-                                TransitionSource.FAB, false
-                            )
-                        ) {
-                            launchSingleTop = true
-                        }
-                    },
-                    modifier = Modifier
-                        .graphicsLayer {
-                            translationY = offsetHeightState.value.toPx()
-                        }
-                        .renderInSharedTransitionScopeOverlay(1f) { isTransitionActive && itemSharedIsMatchFound.value }
-                        .alpha(fabAlpha.value)
-                        .scale(fabScale.value)
-                        .padding(
-                            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
-                            end = 20.dp
-                        )
-                        .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                    contentModifier = Modifier
-                        .fabShareBounds(
-                            key = "",
-                            sharedTransitionScope = sharedTransitionScope,
-                            animatedVisibilityScope = animatedVisibilityScope
-                        ),
-                    content = {
-                        Icon(
-                            Icons.Rounded.Add,
-                            null,
-                            Modifier.size(40.dp),
-                            tint = colorScheme.onPrimary
-                        )
-                    },
-                )
-            },
-            popupHost = { },
-            contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
-        ) { innerPadding ->
-            var isRefreshing by rememberSaveable { mutableStateOf(false) }
-            val pullToRefreshState = rememberPullToRefreshState()
-            LaunchedEffect(isRefreshing) {
-                if (isRefreshing) {
-                    delay(350)
-                    viewModel.fetchTemplates()
-                    isRefreshing = false
+    Scaffold(
+        topBar = {
+            val clipboard = LocalClipboard.current
+            val context = LocalContext.current
+            val showToast = fun(msg: String) {
+                scope.launch(Dispatchers.Main) {
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
             }
-            val refreshTexts = listOf(
-                stringResource(R.string.refresh_pulling),
-                stringResource(R.string.refresh_release),
-                stringResource(R.string.refresh_refresh),
-                stringResource(R.string.refresh_complete),
-            )
-            val layoutDirection = LocalLayoutDirection.current
-            PullToRefresh(
-                isRefreshing = isRefreshing,
-                pullToRefreshState = pullToRefreshState,
-                onRefresh = { isRefreshing = true },
-                refreshTexts = refreshTexts,
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + 6.dp,
-                    start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateEndPadding(layoutDirection)
-                ),
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .scrollEndHaptic()
-                        .overScrollVertical()
-                        .nestedScroll(nestedScrollConnection)
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .hazeSource(state = hazeState)
-                        .padding(horizontal = 12.dp),
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding(),
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection)
-                    ),
-                    overscrollEffect = null
-                ) {
-                    item {
-                        Spacer(Modifier.height(12.dp))
-                    }
-                    items(viewModel.templateList, key = { it.id }) { app ->
-                        this@with.TemplateItem(
-                            navigator = navigator,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            itemSharedIsMatchFound = itemSharedIsMatchFound,
-                            template = app
-                        )
-                    }
-                    item {
-                        Spacer(
-                            Modifier.height(
-                                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                        WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+            TopBar(
+                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onSync = {
+                    scope.launch { viewModel.fetchTemplates(true) }
+                },
+                onImport = {
+                    scope.launch {
+                        clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
+                            if (it.isEmpty()) {
+                                showToast(context.getString(R.string.app_profile_template_import_empty))
+                                return@let
+                            }
+                            viewModel.importTemplates(
+                                it,
+                                {
+                                    showToast(context.getString(R.string.app_profile_template_import_success))
+                                    viewModel.fetchTemplates(false)
+                                },
+                                showToast
                             )
+                        }
+                    }
+                },
+                onExport = {
+                    scope.launch {
+                        viewModel.exportTemplates(
+                            {
+                                showToast(context.getString(R.string.app_profile_template_export_empty))
+                            },
+                            {
+                                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
+                            }
                         )
                     }
+                },
+                scrollBehavior = scrollBehavior,
+                hazeState = hazeState,
+                hazeStyle = hazeStyle,
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                containerColor = colorScheme.primary,
+                shadowElevation = 0.dp,
+                onClick = {
+                    navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+                    .offset(y = offsetHeight)
+                    .padding(
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,
+                        end = 20.dp
+                    )
+                    .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
+                content = {
+                    Icon(
+                        Icons.Rounded.Add,
+                        null,
+                        Modifier.size(40.dp),
+                        tint = colorScheme.onPrimary
+                    )
+                },
+            )
+        },
+        popupHost = { },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+    ) { innerPadding ->
+        var isRefreshing by rememberSaveable { mutableStateOf(false) }
+        val pullToRefreshState = rememberPullToRefreshState()
+        LaunchedEffect(isRefreshing) {
+            if (isRefreshing) {
+                delay(350)
+                viewModel.fetchTemplates()
+                isRefreshing = false
+            }
+        }
+        val refreshTexts = listOf(
+            stringResource(R.string.refresh_pulling),
+            stringResource(R.string.refresh_release),
+            stringResource(R.string.refresh_refresh),
+            stringResource(R.string.refresh_complete),
+        )
+        val layoutDirection = LocalLayoutDirection.current
+        PullToRefresh(
+            isRefreshing = isRefreshing,
+            pullToRefreshState = pullToRefreshState,
+            onRefresh = { isRefreshing = true },
+            refreshTexts = refreshTexts,
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + 12.dp,
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            ),
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .scrollEndHaptic()
+                    .overScrollVertical()
+                    .nestedScroll(nestedScrollConnection)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .hazeSource(state = hazeState)
+                    .padding(horizontal = 12.dp),
+                contentPadding = innerPadding,
+                overscrollEffect = null
+            ) {
+                item {
+                    Spacer(Modifier.height(12.dp))
+                }
+                items(viewModel.templateList, key = { it.id }) { app ->
+                    TemplateItem(navigator, app)
+                }
+                item {
+                    Spacer(
+                        Modifier.height(
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                        )
+                    )
                 }
             }
         }
@@ -371,19 +310,14 @@ fun AppProfileTemplateScreen(
 }
 
 @Composable
-private fun SharedTransitionScope.TemplateItem(
-    navigator: MiuixDestinationsNavigator,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    itemSharedIsMatchFound: MutableState<Boolean>,
+private fun TemplateItem(
+    navigator: DestinationsNavigator,
     template: TemplateViewModel.TemplateInfo
 ) {
-    SharedTransitionCard(
-        key = template.id,
-        animatedVisibilityScope = animatedVisibilityScope,
+    Card(
         modifier = Modifier.padding(bottom = 12.dp),
         onClick = {
-            itemSharedIsMatchFound.value = true
-            navigator.navigate(TemplateEditorScreenDestination(template, TransitionSource.LIST_CARD, !template.local)) {
+            navigator.navigate(TemplateEditorScreenDestination(template, !template.local)) {
                 popUpTo(TemplateEditorScreenDestination) {
                     inclusive = true
                 }
@@ -489,6 +423,7 @@ private fun InfoChip(icon: ImageVector, text: String) {
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
+    onSync: () -> Unit = {},
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
     scrollBehavior: ScrollBehavior,

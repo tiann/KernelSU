@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -49,13 +48,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.flashModule
@@ -109,7 +108,7 @@ fun flashModulesSequentially(
 @Composable
 @Destination<RootGraph>
 fun FlashScreen(
-    navigator: MiuixDestinationsNavigator,
+    navigator: DestinationsNavigator,
     flashIt: FlashIt
 ) {
     var text by rememberSaveable { mutableStateOf("") }
@@ -152,9 +151,6 @@ fun FlashScreen(
         }
     }
 
-    BackHandler {
-        navigator.popBackStack()
-    }
     Scaffold(
         topBar = {
             TopBar(

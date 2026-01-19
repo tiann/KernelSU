@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -17,24 +16,20 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.adjustLightnessArgb
@@ -60,16 +55,6 @@ fun GithubMarkdown(
     isLoading.value = true
     val context = LocalContext.current
     val scrollInterface = remember { MarkdownScrollInterface() }
-    val coroutineScope = rememberCoroutineScope()
-
-    val height = remember { mutableStateOf(0.dp) }
-
-    scrollInterface.onHeightChange = {
-        coroutineScope.launch {
-            height.value = it.dp
-        }
-    }
-
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
     val isDark = isInDarkTheme(themeMode)
@@ -117,24 +102,10 @@ fun GithubMarkdown(
         </html>
     """.trimIndent()
 
-    var layoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
-
     AndroidView(
         factory = { context ->
-            val frameLayout = FrameLayout(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            }
+            val frameLayout = FrameLayout(context)
             val webView = WebView(context).apply {
-                var lastMeasuredHeight = -1
-                var readyDispatched = false
-                val tryNotifyReady = { height: Int ->
-                    if (height > 0 && !readyDispatched) {
-                        readyDispatched = true
-                    }
-                }
                 try {
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
@@ -220,25 +191,9 @@ fun GithubMarkdown(
                                               update(s.l, s.r);
                                         }
                                     }, {passive: true, capture: true});
-
-                                    if (window.ResizeObserver) {
-                                        const resizeObserver = new ResizeObserver(entries => {
-                                            AndroidScroll.updateHeight(document.body.scrollHeight);
-                                        });
-                                        resizeObserver.observe(document.body);
-                                    }
                                 })();
                             """.trimIndent()
                             view.evaluateJavascript(js, null)
-                            tryNotifyReady(lastMeasuredHeight)
-                        }
-
-                        override fun onPageCommitVisible(view: WebView, url: String) {
-                            coroutineScope.launch {
-                                delay(30)
-                                isLoading.value = false
-                            }
-                            tryNotifyReady(lastMeasuredHeight)
                         }
 
                         override fun shouldOverrideUrlLoading(
@@ -249,6 +204,10 @@ fun GithubMarkdown(
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent)
                             return true
+                        }
+
+                        override fun onPageCommitVisible(view: WebView?, url: String?) {
+                            isLoading.value = false
                         }
 
                         override fun shouldInterceptRequest(
@@ -281,14 +240,6 @@ fun GithubMarkdown(
                             }
                         }
                     }
-                    layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
-                        val newHeight = this.height
-                        if (newHeight > 0 && newHeight != lastMeasuredHeight) {
-                            lastMeasuredHeight = newHeight
-                            tryNotifyReady(newHeight)
-                        }
-                    }
-                    viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
                     setOnTouchListener(object : View.OnTouchListener {
                         private var isHorizontalScrollLocked = false
                         private var initialDownX = 0f
@@ -340,35 +291,22 @@ fun GithubMarkdown(
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
             }
-            frameLayout.addView(
-                webView, ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
+            frameLayout.addView(webView)
             frameLayout
         },
         onRelease = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView
+            frameLayout.removeAllViews()
             webView?.apply {
-                layoutListener?.let { listener ->
-                    if (viewTreeObserver.isAlive) {
-                        viewTreeObserver.removeOnGlobalLayoutListener(listener)
-                    }
-                }
                 stopLoading()
                 destroy()
             }
-            layoutListener = null
-            frameLayout.removeAllViews()
         },
-
         modifier = Modifier
             .fillMaxWidth()
-            .height(height.value)
+            .wrapContentHeight()
             .clipToBounds(),
     )
-
 }
 
 class MarkdownScrollInterface {
@@ -378,16 +316,9 @@ class MarkdownScrollInterface {
     @Volatile
     var canScrollRight = false
 
-    var onHeightChange: ((Float) -> Unit)? = null
-
     @JavascriptInterface
     fun updateScrollState(left: Boolean, right: Boolean) {
         canScrollLeft = left
         canScrollRight = right
-    }
-
-    @JavascriptInterface
-    fun updateHeight(height: Float) {
-        onHeightChange?.invoke(height)
     }
 }

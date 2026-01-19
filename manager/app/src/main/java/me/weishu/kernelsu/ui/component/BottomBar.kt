@@ -7,7 +7,6 @@ import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -16,10 +15,10 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.LocalPagerState
+import me.weishu.kernelsu.ui.LocalHandlePageChange
+import me.weishu.kernelsu.ui.LocalSelectedPage
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationItem
@@ -33,8 +32,8 @@ fun BottomBar(
     val isManager = Natives.isManager
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
-    val pageState = LocalPagerState.current
-    val coroutineScope = rememberCoroutineScope()
+    val page = LocalSelectedPage.current
+    val handlePageChange = LocalHandlePageChange.current
 
     if (!fullFeatured) return
 
@@ -54,12 +53,8 @@ fun BottomBar(
             },
         color = Color.Transparent,
         items = item,
-        selected = pageState.targetPage,
-        onClick = {
-            coroutineScope.launch {
-                pageState.animateScrollToPage(it)
-            }
-        }
+        selected = page,
+        onClick = handlePageChange
     )
 }
 
