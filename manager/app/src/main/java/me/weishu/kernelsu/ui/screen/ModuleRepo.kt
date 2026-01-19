@@ -68,12 +68,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleRepoDetailScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -93,6 +91,8 @@ import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
@@ -172,9 +172,8 @@ data class RepoModuleArg(
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-@Destination<RootGraph>
 fun ModuleRepoScreen(
-    navigator: DestinationsNavigator,
+    navigator: Navigator,
 ) {
     val viewModel = viewModel<ModuleRepoViewModel>()
     val installedVm = viewModel<ModuleViewModel>()
@@ -254,7 +253,7 @@ fun ModuleRepoScreen(
                     navigationIcon = {
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
-                            onClick = { navigator.popBackStack() }
+                            onClick = { navigator.pop() }
 
                         ) {
                             val layoutDirection = LocalLayoutDirection.current
@@ -305,7 +304,7 @@ fun ModuleRepoScreen(
                                 latestReleaseTime = module.latestReleaseTime,
                                 releases = emptyList()
                             )
-                            navigator.navigate(ModuleRepoDetailScreenDestination(args)) { launchSingleTop = true }
+                            navigator.push(Route.ModuleRepoDetail(args))
                         }
                     ) {
                         Column {
@@ -490,9 +489,7 @@ fun ModuleRepoScreen(
                                         latestReleaseTime = module.latestReleaseTime,
                                         releases = emptyList()
                                     )
-                                    navigator.navigate(ModuleRepoDetailScreenDestination(args)) {
-                                        launchSingleTop = true
-                                    }
+                                    navigator.push(Route.ModuleRepoDetail(args))
                                 }
                             ) {
                                 Column {
@@ -1008,9 +1005,8 @@ fun InfoPage(
 
 @SuppressLint("StringFormatInvalid", "DefaultLocale")
 @Composable
-@Destination<RootGraph>
 fun ModuleRepoDetailScreen(
-    navigator: DestinationsNavigator,
+    navigator: Navigator,
     module: RepoModuleArg
 ) {
     val context = LocalContext.current
@@ -1024,9 +1020,7 @@ fun ModuleRepoDetailScreen(
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
     val onInstallModule: (Uri) -> Unit = { uri ->
-        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-            launchSingleTop = true
-        }
+        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
     }
 
     var readmeHtml by remember(module.moduleId) { mutableStateOf<String?>(null) }
@@ -1058,9 +1052,7 @@ fun ModuleRepoDetailScreen(
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
-                        onClick = {
-                            navigator.popBackStack()
-                        }
+                        onClick = { navigator.pop() }
                     ) {
                         val layoutDirection = LocalLayoutDirection.current
                         Icon(
@@ -1207,15 +1199,26 @@ fun ModuleRepoDetailScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 3,
+                beyondViewportPageCount = 1,
                 userScrollEnabled = userScrollEnabled,
             ) { page ->
+                run {
+                    val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
+                    NavigationBackHandler(
+                        state = navEventState,
+                        isBackEnabled = pagerState.currentPage != 0,
+                        onBackCompleted = {
+                            scope.launch { pagerState.animateScrollToPage(0) }
+                        }
+                    )
+                }
                 val innerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
                     bottom = innerPadding.calculateBottomPadding() + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
                 )
+
                 when (page) {
                     0 -> ReadmePage(
                         readmeHtml = readmeHtml,

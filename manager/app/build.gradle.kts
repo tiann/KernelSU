@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.agp.app)
     alias(libs.plugins.kotlin)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.lsplugin.apksign)
     id("kotlin-parcelize")
 }
@@ -67,11 +67,6 @@ android {
             val output = it as BaseVariantOutputImpl
             output.outputFileName = "KernelSU_${managerVersionName}_${managerVersionCode}-$name.apk"
         }
-        kotlin.sourceSets {
-            getByName(name) {
-                kotlin.srcDir("build/generated/ksp/$name/kotlin")
-            }
-        }
     }
 
     // https://stackoverflow.com/a/77745844
@@ -89,13 +84,8 @@ android {
     }
 }
 
-ksp {
-    arg("compose-destinations.defaultTransitions", "none")
-}
-
 dependencies {
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.navigation.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material.icons.extended)
@@ -108,9 +98,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
-    implementation(libs.compose.destinations.core)
-    ksp(libs.compose.destinations.ksp)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigationevent.compose)
 
     implementation(libs.com.github.topjohnwu.libsu.core)
     implementation(libs.com.github.topjohnwu.libsu.service)
@@ -128,6 +119,7 @@ dependencies {
 
     implementation(libs.miuix)
     implementation(libs.miuix.icons)
+    implementation(libs.miuix.navigation3.ui)
 
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)

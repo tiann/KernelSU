@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.component
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -65,6 +64,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
@@ -283,10 +285,19 @@ fun SearchStatus.SearchPager(
                             interactionSource = null,
                             enabled = searchStatus.isExpand(),
                             indication = null
-                        ) { searchStatus.current = SearchStatus.Status.COLLAPSING }
+                        ) {
+                            searchStatus.current = SearchStatus.Status.COLLAPSING
+                        }
                 )
-                BackHandler(enabled = true) {
-                    searchStatus.current = SearchStatus.Status.COLLAPSING
+                run {
+                    val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
+                    NavigationBackHandler(
+                        state = navEventState,
+                        isBackEnabled = true,
+                        onBackCompleted = {
+                            searchStatus.current = SearchStatus.Status.COLLAPSING
+                        }
+                    )
                 }
             }
         }

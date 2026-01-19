@@ -38,6 +38,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,23 +51,24 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
-import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
-import me.weishu.kernelsu.ui.LocalHandlePageChange
+import me.weishu.kernelsu.ui.LocalPagerState
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
@@ -95,7 +97,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun HomePager(
-    navigator: DestinationsNavigator,
+    navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
     val kernelVersion = getKernelVersion()
@@ -139,7 +141,8 @@ fun HomePager(
                 val lkmMode = ksuVersion?.let {
                     if (kernelVersion.isGKI()) Natives.isLkmMode else null
                 }
-                val handlePageChange = LocalHandlePageChange.current
+                val pageState = LocalPagerState.current
+                val coroutineScope = rememberCoroutineScope()
 
                 Column(
                     modifier = Modifier.padding(vertical = 12.dp),
@@ -168,15 +171,17 @@ fun HomePager(
                     StatusCard(
                         kernelVersion, ksuVersion, lkmMode,
                         onClickInstall = {
-                            navigator.navigate(InstallScreenDestination) {
-                                launchSingleTop = true
-                            }
+                            navigator.push(Route.Install)
                         },
                         onClickSuperuser = {
-                            handlePageChange(1)
+                            coroutineScope.launch {
+                                pageState.animateScrollToPage(1)
+                            }
                         },
                         onclickModule = {
-                            handlePageChange(2)
+                            coroutineScope.launch {
+                                pageState.animateScrollToPage(2)
+                            }
                         },
                         themeMode = themeMode
                     )

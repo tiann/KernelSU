@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -36,9 +35,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -48,6 +44,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.EditText
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
+import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
@@ -73,9 +70,8 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @date 2023/10/20.
  */
 @Composable
-@Destination<RootGraph>
 fun TemplateEditorScreen(
-    navigator: ResultBackNavigator<Boolean>,
+    navigator: Navigator,
     initialTemplate: TemplateViewModel.TemplateInfo,
     readOnly: Boolean = true,
 ) {
@@ -94,10 +90,6 @@ fun TemplateEditorScreen(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
-    BackHandler {
-        navigator.navigateBack(result = !readOnly)
-    }
-
     Scaffold(
         topBar = {
             val saveTemplateFailed = stringResource(id = R.string.app_profile_template_save_failed)
@@ -115,11 +107,11 @@ fun TemplateEditorScreen(
                 },
                 readOnly = readOnly,
                 isCreation = isCreation,
-                onBack = dropUnlessResumed { navigator.navigateBack(result = !readOnly) },
+                onBack = dropUnlessResumed {
+                    if (readOnly) navigator.pop() else navigator.setResult("template_edit", true)
+                },
                 onDelete = {
-                    if (deleteAppProfileTemplate(template.id)) {
-                        navigator.navigateBack(result = true)
-                    }
+                    if (deleteAppProfileTemplate(template.id)) navigator.setResult("template_edit", true)
                 },
                 onSave = {
                     when (idCheck(template.id)) {
@@ -136,7 +128,7 @@ fun TemplateEditorScreen(
                         }
                     }
                     if (saveTemplate(template, isCreation)) {
-                        navigator.navigateBack(result = true)
+                        navigator.setResult("template_edit", true)
                     } else {
                         Toast.makeText(context, saveTemplateFailed, Toast.LENGTH_SHORT).show()
                     }
@@ -191,7 +183,6 @@ fun TemplateEditorScreen(
                         text = template.id,
                         isError = errorHint
                     ) { value ->
-                        errorHint = value.isNotEmpty() && (isTemplateExist(value) || !isValidTemplateId(value))
                         template = template.copy(id = value)
                     }
                     TextEdit(

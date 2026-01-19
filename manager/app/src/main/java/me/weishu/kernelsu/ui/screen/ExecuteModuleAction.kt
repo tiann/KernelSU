@@ -41,9 +41,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -54,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.util.runModuleAction
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -72,8 +70,7 @@ import java.util.Locale
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-@Destination<RootGraph>
-fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String) {
+fun ExecuteModuleActionScreen(navigator: Navigator, moduleId: String) {
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
@@ -125,9 +122,9 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                 ).show()
             }
             if (fromShortcut && activity != null) {
-                activity.finish()
+                activity.finishAndRemoveTask()
             } else {
-                navigator.popBackStack()
+                navigator.pop()
             }
         }
     }
@@ -135,9 +132,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed {
-                    navigator.popBackStack()
-                },
+                onBack = dropUnlessResumed { navigator.pop() },
                 onSave = {
                     scope.launch {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())

@@ -97,10 +97,6 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -119,6 +115,8 @@ import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
@@ -171,7 +169,7 @@ private enum class ShortcutType {
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 fun ModulePager(
-    navigator: DestinationsNavigator,
+    navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleViewModel>()
@@ -623,11 +621,7 @@ fun ModulePager(
                     navigationIcon = {
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
-                            onClick = {
-                                navigator.navigate(ModuleRepoScreenDestination) {
-                                    launchSingleTop = true
-                                }
-                            },
+                            onClick = { navigator.push(Route.ModuleRepo) },
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Download,
@@ -647,9 +641,7 @@ fun ModulePager(
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(
                     onConfirm = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
-                            launchSingleTop = true
-                        }
+                        navigator.push(Route.Flash(FlashIt.FlashModules(zipUris)))
                         viewModel.markNeedRefresh()
                     }
                 )
@@ -672,9 +664,7 @@ fun ModulePager(
                     }
 
                     if (uris.size == 1) {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))) {
-                            launchSingleTop = true
-                        }
+                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uris.first()))))
                         viewModel.markNeedRefresh()
                     } else if (uris.size > 1) {
                         // multiple files selected
@@ -769,9 +759,7 @@ fun ModulePager(
                                         "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
                                         context
                                     ) { uri ->
-                                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-                                            launchSingleTop = true
-                                        }
+                                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
                                         viewModel.markNeedRefresh()
                                     }
                                 }
@@ -780,9 +768,7 @@ fun ModulePager(
                         }
                         val onExecuteActionClick = remember(module.id, navigator, viewModel) {
                             {
-                                navigator.navigate(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.ExecuteModuleAction(currentModuleState.value.id))
                                 viewModel.markNeedRefresh()
                             }
                         }
@@ -860,11 +846,7 @@ fun ModulePager(
                             .hazeSource(state = hazeState),
                         scope = scope,
                         modules = modules,
-                        onInstallModule = {
-                            navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
-                                launchSingleTop = true
-                            }
-                        },
+                        onInstallModule = { navigator.push(Route.Flash(FlashIt.FlashModules(listOf(it)))) },
                         onClickModule = { id, name, hasWebUi ->
                             onModuleClick(id, name, hasWebUi)
                         },
@@ -885,9 +867,7 @@ fun ModulePager(
                                 fileName,
                                 context
                             ) { uri ->
-                                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
                                 viewModel.markNeedRefresh()
                             }
                         },
@@ -1056,7 +1036,7 @@ fun ModulePager(
 
 @Composable
 private fun ModuleList(
-    navigator: DestinationsNavigator,
+    navigator: Navigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     scope: CoroutineScope,
@@ -1184,9 +1164,7 @@ private fun ModuleList(
                         }
                         val onExecuteActionClick = remember(module.id, navigator, viewModel) {
                             {
-                                navigator.navigate(ExecuteModuleActionScreenDestination(currentModuleState.value.id)) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.ExecuteModuleAction(currentModuleState.value.id))
                                 viewModel.markNeedRefresh()
                             }
                         }
