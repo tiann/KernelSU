@@ -28,6 +28,16 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
 import me.weishu.kernelsu.IKsuInterface
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
@@ -62,8 +72,10 @@ class SuperUserViewModel : ViewModel() {
     val searchStatus: State<SearchStatus> = _searchStatus
 
     @Parcelize
+    @Serializable
     data class AppInfo(
         val label: String,
+        @Serializable(PackageInfoSerializer::class)
         val packageInfo: PackageInfo,
         val profile: Natives.Profile?,
     ) : Parcelable {
@@ -269,6 +281,47 @@ class SuperUserViewModel : ViewModel() {
                 fetchAppList()
             } else {
                 refreshAppList()
+            }
+        }
+    }
+}
+
+object PackageInfoSerializer : KSerializer<PackageInfo> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PackageInfo") {
+        element<String>("packageName")
+        element<Int>("uid")
+    }
+
+    override fun serialize(encoder: Encoder, value: PackageInfo) {
+        encoder.encodeStructure(descriptor) {
+            encodeStringElement(descriptor, 0, value.packageName)
+            encodeIntElement(descriptor, 1, value.applicationInfo?.uid ?: 0)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): PackageInfo {
+        return decoder.decodeStructure(descriptor) {
+            var packageName = ""
+            var uid = 0
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> packageName = decodeStringElement(descriptor, 0)
+                    1 -> uid = decodeIntElement(descriptor, 1)
+                    CompositeDecoder.DECODE_DONE -> break
+                    else -> error("Unexpected index: $index")
+                }
+            }
+            try {
+                ksuApp.packageManager.getPackageInfo(packageName, 0)
+            } catch (e: Exception) {
+                PackageInfo().apply {
+                    this.packageName = packageName
+                    this.applicationInfo = ApplicationInfo().apply {
+                        this.uid = uid
+                        this.packageName = packageName
+                        this.enabled = true
+                    }
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.profile.Capabilities
@@ -39,13 +40,13 @@ class TemplateViewModel : ViewModel() {
     }
 
     @Parcelize
+    @Serializable
     data class TemplateInfo(
         val id: String = "",
         val name: String = "",
         val description: String = "",
         val author: String = "",
         val local: Boolean = true,
-
         val namespace: Int = Natives.Profile.Namespace.INHERITED.ordinal,
         val uid: Int = Natives.ROOT_UID,
         val gid: Int = Natives.ROOT_GID,

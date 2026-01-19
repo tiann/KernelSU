@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -169,23 +170,21 @@ class MainActivity : ComponentActivity() {
                                 else -> navigator.pop()
                             }
                         },
-                        entryProvider = { key ->
-                            NavEntry(key) {
-                                when (key) {
-                                    is Route.Main -> MainScreen(navigator)
-                                    is Route.About -> AboutScreen(navigator)
-                                    is Route.AppProfileTemplate -> AppProfileTemplateScreen(navigator)
-                                    is Route.TemplateEditor -> TemplateEditorScreen(navigator, key.template, key.readOnly)
-                                    is Route.AppProfile -> AppProfileScreen(navigator, key.appInfo)
-                                    is Route.ModuleRepo -> ModuleRepoScreen(navigator)
-                                    is Route.ModuleRepoDetail -> ModuleRepoDetailScreen(navigator, key.module)
-                                    is Route.Install -> InstallScreen(navigator)
-                                    is Route.Flash -> FlashScreen(navigator, key.flashIt)
-                                    is Route.ExecuteModuleAction -> ExecuteModuleActionScreen(navigator, key.moduleId)
-                                    is Route.Home, is Route.SuperUser, is Route.Module, is Route.Settings -> MainScreen(navigator)
-                                    else -> MainScreen(navigator)
-                                }
-                            }
+                        entryProvider = entryProvider {
+                            entry<Route.Main> { MainScreen(navigator) }
+                            entry<Route.About> { AboutScreen(navigator) }
+                            entry<Route.AppProfileTemplate> { AppProfileTemplateScreen(navigator) }
+                            entry<Route.TemplateEditor> { key -> TemplateEditorScreen(navigator, key.template, key.readOnly) }
+                            entry<Route.AppProfile> { key -> AppProfileScreen(navigator, key.appInfo) }
+                            entry<Route.ModuleRepo> { ModuleRepoScreen(navigator) }
+                            entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(navigator, key.module) }
+                            entry<Route.Install> { InstallScreen(navigator) }
+                            entry<Route.Flash> { key -> FlashScreen(navigator, key.flashIt) }
+                            entry<Route.ExecuteModuleAction> { key -> ExecuteModuleActionScreen(navigator, key.moduleId) }
+                            entry<Route.Home> { MainScreen(navigator) }
+                            entry<Route.SuperUser> { MainScreen(navigator) }
+                            entry<Route.Module> { MainScreen(navigator) }
+                            entry<Route.Settings> { MainScreen(navigator) }
                         }
                     )
                 }
