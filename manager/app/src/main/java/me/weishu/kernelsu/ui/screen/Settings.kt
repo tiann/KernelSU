@@ -49,10 +49,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AboutScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -63,8 +59,9 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.SendLogDialog
 import me.weishu.kernelsu.ui.component.UninstallDialog
-import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.getFeaturePersistValue
 import me.weishu.kernelsu.ui.util.getFeatureStatus
@@ -85,9 +82,8 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @date 2023/1/1.
  */
 @Composable
-@Destination<RootGraph>
 fun SettingPager(
-    navigator: MiuixDestinationsNavigator,
+    navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
     val scrollBehavior = MiuixScrollBehavior()
@@ -293,9 +289,7 @@ fun SettingPager(
                                 )
                             },
                             onClick = {
-                                navigator.navigate(AppProfileTemplateScreenDestination) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.AppProfileTemplate)
                             }
                         )
                     }
@@ -506,9 +500,7 @@ fun SettingPager(
                             )
                         },
                         onClick = {
-                            navigator.navigate(AboutScreenDestination) {
-                                launchSingleTop = true
-                            }
+                            navigator.push(Route.About)
                         }
                     )
                 }

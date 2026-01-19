@@ -12,7 +12,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
@@ -43,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -57,6 +57,7 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -74,7 +75,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -97,9 +97,6 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleRepoScreenDestination
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -116,10 +113,10 @@ import me.weishu.kernelsu.ui.component.ConfirmResult
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
-import me.weishu.kernelsu.ui.component.TopAppBarAnim
-import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
@@ -172,13 +169,12 @@ private enum class ShortcutType {
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 fun ModulePager(
-    navigator: MiuixDestinationsNavigator,
+    navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<ModuleViewModel>()
     val scope = rememberCoroutineScope()
     val searchStatus by viewModel.searchStatus
-    val searchTransition = rememberTransition(searchStatus.expandState)
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -227,18 +223,12 @@ fun ModulePager(
     val hideInstallButton = isSafeMode || magiskInstalled
 
     val scrollBehavior = MiuixScrollBehavior()
-    val dynamicTopPadding by remember {
-        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
-    }
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
-
     val listState = rememberLazyListState()
     var fabVisible by remember { mutableStateOf(true) }
     var scrollDistance by remember { mutableFloatStateOf(0f) }
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
+    }
 
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -550,15 +540,20 @@ fun ModulePager(
             }
         }
     }
-    val offsetHeightState = animateDpAsState(
+    val offsetHeight by animateDpAsState(
         targetValue = if (fabVisible) 0.dp else 180.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-        animationSpec = tween(durationMillis = 350),
-        label = "fabOffset"
+        animationSpec = tween(durationMillis = 350)
+    )
+
+    val hazeState = remember { HazeState() }
+    val hazeStyle = HazeStyle(
+        backgroundColor = colorScheme.surface,
+        tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
 
     Scaffold(
         topBar = {
-            searchTransition.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
+            searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
                     color = Color.Transparent,
                     title = stringResource(R.string.module),
@@ -626,11 +621,7 @@ fun ModulePager(
                     navigationIcon = {
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
-                            onClick = {
-                                navigator.navigate(ModuleRepoScreenDestination) {
-                                    launchSingleTop = true
-                                }
-                            },
+                            onClick = { navigator.push(Route.ModuleRepo) },
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Download,
@@ -650,9 +641,7 @@ fun ModulePager(
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(
                     onConfirm = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris))) {
-                            launchSingleTop = true
-                        }
+                        navigator.push(Route.Flash(FlashIt.FlashModules(zipUris)))
                         viewModel.markNeedRefresh()
                     }
                 )
@@ -675,9 +664,7 @@ fun ModulePager(
                     }
 
                     if (uris.size == 1) {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uris.first())))) {
-                            launchSingleTop = true
-                        }
+                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uris.first()))))
                         viewModel.markNeedRefresh()
                     } else if (uris.size > 1) {
                         // multiple files selected
@@ -692,9 +679,7 @@ fun ModulePager(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .graphicsLayer {
-                            translationY = offsetHeightState.value.toPx()
-                        }
+                        .offset(y = offsetHeight)
                         .padding(bottom = bottomInnerPadding + 20.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                     shadowElevation = 0.dp,
@@ -718,8 +703,7 @@ fun ModulePager(
             }
         },
         popupHost = {
-            searchTransition.SearchPager(
-                searchStatus = searchStatus,
+            searchStatus.SearchPager(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
@@ -775,9 +759,7 @@ fun ModulePager(
                                         "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
                                         context
                                     ) { uri ->
-                                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-                                            launchSingleTop = true
-                                        }
+                                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
                                         viewModel.markNeedRefresh()
                                     }
                                 }
@@ -786,14 +768,7 @@ fun ModulePager(
                         }
                         val onExecuteActionClick = remember(module.id, navigator, viewModel) {
                             {
-                                navigator.navigate(
-                                    ExecuteModuleActionScreenDestination(
-                                        currentModuleState.value.id,
-                                        fromShortcut = false
-                                    )
-                                ) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.ExecuteModuleAction(currentModuleState.value.id))
                                 viewModel.markNeedRefresh()
                             }
                         }
@@ -849,8 +824,7 @@ fun ModulePager(
 
             else -> {
                 val layoutDirection = LocalLayoutDirection.current
-                searchTransition.SearchBox(
-                    searchStatus = searchStatus,
+                searchStatus.SearchBox(
                     searchBarTopPadding = dynamicTopPadding,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding(),
@@ -859,7 +833,7 @@ fun ModulePager(
                     ),
                     hazeState = hazeState,
                     hazeStyle = hazeStyle
-                ) { contentTopPadding ->
+                ) { boxHeight ->
                     ModuleList(
                         navigator,
                         viewModel = viewModel,
@@ -872,11 +846,7 @@ fun ModulePager(
                             .hazeSource(state = hazeState),
                         scope = scope,
                         modules = modules,
-                        onInstallModule = {
-                            navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it)))) {
-                                launchSingleTop = true
-                            }
-                        },
+                        onInstallModule = { navigator.push(Route.Flash(FlashIt.FlashModules(listOf(it)))) },
                         onClickModule = { id, name, hasWebUi ->
                             onModuleClick(id, name, hasWebUi)
                         },
@@ -897,9 +867,7 @@ fun ModulePager(
                                 fileName,
                                 context
                             ) { uri ->
-                                navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
                                 viewModel.markNeedRefresh()
                             }
                         },
@@ -909,7 +877,7 @@ fun ModulePager(
                         context = context,
                         innerPadding = innerPadding,
                         bottomInnerPadding = bottomInnerPadding,
-                        contentTopPadding = contentTopPadding
+                        boxHeight = boxHeight
                     )
                 }
             }
@@ -1068,7 +1036,7 @@ fun ModulePager(
 
 @Composable
 private fun ModuleList(
-    navigator: MiuixDestinationsNavigator,
+    navigator: Navigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     scope: CoroutineScope,
@@ -1083,7 +1051,7 @@ private fun ModuleList(
     context: Context,
     innerPadding: PaddingValues,
     bottomInnerPadding: Dp,
-    contentTopPadding: Dp
+    boxHeight: MutableState<Dp>
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val updateInfoMap = viewModel.updateInfo
@@ -1112,7 +1080,7 @@ private fun ModuleList(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = contentTopPadding + 6.dp,
+                        top = innerPadding.calculateTopPadding(),
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                         bottom = bottomInnerPadding
@@ -1134,7 +1102,7 @@ private fun ModuleList(
                 onRefresh = { if (!isRefreshing) isRefreshing = true },
                 refreshTexts = refreshTexts,
                 contentPadding = PaddingValues(
-                    top = contentTopPadding + 6.dp,
+                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
                 ),
@@ -1143,7 +1111,7 @@ private fun ModuleList(
                     modifier = modifier
                         .fillMaxHeight(),
                     contentPadding = PaddingValues(
-                        top = contentTopPadding + 6.dp,
+                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                         start = innerPadding.calculateStartPadding(layoutDirection),
                         end = innerPadding.calculateEndPadding(layoutDirection),
                     ),
@@ -1196,14 +1164,7 @@ private fun ModuleList(
                         }
                         val onExecuteActionClick = remember(module.id, navigator, viewModel) {
                             {
-                                navigator.navigate(
-                                    ExecuteModuleActionScreenDestination(
-                                        currentModuleState.value.id,
-                                        fromShortcut = false
-                                    )
-                                ) {
-                                    launchSingleTop = true
-                                }
+                                navigator.push(Route.ExecuteModuleAction(currentModuleState.value.id))
                                 viewModel.markNeedRefresh()
                             }
                         }

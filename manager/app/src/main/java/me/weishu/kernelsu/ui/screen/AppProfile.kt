@@ -51,10 +51,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.TemplateScreenDestination
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -65,11 +61,11 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.DropdownItem
-import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
-import me.weishu.kernelsu.ui.component.sharedTransition.TransitionSource
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
@@ -108,9 +104,8 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @date 2023/5/16.
  */
 @Composable
-@Destination<RootGraph>
 fun AppProfileScreen(
-    navigator: MiuixDestinationsNavigator,
+    navigator: Navigator,
     appInfo: SuperUserViewModel.AppInfo,
 ) {
     val context = LocalContext.current
@@ -150,7 +145,7 @@ fun AppProfileScreen(
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.pop() },
                 packageName = packageName,
                 showActions = !isUidGroup,
                 scrollBehavior = scrollBehavior,
@@ -198,16 +193,10 @@ fun AppProfileScreen(
                     affectedApps = sameUidApps,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
-                            navigator.navigate(TemplateScreenDestination(info, TransitionSource.NULL)) {
-                                launchSingleTop = true
-                            }
+                            navigator.push(Route.TemplateEditor(info, readOnly = true))
                         }
                     },
-                    onManageTemplate = {
-                        navigator.navigate(AppProfileTemplateScreenDestination()) {
-                            launchSingleTop = true
-                        }
-                    },
+                    onManageTemplate = { navigator.push(Route.AppProfileTemplate) },
                     onProfileChange = {
                         scope.launch {
                             if (it.allowSu) {

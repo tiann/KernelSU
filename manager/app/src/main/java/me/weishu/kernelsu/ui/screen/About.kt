@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -41,8 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -50,7 +47,7 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.navigation.MiuixDestinationsNavigator
+import me.weishu.kernelsu.ui.navigation3.Navigator
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -65,8 +62,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-@Destination<RootGraph>
-fun AboutScreen(navigator: MiuixDestinationsNavigator) {
+fun AboutScreen(navigator: Navigator) {
     val uriHandler = LocalUriHandler.current
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = remember { HazeState() }
@@ -82,9 +78,6 @@ fun AboutScreen(navigator: MiuixDestinationsNavigator) {
     )
     val result = extractLinks(htmlString)
 
-    BackHandler {
-        navigator.popBackStack()
-    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,7 +91,7 @@ fun AboutScreen(navigator: MiuixDestinationsNavigator) {
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
-                        onClick = dropUnlessResumed { navigator.popBackStack() }
+                        onClick = dropUnlessResumed { navigator.pop() }
                     ) {
                         val layoutDirection = LocalLayoutDirection.current
                         Icon(
