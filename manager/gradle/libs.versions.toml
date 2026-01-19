@@ -64,7 +64,8 @@ lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 
 miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" }
 miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.ref = "miuix" }
-miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui-android", version.ref = "miuix" }
+#noinspection NewerVersionAvailable, will be removed in version 0.8.0 release or the next rc.
+miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui-android", version = "0.8.0-rc06-patch01" }
 
 haze = { module = "dev.chrisbanes.haze:haze-android", version.ref = "haze" }
 

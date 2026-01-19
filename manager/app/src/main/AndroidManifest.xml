@@ -16,7 +16,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.KernelSU"
-        tools:targetApi="34">
+        tools:targetApi="29">
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
