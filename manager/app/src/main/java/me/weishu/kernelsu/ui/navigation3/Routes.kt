@@ -36,6 +36,8 @@ sealed interface Route : NavKey {
 
     @Serializable
     data class TemplateEditor(val template: @Contextual TemplateViewModel.TemplateInfo, val readOnly: Boolean) : Route
+
+    @Serializable
     data class AppProfile(val appInfo: @Contextual SuperUserViewModel.AppInfo) : Route
 
     @Serializable
