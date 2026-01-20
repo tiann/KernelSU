@@ -290,12 +290,14 @@ void track_throne(bool prune_only)
         char *package = strsep(&tmp, delim);
         char *uid = strsep(&tmp, delim);
         if (!uid || !package) {
+            kfree(data);
             pr_err("update_uid: package or uid is NULL!\n");
             break;
         }
 
         u32 res;
         if (kstrtou32(uid, 10, &res)) {
+            kfree(data);
             pr_err("update_uid: uid parse err\n");
             break;
         }

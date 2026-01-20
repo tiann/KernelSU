@@ -423,7 +423,10 @@ void persistent_allow_list()
         goto put_task;
     }
     cb->func = do_persistent_allow_list;
-    task_work_add(tsk, cb, TWA_RESUME);
+    if (task_work_add(tsk, cb, TWA_RESUME)) {
+        kfree(cb);
+        pr_warn("save_allow_list add task_work failed\n");
+    }
 
 put_task:
     put_task_struct(tsk);
