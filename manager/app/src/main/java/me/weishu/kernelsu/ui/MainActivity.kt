@@ -34,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -53,7 +52,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.BottomBar
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
-import me.weishu.kernelsu.ui.navigation3.DeepLinkResolver
+import me.weishu.kernelsu.ui.navigation3.HandleDeepLink
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.AboutScreen
@@ -127,18 +126,13 @@ class MainActivity : ComponentActivity() {
             }
 
             KernelSUTheme(colorMode = colorMode, keyColor = keyColor) {
-                val intent = LocalActivity.current?.intent
                 val backStack: NavBackStack<NavKey> = rememberNavBackStack(Route.Main)
-                val initialStack = remember(intentState.collectAsState().value) {
-                    DeepLinkResolver.resolve(intent)
-                }
-                LaunchedEffect(initialStack) {
-                    if (initialStack.isNotEmpty()) {
-                        backStack.clear()
-                        backStack.addAll(initialStack)
-                    }
-                }
                 val navigator = remember { Navigator(backStack) }
+
+                HandleDeepLink(
+                    intentState = intentState.collectAsState(),
+                    backStack = backStack
+                )
 
                 ZipFileIntentHandler(
                     intentState = intentState,
