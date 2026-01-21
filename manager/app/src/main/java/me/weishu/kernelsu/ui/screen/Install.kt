@@ -61,6 +61,7 @@ import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.LkmSelection
@@ -96,7 +97,8 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun InstallScreen(navigator: Navigator) {
+fun InstallScreen() {
+    val navigator = LocalNavigator.current
     val context = LocalContext.current
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)

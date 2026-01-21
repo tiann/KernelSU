@@ -44,11 +44,11 @@ object DeepLinkResolver {
 @Composable
 fun HandleDeepLink(
     intentState: State<Int>,
-    backStack: NavBackStack<NavKey>
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
     val currentIntentId by intentState
+    val navigator = LocalNavigator.current
     var lastHandledIntentId by rememberSaveable { mutableIntStateOf(-1) }
 
     LaunchedEffect(currentIntentId) {
@@ -56,8 +56,7 @@ fun HandleDeepLink(
             val intent = activity?.intent
             val initialStack = DeepLinkResolver.resolve(intent)
             if (initialStack.isNotEmpty()) {
-                backStack.clear()
-                backStack.addAll(initialStack)
+                navigator.replaceAll(initialStack)
             }
             lastHandledIntentId = currentIntentId
         }

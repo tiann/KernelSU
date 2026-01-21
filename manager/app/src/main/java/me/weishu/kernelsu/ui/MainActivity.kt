@@ -33,10 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
@@ -53,8 +50,9 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.BottomBar
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.HandleDeepLink
-import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.navigation3.rememberNavigator
 import me.weishu.kernelsu.ui.screen.AboutScreen
 import me.weishu.kernelsu.ui.screen.AppProfileScreen
 import me.weishu.kernelsu.ui.screen.AppProfileTemplateScreen
@@ -125,62 +123,60 @@ class MainActivity : ComponentActivity() {
                 onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
             }
 
-            KernelSUTheme(colorMode = colorMode, keyColor = keyColor) {
-                val backStack: NavBackStack<NavKey> = rememberNavBackStack(Route.Main)
-                val navigator = remember { Navigator(backStack) }
+            val navigator = rememberNavigator(Route.Main)
+            CompositionLocalProvider(LocalNavigator provides navigator) {
+                KernelSUTheme(colorMode = colorMode, keyColor = keyColor) {
 
-                HandleDeepLink(
-                    intentState = intentState.collectAsState(),
-                    backStack = backStack
-                )
-
-                ZipFileIntentHandler(
-                    intentState = intentState,
-                    isManager = isManager,
-                    navigator = navigator
-                )
-                ShortcutIntentHandler(
-                    intentState = intentState,
-                    navigator = navigator
-                )
-
-                Scaffold {
-                    NavDisplay(
-                        backStack = backStack,
-                        entryDecorators = listOf(
-                            rememberSaveableStateHolderNavEntryDecorator(),
-                            rememberViewModelStoreNavEntryDecorator()
-                        ),
-                        onBack = {
-                            when (val top = backStack.lastOrNull()) {
-                                is Route.TemplateEditor -> {
-                                    if (!top.readOnly) {
-                                        navigator.setResult("template_edit", true)
-                                    } else {
-                                        navigator.pop()
-                                    }
-                                }
-
-                                else -> navigator.pop()
-                            }
-                        },
-                        entryProvider = entryProvider {
-                            entry<Route.Main> { MainScreen(navigator) }
-                            entry<Route.About> { AboutScreen(navigator) }
-                            entry<Route.AppProfileTemplate> { AppProfileTemplateScreen(navigator) }
-                            entry<Route.TemplateEditor> { key -> TemplateEditorScreen(navigator, key.template, key.readOnly) }
-                            entry<Route.AppProfile> { key -> AppProfileScreen(navigator, key.packageName,) }
-                            entry<Route.ModuleRepo> { ModuleRepoScreen(navigator) }
-                            entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(navigator, key.module) }
-                            entry<Route.Install> { InstallScreen(navigator) }
-                            entry<Route.Flash> { key -> FlashScreen(navigator, key.flashIt) }
-                            entry<Route.ExecuteModuleAction> { key -> ExecuteModuleActionScreen(navigator, key.moduleId) }
-                            entry<Route.Home> { MainScreen(navigator) }
-                            entry<Route.SuperUser> { MainScreen(navigator) }
-                            entry<Route.Module> { MainScreen(navigator) }
-                            entry<Route.Settings> { MainScreen(navigator) }
-                        }
+                    HandleDeepLink(
+                        intentState = intentState.collectAsState(),
                     )
+
+                    ZipFileIntentHandler(
+                        intentState = intentState,
+                        isManager = isManager,
+                    )
+                    ShortcutIntentHandler(
+                        intentState = intentState,
+                    )
+
+                    Scaffold {
+                        NavDisplay(
+                            backStack = navigator.backStack,
+                            entryDecorators = listOf(
+                                rememberSaveableStateHolderNavEntryDecorator(),
+                                rememberViewModelStoreNavEntryDecorator()
+                            ),
+                            onBack = {
+                                when (val top = navigator.current()) {
+                                    is Route.TemplateEditor -> {
+                                        if (!top.readOnly) {
+                                            navigator.setResult("template_edit", true)
+                                        } else {
+                                            navigator.pop()
+                                        }
+                                    }
+
+                                    else -> navigator.pop()
+                                }
+                            },
+                            entryProvider = entryProvider {
+                                entry<Route.Main> { MainScreen() }
+                                entry<Route.About> { AboutScreen() }
+                                entry<Route.AppProfileTemplate> { AppProfileTemplateScreen() }
+                                entry<Route.TemplateEditor> { key -> TemplateEditorScreen(key.template, key.readOnly) }
+                                entry<Route.AppProfile> { key -> AppProfileScreen(key.packageName) }
+                                entry<Route.ModuleRepo> { ModuleRepoScreen() }
+                                entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(key.module) }
+                                entry<Route.Install> { InstallScreen() }
+                                entry<Route.Flash> { key -> FlashScreen(key.flashIt) }
+                                entry<Route.ExecuteModuleAction> { key -> ExecuteModuleActionScreen(key.moduleId) }
+                                entry<Route.Home> { MainScreen() }
+                                entry<Route.SuperUser> { MainScreen() }
+                                entry<Route.Module> { MainScreen() }
+                                entry<Route.Settings> { MainScreen() }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -198,7 +194,8 @@ class MainActivity : ComponentActivity() {
 val LocalPagerState = compositionLocalOf<PagerState> { error("No pager state") }
 
 @Composable
-fun MainScreen(navController: Navigator) {
+fun MainScreen() {
+    val navController = LocalNavigator.current
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
     val isManager = Natives.isManager
@@ -212,8 +209,8 @@ fun MainScreen(navController: Navigator) {
 
     run {
         val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
-        val isTopMain = navController.backStack.lastOrNull() is Route.Main
-        val isPagerBackHandlerEnabled = isTopMain && navController.backStack.size == 1 && pagerState.currentPage != 0
+        val isTopMain = navController.current() is Route.Main
+        val isPagerBackHandlerEnabled = isTopMain && navController.backStackSize() == 1 && pagerState.currentPage != 0
         NavigationBackHandler(
             state = navEventState,
             isBackEnabled = isPagerBackHandlerEnabled,
@@ -260,13 +257,13 @@ fun MainScreen(navController: Navigator) {
 private fun ZipFileIntentHandler(
     intentState: MutableStateFlow<Int>,
     isManager: Boolean,
-    navigator: Navigator
 ) {
     val activity = LocalActivity.current ?: return
     val context = LocalContext.current
     var zipUri by remember { mutableStateOf<Uri?>(null) }
     val isSafeMode = Natives.isSafeMode
     val clearZipUri = { zipUri = null }
+    val navigator = LocalNavigator.current
 
     val installDialog = rememberConfirmDialog(
         onConfirm = {
@@ -313,11 +310,11 @@ private fun ZipFileIntentHandler(
 @Composable
 private fun ShortcutIntentHandler(
     intentState: MutableStateFlow<Int>,
-    navigator: Navigator
 ) {
     val activity = LocalActivity.current ?: return
     val context = LocalContext.current
     val intentStateValue by intentState.collectAsState()
+    val navigator = LocalNavigator.current
     LaunchedEffect(intentStateValue) {
         val intent = activity.intent
         val type = intent?.getStringExtra("shortcut_type") ?: return@LaunchedEffect

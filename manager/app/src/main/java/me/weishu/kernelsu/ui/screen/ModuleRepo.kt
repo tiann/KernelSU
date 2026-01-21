@@ -91,6 +91,7 @@ import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -173,8 +174,8 @@ data class RepoModuleArg(
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ModuleRepoScreen(
-    navigator: Navigator,
 ) {
+    val navigator = LocalNavigator.current
     val viewModel = viewModel<ModuleRepoViewModel>()
     val installedVm = viewModel<ModuleViewModel>()
     val searchStatus by viewModel.searchStatus
@@ -1006,9 +1007,9 @@ fun InfoPage(
 @SuppressLint("StringFormatInvalid", "DefaultLocale")
 @Composable
 fun ModuleRepoDetailScreen(
-    navigator: Navigator,
     module: RepoModuleArg
 ) {
+    val navigator = LocalNavigator.current
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
