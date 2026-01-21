@@ -239,7 +239,7 @@ fun SuperUserPager(
                                     }
                                 },
                             ) {
-                                navigator.push(Route.AppProfile(group.primary))
+                                navigator.push(Route.AppProfile(group.primary.packageName))
                                 viewModel.markNeedRefresh()
                             }
                             AnimatedVisibility(
@@ -354,7 +354,7 @@ fun SuperUserPager(
                                             }
                                         }
                                     ) {
-                                        navigator.push(Route.AppProfile(group.primary))
+                                        navigator.push(Route.AppProfile(group.primary.packageName))
                                         viewModel.markNeedRefresh()
                                     }
                                     AnimatedVisibility(

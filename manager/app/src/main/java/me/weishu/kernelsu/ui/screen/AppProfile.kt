@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -106,7 +107,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @Composable
 fun AppProfileScreen(
     navigator: Navigator,
-    appInfo: SuperUserViewModel.AppInfo,
+    packageName: String,
 ) {
     val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
@@ -116,11 +117,19 @@ fun AppProfileScreen(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
     val scope = rememberCoroutineScope()
+    val appInfoState = remember(packageName) {
+        derivedStateOf {
+            SuperUserViewModel.apps.find { it.packageName == packageName }
+        }
+    }
+    val appInfo = appInfoState.value
+    if (appInfo == null) {
+        navigator.pop()
+        return
+    }
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label).format(appInfo.uid)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
     val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
-
-    val packageName = appInfo.packageName
     val sameUidApps = remember(appInfo.uid) {
         SuperUserViewModel.apps.filter { it.uid == appInfo.uid }
     }

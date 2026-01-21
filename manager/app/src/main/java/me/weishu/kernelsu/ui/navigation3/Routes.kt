@@ -5,7 +5,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.RepoModuleArg
-import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import me.weishu.kernelsu.ui.util.FlashItSerializer
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 
 /**
@@ -38,7 +38,7 @@ sealed interface Route : NavKey {
     data class TemplateEditor(val template: TemplateViewModel.TemplateInfo, val readOnly: Boolean) : Route
 
     @Serializable
-    data class AppProfile(val appInfo: SuperUserViewModel.AppInfo) : Route
+    data class AppProfile(val packageName: String) : Route
 
     @Serializable
     data object Install : Route
@@ -50,7 +50,7 @@ sealed interface Route : NavKey {
     data object ModuleRepo : Route
 
     @Serializable
-    data class Flash(val flashIt: @Contextual FlashIt) : Route
+    data class Flash(@Serializable(with = FlashItSerializer::class) val flashIt: FlashIt) : Route
 
     @Serializable
     data class ExecuteModuleAction(val moduleId: String) : Route

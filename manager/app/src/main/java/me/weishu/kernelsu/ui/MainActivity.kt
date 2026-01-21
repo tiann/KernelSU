@@ -169,7 +169,7 @@ class MainActivity : ComponentActivity() {
                             entry<Route.About> { AboutScreen(navigator) }
                             entry<Route.AppProfileTemplate> { AppProfileTemplateScreen(navigator) }
                             entry<Route.TemplateEditor> { key -> TemplateEditorScreen(navigator, key.template, key.readOnly) }
-                            entry<Route.AppProfile> { key -> AppProfileScreen(navigator, key.appInfo) }
+                            entry<Route.AppProfile> { key -> AppProfileScreen(navigator, key.packageName,) }
                             entry<Route.ModuleRepo> { ModuleRepoScreen(navigator) }
                             entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(navigator, key.module) }
                             entry<Route.Install> { InstallScreen(navigator) }

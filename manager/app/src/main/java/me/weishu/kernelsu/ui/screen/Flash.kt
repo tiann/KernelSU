@@ -50,13 +50,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
-import me.weishu.kernelsu.ui.util.UriSerializer
 import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.reboot
@@ -238,23 +236,18 @@ fun FlashScreen(
 }
 
 @Parcelize
-@Serializable
 sealed class FlashIt : Parcelable {
-    @Serializable
     data class FlashBoot(
-        @Serializable(with = UriSerializer::class) val boot: Uri? = null,
+        val boot: Uri? = null,
         val lkm: LkmSelection,
         val ota: Boolean,
         val partition: String? = null
     ) : FlashIt()
 
-    @Serializable
-    data class FlashModules(val uris: List<@Serializable(with = UriSerializer::class) Uri>) : FlashIt()
+    data class FlashModules(val uris: List<Uri>) : FlashIt()
 
-    @Serializable
     data object FlashRestore : FlashIt()
 
-    @Serializable
     data object FlashUninstall : FlashIt()
 }
 
