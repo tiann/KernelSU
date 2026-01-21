@@ -56,6 +56,7 @@ import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
+import me.weishu.kernelsu.ui.util.UriListSerializer
 import me.weishu.kernelsu.ui.util.UriSerializer
 import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
@@ -249,7 +250,7 @@ sealed class FlashIt : Parcelable {
     ) : FlashIt()
 
     @Serializable
-    data class FlashModules(val uris: List<@Serializable(with = UriSerializer::class) Uri>) : FlashIt()
+    data class FlashModules(@Serializable(with = UriListSerializer::class) val uris: List<Uri>) : FlashIt()
 
     @Serializable
     data object FlashRestore : FlashIt()

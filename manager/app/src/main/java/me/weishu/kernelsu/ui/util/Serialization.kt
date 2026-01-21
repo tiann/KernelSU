@@ -1,68 +1,45 @@
 package me.weishu.kernelsu.ui.util
 
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.net.Uri
-import androidx.core.net.toUri
+import android.os.Parcel
+import android.os.Parcelable
+import android.util.Base64
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
-import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.decodeStructure
-import kotlinx.serialization.encoding.encodeStructure
-import me.weishu.kernelsu.ksuApp
 
+open class ParcelableSerializer<T : Parcelable>(
+    private val creator: Parcelable.Creator<T>
+) : KSerializer<T> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Parcelable", PrimitiveKind.STRING)
 
-object PackageInfoSerializer : KSerializer<PackageInfo> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PackageInfo") {
-        element<String>("packageName")
-        element<Int>("uid")
-    }
-
-    override fun serialize(encoder: Encoder, value: PackageInfo) {
-        encoder.encodeStructure(descriptor) {
-            encodeStringElement(descriptor, 0, value.packageName)
-            encodeIntElement(descriptor, 1, value.applicationInfo?.uid ?: 0)
+    override fun serialize(encoder: Encoder, value: T) {
+        Parcel.obtain().use { parcel ->
+            value.writeToParcel(parcel, 0)
+            val bytes = parcel.marshall()
+            val string = Base64.encodeToString(bytes, Base64.NO_WRAP)
+            encoder.encodeString(string)
         }
     }
 
-    override fun deserialize(decoder: Decoder): PackageInfo {
-        return decoder.decodeStructure(descriptor) {
-            var packageName = ""
-            var uid = 0
-            while (true) {
-                when (val index = decodeElementIndex(descriptor)) {
-                    0 -> packageName = decodeStringElement(descriptor, 0)
-                    1 -> uid = decodeIntElement(descriptor, 1)
-                    CompositeDecoder.DECODE_DONE -> break
-                    else -> error("Unexpected index: $index")
-                }
-            }
-            runCatching {
-                ksuApp.packageManager.getPackageInfo(packageName, 0)
-            }.getOrElse {
-                PackageInfo().apply {
-                    this.packageName = packageName
-                    this.applicationInfo = ApplicationInfo().apply {
-                        this.uid = uid
-                        this.packageName = packageName
-                        this.enabled = true
-                    }
-                }
-            }
+    override fun deserialize(decoder: Decoder): T {
+        val string = decoder.decodeString()
+        val bytes = Base64.decode(string, Base64.NO_WRAP)
+        return Parcel.obtain().use { parcel ->
+            parcel.unmarshall(bytes, 0, bytes.size)
+            parcel.setDataPosition(0)
+            creator.createFromParcel(parcel)
         }
     }
 }
 
-object UriSerializer : KSerializer<Uri> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Uri", PrimitiveKind.STRING)
+object UriSerializer : ParcelableSerializer<Uri>(Uri.CREATOR)
 
-    override fun serialize(encoder: Encoder, value: Uri) = encoder.encodeString(value.toString())
+object UriListSerializer : KSerializer<List<Uri>> by ListSerializer(UriSerializer)
 
-    override fun deserialize(decoder: Decoder): Uri = decoder.decodeString().toUri()
-}
+object PackageInfoSerializer : ParcelableSerializer<PackageInfo>(PackageInfo.CREATOR)

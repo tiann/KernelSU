@@ -85,6 +85,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.GithubMarkdown
@@ -137,6 +138,7 @@ import java.text.Collator
 import java.util.Locale
 
 @Parcelize
+@Serializable
 data class ReleaseAssetArg(
     val name: String,
     val downloadUrl: String,
@@ -145,6 +147,7 @@ data class ReleaseAssetArg(
 ) : Parcelable
 
 @Parcelize
+@Serializable
 data class ReleaseArg(
     val tagName: String,
     val name: String,
@@ -154,12 +157,14 @@ data class ReleaseArg(
 ) : Parcelable
 
 @Parcelize
+@Serializable
 data class AuthorArg(
     val name: String,
     val link: String,
 ) : Parcelable
 
 @Parcelize
+@Serializable
 data class RepoModuleArg(
     val moduleId: String,
     val moduleName: String,

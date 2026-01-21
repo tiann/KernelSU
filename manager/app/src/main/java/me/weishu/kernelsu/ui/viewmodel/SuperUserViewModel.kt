@@ -67,8 +67,7 @@ class SuperUserViewModel : ViewModel() {
     @Serializable
     data class AppInfo(
         val label: String,
-        @Serializable(PackageInfoSerializer::class)
-        val packageInfo: PackageInfo,
+        @Serializable(with = PackageInfoSerializer::class) val packageInfo: PackageInfo,
         val profile: Natives.Profile?,
     ) : Parcelable {
         val packageName: String

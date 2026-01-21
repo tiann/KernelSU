@@ -1,7 +1,8 @@
 package me.weishu.kernelsu.ui.navigation3
 
+import android.os.Parcelable
 import androidx.navigation3.runtime.NavKey
-import kotlinx.serialization.Contextual
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import me.weishu.kernelsu.ui.screen.FlashIt
 import me.weishu.kernelsu.ui.screen.RepoModuleArg
@@ -44,13 +45,13 @@ sealed interface Route : NavKey {
     data object Install : Route
 
     @Serializable
-    data class ModuleRepoDetail(val module: @Contextual RepoModuleArg) : Route
+    data class ModuleRepoDetail(val module: RepoModuleArg) : Route
 
     @Serializable
     data object ModuleRepo : Route
 
     @Serializable
-    data class Flash(val flashIt: @Contextual FlashIt) : Route
+    data class Flash(val flashIt: FlashIt) : Route
 
     @Serializable
     data class ExecuteModuleAction(val moduleId: String) : Route

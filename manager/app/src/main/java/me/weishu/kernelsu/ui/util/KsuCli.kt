@@ -259,8 +259,10 @@ fun uninstallPermanently(
 sealed class LkmSelection : Parcelable {
     @Serializable
     data class LkmUri(@Serializable(with = UriSerializer::class) val uri: Uri) : LkmSelection()
+
     @Serializable
     data class KmiString(val value: String) : LkmSelection()
+
     @Serializable
     data object KmiNone : LkmSelection()
 }
