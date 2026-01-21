@@ -45,6 +45,9 @@ class Navigator(
      * Replace the backstack with a new list of keys if the stack is not empty.
      */
     fun replaceAll(keys: List<NavKey>) {
+        if (keys.isEmpty()) {
+            return
+        }
         if (backStack.isNotEmpty()) {
             backStack.clear()
             backStack.addAll(keys)
@@ -108,8 +111,8 @@ class Navigator(
     }
 
     /**
-    * Get current size of back stack.
-    * */
+     * Get current size of back stack.
+     */
     fun backStackSize(): Int {
         return backStack.size
     }
@@ -119,18 +122,15 @@ class Navigator(
     }
 
     companion object {
-        val Saver: Saver<Navigator, Any> = listSaver(
-            save = { navigator ->
-                navigator.backStack.toList()
-            },
-            restore = { savedList ->
-                val initialKey = savedList.first()
-                val navigator = Navigator(initialKey)
-                navigator.backStack.clear()
-                navigator.backStack.addAll(savedList)
-                navigator
-            }
-        )
+        val Saver: Saver<Navigator, Any> = listSaver(save = { navigator ->
+            navigator.backStack.toList()
+        }, restore = { savedList ->
+            val initialKey = savedList.firstOrNull() ?: Route.Home
+            val navigator = Navigator(initialKey)
+            navigator.backStack.clear()
+            navigator.backStack.addAll(savedList)
+            navigator
+        })
     }
 }
 

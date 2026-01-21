@@ -256,8 +256,11 @@ fun uninstallPermanently(
 
 @Parcelize
 sealed class LkmSelection : Parcelable {
+    @Parcelize
     data class LkmUri(val uri: Uri) : LkmSelection()
+    @Parcelize
     data class KmiString(val value: String) : LkmSelection()
+    @Parcelize
     data object KmiNone : LkmSelection()
 }
 

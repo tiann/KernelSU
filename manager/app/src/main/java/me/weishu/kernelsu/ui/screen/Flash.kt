@@ -53,7 +53,6 @@ import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.flashModule
@@ -238,6 +237,7 @@ fun FlashScreen(
 
 @Parcelize
 sealed class FlashIt : Parcelable {
+    @Parcelize
     data class FlashBoot(
         val boot: Uri? = null,
         val lkm: LkmSelection,
@@ -245,10 +245,13 @@ sealed class FlashIt : Parcelable {
         val partition: String? = null
     ) : FlashIt()
 
+    @Parcelize
     data class FlashModules(val uris: List<Uri>) : FlashIt()
 
+    @Parcelize
     data object FlashRestore : FlashIt()
 
+    @Parcelize
     data object FlashUninstall : FlashIt()
 }
 
