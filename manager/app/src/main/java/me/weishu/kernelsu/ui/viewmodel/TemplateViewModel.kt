@@ -40,7 +40,6 @@ class TemplateViewModel : ViewModel() {
     }
 
     @Parcelize
-    @Serializable
     data class TemplateInfo(
         val id: String = "",
         val name: String = "",

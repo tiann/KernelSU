@@ -1,5 +1,12 @@
 package me.weishu.kernelsu.ui.navigation3
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -10,8 +17,10 @@ import kotlinx.coroutines.flow.SharedFlow
  * Supports push/replace/pop/popUntil and result APIs: navigateForResult/setResult/observeResult/clearResult.
  */
 class Navigator(
-    val backStack: MutableList<NavKey>
+    initialKey: NavKey
 ) {
+    val backStack: SnapshotStateList<NavKey> = mutableStateListOf(initialKey)
+
     private val resultBus = mutableMapOf<String, MutableSharedFlow<Any>>()
 
     /**
@@ -31,6 +40,20 @@ class Navigator(
             backStack.add(key)
         }
     }
+
+    /**
+     * Replace the backstack with a new list of keys if the stack is not empty.
+     */
+    fun replaceAll(keys: List<NavKey>) {
+        if (keys.isEmpty()) {
+            return
+        }
+        if (backStack.isNotEmpty()) {
+            backStack.clear()
+            backStack.addAll(keys)
+        }
+    }
+
 
     /**
      * Pop the top key if present.
@@ -80,7 +103,45 @@ class Navigator(
         ensureChannel(requestKey).resetReplayCache()
     }
 
+    /**
+     * Get current NavKey on the back stack.
+     */
+    fun current(): NavKey? {
+        return backStack.lastOrNull()
+    }
+
+    /**
+     * Get current size of back stack.
+     */
+    fun backStackSize(): Int {
+        return backStack.size
+    }
+
     private fun ensureChannel(key: String): MutableSharedFlow<Any> {
         return resultBus.getOrPut(key) { MutableSharedFlow(replay = 1, extraBufferCapacity = 0) }
     }
+
+    companion object {
+        val Saver: Saver<Navigator, Any> = listSaver(save = { navigator ->
+            navigator.backStack.toList()
+        }, restore = { savedList ->
+            val initialKey = savedList.firstOrNull() ?: Route.Home
+            val navigator = Navigator(initialKey)
+            navigator.backStack.clear()
+            navigator.backStack.addAll(savedList)
+            navigator
+        })
+    }
+}
+
+
+@Composable
+fun rememberNavigator(startRoute: NavKey): Navigator {
+    return rememberSaveable(startRoute, saver = Navigator.Saver) {
+        Navigator(startRoute)
+    }
+}
+
+val LocalNavigator = staticCompositionLocalOf<Navigator> {
+    error("LocalNavigator not provided")
 }
