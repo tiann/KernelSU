@@ -251,7 +251,7 @@ fun AppProfileTemplateScreen(
         val pullToRefreshState = rememberPullToRefreshState()
         LaunchedEffect(isRefreshing) {
             if (isRefreshing) {
-                delay(350)
+                delay(150)
                 viewModel.fetchTemplates()
                 isRefreshing = false
             }

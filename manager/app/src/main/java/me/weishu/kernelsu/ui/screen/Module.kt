@@ -1068,7 +1068,7 @@ private fun ModuleList(
     }
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
-            delay(350)
+            delay(150)
             viewModel.fetchModuleList()
             isRefreshing = false
         }

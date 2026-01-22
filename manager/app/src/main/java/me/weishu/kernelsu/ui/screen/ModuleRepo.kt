@@ -5,6 +5,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -79,7 +81,6 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -92,7 +93,6 @@ import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
@@ -422,7 +422,7 @@ fun ModuleRepoScreen(
                 val pullToRefreshState = rememberPullToRefreshState()
                 LaunchedEffect(isRefreshing) {
                     if (isRefreshing) {
-                        delay(450)
+                        delay(150)
                         viewModel.refresh()
                         isRefreshing = false
                     }
@@ -1128,19 +1128,10 @@ fun ModuleRepoDetailScreen(
         }
         val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
         val layoutDirection = LocalLayoutDirection.current
+        val coroutineScope = rememberCoroutineScope()
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            var userScrollEnabled by remember { mutableStateOf(true) }
-            var animating by remember { mutableStateOf(false) }
-            var animateJob by remember { mutableStateOf<Job?>(null) }
-            var tabSelectedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
-            var lastRequestedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
-            LaunchedEffect(pagerState) {
-                snapshotFlow { pagerState.currentPage }.collectLatest { page ->
-                    if (!animating) tabSelectedIndex = page
-                }
-            }
             Column(
                 modifier = Modifier
                     .hazeEffect(hazeState) {
@@ -1159,38 +1150,10 @@ fun ModuleRepoDetailScreen(
             ) {
                 TabRow(
                     tabs = tabs,
-                    selectedTabIndex = tabSelectedIndex,
+                    selectedTabIndex = pagerState.currentPage,
                     onTabSelected = { index ->
-                        tabSelectedIndex = index
-                        if (index == pagerState.currentPage) {
-                            if (animateJob != null && lastRequestedIndex != index) {
-                                animateJob?.cancel()
-                                animateJob = null
-                                animating = false
-                                userScrollEnabled = true
-                            }
-                            lastRequestedIndex = index
-                        } else {
-                            if (animateJob != null && lastRequestedIndex == index) {
-                                // Already animating to the requested page
-                            } else {
-                                animateJob?.cancel()
-                                animating = true
-                                userScrollEnabled = false
-                                val job = scope.launch {
-                                    try {
-                                        pagerState.animateScrollToPage(index)
-                                    } finally {
-                                        if (animateJob === this) {
-                                            userScrollEnabled = true
-                                            animating = false
-                                            animateJob = null
-                                        }
-                                    }
-                                }
-                                animateJob = job
-                                lastRequestedIndex = index
-                            }
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page = index, animationSpec = tween(easing = EaseInOut))
                         }
                     },
                     colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
@@ -1200,8 +1163,7 @@ fun ModuleRepoDetailScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 1,
-                userScrollEnabled = userScrollEnabled,
+                beyondViewportPageCount = 2,
             ) { page ->
                 run {
                     val navEventState = rememberNavigationEventState(NavigationEventInfo.None)

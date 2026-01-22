@@ -5,6 +5,8 @@ import android.os.Build
 import android.system.Os
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -175,12 +177,12 @@ fun HomePager(
                         },
                         onClickSuperuser = {
                             coroutineScope.launch {
-                                pageState.animateScrollToPage(1)
+                                pageState.animateScrollToPage(page = 1, animationSpec = tween(easing = EaseInOut))
                             }
                         },
                         onclickModule = {
                             coroutineScope.launch {
-                                pageState.animateScrollToPage(2)
+                                pageState.animateScrollToPage(page = 2, animationSpec = tween(easing = EaseInOut))
                             }
                         },
                         themeMode = themeMode

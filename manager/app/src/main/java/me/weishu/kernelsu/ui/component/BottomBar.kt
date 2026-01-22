@@ -1,6 +1,8 @@
 package me.weishu.kernelsu.ui.component
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cottage
 import androidx.compose.material.icons.rounded.Extension
@@ -57,7 +59,7 @@ fun BottomBar(
         selected = pageState.targetPage,
         onClick = {
             coroutineScope.launch {
-                pageState.animateScrollToPage(it)
+                pageState.animateScrollToPage(page = it, animationSpec = tween(easing = EaseInOut))
             }
         }
     )

@@ -45,7 +45,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.EditText
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate

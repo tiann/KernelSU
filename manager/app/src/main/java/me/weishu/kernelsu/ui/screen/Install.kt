@@ -62,7 +62,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getAvailablePartitions

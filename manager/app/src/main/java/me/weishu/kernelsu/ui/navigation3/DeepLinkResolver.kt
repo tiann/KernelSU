@@ -11,8 +11,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavKey
 
 /**
  * Deep link resolution: maps external Intent/Uri to an initial back stack.

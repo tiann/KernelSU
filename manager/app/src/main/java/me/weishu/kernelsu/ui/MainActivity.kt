@@ -12,6 +12,8 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -21,13 +23,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -190,8 +192,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-val LocalPagerState = compositionLocalOf<PagerState> { error("No pager state") }
+val LocalPagerState = staticCompositionLocalOf<PagerState> { error("LocalPagerState not provided") }
 
 @Composable
 fun MainScreen() {
@@ -216,7 +217,7 @@ fun MainScreen() {
             isBackEnabled = isPagerBackHandlerEnabled,
             onBackCompleted = {
                 coroutineScope.launch {
-                    pagerState.animateScrollToPage(0)
+                    pagerState.animateScrollToPage(page = 0, animationSpec = tween(easing = EaseInOut))
                 }
             }
         )
@@ -233,7 +234,7 @@ fun MainScreen() {
             HorizontalPager(
                 modifier = Modifier.hazeSource(state = hazeState),
                 state = pagerState,
-                beyondViewportPageCount = 1,
+                beyondViewportPageCount = 3,
                 userScrollEnabled = userScrollEnabled,
             ) {
                 when (it) {

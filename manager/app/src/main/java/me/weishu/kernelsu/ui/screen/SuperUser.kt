@@ -279,7 +279,7 @@ fun SuperUserPager(
             val pullToRefreshState = rememberPullToRefreshState()
             LaunchedEffect(isRefreshing) {
                 if (isRefreshing) {
-                    delay(350)
+                    delay(150)
                     viewModel.loadAppList(force = true)
                     isRefreshing = false
                 }
