@@ -454,8 +454,6 @@ fun ModulePager(
 
         val success = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
-                Shortcut.deleteModuleActionShortcut(context, module.id)
-                Shortcut.deleteModuleWebUiShortcut(context, module.id)
                 uninstallModule(module.id)
             }
         }

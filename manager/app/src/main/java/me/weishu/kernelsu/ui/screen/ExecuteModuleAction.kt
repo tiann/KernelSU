@@ -53,6 +53,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.util.runModuleAction
+import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -91,8 +92,36 @@ fun ExecuteModuleActionScreen(moduleId: String) {
         intent?.getStringExtra("shortcut_type") == "module_action"
     }
 
+    val exitExecute = {
+        if (fromShortcut && activity != null) {
+            activity.finishAndRemoveTask()
+        } else {
+            navigator.pop()
+        }
+    }
+    val noModule = stringResource(R.string.no_such_module)
+    val moduleUnavailable = stringResource(R.string.module_unavailable)
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
+            return@LaunchedEffect
+        }
+        val viewModel = ModuleViewModel()
+        if (viewModel.moduleList.isEmpty()) {
+            viewModel.loadModuleList()
+        }
+        val moduleInfo = viewModel.moduleList.find { info -> info.id == moduleId }
+        if (moduleInfo == null) {
+            Toast.makeText(context, noModule.format(moduleId), Toast.LENGTH_SHORT).show()
+            exitExecute()
+            return@LaunchedEffect
+        }
+        if (!moduleInfo.hasActionScript) {
+            exitExecute()
+            return@LaunchedEffect
+        }
+        if (!moduleInfo.enabled || moduleInfo.update || moduleInfo.remove) {
+            Toast.makeText(context, moduleUnavailable.format(moduleId), Toast.LENGTH_SHORT).show()
+            exitExecute()
             return@LaunchedEffect
         }
         withContext(Dispatchers.IO) {
@@ -122,11 +151,7 @@ fun ExecuteModuleActionScreen(moduleId: String) {
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            if (fromShortcut && activity != null) {
-                activity.finishAndRemoveTask()
-            } else {
-                navigator.pop()
-            }
+            exitExecute()
         }
     }
 
