@@ -120,7 +120,7 @@ fun ExecuteModuleActionScreen(moduleId: String) {
             return@LaunchedEffect
         }
         if (!moduleInfo.enabled || moduleInfo.update || moduleInfo.remove) {
-            Toast.makeText(context, moduleUnavailable.format(moduleId), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, moduleUnavailable.format(moduleInfo.name), Toast.LENGTH_SHORT).show()
             exitExecute()
             return@LaunchedEffect
         }

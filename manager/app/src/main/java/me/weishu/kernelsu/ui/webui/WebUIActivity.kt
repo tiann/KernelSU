@@ -113,7 +113,7 @@ class WebUIActivity : ComponentActivity() {
             }
 
             if (!moduleInfo.enabled || moduleInfo.update || moduleInfo.remove) {
-                Toast.makeText(this@WebUIActivity, getString(R.string.module_unavailable, moduleId), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@WebUIActivity, getString(R.string.module_unavailable, moduleName), Toast.LENGTH_SHORT).show()
                 finish()
                 return@launch
             }
