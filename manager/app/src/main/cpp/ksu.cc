@@ -88,8 +88,8 @@ uint32_t get_version() {
     return info.version;
 }
 
-bool get_allow_list(struct ksu_get_allow_list_cmd *cmd) {
-    return ksuctl(KSU_IOCTL_GET_ALLOW_LIST, cmd) == 0;
+bool get_allow_list(struct ksu_new_get_allow_list_cmd *cmd) {
+    return ksuctl(KSU_IOCTL_NEW_GET_ALLOW_LIST, cmd) == 0;
 }
 
 bool is_safe_mode() {
