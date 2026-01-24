@@ -209,7 +209,7 @@ fun MainScreen() {
         tint = HazeTint(MiuixTheme.colorScheme.surface.copy(0.8f))
     )
 
-    MainScreenBackHandler(pagerState,navController,coroutineScope)
+    MainScreenBackHandler(pagerState, navController, coroutineScope)
 
     CompositionLocalProvider(
         LocalPagerState provides pagerState,
