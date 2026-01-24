@@ -191,4 +191,6 @@
     <string name="module_shortcut_permission_tip_xiaomi">请在 Xiaomi 设置中为本应用启用“创建桌面快捷方式”权限。</string>
     <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为本应用启用“桌面快捷方式”权限。</string>
     <string name="module_shortcut_permission_tip_default">若创建快捷方式失败，请在系统设置中为本应用启用桌面快捷方式权限。</string>
+    <string name="no_such_module">模块 %s 不存在</string>
+    <string name="module_unavailable">模块 %s 被禁用，待更新或待卸载</string>
 </resources>

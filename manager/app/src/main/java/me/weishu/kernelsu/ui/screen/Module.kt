@@ -454,8 +454,6 @@ fun ModulePager(
 
         val success = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
-                Shortcut.deleteModuleActionShortcut(context, module.id)
-                Shortcut.deleteModuleWebUiShortcut(context, module.id)
                 uninstallModule(module.id)
             }
         }
@@ -1355,7 +1353,7 @@ fun ModuleItem(
 
         Row {
             AnimatedVisibility(
-                visible = module.enabled && !module.remove,
+                visible = module.enabled && !module.remove && !module.update,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {

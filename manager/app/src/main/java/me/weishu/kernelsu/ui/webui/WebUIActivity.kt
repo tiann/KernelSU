@@ -16,6 +16,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -38,8 +39,10 @@ import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.util.createRootShell
+import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import java.io.File
@@ -87,10 +90,38 @@ class WebUIActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch {
+            val moduleId = intent.getStringExtra("id")
+            if (moduleId == null) {
+                finish()
+                return@launch
+            }
+            val viewModel = ModuleViewModel()
+            if (viewModel.moduleList.isEmpty()) {
+                viewModel.loadModuleList()
+            }
+
+            val moduleInfo = viewModel.moduleList.find { info -> info.id == moduleId }
+            if (moduleInfo == null) {
+                Toast.makeText(this@WebUIActivity, getString(R.string.no_such_module, moduleId), Toast.LENGTH_SHORT).show()
+                finish()
+                return@launch
+            }
+            val moduleName = moduleInfo.name
+            if (!moduleInfo.hasWebUi) {
+                finish()
+                return@launch
+            }
+
+            if (!moduleInfo.enabled || moduleInfo.update || moduleInfo.remove) {
+                Toast.makeText(this@WebUIActivity, getString(R.string.module_unavailable, moduleName), Toast.LENGTH_SHORT).show()
+                finish()
+                return@launch
+            }
+
             if (SuperUserViewModel.apps.isEmpty()) {
                 SuperUserViewModel().fetchAppList()
             }
-            setupWebView()
+            setupWebView(moduleId, moduleName)
         }
 
         fileChooserLauncher = registerForActivityResult(
@@ -119,9 +150,7 @@ class WebUIActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun setupWebView() {
-        val moduleId = intent.getStringExtra("id")!!
-        val name = intent.getStringExtra("name")!!
+    private suspend fun setupWebView(moduleId: String, name: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             @Suppress("DEPRECATION")
             setTaskDescription(ActivityManager.TaskDescription("KernelSU - $name"))
