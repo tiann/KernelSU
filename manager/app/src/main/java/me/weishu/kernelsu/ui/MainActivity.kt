@@ -12,6 +12,8 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -245,9 +247,7 @@ private fun MainScreenBackHandler(
 ) {
     val isPagerBackHandlerEnabled by remember {
         derivedStateOf {
-            navController.current() is Route.Main &&
-                    navController.backStackSize() == 1 &&
-                    pagerState.targetPage != 0
+            navController.current() is Route.Main && navController.backStackSize() == 1 && pagerState.targetPage != 0
         }
     }
 
@@ -258,7 +258,7 @@ private fun MainScreenBackHandler(
         isBackEnabled = isPagerBackHandlerEnabled,
         onBackCompleted = {
             coroutineScope.launch {
-                pagerState.animateScrollToPage(0)
+                pagerState.animateScrollToPage(page = 0, animationSpec = tween(easing = EaseInOut))
             }
         }
     )
