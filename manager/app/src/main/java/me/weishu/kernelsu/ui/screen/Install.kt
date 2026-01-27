@@ -59,6 +59,7 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -136,8 +137,11 @@ fun InstallScreen() {
     }
 
     val onClickNext = {
-        if (lkmSelection == LkmSelection.KmiNone && currentKmi.isBlank()) {
-            // no lkm file selected and cannot get current kmi
+        val isLkmSelected = lkmSelection != LkmSelection.KmiNone
+        val isKmiUnknown = currentKmi.isBlank()
+        val isSelectFileMode = installMethod is InstallMethod.SelectFile
+        if (!isLkmSelected && (isKmiUnknown || isSelectFileMode)) {
+            // no lkm file selected and cannot get current kmi or select file mode
             showChooseKmiDialog.value = true
             chooseKmiDialog
         } else {
@@ -329,11 +333,15 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val defaultPartitionName = produceState(initialValue = "boot") {
         value = getDefaultPartition()
     }.value
+    val isGkiDevice = produceState(initialValue = false) {
+        value = getKernelVersion().isGKI()
+    }.value
     val selectFileTip = stringResource(
         id = R.string.select_file_tip, defaultPartitionName
     )
-    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
-    if (rootAvailable) {
+    val selectFileTipNoGKI = stringResource(id = R.string.select_file_tip_nogki)
+    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = if (isGkiDevice) selectFileTip else selectFileTipNoGKI))
+    if (rootAvailable && isGkiDevice) {
         radioOptions.add(InstallMethod.DirectInstall)
 
         if (isAbDevice) {
