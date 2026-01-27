@@ -21,6 +21,8 @@ sha256 = "1"
 tempfile = "3"
 chrono = "0.4"
 regex-lite = "0.1"
+android-bootimg = { git = "https://github.com/5ec1cff/android_bootimg" }
+memmap2 = "0.9.9"
 
 [target.'cfg(target_os = "android")'.dependencies]
 rustix = { version = "1", features = [

@@ -186,7 +186,7 @@ fn link_ksud_to_bin() -> Result<()> {
     Ok(())
 }
 
-pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
+pub fn install() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     std::fs::copy(
         std::env::current_exe().with_context(|| "Failed to get self exe path")?,
@@ -198,15 +198,10 @@ pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
 
     link_ksud_to_bin()?;
 
-    if let Some(magiskboot) = magiskboot {
-        ensure_dir_exists(defs::BINARY_DIR)?;
-        let _ = std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH);
-    }
-
     Ok(())
 }
 
-pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
+pub fn uninstall() -> Result<()> {
     if Path::new(defs::MODULE_DIR).exists() {
         println!("- Uninstall modules..");
         module::uninstall_all_modules()?;
@@ -220,8 +215,9 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     boot_patch::restore(BootRestoreArgs {
         boot: None,
         flash: true,
-        magiskboot: magiskboot_path,
         out_name: None,
+        stock: false,
+        partition: None,
     })?;
     println!("- Uninstall KernelSU manager..");
     Command::new("pm")

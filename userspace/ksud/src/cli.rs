@@ -1,6 +1,5 @@
 use anyhow::{Context, Ok, Result};
 use clap::Parser;
-use std::path::PathBuf;
 
 use android_logger::Config;
 use log::LevelFilter;
@@ -34,17 +33,10 @@ enum Commands {
     BootCompleted,
 
     /// Install KernelSU userspace component to system
-    Install {
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
-    },
+    Install,
 
     /// Uninstall KernelSU modules and itself(LKM Only)
-    Uninstall {
-        /// magiskboot path, if not specified, will search from $PATH
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
-    },
+    Uninstall,
 
     /// SELinux policy Patch tool
     Sepolicy {
@@ -516,8 +508,8 @@ pub fn run() -> Result<()> {
                 }
             }
         }
-        Commands::Install { magiskboot } => utils::install(magiskboot),
-        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
+        Commands::Install => utils::install(),
+        Commands::Uninstall => utils::uninstall(),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
