@@ -147,12 +147,12 @@ void escape_with_root_profile(void)
            sizeof(cred->cap_bset));
 
     setup_groups(profile, cred);
+    setup_selinux(profile->selinux_domain, cred);
 
     commit_creds(cred);
 
     disable_seccomp();
 
-    setup_selinux(profile->selinux_domain);
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
     }
