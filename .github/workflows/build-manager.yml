@@ -13,6 +13,7 @@ on:
     paths:
       - 'manager/**'
   workflow_call:
+  workflow_dispatch:   # <-- 在这里加上
 
 jobs:
   build-lkm:
