@@ -539,6 +539,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
         let kmi = kmi.map_or_else(
             || -> Result<_> {
+                if kmod.is_some() {
+                    return Ok(String::new());
+                }
                 #[cfg(target_os = "android")]
                 match get_current_kmi() {
                     Ok(value) => {

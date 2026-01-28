@@ -334,7 +334,7 @@ private fun StatusCard(
                             }
                         ),
                         onClick = {
-                            if (kernelVersion.isGKI()) onClickInstall()
+                            onClickInstall()
                         },
                         showIndication = true,
                         pressFeedbackType = PressFeedbackType.Tilt
@@ -451,7 +451,7 @@ private fun StatusCard(
             kernelVersion.isGKI() -> {
                 Card(
                     onClick = {
-                        if (kernelVersion.isGKI()) onClickInstall()
+                        onClickInstall()
                     },
                     showIndication = true,
                     pressFeedbackType = PressFeedbackType.Sink
@@ -475,7 +475,7 @@ private fun StatusCard(
             else -> {
                 Card(
                     onClick = {
-                        if (kernelVersion.isGKI()) onClickInstall()
+                        onClickInstall()
                     },
                     showIndication = true,
                     pressFeedbackType = PressFeedbackType.Sink
