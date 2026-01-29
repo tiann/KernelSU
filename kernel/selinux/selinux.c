@@ -53,7 +53,7 @@ static int transive_to_domain(const char *domain, struct cred *cred)
 
 void setup_selinux(const char *domain, struct cred *cred)
 {
-    if (transive_to_domain(domain, cred) {
+    if (transive_to_domain(domain, cred)) {
         pr_err("transive domain failed.\n");
         return;
     }
