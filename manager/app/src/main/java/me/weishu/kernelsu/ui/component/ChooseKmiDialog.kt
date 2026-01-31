@@ -62,7 +62,7 @@ fun ChooseKmiDialog(
                         checkboxLocation = CheckboxLocation.End,
                         checked = currentSelection.value == kmi,
                         holdDownState = currentSelection.value == kmi,
-                        onCheckedChange = { isChecked ->
+                        onCheckedChange = { _ ->
                             currentSelection.value = kmi
                         }
                     )
