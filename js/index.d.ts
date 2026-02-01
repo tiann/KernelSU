@@ -35,7 +35,7 @@ declare function spawn(command: string, args: string[], options: SpawnOptions): 
 
 declare function fullScreen(isFullScreen: boolean);
 
-declare function enableInsets(enable: boolean);
+declare function enableEdgeToEdge(enable: boolean);
 
 declare function toast(message: string);
 
@@ -60,7 +60,7 @@ export {
     exec,
     spawn,
     fullScreen,
-    enableInsets,
+    enableEdgeToEdge,
     toast,
     moduleInfo,
     listPackages,

@@ -110,8 +110,8 @@ export function fullScreen(isFullScreen) {
   ksu.fullScreen(isFullScreen);
 }
 
-export function enableInsets(enable) {
-  ksu.enableInsets(enable);
+export function enableEdgeToEdge(enable) {
+  ksu.enableEdgeToEdge(enable);
 }
 
 export function toast(message) {
