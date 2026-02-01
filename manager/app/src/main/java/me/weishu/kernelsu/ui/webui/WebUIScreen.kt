@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.webui
 
 import android.app.Activity
 import android.net.Uri
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -90,27 +89,27 @@ fun WebUIScreen(webUIState: WebUIState) {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
                         )
-                    }
-                },update = { view ->
-                    if (webUIState.isUrlLoaded) return@AndroidView
-                    val homePage = "https://mui.kernelsu.org/index.html"
-                    if (view.width > 0 && view.height > 0) {
-                        view.loadUrl(homePage)
-                        webUIState.isUrlLoaded = true
-                    } else {
-                        val listener = object : View.OnLayoutChangeListener {
-                            override fun onLayoutChange(
-                                v: View, left: Int, top: Int, right: Int, bottom: Int,
-                                oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
-                            ) {
-                                if (v.width > 0 && v.height > 0) {
-                                    (v as WebView).loadUrl(homePage)
-                                    webUIState.isUrlLoaded = true
-                                    v.removeOnLayoutChangeListener(this)
+                        if (!webUIState.isUrlLoaded) {
+                            val homePage = "https://mui.kernelsu.org/index.html"
+                            if (width > 0 && height > 0) {
+                                loadUrl(homePage)
+                                webUIState.isUrlLoaded = true
+                            } else {
+                                val listener = object : View.OnLayoutChangeListener {
+                                    override fun onLayoutChange(
+                                        v: View, left: Int, top: Int, right: Int, bottom: Int,
+                                        oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
+                                    ) {
+                                        if (v.width > 0 && v.height > 0) {
+                                            (v as WebView).loadUrl(homePage)
+                                            webUIState.isUrlLoaded = true
+                                            v.removeOnLayoutChangeListener(this)
+                                        }
+                                    }
                                 }
+                                addOnLayoutChangeListener(listener)
                             }
                         }
-                        view.addOnLayoutChangeListener(listener)
                     }
                 }
             )
