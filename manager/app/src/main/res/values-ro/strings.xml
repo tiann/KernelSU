@@ -121,4 +121,8 @@
     <string name="flash_success">Instalare reușită</string>
     <string name="flash_failed">Instalarea a eșuat</string>
     <string name="save_log">Salvează Jurnale</string>
+    <string name="settings_sucompat">Redirecționare binar su</string>
+    <string name="settings_sucompat_summary">Permite aplicațiilor cu permisiune de Superutilizator în Profilul Aplicației să obțină un shell de superutilizator executând /system/bin/su; eficient doar pentru procesele noi.</string>
+    <string name="settings_kernel_umount">Demontare kernel</string>
+    <string name="settings_kernel_umount_summary">Comportament de demontare la nivel de kernel controlat de KernelSU</string>
 </resources>

@@ -116,6 +116,10 @@
     <string name="refresh_release">鬆開刷新</string>
     <string name="refresh_refresh">正在刷新…</string>
     <string name="refresh_complete">刷新成功</string>
+    <string name="settings_sucompat">傳統 su 命令支援</string>
+    <string name="settings_sucompat_summary">允許透過 /system/bin/su 獲取 Root 權限，僅對新行程生效。</string>
+    <string name="settings_kernel_umount">核心處理解除掛載模組</string>
+    <string name="settings_kernel_umount_summary">在核心為需要的應用程式解除掛載模組</string>
     <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
     <string name="module_shortcut_icon_pick">選擇自訂圖示</string>

@@ -41,9 +41,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -54,7 +51,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.util.runModuleAction
+import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -72,8 +71,8 @@ import java.util.Locale
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-@Destination<RootGraph>
-fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String) {
+fun ExecuteModuleActionScreen(moduleId: String) {
+    val navigator = LocalNavigator.current
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
@@ -93,8 +92,36 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
         intent?.getStringExtra("shortcut_type") == "module_action"
     }
 
+    val exitExecute = {
+        if (fromShortcut && activity != null) {
+            activity.finishAndRemoveTask()
+        } else {
+            navigator.pop()
+        }
+    }
+    val noModule = stringResource(R.string.no_such_module)
+    val moduleUnavailable = stringResource(R.string.module_unavailable)
     LaunchedEffect(Unit) {
         if (text.isNotEmpty()) {
+            return@LaunchedEffect
+        }
+        val viewModel = ModuleViewModel()
+        if (viewModel.moduleList.isEmpty()) {
+            viewModel.loadModuleList()
+        }
+        val moduleInfo = viewModel.moduleList.find { info -> info.id == moduleId }
+        if (moduleInfo == null) {
+            Toast.makeText(context, noModule.format(moduleId), Toast.LENGTH_SHORT).show()
+            exitExecute()
+            return@LaunchedEffect
+        }
+        if (!moduleInfo.hasActionScript) {
+            exitExecute()
+            return@LaunchedEffect
+        }
+        if (!moduleInfo.enabled || moduleInfo.update || moduleInfo.remove) {
+            Toast.makeText(context, moduleUnavailable.format(moduleInfo.name), Toast.LENGTH_SHORT).show()
+            exitExecute()
             return@LaunchedEffect
         }
         withContext(Dispatchers.IO) {
@@ -124,20 +151,14 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            if (fromShortcut && activity != null) {
-                activity.finish()
-            } else {
-                navigator.popBackStack()
-            }
+            exitExecute()
         }
     }
 
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed {
-                    navigator.popBackStack()
-                },
+                onBack = dropUnlessResumed { navigator.pop() },
                 onSave = {
                     scope.launch {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())

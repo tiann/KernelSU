@@ -5,6 +5,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -68,12 +70,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.ModuleRepoDetailScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -81,7 +81,6 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -93,6 +92,8 @@ import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
@@ -172,10 +173,9 @@ data class RepoModuleArg(
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-@Destination<RootGraph>
 fun ModuleRepoScreen(
-    navigator: DestinationsNavigator,
 ) {
+    val navigator = LocalNavigator.current
     val viewModel = viewModel<ModuleRepoViewModel>()
     val installedVm = viewModel<ModuleViewModel>()
     val searchStatus by viewModel.searchStatus
@@ -254,7 +254,7 @@ fun ModuleRepoScreen(
                     navigationIcon = {
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
-                            onClick = { navigator.popBackStack() }
+                            onClick = { navigator.pop() }
 
                         ) {
                             val layoutDirection = LocalLayoutDirection.current
@@ -305,7 +305,7 @@ fun ModuleRepoScreen(
                                 latestReleaseTime = module.latestReleaseTime,
                                 releases = emptyList()
                             )
-                            navigator.navigate(ModuleRepoDetailScreenDestination(args)) { launchSingleTop = true }
+                            navigator.push(Route.ModuleRepoDetail(args))
                         }
                     ) {
                         Column {
@@ -422,7 +422,7 @@ fun ModuleRepoScreen(
                 val pullToRefreshState = rememberPullToRefreshState()
                 LaunchedEffect(isRefreshing) {
                     if (isRefreshing) {
-                        delay(450)
+                        delay(150)
                         viewModel.refresh()
                         isRefreshing = false
                     }
@@ -490,9 +490,7 @@ fun ModuleRepoScreen(
                                         latestReleaseTime = module.latestReleaseTime,
                                         releases = emptyList()
                                     )
-                                    navigator.navigate(ModuleRepoDetailScreenDestination(args)) {
-                                        launchSingleTop = true
-                                    }
+                                    navigator.push(Route.ModuleRepoDetail(args))
                                 }
                             ) {
                                 Column {
@@ -1008,11 +1006,10 @@ fun InfoPage(
 
 @SuppressLint("StringFormatInvalid", "DefaultLocale")
 @Composable
-@Destination<RootGraph>
 fun ModuleRepoDetailScreen(
-    navigator: DestinationsNavigator,
     module: RepoModuleArg
 ) {
+    val navigator = LocalNavigator.current
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
@@ -1024,9 +1021,7 @@ fun ModuleRepoDetailScreen(
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
     val onInstallModule: (Uri) -> Unit = { uri ->
-        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(uri)))) {
-            launchSingleTop = true
-        }
+        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
     }
 
     var readmeHtml by remember(module.moduleId) { mutableStateOf<String?>(null) }
@@ -1058,9 +1053,7 @@ fun ModuleRepoDetailScreen(
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
-                        onClick = {
-                            navigator.popBackStack()
-                        }
+                        onClick = { navigator.pop() }
                     ) {
                         val layoutDirection = LocalLayoutDirection.current
                         Icon(
@@ -1135,19 +1128,10 @@ fun ModuleRepoDetailScreen(
         }
         val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
         val layoutDirection = LocalLayoutDirection.current
+        val coroutineScope = rememberCoroutineScope()
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            var userScrollEnabled by remember { mutableStateOf(true) }
-            var animating by remember { mutableStateOf(false) }
-            var animateJob by remember { mutableStateOf<Job?>(null) }
-            var tabSelectedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
-            var lastRequestedIndex by remember { mutableIntStateOf(pagerState.currentPage) }
-            LaunchedEffect(pagerState) {
-                snapshotFlow { pagerState.currentPage }.collectLatest { page ->
-                    if (!animating) tabSelectedIndex = page
-                }
-            }
             Column(
                 modifier = Modifier
                     .hazeEffect(hazeState) {
@@ -1166,38 +1150,10 @@ fun ModuleRepoDetailScreen(
             ) {
                 TabRow(
                     tabs = tabs,
-                    selectedTabIndex = tabSelectedIndex,
+                    selectedTabIndex = pagerState.currentPage,
                     onTabSelected = { index ->
-                        tabSelectedIndex = index
-                        if (index == pagerState.currentPage) {
-                            if (animateJob != null && lastRequestedIndex != index) {
-                                animateJob?.cancel()
-                                animateJob = null
-                                animating = false
-                                userScrollEnabled = true
-                            }
-                            lastRequestedIndex = index
-                        } else {
-                            if (animateJob != null && lastRequestedIndex == index) {
-                                // Already animating to the requested page
-                            } else {
-                                animateJob?.cancel()
-                                animating = true
-                                userScrollEnabled = false
-                                val job = scope.launch {
-                                    try {
-                                        pagerState.animateScrollToPage(index)
-                                    } finally {
-                                        if (animateJob === this) {
-                                            userScrollEnabled = true
-                                            animating = false
-                                            animateJob = null
-                                        }
-                                    }
-                                }
-                                animateJob = job
-                                lastRequestedIndex = index
-                            }
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page = index, animationSpec = tween(easing = EaseInOut))
                         }
                     },
                     colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
@@ -1207,15 +1163,25 @@ fun ModuleRepoDetailScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 3,
-                userScrollEnabled = userScrollEnabled,
+                beyondViewportPageCount = 2,
             ) { page ->
+                run {
+                    val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
+                    NavigationBackHandler(
+                        state = navEventState,
+                        isBackEnabled = pagerState.currentPage != 0,
+                        onBackCompleted = {
+                            scope.launch { pagerState.animateScrollToPage(0) }
+                        }
+                    )
+                }
                 val innerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
                     bottom = innerPadding.calculateBottomPadding() + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
                 )
+
                 when (page) {
                     0 -> ReadmePage(
                         readmeHtml = readmeHtml,

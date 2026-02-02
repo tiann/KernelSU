@@ -78,4 +78,8 @@
     <string name="module_install_prompt_with_name">Modul će biti instaliran</string>
     <string name="module_sort_action_first">Sortiraj</string>
     <string name="confirm">Potvrdi</string>
+    <string name="settings_sucompat">Preusmjeri su binarnu datoteku</string>
+    <string name="settings_sucompat_summary">Preusmjeri /system/bin/su na ksud za aplikacije kojima je dodijeljeno dopuštenje Superuser u Profilu aplikacije; učinkovito samo za nove procese.</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
+    <string name="settings_kernel_umount_summary">Ponašanje umount na razini kernela kontrolira KernelSU</string>
 </resources>

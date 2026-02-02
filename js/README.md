@@ -101,9 +101,9 @@ import { fullScreen } from 'kernelsu';
 fullScreen(true);
 ```
 
-### enableInsets
+### enableEdgeToEdge
 
-Request the WebView to set padding to 0 or system bar insets
+Request the WebView to set padding to 0 or safeDrawing insets
 
 - tips: this is disabled by default but if you request resource from `internal/insets.css`, this will be enabled automatically.
 - To get insets value and enable this automatically, you can
@@ -111,8 +111,8 @@ Request the WebView to set padding to 0 or system bar insets
   - add `<link rel="stylesheet" type="text/css" href="/internal/insets.css" />` in html.
 
 ```javascript
-import { enableInsets } from 'kernelsu';
-enableInsets(true);
+import { enableEdgeToEdge } from 'kernelsu';
+enableEdgeToEdge(true);
 ```
 
 ### toast

@@ -60,4 +60,8 @@
     <string name="profile_namespace_individual">تکی</string>
     <string name="profile_umount_modules">جداکردن ماژول ها</string>
     <string name="save_log">ذخیره گزارش‌ها</string>
+    <string name="settings_sucompat">تغییر مسیر باینری su</string>
+    <string name="settings_sucompat_summary">تغییر مسیر /system/bin/su به ksud برای برنامه‌هایی که مجوز Superuser در پروفایل برنامه دارند؛ فقط برای فرآیندهای جدید موثر است.</string>
+    <string name="settings_kernel_umount">جداسازی هسته</string>
+    <string name="settings_kernel_umount_summary">رفتار جداسازی در سطح هسته که توسط KernelSU کنترل می‌شود</string>
 </resources>

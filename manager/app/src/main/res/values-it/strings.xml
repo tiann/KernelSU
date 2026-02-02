@@ -121,4 +121,8 @@
     <string name="selected_lkm">LKM selezionato: %s</string>
     <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica del produttore (se il backup è presente), solitamente usato prima di applicare l\'OTA; se devi disinstallare KernelSU, utilizza invece \"Disinstalla permanentemente\".</string>
     <string name="save_log">Salva Registri</string>
+    <string name="settings_sucompat">Reindirizza binario su</string>
+    <string name="settings_sucompat_summary">Consente alle app con autorizzazione Superuser nel profilo app di ottenere una shell superuser eseguendo /system/bin/su; efficace solo per i nuovi processi.</string>
+    <string name="settings_kernel_umount">Umount del kernel</string>
+    <string name="settings_kernel_umount_summary">Comportamento di umount a livello di kernel controllato da KernelSU</string>
 </resources>

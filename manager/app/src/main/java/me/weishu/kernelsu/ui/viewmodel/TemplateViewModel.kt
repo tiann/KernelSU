@@ -45,7 +45,6 @@ class TemplateViewModel : ViewModel() {
         val description: String = "",
         val author: String = "",
         val local: Boolean = true,
-
         val namespace: Int = Natives.Profile.Namespace.INHERITED.ordinal,
         val uid: Int = Natives.ROOT_UID,
         val gid: Int = Natives.ROOT_GID,

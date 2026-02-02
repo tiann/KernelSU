@@ -37,4 +37,14 @@ data class Insets(
             appendLine("\t--f7-safe-area-right: var(--window-inset-right, 0px) !important;")
             append("}")
         }
+    val js
+        get() = buildString {
+            append("(function() {")
+            append(" var s = document.documentElement.style;")
+            append(" s.setProperty('--safe-area-inset-top', '${top}px');")
+            append(" s.setProperty('--safe-area-inset-right', '${right}px');")
+            append(" s.setProperty('--safe-area-inset-bottom', '${bottom}px');")
+            append(" s.setProperty('--safe-area-inset-left', '${left}px');")
+            append("})();")
+        }
 }

@@ -53,18 +53,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
@@ -98,8 +97,8 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-@Destination<RootGraph>
-fun InstallScreen(navigator: DestinationsNavigator) {
+fun InstallScreen() {
+    val navigator = LocalNavigator.current
     val context = LocalContext.current
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)
@@ -123,9 +122,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 ota = isOta,
                 partition = partitionSelection
             )
-            navigator.navigate(FlashScreenDestination(flashIt)) {
-                launchSingleTop = true
-            }
+            navigator.push(Route.Flash(flashIt))
         }
     }
 
@@ -140,8 +137,11 @@ fun InstallScreen(navigator: DestinationsNavigator) {
     }
 
     val onClickNext = {
-        if (lkmSelection == LkmSelection.KmiNone && currentKmi.isBlank()) {
-            // no lkm file selected and cannot get current kmi
+        val isLkmSelected = lkmSelection != LkmSelection.KmiNone
+        val isKmiUnknown = currentKmi.isBlank()
+        val isSelectFileMode = installMethod is InstallMethod.SelectFile
+        if (!isLkmSelected && (isKmiUnknown || isSelectFileMode)) {
+            // no lkm file selected and cannot get current kmi or select file mode
             showChooseKmiDialog.value = true
             chooseKmiDialog
         } else {
@@ -184,7 +184,7 @@ fun InstallScreen(navigator: DestinationsNavigator) {
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.pop() },
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
@@ -333,11 +333,15 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val defaultPartitionName = produceState(initialValue = "boot") {
         value = getDefaultPartition()
     }.value
+    val isGkiDevice = produceState(initialValue = false) {
+        value = getKernelVersion().isGKI()
+    }.value
     val selectFileTip = stringResource(
         id = R.string.select_file_tip, defaultPartitionName
     )
-    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = selectFileTip))
-    if (rootAvailable) {
+    val selectFileTipNoGKI = stringResource(id = R.string.select_file_tip_nogki)
+    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = if (isGkiDevice) selectFileTip else selectFileTipNoGKI))
+    if (rootAvailable && isGkiDevice) {
         radioOptions.add(InstallMethod.DirectInstall)
 
         if (isAbDevice) {

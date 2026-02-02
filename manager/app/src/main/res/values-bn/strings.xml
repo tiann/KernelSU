@@ -67,4 +67,8 @@
     <string name="metamodule_uninstall_confirm">আপনি কি নিশ্চিত আপনি মডিউল %s আনইনস্টল করতে চান? এটি সকল মডিউলকে প্রভাবিত করবে, এবং মেটামডিউল দ্বারা প্রদত্ত কিছু বৈশিষ্ট্য (যেমন মাউন্ট করা) আর কাজ করবে না।</string>
     <string name="home_gki_warning">v3.0.0 থেকে শুরু করে, GKI মোড শুধুমাত্র নিরীক্ষণ এর জন্য ব্যবহার করা যাবে। আমরা দৈনন্দিন ব্যবহারের জন্য এটি সুপারিশ করি না, এবং ইমেজ ফাইল আর প্রদান করা হবে না।</string>
     <string name="failed_to_update_app_profile">%s এর জন্য অ্যাপ প্রোফাইল আপডেট করতে ব্যর্থ হয়েছে</string>
+    <string name="settings_sucompat">su বাইনারি রি-রুট করুন</string>
+    <string name="settings_sucompat_summary">অ্যাপ প্রোফাইলে সুপার ইউজার অনুমতি প্রাপ্ত অ্যাপগুলির জন্য /system/bin/su কে ksud এ রিডাইরেক্ট করুন; শুধুমাত্র নতুন প্রসেসের জন্য কার্যকর।</string>
+    <string name="settings_kernel_umount">কার্নেল আনমাউন্ট</string>
+    <string name="settings_kernel_umount_summary">KernelSU দ্বারা নিয়ন্ত্রিত কার্নেল-লেভেল আনমাউন্ট আচরণ</string>
 </resources>

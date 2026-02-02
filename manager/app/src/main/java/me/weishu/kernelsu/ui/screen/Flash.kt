@@ -46,15 +46,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.flashModule
@@ -106,11 +104,10 @@ fun flashModulesSequentially(
 }
 
 @Composable
-@Destination<RootGraph>
 fun FlashScreen(
-    navigator: DestinationsNavigator,
     flashIt: FlashIt
 ) {
+    val navigator = LocalNavigator.current
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
@@ -155,7 +152,7 @@ fun FlashScreen(
         topBar = {
             TopBar(
                 flashing,
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.pop() },
                 onSave = {
                     scope.launch {
                         val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.getDefault())
@@ -240,13 +237,21 @@ fun FlashScreen(
 
 @Parcelize
 sealed class FlashIt : Parcelable {
-    data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean, val partition: String? = null) :
-        FlashIt()
+    @Parcelize
+    data class FlashBoot(
+        val boot: Uri? = null,
+        val lkm: LkmSelection,
+        val ota: Boolean,
+        val partition: String? = null
+    ) : FlashIt()
 
+    @Parcelize
     data class FlashModules(val uris: List<Uri>) : FlashIt()
 
+    @Parcelize
     data object FlashRestore : FlashIt()
 
+    @Parcelize
     data object FlashUninstall : FlashIt()
 }
 

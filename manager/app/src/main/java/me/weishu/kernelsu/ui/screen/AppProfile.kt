@@ -32,6 +32,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,11 +53,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -69,6 +66,8 @@ import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.forceStopApp
 import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
@@ -107,11 +106,10 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @date 2023/5/16.
  */
 @Composable
-@Destination<RootGraph>
 fun AppProfileScreen(
-    navigator: DestinationsNavigator,
-    appInfo: SuperUserViewModel.AppInfo,
+    packageName: String,
 ) {
+    val navigator = LocalNavigator.current
     val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = remember { HazeState() }
@@ -120,11 +118,21 @@ fun AppProfileScreen(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
     val scope = rememberCoroutineScope()
+    val appInfoState = remember(packageName) {
+        derivedStateOf {
+            SuperUserViewModel.apps.find { it.packageName == packageName }
+        }
+    }
+    val appInfo = appInfoState.value
+    if (appInfo == null) {
+        LaunchedEffect(Unit) {
+            navigator.pop()
+        }
+        return
+    }
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label).format(appInfo.uid)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
     val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
-
-    val packageName = appInfo.packageName
     val sameUidApps = remember(appInfo.uid) {
         SuperUserViewModel.apps.filter { it.uid == appInfo.uid }
     }
@@ -149,7 +157,7 @@ fun AppProfileScreen(
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.pop() },
                 packageName = packageName,
                 showActions = !isUidGroup,
                 scrollBehavior = scrollBehavior,
@@ -197,16 +205,10 @@ fun AppProfileScreen(
                     affectedApps = sameUidApps,
                     onViewTemplate = {
                         getTemplateInfoById(it)?.let { info ->
-                            navigator.navigate(TemplateEditorScreenDestination(info)) {
-                                launchSingleTop = true
-                            }
+                            navigator.push(Route.TemplateEditor(info, readOnly = true))
                         }
                     },
-                    onManageTemplate = {
-                        navigator.navigate(AppProfileTemplateScreenDestination()) {
-                            launchSingleTop = true
-                        }
-                    },
+                    onManageTemplate = { navigator.push(Route.AppProfileTemplate) },
                     onProfileChange = {
                         scope.launch {
                             if (it.allowSu) {

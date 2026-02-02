@@ -126,8 +126,8 @@
     <string name="flash_failed">Nabigo ang pag-flash</string>
     <string name="selected_lkm">Piniling LKM: %s</string>
     <string name="log_saved">Nai-save ang mga log</string>
-    <string name="settings_disable_su">I-disable ang su compatibility</string>
-    <string name="settings_disable_su_summary">Pansamantalang i-disable ang kakayahan ng anumang app na makakuha ng pribilehiyong root sa pamamagitan ng su command (hindi maaapektuhan ang mga umiiral na root process).</string>
+    <string name="settings_sucompat">Klasikong su command</string>
+    <string name="settings_sucompat_summary">Payagan ang root access gamit ang /system/bin/su, sa mga bagong proseso.</string>
     <string name="module_repos">Mga Repo</string>
     <string name="module_repos_sort_name">Pangalan (A → Z)</string>
     <string name="module_repos_source_code">Source code</string>

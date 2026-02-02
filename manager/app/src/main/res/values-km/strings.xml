@@ -3,4 +3,8 @@
     <string name="home">ទំព័រដើម</string>
     <string name="home_not_installed">មិនទាន់បានដំឡើង</string>
     <string name="home_click_to_install">ចុចដើម្បីដំឡើង</string>
+    <string name="settings_sucompat">កែផ្លូវ su binary</string>
+    <string name="settings_sucompat_summary">បញ្ជូន /system/bin/su ទៅកាន់ ksud សម្រាប់កម្មវិធីដែលបានទទួលសិទ្ធិ Superuser នៅក្នុងទម្រង់កម្មវិធី; មានប្រសិទ្ធភាពសម្រាប់ដំណើរការថ្មីប៉ុណ្ណោះ។</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
+    <string name="settings_kernel_umount_summary">ឥរិយាបថ umount កម្រិតខឺណែលគ្រប់គ្រងដោយ KernelSU</string>
 </resources>

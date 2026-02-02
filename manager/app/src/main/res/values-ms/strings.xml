@@ -33,4 +33,8 @@
     <string name="reboot_bootloader">Reboot ke Bootloader</string>
     <string name="home_manager_version">Versi manager</string>
     <string name="save_log">Simpan Log</string>
+    <string name="settings_sucompat">Ubaḥ hala binari su</string>
+    <string name="settings_sucompat_summary">Ubaḥ hala /system/bin/su ke ksud untuk aplikasi yang diberikan kebenaran Superuser dalam Profil Aplikasi; berkesan untuk proses baharu sahaja.</string>
+    <string name="settings_kernel_umount">Umount kernel</string>
+    <string name="settings_kernel_umount_summary">Tingkah laku umount peringkat kernel dikawal oleh KernelSU</string>
 </resources>

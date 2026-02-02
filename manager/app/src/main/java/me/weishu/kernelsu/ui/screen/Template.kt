@@ -67,12 +67,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.TemplateEditorScreenDestination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.result.ResultRecipient
-import com.ramcosta.composedestinations.result.getOr
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -83,6 +77,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
+import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
@@ -115,11 +112,9 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-@Destination<RootGraph>
 fun AppProfileTemplateScreen(
-    navigator: DestinationsNavigator,
-    resultRecipient: ResultRecipient<TemplateEditorScreenDestination, Boolean>
 ) {
+    val navigator = LocalNavigator.current
     val viewModel = viewModel<TemplateViewModel>()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
@@ -130,10 +125,13 @@ fun AppProfileTemplateScreen(
         }
     }
 
-    // handle result from TemplateEditorScreen, refresh if needed
-    resultRecipient.onNavResult { result ->
-        if (result.getOr { false }) {
-            scope.launch { viewModel.fetchTemplates() }
+    val requestKey = "template_edit"
+    LaunchedEffect(Unit) {
+        navigator.observeResult<Boolean>(requestKey).collect { success ->
+            if (success) {
+                navigator.clearResult(requestKey)
+                scope.launch { viewModel.fetchTemplates() }
+            }
         }
     }
 
@@ -182,7 +180,7 @@ fun AppProfileTemplateScreen(
                 }
             }
             TopBar(
-                onBack = dropUnlessResumed { navigator.popBackStack() },
+                onBack = dropUnlessResumed { navigator.pop() },
                 onSync = {
                     scope.launch { viewModel.fetchTemplates(true) }
                 },
@@ -226,9 +224,7 @@ fun AppProfileTemplateScreen(
                 containerColor = colorScheme.primary,
                 shadowElevation = 0.dp,
                 onClick = {
-                    navigator.navigate(TemplateEditorScreenDestination(TemplateViewModel.TemplateInfo(), false)) {
-                        launchSingleTop = true
-                    }
+                    navigator.navigateForResult(Route.TemplateEditor(TemplateViewModel.TemplateInfo(), false), requestKey)
                 },
                 modifier = Modifier
                     .offset(y = offsetHeight)
@@ -255,7 +251,7 @@ fun AppProfileTemplateScreen(
         val pullToRefreshState = rememberPullToRefreshState()
         LaunchedEffect(isRefreshing) {
             if (isRefreshing) {
-                delay(350)
+                delay(150)
                 viewModel.fetchTemplates()
                 isRefreshing = false
             }
@@ -311,18 +307,13 @@ fun AppProfileTemplateScreen(
 
 @Composable
 private fun TemplateItem(
-    navigator: DestinationsNavigator,
+    navigator: Navigator,
     template: TemplateViewModel.TemplateInfo
 ) {
     Card(
         modifier = Modifier.padding(bottom = 12.dp),
         onClick = {
-            navigator.navigate(TemplateEditorScreenDestination(template, !template.local)) {
-                popUpTo(TemplateEditorScreenDestination) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
+            navigator.navigateForResult(Route.TemplateEditor(template, !template.local), "template_edit")
         },
         showIndication = true,
         pressFeedbackType = PressFeedbackType.Sink

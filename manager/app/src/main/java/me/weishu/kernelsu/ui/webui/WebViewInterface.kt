@@ -1,14 +1,12 @@
 package me.weishu.kernelsu.ui.webui
 
 import android.app.Activity
-import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import android.widget.Toast
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.WindowInsetsCompat
@@ -25,11 +23,9 @@ import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
-class WebViewInterface(
-    val context: Context,
-    private val webView: WebView,
-    private val modDir: String
-) {
+class WebViewInterface(private val state: WebUIState) {
+    private val webView get() = state.webView!!
+    private val modDir get() = state.modDir
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -162,12 +158,13 @@ class WebViewInterface(
     @JavascriptInterface
     fun toast(msg: String) {
         webView.post {
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(webView.context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
     @JavascriptInterface
     fun fullScreen(enable: Boolean) {
+        val context = webView.context
         if (context is Activity) {
             Handler(Looper.getMainLooper()).post {
                 if (enable) {
@@ -177,22 +174,20 @@ class WebViewInterface(
                 }
             }
         }
-        enableInsets(enable)
+        enableEdgeToEdge(enable)
     }
 
     @JavascriptInterface
-    fun enableInsets(enable: Boolean = true) {
-        if (context is WebUIActivity) {
-            context.enableInsets(enable)
-        }
+    fun enableEdgeToEdge(enable: Boolean = true) {
+        state.isInsetsEnabled = enable
     }
 
     @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
-        var currentModuleInfo = JSONObject()
+        val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
-        val moduleId = File(modDir).getName()
+        val moduleId = File(modDir).name
         for (i in 0 until moduleInfos.length()) {
             val currentInfo = moduleInfos.getJSONObject(i)
 
@@ -200,7 +195,7 @@ class WebViewInterface(
                 continue
             }
 
-            var keys = currentInfo.keys()
+            val keys = currentInfo.keys()
             for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }
@@ -261,9 +256,7 @@ class WebViewInterface(
 
     @JavascriptInterface
     fun exit() {
-        if (context is Activity) {
-            context.finish()
-        }
+        state.requestExit()
     }
 }
 

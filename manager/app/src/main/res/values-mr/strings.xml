@@ -74,4 +74,8 @@
     <string name="launch_app">लाँच करा</string>
     <string name="restart_app">पुन्हा सुरू करा</string>
     <string name="save_log">लॉग जतन करा</string>
+    <string name="settings_sucompat">su बाइनरी पुन्हा मार्गस्थ करा</string>
+    <string name="settings_sucompat_summary">ॲप प्रोफाईलमध्ये सुपरयुझर परवानगी दिलेल्या ॲप्ससाठी /system/bin/su ला ksud वर पुनर्निर्देशित करा; फक्त नवीन प्रक्रियांसाठी प्रभावी.</string>
+    <string name="settings_kernel_umount">कर्नल अनमाउंट</string>
+    <string name="settings_kernel_umount_summary">KernelSU द्वारे नियंत्रित कर्नल-स्तरीय अनमाउंट वर्तन</string>
 </resources>

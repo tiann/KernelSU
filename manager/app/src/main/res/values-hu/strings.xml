@@ -19,7 +19,8 @@
     <string name="home_learn_kernelsu">Tudjon meg többet a KernelSU-ról</string>
     <string name="home_click_to_learn_kernelsu">Ismerje meg a KernelSU telepítését és a modulok használatát</string>
     <string name="home_support_title">Támogasson minket</string>
-    <string name="about_source_code">Tekintse meg a forráskódot a %1$s-on<br/>Csatlakozzon a %2$s csatornánkhoz</string>
+    <string name="about_source_code">Tekintse meg a forráskódot a %1$s-on<br/>
+Csatlakozzon a %2$s csatornánkhoz</string>
     <string name="profile_default">Alapértelmezett</string>
     <string name="profile_template">Sablon</string>
     <string name="profile_custom">Egyedi</string>
@@ -121,4 +122,8 @@
     <string name="settings_check_update">Frissítés ellenőrzése</string>
     <string name="settings_check_update_summary">Automatikusan keressen frissítéseket az alkalmazás megnyitásakor</string>
     <string name="log_saved">Mentett naplók</string>
+    <string name="settings_sucompat">su bináris átirányítása</string>
+    <string name="settings_sucompat_summary">Lehetővé teszi az App Profile-ban Superuser engedéllyel rendelkező alkalmazások számára, hogy superuser shell-t kapjanak a /system/bin/su végrehajtásával; csak új folyamatoknál hatékony.</string>
+    <string name="settings_kernel_umount">Kernel leválasztása</string>
+    <string name="settings_kernel_umount_summary">KernelSU által vezérelt kernel szintű leválasztási viselkedés</string>
 </resources>

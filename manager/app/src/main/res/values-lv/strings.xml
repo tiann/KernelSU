@@ -124,4 +124,8 @@
     <string name="module_sort_enabled_first">Kārtot (Iespējotie augšgalā)</string>
     <string name="confirm">Apstiprināt</string>
     <string name="module_install_prompt_with_name">Tiks uzstādīti šādi moduļi : %1$s</string>
+    <string name="settings_sucompat">Pārvirzīt su bināro failu</string>
+    <string name="settings_sucompat_summary">Pārvirzīt /system/bin/su uz ksud lietotnēm, kurām piešķirta Superuser atļauja lietotnes profilā; efektīva tikai jauniem procesiem.</string>
+    <string name="settings_kernel_umount">Kodola atvienošana</string>
+    <string name="settings_kernel_umount_summary">Kodola līmeņa atvienošanas uzvedība, ko kontrolē KernelSU</string>
 </resources>

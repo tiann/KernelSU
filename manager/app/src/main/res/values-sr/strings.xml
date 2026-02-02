@@ -6,4 +6,8 @@
     <string name="home_working_version">Верзија: %d</string>
     <string name="home_working">Ради</string>
     <string name="save_log">Сачувај Дневнике</string>
+    <string name="settings_sucompat">Preusmeri su binarni fajl</string>
+    <string name="settings_sucompat_summary">Preusmeri /system/bin/su na ksud za aplikacije sa dozvolom Superkorisnika u Profilu aplikacije; efektivno samo za nove procese.</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
+    <string name="settings_kernel_umount_summary">Ponašanje umount-a na nivou kernela kontrolisano od strane KernelSU-a</string>
 </resources>

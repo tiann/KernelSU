@@ -7,7 +7,7 @@
     <string name="home_working">Working</string>
     <string name="home_working_version">Version: %d</string>
     <string name="home_unsupported">Unsupported</string>
-    <string name="home_unsupported_reason">KernelSU only supports GKI kernels now.</string>
+    <string name="home_unsupported_reason">KernelSU only supports GKI kernels now, but you can patch the image for GKI devices.</string>
     <string name="home_kernel">Kernel version</string>
     <string name="home_manager_version">Manager version</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -140,15 +140,15 @@
     <string name="selected_lkm">Selected LKM: %s</string>
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
-    <string name="settings_disable_su">Disable su compatibility</string>
-    <string name="settings_disable_su_summary">Disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-    <string name="settings_disable_kernel_umount">Disable kernel umount</string>
-    <string name="settings_disable_kernel_umount_summary">Disable kernel-level umount behavior controlled by KernelSU.</string>
-    <string name="feature_status_unsupported_summary">Kernel does not support this feature.</string>
-    <string name="feature_status_managed_summary">This feature is managed by a module.</string>
-    <string name="settings_mode_default">Default</string>
-    <string name="settings_mode_temp_enable">Temporarily enable</string>
-    <string name="settings_mode_always_enable">Permanently enable</string>
+    <string name="settings_sucompat">Classic su command</string>
+    <string name="settings_sucompat_summary">Allow root access via /system/bin/su, in new processes.</string>
+    <string name="settings_kernel_umount">Module unmounting</string>
+    <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile</string>
+    <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
+    <string name="feature_status_managed_summary">This feature is managed by a module</string>
+    <string name="settings_mode_enable_by_default">Enable (Default)</string>
+    <string name="settings_mode_disable_until_reboot">Disable until Reboot</string>
+    <string name="settings_mode_disable_always">Always disable</string>
     <string name="processing">Processing…</string>
     <string name="refresh_pulling">Pull down to refresh</string>
     <string name="refresh_release">Release to refresh</string>
@@ -194,4 +194,9 @@
     <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Create desktop shortcuts\" permission for this app in Xiaomi settings.</string>
     <string name="module_shortcut_permission_tip_oppo">Please enable \"Desktop shortcut\" permission for this app in OPPO settings.</string>
     <string name="module_shortcut_permission_tip_default">If shortcut creation fails, please enable desktop shortcut permission for this app in system settings.</string>
+    <string name="no_such_module">Module %s does not exist</string>
+    <string name="module_unavailable">Module %s is disabled, updating, or pending removal</string>
+    <string name="select_file_tip_nogki">Please select the GKI device image file you want to patch</string>
+    <string name="current_kmi">KMI version of this device: %s</string>
+    <string name="current_device_kmi">This device KMI</string>
 </resources>

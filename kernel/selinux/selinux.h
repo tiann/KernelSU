@@ -14,7 +14,7 @@
 #define ZYGOTE_CONTEXT "u:r:zygote:s0"
 #define INIT_CONTEXT "u:r:init:s0"
 
-void setup_selinux(const char *);
+void setup_selinux(const char *, struct cred *);
 
 void setenforce(bool);
 

@@ -126,9 +126,11 @@
     <string name="log_saved">Registros salvos</string>
     <string name="module_sort_action_first">Ordenar (Ação primeiro)</string>
     <string name="module_sort_enabled_first">Ordenar (Ativado primeiro)</string>
-    <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
-    <string name="settings_disable_su">Desativar compatibilidade su</string>
     <string name="confirm">Confirmar</string>
     <string name="su_not_allowed">Não foi possível conceder acesso de SuperUsuário a %s</string>
     <string name="module_install_prompt_with_name">Os seguintes módulos serão instalados: %1$s</string>
+    <string name="settings_sucompat">Redirecionar binário su</string>
+    <string name="settings_sucompat_summary">Permite que aplicativos com permissão de Superusuário no Perfil do App obtenham um shell de superusuário executando /system/bin/su; efetivo apenas para novos processos.</string>
+    <string name="settings_kernel_umount">Desmontar kernel</string>
+    <string name="settings_kernel_umount_summary">Comportamento de desmontagem no nível do kernel controlado pelo KernelSU</string>
 </resources>
