@@ -16,7 +16,7 @@ anyhow = "1"
 # rustix = { git = "https://github.com/bytecodealliance/rustix", rev = "7b44528", features = ["mount", "fs", "runtime", "system", "process"] }
 rustix = { git = "https://github.com/Kernel-SU/rustix.git", rev = "4a53fbc", features = ["mount", "fs", "runtime", "system", "process"] }
 
-syscalls = { version = "0.7", default-features = false, features = [
+syscalls = { version = "0.8", default-features = false, features = [
     "aarch64",
     "x86_64",
 ] }
