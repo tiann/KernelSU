@@ -4,13 +4,13 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cottage
 import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,35 +25,25 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.LocalPagerState
+import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationItem
+import kotlin.math.abs
 
 
 @Composable
-fun BottomBar(
-    hazeState: HazeState,
-    hazeStyle: HazeStyle
-) {
+fun BottomBar(hazeState: HazeState, hazeStyle: HazeStyle) {
     val isManager = Natives.isManager
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
 
-    val pageState = LocalPagerState.current
-    val coroutineScope = rememberCoroutineScope()
-    var selectedPage by remember { mutableIntStateOf(pageState.currentPage) }
-    var isNavigating by remember { mutableStateOf(false) }
-
-    LaunchedEffect(pageState.currentPage) {
-        if (!isNavigating) {
-            selectedPage = pageState.currentPage
-        }
-    }
+    val mainState = LocalMainPagerState.current
 
     if (!fullFeatured) return
 
@@ -64,8 +54,6 @@ fun BottomBar(
         )
     }
 
-    val currentNavJob = remember { mutableStateOf<Job?>(null) }
-
     NavigationBar(
         modifier = Modifier
             .hazeEffect(hazeState) {
@@ -75,31 +63,9 @@ fun BottomBar(
             },
         color = Color.Transparent,
         items = item,
-        selected = selectedPage,
+        selected = mainState.selectedPage,
         onClick = { targetIndex ->
-            if (targetIndex == selectedPage) return@NavigationBar
-            currentNavJob.value?.cancel()
-            selectedPage = targetIndex
-            isNavigating = true
-            val distance = kotlin.math.abs(targetIndex - pageState.currentPage).coerceAtLeast(2)
-            val duration = 100 * distance + 100
-            val layoutInfo = pageState.layoutInfo
-            val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
-            val currentDistanceInPages = targetIndex - pageState.currentPage - pageState.currentPageOffsetFraction
-            val scrollPixels = currentDistanceInPages * pageSize
-            currentNavJob.value = coroutineScope.launch {
-                val myJob = coroutineContext.job
-                try {
-                    pageState.animateScrollBy(value = scrollPixels, animationSpec = tween(easing = EaseInOut, durationMillis = duration))
-                } finally {
-                    if (currentNavJob.value == myJob) {
-                        isNavigating = false
-                        if (pageState.currentPage != targetIndex) {
-                            selectedPage = pageState.currentPage
-                        }
-                    }
-                }
-            }
+            mainState.animateToPage(targetIndex)
         }
     )
 }
@@ -112,4 +78,66 @@ enum class BottomBarDestination(
     SuperUser(R.string.superuser, Icons.Rounded.Security),
     Module(R.string.module, Icons.Rounded.Extension),
     Setting(R.string.settings, Icons.Rounded.Settings)
+}
+
+class MainPagerState(
+    val pagerState: PagerState,
+    private val coroutineScope: CoroutineScope
+) {
+    var selectedPage by mutableIntStateOf(pagerState.currentPage)
+        private set
+
+    var isNavigating by mutableStateOf(false)
+        private set
+
+    private var navJob: Job? = null
+
+    fun animateToPage(targetIndex: Int) {
+        if (targetIndex == selectedPage) return
+
+        navJob?.cancel()
+
+        selectedPage = targetIndex
+        isNavigating = true
+
+        val distance = abs(targetIndex - pagerState.currentPage).coerceAtLeast(2)
+        val duration = 100 * distance + 100
+        val layoutInfo = pagerState.layoutInfo
+        val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
+        val currentDistanceInPages = targetIndex - pagerState.currentPage - pagerState.currentPageOffsetFraction
+        val scrollPixels = currentDistanceInPages * pageSize
+
+        navJob = coroutineScope.launch {
+            val myJob = coroutineContext.job
+            try {
+                pagerState.animateScrollBy(
+                    value = scrollPixels,
+                    animationSpec = tween(easing = EaseInOut, durationMillis = duration)
+                )
+            } finally {
+                if (navJob == myJob) {
+                    isNavigating = false
+                    if (pagerState.currentPage != targetIndex) {
+                        selectedPage = pagerState.currentPage
+                    }
+                }
+            }
+        }
+    }
+
+    fun syncPage() {
+        if (!isNavigating && selectedPage != pagerState.currentPage) {
+            selectedPage = pagerState.currentPage
+        }
+    }
+}
+
+@Composable
+fun rememberMainPagerState(
+    pagerState: PagerState,
+    coroutineScope: CoroutineScope = rememberCoroutineScope()
+): MainPagerState {
+    return remember(pagerState, coroutineScope) {
+        MainPagerState(pagerState, coroutineScope)
+    }
 }
