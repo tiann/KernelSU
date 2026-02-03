@@ -2,7 +2,7 @@
 <resources>
     <string name="home">Beranda</string>
     <string name="home_not_installed">Tidak terpasang</string>
-    <string name="home_click_to_install">Klik untuk memasang</string>
+    <string name="home_click_to_install">Ketuk untuk memasang</string>
     <string name="home_working">Berfungsi</string>
     <string name="home_working_version">Versi: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
@@ -132,11 +132,11 @@
     <string name="install_only_support_ko_file">Hanya berkas .ko yang didukung</string>
     <string name="settings_sucompat">Perintah SU klasik</string>
     <string name="settings_sucompat_summary">Mengizinkan akses root melalui /system/bin/su, pada proses baru yang dibuat.</string>
-    <string name="settings_kernel_umount">Unmount modul</string>
+    <string name="settings_kernel_umount">Unmount modul (tingkat kernel)</string>
     <string name="settings_kernel_umount_summary">Unmount modul dari kernel pada Profil Aplikasi.</string>
     <string name="processing">Memproses…</string>
     <string name="refresh_pulling">Tarik ke bawah untuk menyegarkan</string>
-    <string name="refresh_release">Lepaskan untuk menyegarkan</string>
+    <string name="refresh_release">Lepas untuk menyegarkan</string>
     <string name="refresh_refresh">Menyegarkan…</string>
     <string name="refresh_complete">Penyegaran berhasil</string>
     <string name="module_repos">Repositori</string>
