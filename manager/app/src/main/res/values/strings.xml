@@ -3,7 +3,7 @@
     <string name="app_name" translatable="false">KernelSU</string>
     <string name="home">Home</string>
     <string name="home_not_installed">Not installed</string>
-    <string name="home_click_to_install">Click to install</string>
+    <string name="home_click_to_install">Tap to install</string>
     <string name="home_working">Working</string>
     <string name="home_working_version">Version: %d</string>
     <string name="home_unsupported">Unsupported</string>
