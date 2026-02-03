@@ -3,13 +3,20 @@ package me.weishu.kernelsu.ui.component
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cottage
 import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,6 +44,14 @@ fun BottomBar(
 
     val pageState = LocalPagerState.current
     val coroutineScope = rememberCoroutineScope()
+    var selectedPage by remember { mutableIntStateOf(pageState.currentPage) }
+    var isNavigating by remember { mutableStateOf(false) }
+
+    LaunchedEffect(pageState.currentPage) {
+        if (!isNavigating) {
+            selectedPage = pageState.currentPage
+        }
+    }
 
     if (!fullFeatured) return
 
@@ -56,10 +71,26 @@ fun BottomBar(
             },
         color = Color.Transparent,
         items = item,
-        selected = pageState.targetPage,
-        onClick = {
+        selected = selectedPage,
+        onClick = { targetIndex ->
+            if (targetIndex == selectedPage) return@NavigationBar
+            selectedPage = targetIndex
+            isNavigating = true
+            val distance = kotlin.math.abs(targetIndex - pageState.currentPage).coerceAtLeast(2)
+            val duration = (300 + (distance - 2) * 100)
+            val layoutInfo = pageState.layoutInfo
+            val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
+            val currentDistanceInPages = targetIndex - pageState.currentPage - pageState.currentPageOffsetFraction
+            val scrollPixels = currentDistanceInPages * pageSize
             coroutineScope.launch {
-                pageState.animateScrollToPage(page = it, animationSpec = tween(easing = EaseInOut))
+                try {
+                    pageState.animateScrollBy(value = scrollPixels, animationSpec = tween(easing = EaseInOut, durationMillis = duration))
+                } finally {
+                    isNavigating = false
+                    if (pageState.currentPage != targetIndex) {
+                        selectedPage = pageState.currentPage
+                    }
+                }
             }
         }
     )
