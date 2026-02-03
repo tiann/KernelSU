@@ -5,8 +5,6 @@ import android.os.Build
 import android.system.Os
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -40,7 +38,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,13 +56,12 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
-import me.weishu.kernelsu.ui.LocalPagerState
+import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
@@ -143,8 +139,7 @@ fun HomePager(
                 val lkmMode = ksuVersion?.let {
                     if (kernelVersion.isGKI()) Natives.isLkmMode else null
                 }
-                val pageState = LocalPagerState.current
-                val coroutineScope = rememberCoroutineScope()
+                val mainState = LocalMainPagerState.current
 
                 Column(
                     modifier = Modifier.padding(vertical = 12.dp),
@@ -176,14 +171,10 @@ fun HomePager(
                             navigator.push(Route.Install)
                         },
                         onClickSuperuser = {
-                            coroutineScope.launch {
-                                pageState.animateScrollToPage(page = 1, animationSpec = tween(easing = EaseInOut))
-                            }
+                            mainState.animateToPage(1)
                         },
                         onclickModule = {
-                            coroutineScope.launch {
-                                pageState.animateScrollToPage(page = 2, animationSpec = tween(easing = EaseInOut))
-                            }
+                            mainState.animateToPage(2)
                         },
                         themeMode = themeMode
                     )
