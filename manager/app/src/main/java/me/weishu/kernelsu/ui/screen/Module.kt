@@ -187,14 +187,12 @@ fun ModulePager(
                 viewModel.checkModuleUpdate = prefs.getBoolean("module_check_update", true)
                 viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
                 viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
-                viewModel.fetchModuleList()
-                scope.launch { viewModel.syncModuleUpdateInfo(modules) }
+                viewModel.fetchModuleList(checkUpdate = true)
                 isInitialized = true
             }
 
             viewModel.isNeedRefresh -> {
-                viewModel.fetchModuleList()
-                scope.launch { viewModel.syncModuleUpdateInfo(modules) }
+                viewModel.fetchModuleList(checkUpdate = true)
             }
         }
     }
