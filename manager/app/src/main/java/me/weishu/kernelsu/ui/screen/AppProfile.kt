@@ -119,9 +119,7 @@ fun AppProfileScreen(
     )
     val scope = rememberCoroutineScope()
     val appInfoState = remember(packageName) {
-        derivedStateOf {
-            SuperUserViewModel.apps.find { it.packageName == packageName }
-        }
+        derivedStateOf { SuperUserViewModel.apps.find { it.packageName == packageName } }
     }
     val appInfo = appInfoState.value
     if (appInfo == null) {
@@ -540,7 +538,7 @@ private fun AppProfileInner(
     }
 }
 
-private enum class Mode() {
+private enum class Mode {
     Default,
     Template,
     Custom;

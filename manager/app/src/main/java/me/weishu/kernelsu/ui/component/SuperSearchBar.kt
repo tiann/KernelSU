@@ -286,6 +286,7 @@ fun SearchStatus.SearchPager(
                             enabled = searchStatus.isExpand(),
                             indication = null
                         ) {
+                            searchStatus.searchText = ""
                             searchStatus.current = SearchStatus.Status.COLLAPSING
                         }
                 )
@@ -295,6 +296,7 @@ fun SearchStatus.SearchPager(
                         state = navEventState,
                         isBackEnabled = true,
                         onBackCompleted = {
+                            searchStatus.searchText = ""
                             searchStatus.current = SearchStatus.Status.COLLAPSING
                         }
                     )

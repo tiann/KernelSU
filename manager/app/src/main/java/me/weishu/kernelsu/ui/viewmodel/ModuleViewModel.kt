@@ -212,24 +212,17 @@ class ModuleViewModel : ViewModel() {
         }
     }
 
-    fun fetchModuleList() {
+    fun fetchModuleList(checkUpdate: Boolean = false) {
         viewModelScope.launch {
-            withContext(Dispatchers.Main) { isRefreshing = true }
+            withContext(Dispatchers.Main) {
+                isRefreshing = true
+            }
 
-            val oldModuleList = modules
             val start = SystemClock.elapsedRealtime()
 
             loadModuleList()
 
-            withContext(Dispatchers.Main) {
-                if (oldModuleList === modules) {
-                    isRefreshing = false
-                }
-            }
-
-            if (modules.isNotEmpty()) {
-                syncModuleUpdateInfo(modules)
-            }
+            if (checkUpdate) syncModuleUpdateInfo(modules)
 
             withContext(Dispatchers.Main) {
                 isRefreshing = false
