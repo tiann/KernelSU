@@ -115,13 +115,15 @@ fun SuperUserPager(
     val searchStatus by viewModel.searchStatus
 
     val context = LocalContext.current
+    var isInitialized by rememberSaveable { mutableStateOf(false) }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     LaunchedEffect(Unit) {
         when {
-            viewModel.appList.value.isEmpty() -> {
+            !isInitialized || viewModel.appList.value.isEmpty() -> {
                 viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
                 viewModel.loadAppList()
+                isInitialized = true
             }
 
             viewModel.isNeedRefresh -> {
@@ -486,32 +488,26 @@ private fun GroupItem(
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
-    val colorScheme = colorScheme
-    val bg = remember(colorScheme) { colorScheme.secondaryContainer.copy(alpha = 0.8f) }
-    val rootBg = remember(colorScheme) { colorScheme.tertiaryContainer.copy(alpha = 0.6f) }
-    val unmountBg = remember(isDark, colorScheme) {
-        if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f)
-    }
-    val fg = remember(colorScheme) { colorScheme.onSecondaryContainer }
-    val rootFg = remember(colorScheme) { colorScheme.onTertiaryContainer.copy(alpha = 0.8f) }
-    val unmountFg = remember(isDark, colorScheme) {
-        if (isDark) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f)
-    }
+    val bg = colorScheme.secondaryContainer.copy(alpha = 0.8f)
+    val rootBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+    val unmountBg = if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f)
+    val fg = colorScheme.onSecondaryContainer
+    val rootFg = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+    val unmountFg = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f)
+
     val userId = group.uid / 100000
     val packageInfo = group.primary.packageInfo
     val applicationInfo = packageInfo.applicationInfo
     val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
     val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
             || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-    val tags = remember(group, colorScheme, isDark) {
-        buildList {
-            if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
-            if (group.shouldUmount) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
-            if (group.anyCustom) add(StatusMeta("CUSTOM", bg, fg))
-            if (userId != 0) add(StatusMeta("USER $userId", bg, fg))
-            if (isSystemApp) add(StatusMeta("SYSTEM", bg, fg))
-            if (hasSharedUserId) add(StatusMeta("SHARED UID", bg, fg))
-        }
+    val tags = buildList {
+        if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
+        if (group.shouldUmount) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
+        if (group.anyCustom) add(StatusMeta("CUSTOM", bg, fg))
+        if (userId != 0) add(StatusMeta("USER $userId", bg, fg))
+        if (isSystemApp) add(StatusMeta("SYSTEM", bg, fg))
+        if (hasSharedUserId) add(StatusMeta("SHARED UID", bg, fg))
     }
     Card(
         modifier = Modifier

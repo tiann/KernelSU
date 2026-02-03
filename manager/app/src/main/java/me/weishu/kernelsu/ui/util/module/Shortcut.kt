@@ -20,6 +20,7 @@ import com.topjohnwu.superuser.io.SuFileInputStream
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.MainActivity
 import me.weishu.kernelsu.ui.util.getRootShell
+import me.weishu.kernelsu.ui.webui.WebUIActivity
 import java.util.Locale
 
 object Shortcut {
@@ -57,7 +58,7 @@ object Shortcut {
         iconUri: String?
     ) {
         val shortcutId = "module_webui_$moduleId"
-        val shortcutIntent = Intent(context, me.weishu.kernelsu.ui.webui.WebUIActivity::class.java).apply {
+        val shortcutIntent = Intent(context, WebUIActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             data = "kernelsu://webui/$moduleId".toUri()
             putExtra("id", moduleId)
