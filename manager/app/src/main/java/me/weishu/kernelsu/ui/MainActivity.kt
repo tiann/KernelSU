@@ -192,7 +192,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-val LocalPagerState = staticCompositionLocalOf<PagerState> { error("LocalPagerState not provided") }
 val LocalMainPagerState = staticCompositionLocalOf<MainPagerState> { error("LocalMainPagerState not provided") }
 
 @Composable
@@ -209,14 +208,13 @@ fun MainScreen() {
         tint = HazeTint(MiuixTheme.colorScheme.surface.copy(0.8f))
     )
 
-    LaunchedEffect(pagerState.currentPage) {
+    LaunchedEffect(mainPagerState.pagerState.currentPage) {
         mainPagerState.syncPage()
     }
 
     MainScreenBackHandler(mainPagerState, navController)
 
     CompositionLocalProvider(
-        LocalPagerState provides pagerState,
         LocalMainPagerState provides mainPagerState
     ) {
         Scaffold(
@@ -226,7 +224,7 @@ fun MainScreen() {
         ) { innerPadding ->
             HorizontalPager(
                 modifier = Modifier.hazeSource(state = hazeState),
-                state = pagerState,
+                state = mainPagerState.pagerState,
                 beyondViewportPageCount = 3,
                 userScrollEnabled = userScrollEnabled,
             ) {
