@@ -140,10 +140,10 @@
     <string name="selected_lkm">Selected LKM: %s</string>
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
-    <string name="settings_sucompat">Classic su command</string>
+    <string name="settings_sucompat">Classic SU command</string>
     <string name="settings_sucompat_summary">Allow root access via /system/bin/su, in new processes.</string>
-    <string name="settings_kernel_umount">Module unmounting</string>
-    <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile</string>
+    <string name="settings_kernel_umount">Umount modules (kernel-level)</string>
+    <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile.</string>
     <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
     <string name="feature_status_managed_summary">This feature is managed by a module</string>
     <string name="settings_mode_enable_by_default">Enable (Default)</string>
