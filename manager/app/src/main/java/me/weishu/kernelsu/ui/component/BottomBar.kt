@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -62,6 +64,8 @@ fun BottomBar(
         )
     }
 
+    val currentNavJob = remember { mutableStateOf<Job?>(null) }
+
     NavigationBar(
         modifier = Modifier
             .hazeEffect(hazeState) {
@@ -74,21 +78,25 @@ fun BottomBar(
         selected = selectedPage,
         onClick = { targetIndex ->
             if (targetIndex == selectedPage) return@NavigationBar
+            currentNavJob.value?.cancel()
             selectedPage = targetIndex
             isNavigating = true
             val distance = kotlin.math.abs(targetIndex - pageState.currentPage).coerceAtLeast(2)
-            val duration = (300 + (distance - 2) * 100)
+            val duration = 100 * distance + 100
             val layoutInfo = pageState.layoutInfo
             val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
             val currentDistanceInPages = targetIndex - pageState.currentPage - pageState.currentPageOffsetFraction
             val scrollPixels = currentDistanceInPages * pageSize
-            coroutineScope.launch {
+            currentNavJob.value = coroutineScope.launch {
+                val myJob = coroutineContext.job
                 try {
                     pageState.animateScrollBy(value = scrollPixels, animationSpec = tween(easing = EaseInOut, durationMillis = duration))
                 } finally {
-                    isNavigating = false
-                    if (pageState.currentPage != targetIndex) {
-                        selectedPage = pageState.currentPage
+                    if (currentNavJob.value == myJob) {
+                        isNavigating = false
+                        if (pageState.currentPage != targetIndex) {
+                            selectedPage = pageState.currentPage
+                        }
                     }
                 }
             }
