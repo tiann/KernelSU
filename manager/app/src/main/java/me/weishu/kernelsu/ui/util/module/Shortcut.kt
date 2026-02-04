@@ -24,7 +24,6 @@ import me.weishu.kernelsu.ui.util.isHyperOS
 import me.weishu.kernelsu.ui.util.isMiui
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 
-
 object Shortcut {
 
     private const val TAG = "ModuleShortcut"
