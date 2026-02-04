@@ -169,9 +169,16 @@
     <string name="color_green">绿色</string>
     <string name="color_purple">紫色</string>
     <string name="color_orange">橙色</string>
-    <string name="color_teal">青色</string>
+    <string name="color_teal">青绿</string>
     <string name="color_pink">粉色</string>
     <string name="color_brown">棕色</string>
+    <string name="color_sakura">樱花</string>
+    <string name="color_deep_purple">深紫</string>
+    <string name="color_indigo">靛青</string>
+    <string name="color_cyan">青色</string>
+    <string name="color_yellow">黄色</string>
+    <string name="color_amber">琥珀</string>
+    <string name="color_blue_grey">灰蓝</string>
     <string name="network_offline">未连接到网络</string>
     <string name="network_retry">重试</string>
     <string name="tab_readme">自述</string>

@@ -177,6 +177,13 @@
     <string name="color_teal">Teal</string>
     <string name="color_pink">Pink</string>
     <string name="color_brown">Brown</string>
+    <string name="color_deep_purple">Deep Purple</string>
+    <string name="color_indigo">Indigo</string>
+    <string name="color_cyan">Cyan</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="color_amber">Amber</string>
+    <string name="color_blue_grey">Blue Grey</string>
+    <string name="color_sakura">Sakura</string>
     <string name="network_offline">Not connected to network</string>
     <string name="network_retry">Retry</string>
     <string name="tab_readme">README</string>
