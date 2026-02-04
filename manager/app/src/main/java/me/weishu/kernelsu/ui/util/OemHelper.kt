@@ -17,7 +17,7 @@ fun isMiui(): Boolean {
 }
 
 fun isHyperOS(): Boolean {
-    return isMiui() && getSystemProperty("ro.mi.os.version.name").isNotEmpty()
+    return getSystemProperty("ro.mi.os.version.name").isNotEmpty()
 }
 
 fun isColorOS(): Boolean {
