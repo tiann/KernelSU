@@ -428,7 +428,6 @@ fun ModuleRepoScreen(
                     }
                 }
                 val refreshTexts = listOf(
-
                     stringResource(R.string.refresh_pulling),
                     stringResource(R.string.refresh_release),
                     stringResource(R.string.refresh_refresh),
