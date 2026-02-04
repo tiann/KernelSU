@@ -2,7 +2,7 @@
 <resources>
     <string name="home">ホーム</string>
     <string name="home_not_installed">未インストール</string>
-    <string name="home_click_to_install">タップでインストール</string>
+    <string name="home_click_to_install">タップしてインストール</string>
     <string name="home_working">動作中</string>
     <string name="home_working_version">バージョン: %d</string>
     <string name="home_unsupported">非対応</string>
@@ -198,4 +198,11 @@
     <string name="select_file_tip_nogki">パッチを適用する GKI デバイスのイメージファイルを選択してください</string>
     <string name="current_kmi">このデバイスの KMI バージョン: %s</string>
     <string name="current_device_kmi">このデバイスの KMI</string>
+    <string name="color_deep_purple">ディープパープル</string>
+    <string name="color_indigo">インディゴ</string>
+    <string name="color_cyan">シアン</string>
+    <string name="color_yellow">イエロー</string>
+    <string name="color_amber">アンバー</string>
+    <string name="color_blue_grey">ブルーグレー</string>
+    <string name="color_sakura">桜</string>
 </resources>
