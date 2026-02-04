@@ -101,14 +101,14 @@
     <string name="install_inactive_slot">安裝至非活動插槽（OTA 後）</string>
     <string name="install_inactive_slot_warning">重新啟動後將強制由目前非活動插槽開機！請僅在 OTA 完成後才使用此選項。</string>
     <string name="install_next">下一個</string>
-    <string name="select_kmi">選擇KMI</string>
+    <string name="select_kmi">選取 KMI</string>
     <string name="select_file_tip">建議使用 %1$s 分割區映像</string>
     <string name="grant_root_failed">授予root權限失敗！</string>
     <string name="open">開啟</string>
     <string name="settings_check_update">檢查更新</string>
     <string name="settings_check_update_summary">開啟程式時自動檢查更新。</string>
     <string name="settings_uninstall">解除安裝</string>
-    <string name="save_log">保存日志</string>
+    <string name="save_log">儲存日誌</string>
     <string name="processing">處理中…</string>
     <string name="refresh_pulling">下拉刷新</string>
     <string name="refresh_release">鬆開刷新</string>
@@ -149,7 +149,7 @@
     <string name="no_such_module">模組 %s 不存在</string>
     <string name="module_unavailable">模組 %s 已停用、更新中或正等待移除</string>
     <string name="select_file_tip_nogki">請選擇需要修補的 GKI 裝置映像檔</string>
-    <string name="settings_theme_summary">選擇程式主題模式。</string>
+    <string name="settings_theme_summary">選擇主題模式。</string>
     <string name="settings_theme_mode_system">跟隨系統</string>
     <string name="settings_theme_mode_light">淺色模式</string>
     <string name="settings_theme_mode_dark">深色模式</string>
@@ -163,4 +163,18 @@
     <string name="settings_module_check_update">檢查模組更新</string>
     <string name="action">執行</string>
     <string name="settings_theme">介面主題</string>
+    <string name="install_select_partition">選取分割區</string>
+    <string name="install_upload_lkm_file">使用本地 LKM 檔案</string>
+    <string name="install_only_support_ko_file">僅支援 .ko 格式檔案</string>
+    <string name="settings_uninstall_temporary">暫時解除安裝</string>
+    <string name="settings_uninstall_permanent">永久解除安裝</string>
+    <string name="settings_restore_stock_image">恢復原廠映像</string>
+    <string name="settings_uninstall_temporary_message">暫時解除安裝 KernelSU，下次重新啟動後恢復原狀。</string>
+    <string name="settings_uninstall_permanent_message">徹底永久解除安裝 KernelSU（Root 權限及所有模組）。</string>
+    <string name="settings_restore_stock_image_message">恢復原廠映像（如有備份），通常用於 OTA 前；如需解除安裝 KernelSU，請使用「永久解除安裝」。</string>
+    <string name="flashing">正在刷入</string>
+    <string name="flash_success">刷入成功</string>
+    <string name="flash_failed">刷入失敗</string>
+    <string name="selected_lkm">已選取 LKM：%s</string>
+    <string name="log_saved">日誌已儲存</string>
 </resources>
