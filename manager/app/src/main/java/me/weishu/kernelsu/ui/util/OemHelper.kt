@@ -13,7 +13,7 @@ private fun getSystemProperty(key: String): String {
 }
 
 fun isMiui(): Boolean {
-    return getSystemProperty("ro.miui.ui.version.name").isNotEmpty() || getSystemProperty("ro.product.marketname").isNotEmpty()
+    return getSystemProperty("ro.miui.ui.version.name").isNotEmpty()
 }
 
 fun isHyperOS(): Boolean {
