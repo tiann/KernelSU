@@ -2,11 +2,11 @@
 <resources>
     <string name="home">Beranda</string>
     <string name="home_not_installed">Tidak terpasang</string>
-    <string name="home_click_to_install">Klik untuk memasang</string>
+    <string name="home_click_to_install">Ketuk untuk memasang</string>
     <string name="home_working">Berfungsi</string>
     <string name="home_working_version">Versi: %d</string>
     <string name="home_unsupported">Tidak didukung</string>
-    <string name="home_unsupported_reason">KernelSU saat ini hanya mendukung kernel GKI.</string>
+    <string name="home_unsupported_reason">KernelSU sekarang hanya mendukung kernel GKI, tetapi Anda dapat menambal image untuk perangkat GKI.</string>
     <string name="home_kernel">Versi kernel</string>
     <string name="home_manager_version">Versi manajer</string>
     <string name="home_fingerprint">Identitas</string>
@@ -48,7 +48,7 @@
     <string name="home_support_content">KernelSU akan selalu menjadi aplikasi gratis dan terbuka. Anda dapat memberikan donasi sebagai bentuk dukungan.</string>
     <string name="about_source_code"><![CDATA[Lihat sumber kode di %1$s<br/>Gabung saluran %2$s kami]]></string>
     <string name="profile">Profil Apl</string>
-    <string name="profile_default">Bawaan</string>
+    <string name="profile_default">Default</string>
     <string name="profile_template">Templat</string>
     <string name="profile_custom">Khusus</string>
     <string name="profile_name">Nama profil</string>
@@ -61,8 +61,8 @@
     <string name="profile_selinux_context">Konteks SELinux</string>
     <string name="profile_umount_modules">Umount modul</string>
     <string name="failed_to_update_app_profile">Gagal memperbarui Profil Apl untuk %s</string>
-    <string name="settings_umount_modules_default">Umount modul secara bawaan</string>
-    <string name="settings_umount_modules_default_summary">Menggunakan \"Umount modul\" secara universal pada Profil Aplikasi. Jika diaktifkan, akan menghapus semua modifikasi sistem untuk aplikasi yang tidak memiliki set profil.</string>
+    <string name="settings_umount_modules_default">Umount modul secara default</string>
+    <string name="settings_umount_modules_default_summary">Nilai default universal untuk \"Umount modul\" pada Profil Aplikasi. Jika diaktifkan, akan menghapus semua modifikasi sistem untuk aplikasi yang tidak memiliki set profil.</string>
     <string name="profile_umount_modules_summary">Aktifkan opsi ini agar KernelSU dapat memulihkan kembali berkas termodifikasi oleh modul pada aplikasi ini.</string>
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Aturan</string>
@@ -122,7 +122,7 @@
     <string name="save_log">Simpan Log</string>
     <string name="action">Aksi</string>
     <string name="log_saved">Log disimpan</string>
-    <string name="module_sort_enabled_first">Aktif lebih dulu</string>
+    <string name="module_sort_enabled_first">Diaktifkan dahulu</string>
     <string name="module_sort_action_first">Aksi lebih dulu</string>
     <string name="module_install_prompt_with_name">Modul berikut akan dipasang: %1$s</string>
     <string name="confirm">Oke</string>
@@ -130,13 +130,13 @@
     <string name="settings_module_check_update">Periksa pembaruan modul</string>
     <string name="install_upload_lkm_file">Gunakan berkas LKM lokal</string>
     <string name="install_only_support_ko_file">Hanya berkas .ko yang didukung</string>
-    <string name="settings_sucompat">Rutekan ulang biner su</string>
-    <string name="settings_sucompat_summary">Memungkinkan aplikasi yang diberi izin Superuser di Profil Aplikasi mendapatkan shell superuser dengan menjalankan /system/bin/su; efektif hanya untuk proses baru.</string>
-    <string name="settings_kernel_umount">Umount kernel</string>
-    <string name="settings_kernel_umount_summary">Perilaku umount tingkat kernel dikendalikan oleh KernelSU</string>
+    <string name="settings_sucompat">Perintah SU klasik</string>
+    <string name="settings_sucompat_summary">Mengizinkan akses root melalui /system/bin/su, pada proses baru yang dibuat.</string>
+    <string name="settings_kernel_umount">Unmount modul (tingkat kernel)</string>
+    <string name="settings_kernel_umount_summary">Unmount modul dari kernel pada Profil Aplikasi.</string>
     <string name="processing">Memproses…</string>
     <string name="refresh_pulling">Tarik ke bawah untuk menyegarkan</string>
-    <string name="refresh_release">Lepaskan untuk menyegarkan</string>
+    <string name="refresh_release">Lepas untuk menyegarkan</string>
     <string name="refresh_refresh">Menyegarkan…</string>
     <string name="refresh_complete">Penyegaran berhasil</string>
     <string name="module_repos">Repositori</string>
@@ -146,8 +146,8 @@
     <string name="home_gki_warning">Mulai dari v3.0.0, fungsi mode GKI dibatasi untuk lingkungan pengujian. Kami tidak menyarankan untuk penggunaan harian, dan berkas image tidak akan lagi disediakan.</string>
     <string name="app_profile_affects_following_apps">Mempengaruhi apl berikut</string>
     <string name="install_select_partition">Pilih partisi</string>
-    <string name="feature_status_unsupported_summary">Kernel tidak mendukung fitur ini.</string>
-    <string name="feature_status_managed_summary">Fitur ini dikelola oleh modul.</string>
+    <string name="feature_status_unsupported_summary">Kernel tidak mendukung fitur ini</string>
+    <string name="feature_status_managed_summary">Fitur ini dikelola oleh modul</string>
     <string name="undo">Batalkan</string>
     <string name="module_undo_uninstall_success">Berhasil membatalkan penghapusan %s</string>
     <string name="module_undo_uninstall_failed">Gagal membatalkan penghapusan: %s</string>
@@ -162,7 +162,7 @@
     <string name="settings_theme_mode_monet_dark">Monet (Gelap)</string>
     <string name="settings_key_color">Warna utama</string>
     <string name="settings_key_color_summary">Sesuaikan aksen saat menggunakan Monet.</string>
-    <string name="settings_key_color_default">Bawaan</string>
+    <string name="settings_key_color_default">Default</string>
     <string name="color_blue">Biru</string>
     <string name="color_red">Merah</string>
     <string name="color_green">Hijau</string>
@@ -177,4 +177,25 @@
     <string name="tab_releases">Rilis</string>
     <string name="tab_info">Informasi</string>
     <string name="safe_mode_module_disabled">Pemasangan modul dinonaktifkan pada mode aman</string>
+    <string name="module_action_success">Tindakan modul berhasil dieksekusi.</string>
+    <string name="settings_mode_enable_by_default">Aktif (Default)</string>
+    <string name="settings_mode_disable_until_reboot">Nonaktif hingga Reboot</string>
+    <string name="settings_mode_disable_always">Selalu nonaktif</string>
+    <string name="module_shortcut_title">Buat pintasan</string>
+    <string name="module_shortcut_name_label">Nama pintasan</string>
+    <string name="module_shortcut_icon_pick">Pilih ikon khusus</string>
+    <string name="module_shortcut_add">Tambahkan pintasan</string>
+    <string name="module_shortcut_not_supported">Launcher tidak mendukung pintasan layar utama.</string>
+    <string name="module_shortcut_created">Pintasan dibuat di layar utama.</string>
+    <string name="module_shortcut_updated">Pintasan diperbarui.</string>
+    <string name="module_shortcut_delete">Hapus pintasan</string>
+    <string name="module_shortcut_type_title">Pilih tipe</string>
+    <string name="module_shortcut_permission_tip_xiaomi">Harap aktifkan izin \"Buat pintasan layar utama\" untuk aplikasi ini di pengaturan Xiaomi.</string>
+    <string name="module_shortcut_permission_tip_oppo">Harap aktifkan izin \"Pintasan layar utama\" untuk aplikasi ini di pengaturan OPPO.</string>
+    <string name="module_shortcut_permission_tip_default">Jika pembuatan pintasan gagal, harap aktifkan izin pintasan layar utama untuk aplikasi ini di pengaturan sistem.</string>
+    <string name="no_such_module">Modul %s tidak tersedia</string>
+    <string name="module_unavailable">Modul %s dinonaktifkan, diperbarui, atau menunggu penghapusan</string>
+    <string name="select_file_tip_nogki">Silakan pilih berkas image perangkat GKI yang ingin Anda tambal.</string>
+    <string name="current_kmi">Versi KMI perangkat ini: %s</string>
+    <string name="current_device_kmi">Ini perangkat KMI</string>
 </resources>

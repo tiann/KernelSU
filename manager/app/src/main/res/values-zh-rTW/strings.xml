@@ -159,4 +159,6 @@
     <string name="module_shortcut_permission_tip_xiaomi">請在 Xiaomi 設定中為此應用啟用「建立桌面捷徑」權限。</string>
     <string name="module_shortcut_permission_tip_oppo">請在 OPPO 設定中為此應用啟用「桌面捷徑」權限。</string>
     <string name="module_shortcut_permission_tip_default">若建立捷徑失敗，請在系統設定中為此應用啟用桌面捷徑權限。</string>
+    <string name="safe_mode_module_disabled">處於安全模式下，禁止安裝模組</string>
+    <string name="settings_module_check_update">檢查模組更新</string>
 </resources>
