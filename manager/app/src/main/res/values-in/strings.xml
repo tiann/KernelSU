@@ -198,4 +198,9 @@
     <string name="select_file_tip_nogki">Silakan pilih berkas image perangkat GKI yang ingin Anda tambal.</string>
     <string name="current_kmi">Versi KMI perangkat ini: %s</string>
     <string name="current_device_kmi">Ini perangkat KMI</string>
+    <string name="color_deep_purple">Ungu gelap</string>
+    <string name="color_indigo">Biru keunguan</string>
+    <string name="color_cyan">Biru kehijauan</string>
+    <string name="color_yellow">Kuning</string>
+    <string name="color_blue_grey">Abu-abu kebiruan</string>
 </resources>
