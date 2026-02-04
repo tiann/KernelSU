@@ -28,7 +28,7 @@
     <string name="home_working">Đang hoạt động</string>
     <string name="home_working_version">Phiên bản: %d</string>
     <string name="home_unsupported">Không được hỗ trợ</string>
-    <string name="home_unsupported_reason">KernelSU hiện tại chỉ hỗ trợ Kernel GKI, nhưng bạn có thể patch file .img tương thích với thiết bị GKI bạn cần.</string>
+    <string name="home_unsupported_reason">KernelSU hiện tại chỉ hỗ trợ Kernel GKI, nhưng bạn có thể patch file .img của thiết bị GKI mà bạn cần.</string>
     <string name="home_kernel">Phiên bản Kernel</string>
     <string name="home_manager_version">Phiên bản Trình quản lý</string>
     <string name="home_fingerprint">Fingerprint</string>
@@ -156,9 +156,9 @@
     <string name="settings_theme_mode_monet_dark">Monet (Tối)</string>
     <string name="settings_key_color_summary">Tùy chỉnh màu nhấn khi sử dụng Monet.</string>
     <string name="settings_key_color_default">Mặc định</string>
-    <string name="color_blue">Dương</string>
+    <string name="color_blue">Xanh dương</string>
     <string name="color_red">Đỏ</string>
-    <string name="color_green">Lục</string>
+    <string name="color_green">Xanh lục</string>
     <string name="color_purple">Tím</string>
     <string name="color_orange">Cam</string>
     <string name="color_teal">Xanh mòng két</string>
@@ -198,4 +198,11 @@
     <string name="current_kmi">Phiên bản KMI của thiết bị này: %s</string>
     <string name="current_device_kmi">KMI của thiết bị này</string>
     <string name="module_action_success">Khởi chạy module đã được thực thi.</string>
+    <string name="color_deep_purple">Tím đậm</string>
+    <string name="color_indigo">Chàm</string>
+    <string name="color_cyan">Xanh lam</string>
+    <string name="color_yellow">Vàng</string>
+    <string name="color_amber">Hổ phách</string>
+    <string name="color_blue_grey">Xám xanh</string>
+    <string name="color_sakura">Hoa anh đào</string>
 </resources>
