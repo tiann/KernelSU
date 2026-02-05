@@ -56,8 +56,8 @@
     <string name="profile_umount_modules">卸載模組</string>
     <string name="failed_to_update_app_profile">無法為 %s 更新 App Profile</string>
     <string name="profile_selinux_rules">規則</string>
-    <string name="require_kernel_version">現時 KernelSU 版本為 %1$d，版本過低致管理器無法正常運作。請即升級至 %2$d 或更高版本！</string>
-    <string name="settings_umount_modules_default_summary">App Profile 中「卸載模組」的預設值。如啟用，將為未設定的 app 移除所有模組對系統的修改。</string>
+    <string name="require_kernel_version">目前 KernelSU 版本 %1$d 過低，管理器無法正常運作。請升級至 %2$d 或更高版本！</string>
+    <string name="settings_umount_modules_default_summary">控制 App Profile「卸載模組」的預設值，對未設定的 App 移除模組修改。</string>
     <string name="profile_umount_modules_summary">啟用後 KernelSU 將為此 App 還原所有被模組修改過的檔案。</string>
     <string name="profile_selinux_domain">定域</string>
     <string name="module_update">更新</string>
@@ -117,7 +117,7 @@
     <string name="settings_sucompat">傳統 SU 指令支援</string>
     <string name="settings_sucompat_summary">允許透過 /system/bin/su 獲取 Root 權限，僅限新的處理程序。</string>
     <string name="settings_kernel_umount">核心層級卸載模組</string>
-    <string name="settings_kernel_umount_summary">從核心層級（kernel-level）對選定的 App 卸載模組。</string>
+    <string name="settings_kernel_umount_summary">從核心層級（kernel-level）對選定的 App 移除模組修改。</string>
     <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
     <string name="module_shortcut_icon_pick">選擇自訂圖示</string>
