@@ -201,6 +201,12 @@ fun ModulePager(
         viewModel.updateSearchText(searchStatus.searchText)
     }
 
+    LaunchedEffect(modules) {
+        if (searchStatus.searchText.isNotEmpty()) {
+            viewModel.updateSearchText(searchStatus.searchText)
+        }
+    }
+
     val webUILauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { viewModel.fetchModuleList() }
