@@ -132,7 +132,7 @@
     <string name="install_only_support_ko_file">Hanya berkas .ko yang didukung</string>
     <string name="settings_sucompat">Perintah SU klasik</string>
     <string name="settings_sucompat_summary">Mengizinkan akses root melalui /system/bin/su, pada proses baru yang dibuat.</string>
-    <string name="settings_kernel_umount">Unmount modul (tingkat kernel)</string>
+    <string name="settings_kernel_umount">Umount modul (tingkat kernel)</string>
     <string name="settings_kernel_umount_summary">Unmount modul dari kernel pada Profil Aplikasi.</string>
     <string name="processing">Memproses…</string>
     <string name="refresh_pulling">Tarik ke bawah untuk menyegarkan</string>
@@ -198,4 +198,11 @@
     <string name="select_file_tip_nogki">Silakan pilih berkas image perangkat GKI yang ingin Anda tambal.</string>
     <string name="current_kmi">Versi KMI perangkat ini: %s</string>
     <string name="current_device_kmi">Ini perangkat KMI</string>
+    <string name="color_deep_purple">Ungu gelap</string>
+    <string name="color_indigo">Biru keunguan</string>
+    <string name="color_cyan">Biru kehijauan</string>
+    <string name="color_yellow">Kuning</string>
+    <string name="color_blue_grey">Abu-abu kebiruan</string>
+    <string name="color_amber">Amber</string>
+    <string name="color_sakura">Sakura</string>
 </resources>

@@ -6,7 +6,7 @@
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本：%d</string>
     <string name="home_unsupported">不支持</string>
-    <string name="home_unsupported_reason">KernelSU 现在只支持 GKI 内核，但是你可以为 GKI 设备补丁镜像。</string>
+    <string name="home_unsupported_reason">KernelSU 现在只支持 GKI 内核，但是你可以为 GKI 设备修补镜像。</string>
     <string name="home_kernel">内核版本</string>
     <string name="home_manager_version">管理器版本</string>
     <string name="home_fingerprint">系统指纹</string>
@@ -138,10 +138,10 @@
     <string name="settings_mode_enable_by_default">启用（默认）</string>
     <string name="settings_mode_disable_until_reboot">禁用直到下次重启</string>
     <string name="settings_mode_disable_always">始终禁用</string>
-    <string name="settings_sucompat">传统 su 命令支持</string>
+    <string name="settings_sucompat">传统 SU 命令支持</string>
     <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限</string>
-    <string name="settings_kernel_umount">内核处理卸载模块</string>
-    <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块</string>
+    <string name="settings_kernel_umount">卸载模块（内核级）</string>
+    <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块。</string>
     <string name="module_install_prompt_with_name">将安装以下模块：%1$s</string>
     <string name="confirm">确认</string>
     <string name="processing">处理中…</string>
@@ -184,8 +184,8 @@
     <string name="tab_readme">自述</string>
     <string name="tab_releases">版本</string>
     <string name="tab_info">信息</string>
-    <string name="feature_status_unsupported_summary">内核不支持此特性。</string>
-    <string name="feature_status_managed_summary">此功能由一个模块管理。</string>
+    <string name="feature_status_unsupported_summary">内核不支持此特性</string>
+    <string name="feature_status_managed_summary">此功能由一个模块管理</string>
     <string name="module_shortcut_title">创建快捷方式</string>
     <string name="module_shortcut_name_label">快捷方式名称</string>
     <string name="module_shortcut_icon_pick">选择自定义图标</string>
