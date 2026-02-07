@@ -12,8 +12,8 @@
     <string name="home_fingerprint">指紋</string>
     <string name="home_selinux_status">SELinux 狀態</string>
     <string name="selinux_status_disabled">已停用</string>
-    <string name="selinux_status_enforcing">強制</string>
-    <string name="selinux_status_permissive">寬鬆</string>
+    <string name="selinux_status_enforcing">強制模式</string>
+    <string name="selinux_status_permissive">寬鬆模式</string>
     <string name="selinux_status_unknown">未知</string>
     <string name="superuser">超級使用者</string>
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
@@ -55,11 +55,11 @@
     <string name="profile_capabilities">權限能力</string>
     <string name="profile_umount_modules">卸載模組</string>
     <string name="failed_to_update_app_profile">無法為 %s 更新 App Profile</string>
-    <string name="profile_selinux_rules">規則</string>
+    <string name="profile_selinux_rules">規則（Rules）</string>
     <string name="require_kernel_version">目前 KernelSU 版本 %1$d 過低，管理器無法正常運作。請升級至 %2$d 或更高版本！</string>
     <string name="settings_umount_modules_default_summary">控制 App Profile「卸載模組」的預設值，對未設定的 App 移除模組修改。</string>
     <string name="profile_umount_modules_summary">啟用後 KernelSU 將為此 App 還原所有被模組修改過的檔案。</string>
-    <string name="profile_selinux_domain">定域</string>
+    <string name="profile_selinux_domain">域（Domain）</string>
     <string name="module_update">更新</string>
     <string name="profile_custom">自訂</string>
     <string name="profile_namespace">掛載命名空間</string>
@@ -141,7 +141,7 @@
     <string name="color_teal">藍綠色</string>
     <string name="color_pink">粉紅色</string>
     <string name="color_brown">啡色</string>
-    <string name="network_offline">未連接網絡</string>
+    <string name="network_offline">未連上網絡</string>
     <string name="network_retry">重試</string>
     <string name="tab_readme">自述文件</string>
     <string name="tab_releases">版本</string>
@@ -161,7 +161,7 @@
     <string name="group_contains_apps">內含 %d 個 App</string>
     <string name="app_profile_affects_following_apps">受影響 App 如下</string>
     <string name="settings_module_check_update">檢查模組更新</string>
-    <string name="action">執行</string>
+    <string name="action">執行模組</string>
     <string name="settings_theme">介面主題</string>
     <string name="install_select_partition">選取分割區</string>
     <string name="install_upload_lkm_file">使用本地 LKM 檔案</string>
@@ -190,7 +190,7 @@
     <string name="color_blue_grey">藍灰色</string>
     <string name="color_sakura">櫻花色</string>
     <string name="home_gki_warning">由 v3.0.0 起 GKI 模式僅限測試環境使用，不建議日常長期使用且不再提供鏡像檔。</string>
-    <string name="module_action_success">模組指令執行成功。</string>
+    <string name="module_action_success">模組執行成功。</string>
     <string name="su_not_allowed">無法向 %s 授予超級使用者權限</string>
     <string name="module_install_prompt_with_name">將安裝以下模組：%1$s</string>
     <string name="module_sort_action_first">可執行優先</string>
