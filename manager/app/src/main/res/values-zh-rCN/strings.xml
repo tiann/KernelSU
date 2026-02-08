@@ -70,7 +70,7 @@
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
     <string name="require_kernel_version">当前 KernelSU 版本 %1$d 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %2$d 或以上！</string>
     <string name="settings_umount_modules_default">默认卸载模块</string>
-    <string name="settings_umount_modules_default_summary">App Profile 中“卸载模块”的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改。</string>
+    <string name="settings_umount_modules_default_summary">App Profile 中「卸载模块」的全局默认值，如果启用，会将未自定义 Profile 的应用移除所有模块针对系统的修改。</string>
     <string name="profile_umount_modules_summary">启用该选项后将允许 KernelSU 为本应用还原被模块修改过的文件。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">规则</string>
@@ -111,7 +111,7 @@
     <string name="action">执行</string>
     <string name="open">打开</string>
     <string name="enable_web_debugging">WebView 调试</string>
-    <string name="enable_web_debugging_summary">可用于调试 WebUI 。请仅在需要时启用。</string>
+    <string name="enable_web_debugging_summary">可用于调试 WebUI，请仅在需要时启用。</string>
     <string name="direct_install">直接安装（推荐）</string>
     <string name="select_file">选择一个文件</string>
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
@@ -128,7 +128,7 @@
     <string name="settings_restore_stock_image">恢复原厂镜像</string>
     <string name="settings_uninstall_temporary_message">临时卸载 KernelSU，下次重启后恢复至原始状态。</string>
     <string name="settings_uninstall_permanent_message">完全并永久卸载 KernelSU（Root 权限和所有模块）。</string>
-    <string name="settings_restore_stock_image_message">恢复原厂镜像（若存在备份），一般在 OTA 前使用；如果你需要卸载 KernelSU，请使用“永久卸载”。</string>
+    <string name="settings_restore_stock_image_message">恢复原厂镜像（若存在备份），一般在 OTA 前使用；如果你需要卸载 KernelSU，请使用「永久卸载」。</string>
     <string name="flashing">刷写中</string>
     <string name="flash_success">刷写完成</string>
     <string name="flash_failed">刷写失败</string>
@@ -139,9 +139,9 @@
     <string name="settings_mode_disable_until_reboot">禁用直到下次重启</string>
     <string name="settings_mode_disable_always">始终禁用</string>
     <string name="settings_sucompat">传统 su 命令支持</string>
-    <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限</string>
+    <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限。</string>
     <string name="settings_kernel_umount">内核处理卸载模块</string>
-    <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块</string>
+    <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块。</string>
     <string name="module_install_prompt_with_name">将安装以下模块：%1$s</string>
     <string name="confirm">确认</string>
     <string name="processing">处理中…</string>
@@ -164,6 +164,8 @@
     <string name="settings_key_color">强调色</string>
     <string name="settings_key_color_summary">在使用 Monet 时自定义种子色。</string>
     <string name="settings_key_color_default">默认</string>
+    <string name="settings_page_scale">界面缩放</string>
+    <string name="settings_page_scale_summary">调整全局显示比例。</string>
     <string name="color_blue">蓝色</string>
     <string name="color_red">红色</string>
     <string name="color_green">绿色</string>
@@ -195,8 +197,8 @@
     <string name="module_shortcut_updated">快捷方式已更新。</string>
     <string name="module_shortcut_delete">删除快捷方式</string>
     <string name="module_shortcut_type_title">选择类型</string>
-    <string name="module_shortcut_permission_tip_xiaomi">请在 Xiaomi 设置中为本应用启用“创建桌面快捷方式”权限。</string>
-    <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为本应用启用“桌面快捷方式”权限。</string>
+    <string name="module_shortcut_permission_tip_xiaomi">请在 Xiaomi 设置中为本应用启用「桌面快捷方式」权限。</string>
+    <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为本应用启用「创建桌面快捷方式」权限。</string>
     <string name="module_shortcut_permission_tip_default">若创建快捷方式失败，请在系统设置中为本应用启用桌面快捷方式权限。</string>
     <string name="no_such_module">模块 %s 不存在</string>
     <string name="module_unavailable">模块 %s 被禁用，待更新或待卸载</string>

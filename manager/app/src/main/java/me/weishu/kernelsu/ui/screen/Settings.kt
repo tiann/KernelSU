@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
+import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.ContactPage
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -57,6 +59,7 @@ import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
+import me.weishu.kernelsu.ui.component.ScaleDialog
 import me.weishu.kernelsu.ui.component.SendLogDialog
 import me.weishu.kernelsu.ui.component.UninstallDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
@@ -69,6 +72,9 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Slider
+import top.yukonga.miuix.kmp.basic.SliderDefaults
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
@@ -109,12 +115,16 @@ fun SettingPager(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        val context = LocalContext.current
         val loadingDialog = rememberLoadingDialog()
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        var pageScale by rememberSaveable {
+            mutableFloatStateOf(prefs.getFloat("page_scale", 1.0f))
+        }
 
+        val showScaleDialog = rememberSaveable { mutableStateOf(false) }
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
-        val uninstallDialog = UninstallDialog(showUninstallDialog, navigator)
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
-        val sendLogDialog = SendLogDialog(showSendLogDialog, loadingDialog)
 
         LazyColumn(
             modifier = Modifier
@@ -128,8 +138,6 @@ fun SettingPager(
             overscrollEffect = null,
         ) {
             item {
-                val context = LocalContext.current
-                val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                 var checkUpdate by rememberSaveable {
                     mutableStateOf(prefs.getBoolean("check_update", true))
                 }
@@ -282,6 +290,50 @@ fun SettingPager(
                             }
                         )
                     }
+                    SuperArrow(
+                        title = stringResource(id = R.string.settings_page_scale),
+                        summary = stringResource(id = R.string.settings_page_scale_summary),
+                        startAction = {
+                            Icon(
+                                Icons.Rounded.AspectRatio,
+                                modifier = Modifier.padding(end = 16.dp),
+                                contentDescription = stringResource(id = R.string.settings_page_scale),
+                                tint = colorScheme.onBackground
+                            )
+                        },
+                        endActions = {
+                            Text(
+                                text = "${(pageScale * 100).toInt()}%",
+                                color = colorScheme.onSurfaceVariantActions,
+                            )
+                        },
+                        onClick = { showScaleDialog.value = !showScaleDialog.value },
+                        holdDownState = showScaleDialog.value,
+                        bottomAction = {
+                            Slider(
+                                value = pageScale,
+                                onValueChange = {
+                                    pageScale = it
+                                },
+                                onValueChangeFinished = {
+                                    prefs.edit { putFloat("page_scale", pageScale) }
+                                },
+                                valueRange = 0.8f..1.1f,
+                                showKeyPoints = true,
+                                keyPoints = listOf(0.8f, 0.9f, 1f, 1.1f),
+                                magnetThreshold = 0.01f,
+                                hapticEffect = SliderDefaults.SliderHapticEffect.Step,
+                            )
+                        },
+                    )
+                    ScaleDialog(
+                        showScaleDialog,
+                        volumeState = { pageScale },
+                        onVolumeChange = {
+                            pageScale = it
+                            prefs.edit { putFloat("page_scale", it) }
+                        }
+                    )
                 }
 
                 KsuIsValid {
@@ -475,9 +527,9 @@ fun SettingPager(
                                 },
                                 onClick = {
                                     showUninstallDialog.value = true
-                                    uninstallDialog
                                 }
                             )
+                            UninstallDialog(showUninstallDialog, navigator)
                         }
                     }
                 }
@@ -499,9 +551,9 @@ fun SettingPager(
                         },
                         onClick = {
                             showSendLogDialog.value = true
-                            sendLogDialog
                         },
                     )
+                    SendLogDialog(showSendLogDialog, loadingDialog)
                     val about = stringResource(id = R.string.about)
                     SuperArrow(
                         title = about,

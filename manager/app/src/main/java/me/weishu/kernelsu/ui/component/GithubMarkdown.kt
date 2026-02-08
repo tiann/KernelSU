@@ -24,7 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
@@ -53,6 +55,13 @@ fun GithubMarkdown(
 ) {
     isLoading.value = true
     val context = LocalContext.current
+
+    val density = LocalDensity.current
+    val systemDensity = LocalResources.current.displayMetrics.density
+    val fontScale = density.fontScale
+    val pageScale = density.density / systemDensity
+    val newtTextZoom = (90 * pageScale * fontScale).toInt()
+
     val scrollInterface = remember { MarkdownScrollInterface() }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val themeMode = prefs.getInt("color_mode", 0)
@@ -118,7 +127,7 @@ fun GithubMarkdown(
                         allowContentAccess = false
                         allowFileAccess = false
                         cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-                        textZoom = 90
+                        textZoom = newtTextZoom
                         setSupportZoom(false)
                         setGeolocationEnabled(false)
                     }

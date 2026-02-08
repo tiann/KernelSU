@@ -169,6 +169,8 @@
     <string name="settings_key_color">Key color</string>
     <string name="settings_key_color_summary">Customize accent when using Monet.</string>
     <string name="settings_key_color_default">Default</string>
+    <string name="settings_page_scale">Page Scale</string>
+    <string name="settings_page_scale_summary">Adjust the global display scale.</string>
     <string name="color_blue">Blue</string>
     <string name="color_red">Red</string>
     <string name="color_green">Green</string>
@@ -198,8 +200,8 @@
     <string name="module_shortcut_updated">Shortcut updated.</string>
     <string name="module_shortcut_delete">Delete shortcut</string>
     <string name="module_shortcut_type_title">Select type</string>
-    <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Create desktop shortcuts\" permission for this app in Xiaomi settings.</string>
-    <string name="module_shortcut_permission_tip_oppo">Please enable \"Desktop shortcut\" permission for this app in OPPO settings.</string>
+    <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Home screen shortcuts\" permission for this app in Xiaomi settings.</string>
+    <string name="module_shortcut_permission_tip_oppo">Please enable \"Create Home screen shortcuts\" permission for this app in OPPO settings.</string>
     <string name="module_shortcut_permission_tip_default">If shortcut creation fails, please enable desktop shortcut permission for this app in system settings.</string>
     <string name="no_such_module">Module %s does not exist</string>
     <string name="module_unavailable">Module %s is disabled, updating, or pending removal</string>
