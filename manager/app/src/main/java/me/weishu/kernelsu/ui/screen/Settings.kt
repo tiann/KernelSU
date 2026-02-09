@@ -311,7 +311,7 @@ fun SettingPager(
                             onCheckedChange = {
                                 prefs.edit { putBoolean("enable_predictive_back", it) }
                                 enablePredictiveBack = it
-                                KernelSUApplication.setOnBackInvokedCallback(context.applicationInfo, it)
+                                KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
                                 activity?.recreate()
                             }
                         )

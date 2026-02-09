@@ -19,10 +19,13 @@ lateinit var ksuApp: KernelSUApplication
 class KernelSUApplication : Application(), ViewModelStoreOwner {
 
     companion object {
-        fun setOnBackInvokedCallback(applicationInfo: ApplicationInfo, enable: Boolean) {
-            val applicationInfoClass = ApplicationInfo::class.java
-            val method = applicationInfoClass.getDeclaredMethod("setEnableOnBackInvokedCallback", Boolean::class.javaPrimitiveType)
-            method.invoke(applicationInfo, enable)
+        fun setEnableOnBackInvokedCallback(appInfo: ApplicationInfo, enable: Boolean) {
+            runCatching {
+                val applicationInfoClass = ApplicationInfo::class.java
+                val method = applicationInfoClass.getDeclaredMethod("setEnableOnBackInvokedCallback", Boolean::class.javaPrimitiveType)
+                method.isAccessible = true
+                method.invoke(appInfo, enable)
+            }
         }
     }
 
@@ -35,9 +38,9 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             val prefs = this.getSharedPreferences("settings", MODE_PRIVATE)
-            val enable = prefs?.getBoolean("enable_predictive_back", false) ?: false
+            val enable = prefs.getBoolean("enable_predictive_back", false)
             HiddenApiBypass.addHiddenApiExemptions("Landroid/content/pm/ApplicationInfo;->setEnableOnBackInvokedCallback")
-            setOnBackInvokedCallback(applicationInfo, enable)
+            setEnableOnBackInvokedCallback(applicationInfo, enable)
         }
 
         val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
