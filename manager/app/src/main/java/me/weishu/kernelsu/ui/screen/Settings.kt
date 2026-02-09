@@ -1,6 +1,8 @@
 package me.weishu.kernelsu.ui.screen
 
 import android.content.Context
+import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -56,6 +58,7 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import me.weishu.kernelsu.KernelSUApplication
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
@@ -116,12 +119,10 @@ fun SettingPager(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val context = LocalContext.current
-        val loadingDialog = rememberLoadingDialog()
+        val activity = LocalActivity.current
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        var pageScale by rememberSaveable {
-            mutableFloatStateOf(prefs.getFloat("page_scale", 1.0f))
-        }
 
+        val loadingDialog = rememberLoadingDialog()
         val showScaleDialog = rememberSaveable { mutableStateOf(false) }
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
@@ -289,6 +290,34 @@ fun SettingPager(
                                 keyColorIndex = index
                             }
                         )
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        var enablePredictiveBack by rememberSaveable {
+                            mutableStateOf(prefs.getBoolean("enable_predictive_back", false))
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_enable_predictive_back),
+                            summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Adb,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = enablePredictiveBack,
+                            onCheckedChange = {
+                                prefs.edit { putBoolean("enable_predictive_back", it) }
+                                enablePredictiveBack = it
+                                KernelSUApplication.setOnBackInvokedCallback(context.applicationInfo, it)
+                                activity?.recreate()
+                            }
+                        )
+                    }
+                    var pageScale by rememberSaveable {
+                        mutableFloatStateOf(prefs.getFloat("page_scale", 1.0f))
                     }
                     SuperArrow(
                         title = stringResource(id = R.string.settings_page_scale),

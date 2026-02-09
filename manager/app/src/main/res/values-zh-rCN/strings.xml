@@ -106,6 +106,8 @@
     <string name="app_profile_affects_following_apps">影响以下应用</string>
     <string name="settings_check_update">检查更新</string>
     <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版。</string>
+    <string name="settings_enable_predictive_back">预测性返回手势</string>
+    <string name="settings_enable_predictive_back_summary">启用对预测性返回手势的支持。</string>
     <string name="settings_module_check_update">检查模块更新</string>
     <string name="grant_root_failed">获取 root 失败！</string>
     <string name="action">执行</string>
