@@ -101,11 +101,13 @@ void ksu_show_allow_list(void)
     struct perm_data *p = NULL;
     struct list_head *pos = NULL;
     pr_info("ksu_show_allow_list\n");
+    mutex_lock(&allowlist_mutex);
     list_for_each (pos, &allow_list) {
         p = list_entry(pos, struct perm_data, list);
         pr_info("uid :%d, allow: %d\n", p->profile.current_uid,
                 p->profile.allow_su);
     }
+    mutex_unlock(&allowlist_mutex);
 }
 
 #ifdef CONFIG_KSU_DEBUG
@@ -129,6 +131,7 @@ bool ksu_get_app_profile(struct app_profile *profile)
     struct list_head *pos = NULL;
     bool found = false;
 
+    mutex_lock(&allowlist_mutex);
     list_for_each (pos, &allow_list) {
         p = list_entry(pos, struct perm_data, list);
         bool uid_match = profile->current_uid == p->profile.current_uid;
@@ -141,6 +144,7 @@ bool ksu_get_app_profile(struct app_profile *profile)
     }
 
 exit:
+    mutex_unlock(&allowlist_mutex);
     return found;
 }
 
@@ -186,6 +190,15 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
         return false;
     }
 
+    struct perm_data *new_entry =
+        (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
+    if (!new_entry) {
+        pr_err("ksu_set_app_profile alloc failed\n");
+        return false;
+    }
+
+    mutex_lock(&allowlist_mutex);
+
     list_for_each (pos, &allow_list) {
         p = list_entry(pos, struct perm_data, list);
         // both uid and package must match, otherwise it will break multiple package with different user id
@@ -194,18 +207,12 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
             // found it, just override it all!
             memcpy(&p->profile, profile, sizeof(*profile));
             result = true;
+            kfree(new_entry);
             goto out;
         }
     }
 
-    // not found, alloc a new node!
-    p = (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
-    if (!p) {
-        pr_err("ksu_set_app_profile alloc failed\n");
-        return false;
-    }
-
-    memcpy(&p->profile, profile, sizeof(*profile));
+    memcpy(&new_entry->profile, profile, sizeof(*profile));
     if (profile->allow_su) {
         pr_info("set root profile, key: %s, uid: %d, gid: %d, context: %s\n",
                 profile->key, profile->current_uid,
@@ -216,7 +223,7 @@ bool ksu_set_app_profile(struct app_profile *profile, bool persist)
                 profile->key, profile->current_uid,
                 profile->nrp_config.profile.umount_modules);
     }
-    list_add_tail(&p->list, &allow_list);
+    list_add_tail(&new_entry->list, &allow_list);
 
 out:
     if (profile->current_uid <= BITMAP_UID_MAX) {
@@ -235,6 +242,7 @@ out:
             if (allow_list_pointer >= ARRAY_SIZE(allow_list_arr)) {
                 pr_err("too many apps registered\n");
                 WARN_ON(1);
+                mutex_unlock(&allowlist_mutex);
                 return false;
             }
             allow_list_arr[allow_list_pointer++] = profile->current_uid;
@@ -256,6 +264,8 @@ out:
         memcpy(&default_root_profile, &profile->rp_config.profile,
                sizeof(default_root_profile));
     }
+
+    mutex_unlock(&allowlist_mutex);
 
     if (persist) {
         persistent_allow_list();
@@ -329,22 +339,27 @@ bool ksu_uid_should_umount(uid_t uid)
     }
 }
 
-struct root_profile *ksu_get_root_profile(uid_t uid)
+void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
 {
     struct perm_data *p = NULL;
     struct list_head *pos = NULL;
 
+    mutex_lock(&allowlist_mutex);
     list_for_each (pos, &allow_list) {
         p = list_entry(pos, struct perm_data, list);
         if (uid == p->profile.current_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {
-                return &p->profile.rp_config.profile;
+                memcpy(profile, &p->profile.rp_config.profile,
+                       sizeof(*profile));
+                mutex_unlock(&allowlist_mutex);
+                return;
             }
         }
     }
+    mutex_unlock(&allowlist_mutex);
 
     // use default profile
-    return &default_root_profile;
+    memcpy(profile, &default_root_profile, sizeof(*profile));
 }
 
 bool ksu_get_allow_list(int *array, int *length, bool allow)
@@ -352,6 +367,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
     struct perm_data *p = NULL;
     struct list_head *pos = NULL;
     int i = 0;
+    mutex_lock(&allowlist_mutex);
     list_for_each (pos, &allow_list) {
         p = list_entry(pos, struct perm_data, list);
         // pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
@@ -359,6 +375,7 @@ bool ksu_get_allow_list(int *array, int *length, bool allow)
             array[i++] = p->profile.current_uid;
         }
     }
+    mutex_unlock(&allowlist_mutex);
     *length = i;
 
     return true;
