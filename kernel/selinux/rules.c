@@ -94,6 +94,8 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
+    reset_avc_cache();
+
     mutex_unlock(&ksu_rules);
 }
 
