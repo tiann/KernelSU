@@ -1,0 +1,78 @@
+use anyhow::{Context, Result};
+use log::{info, warn};
+
+use crate::module::{handle_updated_modules, prune_modules};
+use crate::{assets, init_event, restorecon, utils};
+
+pub fn run() -> Result<()> {
+    info!("late-load command triggered!");
+
+    // 1. Check if KernelSU is already loaded
+    if ksuinit::has_kernelsu() {
+        info!("KernelSU already loaded, skip loading ko");
+    } else {
+        // 2. Detect current KMI version
+        let kmi =
+            crate::boot_patch::get_current_kmi().context("Failed to detect current KMI version")?;
+        info!("Detected KMI: {kmi}");
+
+        // 3. Get kernelsu.ko from embedded assets
+        let ko_name = format!("{kmi}_kernelsu.ko");
+        let ko_data = assets::get_asset_data(&ko_name)
+            .with_context(|| format!("Failed to get {ko_name} from assets"))?;
+
+        // 4. Load kernelsu.ko from memory with manual relocation
+        info!("Loading kernelsu.ko for KMI {kmi}...");
+        ksuinit::load_module(&ko_data).context("Failed to load kernelsu.ko")?;
+        info!("kernelsu.ko loaded successfully!");
+    }
+
+    utils::umask(0);
+
+    // 5. Ensure binaries are extracted
+    assets::ensure_binaries(true).context("Failed to extract bin assets")?;
+
+    let safe_mode = utils::is_safe_mode();
+    if safe_mode {
+        warn!("safe mode, skip late-load scripts and disable all modules!");
+        if let Err(e) = crate::module::disable_all_modules() {
+            warn!("disable all modules failed: {e}");
+        }
+        return Ok(());
+    }
+
+    // 6. Handle module updates
+    if let Err(e) = handle_updated_modules() {
+        warn!("handle updated modules failed: {e}");
+    }
+
+    if let Err(e) = prune_modules() {
+        warn!("prune modules failed: {e}");
+    }
+
+    if let Err(e) = restorecon::restorecon() {
+        warn!("restorecon failed: {e}");
+    }
+
+    // 7. Load SELinux rules
+    if crate::module::load_sepolicy_rule().is_err() {
+        warn!("load sepolicy.rule failed");
+    }
+
+    if let Err(e) = crate::profile::apply_sepolies() {
+        warn!("apply root profile sepolicy failed: {e}");
+    }
+
+    // 8. Initialize features
+    if let Err(e) = crate::feature::init_features() {
+        warn!("init features failed: {e}");
+    }
+
+    // 9. Execute late-load stage scripts (blocking)
+    init_event::run_stage("late-load", true);
+
+    // 10. Execute service stage scripts (non-blocking)
+    init_event::run_stage("service", false);
+
+    Ok(())
+}

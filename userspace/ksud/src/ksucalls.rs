@@ -178,6 +178,10 @@ pub fn get_version() -> i32 {
     get_info().version as i32
 }
 
+pub fn is_late_load() -> bool {
+    get_info().flags & 0x4 != 0
+}
+
 pub fn grant_root() -> std::io::Result<()> {
     ksuctl(KSU_IOCTL_GRANT_ROOT, std::ptr::null_mut::<u8>())?;
     Ok(())

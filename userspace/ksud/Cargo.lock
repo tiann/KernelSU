@@ -612,6 +612,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "goblin"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "983a6aafb3b12d4c41ea78d39e189af4298ce747353945ff5105b54a056e5cd9"
+dependencies = [
+ "log",
+ "plain",
+ "scroll",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -792,6 +803,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "kernlog"
+version = "0.3.1"
+source = "git+https://github.com/kstep/kernlog.rs#68caa7bf1e27baea35b00ebba786cafae0bca90f"
+dependencies = [
+ "libc",
+ "log",
+]
+
+[[package]]
 name = "ksud"
 version = "0.1.0"
 dependencies = [
@@ -810,6 +830,7 @@ dependencies = [
  "is_executable",
  "java-properties",
  "jwalk",
+ "ksuinit",
  "libc",
  "log",
  "nom",
@@ -823,6 +844,19 @@ dependencies = [
  "which",
  "zip 7.0.0",
  "zip-extensions",
+]
+
+[[package]]
+name = "ksuinit"
+version = "2.0.0"
+dependencies = [
+ "anyhow",
+ "goblin",
+ "kernlog",
+ "log",
+ "rustix",
+ "scroll",
+ "syscalls",
 ]
 
 [[package]]
@@ -971,6 +1005,12 @@ name = "pkg-config"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
+
+[[package]]
+name = "plain"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 
 [[package]]
 name = "powerfmt"
@@ -1145,6 +1185,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "scroll"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1257cd4248b4132760d6524d6dda4e053bc648c9070b960929bf50cfb1e7add"
+dependencies = [
+ "scroll_derive",
+]
+
+[[package]]
+name = "scroll_derive"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed76efe62313ab6610570951494bdaa81568026e0318eaa55f167de70eeea67d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.111",
+]
+
+[[package]]
 name = "serde"
 version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1259,6 +1319,12 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "syscalls"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "90db46b5b4962319605d435986c775ea45a0ad2561c09e1d5372b89afeb49cf4"
 
 [[package]]
 name = "tempfile"
