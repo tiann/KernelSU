@@ -95,7 +95,6 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
-import me.weishu.kernelsu.ui.util.DownloadListener
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
@@ -1218,6 +1217,5 @@ fun ModuleRepoDetailScreen(
                 }
             }
         }
-        DownloadListener(context, onInstallModule)
     }
 }

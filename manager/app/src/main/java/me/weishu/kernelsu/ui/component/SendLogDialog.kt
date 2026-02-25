@@ -16,6 +16,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +45,7 @@ fun SendLogDialog(
     loadingDialog: LoadingDialogHandle,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val exportBugreportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/gzip")
@@ -58,7 +60,7 @@ fun SendLogDialog(
             }
             loadingDialog.hide()
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, context.getString(R.string.log_saved), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, resources.getString(R.string.log_saved), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -132,7 +134,7 @@ fun SendLogDialog(
                         context.startActivity(
                             Intent.createChooser(
                                 shareIntent,
-                                context.getString(R.string.send_log)
+                                resources.getString(R.string.send_log)
                             )
                         )
                     }
