@@ -186,7 +186,7 @@ fun AppProfileScreen(
                         AppIconImage(
                             packageInfo = iconApp.packageInfo,
                             label = iconApp.label,
-                            modifier = Modifier.size(54.dp)
+                            modifier = Modifier.size(64.dp)
                         )
                     },
                     appUid = appInfo.uid,
@@ -267,7 +267,7 @@ private fun AppProfileInner(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
-            insideMargin = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+            insideMargin = PaddingValues(start = 12.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -275,7 +275,7 @@ private fun AppProfileInner(
                 appIcon()
                 Column(
                     modifier = Modifier
-                        .padding(start = 16.dp, end = 8.dp)
+                        .padding(start = 12.dp, end = 8.dp)
                         .weight(1f),
                 ) {
                     Text(
@@ -524,7 +524,7 @@ private fun AppProfileInner(
                                 label = app.label,
                                 modifier = Modifier
                                     .padding(end = 12.dp)
-                                    .size(40.dp)
+                                    .size(48.dp)
                             )
                         },
                         title = app.label,

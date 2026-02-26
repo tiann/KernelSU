@@ -4,9 +4,15 @@ import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.system.Os
+import android.util.TypedValue
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import me.weishu.kernelsu.ui.util.AppIconFetcher
+import me.weishu.kernelsu.ui.util.AppIconKeyer
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -16,7 +22,7 @@ import java.util.Locale
 
 lateinit var ksuApp: KernelSUApplication
 
-class KernelSUApplication : Application(), ViewModelStoreOwner {
+class KernelSUApplication : Application(), ViewModelStoreOwner, SingletonImageLoader.Factory {
 
     companion object {
         fun setEnableOnBackInvokedCallback(appInfo: ApplicationInfo, enable: Boolean) {
@@ -63,6 +69,16 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
                             .header("Accept-Language", Locale.getDefault().toLanguageTag()).build()
                     )
                 }.build()
+    }
+
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
+        val iconSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, context.resources.displayMetrics).toInt()
+        return ImageLoader.Builder(context)
+            .components {
+                add(AppIconKeyer())
+                add(AppIconFetcher.Factory(iconSize = iconSize))
+            }
+            .build()
     }
 
     override val viewModelStore: ViewModelStore

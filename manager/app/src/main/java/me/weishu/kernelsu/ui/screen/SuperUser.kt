@@ -410,11 +410,10 @@ private fun SimpleAppItem(
                         packageInfo = app.packageInfo,
                         label = app.label,
                         modifier = Modifier
-                            .padding(end = 9.dp)
-                            .size(40.dp)
+                            .size(48.dp)
                     )
                 },
-                insideMargin = PaddingValues(horizontal = 9.dp)
+                insideMargin = PaddingValues(horizontal = 6.dp)
             )
         }
     }
@@ -517,7 +516,7 @@ private fun GroupItem(
         onLongPress = if (group.apps.size > 1) onToggleExpand else null,
         pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
-        insideMargin = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
+        insideMargin = PaddingValues(top = 8.dp, bottom = 9.dp, start = 10.dp, end = 16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -526,8 +525,8 @@ private fun GroupItem(
                 packageInfo = group.primary.packageInfo,
                 label = group.primary.label,
                 modifier = Modifier
-                    .padding(end = 14.dp)
-                    .size(48.dp)
+                    .padding(end = 10.dp)
+                    .size(60.dp)
             )
             Column(
                 modifier = Modifier

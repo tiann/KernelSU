@@ -188,6 +188,9 @@ dependencies {
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
 
+    implementation(libs.coil3.compose)
+    implementation(libs.appiconloader)
+
     implementation(libs.haze)
     implementation(libs.capsule)
 }
