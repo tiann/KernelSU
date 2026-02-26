@@ -27,17 +27,35 @@ class KsuService : RootService() {
 
     private fun getAllUserIds(): IntArray {
         val um = getSystemService(USER_SERVICE) as UserManager
-        return try {
-            // getUsers(boolean excludeDying) was added in API 17
+        // getUsers(boolean excludeDying) was added in API 17, but marked as deprecated
+        try {
             val method = um.javaClass.getMethod("getUsers", Boolean::class.javaPrimitiveType)
             val users = method.invoke(um, true) as List<*>
+            return extractUserIds(users)
+        } catch (e: Exception) {
+            Log.w(TAG, "getUsers reflection failed", e)
+        }
+        // getAliveUsers() was added in API 31
+        try {
+            val method = um.javaClass.getMethod("getAliveUsers")
+            val users = method.invoke(um) as List<*>
+            return extractUserIds(users)
+        } catch (e: Exception) {
+            Log.e(TAG, "getAliveUsers reflection failed", e)
+        }
 
+        return intArrayOf(0)
+    }
+
+    private fun extractUserIds(users: List<*>?): IntArray {
+        if (users.isNullOrEmpty()) return intArrayOf(0)
+
+        return try {
             users.map { user ->
                 user!!.javaClass.getField("id").getInt(user)
             }.toIntArray()
-
         } catch (e: Exception) {
-            Log.e(TAG, "getUsers reflection failed", e)
+            Log.e(TAG, "Error extracting ID from UserInfo", e)
             intArrayOf(0)
         }
     }
