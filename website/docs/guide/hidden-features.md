@@ -1,4 +1,4 @@
-# Hidden features
+## Hidden features
 
 ## .ksurc
 
