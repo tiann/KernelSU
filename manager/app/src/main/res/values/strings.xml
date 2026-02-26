@@ -210,4 +210,5 @@
     <string name="select_file_tip_nogki">Please select the GKI device image file you want to patch</string>
     <string name="current_kmi">KMI version of this device: %s</string>
     <string name="current_device_kmi">This device KMI</string>
+    <string name="show_only_primary_user_apps">Show only primary user apps</string>
 </resources>

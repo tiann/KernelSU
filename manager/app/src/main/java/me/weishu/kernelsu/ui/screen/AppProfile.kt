@@ -73,7 +73,6 @@ import me.weishu.kernelsu.ui.util.getSepolicy
 import me.weishu.kernelsu.ui.util.launchApp
 import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.ownerNameForUid
-import me.weishu.kernelsu.ui.util.pickPrimary
 import me.weishu.kernelsu.ui.util.restartApp
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
@@ -107,6 +106,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @Composable
 fun AppProfileScreen(
+    uid: Int,
     packageName: String,
 ) {
     val navigator = LocalNavigator.current
@@ -118,8 +118,8 @@ fun AppProfileScreen(
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
     val scope = rememberCoroutineScope()
-    val appInfoState = remember(packageName) {
-        derivedStateOf { SuperUserViewModel.apps.find { it.packageName == packageName } }
+    val appInfoState = remember(uid, packageName) {
+        derivedStateOf { SuperUserViewModel.apps.find { it.uid == uid && it.packageName == packageName } }
     }
     val appInfo = appInfoState.value
     if (appInfo == null) {
@@ -131,20 +131,18 @@ fun AppProfileScreen(
     val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label).format(appInfo.uid)
     val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
     val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
-    val sameUidApps = remember(appInfo.uid) {
-        SuperUserViewModel.apps.filter { it.uid == appInfo.uid }
+    val sameUidApps = remember(uid) {
+        SuperUserViewModel.apps.filter { it.uid == uid }
     }
     val isUidGroup = sameUidApps.size > 1
-    val primaryForIcon = remember(appInfo.uid, sameUidApps) {
-        runCatching { pickPrimary(sameUidApps) }.getOrNull() ?: appInfo
-    }
-    val sharedUserId = remember(appInfo.uid, sameUidApps, primaryForIcon) {
-        primaryForIcon.packageInfo.sharedUserId
+    // The package name from the SuperUser is the primary package, so no need to recalculate.
+    val sharedUserId = remember(sameUidApps, appInfo) {
+        appInfo.packageInfo.sharedUserId
             ?: sameUidApps.firstOrNull { it.packageInfo.sharedUserId != null }?.packageInfo?.sharedUserId
             ?: ""
     }
 
-    val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
+    val initialProfile = Natives.getAppProfile(packageName, uid)
     if (initialProfile.allowSu) {
         initialProfile.rules = getSepolicy(packageName)
     }
@@ -182,14 +180,13 @@ fun AppProfileScreen(
                     packageName = if (isUidGroup) "" else appInfo.packageName,
                     appLabel = if (isUidGroup) ownerNameForUid(appInfo.uid) else appInfo.label,
                     appIcon = {
-                        val iconApp = if (isUidGroup) primaryForIcon else appInfo
                         AppIconImage(
-                            packageInfo = iconApp.packageInfo,
-                            label = iconApp.label,
+                            packageInfo = appInfo.packageInfo,
+                            label = appInfo.label,
                             modifier = Modifier.size(54.dp)
                         )
                     },
-                    appUid = appInfo.uid,
+                    appUid = uid,
                     sharedUserId = if (isUidGroup) sharedUserId else "",
                     appVersionName = if (isUidGroup) "" else (appInfo.packageInfo.versionName ?: ""),
                     appVersionCode = if (isUidGroup) 0L else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -210,7 +207,7 @@ fun AppProfileScreen(
                     onProfileChange = {
                         scope.launch {
                             if (it.allowSu) {
-                                if (appInfo.uid < 2000 && appInfo.uid != 1000) {
+                                if (uid < 2000 && uid != 1000) {
                                     Toast.makeText(context, suNotAllowed, Toast.LENGTH_SHORT).show()
                                     return@launch
                                 }

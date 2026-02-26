@@ -177,7 +177,7 @@ class MainActivity : ComponentActivity() {
                                 entry<Route.About> { AboutScreen() }
                                 entry<Route.AppProfileTemplate> { AppProfileTemplateScreen() }
                                 entry<Route.TemplateEditor> { key -> TemplateEditorScreen(key.template, key.readOnly) }
-                                entry<Route.AppProfile> { key -> AppProfileScreen(key.packageName) }
+                                entry<Route.AppProfile> { key -> AppProfileScreen(key.uid, key.packageName) }
                                 entry<Route.ModuleRepo> { ModuleRepoScreen() }
                                 entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(key.module) }
                                 entry<Route.Install> { InstallScreen() }

@@ -145,6 +145,9 @@ fun SuperUserPager(
         backgroundColor = colorScheme.surface,
         tint = HazeTint(colorScheme.surface.copy(0.8f))
     )
+    val isMultiUser = remember(viewModel.userIds.value) {
+        viewModel.userIds.value.size > 1
+    }
 
     Scaffold(
         topBar = {
@@ -162,11 +165,12 @@ fun SuperUserPager(
                                 showTopPopup.value = false
                             }
                         ) {
+                            val size = if (isMultiUser) 2 else 1
                             ListPopupColumn {
                                 DropdownImpl(
                                     text = stringResource(R.string.show_system_apps),
                                     isSelected = viewModel.showSystemApps,
-                                    optionSize = 1,
+                                    optionSize = size,
                                     onSelectedIndexChange = {
                                         viewModel.showSystemApps = !viewModel.showSystemApps
                                         prefs.edit {
@@ -179,6 +183,24 @@ fun SuperUserPager(
                                     },
                                     index = 0
                                 )
+                                if (isMultiUser) {
+                                    DropdownImpl(
+                                        text = stringResource(R.string.show_only_primary_user_apps),
+                                        isSelected = viewModel.showOnlyPrimaryUserApps,
+                                        optionSize = size,
+                                        onSelectedIndexChange = {
+                                            viewModel.showOnlyPrimaryUserApps = !viewModel.showOnlyPrimaryUserApps
+                                            prefs.edit {
+                                                putBoolean("show_only_primary_user_apps", viewModel.showOnlyPrimaryUserApps)
+                                            }
+                                            scope.launch {
+                                                viewModel.loadAppList()
+                                            }
+                                            showTopPopup.value = false
+                                        },
+                                        index = 1
+                                    )
+                                }
                             }
                         }
                         IconButton(
@@ -241,7 +263,7 @@ fun SuperUserPager(
                                     }
                                 },
                             ) {
-                                navigator.push(Route.AppProfile(group.primary.packageName))
+                                navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
                                 viewModel.markNeedRefresh()
                             }
                             AnimatedVisibility(
@@ -356,7 +378,7 @@ fun SuperUserPager(
                                             }
                                         }
                                     ) {
-                                        navigator.push(Route.AppProfile(group.primary.packageName))
+                                        navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
                                         viewModel.markNeedRefresh()
                                     }
                                     AnimatedVisibility(
