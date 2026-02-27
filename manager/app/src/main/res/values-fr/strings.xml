@@ -197,4 +197,11 @@
     <string name="select_file_tip_nogki">Sélectionnez le fichier image d\'appareil GKI que vous souhaitez patcher</string>
     <string name="current_kmi">Version KMI de cet appareil : %s</string>
     <string name="current_device_kmi">KMI de cet appareil</string>
+    <string name="color_deep_purple">Violet foncé</string>
+    <string name="color_indigo">Indigo</string>
+    <string name="color_cyan">Cyan</string>
+    <string name="color_yellow">Jaune</string>
+    <string name="color_blue_grey">Gris-bleu</string>
+    <string name="color_sakura">Sakura</string>
+    <string name="color_amber">Ambre</string>
 </resources>

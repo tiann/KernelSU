@@ -139,10 +139,10 @@
     <string name="processing">Обработка…</string>
     <string name="install_upload_lkm_file">Использовать локальный LKM файл</string>
     <string name="install_only_support_ko_file">Поддерживаются только .ko файлы</string>
-    <string name="settings_sucompat">Классическая команда su</string>
+    <string name="settings_sucompat">Классическая команда SU</string>
     <string name="settings_sucompat_summary">Разрешить root-доступ через /system/bin/su в новых процессах.</string>
-    <string name="settings_kernel_umount">Размонтирование модулей</string>
-    <string name="settings_kernel_umount_summary">Размонтировать модули в ядре для профиля приложения</string>
+    <string name="settings_kernel_umount">Размонтировать модули (на уровне ядра)</string>
+    <string name="settings_kernel_umount_summary">Размонтировать модули в ядре для профиля приложения.</string>
     <string name="settings_module_check_update">Проверять обновления модулей</string>
     <string name="install_select_partition">Выбрать раздел</string>
     <string name="app_profile_affects_following_apps">Влияет на следующие приложения</string>
@@ -203,4 +203,11 @@
     <string name="select_file_tip_nogki">Пожалуйста, выберите файл образа GKI устройства, который вы хотите пропатчить</string>
     <string name="current_kmi">Версия KMI этого устройства: %s</string>
     <string name="current_device_kmi">KMI этого устройства</string>
+    <string name="color_deep_purple">Тёмно-фиолетовый</string>
+    <string name="color_indigo">Индиго</string>
+    <string name="color_cyan">Циан</string>
+    <string name="color_yellow">Желтый</string>
+    <string name="color_amber">Янтарный</string>
+    <string name="color_blue_grey">Серо-голубой</string>
+    <string name="color_sakura">Сакура</string>
 </resources>
