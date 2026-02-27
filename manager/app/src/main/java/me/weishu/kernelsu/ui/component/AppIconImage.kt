@@ -80,7 +80,7 @@ fun AppIconImage(
                         }
                         BitmapFactory.decodeResource(appRes, iconId, options)
 
-                        if (options.outWidth > targetSizePx * 2 || options.outHeight > targetSizePx * 2) {
+                        if (options.outWidth > targetSizePx * 6 || options.outHeight > targetSizePx * 6) {
                             options.inSampleSize = calculateInSampleSize(options, targetSizePx, targetSizePx)
                             options.inJustDecodeBounds = false
 
@@ -88,9 +88,12 @@ fun AppIconImage(
                             if (scaledBitmap != null) {
                                 finalDrawable = scaledBitmap.toDrawable(resources)
                             }
+                        } else {
+                            finalDrawable = null
                         }
                     }
                 } catch (_: Exception) {
+                    finalDrawable = null
                 }
 
                 if (finalDrawable == null) {
@@ -116,7 +119,7 @@ fun AppIconImage(
             appIcon = loadedIcon
         }
 
-        val appLabel by produceState(initialValue = "", key1 = applicationInfo) {
+        val appLabel by produceState(initialValue = label, key1 = applicationInfo) {
             if (label != null) {
                 value = label
             } else {
