@@ -114,6 +114,8 @@
     <string name="open">打开</string>
     <string name="enable_web_debugging">WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI，请仅在需要时启用。</string>
+    <string name="enable_script_debugging">模块脚本调试</string>
+    <string name="enable_script_debugging_summary">可用于调试模块脚本，请仅在需要时启用。</string>
     <string name="direct_install">直接安装（推荐）</string>
     <string name="select_file">选择一个文件</string>
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>

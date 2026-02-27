@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
+import androidx.compose.material.icons.rounded.ViewInAr
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,6 +54,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import com.topjohnwu.superuser.io.SuFile
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -509,6 +511,34 @@ fun SettingPager(
                                 if (Natives.setDefaultUmountModules(it)) {
                                     umountChecked = it
                                 }
+                            }
+                        )
+
+                        val enableScriptDebug by produceState(initialValue = false) {
+                            value = SuFile("/data/adb/ksu/.enable_script_debug").exists()
+                        }
+                        var isScriptDebuggingEnabled by rememberSaveable(enableScriptDebug) {
+                            mutableStateOf(enableScriptDebug)
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.enable_script_debugging),
+                            summary = stringResource(id = R.string.enable_script_debugging_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.ViewInAr,
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    contentDescription = stringResource(id = R.string.enable_script_debugging),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = isScriptDebuggingEnabled,
+                            onCheckedChange = {
+                                if (isScriptDebuggingEnabled) {
+                                    SuFile("/data/adb/ksu/.enable_script_debug").delete()
+                                } else {
+                                    SuFile("/data/adb/ksu/.enable_script_debug").createNewFile()
+                                }
+                                isScriptDebuggingEnabled = !isScriptDebuggingEnabled
                             }
                         )
 
