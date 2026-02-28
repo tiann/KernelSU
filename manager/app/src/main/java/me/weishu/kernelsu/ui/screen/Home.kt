@@ -67,6 +67,7 @@ import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
@@ -100,16 +101,20 @@ fun HomePager(
 ) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = MiuixScrollBehavior()
+    val enableBlur = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
+    val hazeStyle = if (enableBlur) {
+        HazeStyle(
+            backgroundColor = colorScheme.surface,
+            tint = HazeTint(colorScheme.surface.copy(0.8f))
+        )
+    } else {
+        HazeStyle.Unspecified
+    }
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val checkUpdate = prefs.getBoolean("check_update", true)
-    val themeMode = prefs.getInt("color_mode", 0)
 
     Scaffold(
         topBar = {
@@ -117,6 +122,7 @@ fun HomePager(
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
+                enableBlur = enableBlur,
             )
         },
         popupHost = { },
@@ -129,7 +135,7 @@ fun HomePager(
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(horizontal = 12.dp)
-                .hazeSource(state = hazeState),
+                .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
             contentPadding = innerPadding,
             overscrollEffect = null,
         ) {
@@ -147,23 +153,16 @@ fun HomePager(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     if (ksuVersion != null && !Natives.isLkmMode) {
-                        WarningCard(
-                            stringResource(id = R.string.home_gki_warning),
-                            themeMode
-                        )
+                        WarningCard(stringResource(id = R.string.home_gki_warning))
                     }
                     if (isManager && Natives.requireNewKernel()) {
                         WarningCard(
                             stringResource(id = R.string.require_kernel_version)
                                 .format(ksuVersion, Natives.MINIMAL_SUPPORTED_KERNEL),
-                            themeMode
                         )
                     }
                     if (ksuVersion != null && !rootAvailable()) {
-                        WarningCard(
-                            stringResource(id = R.string.grant_root_failed),
-                            themeMode
-                        )
+                        WarningCard(stringResource(id = R.string.grant_root_failed))
                     }
                     StatusCard(
                         kernelVersion, ksuVersion, lkmMode,
@@ -176,11 +175,10 @@ fun HomePager(
                         onclickModule = {
                             mainState.animateToPage(2)
                         },
-                        themeMode = themeMode
                     )
 
                     if (checkUpdate) {
-                        UpdateCard(themeMode)
+                        UpdateCard()
                     }
                     InfoCard()
                     DonateCard()
@@ -193,9 +191,7 @@ fun HomePager(
 }
 
 @Composable
-fun UpdateCard(
-    themeMode: Int,
-) {
+fun UpdateCard() {
     val context = LocalContext.current
     val latestVersionInfo = LatestVersionInfo()
     val newVersion by produceState(initialValue = latestVersionInfo) {
@@ -221,7 +217,7 @@ fun UpdateCard(
         val updateDialog = rememberConfirmDialog(onConfirm = { uriHandler.openUri(newVersionUrl) })
         WarningCard(
             message = stringResource(id = R.string.new_version_available).format(newVersionCode),
-            themeMode, colorScheme.outline
+            colorScheme.outline
         ) {
             if (changelog.isEmpty()) {
                 uriHandler.openUri(newVersionUrl)
@@ -260,14 +256,19 @@ private fun TopBar(
     scrollBehavior: ScrollBehavior,
     hazeState: HazeState,
     hazeStyle: HazeStyle,
+    enableBlur: Boolean,
 ) {
     TopAppBar(
-        modifier = Modifier.hazeEffect(hazeState) {
-            style = hazeStyle
-            blurRadius = 30.dp
-            noiseFactor = 0f
+        modifier = if (enableBlur) {
+            Modifier.hazeEffect(hazeState) {
+                style = hazeStyle
+                blurRadius = 30.dp
+                noiseFactor = 0f
+            }
+        } else {
+            Modifier
         },
-        color = Color.Transparent,
+        color = if (enableBlur) Color.Transparent else colorScheme.surface,
         title = stringResource(R.string.app_name),
         actions = {
             RebootListPopup(
@@ -286,7 +287,6 @@ private fun StatusCard(
     onClickInstall: () -> Unit = {},
     onClickSuperuser: () -> Unit = {},
     onclickModule: () -> Unit = {},
-    themeMode: Int,
 ) {
     Column(
         modifier = Modifier
@@ -320,7 +320,7 @@ private fun StatusCard(
                         colors = CardDefaults.defaultColors(
                             color = when {
                                 isDynamicColor -> colorScheme.secondaryContainer
-                                isInDarkTheme(themeMode) -> Color(0xFF1A3825)
+                                isInDarkTheme() -> Color(0xFF1A3825)
                                 else -> Color(0xFFDFFAE4)
                             }
                         ),
@@ -493,7 +493,6 @@ private fun StatusCard(
 @Composable
 fun WarningCard(
     message: String,
-    themeMode: Int,
     color: Color? = null,
     onClick: (() -> Unit)? = null,
 ) {
@@ -504,7 +503,7 @@ fun WarningCard(
         colors = CardDefaults.defaultColors(
             color = color ?: when {
                 isDynamicColor -> colorScheme.errorContainer
-                isInDarkTheme(themeMode) -> Color(0XFF310808)
+                isInDarkTheme() -> Color(0XFF310808)
                 else -> Color(0xFFF8E2E2)
             }
         ),

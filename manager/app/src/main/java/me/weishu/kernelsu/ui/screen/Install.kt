@@ -64,6 +64,7 @@ import me.weishu.kernelsu.ui.component.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
@@ -100,6 +101,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 fun InstallScreen() {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
+    val enableBlur = LocalEnableBlur.current
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)
     }
@@ -176,10 +178,14 @@ fun InstallScreen() {
 
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
+    val hazeStyle = if (enableBlur) {
+        HazeStyle(
+            backgroundColor = colorScheme.surface,
+            tint = HazeTint(colorScheme.surface.copy(0.8f))
+        )
+    } else {
+        HazeStyle.Unspecified
+    }
 
     Scaffold(
         topBar = {
@@ -188,6 +194,7 @@ fun InstallScreen() {
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
+                enableBlur = enableBlur,
             )
         },
         popupHost = { },
@@ -199,7 +206,7 @@ fun InstallScreen() {
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(state = hazeState)
+                .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
                 .padding(top = 12.dp)
                 .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
@@ -427,14 +434,19 @@ private fun TopBar(
     scrollBehavior: ScrollBehavior,
     hazeState: HazeState,
     hazeStyle: HazeStyle,
+    enableBlur: Boolean
 ) {
     TopAppBar(
-        modifier = Modifier.hazeEffect(hazeState) {
-            style = hazeStyle
-            blurRadius = 30.dp
-            noiseFactor = 0f
+        modifier = if (enableBlur) {
+            Modifier.hazeEffect(hazeState) {
+                style = hazeStyle
+                blurRadius = 30.dp
+                noiseFactor = 0f
+            }
+        } else {
+            Modifier
         },
-        color = Color.Transparent,
+        color = if (enableBlur) Color.Transparent else colorScheme.surface,
         title = stringResource(R.string.install),
         navigationIcon = {
             IconButton(

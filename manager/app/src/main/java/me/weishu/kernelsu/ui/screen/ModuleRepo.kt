@@ -94,6 +94,7 @@ import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
@@ -202,17 +203,22 @@ fun ModuleRepoScreen(
         derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
 
+    val enableBlur = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
+    val hazeStyle = if (enableBlur) {
+        HazeStyle(
+            backgroundColor = colorScheme.surface,
+            tint = HazeTint(colorScheme.surface.copy(0.8f))
+        )
+    } else {
+        HazeStyle.Unspecified
+    }
 
     Scaffold(
         topBar = {
             searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
-                    color = Color.Transparent,
+                    color = if (enableBlur) Color.Transparent else colorScheme.surface,
                     title = stringResource(R.string.module_repos),
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
@@ -455,7 +461,7 @@ fun ModuleRepoScreen(
                             .scrollEndHaptic()
                             .overScrollVertical()
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
-                            .hazeSource(state = hazeState),
+                            .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
                         contentPadding = PaddingValues(
                             top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
@@ -1007,11 +1013,10 @@ fun InfoPage(
 fun ModuleRepoDetailScreen(
     module: RepoModuleArg
 ) {
-    val navigator = LocalNavigator.current
     val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
-    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
+    val navigator = LocalNavigator.current
+    val enableBlur = LocalEnableBlur.current
+    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isInDarkTheme()) 0.7f else 0.9f)
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
@@ -1028,7 +1033,6 @@ fun ModuleRepoDetailScreen(
     var webUrl by remember(module.moduleId) { mutableStateOf("https://modules.kernelsu.org/module/${module.moduleId}") }
     var sourceUrl by remember(module.moduleId) { mutableStateOf("https://github.com/KernelSU-Modules-Repo/${module.moduleId}") }
 
-
     val scrollBehavior = MiuixScrollBehavior()
 
     val hazeState = remember { HazeState() }
@@ -1040,12 +1044,14 @@ fun ModuleRepoDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier.hazeEffect(hazeState) {
-                    style = hazeStyle
-                    blurRadius = 30.dp
-                    noiseFactor = 0f
-                },
-                color = Color.Transparent,
+                modifier = if (enableBlur) {
+                    Modifier.hazeEffect(hazeState) {
+                        style = hazeStyle
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                    }
+                } else Modifier,
+                color = if (enableBlur) Color.Transparent else colorScheme.surface,
                 title = module.moduleName,
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
@@ -1132,11 +1138,15 @@ fun ModuleRepoDetailScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .hazeEffect(hazeState) {
-                        style = hazeStyle
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                    }
+                    .then(
+                        if (enableBlur) {
+                            Modifier.hazeEffect(hazeState) {
+                                style = hazeStyle
+                                blurRadius = 30.dp
+                                noiseFactor = 0f
+                            }
+                        } else Modifier.background(colorScheme.surface),
+                    )
                     .zIndex(1f)
                     .padding(
                         top = innerPadding.calculateTopPadding() + dynamicTopPadding,
@@ -1154,7 +1164,9 @@ fun ModuleRepoDetailScreen(
                             pagerState.animateScrollToPage(page = index, animationSpec = tween(easing = EaseInOut))
                         }
                     },
-                    colors = TabRowDefaults.tabRowColors(backgroundColor = Color.Transparent),
+                    colors = TabRowDefaults.tabRowColors(
+                        backgroundColor = if (enableBlur) Color.Transparent else colorScheme.surface
+                    ),
                     height = tabRowHeight,
                 )
             }

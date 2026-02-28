@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.component
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.util.Log
@@ -23,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
@@ -54,7 +52,6 @@ fun GithubMarkdown(
     isLoading: MutableState<Boolean> = mutableStateOf(true)
 ) {
     isLoading.value = true
-    val context = LocalContext.current
 
     val density = LocalDensity.current
     val systemDensity = LocalResources.current.displayMetrics.density
@@ -63,9 +60,7 @@ fun GithubMarkdown(
     val newtTextZoom = (90 * pageScale * fontScale).toInt()
 
     val scrollInterface = remember { MarkdownScrollInterface() }
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val themeMode = prefs.getInt("color_mode", 0)
-    val isDark = isInDarkTheme(themeMode)
+    val isDark = isInDarkTheme()
     val dir = if (LocalLayoutDirection.current == LayoutDirection.Rtl) "rtl" else "ltr"
 
     val bgArgb = MiuixTheme.colorScheme.surfaceContainer.toArgb()
@@ -130,6 +125,10 @@ fun GithubMarkdown(
                         textZoom = newtTextZoom
                         setSupportZoom(false)
                         setGeolocationEnabled(false)
+                        layoutParams = FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.WRAP_CONTENT
+                        )
                     }
                     addJavascriptInterface(scrollInterface, "AndroidScroll")
                     webViewClient = object : WebViewClient() {

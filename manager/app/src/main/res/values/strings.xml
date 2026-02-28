@@ -210,5 +210,11 @@
     <string name="select_file_tip_nogki">Please select the GKI device image file you want to patch</string>
     <string name="current_kmi">KMI version of this device: %s</string>
     <string name="current_device_kmi">This device KMI</string>
+    <string name="settings_enable_blur">Blur</string>
+    <string name="settings_enable_blur_summary">Enable blur effect for top and bottom bars</string>
+    <string name="settings_floating_bottom_bar">Floating bottom bar</string>
+    <string name="settings_floating_bottom_bar_summary">Use Apple style floating bottom bar</string>
+    <string name="settings_enable_glass">Liquid glass</string>
+    <string name="settings_enable_glass_summary">Enable liquid glass effect for floating bottom bar</string>
     <string name="show_only_primary_user_apps">Show only primary user apps</string>
 </resources>

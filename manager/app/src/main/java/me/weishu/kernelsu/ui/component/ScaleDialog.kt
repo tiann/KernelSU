@@ -35,7 +35,7 @@ fun ScaleDialog(
         onDismissRequest = { showDialog.value = false },
     ) {
         var text by remember(showDialog.value) {
-            mutableStateOf((volumeState() * 100).toString().removeSuffix(".0"))
+            mutableStateOf((volumeState() * 100).toInt().toString())
         }
         TextField(
             modifier = Modifier.padding(bottom = 16.dp),
@@ -52,7 +52,7 @@ fun ScaleDialog(
                 if (newValue.isEmpty()) {
                     text = ""
                 } else {
-                    val valid = newValue.count { it == '.' } <= 1 && newValue.all { it.isDigit() || it == '.' }
+                    val valid = newValue.all { it.isDigit() }
                     if (valid) {
                         text = newValue
                     }
@@ -69,8 +69,8 @@ fun ScaleDialog(
             TextButton(
                 text = stringResource(android.R.string.ok),
                 onClick = {
-                    val parsed = text.toFloatOrNull()
-                    val clamped = parsed?.coerceIn(80f, 110f) ?: (volumeState() * 100)
+                    val parsed = text.toIntOrNull()
+                    val clamped = parsed?.coerceIn(80, 110) ?: (volumeState() * 100).toInt()
                     onVolumeChange(clamped / 100f)
                     showDialog.value = false
                 },

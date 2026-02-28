@@ -82,6 +82,7 @@ import me.weishu.kernelsu.ui.component.DropdownItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import top.yukonga.miuix.kmp.basic.Card
@@ -169,11 +170,16 @@ fun AppProfileTemplateScreen(
         targetValue = if (fabVisible) 0.dp else 100.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
         animationSpec = tween(durationMillis = 350)
     )
+    val enableBlur = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
+    val hazeStyle = if (enableBlur) {
+        HazeStyle(
+            backgroundColor = colorScheme.surface,
+            tint = HazeTint(colorScheme.surface.copy(0.8f))
+        )
+    } else {
+        HazeStyle.Unspecified
+    }
 
     Scaffold(
         topBar = {
@@ -186,9 +192,6 @@ fun AppProfileTemplateScreen(
             }
             TopBar(
                 onBack = dropUnlessResumed { navigator.pop() },
-                onSync = {
-                    scope.launch { viewModel.fetchTemplates(true) }
-                },
                 onImport = {
                     scope.launch {
                         clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
@@ -222,6 +225,7 @@ fun AppProfileTemplateScreen(
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
+                enableBlur = enableBlur,
             )
         },
         floatingActionButton = {
@@ -319,7 +323,7 @@ fun AppProfileTemplateScreen(
                     .overScrollVertical()
                     .nestedScroll(nestedScrollConnection)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .hazeSource(state = hazeState)
+                    .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
                     .padding(horizontal = 12.dp),
                 contentPadding = innerPadding,
                 overscrollEffect = null
@@ -452,20 +456,24 @@ private fun InfoChip(icon: ImageVector, text: String) {
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
-    onSync: () -> Unit = {},
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
     hazeState: HazeState,
     hazeStyle: HazeStyle,
+    enableBlur: Boolean
 ) {
     TopAppBar(
-        modifier = Modifier.hazeEffect(hazeState) {
-            style = hazeStyle
-            blurRadius = 30.dp
-            noiseFactor = 0f
+        modifier = if (enableBlur) {
+            Modifier.hazeEffect(hazeState) {
+                style = hazeStyle
+                blurRadius = 30.dp
+                noiseFactor = 0f
+            }
+        } else {
+            Modifier
         },
-        color = Color.Transparent,
+        color = if (enableBlur) Color.Transparent else colorScheme.surface,
         title = stringResource(R.string.settings_profile_template),
         navigationIcon = {
             IconButton(

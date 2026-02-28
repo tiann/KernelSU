@@ -19,7 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.AspectRatio
+import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.CallToAction
 import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Delete
@@ -33,6 +35,7 @@ import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
+import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -85,6 +88,7 @@ import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import kotlin.math.roundToInt
 
 /**
  * @author weishu
@@ -95,6 +99,10 @@ fun SettingPager(
     navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val enableBlur = prefs.getBoolean("enable_blur", true)
+
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = remember { HazeState() }
     val hazeStyle = HazeStyle(
@@ -105,12 +113,16 @@ fun SettingPager(
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier.hazeEffect(hazeState) {
-                    style = hazeStyle
-                    blurRadius = 30.dp
-                    noiseFactor = 0f
+                modifier = if (enableBlur) {
+                    Modifier.hazeEffect(hazeState) {
+                        style = hazeStyle
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                    }
+                } else {
+                    Modifier
                 },
-                color = Color.Transparent,
+                color = if (enableBlur) Color.Transparent else colorScheme.surface,
                 title = stringResource(R.string.settings),
                 scrollBehavior = scrollBehavior
             )
@@ -118,9 +130,7 @@ fun SettingPager(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val context = LocalContext.current
         val activity = LocalActivity.current
-        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
         val loadingDialog = rememberLoadingDialog()
         val showScaleDialog = rememberSaveable { mutableStateOf(false) }
@@ -316,6 +326,70 @@ fun SettingPager(
                             }
                         )
                     }
+                    var enableBlur by rememberSaveable {
+                        mutableStateOf(prefs.getBoolean("enable_blur", true))
+                    }
+                    SuperSwitch(
+                        title = stringResource(id = R.string.settings_enable_blur),
+                        summary = stringResource(id = R.string.settings_enable_blur_summary),
+                        startAction = {
+                            Icon(
+                                Icons.Rounded.WaterDrop,
+                                modifier = Modifier.padding(end = 6.dp),
+                                contentDescription = stringResource(id = R.string.settings_enable_blur),
+                                tint = colorScheme.onBackground
+                            )
+                        },
+                        checked = enableBlur,
+                        onCheckedChange = {
+                            prefs.edit { putBoolean("enable_blur", it) }
+                            enableBlur = it
+                        }
+                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        var enableFloatingBottomBar by rememberSaveable {
+                            mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar", false))
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_floating_bottom_bar),
+                            summary = stringResource(id = R.string.settings_floating_bottom_bar_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.CallToAction,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_floating_bottom_bar),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = enableFloatingBottomBar,
+                            onCheckedChange = {
+                                prefs.edit { putBoolean("enable_floating_bottom_bar", it) }
+                                enableFloatingBottomBar = it
+                            }
+                        )
+                        AnimatedVisibility(visible = enableFloatingBottomBar) {
+                            var enableFloatingBottomBarBlur by rememberSaveable {
+                                mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar_blur", false))
+                            }
+                            SuperSwitch(
+                                title = stringResource(id = R.string.settings_enable_glass),
+                                summary = stringResource(id = R.string.settings_enable_glass_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.BlurOn,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_enable_glass),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                checked = enableFloatingBottomBarBlur,
+                                onCheckedChange = {
+                                    prefs.edit { putBoolean("enable_floating_bottom_bar_blur", it) }
+                                    enableFloatingBottomBarBlur = it
+                                }
+                            )
+                        }
+                    }
                     var pageScale by rememberSaveable {
                         mutableFloatStateOf(prefs.getFloat("page_scale", 1.0f))
                     }
@@ -345,6 +419,7 @@ fun SettingPager(
                                     pageScale = it
                                 },
                                 onValueChangeFinished = {
+                                    pageScale = (pageScale * 100).roundToInt() / 100f
                                     prefs.edit { putFloat("page_scale", pageScale) }
                                 },
                                 valueRange = 0.8f..1.1f,

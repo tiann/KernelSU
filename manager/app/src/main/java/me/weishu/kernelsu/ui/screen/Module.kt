@@ -110,6 +110,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.ConfirmResult
+import me.weishu.kernelsu.ui.component.ListPopupDefaults.MenuPositionProvider
 import me.weishu.kernelsu.ui.component.RebootListPopup
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
@@ -117,6 +118,7 @@ import me.weishu.kernelsu.ui.component.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
@@ -137,7 +139,6 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
-import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -179,6 +180,7 @@ fun ModulePager(
     val context = LocalContext.current
     var isInitialized by rememberSaveable { mutableStateOf(false) }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val enableBlur = LocalEnableBlur.current
 
     LaunchedEffect(Unit) {
         when {
@@ -541,72 +543,78 @@ fun ModulePager(
     )
 
     val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
+    val hazeStyle = if (enableBlur) {
+        HazeStyle(
+            backgroundColor = colorScheme.surface,
+            tint = HazeTint(colorScheme.surface.copy(0.8f))
+        )
+    } else {
+        HazeStyle.Unspecified
+    }
 
     Scaffold(
         topBar = {
             searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
-                    color = Color.Transparent,
+                    color = if (enableBlur) Color.Transparent else colorScheme.surface,
                     title = stringResource(R.string.module),
                     actions = {
-                        val showTopPopup = remember { mutableStateOf(false) }
-                        SuperListPopup(
-                            show = showTopPopup,
-                            popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                            alignment = PopupPositionProvider.Align.TopEnd,
-                            onDismissRequest = {
-                                showTopPopup.value = false
-                            }
-                        ) {
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_sort_action_first),
-                                    optionSize = 2,
-                                    isSelected = viewModel.sortActionFirst,
-                                    onSelectedIndexChange = {
-                                        viewModel.sortActionFirst = !viewModel.sortActionFirst
-                                        prefs.edit {
-                                            putBoolean("module_sort_action_first", viewModel.sortActionFirst)
-                                        }
-                                        scope.launch {
-                                            viewModel.fetchModuleList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_sort_enabled_first),
-                                    optionSize = 2,
-                                    isSelected = viewModel.sortEnabledFirst,
-                                    onSelectedIndexChange = {
-                                        viewModel.sortEnabledFirst = !viewModel.sortEnabledFirst
-                                        prefs.edit {
-                                            putBoolean("module_sort_enabled_first", viewModel.sortEnabledFirst)
-                                        }
-                                        scope.launch {
-                                            viewModel.fetchModuleList()
-                                        }
-                                        showTopPopup.value = false
-                                    },
-                                    index = 1
+                        Box {
+                            val showTopPopup = remember { mutableStateOf(false) }
+                            IconButton(
+                                modifier = Modifier.padding(end = 8.dp),
+                                onClick = { showTopPopup.value = true },
+                                holdDownState = showTopPopup.value
+                            ) {
+                                Icon(
+                                    imageVector = MiuixIcons.MoreCircle,
+                                    tint = colorScheme.onSurface,
+                                    contentDescription = null
                                 )
                             }
-                        }
-                        IconButton(
-                            modifier = Modifier.padding(end = 8.dp),
-                            onClick = { showTopPopup.value = true },
-                            holdDownState = showTopPopup.value
-                        ) {
-                            Icon(
-                                imageVector = MiuixIcons.MoreCircle,
-                                tint = colorScheme.onSurface,
-                                contentDescription = null
-                            )
+                            SuperListPopup(
+                                show = showTopPopup,
+                                popupPositionProvider = MenuPositionProvider,
+                                alignment = PopupPositionProvider.Align.TopEnd,
+                                onDismissRequest = {
+                                    showTopPopup.value = false
+                                }
+                            ) {
+                                ListPopupColumn {
+                                    DropdownImpl(
+                                        text = stringResource(R.string.module_sort_action_first),
+                                        optionSize = 2,
+                                        isSelected = viewModel.sortActionFirst,
+                                        onSelectedIndexChange = {
+                                            viewModel.sortActionFirst = !viewModel.sortActionFirst
+                                            prefs.edit {
+                                                putBoolean("module_sort_action_first", viewModel.sortActionFirst)
+                                            }
+                                            scope.launch {
+                                                viewModel.fetchModuleList()
+                                            }
+                                            showTopPopup.value = false
+                                        },
+                                        index = 0
+                                    )
+                                    DropdownImpl(
+                                        text = stringResource(R.string.module_sort_enabled_first),
+                                        optionSize = 2,
+                                        isSelected = viewModel.sortEnabledFirst,
+                                        onSelectedIndexChange = {
+                                            viewModel.sortEnabledFirst = !viewModel.sortEnabledFirst
+                                            prefs.edit {
+                                                putBoolean("module_sort_enabled_first", viewModel.sortEnabledFirst)
+                                            }
+                                            scope.launch {
+                                                viewModel.fetchModuleList()
+                                            }
+                                            showTopPopup.value = false
+                                        },
+                                        index = 1
+                                    )
+                                }
+                            }
                         }
                         RebootListPopup(
                             modifier = Modifier.padding(end = 16.dp),
@@ -838,7 +846,7 @@ fun ModulePager(
                             .overScrollVertical()
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
                             .nestedScroll(nestedScrollConnection)
-                            .hazeSource(state = hazeState),
+                            .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
                         scope = scope,
                         modules = modules,
                         onClickModule = { id, name, hasWebUi ->
@@ -1209,11 +1217,8 @@ fun ModuleItem(
     onAddActionShortcut: () -> Unit,
     onOpenWebUi: () -> Unit
 ) {
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
-    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isDark) 0.7f else 0.9f)
+    val actionIconTint = colorScheme.onSurface.copy(alpha = if (isInDarkTheme()) 0.7f else 0.9f)
     val updateBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     val updateTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
     val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }

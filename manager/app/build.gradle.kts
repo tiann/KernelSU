@@ -188,6 +188,7 @@ dependencies {
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
 
-    implementation(libs.haze)
+    implementation(libs.backdrop)
     implementation(libs.capsule)
+    implementation(libs.haze)
 }

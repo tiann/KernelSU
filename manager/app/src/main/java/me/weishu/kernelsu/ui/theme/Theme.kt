@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import me.weishu.kernelsu.ui.webui.MonetColorsProvider.UpdateCss
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
@@ -48,10 +49,19 @@ fun KernelSUTheme(
 
 @Composable
 @ReadOnlyComposable
-fun isInDarkTheme(themeMode: Int): Boolean {
-    return when (themeMode) {
+fun isInDarkTheme(): Boolean {
+    return when (LocalColorMode.current) {
         1, 4 -> false  // Force light mode
         2, 5 -> true   // Force dark mode
         else -> isSystemInDarkTheme()  // Follow system (0 or default)
     }
 }
+
+
+val LocalColorMode = staticCompositionLocalOf { 0 }
+
+val LocalEnableBlur = staticCompositionLocalOf { true }
+
+val LocalEnableFloatingBottomBar = staticCompositionLocalOf { false }
+
+val LocalEnableFloatingBottomBarBlur = staticCompositionLocalOf { true }

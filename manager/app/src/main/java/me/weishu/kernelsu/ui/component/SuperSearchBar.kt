@@ -70,6 +70,7 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text
@@ -154,8 +155,8 @@ fun SearchStatus.SearchBox(
     },
     searchBarTopPadding: Dp = 12.dp,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    hazeState: HazeState,
-    hazeStyle: HazeStyle,
+    hazeState: HazeState? = null,
+    hazeStyle: HazeStyle? = null,
     content: @Composable (MutableState<Dp>) -> Unit
 ) {
     val searchStatus = this
@@ -184,11 +185,17 @@ fun SearchStatus.SearchBox(
             .pointerInput(Unit) {
                 detectTapGestures { searchStatus.current = SearchStatus.Status.EXPANDING }
             }
-            .hazeEffect(hazeState) {
-                style = hazeStyle
-                blurRadius = 30.dp
-                noiseFactor = 0f
-            }
+            .then(
+                if (hazeState != null && hazeStyle != null) {
+                    Modifier.hazeEffect(hazeState) {
+                        style = hazeStyle
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                    }
+                } else {
+                    Modifier.background(colorScheme.surface)
+                }
+            )
     ) {
         collapseBar(searchStatus, searchBarTopPadding, contentPadding)
     }
@@ -397,6 +404,7 @@ fun SearchBarFake(
     innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val layoutDirection = LocalLayoutDirection.current
+    val enableBlur = LocalEnableBlur.current
     InputField(
         query = "",
         onQueryChange = { },
@@ -412,6 +420,8 @@ fun SearchBarFake(
             )
         },
         modifier = Modifier
+            .let { if (!enableBlur) it.background(colorScheme.surface) else it }
+            .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(
                 start = innerPadding.calculateStartPadding(layoutDirection),

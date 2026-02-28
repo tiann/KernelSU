@@ -77,6 +77,7 @@ import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.pickPrimary
@@ -117,6 +118,7 @@ fun SuperUserPager(
     val context = LocalContext.current
     var isInitialized by rememberSaveable { mutableStateOf(false) }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val enableBlur = LocalEnableBlur.current
 
     LaunchedEffect(Unit) {
         when {
@@ -140,11 +142,16 @@ fun SuperUserPager(
     val dynamicTopPadding by remember {
         derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
-    val hazeState = remember { HazeState() }
-    val hazeStyle = HazeStyle(
-        backgroundColor = colorScheme.surface,
-        tint = HazeTint(colorScheme.surface.copy(0.8f))
-    )
+
+    val hazeStyle = if (enableBlur) {
+        HazeStyle(
+            backgroundColor = colorScheme.surface,
+            tint = HazeTint(colorScheme.surface.copy(0.8f))
+        )
+    } else {
+        HazeStyle.Unspecified
+    }
+
     val isMultiUser = remember(viewModel.userIds.value) {
         viewModel.userIds.value.size > 1
     }
@@ -153,7 +160,7 @@ fun SuperUserPager(
         topBar = {
             searchStatus.TopAppBarAnim(hazeState = hazeState, hazeStyle = hazeStyle) {
                 TopAppBar(
-                    color = Color.Transparent,
+                    color = if (enableBlur) Color.Transparent else colorScheme.surface,
                     title = stringResource(R.string.superuser),
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
@@ -352,7 +359,7 @@ fun SuperUserPager(
                             .scrollEndHaptic()
                             .overScrollVertical()
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
-                            .hazeSource(state = hazeState),
+                            .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
                         contentPadding = PaddingValues(
                             top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
@@ -507,15 +514,13 @@ private fun GroupItem(
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val isDark = isInDarkTheme(prefs.getInt("color_mode", 0))
+    val isInDarkTheme = isInDarkTheme()
     val bg = colorScheme.secondaryContainer.copy(alpha = 0.8f)
     val rootBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-    val unmountBg = if (isDark) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f)
+    val unmountBg = if (isInDarkTheme) Color.White.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.3f)
     val fg = colorScheme.onSecondaryContainer
     val rootFg = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
-    val unmountFg = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f)
+    val unmountFg = if (isInDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f)
 
     val userId = group.uid / 100000
     val packageInfo = group.primary.packageInfo
