@@ -14,10 +14,36 @@
 #include "ksu.h"
 #include "file_wrapper.h"
 
+// workaround for A12-5.10 kernel
+// Some third-party kernel (e.g. linegaeOS) uses wrong toolchain, which supports
+// CC_HAVE_STACKPROTECTOR_SYSREG while gki's toolchain doesn't.
+// Therefore, ksu lkm, which uses gki toolchain, requires this __stack_chk_guard,
+// while those third-party kernel can't provide.
+// Thus, we manually provide it instead of using kernel's
+#if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_STACKPROTECTOR_PER_TASK)
+#include <linux/stackprotector.h>
+#include <linux/random.h>
+unsigned long __stack_chk_guard __ro_after_init
+    __attribute__((visibility("hidden")));
+#define NO_STACK_PROTECTOR_WORKAROUND __attribute__((no_stack_protector))
+#else
+#define NO_STACK_PROTECTOR_WORKAROUND
+#endif
+
 struct cred *ksu_cred;
 
 int __init kernelsu_init(void)
 {
+#if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_STACKPROTECTOR_PER_TASK)
+    unsigned long canary;
+
+    /* Try to get a semi random initial value. */
+    get_random_bytes(&canary, sizeof(canary));
+    canary ^= LINUX_VERSION_CODE;
+    canary &= CANARY_MASK;
+    __stack_chk_guard = canary;
+#endif
+
 #ifdef CONFIG_KSU_DEBUG
     pr_alert("*************************************************************");
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
