@@ -133,10 +133,9 @@ class SettingsViewModel(
                 1 -> if (repo.setSuEnabled(true)) {
                     repo.execKsudFeatureSave()
                     if (repo.setSuEnabled(false)) {
-                        repo.setSuCompatModePref(0) // Logic copied from original: prefs.edit { putInt("su_compat_mode", 0) } why 0? Original code sets 0 for mode 1 too?
-                        // Wait, looking at original code:
-                        // 1 -> if (Natives.setSuEnabled(true)) { execKsud... if (Natives.setSuEnabled(false)) { prefs... putInt(..., 0); suCompatMode = 1 } }
-                        // It seems su_compat_mode pref is just internal tracking?
+                        // "Disable until reboot" implies it should be enabled on next boot.
+                        // We set the preference to 0 (Enabled) to match the persistent state.
+                        repo.setSuCompatModePref(0)
                         _uiState.update { it.copy(suCompatMode = 1, isSuEnabled = false) }
                     }
                 }

@@ -138,7 +138,7 @@ class ModuleViewModel(
                     .toPinyinString(it.name).contains(searchText, true)
             }.sortedWith(moduleComparator(state))
 
-            _uiState.update { it.copy(moduleList = filtered, isRefreshing = false) }
+            _uiState.update { it.copy(moduleList = filtered) }
         }
     }
 

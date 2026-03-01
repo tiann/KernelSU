@@ -25,14 +25,12 @@ object AppIconCache {
         }
     }
 
-    suspend fun loadIcon(context: Context, applicationInfo: ApplicationInfo, size: Int): Drawable {
+    suspend fun loadIcon(context: Context, applicationInfo: ApplicationInfo, size: Int): Bitmap {
         val key = "${applicationInfo.packageName}:${applicationInfo.uid}"
 
         synchronized(lruCache) {
             val cachedBitmap = lruCache.get(key)
-            if (cachedBitmap != null) {
-                return cachedBitmap.toDrawable(context.resources)
-            }
+            if (cachedBitmap != null) return cachedBitmap
         }
 
         return withContext(Dispatchers.IO) {
@@ -100,7 +98,7 @@ object AppIconCache {
                 lruCache.put(key, resultBitmap)
             }
 
-            resultBitmap.toDrawable(context.resources)
+            resultBitmap
         }
     }
 

@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.component
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
-import android.graphics.drawable.Drawable
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -18,11 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.withSave
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -43,11 +39,11 @@ fun AppIconImage(
     val targetSizePx = with(density) { 48.dp.roundToPx() }
 
     Box(modifier = modifier) {
-        var appIcon by remember { mutableStateOf<Drawable?>(null) }
+        var appIcon by remember { mutableStateOf<ImageBitmap?>(null) }
 
         LaunchedEffect(applicationInfo) {
             val loadedIcon = AppIconCache.loadIcon(context, applicationInfo, targetSizePx)
-            appIcon = loadedIcon
+            appIcon = loadedIcon.asImageBitmap()
         }
 
         val appLabel by produceState(initialValue = label, key1 = applicationInfo) {
@@ -68,9 +64,10 @@ fun AppIconImage(
             if (icon == null) {
                 PlaceHolderBox(Modifier.fillMaxSize())
             } else {
-                val painter = remember(icon) { DrawablePainter(icon) }
                 Image(
-                    painter = painter, contentDescription = appLabel, modifier = Modifier.fillMaxSize()
+                    bitmap = icon,
+                    contentDescription = appLabel,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -94,23 +91,4 @@ private fun PlaceHolderBox(modifier: Modifier = Modifier) {
             .clip(ContinuousRoundedRectangle(12.dp))
             .background(colorScheme.secondaryContainer)
     )
-}
-
-class DrawablePainter(private val drawable: Drawable) : Painter() {
-
-    override val intrinsicSize: Size
-        get() = Size(
-            width = drawable.intrinsicWidth.toFloat(), height = drawable.intrinsicHeight.toFloat()
-        )
-
-    init {
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-    }
-
-    override fun DrawScope.onDraw() {
-        drawContext.canvas.withSave {
-            drawable.setBounds(0, 0, size.width.toInt(), size.height.toInt())
-            drawable.draw(drawContext.canvas.nativeCanvas)
-        }
-    }
 }

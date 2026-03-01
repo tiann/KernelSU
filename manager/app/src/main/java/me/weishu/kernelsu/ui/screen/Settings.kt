@@ -36,12 +36,13 @@ import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -131,10 +132,6 @@ fun SettingPager(
         val showScaleDialog = rememberSaveable { mutableStateOf(false) }
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            viewModel.refresh()
-        }
 
         LazyColumn(
             modifier = Modifier
@@ -352,6 +349,7 @@ fun SettingPager(
                             }
                         )
                     }
+                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
                     SuperArrow(
                         title = stringResource(id = R.string.settings_page_scale),
                         summary = stringResource(id = R.string.settings_page_scale_summary),
@@ -365,7 +363,7 @@ fun SettingPager(
                         },
                         endActions = {
                             Text(
-                                text = "${(uiState.pageScale * 100).toInt()}%",
+                                text = "${(sliderValue * 100).toInt()}%",
                                 color = colorScheme.onSurfaceVariantActions,
                             )
                         },
@@ -373,12 +371,13 @@ fun SettingPager(
                         holdDownState = showScaleDialog.value,
                         bottomAction = {
                             Slider(
-                                value = uiState.pageScale,
+                                value = sliderValue,
                                 onValueChange = {
-                                    viewModel.setPageScale(it)
+                                    sliderValue = it
                                 },
                                 onValueChangeFinished = {
-                                    val scale = (uiState.pageScale * 100).roundToInt() / 100f
+                                    val scale = (sliderValue * 100).roundToInt() / 100f
+                                    sliderValue = scale
                                     viewModel.setPageScale(scale)
                                 },
                                 valueRange = 0.8f..1.1f,

@@ -69,6 +69,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
@@ -325,6 +326,7 @@ fun SuperUserPager(
                         val job = viewModel.loadAppList(force = true)
                         scope.launch {
                             job.join()
+                            delay(10)
                             listState.animateScrollToItem(0)
                         }
                     },

@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -285,7 +284,6 @@ class SuperUserViewModel(
         return viewModelScope.launch {
             if (force || _uiState.value.appList.isEmpty()) {
                 fetchAppList()
-                delay(10)
             } else {
                 refreshAppList(resort)
             }
