@@ -24,17 +24,17 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
             }
 
             val request = Request.Builder().url(MODULES_URL).build()
-            val response = ksuApp.okhttpClient.newCall(request).execute()
+            ksuApp.okhttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw Exception("Fetch failed: ${response.code}")
+                }
 
-            if (!response.isSuccessful) {
-                throw Exception("Fetch failed: ${response.code}")
-            }
-
-            val body = response.body.string()
-            val json = JSONArray(body)
-            (0 until json.length()).mapNotNull { idx ->
-                val item = json.optJSONObject(idx) ?: return@mapNotNull null
-                parseRepoModule(item)
+                val body = response.body.string()
+                val json = JSONArray(body)
+                (0 until json.length()).mapNotNull { idx ->
+                    val item = json.optJSONObject(idx) ?: return@mapNotNull null
+                    parseRepoModule(item)
+                }
             }
         }
     }

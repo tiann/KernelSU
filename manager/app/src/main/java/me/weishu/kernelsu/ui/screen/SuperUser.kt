@@ -239,6 +239,7 @@ fun SuperUserPager(
                 expandedSearchUids.value = searchGroups.filter { it.apps.size > 1 }.map { it.uid }.toSet()
             }
             searchStatus.SearchPager(
+                onSearchStatusChange = viewModel::updateSearchStatus,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
@@ -286,6 +287,7 @@ fun SuperUserPager(
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
         searchStatus.SearchBox(
+            onSearchStatusChange = viewModel::updateSearchStatus,
             searchBarTopPadding = dynamicTopPadding, contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),
                 start = innerPadding.calculateStartPadding(layoutDirection),

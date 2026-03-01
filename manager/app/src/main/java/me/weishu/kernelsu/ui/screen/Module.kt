@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen
 
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
@@ -166,6 +167,7 @@ private enum class ShortcutType {
     WebUI
 }
 
+@SuppressLint("LocalContextGetResourceValueCall", "StringFormatInvalid")
 @Composable
 fun ModulePager(
     navigator: Navigator,
@@ -586,9 +588,10 @@ fun ModulePager(
                                         optionSize = 2,
                                         isSelected = uiState.sortActionFirst,
                                         onSelectedIndexChange = {
-                                            viewModel.setSortActionFirst(!uiState.sortActionFirst)
+                                            val newValue = !uiState.sortActionFirst
+                                            viewModel.setSortActionFirst(newValue)
                                             prefs.edit {
-                                                putBoolean("module_sort_action_first", uiState.sortActionFirst)
+                                                putBoolean("module_sort_action_first", newValue)
                                             }
                                             scope.launch {
                                                 viewModel.fetchModuleList()
@@ -602,9 +605,10 @@ fun ModulePager(
                                         optionSize = 2,
                                         isSelected = uiState.sortEnabledFirst,
                                         onSelectedIndexChange = {
-                                            viewModel.setSortEnabledFirst(!uiState.sortEnabledFirst)
+                                            val newValue = !uiState.sortEnabledFirst
+                                            viewModel.setSortEnabledFirst(newValue)
                                             prefs.edit {
-                                                putBoolean("module_sort_enabled_first", uiState.sortEnabledFirst)
+                                                putBoolean("module_sort_enabled_first", newValue)
                                             }
                                             scope.launch {
                                                 viewModel.fetchModuleList()
@@ -707,6 +711,7 @@ fun ModulePager(
         },
         popupHost = {
             searchStatus.SearchPager(
+                onSearchStatusChange = viewModel::updateSearchStatus,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
@@ -828,6 +833,7 @@ fun ModulePager(
             else -> {
                 val layoutDirection = LocalLayoutDirection.current
                 searchStatus.SearchBox(
+                    onSearchStatusChange = viewModel::updateSearchStatus,
                     searchBarTopPadding = dynamicTopPadding,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding(),

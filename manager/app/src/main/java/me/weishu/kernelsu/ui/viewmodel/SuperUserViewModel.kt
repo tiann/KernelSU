@@ -68,7 +68,7 @@ class SuperUserViewModel(
         return viewModelScope.launch {
             // Re-filter when setting changes
             val (filtered, grouped) = withContext(Dispatchers.IO) {
-                val list = filterAndSort(repo.getAppList().getOrNull()?.first ?: emptyList())
+                val list = filterAndSort(apps)
                 list to buildGroups(list)
             }
             _uiState.update { it.copy(appList = filtered, groupedApps = grouped) }
@@ -80,32 +80,39 @@ class SuperUserViewModel(
         return viewModelScope.launch {
             // Re-filter when setting changes
             val (filtered, grouped) = withContext(Dispatchers.IO) {
-                val list = filterAndSort(repo.getAppList().getOrNull()?.first ?: emptyList())
+                val list = filterAndSort(apps)
                 list to buildGroups(list)
             }
             _uiState.update { it.copy(appList = filtered, groupedApps = grouped) }
         }
     }
 
+    fun updateSearchStatus(status: SearchStatus) {
+        _uiState.update { it.copy(searchStatus = status) }
+    }
+
     suspend fun updateSearchText(text: String) {
         _uiState.update {
             it.copy(
-                searchStatus = it.searchStatus.apply { searchText = text }
+                searchStatus = it.searchStatus.copy(searchText = text)
             )
         }
 
         if (text.isEmpty()) {
             _uiState.update {
                 it.copy(
-                    searchStatus = it.searchStatus.apply { resultStatus = SearchStatus.ResultStatus.DEFAULT },
+                    searchStatus = it.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.DEFAULT),
                     searchResults = emptyList()
                 )
             }
             return
         }
 
+        _uiState.update {
+            it.copy(searchStatus = it.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.LOAD))
+        }
+
         val result = withContext(Dispatchers.IO) {
-            _uiState.value.searchStatus.resultStatus = SearchStatus.ResultStatus.LOAD
             _uiState.value.appList.filter {
                 it.label.contains(text, true) || it.packageName.contains(
                     text,
@@ -118,9 +125,9 @@ class SuperUserViewModel(
         _uiState.update {
             it.copy(
                 searchResults = result,
-                searchStatus = it.searchStatus.apply {
+                searchStatus = it.searchStatus.copy(
                     resultStatus = if (result.isEmpty()) SearchStatus.ResultStatus.EMPTY else SearchStatus.ResultStatus.SHOW
-                }
+                )
             )
         }
     }

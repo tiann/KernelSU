@@ -63,25 +63,30 @@ class ModuleRepoViewModel(
         }
     }
 
+    fun updateSearchStatus(status: SearchStatus) {
+        _uiState.update { it.copy(searchStatus = status) }
+    }
+
     suspend fun updateSearchText(text: String) {
         _uiState.update {
-            it.copy(
-                searchStatus = it.searchStatus.apply { searchText = text }
-            )
+            it.copy(searchStatus = it.searchStatus.copy(searchText = text))
         }
 
         if (text.isEmpty()) {
             _uiState.update {
                 it.copy(
-                    searchStatus = it.searchStatus.apply { resultStatus = SearchStatus.ResultStatus.DEFAULT },
+                    searchStatus = it.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.DEFAULT),
                     searchResults = emptyList()
                 )
             }
             return
         }
 
+        _uiState.update {
+            it.copy(searchStatus = it.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.LOAD))
+        }
+
         val result = withContext(Dispatchers.IO) {
-            _uiState.value.searchStatus.resultStatus = SearchStatus.ResultStatus.LOAD
             _uiState.value.modules.filter {
                 it.moduleId.contains(text, true)
                         || it.moduleName.contains(text, true)
@@ -94,9 +99,9 @@ class ModuleRepoViewModel(
         _uiState.update {
             it.copy(
                 searchResults = result,
-                searchStatus = it.searchStatus.apply {
+                searchStatus = it.searchStatus.copy(
                     resultStatus = if (result.isEmpty()) SearchStatus.ResultStatus.EMPTY else SearchStatus.ResultStatus.SHOW
-                }
+                )
             )
         }
     }

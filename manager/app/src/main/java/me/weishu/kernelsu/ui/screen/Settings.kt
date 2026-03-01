@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.content.Context
 import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -38,14 +37,11 @@ import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -55,14 +51,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.KernelSUApplication
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.ScaleDialog
@@ -71,9 +66,7 @@ import me.weishu.kernelsu.ui.component.UninstallDialog
 import me.weishu.kernelsu.ui.component.rememberLoadingDialog
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
-import me.weishu.kernelsu.ui.util.execKsud
-import me.weishu.kernelsu.ui.util.getFeaturePersistValue
-import me.weishu.kernelsu.ui.util.getFeatureStatus
+import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -100,8 +93,10 @@ fun SettingPager(
     bottomInnerPadding: Dp
 ) {
     val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val enableBlur = prefs.getBoolean("enable_blur", true)
+    val viewModel = viewModel<SettingsViewModel>()
+    val uiState by viewModel.uiState.collectAsState()
+
+    val enableBlur = uiState.enableBlur
 
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = remember { HazeState() }
@@ -137,6 +132,10 @@ fun SettingPager(
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
 
+        LaunchedEffect(Unit) {
+            viewModel.refresh()
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -149,10 +148,6 @@ fun SettingPager(
             overscrollEffect = null,
         ) {
             item {
-                var checkUpdate by rememberSaveable {
-                    mutableStateOf(prefs.getBoolean("check_update", true))
-                }
-
                 Card(
                     modifier = Modifier
                         .padding(top = 12.dp)
@@ -169,18 +164,12 @@ fun SettingPager(
                                 tint = colorScheme.onBackground
                             )
                         },
-                        checked = checkUpdate,
+                        checked = uiState.checkUpdate,
                         onCheckedChange = {
-                            prefs.edit {
-                                putBoolean("check_update", it)
-                            }
-                            checkUpdate = it
+                            viewModel.setCheckUpdate(it)
                         }
                     )
                     KsuIsValid {
-                        var checkModuleUpdate by rememberSaveable {
-                            mutableStateOf(prefs.getBoolean("module_check_update", true))
-                        }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_module_check_update),
                             summary = stringResource(id = R.string.settings_check_update_summary),
@@ -192,12 +181,9 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = checkModuleUpdate,
+                            checked = uiState.checkModuleUpdate,
                             onCheckedChange = {
-                                prefs.edit {
-                                    putBoolean("module_check_update", it)
-                                }
-                                checkModuleUpdate = it
+                                viewModel.setCheckModuleUpdate(it)
                             }
                         )
                     }
@@ -216,9 +202,6 @@ fun SettingPager(
                         stringResource(id = R.string.settings_theme_mode_monet_light),
                         stringResource(id = R.string.settings_theme_mode_monet_dark),
                     )
-                    var themeMode by rememberSaveable {
-                        mutableIntStateOf(prefs.getInt("color_mode", 0))
-                    }
                     SuperDropdown(
                         title = stringResource(id = R.string.settings_theme),
                         summary = stringResource(id = R.string.settings_theme_summary),
@@ -231,15 +214,14 @@ fun SettingPager(
                                 tint = colorScheme.onBackground
                             )
                         },
-                        selectedIndex = themeMode,
+                        selectedIndex = uiState.themeMode,
                         onSelectedIndexChange = { index ->
-                            prefs.edit { putInt("color_mode", index) }
-                            themeMode = index
+                            viewModel.setThemeMode(index)
                         }
                     )
 
                     AnimatedVisibility(
-                        visible = themeMode in 3..5
+                        visible = uiState.themeMode in 3..5
                     ) {
                         val colorItems = listOf(
                             stringResource(id = R.string.settings_key_color_default),
@@ -277,11 +259,8 @@ fun SettingPager(
                             Color(0xFF607D8F).toArgb(),
                             Color(0xFFFF9CA8).toArgb(),
                         )
-                        var keyColorIndex by rememberSaveable {
-                            mutableIntStateOf(
-                                colorValues.indexOf(prefs.getInt("key_color", 0)).takeIf { it >= 0 } ?: 0
-                            )
-                        }
+                        val keyColorIndex = colorValues.indexOf(uiState.keyColor).takeIf { it >= 0 } ?: 0
+
                         SuperDropdown(
                             title = stringResource(id = R.string.settings_key_color),
                             summary = stringResource(id = R.string.settings_key_color_summary),
@@ -296,16 +275,12 @@ fun SettingPager(
                             },
                             selectedIndex = keyColorIndex,
                             onSelectedIndexChange = { index ->
-                                prefs.edit { putInt("key_color", colorValues[index]) }
-                                keyColorIndex = index
+                                viewModel.setKeyColor(colorValues[index])
                             }
                         )
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        var enablePredictiveBack by rememberSaveable {
-                            mutableStateOf(prefs.getBoolean("enable_predictive_back", false))
-                        }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_enable_predictive_back),
                             summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
@@ -317,19 +292,15 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = enablePredictiveBack,
+                            checked = uiState.enablePredictiveBack,
                             onCheckedChange = {
-                                prefs.edit { putBoolean("enable_predictive_back", it) }
-                                enablePredictiveBack = it
+                                viewModel.setEnablePredictiveBack(it)
                                 KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
                                 activity?.recreate()
                             }
                         )
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        var enableBlur by rememberSaveable {
-                            mutableStateOf(prefs.getBoolean("enable_blur", true))
-                        }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_enable_blur),
                             summary = stringResource(id = R.string.settings_enable_blur_summary),
@@ -341,15 +312,11 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = enableBlur,
+                            checked = uiState.enableBlur,
                             onCheckedChange = {
-                                prefs.edit { putBoolean("enable_blur", it) }
-                                enableBlur = it
+                                viewModel.setEnableBlur(it)
                             }
                         )
-                    }
-                    var enableFloatingBottomBar by rememberSaveable {
-                        mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar", false))
                     }
                     SuperSwitch(
                         title = stringResource(id = R.string.settings_floating_bottom_bar),
@@ -362,16 +329,12 @@ fun SettingPager(
                                 tint = colorScheme.onBackground
                             )
                         },
-                        checked = enableFloatingBottomBar,
+                        checked = uiState.enableFloatingBottomBar,
                         onCheckedChange = {
-                            prefs.edit { putBoolean("enable_floating_bottom_bar", it) }
-                            enableFloatingBottomBar = it
+                            viewModel.setEnableFloatingBottomBar(it)
                         }
                     )
-                    AnimatedVisibility(visible = enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        var enableFloatingBottomBarBlur by rememberSaveable {
-                            mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar_blur", false))
-                        }
+                    AnimatedVisibility(visible = uiState.enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_enable_glass),
                             summary = stringResource(id = R.string.settings_enable_glass_summary),
@@ -383,15 +346,11 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = enableFloatingBottomBarBlur,
+                            checked = uiState.enableFloatingBottomBarBlur,
                             onCheckedChange = {
-                                prefs.edit { putBoolean("enable_floating_bottom_bar_blur", it) }
-                                enableFloatingBottomBarBlur = it
+                                viewModel.setEnableFloatingBottomBarBlur(it)
                             }
                         )
-                    }
-                    var pageScale by rememberSaveable {
-                        mutableFloatStateOf(prefs.getFloat("page_scale", 1.0f))
                     }
                     SuperArrow(
                         title = stringResource(id = R.string.settings_page_scale),
@@ -406,7 +365,7 @@ fun SettingPager(
                         },
                         endActions = {
                             Text(
-                                text = "${(pageScale * 100).toInt()}%",
+                                text = "${(uiState.pageScale * 100).toInt()}%",
                                 color = colorScheme.onSurfaceVariantActions,
                             )
                         },
@@ -414,13 +373,13 @@ fun SettingPager(
                         holdDownState = showScaleDialog.value,
                         bottomAction = {
                             Slider(
-                                value = pageScale,
+                                value = uiState.pageScale,
                                 onValueChange = {
-                                    pageScale = it
+                                    viewModel.setPageScale(it)
                                 },
                                 onValueChangeFinished = {
-                                    pageScale = (pageScale * 100).roundToInt() / 100f
-                                    prefs.edit { putFloat("page_scale", pageScale) }
+                                    val scale = (uiState.pageScale * 100).roundToInt() / 100f
+                                    viewModel.setPageScale(scale)
                                 },
                                 valueRange = 0.8f..1.1f,
                                 showKeyPoints = true,
@@ -432,10 +391,9 @@ fun SettingPager(
                     )
                     ScaleDialog(
                         showScaleDialog,
-                        volumeState = { pageScale },
+                        volumeState = { uiState.pageScale },
                         onVolumeChange = {
-                            pageScale = it
-                            prefs.edit { putFloat("page_scale", it) }
+                            viewModel.setPageScale(it)
                         }
                     )
                 }
@@ -477,20 +435,7 @@ fun SettingPager(
                             stringResource(id = R.string.settings_mode_disable_always),
                         )
 
-                        val currentSuEnabled = Natives.isSuEnabled()
-                        var suCompatMode by rememberSaveable { mutableIntStateOf(if (!currentSuEnabled) 1 else 0) }
-                        val suPersistValue by produceState(initialValue = null as Long?) {
-                            value = getFeaturePersistValue("su_compat")
-                        }
-                        LaunchedEffect(suPersistValue) {
-                            suPersistValue?.let { v ->
-                                suCompatMode = if (v == 0L) 2 else if (!currentSuEnabled) 1 else 0
-                            }
-                        }
-                        val suStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("su_compat")
-                        }
-                        val suSummary = when (suStatus) {
+                        val suSummary = when (uiState.suCompatStatus) {
                             "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
                             else -> stringResource(id = R.string.settings_sucompat_summary)
@@ -507,41 +452,14 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            enabled = suStatus == "supported",
-                            selectedIndex = suCompatMode,
+                            enabled = uiState.suCompatStatus == "supported",
+                            selectedIndex = uiState.suCompatMode,
                             onSelectedIndexChange = { index ->
-                                when (index) {
-                                    // Default: enable and save to persist
-                                    0 -> if (Natives.setSuEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("su_compat_mode", 0) }
-                                        suCompatMode = 0
-                                    }
-
-                                    // Temporarily disable: save enabled state first, then disable
-                                    1 -> if (Natives.setSuEnabled(true)) {
-                                        execKsud("feature save", true)
-                                        if (Natives.setSuEnabled(false)) {
-                                            prefs.edit { putInt("su_compat_mode", 0) }
-                                            suCompatMode = 1
-                                        }
-                                    }
-
-                                    // Permanently disable: disable and save
-                                    2 -> if (Natives.setSuEnabled(false)) {
-                                        execKsud("feature save", true)
-                                        prefs.edit { putInt("su_compat_mode", 2) }
-                                        suCompatMode = 2
-                                    }
-                                }
+                                viewModel.setSuCompatMode(index)
                             }
                         )
 
-                        var isKernelUmountEnabled by rememberSaveable { mutableStateOf(Natives.isKernelUmountEnabled()) }
-                        val umountStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("kernel_umount")
-                        }
-                        val umountSummary = when (umountStatus) {
+                        val umountSummary = when (uiState.kernelUmountStatus) {
                             "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
                             else -> stringResource(id = R.string.settings_kernel_umount_summary)
@@ -557,17 +475,13 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            enabled = umountStatus == "supported",
-                            checked = isKernelUmountEnabled,
+                            enabled = uiState.kernelUmountStatus == "supported",
+                            checked = uiState.isKernelUmountEnabled,
                             onCheckedChange = { checked ->
-                                if (Natives.setKernelUmountEnabled(checked)) {
-                                    execKsud("feature save", true)
-                                    isKernelUmountEnabled = checked
-                                }
+                                viewModel.setKernelUmountEnabled(checked)
                             }
                         )
 
-                        var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
                         SuperSwitch(
                             title = stringResource(id = R.string.settings_umount_modules_default),
                             summary = stringResource(id = R.string.settings_umount_modules_default_summary),
@@ -579,17 +493,12 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = umountChecked,
+                            checked = uiState.isDefaultUmountModules,
                             onCheckedChange = {
-                                if (Natives.setDefaultUmountModules(it)) {
-                                    umountChecked = it
-                                }
+                                viewModel.setDefaultUmountModules(it)
                             }
                         )
 
-                        var enableWebDebugging by rememberSaveable {
-                            mutableStateOf(prefs.getBoolean("enable_web_debugging", false))
-                        }
                         SuperSwitch(
                             title = stringResource(id = R.string.enable_web_debugging),
                             summary = stringResource(id = R.string.enable_web_debugging_summary),
@@ -601,10 +510,9 @@ fun SettingPager(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = enableWebDebugging,
+                            checked = uiState.enableWebDebugging,
                             onCheckedChange = {
-                                prefs.edit { putBoolean("enable_web_debugging", it) }
-                                enableWebDebugging = it
+                                viewModel.setEnableWebDebugging(it)
                             }
                         )
                     }
@@ -616,8 +524,7 @@ fun SettingPager(
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
-                        val lkmMode = Natives.isLkmMode
-                        if (lkmMode) {
+                        if (uiState.isLkmMode) {
                             val uninstall = stringResource(id = R.string.settings_uninstall)
                             SuperArrow(
                                 title = uninstall,

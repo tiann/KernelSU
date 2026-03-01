@@ -82,13 +82,13 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 // Search Status Class
 @Stable
-class SearchStatus(val label: String) {
-    var searchText by mutableStateOf("")
-    var current by mutableStateOf(Status.COLLAPSED)
-
-    var offsetY by mutableStateOf(0.dp)
-    var resultStatus by mutableStateOf(ResultStatus.DEFAULT)
-
+data class SearchStatus(
+    val label: String,
+    val searchText: String = "",
+    val current: Status = Status.COLLAPSED,
+    val offsetY: Dp = 0.dp,
+    val resultStatus: ResultStatus = ResultStatus.DEFAULT
+) {
     fun isExpand() = current == Status.EXPANDED
     fun isCollapsed() = current == Status.COLLAPSED
     fun shouldExpand() = current == Status.EXPANDED || current == Status.EXPANDING
@@ -96,15 +96,11 @@ class SearchStatus(val label: String) {
     fun isAnimatingExpand() = current == Status.EXPANDING
 
     // 动画完成回调
-    fun onAnimationComplete() {
-        current = when (current) {
-            Status.EXPANDING -> Status.EXPANDED
-            Status.COLLAPSING -> {
-                searchText = ""
-                Status.COLLAPSED
-            }
-
-            else -> current
+    fun onAnimationComplete(): SearchStatus {
+        return when (current) {
+            Status.EXPANDING -> copy(current = Status.EXPANDED)
+            Status.COLLAPSING -> copy(searchText = "", current = Status.COLLAPSED)
+            else -> this
         }
     }
 
@@ -150,6 +146,7 @@ class SearchStatus(val label: String) {
 // Search Box Composable
 @Composable
 fun SearchStatus.SearchBox(
+    onSearchStatusChange: (SearchStatus) -> Unit,
     collapseBar: @Composable (SearchStatus, Dp, PaddingValues) -> Unit = { searchStatus, topPadding, innerPadding ->
         SearchBarFake(searchStatus.label, topPadding, innerPadding)
     },
@@ -177,13 +174,17 @@ fun SearchStatus.SearchBox(
                 it.positionInWindow().y.apply {
                     offsetY.intValue = (this@apply * 0.9).toInt()
                     with(density) {
-                        searchStatus.offsetY = this@apply.toDp()
-                        boxHeight.value = it.size.height.toDp()
+                        val newOffsetY = this@apply.toDp()
+                        val newBoxHeight = it.size.height.toDp()
+                        if (searchStatus.offsetY != newOffsetY) {
+                            onSearchStatusChange(searchStatus.copy(offsetY = newOffsetY))
+                        }
+                        boxHeight.value = newBoxHeight
                     }
                 }
             }
             .pointerInput(Unit) {
-                detectTapGestures { searchStatus.current = SearchStatus.Status.EXPANDING }
+                detectTapGestures { onSearchStatusChange(searchStatus.copy(current = SearchStatus.Status.EXPANDING)) }
             }
             .then(
                 if (hazeState != null && hazeStyle != null) {
@@ -223,9 +224,10 @@ fun SearchStatus.SearchBox(
 // Search Pager Composable
 @Composable
 fun SearchStatus.SearchPager(
+    onSearchStatusChange: (SearchStatus) -> Unit,
     defaultResult: @Composable () -> Unit,
     expandBar: @Composable (SearchStatus, Dp) -> Unit = { searchStatus, padding ->
-        SearchBar(searchStatus, padding)
+        SearchBar(searchStatus, onSearchStatusChange, padding)
     },
     searchBarTopPadding: Dp = 12.dp,
     result: LazyListScope.() -> Unit
@@ -240,7 +242,7 @@ fun SearchStatus.SearchPager(
         },
         animationSpec = tween(300, easing = LinearOutSlowInEasing)
     ) {
-        searchStatus.onAnimationComplete()
+        onSearchStatusChange(searchStatus.onAnimationComplete())
     }
     val surfaceAlpha by animateFloatAsState(
         if (searchStatus.shouldExpand()) 1f else 0f,
@@ -293,8 +295,12 @@ fun SearchStatus.SearchPager(
                             enabled = searchStatus.isExpand(),
                             indication = null
                         ) {
-                            searchStatus.searchText = ""
-                            searchStatus.current = SearchStatus.Status.COLLAPSING
+                            onSearchStatusChange(
+                                searchStatus.copy(
+                                    searchText = "",
+                                    current = SearchStatus.Status.COLLAPSING
+                                )
+                            )
                         }
                 )
                 run {
@@ -303,8 +309,12 @@ fun SearchStatus.SearchPager(
                         state = navEventState,
                         isBackEnabled = true,
                         onBackCompleted = {
-                            searchStatus.searchText = ""
-                            searchStatus.current = SearchStatus.Status.COLLAPSING
+                            onSearchStatusChange(
+                                searchStatus.copy(
+                                    searchText = "",
+                                    current = SearchStatus.Status.COLLAPSING
+                                )
+                            )
                         }
                     )
                 }
@@ -337,6 +347,7 @@ fun SearchStatus.SearchPager(
 @Composable
 fun SearchBar(
     searchStatus: SearchStatus,
+    onSearchStatusChange: (SearchStatus) -> Unit,
     searchBarTopPadding: Dp = 12.dp,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -344,7 +355,7 @@ fun SearchBar(
 
     InputField(
         query = searchStatus.searchText,
-        onQueryChange = { searchStatus.searchText = it },
+        onQueryChange = { onSearchStatusChange(searchStatus.copy(searchText = it)) },
         label = "",
         leadingIcon = {
             Icon(
@@ -373,7 +384,7 @@ fun SearchBar(
                             interactionSource = null,
                             indication = null
                         ) {
-                            searchStatus.searchText = ""
+                            onSearchStatusChange(searchStatus.copy(searchText = ""))
                         },
                 )
             }
@@ -386,7 +397,11 @@ fun SearchBar(
         onSearch = { it },
         expanded = searchStatus.shouldExpand(),
         onExpandedChange = {
-            searchStatus.current = if (it) SearchStatus.Status.EXPANDED else SearchStatus.Status.COLLAPSED
+            onSearchStatusChange(
+                searchStatus.copy(
+                    current = if (it) SearchStatus.Status.EXPANDED else SearchStatus.Status.COLLAPSED
+                )
+            )
         }
     )
     LaunchedEffect(Unit) {

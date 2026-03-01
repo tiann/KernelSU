@@ -279,6 +279,7 @@ fun ModuleRepoScreen(
         },
         popupHost = {
             searchStatus.SearchPager(
+                onSearchStatusChange = viewModel::updateSearchStatus,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
@@ -414,6 +415,7 @@ fun ModuleRepoScreen(
             }
         } else {
             searchStatus.SearchBox(
+                onSearchStatusChange = viewModel::updateSearchStatus,
                 searchBarTopPadding = dynamicTopPadding,
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding(),
