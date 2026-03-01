@@ -102,7 +102,12 @@ fun AppIconImage(
 
                 // Add system badges
                 val handle = UserHandle.getUserHandleForUid(applicationInfo.uid)
-                val badgedDrawable = pm.getUserBadgedIcon(finalDrawable, handle)
+                val badgedDrawable = try {
+                    pm.getUserBadgedIcon(finalDrawable, handle)
+                } catch (_: Exception) {
+                    // Fallback to unbadged icon for users in a different profile group (e.g., secondary users)
+                    finalDrawable
+                }
 
                 if (badgedDrawable is BitmapDrawable && (badgedDrawable.intrinsicWidth > targetSizePx * 2 || badgedDrawable.intrinsicHeight > targetSizePx * 2)) {
 
