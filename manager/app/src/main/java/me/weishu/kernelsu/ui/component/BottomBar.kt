@@ -119,7 +119,7 @@ fun BottomBar(
             isBlurEnabled = enableFloatingBottomBarBlur,
         ) {
             items.forEachIndexed { index, item ->
-                FloatingBottomBar(
+                FloatingBottomBarItem(
                     onClick = {
                         mainState.animateToPage(index)
                     },

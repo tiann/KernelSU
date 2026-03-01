@@ -4,7 +4,9 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import com.topjohnwu.superuser.Shell
@@ -112,13 +114,19 @@ class SuperUserRepositoryImpl : SuperUserRepository {
                 override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
                     if (cont.isActive) {
                         cont.resume(binder as IBinder to this)
-                    } else {
-                        RootService.unbind(this)
                     }
                 }
             }
 
-            cont.invokeOnCancellation { RootService.unbind(connection) }
+            cont.invokeOnCancellation {
+                if (Looper.myLooper() == Looper.getMainLooper()) {
+                    RootService.unbind(connection)
+                } else {
+                    Handler(Looper.getMainLooper()).post {
+                        RootService.unbind(connection)
+                    }
+                }
+            }
 
             val intent = Intent(ksuApp, KsuService::class.java)
 

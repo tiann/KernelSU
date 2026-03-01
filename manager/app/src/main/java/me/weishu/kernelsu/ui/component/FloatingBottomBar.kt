@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -66,12 +68,15 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs
 import kotlin.math.sign
 
+val LocalFloatingBottomBarTabScale = staticCompositionLocalOf { { 1f } }
+
 @Composable
-fun RowScope.FloatingBottomBar(
+fun RowScope.FloatingBottomBarItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val scale = LocalFloatingBottomBarTabScale.current
     Column(
         modifier
             .clip(ContinuousCapsule)
@@ -82,8 +87,13 @@ fun RowScope.FloatingBottomBar(
                 onClick = onClick
             )
             .fillMaxHeight()
-            .weight(1f),
-        verticalArrangement = Arrangement.spacedBy(2f.dp, Alignment.CenterVertically),
+            .weight(1f)
+            .graphicsLayer {
+                val scale = scale()
+                scaleX = scale
+                scaleY = scale
+            },
+        verticalArrangement = Arrangement.spacedBy(1.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
         content = content
     )
@@ -257,35 +267,42 @@ fun FloatingBottomBar(
             content = content
         )
 
-        Row(
-            Modifier
-                .clearAndSetSemantics {}
-                .alpha(0f)
-                .layerBackdrop(tabsBackdrop)
-                .graphicsLayer { translationX = panelOffset }
-                .drawBackdrop(
-                    backdrop = backdrop,
-                    shape = { ContinuousCapsule },
-                    effects = {
-                        if (isBlurEnabled) {
-                            val progress = dampedDragAnimation.pressProgress
-                            vibrancy()
-                            blur(8f.dp.toPx())
-                            lens(24f.dp.toPx() * progress, 24f.dp.toPx() * progress)
-                        }
-                    },
-                    highlight = {
-                        Highlight.Default.copy(alpha = if (isBlurEnabled) dampedDragAnimation.pressProgress else 0f)
-                    },
-                    onDrawSurface = { drawRect(containerColor) }
-                )
-                .then(if (isBlurEnabled) interactiveHighlight.modifier else Modifier)
-                .height(56.dp)
-                .padding(horizontal = 4.dp)
-                .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
-            verticalAlignment = Alignment.CenterVertically,
-            content = content
-        )
+        CompositionLocalProvider(
+            LocalFloatingBottomBarTabScale provides {
+                if (isBlurEnabled) lerp(1f, 1.2f, dampedDragAnimation.pressProgress)
+                else 1f
+            }
+        ) {
+            Row(
+                Modifier
+                    .clearAndSetSemantics {}
+                    .alpha(0f)
+                    .layerBackdrop(tabsBackdrop)
+                    .graphicsLayer { translationX = panelOffset }
+                    .drawBackdrop(
+                        backdrop = backdrop,
+                        shape = { ContinuousCapsule },
+                        effects = {
+                            if (isBlurEnabled) {
+                                val progress = dampedDragAnimation.pressProgress
+                                vibrancy()
+                                blur(8f.dp.toPx())
+                                lens(24f.dp.toPx() * progress, 24f.dp.toPx() * progress)
+                            }
+                        },
+                        highlight = {
+                            Highlight.Default.copy(alpha = if (isBlurEnabled) dampedDragAnimation.pressProgress else 0f)
+                        },
+                        onDrawSurface = { drawRect(containerColor) }
+                    )
+                    .then(if (isBlurEnabled) interactiveHighlight.modifier else Modifier)
+                    .height(56.dp)
+                    .padding(horizontal = 4.dp)
+                    .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
+                verticalAlignment = Alignment.CenterVertically,
+                content = content
+            )
+        }
 
         if (tabWidthPx > 0f) {
             Box(
