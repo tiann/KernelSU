@@ -26,7 +26,7 @@ object AppIconCache {
     }
 
     suspend fun loadIcon(context: Context, applicationInfo: ApplicationInfo, size: Int): Drawable {
-        val key = "${applicationInfo.packageName}:${applicationInfo.uid / 100000}"
+        val key = "${applicationInfo.packageName}:${applicationInfo.uid}"
 
         synchronized(lruCache) {
             val cachedBitmap = lruCache.get(key)

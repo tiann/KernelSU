@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 
@@ -41,7 +40,7 @@ class SettingsViewModel(
             val suCompatStatus = repo.getSuCompatStatus()
             val suCompatPersistValue = repo.getSuCompatPersistValue()
             val isSuEnabled = repo.isSuEnabled()
-            
+
             val suCompatMode = if (suCompatPersistValue == 0L) 2 else if (!isSuEnabled) 1 else 0
 
             val kernelUmountStatus = repo.getKernelUmountStatus()
@@ -130,6 +129,7 @@ class SettingsViewModel(
                     repo.setSuCompatModePref(0)
                     _uiState.update { it.copy(suCompatMode = 0, isSuEnabled = true) }
                 }
+
                 1 -> if (repo.setSuEnabled(true)) {
                     repo.execKsudFeatureSave()
                     if (repo.setSuEnabled(false)) {
@@ -140,6 +140,7 @@ class SettingsViewModel(
                         _uiState.update { it.copy(suCompatMode = 1, isSuEnabled = false) }
                     }
                 }
+
                 2 -> if (repo.setSuEnabled(false)) {
                     repo.execKsudFeatureSave()
                     repo.setSuCompatModePref(2)
