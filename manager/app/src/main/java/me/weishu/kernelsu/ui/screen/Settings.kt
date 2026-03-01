@@ -326,69 +326,69 @@ fun SettingPager(
                             }
                         )
                     }
-                    var enableBlur by rememberSaveable {
-                        mutableStateOf(prefs.getBoolean("enable_blur", true))
-                    }
-                    SuperSwitch(
-                        title = stringResource(id = R.string.settings_enable_blur),
-                        summary = stringResource(id = R.string.settings_enable_blur_summary),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.WaterDrop,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_enable_blur),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        checked = enableBlur,
-                        onCheckedChange = {
-                            prefs.edit { putBoolean("enable_blur", it) }
-                            enableBlur = it
-                        }
-                    )
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        var enableFloatingBottomBar by rememberSaveable {
-                            mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar", false))
+                        var enableBlur by rememberSaveable {
+                            mutableStateOf(prefs.getBoolean("enable_blur", true))
                         }
                         SuperSwitch(
-                            title = stringResource(id = R.string.settings_floating_bottom_bar),
-                            summary = stringResource(id = R.string.settings_floating_bottom_bar_summary),
+                            title = stringResource(id = R.string.settings_enable_blur),
+                            summary = stringResource(id = R.string.settings_enable_blur_summary),
                             startAction = {
                                 Icon(
-                                    Icons.Rounded.CallToAction,
+                                    Icons.Rounded.WaterDrop,
                                     modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_floating_bottom_bar),
+                                    contentDescription = stringResource(id = R.string.settings_enable_blur),
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = enableFloatingBottomBar,
+                            checked = enableBlur,
                             onCheckedChange = {
-                                prefs.edit { putBoolean("enable_floating_bottom_bar", it) }
-                                enableFloatingBottomBar = it
+                                prefs.edit { putBoolean("enable_blur", it) }
+                                enableBlur = it
                             }
                         )
-                        AnimatedVisibility(visible = enableFloatingBottomBar) {
-                            var enableFloatingBottomBarBlur by rememberSaveable {
-                                mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar_blur", false))
-                            }
-                            SuperSwitch(
-                                title = stringResource(id = R.string.settings_enable_glass),
-                                summary = stringResource(id = R.string.settings_enable_glass_summary),
-                                startAction = {
-                                    Icon(
-                                        Icons.Rounded.BlurOn,
-                                        modifier = Modifier.padding(end = 6.dp),
-                                        contentDescription = stringResource(id = R.string.settings_enable_glass),
-                                        tint = colorScheme.onBackground
-                                    )
-                                },
-                                checked = enableFloatingBottomBarBlur,
-                                onCheckedChange = {
-                                    prefs.edit { putBoolean("enable_floating_bottom_bar_blur", it) }
-                                    enableFloatingBottomBarBlur = it
-                                }
+                    }
+                    var enableFloatingBottomBar by rememberSaveable {
+                        mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar", false))
+                    }
+                    SuperSwitch(
+                        title = stringResource(id = R.string.settings_floating_bottom_bar),
+                        summary = stringResource(id = R.string.settings_floating_bottom_bar_summary),
+                        startAction = {
+                            Icon(
+                                Icons.Rounded.CallToAction,
+                                modifier = Modifier.padding(end = 6.dp),
+                                contentDescription = stringResource(id = R.string.settings_floating_bottom_bar),
+                                tint = colorScheme.onBackground
                             )
+                        },
+                        checked = enableFloatingBottomBar,
+                        onCheckedChange = {
+                            prefs.edit { putBoolean("enable_floating_bottom_bar", it) }
+                            enableFloatingBottomBar = it
                         }
+                    )
+                    AnimatedVisibility(visible = enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        var enableFloatingBottomBarBlur by rememberSaveable {
+                            mutableStateOf(prefs.getBoolean("enable_floating_bottom_bar_blur", false))
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_enable_glass),
+                            summary = stringResource(id = R.string.settings_enable_glass_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.BlurOn,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_enable_glass),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = enableFloatingBottomBarBlur,
+                            onCheckedChange = {
+                                prefs.edit { putBoolean("enable_floating_bottom_bar_blur", it) }
+                                enableFloatingBottomBarBlur = it
+                            }
+                        )
                     }
                     var pageScale by rememberSaveable {
                         mutableFloatStateOf(prefs.getFloat("page_scale", 1.0f))

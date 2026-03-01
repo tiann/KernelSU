@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,9 +34,11 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +57,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -67,11 +69,8 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.SearchBox
 import me.weishu.kernelsu.ui.component.SearchPager
@@ -79,8 +78,7 @@ import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
-import me.weishu.kernelsu.ui.util.ownerNameForUid
-import me.weishu.kernelsu.ui.util.pickPrimary
+import me.weishu.kernelsu.ui.viewmodel.GroupedApps
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -108,28 +106,30 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun SuperUserPager(
-    navigator: Navigator,
-    bottomInnerPadding: Dp
+    navigator: Navigator, bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<SuperUserViewModel>()
-    val scope = rememberCoroutineScope()
-    val searchStatus by viewModel.searchStatus
+    val uiState by viewModel.uiState.collectAsState()
+    val searchStatus = uiState.searchStatus
 
     val context = LocalContext.current
     var isInitialized by rememberSaveable { mutableStateOf(false) }
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val enableBlur = LocalEnableBlur.current
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         when {
-            !isInitialized || viewModel.appList.value.isEmpty() -> {
-                viewModel.showSystemApps = prefs.getBoolean("show_system_apps", false)
+            !isInitialized || uiState.appList.isEmpty() -> {
+                viewModel.setShowSystemApps(prefs.getBoolean("show_system_apps", false))
+                viewModel.setShowOnlyPrimaryUserApps(prefs.getBoolean("show_only_primary_user_apps", false))
                 viewModel.loadAppList()
                 isInitialized = true
             }
 
             viewModel.isNeedRefresh -> {
-                viewModel.loadAppList()
+                viewModel.loadAppList(resort = false)
             }
         }
     }
@@ -146,15 +146,14 @@ fun SuperUserPager(
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
+            backgroundColor = colorScheme.surface, tint = HazeTint(colorScheme.surface.copy(0.8f))
         )
     } else {
         HazeStyle.Unspecified
     }
 
-    val isMultiUser = remember(viewModel.userIds.value) {
-        viewModel.userIds.value.size > 1
+    val isMultiUser = remember(uiState.userIds) {
+        uiState.userIds.size > 1
     }
 
     Scaffold(
@@ -171,40 +170,43 @@ fun SuperUserPager(
                             alignment = PopupPositionProvider.Align.TopEnd,
                             onDismissRequest = {
                                 showTopPopup.value = false
-                            }
-                        ) {
+                            }) {
                             val size = if (isMultiUser) 2 else 1
                             ListPopupColumn {
                                 DropdownImpl(
                                     text = stringResource(R.string.show_system_apps),
-                                    isSelected = viewModel.showSystemApps,
+                                    isSelected = uiState.showSystemApps,
                                     optionSize = size,
                                     onSelectedIndexChange = {
-                                        viewModel.showSystemApps = !viewModel.showSystemApps
+                                        val newValue = !uiState.showSystemApps
+                                        val job = viewModel.setShowSystemApps(newValue)
                                         prefs.edit {
-                                            putBoolean("show_system_apps", viewModel.showSystemApps)
-                                        }
-                                        scope.launch {
-                                            viewModel.loadAppList()
+                                            putBoolean("show_system_apps", newValue)
                                         }
                                         showTopPopup.value = false
+                                        scope.launch {
+                                            job.join()
+                                            listState.animateScrollToItem(0)
+                                        }
                                     },
                                     index = 0
                                 )
                                 if (isMultiUser) {
                                     DropdownImpl(
                                         text = stringResource(R.string.show_only_primary_user_apps),
-                                        isSelected = viewModel.showOnlyPrimaryUserApps,
+                                        isSelected = uiState.showOnlyPrimaryUserApps,
                                         optionSize = size,
                                         onSelectedIndexChange = {
-                                            viewModel.showOnlyPrimaryUserApps = !viewModel.showOnlyPrimaryUserApps
+                                            val newValue = !uiState.showOnlyPrimaryUserApps
+                                            val job = viewModel.setShowOnlyPrimaryUserApps(newValue)
                                             prefs.edit {
-                                                putBoolean("show_only_primary_user_apps", viewModel.showOnlyPrimaryUserApps)
-                                            }
-                                            scope.launch {
-                                                viewModel.loadAppList()
+                                                putBoolean("show_only_primary_user_apps", newValue)
                                             }
                                             showTopPopup.value = false
+                                            scope.launch {
+                                                job.join()
+                                                listState.animateScrollToItem(0)
+                                            }
                                         },
                                         index = 1
                                     )
@@ -212,40 +214,29 @@ fun SuperUserPager(
                             }
                         }
                         IconButton(
-                            modifier = Modifier.padding(end = 16.dp),
-                            onClick = {
+                            modifier = Modifier.padding(end = 16.dp), onClick = {
                                 showTopPopup.value = true
-                            },
-                            holdDownState = showTopPopup.value
+                            }, holdDownState = showTopPopup.value
                         ) {
                             Icon(
-                                imageVector = MiuixIcons.MoreCircle,
-                                tint = colorScheme.onSurface,
-                                contentDescription = null
+                                imageVector = MiuixIcons.MoreCircle, tint = colorScheme.onSurface, contentDescription = null
                             )
                         }
                     },
                     scrollBehavior = scrollBehavior
                 )
             }
-        },
-        popupHost = {
-            val filteredApps = remember(viewModel.appList.value) {
-                viewModel.appList.value.filter { it.packageName != ksuApp.packageName }
-            }
-            val allGroups = remember(filteredApps) { buildGroups(filteredApps) }
-            val matchedByUid = remember(viewModel.searchResults.value) {
-                viewModel.searchResults.value.groupBy { it.uid }
+        }, popupHost = {
+            val allGroups = uiState.groupedApps
+            val matchedByUid = remember(uiState.searchResults) {
+                uiState.searchResults.groupBy { it.uid }
             }
             val searchGroups = remember(allGroups, matchedByUid) {
                 allGroups.filter { matchedByUid.containsKey(it.uid) }
             }
             val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
             LaunchedEffect(matchedByUid) {
-                expandedSearchUids.value = searchGroups
-                    .filter { it.apps.size > 1 }
-                    .map { it.uid }
-                    .toSet()
+                expandedSearchUids.value = searchGroups.filter { it.apps.size > 1 }.map { it.uid }.toSet()
             }
             searchStatus.SearchPager(
                 defaultResult = {},
@@ -257,9 +248,7 @@ fun SuperUserPager(
                 items(searchGroups, key = { it.uid }) { group ->
                     val expanded = expandedSearchUids.value.contains(group.uid)
                     AnimatedVisibility(
-                        visible = searchGroups.isNotEmpty(),
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
+                        visible = searchGroups.isNotEmpty(), enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()
                     ) {
                         Column {
                             GroupItem(
@@ -293,36 +282,24 @@ fun SuperUserPager(
                     Spacer(Modifier.height(maxOf(bottomInnerPadding, imeBottomPadding)))
                 }
             }
-        },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+        }, contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
         searchStatus.SearchBox(
-            searchBarTopPadding = dynamicTopPadding,
-            contentPadding = PaddingValues(
+            searchBarTopPadding = dynamicTopPadding, contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),
                 start = innerPadding.calculateStartPadding(layoutDirection),
                 end = innerPadding.calculateEndPadding(layoutDirection)
-            ),
-            hazeState = hazeState,
-            hazeStyle = hazeStyle
+            ), hazeState = hazeState, hazeStyle = hazeStyle
         ) { boxHeight ->
-            var isRefreshing by rememberSaveable { mutableStateOf(false) }
             val pullToRefreshState = rememberPullToRefreshState()
-            LaunchedEffect(isRefreshing) {
-                if (isRefreshing) {
-                    delay(150)
-                    viewModel.loadAppList(force = true)
-                    isRefreshing = false
-                }
-            }
             val refreshTexts = listOf(
                 stringResource(R.string.refresh_pulling),
                 stringResource(R.string.refresh_release),
                 stringResource(R.string.refresh_refresh),
                 stringResource(R.string.refresh_complete),
             )
-            if (viewModel.appList.value.isEmpty()) {
+            if (uiState.appList.isEmpty() && uiState.isRefreshing) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -331,22 +308,24 @@ fun SuperUserPager(
                             start = innerPadding.calculateStartPadding(layoutDirection),
                             end = innerPadding.calculateEndPadding(layoutDirection),
                             bottom = bottomInnerPadding
-                        ),
-                    contentAlignment = Alignment.Center
+                        ), contentAlignment = Alignment.Center
                 ) {
                     InfiniteProgressIndicator()
                 }
             } else {
-                val filteredApps = remember(SuperUserViewModel.apps) {
-                    SuperUserViewModel.apps.filter { it.packageName != ksuApp.packageName }
-                }
-                val allGroups = remember(filteredApps) { buildGroups(filteredApps) }
-                val visibleUidSet = remember(viewModel.appList.value) { viewModel.appList.value.map { it.uid }.toSet() }
+                val allGroups = uiState.groupedApps
+                val visibleUidSet = remember(uiState.appList) { uiState.appList.map { it.uid }.toSet() }
                 val expandedUids = remember { mutableStateOf(setOf<Int>()) }
                 PullToRefresh(
-                    isRefreshing = isRefreshing,
+                    isRefreshing = uiState.isRefreshing,
                     pullToRefreshState = pullToRefreshState,
-                    onRefresh = { isRefreshing = true },
+                    onRefresh = {
+                        val job = viewModel.loadAppList(force = true)
+                        scope.launch {
+                            job.join()
+                            listState.animateScrollToItem(0)
+                        }
+                    },
                     refreshTexts = refreshTexts,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
@@ -355,10 +334,8 @@ fun SuperUserPager(
                     ),
                 ) {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .scrollEndHaptic()
-                            .overScrollVertical()
+                        state = listState,
+                        modifier = Modifier.fillMaxHeight().scrollEndHaptic().overScrollVertical()
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
                             .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
                         contentPadding = PaddingValues(
@@ -372,20 +349,16 @@ fun SuperUserPager(
                             val expanded = expandedUids.value.contains(group.uid)
                             val isVisible = visibleUidSet.contains(group.uid)
                             AnimatedVisibility(
-                                visible = isVisible,
-                                enter = expandVertically() + fadeIn(),
-                                exit = shrinkVertically() + fadeOut()
+                                visible = isVisible, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()
                             ) {
                                 Column {
                                     GroupItem(
-                                        group = group,
-                                        onToggleExpand = {
+                                        group = group, onToggleExpand = {
                                             if (group.apps.size > 1) {
                                                 expandedUids.value =
                                                     if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
                                             }
-                                        }
-                                    ) {
+                                        }) {
                                         navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
                                         viewModel.markNeedRefresh()
                                     }
@@ -429,84 +402,19 @@ private fun SimpleAppItem(
                 .background(colorScheme.primaryContainer)
         )
         Card(
-            modifier = Modifier
-                .padding(start = 6.dp, end = 12.dp, bottom = 6.dp)
+            modifier = Modifier.padding(start = 6.dp, end = 12.dp, bottom = 6.dp)
         ) {
             BasicComponent(
-                title = app.label,
-                summary = app.packageName,
-                startAction = {
+                title = app.label, summary = app.packageName, startAction = {
                     AppIconImage(
-                        packageInfo = app.packageInfo,
-                        label = app.label,
-                        modifier = Modifier
+                        packageInfo = app.packageInfo, label = app.label, modifier = Modifier
                             .padding(end = 9.dp)
                             .size(40.dp)
                     )
-                },
-                insideMargin = PaddingValues(horizontal = 9.dp)
+                }, insideMargin = PaddingValues(horizontal = 9.dp)
             )
         }
     }
-}
-
-@Immutable
-private data class GroupedApps(
-    val uid: Int,
-    val apps: List<SuperUserViewModel.AppInfo>,
-    val primary: SuperUserViewModel.AppInfo,
-    val anyAllowSu: Boolean,
-    val anyCustom: Boolean,
-    val shouldUmount: Boolean,
-)
-
-private val uidShouldUmountCache = mutableMapOf<Int, Boolean>()
-
-private fun uidShouldUmountCached(uid: Int): Boolean {
-    uidShouldUmountCache[uid]?.let { return it }
-    val value = Natives.uidShouldUmount(uid)
-    uidShouldUmountCache[uid] = value
-    return value
-}
-
-private fun buildGroups(apps: List<SuperUserViewModel.AppInfo>): List<GroupedApps> {
-    val comparator = compareBy<SuperUserViewModel.AppInfo> {
-        when {
-            it.allowSu -> 0
-            it.hasCustomProfile -> 1
-            else -> 2
-        }
-    }.thenBy { it.label.lowercase() }
-    val groups = apps.groupBy { it.uid }.map { (uid, list) ->
-        val sorted = list.sortedWith(comparator)
-        val primary = pickPrimary(sorted)
-        val shouldUmount = uidShouldUmountCached(uid)
-        GroupedApps(
-            uid = uid,
-            apps = sorted,
-            primary = primary,
-            anyAllowSu = sorted.any { it.allowSu },
-            anyCustom = sorted.any { it.hasCustomProfile },
-            shouldUmount = shouldUmount,
-        )
-    }
-    return groups.sortedWith(Comparator { a, b ->
-        fun rank(g: GroupedApps): Int = when {
-            g.anyAllowSu -> 0
-            g.anyCustom -> 1
-            g.apps.size > 1 -> 2
-            g.shouldUmount -> 4
-            else -> 3
-        }
-
-        val ra = rank(a)
-        val rb = rank(b)
-        if (ra != rb) return@Comparator ra - rb
-        return@Comparator when (ra) {
-            2 -> a.uid.compareTo(b.uid)
-            else -> a.primary.label.lowercase().compareTo(b.primary.label.lowercase())
-        }
-    })
 }
 
 @Composable
@@ -527,8 +435,8 @@ private fun GroupItem(
     val packageInfo = group.primary.packageInfo
     val applicationInfo = packageInfo.applicationInfo
     val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
-    val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-            || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+    val isSystemApp =
+        applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0 || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
     val tags = buildList {
         if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
         if (group.shouldUmount) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
@@ -551,23 +459,19 @@ private fun GroupItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AppIconImage(
-                packageInfo = group.primary.packageInfo,
-                label = group.primary.label,
-                modifier = Modifier
+                packageInfo = group.primary.packageInfo, label = group.primary.label, modifier = Modifier
                     .padding(end = 14.dp)
                     .size(48.dp)
             )
             Column(
-                modifier = Modifier
-                    .weight(1f),
+                modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = if (group.apps.size > 1) ownerNameForUid(group.uid) else group.primary.label,
-                    modifier = Modifier.basicMarquee(),
+                    text = group.ownerName ?: group.primary.label,
                     fontWeight = FontWeight(550),
                     color = colorScheme.onSurface,
                     maxLines = 1,
-                    softWrap = false
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = if (group.apps.size > 1) {
@@ -575,13 +479,11 @@ private fun GroupItem(
                     } else {
                         group.primary.packageName
                     },
-                    modifier = Modifier
-                        .basicMarquee(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight(550),
                     color = colorScheme.onSurfaceVariantSummary,
                     maxLines = 1,
-                    softWrap = false
+                    overflow = TextOverflow.Ellipsis,
                 )
                 FlowRow(
                     modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
@@ -590,9 +492,7 @@ private fun GroupItem(
                 ) {
                     tags.forEach { tag ->
                         StatusTag(
-                            label = tag.label,
-                            backgroundColor = tag.bg,
-                            contentColor = tag.fg
+                            label = tag.label, backgroundColor = tag.bg, contentColor = tag.fg
                         )
                     }
                 }
@@ -615,16 +515,12 @@ private fun GroupItem(
 
 @Composable
 fun StatusTag(
-    label: String,
-    backgroundColor: Color,
-    contentColor: Color
+    label: String, backgroundColor: Color, contentColor: Color
 ) {
     Box(
-        modifier = Modifier
-            .background(
-                color = backgroundColor,
-                shape = ContinuousRoundedRectangle(6.dp)
-            )
+        modifier = Modifier.background(
+            color = backgroundColor, shape = ContinuousRoundedRectangle(6.dp)
+        )
     ) {
         Text(
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
@@ -640,7 +536,5 @@ fun StatusTag(
 
 @Immutable
 private data class StatusMeta(
-    val label: String,
-    val bg: Color,
-    val fg: Color
+    val label: String, val bg: Color, val fg: Color
 )

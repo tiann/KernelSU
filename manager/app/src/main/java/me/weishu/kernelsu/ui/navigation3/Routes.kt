@@ -46,7 +46,10 @@ sealed interface Route : NavKey, Parcelable {
 
     @Parcelize
     @Serializable
-    data class TemplateEditor(@Serializable(with = TemplateInfoSerializer::class) val template: TemplateViewModel.TemplateInfo, val readOnly: Boolean) : Route
+    data class TemplateEditor(
+        @Serializable(with = TemplateInfoSerializer::class) val template: TemplateViewModel.TemplateInfo,
+        val readOnly: Boolean
+    ) : Route
 
     @Parcelize
     @Serializable

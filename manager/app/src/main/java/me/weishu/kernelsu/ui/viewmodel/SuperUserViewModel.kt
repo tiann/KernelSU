@@ -1,174 +1,128 @@
 package me.weishu.kernelsu.ui.viewmodel
 
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageInfo
 import android.graphics.drawable.Drawable
-import android.os.Build
-import android.os.IBinder
-import android.os.Parcelable
-import android.os.SystemClock
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.topjohnwu.superuser.Shell
-import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.parcelize.Parcelize
-import me.weishu.kernelsu.IKsuInterface
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.data.repository.SuperUserRepository
+import me.weishu.kernelsu.data.repository.SuperUserRepositoryImpl
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.KsuService
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.util.HanziToPinyin
-import me.weishu.kernelsu.ui.util.KsuCli
+import me.weishu.kernelsu.ui.util.ownerNameForUid
+import me.weishu.kernelsu.ui.util.pickPrimary
 import java.text.Collator
 import java.util.Locale
-import kotlin.coroutines.resume
 
-class SuperUserViewModel : ViewModel() {
+class SuperUserViewModel(
+    private val repo: SuperUserRepository = SuperUserRepositoryImpl()
+) : ViewModel() {
 
     companion object {
         private const val TAG = "SuperUserViewModel"
+
+        // Cache to support getAppIconDrawable static method
         private val appsLock = Any()
-        private val refreshMutex = Mutex()
-        var apps by mutableStateOf<List<AppInfo>>(emptyList())
+        private var cachedApps: List<AppInfo> = emptyList()
+
+        val apps: List<AppInfo>
+            get() = synchronized(appsLock) { cachedApps }
 
         @JvmStatic
         fun getAppIconDrawable(context: Context, packageName: String): Drawable? {
-            val appList = synchronized(appsLock) { apps }
+            val appList = synchronized(appsLock) { cachedApps }
             val appDetail = appList.find { it.packageName == packageName }
             return appDetail?.packageInfo?.applicationInfo?.loadIcon(context.packageManager)
         }
     }
 
-    private var _appList = mutableStateOf<List<AppInfo>>(emptyList())
-    val appList: State<List<AppInfo>> = _appList
+    typealias AppInfo = me.weishu.kernelsu.data.model.AppInfo
 
-    private val _userIds = mutableStateOf<List<Int>>(emptyList())
-    val userIds: State<List<Int>> = _userIds
+    private val _uiState = MutableStateFlow(SuperUserUiState())
+    val uiState: StateFlow<SuperUserUiState> = _uiState.asStateFlow()
 
-    private val _searchStatus = mutableStateOf(SearchStatus(""))
-    val searchStatus: State<SearchStatus> = _searchStatus
-
-    @Parcelize
-    data class AppInfo(
-        val label: String,
-        val packageInfo: PackageInfo,
-        val profile: Natives.Profile?,
-    ) : Parcelable {
-        val packageName: String
-            get() = packageInfo.packageName
-        val uid: Int
-            get() = packageInfo.applicationInfo!!.uid
-
-        val allowSu: Boolean
-            get() = profile != null && profile.allowSu
-        val hasCustomProfile: Boolean
-            get() {
-                if (profile == null) {
-                    return false
-                }
-
-                return if (profile.allowSu) {
-                    !profile.rootUseDefault
-                } else {
-                    !profile.nonRootUseDefault
-                }
-            }
-    }
-
-    var showSystemApps by mutableStateOf(false)
-    var showOnlyPrimaryUserApps by mutableStateOf(false)
-    var isRefreshing by mutableStateOf(false)
-        private set
-
-    var isNeedRefresh by mutableStateOf(false)
+    private val refreshMutex = Mutex()
+    var isNeedRefresh = false
         private set
 
     fun markNeedRefresh() {
         isNeedRefresh = true
     }
 
-    private val _searchResults = mutableStateOf<List<AppInfo>>(emptyList())
-    val searchResults: State<List<AppInfo>> = _searchResults
+    fun setShowSystemApps(show: Boolean): Job {
+        _uiState.update { it.copy(showSystemApps = show) }
+        return viewModelScope.launch {
+            // Re-filter when setting changes
+            val (filtered, grouped) = withContext(Dispatchers.IO) {
+                val list = filterAndSort(repo.getAppList().getOrNull()?.first ?: emptyList())
+                list to buildGroups(list)
+            }
+            _uiState.update { it.copy(appList = filtered, groupedApps = grouped) }
+        }
+    }
+
+    fun setShowOnlyPrimaryUserApps(show: Boolean): Job {
+        _uiState.update { it.copy(showOnlyPrimaryUserApps = show) }
+        return viewModelScope.launch {
+            // Re-filter when setting changes
+            val (filtered, grouped) = withContext(Dispatchers.IO) {
+                val list = filterAndSort(repo.getAppList().getOrNull()?.first ?: emptyList())
+                list to buildGroups(list)
+            }
+            _uiState.update { it.copy(appList = filtered, groupedApps = grouped) }
+        }
+    }
 
     suspend fun updateSearchText(text: String) {
-        _searchStatus.value.searchText = text
+        _uiState.update {
+            it.copy(
+                searchStatus = it.searchStatus.apply { searchText = text }
+            )
+        }
 
         if (text.isEmpty()) {
-            _searchStatus.value.resultStatus = SearchStatus.ResultStatus.DEFAULT
-            _searchResults.value = emptyList()
+            _uiState.update {
+                it.copy(
+                    searchStatus = it.searchStatus.apply { resultStatus = SearchStatus.ResultStatus.DEFAULT },
+                    searchResults = emptyList()
+                )
+            }
             return
         }
 
         val result = withContext(Dispatchers.IO) {
-            _searchStatus.value.resultStatus = SearchStatus.ResultStatus.LOAD
-            _appList.value.filter {
-                it.label.contains(_searchStatus.value.searchText, true) || it.packageName.contains(
-                    _searchStatus.value.searchText,
+            _uiState.value.searchStatus.resultStatus = SearchStatus.ResultStatus.LOAD
+            _uiState.value.appList.filter {
+                it.label.contains(text, true) || it.packageName.contains(
+                    text,
                     true
                 ) || HanziToPinyin.getInstance().toPinyinString(it.label)
-                    .contains(_searchStatus.value.searchText, true)
+                    .contains(text, true)
             }
         }
 
-        _searchResults.value = result
-        _searchStatus.value.resultStatus = if (result.isEmpty()) {
-            SearchStatus.ResultStatus.EMPTY
-        } else {
-            SearchStatus.ResultStatus.SHOW
-        }
-
-    }
-
-    private suspend inline fun connectKsuService(
-        crossinline onDisconnect: () -> Unit = {}
-    ): Pair<IBinder, ServiceConnection> = withContext(Dispatchers.Main) {
-        suspendCancellableCoroutine { cont ->
-            val connection = object : ServiceConnection {
-                override fun onServiceDisconnected(name: ComponentName?) {
-                    onDisconnect()
+        _uiState.update {
+            it.copy(
+                searchResults = result,
+                searchStatus = it.searchStatus.apply {
+                    resultStatus = if (result.isEmpty()) SearchStatus.ResultStatus.EMPTY else SearchStatus.ResultStatus.SHOW
                 }
-
-                override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                    if (cont.isActive) {
-                        cont.resume(binder as IBinder to this)
-                    } else {
-                        RootService.unbind(this)
-                    }
-                }
-            }
-
-            cont.invokeOnCancellation { RootService.unbind(connection) }
-
-            val intent = Intent(ksuApp, KsuService::class.java)
-
-            val task = RootService.bindOrTask(
-                intent,
-                Shell.EXECUTOR,
-                connection,
             )
-            val shell = KsuCli.SHELL
-            task?.let { shell.execTask(it) }
         }
-    }
-
-    private fun stopKsuService() {
-        val intent = Intent(ksuApp, KsuService::class.java)
-        RootService.stop(intent)
     }
 
     private fun filterAndSort(list: List<AppInfo>): List<AppInfo> {
@@ -179,129 +133,154 @@ class SuperUserViewModel : ViewModel() {
                 else -> 2
             }
         }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
+
+        val currentState = _uiState.value
+
         return list.filter {
+            if (it.packageName == ksuApp.packageName) return@filter false
             if (it.allowSu || it.hasCustomProfile) {
                 return@filter true
             }
-            val userFilter = !showOnlyPrimaryUserApps || it.uid / 100000 == 0
+            val userFilter = !currentState.showOnlyPrimaryUserApps || it.uid / 100000 == 0
             val isSystemApp = it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) != 0
             val typeFilter = it.uid == 2000
-                    || showSystemApps
+                    || currentState.showSystemApps
                     || !isSystemApp
             userFilter && typeFilter
         }.sortedWith(comparator)
     }
 
+    private fun buildGroups(apps: List<AppInfo>): List<GroupedApps> {
+        val comparator = compareBy<AppInfo> {
+            when {
+                it.allowSu -> 0
+                it.hasCustomProfile -> 1
+                else -> 2
+            }
+        }.thenBy { it.label.lowercase() }
+        val groups = apps.groupBy { it.uid }.map { (uid, list) ->
+            val sorted = list.sortedWith(comparator)
+            val primary = pickPrimary(sorted)
+            val shouldUmount = Natives.uidShouldUmount(uid)
+            val ownerName = if (sorted.size > 1) ownerNameForUid(uid, sorted) else null
+
+            GroupedApps(
+                uid = uid,
+                apps = sorted,
+                primary = primary,
+                anyAllowSu = sorted.any { it.allowSu },
+                anyCustom = sorted.any { it.hasCustomProfile },
+                shouldUmount = shouldUmount,
+                ownerName = ownerName
+            )
+        }
+        return groups.sortedWith(Comparator { a, b ->
+            fun rank(g: GroupedApps): Int = when {
+                g.anyAllowSu -> 0
+                g.anyCustom -> 1
+                g.apps.size > 1 -> 2
+                g.shouldUmount -> 4
+                else -> 3
+            }
+
+            val ra = rank(a)
+            val rb = rank(b)
+            if (ra != rb) return@Comparator ra - rb
+            return@Comparator when (ra) {
+                2 -> a.uid.compareTo(b.uid)
+                else -> a.primary.label.lowercase().compareTo(b.primary.label.lowercase())
+            }
+        })
+    }
+
     suspend fun fetchAppList() {
         refreshMutex.withLock {
-            withContext(Dispatchers.Main) { isRefreshing = true }
+            _uiState.update { it.copy(isRefreshing = true, error = null) }
 
-            val result = connectKsuService {
-                Log.w(TAG, "KsuService disconnected")
+            repo.getAppList().onSuccess { (newApps, ids) ->
+                val (sortedFiltered, grouped) = withContext(Dispatchers.IO) {
+                    val list = filterAndSort(newApps)
+                    list to buildGroups(list)
+                }
+
+                // Update cache for static method
+                synchronized(appsLock) { cachedApps = newApps }
+
+                _uiState.update {
+                    it.copy(
+                        appList = sortedFiltered,
+                        groupedApps = grouped,
+                        userIds = ids,
+                        isRefreshing = false
+                    )
+                }
+            }.onFailure { e ->
+                Log.e(TAG, "fetchAppList failed", e)
+                _uiState.update {
+                    it.copy(
+                        isRefreshing = false,
+                        error = e
+                    )
+                }
             }
 
-            var currentBinder = result.first
-            var currentConnection = result.second
-
-            try {
-                suspend fun reconnect(): IKsuInterface {
-                    RootService.unbind(currentConnection)
-
-                    val retry = connectKsuService { Log.w(TAG, "KsuService disconnected") }
-                    currentBinder = retry.first
-                    currentConnection = retry.second
-                    return IKsuInterface.Stub.asInterface(currentBinder)
-                }
-
-                val allPackagesSlice = withContext(Dispatchers.IO) {
-                    val pm = ksuApp.packageManager
-                    val start = SystemClock.elapsedRealtime()
-
-                    var iface = IKsuInterface.Stub.asInterface(currentBinder)
-                    val idsArray = try {
-                        iface.userIds
-                    } catch (_: Exception) {
-                        iface = reconnect()
-                        iface.userIds
-                    }
-
-                    val slice = try {
-                        iface.getPackages(0)
-                    } catch (_: Exception) {
-                        iface = reconnect()
-                        iface.getPackages(0)
-                    }
-
-                    val packages = slice.list
-                    val newApps = packages.map {
-                        val appInfo = it.applicationInfo
-                        val uid = appInfo!!.uid
-                        val profile = Natives.getAppProfile(it.packageName, uid)
-                        AppInfo(
-                            label = appInfo.loadLabel(pm).toString(),
-                            packageInfo = it,
-                            profile = profile,
-                        )
-                    }.filter {
-                        val ai = it.packageInfo.applicationInfo!!
-                        if (Build.VERSION.SDK_INT >= 29) !ai.isResourceOverlay else true
-                    }
-
-                    val sortedFiltered = filterAndSort(newApps)
-
-                    Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
-
-                    Triple(newApps, sortedFiltered, idsArray)
-                }
-                withContext(Dispatchers.Main) {
-                    synchronized(appsLock) {
-                        apps = allPackagesSlice.first
-                    }
-                    _appList.value = allPackagesSlice.second
-                    _userIds.value = allPackagesSlice.third.toList()
-                }
-            } finally {
-                withContext(Dispatchers.Main) {
-                    isRefreshing = false
-                    isNeedRefresh = false
-                }
-                RootService.unbind(currentConnection)
-            }
+            isNeedRefresh = false
         }
     }
 
-    private suspend fun refreshAppList() {
+    private suspend fun refreshAppList(resort: Boolean = true) {
         refreshMutex.withLock {
-            val currentApps = synchronized(appsLock) { apps }
+            val currentApps = synchronized(appsLock) { cachedApps }
             if (currentApps.isEmpty()) return
 
-            val updatedApps = withContext(Dispatchers.IO) {
-                currentApps.map {
-                    val profile = Natives.getAppProfile(it.packageName, it.uid)
-                    it.copy(profile = profile)
-                }
-            }
+            repo.refreshProfiles(currentApps).onSuccess { updatedApps ->
+                // Update cache for static method
+                synchronized(appsLock) { cachedApps = updatedApps }
 
-            val sortedFiltered = withContext(Dispatchers.IO) {
-                filterAndSort(updatedApps)
-            }
-
-            withContext(Dispatchers.Main) {
-                synchronized(appsLock) {
-                    apps = updatedApps
+                val (sortedFiltered, grouped) = if (resort) {
+                    withContext(Dispatchers.IO) {
+                        val list = filterAndSort(updatedApps)
+                        list to buildGroups(list)
+                    }
+                } else {
+                    val updatedMap = updatedApps.associateBy { it.packageName }
+                    val currentFiltered = _uiState.value.appList.map { updatedMap[it.packageName] ?: it }
+                    val currentGroups = _uiState.value.groupedApps.map { group ->
+                        val newApps = group.apps.map { updatedMap[it.packageName] ?: it }
+                        val primary = pickPrimary(newApps)
+                        val shouldUmount = Natives.uidShouldUmount(group.uid)
+                        val ownerName = if (newApps.size > 1) ownerNameForUid(group.uid, newApps) else null
+                        group.copy(
+                            apps = newApps,
+                            primary = primary,
+                            anyAllowSu = newApps.any { it.allowSu },
+                            anyCustom = newApps.any { it.hasCustomProfile },
+                            shouldUmount = shouldUmount,
+                            ownerName = ownerName
+                        )
+                    }
+                    currentFiltered to currentGroups
                 }
-                _appList.value = sortedFiltered
+
+                _uiState.update {
+                    it.copy(
+                        appList = sortedFiltered,
+                        groupedApps = grouped,
+                        isRefreshing = false
+                    )
+                }
                 isNeedRefresh = false
             }
         }
     }
 
-    fun loadAppList(force: Boolean = false) {
-        viewModelScope.launch {
-            if (force || apps.isEmpty()) {
+    fun loadAppList(force: Boolean = false, resort: Boolean = true): Job {
+        return viewModelScope.launch {
+            if (force || _uiState.value.appList.isEmpty()) {
                 fetchAppList()
+                delay(10)
             } else {
-                refreshAppList()
+                refreshAppList(resort)
             }
         }
     }

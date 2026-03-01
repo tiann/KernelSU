@@ -347,7 +347,8 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         id = R.string.select_file_tip, defaultPartitionName
     )
     val selectFileTipNoGKI = stringResource(id = R.string.select_file_tip_nogki)
-    val radioOptions = mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = if (isGkiDevice) selectFileTip else selectFileTipNoGKI))
+    val radioOptions =
+        mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = if (isGkiDevice) selectFileTip else selectFileTipNoGKI))
     if (rootAvailable && isGkiDevice) {
         radioOptions.add(InstallMethod.DirectInstall)
 

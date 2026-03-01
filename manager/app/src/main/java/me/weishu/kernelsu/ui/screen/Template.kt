@@ -42,12 +42,12 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +75,6 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.DropdownItem
@@ -122,12 +121,13 @@ fun AppProfileTemplateScreen(
 ) {
     val navigator = LocalNavigator.current
     val viewModel = viewModel<TemplateViewModel>()
+    val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
 
     LaunchedEffect(Unit) {
-        if (viewModel.templateList.isEmpty()) {
-            scope.launch { viewModel.fetchTemplates() }
+        if (uiState.templateList.isEmpty()) {
+            viewModel.fetchTemplates()
         }
     }
 
@@ -136,7 +136,7 @@ fun AppProfileTemplateScreen(
         navigator.observeResult<Boolean>(requestKey).collect { success ->
             if (success) {
                 navigator.clearResult(requestKey)
-                scope.launch { viewModel.fetchTemplates() }
+                viewModel.fetchTemplates()
             }
         }
     }
@@ -258,7 +258,7 @@ fun AppProfileTemplateScreen(
     ) { innerPadding ->
         val context = LocalContext.current
         val offline = !isNetworkAvailable(context)
-        if (viewModel.templateList.isEmpty()) {
+        if (uiState.templateList.isEmpty()) {
             val layoutDirection = LocalLayoutDirection.current
             Box(
                 modifier = Modifier
@@ -289,15 +289,7 @@ fun AppProfileTemplateScreen(
                 }
             }
         }
-        var isRefreshing by rememberSaveable { mutableStateOf(false) }
         val pullToRefreshState = rememberPullToRefreshState()
-        LaunchedEffect(isRefreshing) {
-            if (isRefreshing) {
-                delay(150)
-                viewModel.fetchTemplates()
-                isRefreshing = false
-            }
-        }
         val refreshTexts = listOf(
             stringResource(R.string.refresh_pulling),
             stringResource(R.string.refresh_release),
@@ -306,9 +298,9 @@ fun AppProfileTemplateScreen(
         )
         val layoutDirection = LocalLayoutDirection.current
         PullToRefresh(
-            isRefreshing = isRefreshing,
+            isRefreshing = uiState.isRefreshing,
             pullToRefreshState = pullToRefreshState,
-            onRefresh = { isRefreshing = true },
+            onRefresh = { scope.launch { viewModel.fetchTemplates(true) } },
             refreshTexts = refreshTexts,
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,
@@ -331,7 +323,7 @@ fun AppProfileTemplateScreen(
                 item {
                     Spacer(Modifier.height(12.dp))
                 }
-                items(viewModel.templateList, key = { it.id }) { app ->
+                items(uiState.templateList, key = { it.id }) { app ->
                     TemplateItem(navigator, app)
                 }
                 item {

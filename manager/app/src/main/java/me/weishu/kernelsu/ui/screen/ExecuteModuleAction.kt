@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen
 
-import android.annotation.SuppressLint
 import android.os.Environment
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -50,11 +49,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.runModuleAction
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -70,13 +69,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ExecuteModuleActionScreen(moduleId: String) {
     val navigator = LocalNavigator.current
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
     val logContent = rememberSaveable { StringBuilder() }
+    val moduleActionSuccess = stringResource(R.string.module_action_success)
     val context = LocalContext.current
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
@@ -92,7 +91,6 @@ fun ExecuteModuleActionScreen(moduleId: String) {
     } else {
         HazeStyle.Unspecified
     }
-
     val fromShortcut = remember(activity) {
         val intent = activity?.intent
         intent?.getStringExtra("shortcut_type") == "module_action"
@@ -111,11 +109,9 @@ fun ExecuteModuleActionScreen(moduleId: String) {
         if (text.isNotEmpty()) {
             return@LaunchedEffect
         }
-        val viewModel = ModuleViewModel()
-        if (viewModel.moduleList.isEmpty()) {
-            viewModel.loadModuleList()
-        }
-        val moduleInfo = viewModel.moduleList.find { info -> info.id == moduleId }
+        val repo = ModuleRepositoryImpl()
+        val modules = repo.getModules().getOrDefault(emptyList())
+        val moduleInfo = modules.find { info -> info.id == moduleId }
         if (moduleInfo == null) {
             Toast.makeText(context, noModule.format(moduleId), Toast.LENGTH_SHORT).show()
             exitExecute()
@@ -130,6 +126,7 @@ fun ExecuteModuleActionScreen(moduleId: String) {
             exitExecute()
             return@LaunchedEffect
         }
+
         withContext(Dispatchers.IO) {
             runModuleAction(
                 moduleId = moduleId,
@@ -151,11 +148,7 @@ fun ExecuteModuleActionScreen(moduleId: String) {
         }
         if (actionResult) {
             if (fromShortcut) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.module_action_success),
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, moduleActionSuccess, Toast.LENGTH_SHORT).show()
             }
             exitExecute()
         }

@@ -184,7 +184,10 @@ private fun HandleWebUIEvent(webUIState: WebUIState) {
                             onClick = {
                                 webUIState.onConfirmResult(true)
                                 showDialog.value = false
-                            }, text = stringResource(R.string.confirm), modifier = Modifier.weight(1f), colors = ButtonDefaults.textButtonColorsPrimary()
+                            },
+                            text = stringResource(R.string.confirm),
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.textButtonColorsPrimary()
                         )
                     }
                 }
@@ -220,7 +223,10 @@ private fun HandleWebUIEvent(webUIState: WebUIState) {
                             onClick = {
                                 webUIState.onPromptResult(state.text.toString())
                                 showDialog.value = false
-                            }, text = stringResource(R.string.confirm), modifier = Modifier.weight(1f), colors = ButtonDefaults.textButtonColorsPrimary()
+                            },
+                            text = stringResource(R.string.confirm),
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.textButtonColorsPrimary()
                         )
                     }
                 }

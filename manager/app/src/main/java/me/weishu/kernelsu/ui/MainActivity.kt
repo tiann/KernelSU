@@ -139,7 +139,8 @@ class MainActivity : ComponentActivity() {
                         "page_scale" -> pageScale = prefs.getFloat("page_scale", 1f)
                         "enable_blur" -> enableBlur = prefs.getBoolean("enable_blur", true)
                         "enable_floating_bottom_bar" -> enableFloatingBottomBar = prefs.getBoolean("enable_floating_bottom_bar", false)
-                        "enable_floating_bottom_bar_blur" -> enableFloatingBottomBarBlur = prefs.getBoolean("enable_floating_bottom_bar_blur", true)
+                        "enable_floating_bottom_bar_blur" -> enableFloatingBottomBarBlur =
+                            prefs.getBoolean("enable_floating_bottom_bar_blur", true)
                     }
                 }
                 prefs.registerOnSharedPreferenceChangeListener(listener)

@@ -39,6 +39,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -46,7 +47,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -81,7 +81,6 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -171,14 +170,15 @@ data class RepoModuleArg(
     val releases: List<ReleaseArg>
 ) : Parcelable
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ModuleRepoScreen(
 ) {
     val navigator = LocalNavigator.current
     val viewModel = viewModel<ModuleRepoViewModel>()
+    val uiState by viewModel.uiState.collectAsState()
     val installedVm = viewModel<ModuleViewModel>()
-    val searchStatus by viewModel.searchStatus
+    val installedUiState by installedVm.uiState.collectAsState()
+    val searchStatus = uiState.searchStatus
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val metaBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
@@ -186,10 +186,10 @@ fun ModuleRepoScreen(
     val repoSortByNameState = remember { mutableStateOf(prefs.getBoolean("module_repo_sort_name", false)) }
 
     LaunchedEffect(Unit) {
-        if (viewModel.modules.value.isEmpty()) {
+        if (uiState.modules.isEmpty()) {
             viewModel.refresh()
         }
-        if (installedVm.moduleList.isEmpty()) {
+        if (installedUiState.moduleList.isEmpty()) {
             installedVm.fetchModuleList()
         }
     }
@@ -286,7 +286,7 @@ fun ModuleRepoScreen(
                     Spacer(Modifier.height(6.dp))
                 }
                 val displaySearch = run {
-                    val base = viewModel.searchResults.value
+                    val base = uiState.searchResults
                     val sortByName = repoSortByNameState.value
                     val collator = Collator.getInstance(Locale.getDefault())
                     if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
@@ -387,7 +387,7 @@ fun ModuleRepoScreen(
         },
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
-        val isLoading = viewModel.modules.value.isEmpty()
+        val isLoading = uiState.modules.isEmpty()
         val offline = !isNetworkAvailable(context)
 
         if (isLoading) {
@@ -423,15 +423,7 @@ fun ModuleRepoScreen(
                 hazeState = hazeState,
                 hazeStyle = hazeStyle
             ) { boxHeight ->
-                var isRefreshing by rememberSaveable { mutableStateOf(false) }
                 val pullToRefreshState = rememberPullToRefreshState()
-                LaunchedEffect(isRefreshing) {
-                    if (isRefreshing) {
-                        delay(150)
-                        viewModel.refresh()
-                        isRefreshing = false
-                    }
-                }
                 val refreshTexts = listOf(
                     stringResource(R.string.refresh_pulling),
                     stringResource(R.string.refresh_release),
@@ -439,9 +431,9 @@ fun ModuleRepoScreen(
                     stringResource(R.string.refresh_complete),
                 )
                 PullToRefresh(
-                    isRefreshing = isRefreshing,
+                    isRefreshing = uiState.isRefreshing,
                     pullToRefreshState = pullToRefreshState,
-                    onRefresh = { if (!isRefreshing) isRefreshing = true },
+                    onRefresh = { viewModel.refresh() },
                     refreshTexts = refreshTexts,
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
@@ -450,7 +442,7 @@ fun ModuleRepoScreen(
                     ),
                 ) {
                     val displayModules = run {
-                        val base = viewModel.modules.value
+                        val base = uiState.modules
                         val sortByName = repoSortByNameState.value
                         val collator = Collator.getInstance(Locale.getDefault())
                         if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
