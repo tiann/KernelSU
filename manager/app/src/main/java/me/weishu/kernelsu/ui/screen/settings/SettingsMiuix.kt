@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -342,6 +343,7 @@ fun SettingPagerMiuix(
                             }
                         )
                     }
+                    var sliderValue by remember(uiState.pageScale) { mutableStateOf(uiState.pageScale) }
                     SuperArrow(
                         title = stringResource(id = R.string.settings_page_scale),
                         summary = stringResource(id = R.string.settings_page_scale_summary),
@@ -355,7 +357,7 @@ fun SettingPagerMiuix(
                         },
                         endActions = {
                             Text(
-                                text = "${(uiState.pageScale * 100).toInt()}%",
+                                text = "${(sliderValue * 100).toInt()}%",
                                 color = colorScheme.onSurfaceVariantActions,
                             )
                         },
@@ -363,9 +365,12 @@ fun SettingPagerMiuix(
                         holdDownState = showScaleDialog.value,
                         bottomAction = {
                             Slider(
-                                value = uiState.pageScale,
+                                value = sliderValue,
                                 onValueChange = {
-                                    viewModel.setPageScale(it)
+                                    sliderValue = it
+                                },
+                                onValueChangeFinished = {
+                                    viewModel.setPageScale(sliderValue)
                                 },
                                 valueRange = 0.8f..1.1f,
                                 showKeyPoints = true,

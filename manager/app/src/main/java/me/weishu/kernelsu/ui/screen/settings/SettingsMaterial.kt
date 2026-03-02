@@ -52,6 +52,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -225,6 +226,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         }
                     }
                     add {
+                        var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
                         ExpressiveListItem(
                             headlineContent = { Text(stringResource(id = R.string.settings_page_scale)) },
                             supportingContent = { Text(stringResource(id = R.string.settings_page_scale_summary)) },
@@ -236,15 +238,17 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             },
                             trailingContent = { 
                                 Text(
-                                    "${(uiState.pageScale * 100).toInt()}%",
+                                    "${(sliderValue * 100).toInt()}%",
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
                             bottomContent = {
+
                                 Slider(
-                                    value = uiState.pageScale,
-                                    onValueChange = { viewModel.setPageScale(it) },
+                                    value = sliderValue,
+                                    onValueChange = { sliderValue = it },
+                                    onValueChangeFinished = { viewModel.setPageScale(sliderValue) },
                                     valueRange = 0.8f..1.1f,
                                     modifier = Modifier.fillMaxWidth()
                                 )
