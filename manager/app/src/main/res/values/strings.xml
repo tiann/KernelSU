@@ -171,8 +171,12 @@
     <string name="settings_key_color">Key color</string>
     <string name="settings_key_color_summary">Customize accent when using Monet.</string>
     <string name="settings_key_color_default">Default</string>
+    <string name="settings_ui_mode">UI Style</string>
+    <string name="settings_ui_mode_summary">Choose the interface style.</string>
     <string name="settings_page_scale">Page Scale</string>
     <string name="settings_page_scale_summary">Adjust the global display scale.</string>
+    <string name="settings_color_spec">Color Spec</string>
+    <string name="settings_color_style">Color Style</string>
     <string name="color_blue">Blue</string>
     <string name="color_red">Red</string>
     <string name="color_green">Green</string>

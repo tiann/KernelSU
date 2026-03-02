@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.data.repository
 
 interface SettingsRepository {
+    var uiMode: String
     var checkUpdate: Boolean
     var checkModuleUpdate: Boolean
     var themeMode: Int

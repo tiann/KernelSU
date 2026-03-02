@@ -24,7 +24,7 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 
 class WebViewInterface(private val state: WebUIState) {
-    private val webView get() = state.webView!!
+    private val webView get() = state.webView
     private val modDir get() = state.modDir
 
     @JavascriptInterface
@@ -76,8 +76,8 @@ class WebViewInterface(private val state: WebUIState) {
                     stdout
                 )
             }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
-        webView.post {
-            webView.loadUrl(jsCode)
+        webView?.post {
+            webView?.loadUrl(jsCode)
         }
     }
 
@@ -108,8 +108,8 @@ class WebViewInterface(private val state: WebUIState) {
                         data
                     )
                 }); } catch(e) { console.error('emitData', e); } })();"
-            webView.post {
-                webView.loadUrl(jsCode)
+            webView?.post {
+                webView?.loadUrl(jsCode)
             }
         }
 
@@ -133,8 +133,8 @@ class WebViewInterface(private val state: WebUIState) {
         completableFuture.thenAccept { result ->
             val emitExitCode =
                 "javascript: (function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
-            webView.post {
-                webView.loadUrl(emitExitCode)
+            webView?.post {
+                webView?.loadUrl(emitExitCode)
             }
 
             if (result.code != 0) {
@@ -146,8 +146,8 @@ class WebViewInterface(private val state: WebUIState) {
                             )
                         )
                     };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
-                webView.post {
-                    webView.loadUrl(emitErrCode)
+                webView?.post {
+                    webView?.loadUrl(emitErrCode)
                 }
             }
         }.whenComplete { _, _ ->
@@ -157,14 +157,14 @@ class WebViewInterface(private val state: WebUIState) {
 
     @JavascriptInterface
     fun toast(msg: String) {
-        webView.post {
-            Toast.makeText(webView.context, msg, Toast.LENGTH_SHORT).show()
+        webView?.post {
+            webView?.let { Toast.makeText(it.context, msg, Toast.LENGTH_SHORT).show() }
         }
     }
 
     @JavascriptInterface
     fun fullScreen(enable: Boolean) {
-        val context = webView.context
+        val context = webView?.context
         if (context is Activity) {
             Handler(Looper.getMainLooper()).post {
                 if (enable) {

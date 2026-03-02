@@ -1,6 +1,9 @@
 package me.weishu.kernelsu.ui.viewmodel
 
+import me.weishu.kernelsu.ui.UiMode
+
 data class SettingsUiState(
+    val uiMode: String = UiMode.DEFAULT_VALUE,
     val checkUpdate: Boolean = true,
     val checkModuleUpdate: Boolean = true,
     val themeMode: Int = 0,

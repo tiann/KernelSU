@@ -10,6 +10,8 @@ navigationevent = "1.0.2"
 markwon = "4.6.2"
 webkit = "1.15.0"
 parcelablelist = "2.0.1"
+material3 = "1.5.0-alpha14"
+materialKolor = "4.1.1"
 ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
@@ -34,6 +36,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
@@ -73,3 +76,5 @@ okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
 
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenapibypass" }
+
+material-kolor = { group = "com.materialkolor", name = "material-kolor", version.ref = "materialKolor" }

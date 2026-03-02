@@ -2,10 +2,9 @@ package me.weishu.kernelsu.data.repository
 
 import android.content.Context
 import androidx.core.content.edit
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.getFeaturePersistValue
 import me.weishu.kernelsu.ui.util.getFeatureStatus
@@ -15,6 +14,10 @@ class SettingsRepositoryImpl : SettingsRepository {
     private val prefs by lazy {
         ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
     }
+
+    override var uiMode: String
+        get() = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
+        set(value) = prefs.edit { putString("ui_mode", value) }
 
     override var checkUpdate: Boolean
         get() = prefs.getBoolean("check_update", true)
