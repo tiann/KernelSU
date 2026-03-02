@@ -149,11 +149,7 @@ fun TemplateEditorScreenMiuix(
                 .scrollEndHaptic()
                 .overScrollVertical()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
-                .pointerInteropFilter {
-                    // disable click and ripple if readOnly
-                    readOnly
-                },
+                .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
             contentPadding = innerPadding,
             overscrollEffect = null
         ) {
@@ -167,7 +163,8 @@ fun TemplateEditorScreenMiuix(
 
                     TextEdit(
                         label = stringResource(id = R.string.app_profile_template_name),
-                        text = template.name
+                        text = template.name,
+                        enabled = !readOnly
                     ) { value ->
                         template.copy(name = value).run {
                             if (autoSave) {
@@ -183,13 +180,15 @@ fun TemplateEditorScreenMiuix(
                     TextEdit(
                         label = stringResource(id = R.string.app_profile_template_id),
                         text = template.id,
-                        isError = errorHint
+                        isError = errorHint,
+                        enabled = !readOnly
                     ) { value ->
                         template = template.copy(id = value)
                     }
                     TextEdit(
                         label = stringResource(R.string.module_author),
-                        text = template.author
+                        text = template.author,
+                        enabled = !readOnly
                     ) { value ->
                         template.copy(author = value).run {
                             if (autoSave) {
@@ -204,7 +203,8 @@ fun TemplateEditorScreenMiuix(
 
                     TextEdit(
                         label = stringResource(id = R.string.app_profile_template_description),
-                        text = template.description
+                        text = template.description,
+                        enabled = !readOnly
                     ) { value ->
                         template.copy(description = value).run {
                             if (autoSave) {
@@ -219,6 +219,7 @@ fun TemplateEditorScreenMiuix(
 
                     RootProfileConfig(
                         fixedName = true,
+                        enabled = !readOnly,
                         profile = toNativeProfile(template),
                         onProfileChange = {
                             template.copy(
@@ -332,6 +333,7 @@ private fun TextEdit(
     label: String,
     text: String,
     isError: Boolean = false,
+    enabled: Boolean = true,
     onValueChange: (String) -> Unit = {}
 ) {
     val editText = remember { mutableStateOf(text) }
@@ -346,6 +348,7 @@ private fun TextEdit(
             keyboardType = KeyboardType.Ascii,
         ),
         isError = isError,
+        enabled = enabled,
     )
 }
 

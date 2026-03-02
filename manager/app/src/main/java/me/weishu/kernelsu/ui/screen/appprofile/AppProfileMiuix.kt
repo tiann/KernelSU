@@ -477,6 +477,7 @@ private fun AppProfileInner(
                 ) {
                     RootProfileConfig(
                         fixedName = true,
+                        enabled = rootMode == Mode.Custom,
                         profile = profile,
                         onProfileChange = onProfileChange
                     )

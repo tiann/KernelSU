@@ -46,6 +46,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 fun RootProfileConfigMiuix(
     modifier: Modifier = Modifier,
     fixedName: Boolean,
+    enabled: Boolean = true,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
@@ -54,6 +55,7 @@ fun RootProfileConfigMiuix(
     ) {
         if (!fixedName) {
             TextField(
+                enabled = enabled,
                 label = stringResource(R.string.profile_name),
                 value = profile.name,
                 onValueChange = { onProfileChange(profile.copy(name = it)) }
@@ -61,6 +63,7 @@ fun RootProfileConfigMiuix(
         }
 
         SuperEditArrow(
+            enabled = enabled,
             title = "UID",
             defaultValue = profile.uid,
         ) {
@@ -74,6 +77,7 @@ fun RootProfileConfigMiuix(
         }
 
         SuperEditArrow(
+            enabled = enabled,
             title = "GID",
             defaultValue = profile.gid,
         ) {
@@ -92,7 +96,7 @@ fun RootProfileConfigMiuix(
             }
         }
 
-        GroupsPanel(selectedGroups) {
+        GroupsPanel(enabled, selectedGroups) {
             onProfileChange(
                 profile.copy(
                     groups = it.map { group -> group.gid }.ifEmpty { listOf(0) },
@@ -105,7 +109,7 @@ fun RootProfileConfigMiuix(
             Capabilities.entries.find { it.cap == e }
         }
 
-        CapsPanel(selectedCaps) {
+        CapsPanel(enabled, selectedCaps) {
             onProfileChange(
                 profile.copy(
                     capabilities = it.map { cap -> cap.cap },
@@ -114,7 +118,7 @@ fun RootProfileConfigMiuix(
             )
         }
 
-        MountNameSpacePanel(profile = profile) {
+        MountNameSpacePanel(enabled = enabled, profile = profile) {
             onProfileChange(
                 profile.copy(
                     namespace = it,
@@ -123,7 +127,7 @@ fun RootProfileConfigMiuix(
             )
         }
 
-        SELinuxPanel(profile = profile, onSELinuxChange = { domain, rules ->
+        SELinuxPanel(enabled = enabled, profile = profile, onSELinuxChange = { domain, rules ->
             onProfileChange(
                 profile.copy(
                     context = domain,
@@ -137,6 +141,7 @@ fun RootProfileConfigMiuix(
 
 @Composable
 private fun GroupsPanel(
+    enabled: Boolean,
     selected: List<Groups>,
     closeSelection: (selection: Set<Groups>) -> Unit
 ) {
@@ -221,20 +226,23 @@ private fun GroupsPanel(
         selected.joinToString(separator = ",", transform = { it.display })
     }
     SuperArrow(
+        enabled = enabled,
         title = stringResource(R.string.profile_groups),
         summary = tag,
         onClick = {
             showDialog.value = true
-        },
+        }
     )
 
 }
-
 @Composable
 private fun MountNameSpacePanel(
-    profile: Natives.Profile, onMntNamespaceChange: (namespaceType: Int) -> Unit
+    enabled: Boolean,
+    profile: Natives.Profile,
+    onMntNamespaceChange: (namespaceType: Int) -> Unit
 ) {
     SuperDropdown(
+        enabled = enabled,
         title = stringResource(id = R.string.profile_namespace),
         items = listOf(
             stringResource(id = R.string.profile_namespace_inherited),
@@ -249,6 +257,7 @@ private fun MountNameSpacePanel(
 
 @Composable
 private fun CapsPanel(
+    enabled: Boolean,
     selected: Collection<Capabilities>,
     closeSelection: (selection: Set<Capabilities>) -> Unit
 ) {
@@ -325,6 +334,7 @@ private fun CapsPanel(
         selected.joinToString(separator = ",", transform = { it.display })
     }
     SuperArrow(
+        enabled = enabled,
         title = stringResource(R.string.profile_capabilities),
         summary = tag,
         onClick = {
@@ -336,6 +346,7 @@ private fun CapsPanel(
 
 @Composable
 private fun SELinuxPanel(
+    enabled: Boolean,
     profile: Natives.Profile,
     onSELinuxChange: (domain: String, rules: String) -> Unit
 ) {
@@ -418,6 +429,7 @@ private fun SELinuxPanel(
     }
 
     SuperArrow(
+        enabled = enabled,
         title = stringResource(R.string.profile_selinux_context),
         summary = profile.context,
         onClick = { showDialog.value = true }

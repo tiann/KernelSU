@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -232,18 +233,28 @@ fun InstallScreenMiuix() {
                         val suffix = produceState(initialValue = "", isOta) {
                             value = getSlotSuffix(isOta)
                         }.value
-                        val partitions = produceState(initialValue = emptyList()) {
+                        val partitions by produceState(initialValue = emptyList<String>()) {
                             value = getAvailablePartitions()
-                        }.value
-                        val defaultPartition = produceState(initialValue = "") {
-                            value = getDefaultPartition()
-                        }.value
-                        partitionsState = partitions
-                        val displayPartitions = partitions.map { name ->
-                            if (defaultPartition == name) "$name (default)" else name
                         }
-                        val defaultIndex = partitions.indexOf(defaultPartition).takeIf { it >= 0 } ?: 0
-                        if (!hasCustomSelected) partitionSelectionIndex = defaultIndex
+                        val defaultPartition by produceState(initialValue = "") {
+                            value = getDefaultPartition()
+                        }
+                        LaunchedEffect(partitions) {
+                            partitionsState = partitions
+                        }
+                        val defaultIndex = remember(partitions, defaultPartition) {
+                            partitions.indexOf(defaultPartition).coerceAtLeast(0)
+                        }
+                        LaunchedEffect(defaultIndex, hasCustomSelected) {
+                            if (!hasCustomSelected) {
+                                partitionSelectionIndex = defaultIndex
+                            }
+                        }
+                        val displayPartitions = remember(partitions, defaultPartition) {
+                            partitions.map { name ->
+                                if (defaultPartition == name) "$name (default)" else name
+                            }
+                        }
                         SuperDropdown(
                             items = displayPartitions,
                             selectedIndex = partitionSelectionIndex,

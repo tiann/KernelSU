@@ -122,9 +122,6 @@ fun TemplateEditorScreenMaterial(
                 .imePadding()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
-                .pointerInteropFilter {
-                    readOnly
-                }
         ) {
             var idErrorHint by remember { mutableStateOf("") }
             val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
@@ -198,6 +195,7 @@ fun TemplateEditorScreenMaterial(
 
             RootProfileConfig(
                 fixedName = true,
+                enabled = !readOnly,
                 profile = toNativeProfile(template),
                 onProfileChange = {
                     template.copy(

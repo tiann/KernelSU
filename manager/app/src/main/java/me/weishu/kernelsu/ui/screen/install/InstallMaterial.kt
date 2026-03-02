@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -171,18 +172,28 @@ fun InstallScreenMaterial() {
             val suffix = produceState(initialValue = "", isOta) {
                 value = getSlotSuffix(isOta)
             }.value
-            val partitions = produceState(initialValue = emptyList()) {
+            val partitions by produceState(initialValue = emptyList<String>()) {
                 value = getAvailablePartitions()
-            }.value
-            val defaultPartition = produceState(initialValue = "") {
-                value = getDefaultPartition()
-            }.value
-            partitionsState = partitions
-            val displayPartitions = partitions.map { name ->
-                if (defaultPartition == name) "$name (default)" else name
             }
-            val defaultIndex = partitions.indexOf(defaultPartition).takeIf { it >= 0 } ?: 0
-            if (!hasCustomSelected) partitionSelectionIndex = defaultIndex
+            val defaultPartition by produceState(initialValue = "") {
+                value = getDefaultPartition()
+            }
+            LaunchedEffect(partitions) {
+                partitionsState = partitions
+            }
+            val defaultIndex = remember(partitions, defaultPartition) {
+                partitions.indexOf(defaultPartition).coerceAtLeast(0)
+            }
+            LaunchedEffect(defaultIndex, hasCustomSelected) {
+                if (!hasCustomSelected) {
+                    partitionSelectionIndex = defaultIndex
+                }
+            }
+            val displayPartitions = remember(partitions, defaultPartition) {
+                partitions.map { name ->
+                    if (defaultPartition == name) "$name (default)" else name
+                }
+            }
             ExpressiveColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = listOf(

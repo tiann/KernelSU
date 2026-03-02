@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
@@ -119,7 +120,7 @@ fun ExecuteModuleActionScreenMaterial(moduleId: String) {
                 .fillMaxSize()
                 .padding(
                     start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection),
                 )
                 .verticalScroll(scrollState)
         ) {

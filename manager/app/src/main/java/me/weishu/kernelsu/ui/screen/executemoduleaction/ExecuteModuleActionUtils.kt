@@ -94,7 +94,6 @@ fun ExecuteModuleActionEffect(
     }
 }
 
-@Composable
 fun saveLog(
     logContent: StringBuilder,
     context: Context,

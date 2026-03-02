@@ -36,6 +36,7 @@ fun AppProfileConfig(
 fun RootProfileConfig(
     modifier: Modifier = Modifier,
     fixedName: Boolean,
+    enabled: Boolean = true,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
@@ -43,12 +44,14 @@ fun RootProfileConfig(
         UiMode.Miuix -> RootProfileConfigMiuix(
             modifier = modifier,
             fixedName = fixedName,
+            enabled = enabled,
             profile = profile,
             onProfileChange = onProfileChange
         )
         UiMode.Material -> RootProfileConfigMaterial(
             modifier = modifier,
             fixedName = fixedName,
+            enabled = enabled,
             profile = profile,
             onProfileChange = onProfileChange
         )

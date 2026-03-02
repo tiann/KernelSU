@@ -147,7 +147,7 @@ fun AboutScreenMiuix() {
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = "icon",
+                            contentDescription = null,
                             contentScale = FixedScale(1f)
                         )
                     }

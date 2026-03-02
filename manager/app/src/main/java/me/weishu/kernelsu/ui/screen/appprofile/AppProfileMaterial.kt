@@ -309,6 +309,7 @@ private fun AppProfileInner(
                     ) {
                         RootProfileConfig(
                             fixedName = true,
+                            enabled = mode == Mode.Custom,
                             profile = profile,
                             onProfileChange = onProfileChange
                         )

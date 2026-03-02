@@ -36,6 +36,7 @@ import me.weishu.kernelsu.ui.util.isSepolicyValid
 fun RootProfileConfigMaterial(
     modifier: Modifier = Modifier,
     fixedName: Boolean,
+    enabled: Boolean = true,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit
 ) {
@@ -44,6 +45,7 @@ fun RootProfileConfigMaterial(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         UidGidPanel(
+            enabled = enabled,
             uid = profile.uid,
             gid = profile.gid,
             onUidChange = { onProfileChange(profile.copy(uid = it, rootUseDefault = false)) },
@@ -51,6 +53,7 @@ fun RootProfileConfigMaterial(
         )
 
         GroupsPanel(
+            enabled = enabled,
             selected = profile.groups.mapNotNull { gid ->
                 Groups.entries.find { it.gid == gid }
             },
@@ -65,6 +68,7 @@ fun RootProfileConfigMaterial(
         )
 
         CapsPanel(
+            enabled = enabled,
             selected = profile.capabilities,
             onSelectionChange = { selection ->
                 onProfileChange(
@@ -77,11 +81,13 @@ fun RootProfileConfigMaterial(
         )
 
         MountNameSpacePanel(
+            enabled = enabled,
             namespace = profile.namespace,
             onNamespaceChange = { onProfileChange(profile.copy(namespace = it, rootUseDefault = false)) }
         )
 
         SELinuxPanel(
+            enabled = enabled,
             context = profile.context,
             rules = profile.rules,
             onContextChange = { domain ->
@@ -96,6 +102,7 @@ fun RootProfileConfigMaterial(
 
 @Composable
 private fun UidGidPanel(
+    enabled: Boolean,
     uid: Int,
     gid: Int,
     onUidChange: (Int) -> Unit,
@@ -106,6 +113,7 @@ private fun UidGidPanel(
         content = listOf(
             {
                 ExpressiveTextField(
+                    enabled = enabled,
                     value = uid.toString(),
                     onValueChange = { onUidChange(it.toIntOrNull() ?: 0) },
                     label = "UID",
@@ -114,6 +122,7 @@ private fun UidGidPanel(
             },
             {
                 ExpressiveTextField(
+                    enabled = enabled,
                     value = gid.toString(),
                     onValueChange = { onGidChange(it.toIntOrNull() ?: 0) },
                     label = "GID",
@@ -126,6 +135,7 @@ private fun UidGidPanel(
 
 @Composable
 private fun GroupsPanel(
+    enabled: Boolean,
     selected: List<Groups>,
     onSelectionChange: (Set<Groups>) -> Unit
 ) {
@@ -175,7 +185,7 @@ private fun GroupsPanel(
             ExpressiveListItem(
                 headlineContent = { Text(stringResource(R.string.profile_groups)) },
                 supportingContent = { Text(tag) },
-                onClick = { showDialog.value = true }
+                onClick = if (enabled) { { showDialog.value = true } } else null
             )
         }
     )
@@ -183,6 +193,7 @@ private fun GroupsPanel(
 
 @Composable
 private fun MountNameSpacePanel(
+    enabled: Boolean,
     namespace: Int,
     onNamespaceChange: (Int) -> Unit
 ) {
@@ -227,7 +238,7 @@ private fun MountNameSpacePanel(
             ExpressiveListItem(
                 headlineContent = { Text(stringResource(R.string.profile_namespace)) },
                 supportingContent = { Text(selectedOption.label) },
-                onClick = { showDialog.value = true }
+                onClick = if (enabled) { { showDialog.value = true } } else null
             )
         }
     )
@@ -235,6 +246,7 @@ private fun MountNameSpacePanel(
 
 @Composable
 private fun CapsPanel(
+    enabled: Boolean,
     selected: List<Int>,
     onSelectionChange: (Set<Capabilities>) -> Unit
 ) {
@@ -282,7 +294,7 @@ private fun CapsPanel(
             ExpressiveListItem(
                 headlineContent = { Text(stringResource(R.string.profile_capabilities)) },
                 supportingContent = { Text(tag) },
-                onClick = { showDialog.value = true }
+                onClick = if (enabled) { { showDialog.value = true } } else null
             )
         }
     )
@@ -290,6 +302,7 @@ private fun CapsPanel(
 
 @Composable
 private fun SELinuxPanel(
+    enabled: Boolean,
     context: String,
     rules: String,
     onContextChange: (String) -> Unit,
@@ -316,7 +329,7 @@ private fun SELinuxPanel(
             ExpressiveListItem(
                 headlineContent = { Text(stringResource(R.string.profile_selinux_context)) },
                 supportingContent = { Text(context.ifEmpty { "—" }) },
-                onClick = { showDialog.value = true }
+                onClick = if (enabled) { { showDialog.value = true } } else null
             )
         }
     )
