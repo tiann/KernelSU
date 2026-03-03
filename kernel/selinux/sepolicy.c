@@ -1,4 +1,5 @@
 #include <linux/gfp.h>
+#include <linux/overflow.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/version.h>
@@ -583,13 +584,15 @@ void *ksu_kvrealloc_compat(const void *p, size_t oldsize, size_t newsize,
  *
  * Unlike ksu_kvrealloc, this does NOT free the old buffer, so the caller
  * can safely roll back if a later allocation fails.
+ *
+ * Returns NULL if new_size <= old_size (cannot grow) or allocation fails.
  */
 static void *ksu_kvalloc_grow(const void *old, size_t old_size, size_t new_size)
 {
     void *newp;
 
     if (new_size <= old_size)
-        return (void *)old;
+        return NULL;
     newp = kvmalloc(new_size, GFP_ATOMIC);
     if (!newp)
         return NULL;
@@ -606,7 +609,11 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return true;
     }
 
-    u32 value = db->p_types.nprim + 1;
+    u32 value;
+    if (check_add_overflow(db->p_types.nprim, 1u, &value)) {
+        pr_err("add_type: nprim overflow.\n");
+        return false;
+    }
 
     type = kzalloc(sizeof(struct type_datum), GFP_ATOMIC);
     if (!type) {
@@ -628,9 +635,12 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
      * Pre-allocate all arrays using non-destructive copies.
      * The old buffers are preserved so policydb stays consistent
      * if any allocation fails.
+     *
+     * Use overflow-safe size_mul() for all size computations to
+     * prevent undersized allocations from overflowed multiplications.
      */
-    size_t old_size = (value - 1) * sizeof(struct ebitmap);
-    size_t new_size = value * sizeof(struct ebitmap);
+    size_t old_size = size_mul(value - 1, sizeof(struct ebitmap));
+    size_t new_size = size_mul(value, sizeof(struct ebitmap));
     struct ebitmap *new_type_attr_map_array =
         ksu_kvalloc_grow(db->type_attr_map_array, old_size, new_size);
     if (!new_type_attr_map_array) {
@@ -639,8 +649,8 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return false;
     }
 
-    old_size = sizeof(*db->type_val_to_struct) * (value - 1);
-    new_size = sizeof(*db->type_val_to_struct) * value;
+    old_size = size_mul(value - 1, sizeof(*db->type_val_to_struct));
+    new_size = size_mul(value, sizeof(*db->type_val_to_struct));
     struct type_datum **new_type_val_to_struct =
         ksu_kvalloc_grow(db->type_val_to_struct, old_size, new_size);
     if (!new_type_val_to_struct) {
@@ -650,8 +660,8 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return false;
     }
 
-    old_size = sizeof(char *) * (value - 1);
-    new_size = sizeof(char *) * value;
+    old_size = size_mul(value - 1, sizeof(char *));
+    new_size = size_mul(value, sizeof(char *));
     char **new_val_to_name_types =
         ksu_kvalloc_grow(db->sym_val_to_name[SYM_TYPES], old_size, new_size);
     if (!new_val_to_name_types) {
