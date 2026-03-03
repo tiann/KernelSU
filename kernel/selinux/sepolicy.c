@@ -578,6 +578,26 @@ void *ksu_kvrealloc_compat(const void *p, size_t oldsize, size_t newsize,
     ksu_kvrealloc_compat(p, old_size, new_size, GFP_ATOMIC)
 #endif
 
+/*
+ * ksu_kvalloc_grow - allocate a new larger buffer and copy old contents.
+ *
+ * Unlike ksu_kvrealloc, this does NOT free the old buffer, so the caller
+ * can safely roll back if a later allocation fails.
+ */
+static void *ksu_kvalloc_grow(const void *old, size_t old_size, size_t new_size)
+{
+    void *newp;
+
+    if (new_size <= old_size)
+        return (void *)old;
+    newp = kvmalloc(new_size, GFP_ATOMIC);
+    if (!newp)
+        return NULL;
+    memcpy(newp, old, old_size);
+    memset((char *)newp + old_size, 0, new_size - old_size);
+    return newp;
+}
+
 static bool add_type(struct policydb *db, const char *type_name, bool attr)
 {
     struct type_datum *type = symtab_search(&db->p_types, type_name);
@@ -604,42 +624,58 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return false;
     }
 
-    // Pre-allocate all arrays before committing any state changes
+    /*
+     * Pre-allocate all arrays using non-destructive copies.
+     * The old buffers are preserved so policydb stays consistent
+     * if any allocation fails.
+     */
+    size_t old_size = (value - 1) * sizeof(struct ebitmap);
+    size_t new_size = value * sizeof(struct ebitmap);
     struct ebitmap *new_type_attr_map_array =
-        ksu_kvrealloc(db->type_attr_map_array, value * sizeof(struct ebitmap),
-                      (value - 1) * sizeof(struct ebitmap));
+        ksu_kvalloc_grow(db->type_attr_map_array, old_size, new_size);
     if (!new_type_attr_map_array) {
         kfree(key);
         kfree(type);
         return false;
     }
 
+    old_size = sizeof(*db->type_val_to_struct) * (value - 1);
+    new_size = sizeof(*db->type_val_to_struct) * value;
     struct type_datum **new_type_val_to_struct =
-        ksu_kvrealloc(db->type_val_to_struct,
-                      sizeof(*db->type_val_to_struct) * value,
-                      sizeof(*db->type_val_to_struct) * (value - 1));
+        ksu_kvalloc_grow(db->type_val_to_struct, old_size, new_size);
     if (!new_type_val_to_struct) {
+        kvfree(new_type_attr_map_array);
         kfree(key);
         kfree(type);
         return false;
     }
 
+    old_size = sizeof(char *) * (value - 1);
+    new_size = sizeof(char *) * value;
     char **new_val_to_name_types =
-        ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
-                      sizeof(char *) * (value - 1));
+        ksu_kvalloc_grow(db->sym_val_to_name[SYM_TYPES], old_size, new_size);
     if (!new_val_to_name_types) {
+        kvfree(new_type_val_to_struct);
+        kvfree(new_type_attr_map_array);
         kfree(key);
         kfree(type);
         return false;
     }
 
     if (symtab_insert(&db->p_types, key, type)) {
+        kvfree(new_val_to_name_types);
+        kvfree(new_type_val_to_struct);
+        kvfree(new_type_attr_map_array);
         kfree(key);
         kfree(type);
         return false;
     }
 
-    // All allocations succeeded and symtab insert done -- commit state atomically
+    // All allocations succeeded and symtab insert done -- commit state
+    void *old_type_attr_map_array = db->type_attr_map_array;
+    void *old_type_val_to_struct = db->type_val_to_struct;
+    void *old_val_to_name_types = db->sym_val_to_name[SYM_TYPES];
+
     db->p_types.nprim = value;
 
     db->type_attr_map_array = new_type_attr_map_array;
@@ -651,6 +687,11 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 
     db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
     db->sym_val_to_name[SYM_TYPES][value - 1] = key;
+
+    // Free old buffers after pointers have been swapped
+    kvfree(old_type_attr_map_array);
+    kvfree(old_type_val_to_struct);
+    kvfree(old_val_to_name_types);
 
     int i;
     for (i = 0; i < db->p_roles.nprim; ++i) {
