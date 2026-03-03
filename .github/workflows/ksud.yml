@@ -63,10 +63,10 @@ jobs:
         UTRIPLE=$(echo $TRIPLE | sed 's/-/_/g')
         UUTRIPLE=$(echo $UTRIPLE | tr a-z A-Z)
 
-        eval "export CC_$UTRIPLE=$CLANG_PATH"
-        eval "export CXX_$UTRIPLE=${CLANG_PATH}++"
-        eval "export AR_$UTRIPLE=$LLVM_PATH/llvm-ar"
-        eval "export CARGO_TARGET_${UUTRIPLE}_LINKER=$CLANG_PATH"
+        export CC_$UTRIPLE=$CLANG_PATH
+        export CXX_$UTRIPLE=${CLANG_PATH}++
+        export AR_$UTRIPLE=$LLVM_PATH/llvm-ar
+        export CARGO_TARGET_${UUTRIPLE}_LINKER=$CLANG_PATH
         cargo build --target $TRIPLE --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
