@@ -639,7 +639,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return false;
     }
 
-    // All allocations succeeded and symtab insert done — commit state atomically
+    // All allocations succeeded and symtab insert done -- commit state atomically
     db->p_types.nprim = value;
 
     db->type_attr_map_array = new_type_attr_map_array;
