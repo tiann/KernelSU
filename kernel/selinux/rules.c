@@ -1,6 +1,7 @@
 #include <linux/uaccess.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#include <linux/rcupdate.h>
 
 #include "../klog.h" // IWYU pragma: keep
 #include "selinux.h"
@@ -13,15 +14,22 @@
 
 #define ALL NULL
 
+/*
+ * get_policydb - obtain policydb pointer under policy_mutex protection.
+ *
+ * Must be called with selinux_state.policy_mutex held.
+ * Uses rcu_dereference_protected() to safely dereference the RCU-protected
+ * policy pointer, since the mutex serializes all writers.
+ */
 static struct policydb *get_policydb(void)
 {
-    struct policydb *db;
-    struct selinux_policy *policy = selinux_state.policy;
-    db = &policy->policydb;
-    return db;
+    struct selinux_policy *policy;
+    policy = rcu_dereference_protected(
+        selinux_state.policy, lockdep_is_held(&selinux_state.policy_mutex));
+    return &policy->policydb;
 }
 
-static DEFINE_MUTEX(ksu_rules);
+static void reset_avc_cache(void);
 
 void apply_kernelsu_rules()
 {
@@ -31,7 +39,7 @@ void apply_kernelsu_rules()
         pr_info("SELinux permissive or disabled, apply rules!\n");
     }
 
-    mutex_lock(&ksu_rules);
+    mutex_lock(&selinux_state.policy_mutex);
 
     db = get_policydb();
 
@@ -94,7 +102,8 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
-    mutex_unlock(&ksu_rules);
+    reset_avc_cache();
+    mutex_unlock(&selinux_state.policy_mutex);
 }
 
 #define MAX_SEPOL_LEN 128
@@ -143,7 +152,7 @@ extern int avc_ss_reset(u32 seqno);
 extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
 #endif
 // reset avc cache table, otherwise the new rules will not take effect if already denied
-static void reset_avc_cache()
+static void reset_avc_cache(void)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
     avc_ss_reset(0);
@@ -179,7 +188,7 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
     u32 cmd = data.cmd;
     u32 subcmd = data.subcmd;
 
-    mutex_lock(&ksu_rules);
+    mutex_lock(&selinux_state.policy_mutex);
 
     db = get_policydb();
 
@@ -423,11 +432,8 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
     }
 
 exit:
-    mutex_unlock(&ksu_rules);
-
-    // only allow and xallow needs to reset avc cache, but we cannot do that because
-    // we are in atomic context. so we just reset it every time.
     reset_avc_cache();
+    mutex_unlock(&selinux_state.policy_mutex);
 
     return ret;
 }

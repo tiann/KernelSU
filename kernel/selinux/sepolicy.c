@@ -586,8 +586,9 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return true;
     }
 
-    u32 value = ++db->p_types.nprim;
-    type = (struct type_datum *)kzalloc(sizeof(struct type_datum), GFP_ATOMIC);
+    u32 value = db->p_types.nprim + 1;
+
+    type = kzalloc(sizeof(struct type_datum), GFP_ATOMIC);
     if (!type) {
         pr_err("add_type: alloc type_datum failed.\n");
         return false;
@@ -599,21 +600,17 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 
     char *key = kstrdup(type_name, GFP_ATOMIC);
     if (!key) {
-        pr_err("add_type: alloc key failed.\n");
+        kfree(type);
         return false;
     }
 
-    if (symtab_insert(&db->p_types, key, type)) {
-        pr_err("add_type: insert symtab failed.\n");
-        return false;
-    }
-
+    // Pre-allocate all arrays before committing any state changes
     struct ebitmap *new_type_attr_map_array =
         ksu_kvrealloc(db->type_attr_map_array, value * sizeof(struct ebitmap),
                       (value - 1) * sizeof(struct ebitmap));
-
     if (!new_type_attr_map_array) {
-        pr_err("add_type: alloc type_attr_map_array failed\n");
+        kfree(key);
+        kfree(type);
         return false;
     }
 
@@ -621,9 +618,9 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         ksu_kvrealloc(db->type_val_to_struct,
                       sizeof(*db->type_val_to_struct) * value,
                       sizeof(*db->type_val_to_struct) * (value - 1));
-
     if (!new_type_val_to_struct) {
-        pr_err("add_type: alloc type_val_to_struct failed\n");
+        kfree(key);
+        kfree(type);
         return false;
     }
 
@@ -631,9 +628,19 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
                       sizeof(char *) * (value - 1));
     if (!new_val_to_name_types) {
-        pr_err("add_type: alloc val_to_name failed\n");
+        kfree(key);
+        kfree(type);
         return false;
     }
+
+    if (symtab_insert(&db->p_types, key, type)) {
+        kfree(key);
+        kfree(type);
+        return false;
+    }
+
+    // All allocations succeeded and symtab insert done — commit state atomically
+    db->p_types.nprim = value;
 
     db->type_attr_map_array = new_type_attr_map_array;
     ebitmap_init(&db->type_attr_map_array[value - 1]);
