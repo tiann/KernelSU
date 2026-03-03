@@ -596,7 +596,8 @@ static void *ksu_kvalloc_grow(const void *old, size_t old_size, size_t new_size)
     newp = kvmalloc(new_size, GFP_ATOMIC);
     if (!newp)
         return NULL;
-    memcpy(newp, old, old_size);
+    if (old_size)
+        memcpy(newp, old, old_size);
     memset((char *)newp + old_size, 0, new_size - old_size);
     return newp;
 }
