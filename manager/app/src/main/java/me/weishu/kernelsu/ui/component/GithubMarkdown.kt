@@ -15,6 +15,8 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -26,10 +28,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.LocalUiMode
+import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.adjustLightnessArgb
 import me.weishu.kernelsu.ui.util.cssColorFromArgb
@@ -49,7 +54,8 @@ import kotlin.math.abs
 @Composable
 fun GithubMarkdown(
     content: String,
-    isLoading: MutableState<Boolean> = mutableStateOf(true)
+    isLoading: MutableState<Boolean> = mutableStateOf(true),
+    containerColor: androidx.compose.ui.graphics.Color? = null,
 ) {
     isLoading.value = true
 
@@ -63,20 +69,12 @@ fun GithubMarkdown(
     val isDark = isInDarkTheme()
     val dir = if (LocalLayoutDirection.current == LayoutDirection.Rtl) "rtl" else "ltr"
 
-    val bgArgb = MiuixTheme.colorScheme.surfaceContainer.toArgb()
-    val bgLuminance = relativeLuminance(bgArgb)
-
-    fun makeVariant(delta: Float): Int {
-        val candidate = adjustLightnessArgb(bgArgb, delta)
-        val madeLighter = delta > 0f
-        return ensureVisibleByMix(bgArgb, candidate, 1.15, madeLighter)
-    }
-
-    val bgDefault = cssColorFromArgb(bgArgb)
-    val bgMuted = cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.06f else 0.06f))
-    val bgNeutralMuted = cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.12f else 0.12f))
-    val bgAttentionMuted = cssColorFromArgb(makeVariant(-0.12f))
-    val fgLink = cssColorFromArgb(MiuixTheme.colorScheme.primary.toArgb())
+    val colors = getMarkdownColors(containerColor)
+    val bgDefault = colors.bgDefault
+    val bgMuted = colors.bgMuted
+    val bgNeutralMuted = colors.bgNeutralMuted
+    val bgAttentionMuted = colors.bgAttentionMuted
+    val fgLink = colors.fgLink
 
     val cssHref = "https://appassets.androidplatform.net/assets/github-markdown.css"
     val html = """
@@ -327,5 +325,51 @@ class MarkdownScrollInterface {
     fun updateScrollState(left: Boolean, right: Boolean) {
         canScrollLeft = left
         canScrollRight = right
+    }
+}
+
+private data class MarkdownColors(
+    val bgDefault: String,
+    val bgMuted: String,
+    val bgNeutralMuted: String,
+    val bgAttentionMuted: String,
+    val fgLink: String
+)
+
+@Composable
+private fun getMarkdownColors(containerColor: androidx.compose.ui.graphics.Color?): MarkdownColors {
+    val uiMode = LocalUiMode.current
+
+    return when (uiMode) {
+        UiMode.Material -> {
+            val bgArgb = containerColor?.toArgb() ?: MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
+
+            MarkdownColors(
+                cssColorFromArgb(bgArgb),
+                cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerHigh.toArgb()),
+                cssColorFromArgb(MaterialTheme.colorScheme.surfaceDim.toArgb()),
+                cssColorFromArgb(MaterialTheme.colorScheme.surfaceBright.toArgb()),
+                cssColorFromArgb(MaterialTheme.colorScheme.primary.toArgb())
+            )
+        }
+
+        UiMode.Miuix -> {
+            val bgArgb = containerColor?.toArgb() ?: MiuixTheme.colorScheme.surfaceContainer.toArgb()
+            val bgLuminance = relativeLuminance(bgArgb)
+
+            fun makeVariant(delta: Float): Int {
+                val candidate = adjustLightnessArgb(bgArgb, delta)
+                val madeLighter = delta > 0f
+                return ensureVisibleByMix(bgArgb, candidate, 1.15, madeLighter)
+            }
+
+            MarkdownColors(
+                cssColorFromArgb(bgArgb),
+                cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.06f else 0.06f)),
+                cssColorFromArgb(makeVariant(if (bgLuminance > 0.6) -0.12f else 0.12f)),
+                cssColorFromArgb(makeVariant(-0.12f)),
+                cssColorFromArgb(MiuixTheme.colorScheme.primary.toArgb())
+            )
+        }
     }
 }

@@ -5,7 +5,7 @@ import android.os.Build
 import android.system.Os
 import com.topjohnwu.superuser.ShellUtils
 import me.weishu.kernelsu.Natives
-import me.weishu.kernelsu.ui.screen.getManagerVersion
+import me.weishu.kernelsu.ui.screen.home.getManagerVersion
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter

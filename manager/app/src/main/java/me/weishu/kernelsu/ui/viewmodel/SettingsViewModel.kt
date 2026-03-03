@@ -46,9 +46,11 @@ class SettingsViewModel(
             val kernelUmountStatus = repo.getKernelUmountStatus()
             val isKernelUmountEnabled = repo.isKernelUmountEnabled()
             val isDefaultUmountModules = repo.isDefaultUmountModules()
+            val uiMode = repo.uiMode
 
             _uiState.update {
                 it.copy(
+                    uiMode = uiMode,
                     checkUpdate = checkUpdate,
                     checkModuleUpdate = checkModuleUpdate,
                     themeMode = themeMode,
@@ -74,6 +76,11 @@ class SettingsViewModel(
     fun setCheckUpdate(enabled: Boolean) {
         repo.checkUpdate = enabled
         _uiState.update { it.copy(checkUpdate = enabled) }
+    }
+
+    fun setUiMode(mode: String) {
+        repo.uiMode = mode
+        _uiState.update { it.copy(uiMode = mode) }
     }
 
     fun setCheckModuleUpdate(enabled: Boolean) {
