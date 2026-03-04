@@ -1,3 +1,5 @@
+#include "linux/rcupdate.h"
+#include "security.h"
 #include <linux/uaccess.h>
 #include <linux/types.h>
 #include <linux/version.h>
@@ -13,27 +15,44 @@
 
 #define ALL NULL
 
-static struct policydb *get_policydb(void)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
+extern int avc_ss_reset(u32 seqno);
+#else
+extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
+#endif
+// reset avc cache table, otherwise the new rules will not take effect if already denied
+static void reset_avc_cache()
 {
-    struct policydb *db;
-    struct selinux_policy *policy = selinux_state.policy;
-    db = &policy->policydb;
-    return db;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
+    avc_ss_reset(0);
+    selnl_notify_policyload(0);
+    selinux_status_update_policyload(0);
+#else
+    struct selinux_avc *avc = selinux_state.avc;
+    avc_ss_reset(avc, 0);
+    selnl_notify_policyload(0);
+    selinux_status_update_policyload(&selinux_state, 0);
+#endif
+    selinux_xfrm_notify_policyload();
 }
-
-static DEFINE_MUTEX(ksu_rules);
 
 void apply_kernelsu_rules()
 {
+    struct selinux_policy *pol, *old_pol = selinux_state.policy;
     struct policydb *db;
 
     if (!getenforce()) {
         pr_info("SELinux permissive or disabled, apply rules!\n");
     }
 
-    mutex_lock(&ksu_rules);
+    mutex_lock(&selinux_state.policy_mutex);
+    pol = ksu_dup_sepolicy(old_pol);
+    if (!pol) {
+        pr_err("failed to dup selinux_policy");
+        goto out_unlock;
+    }
 
-    db = get_policydb();
+    db = &pol->policydb;
 
     ksu_permissive(db, KERNEL_SU_DOMAIN);
     ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
@@ -94,7 +113,13 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
-    mutex_unlock(&ksu_rules);
+    rcu_assign_pointer(selinux_state.policy, pol);
+    synchronize_rcu();
+    ksu_destroy_orig_sepolicy(old_pol);
+
+    reset_avc_cache();
+out_unlock:
+    mutex_unlock(&selinux_state.policy_mutex);
 }
 
 #define MAX_SEPOL_LEN 128
@@ -137,30 +162,12 @@ static int get_object(char *buf, char __user *user_object, size_t buf_sz,
 
     return 0;
 }
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
-extern int avc_ss_reset(u32 seqno);
-#else
-extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
-#endif
-// reset avc cache table, otherwise the new rules will not take effect if already denied
-static void reset_avc_cache()
-{
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
-    avc_ss_reset(0);
-    selnl_notify_policyload(0);
-    selinux_status_update_policyload(0);
-#else
-    struct selinux_avc *avc = selinux_state.avc;
-    avc_ss_reset(avc, 0);
-    selnl_notify_policyload(0);
-    selinux_status_update_policyload(&selinux_state, 0);
-#endif
-    selinux_xfrm_notify_policyload();
-}
 
 int handle_sepolicy(unsigned long arg3, void __user *arg4)
 {
+    struct selinux_policy *pol, *old_pol = selinux_state.policy;
     struct policydb *db;
+    int ret;
 
     if (!arg4) {
         return -EINVAL;
@@ -169,6 +176,15 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
     if (!getenforce()) {
         pr_info("SELinux permissive or disabled when handle policy!\n");
     }
+
+    mutex_lock(&selinux_state.policy_mutex);
+
+    pol = ksu_dup_sepolicy(old_pol);
+    if (!pol) {
+        ret = -ENOMEM;
+        goto out_unlock;
+    }
+    db = &pol->policydb;
 
     struct sepol_data data;
     if (copy_from_user(&data, arg4, sizeof(struct sepol_data))) {
@@ -179,11 +195,7 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
     u32 cmd = data.cmd;
     u32 subcmd = data.subcmd;
 
-    mutex_lock(&ksu_rules);
-
-    db = get_policydb();
-
-    int ret = -EINVAL;
+    ret = -EINVAL;
     if (cmd == CMD_NORMAL_PERM) {
         char src_buf[MAX_SEPOL_LEN];
         char tgt_buf[MAX_SEPOL_LEN];
@@ -421,13 +433,14 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
     } else {
         pr_err("sepol: unknown cmd: %d\n", cmd);
     }
-
 exit:
-    mutex_unlock(&ksu_rules);
+    rcu_assign_pointer(selinux_state.policy, pol);
+    synchronize_rcu();
+    ksu_destroy_orig_sepolicy(old_pol);
 
-    // only allow and xallow needs to reset avc cache, but we cannot do that because
-    // we are in atomic context. so we just reset it every time.
     reset_avc_cache();
+out_unlock:
+    mutex_unlock(&selinux_state.policy_mutex);
 
     return ret;
 }
