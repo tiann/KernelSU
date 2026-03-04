@@ -1,3 +1,8 @@
+#include "ss/avtab.h"
+#include "ss/constraint.h"
+#include "ss/ebitmap.h"
+#include "ss/hashtab.h"
+#include "ss/policydb.h"
 #include <linux/gfp.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
@@ -834,4 +839,273 @@ bool ksu_genfscon(struct policydb *db, const char *fs_name, const char *path,
                   const char *ctx)
 {
     return add_genfscon(db, fs_name, path, ctx);
+}
+
+static int copy_hashtab_node(struct hashtab_node *new_node,
+                             struct hashtab_node *old_node, void *data)
+{
+    new_node->datum = old_node->datum;
+    new_node->key = old_node->key;
+    return 0;
+}
+
+static int destroy_hashtab_node(void *key, void *datum, void *data)
+{
+    // just copied pointer, no need to free
+    return 0;
+}
+
+static int shallow_copy_hashtab(struct hashtab *new_tab,
+                                struct hashtab *old_tab)
+{
+    return hashtab_duplicate(new_tab, old_tab, copy_hashtab_node,
+                             destroy_hashtab_node, NULL);
+}
+
+static int copy_class_datum_partially(struct hashtab_node *new_node,
+                                      struct hashtab_node *old_node, void *data)
+{
+    struct class_datum *cls = old_node->datum, *new_cls;
+    struct constraint_node *oldn, *n, *nprev = NULL;
+    struct constraint_expr *olde, *e, *eprev;
+    new_node->key = old_node->key;
+    new_cls = kmemdup(cls, sizeof(struct class_datum), GFP_KERNEL);
+    if (!new_cls)
+        return -ENOMEM;
+    new_node->datum = new_cls;
+    new_cls->constraints = NULL;
+    for (oldn = cls->constraints; oldn; oldn = oldn->next) {
+        n = kmemdup(oldn, sizeof(struct constraint_node), GFP_KERNEL);
+        if (!n)
+            goto out_nomem;
+        if (nprev) {
+            nprev->next = n;
+        } else {
+            new_cls->constraints = n;
+        }
+        eprev = NULL;
+        n->expr = NULL;
+        for (olde = n->expr; olde; olde = olde->next) {
+            e = kmemdup(olde, sizeof(struct constraint_node), GFP_KERNEL);
+            if (!e) {
+                goto out_nomem;
+            }
+            if (eprev) {
+                n->expr = e;
+            } else {
+                eprev->next = e;
+            }
+            if (olde->expr_type == CEXPR_NAMES) {
+                if (ebitmap_cpy(&e->names, &olde->names) < 0) {
+                    goto out_nomem;
+                }
+            }
+            eprev = e;
+        }
+        nprev = n;
+    }
+    return 0;
+out_nomem:
+    return -ENOMEM;
+}
+
+static int destroy_class_datum_partially(void *key, void *datum, void *data)
+{
+    struct class_datum *cls = datum;
+    struct constraint_node *n, *nprev;
+    struct constraint_expr *e, *eprev;
+    if (cls) {
+        for (n = cls->constraints; n;) {
+            for (e = n->expr; e;) {
+                if (e->expr_type == CEXPR_NAMES) {
+                    ebitmap_destroy(&e->names);
+                }
+                eprev = e;
+                e = e->next;
+                kfree(eprev);
+            }
+            nprev = n;
+            n = n->next;
+            kfree(nprev);
+        }
+    }
+    kfree(cls);
+
+    return 0;
+}
+
+static int copy_class_datum(struct policydb *new_db, struct policydb *old_db)
+{
+    return hashtab_duplicate(&new_db->p_classes.table, &old_db->p_classes.table,
+                             copy_class_datum_partially,
+                             destroy_class_datum_partially, NULL);
+}
+
+static int copy_avtab(struct avtab *new_avtab, struct avtab *old_avtab)
+{
+    int ret, i;
+    struct avtab_node *n;
+    ret = avtab_alloc_dup(new_avtab, old_avtab);
+    if (ret < 0)
+        return ret;
+
+    for (i = 0; i < old_avtab->nslot; i++) {
+        n = old_avtab->htable[i];
+        ret = avtab_insert_nonunique(new_avtab, &n->key, &n->datum);
+        if (ret)
+            goto out_free;
+    }
+
+    return 0;
+
+out_free:
+    avtab_destroy(new_avtab);
+    return ret;
+}
+
+static void free_role_datum_partially(struct policydb *db)
+{
+    struct role_datum *rd;
+    int i;
+    for (i = 0; i < db->p_roles.nprim; ++i) {
+        rd = db->role_val_to_struct[i];
+        if (rd) {
+            ebitmap_destroy(&rd->types);
+            kfree(rd);
+        }
+    }
+    kfree(db->role_val_to_struct);
+}
+
+static int copy_role_datum_partially(struct policydb *new_db,
+                                     struct policydb *old_db)
+{
+    struct role_datum *rd;
+    int i, ret;
+
+    new_db->role_val_to_struct = kcalloc(
+        old_db->p_roles.nprim, sizeof(*new_db->role_val_to_struct), GFP_KERNEL);
+    if (!new_db->role_val_to_struct)
+        return -ENOMEM;
+    for (i = 0; i < old_db->p_roles.nprim; ++i) {
+        rd = kmemdup(old_db->role_val_to_struct[i],
+                     sizeof(*old_db->role_val_to_struct[i]), GFP_KERNEL);
+        if (!rd)
+            goto out_free;
+        new_db->role_val_to_struct[i] = rd;
+        ret = ebitmap_cpy(&rd->types, &old_db->role_val_to_struct[i]->types);
+        if (ret < 0)
+            goto out_free;
+    }
+
+out_free:
+    free_role_datum_partially(new_db);
+
+    return ret;
+}
+
+struct policydb *ksu_dup_policydb(struct policydb *old_db)
+{
+    size_t sz, i;
+    int ret;
+    struct policydb *new_db = kmemdup(old_db, sizeof(*old_db), GFP_KERNEL);
+    sz = new_db->p_types.nprim;
+
+    new_db->type_attr_map_array =
+        kvcalloc(sz, sizeof(struct ebitmap), GFP_KERNEL);
+    if (!new_db->type_attr_map_array)
+        goto out_free_policy;
+    for (i = 0; i < sz; i++) {
+        ret = ebitmap_cpy(&new_db->type_attr_map_array[i],
+                          &old_db->type_attr_map_array[i]);
+        if (ret < 0)
+            goto out_free_type_attr_map_array;
+    }
+
+    new_db->type_val_to_struct =
+        kvcalloc(sz, sizeof(*new_db->type_val_to_struct), GFP_KERNEL);
+    if (!new_db->type_val_to_struct)
+        goto out_free_type_attr_map_array;
+    memcpy(new_db->type_val_to_struct, old_db->type_val_to_struct,
+           sz * sizeof(*new_db->type_val_to_struct));
+
+    new_db->sym_val_to_name[SYM_TYPES] =
+        kvcalloc(sz, sizeof(*new_db->sym_val_to_name[SYM_TYPES]), GFP_KERNEL);
+    if (!new_db->sym_val_to_name[SYM_TYPES])
+        goto out_free_type_val_to_struct;
+    memcpy(new_db->sym_val_to_name[SYM_TYPES],
+           old_db->sym_val_to_name[SYM_TYPES],
+           sz * sizeof(*new_db->sym_val_to_name[SYM_TYPES]));
+
+    ret = ebitmap_cpy(&new_db->permissive_map, &old_db->permissive_map);
+    if (ret < 0)
+        goto out_free_sym_val_to_name_sym_types;
+
+    ret = shallow_copy_hashtab(&new_db->p_types.table, &old_db->p_types.table);
+    if (ret < 0)
+        goto out_free_permissive_map;
+
+    ret =
+        shallow_copy_hashtab(&new_db->filename_trans, &old_db->filename_trans);
+    if (ret < 0)
+        goto out_free_permissive_map;
+
+    ret = copy_class_datum(new_db, old_db);
+    if (ret < 0)
+        goto out_free_permissive_map;
+
+    ret = copy_avtab(&new_db->te_avtab, &old_db->te_avtab);
+    if (ret < 0)
+        goto out_free_permissive_map;
+
+    ret = copy_role_datum_partially(new_db, old_db);
+    if (ret < 0)
+        goto out_free_permissive_map;
+
+    return new_db;
+
+out_free_permissive_map:
+    ebitmap_destroy(&new_db->permissive_map);
+
+out_free_sym_val_to_name_sym_types:
+    kvfree(new_db->sym_val_to_name[SYM_TYPES]);
+
+out_free_type_val_to_struct:
+    kvfree(new_db->type_val_to_struct);
+
+out_free_type_attr_map_array:
+    kvfree(new_db->type_attr_map_array);
+
+out_free_policy:
+    kfree(new_db);
+
+    return NULL;
+}
+
+void ksu_destroy_orig_policydb(struct policydb *orig)
+{
+    size_t sz, i;
+    sz = orig->p_types.nprim;
+    for (i = 0; i < sz; i++) {
+        ebitmap_destroy(&orig->type_attr_map_array[i]);
+    }
+
+    kvfree(orig->type_attr_map_array);
+    kvfree(orig->type_val_to_struct);
+    kvfree(orig->sym_val_to_name[SYM_TYPES]);
+
+    ebitmap_destroy(&orig->permissive_map);
+
+    hashtab_destroy(&orig->p_types.table);
+
+    hashtab_destroy(&orig->filename_trans);
+
+    hashtab_map(&orig->p_classes.table, destroy_class_datum_partially, NULL);
+    hashtab_destroy(&orig->p_classes.table);
+
+    avtab_destroy(&orig->te_avtab);
+
+    free_role_datum_partially(orig);
+
+    kfree(orig);
 }
