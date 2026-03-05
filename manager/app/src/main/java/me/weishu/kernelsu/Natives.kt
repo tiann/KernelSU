@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @date 2022/12/8.
  */
 object Natives {
-    // minimal supported kernel version
+    // minimal supported kernel version, before api version introduced
     // 10915: allowlist breaking change, add app profile
     // 10931: app profile struct add 'version' field
     // 10946: add capabilities
@@ -20,6 +20,9 @@ object Natives {
     // 12143: breaking: new supercall impl
     // 32310: new get_allow_list ioctl
     const val MINIMAL_SUPPORTED_KERNEL = 32310
+
+    // 1: first introduce kernel api version
+    const val MINIMAL_SUPPORTED_API = 1
 
     const val KERNEL_SU_DOMAIN = "u:r:su:s0"
 
@@ -31,6 +34,9 @@ object Natives {
     }
 
     val version: Int
+        external get
+
+    val apiVersion: Int
         external get
 
     val isSafeMode: Boolean
@@ -98,7 +104,12 @@ object Natives {
     }
 
     fun requireNewKernel(): Boolean {
-        return version != -1 && version < MINIMAL_SUPPORTED_KERNEL
+        val api = apiVersion
+        if (api > 0) {
+            return api < MINIMAL_SUPPORTED_API
+        } else {
+            return version != -1 && version < MINIMAL_SUPPORTED_KERNEL
+        }
     }
 
     @Keep

@@ -11,6 +11,7 @@
 #include <android/log.h>
 #include <dirent.h>
 #include <cstdlib>
+#include <cerrno>
 
 #include <unistd.h>
 #include <climits>
@@ -78,7 +79,9 @@ static struct ksu_get_info_cmd g_version {};
 
 struct ksu_get_info_cmd get_info() {
     if (!g_version.version) {
-        ksuctl(KSU_IOCTL_GET_INFO, &g_version);
+        if (ksuctl(KSU_IOCTL_GET_INFO, &g_version) && errno == ENOTTY) {
+            ksuctl(KSU_IOCTL_GET_INFO_LEGACY, &g_version);
+        }
     }
     return g_version;
 }
@@ -86,6 +89,11 @@ struct ksu_get_info_cmd get_info() {
 uint32_t get_version() {
     auto info = get_info();
     return info.version;
+}
+
+uint32_t get_api_version() {
+    auto info = get_info();
+    return info.api;
 }
 
 bool get_allow_list(struct ksu_new_get_allow_list_cmd *cmd) {
