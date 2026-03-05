@@ -3,6 +3,7 @@
 #include "ss/ebitmap.h"
 #include "ss/hashtab.h"
 #include "ss/policydb.h"
+#include "ss/services.h"
 #include <linux/gfp.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
@@ -1004,11 +1005,12 @@ out_free:
     return ret;
 }
 
-struct policydb *ksu_dup_policydb(struct policydb *old_db)
+struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 {
     size_t sz, i;
     int ret;
-    struct policydb *new_db = kmemdup(old_db, sizeof(*old_db), GFP_KERNEL);
+    struct selinux_policy *new_pol = kmemdup(old_pol, sizeof(*old_pol), GFP_KERNEL);
+    struct policydb *new_db = &new_pol->policydb, *old_db = &old_pol->policydb;
     sz = new_db->p_types.nprim;
 
     new_db->type_attr_map_array =
@@ -1062,7 +1064,7 @@ struct policydb *ksu_dup_policydb(struct policydb *old_db)
     if (ret < 0)
         goto out_free_permissive_map;
 
-    return new_db;
+    return new_pol;
 
 out_free_permissive_map:
     ebitmap_destroy(&new_db->permissive_map);
@@ -1082,30 +1084,31 @@ out_free_policy:
     return NULL;
 }
 
-void ksu_destroy_orig_policydb(struct policydb *orig)
+void ksu_destroy_orig_sepolicy(struct selinux_policy *orig)
 {
     size_t sz, i;
-    sz = orig->p_types.nprim;
+    struct policydb *old_pol = &orig->policydb;
+    sz = old_pol->p_types.nprim;
     for (i = 0; i < sz; i++) {
-        ebitmap_destroy(&orig->type_attr_map_array[i]);
+        ebitmap_destroy(&old_pol->type_attr_map_array[i]);
     }
 
-    kvfree(orig->type_attr_map_array);
-    kvfree(orig->type_val_to_struct);
-    kvfree(orig->sym_val_to_name[SYM_TYPES]);
+    kvfree(old_pol->type_attr_map_array);
+    kvfree(old_pol->type_val_to_struct);
+    kvfree(old_pol->sym_val_to_name[SYM_TYPES]);
 
-    ebitmap_destroy(&orig->permissive_map);
+    ebitmap_destroy(&old_pol->permissive_map);
 
-    hashtab_destroy(&orig->p_types.table);
+    hashtab_destroy(&old_pol->p_types.table);
 
-    hashtab_destroy(&orig->filename_trans);
+    hashtab_destroy(&old_pol->filename_trans);
 
-    hashtab_map(&orig->p_classes.table, destroy_class_datum_partially, NULL);
-    hashtab_destroy(&orig->p_classes.table);
+    hashtab_map(&old_pol->p_classes.table, destroy_class_datum_partially, NULL);
+    hashtab_destroy(&old_pol->p_classes.table);
 
-    avtab_destroy(&orig->te_avtab);
+    avtab_destroy(&old_pol->te_avtab);
 
-    free_role_datum_partially(orig);
+    free_role_datum_partially(old_pol);
 
     kfree(orig);
 }
