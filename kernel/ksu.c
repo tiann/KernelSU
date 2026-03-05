@@ -27,6 +27,10 @@ int __init kernelsu_init(void)
     pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
     pr_alert("*************************************************************");
 #endif
+    pr_info("Welcome to KernelSU\n");
+    pr_info("version: " __stringify(KERNEL_SU_VERSION) "\n");
+    pr_info("api: " __stringify(KERNEL_SU_API_VERSION) "\n");
+    pr_info("commit: " __stringify(KSU_COMMIT) "\n");
 
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
@@ -83,6 +87,11 @@ module_exit(kernelsu_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("weishu");
 MODULE_DESCRIPTION("Android KernelSU");
+
+MODULE_INFO(ksu_version, __stringify(KSU_VERSION));
+MODULE_INFO(ksu_api, __stringify(KERNEL_SU_API_VERSION));
+MODULE_INFO(ksu_commit, __stringify(KSU_COMMIT));
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
 #else
