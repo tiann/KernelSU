@@ -842,8 +842,16 @@ bool ksu_genfscon(struct policydb *db, const char *fs_name, const char *path,
     return add_genfscon(db, fs_name, path, ctx);
 }
 
+// https://github.com/torvalds/linux/commit/581646c3fb98494009671f6d347ea125bc0e663a
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
+#define CONST_IF_6_10 const
+#else
+#define CONST_IF_6_10
+#endif
+
 static int copy_hashtab_node(struct hashtab_node *new_node,
-                             struct hashtab_node *old_node, void *data)
+                             CONST_IF_6_10 struct hashtab_node *old_node,
+                             void *data)
 {
     new_node->datum = old_node->datum;
     new_node->key = old_node->key;
@@ -863,8 +871,10 @@ static int shallow_copy_hashtab(struct hashtab *new_tab,
                              destroy_hashtab_node, NULL);
 }
 
-static int copy_class_datum_partially(struct hashtab_node *new_node,
-                                      struct hashtab_node *old_node, void *data)
+static int
+copy_class_datum_partially(struct hashtab_node *new_node,
+                           CONST_IF_6_10 struct hashtab_node *old_node,
+                           void *data)
 {
     struct class_datum *cls = old_node->datum, *new_cls;
     struct constraint_node *oldn, *n, *nprev = NULL;
@@ -1009,7 +1019,8 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 {
     size_t sz, i;
     int ret;
-    struct selinux_policy *new_pol = kmemdup(old_pol, sizeof(*old_pol), GFP_KERNEL);
+    struct selinux_policy *new_pol =
+        kmemdup(old_pol, sizeof(*old_pol), GFP_KERNEL);
     struct policydb *new_db = &new_pol->policydb, *old_db = &old_pol->policydb;
     sz = new_db->p_types.nprim;
 
