@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.component.profile.dialogs
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
