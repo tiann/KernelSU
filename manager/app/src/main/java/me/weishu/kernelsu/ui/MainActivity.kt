@@ -14,6 +14,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -96,6 +97,7 @@ class MainActivity : ComponentActivity() {
 
     private val intentState = MutableStateFlow(0)
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -178,7 +180,7 @@ class MainActivity : ComponentActivity() {
                         intentState = intentState,
                     )
 
-                    Scaffold {
+                    val navDisplay = @Composable {
                         NavDisplay(
                             backStack = navigator.backStack,
                             entryDecorators = listOf(
@@ -216,6 +218,11 @@ class MainActivity : ComponentActivity() {
                                 entry<Route.Settings> { MainScreen() }
                             }
                         )
+                    }
+
+                    when (uiMode) {
+                        UiMode.Material -> androidx.compose.material3.Scaffold { navDisplay() }
+                        UiMode.Miuix -> Scaffold { navDisplay() }
                     }
                 }
             }
@@ -276,20 +283,20 @@ fun MainScreen() {
     CompositionLocalProvider(
         LocalMainPagerState provides mainPagerState
     ) {
-        Scaffold(
-            bottomBar = {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    BottomBar(
-                        hazeState = hazeState,
-                        hazeStyle = hazeStyle,
-                        backdrop = backdrop,
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                    )
-                }
-            },
-        ) { innerPadding ->
+        val bottomBar = @Composable {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                BottomBar(
+                    hazeState = hazeState,
+                    hazeStyle = hazeStyle,
+                    backdrop = backdrop,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+        }
+
+        val content = @Composable { innerPadding: PaddingValues ->
             HorizontalPager(
                 modifier = Modifier
                     .then(if (enableBlur) Modifier.hazeSource(state = hazeState) else Modifier)
@@ -304,6 +311,15 @@ fun MainScreen() {
                     2 -> ModulePager(navController, innerPadding.calculateBottomPadding())
                     3 -> SettingPager(navController, innerPadding.calculateBottomPadding())
                 }
+            }
+        }
+
+        when (uiMode) {
+            UiMode.Material -> androidx.compose.material3.Scaffold(bottomBar = bottomBar) { innerPadding ->
+                content(innerPadding)
+            }
+            UiMode.Miuix -> Scaffold(bottomBar = bottomBar) { innerPadding ->
+                content(innerPadding)
             }
         }
     }
