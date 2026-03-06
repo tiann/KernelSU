@@ -143,15 +143,14 @@ private fun GroupsPanel(
 
     val groups = remember {
         Groups.entries.sortedWith(
-            compareBy<Groups> { if (selected.contains(it)) 0 else 1 }
-                .then(compareBy {
-                    when (it) {
-                        Groups.ROOT -> 0
-                        Groups.SYSTEM -> 1
-                        Groups.SHELL -> 2
-                        else -> Int.MAX_VALUE
-                    }
-                })
+            compareBy<Groups> {
+                when (it) {
+                    Groups.ROOT -> 0
+                    Groups.SYSTEM -> 1
+                    Groups.SHELL -> 2
+                    else -> Int.MAX_VALUE
+                }
+            }
                 .then(compareBy { it.name })
         )
     }
@@ -165,9 +164,8 @@ private fun GroupsPanel(
             itemTitle = { it.display },
             itemSubtitle = { it.desc },
             maxSelection = 32,
-            onConfirm = {
+            onSelectionChange = {
                 onSelectionChange(it)
-                showDialog.value = false
             },
             onDismiss = { showDialog.value = false }
         )
@@ -258,11 +256,8 @@ private fun CapsPanel(
         }
     }
 
-    val capabilities = remember(selectedCaps) {
-        Capabilities.entries.sortedWith(
-            compareBy<Capabilities> { if (selectedCaps.contains(it)) 0 else 1 }
-                .then(compareBy { it.display })
-        )
+    val capabilities = remember {
+        Capabilities.entries.sortedBy { it.display }
     }
 
     if (showDialog.value) {
@@ -274,9 +269,8 @@ private fun CapsPanel(
             itemTitle = { it.display },
             itemSubtitle = { null },
             maxSelection = Int.MAX_VALUE,
-            onConfirm = {
+            onSelectionChange = {
                 onSelectionChange(it)
-                showDialog.value = false
             },
             onDismiss = { showDialog.value = false }
         )
