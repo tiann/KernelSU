@@ -51,6 +51,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
@@ -60,7 +61,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.expressiveLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +82,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
@@ -90,6 +94,7 @@ import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.theme.ThemeController
 import me.weishu.kernelsu.ui.theme.keyColorOptions
+import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -126,10 +131,9 @@ fun ColorPaletteScreenMaterial() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val isDark = currentColorMode.isDark || currentColorMode.isSystem && isSystemInDarkTheme()
-            ThemePreviewCardMaterial(
+            ThemePreviewCard(
                 keyColor = currentKeyColor,
                 isDark = isDark,
-                colorMode = currentColorMode,
                 paletteStyle = colorStyle,
                 colorSpec = colorSpec,
             )
@@ -254,6 +258,47 @@ fun ColorPaletteScreenMaterial() {
                 )
             }
 
+            TonalCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                val settingsViewModel = viewModel<SettingsViewModel>()
+                val uiState by settingsViewModel.uiState.collectAsState()
+                var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_page_scale),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = "${(sliderValue * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(id = R.string.settings_page_scale_summary),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+
+                    Slider(
+                        value = sliderValue,
+                        onValueChange = { sliderValue = it },
+                        onValueChangeFinished = { settingsViewModel.setPageScale(sliderValue) },
+                        valueRange = 0.8f..1.1f,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -262,10 +307,9 @@ fun ColorPaletteScreenMaterial() {
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun ThemePreviewCardMaterial(
+private fun ThemePreviewCard(
     keyColor: Int,
     isDark: Boolean,
-    colorMode: ColorMode,
     paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
     colorSpec: ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2021,
 ) {

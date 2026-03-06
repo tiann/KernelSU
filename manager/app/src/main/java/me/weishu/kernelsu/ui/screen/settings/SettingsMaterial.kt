@@ -34,7 +34,6 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.rounded.Adb
-import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +41,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,7 +50,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -224,36 +221,6 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 }
                             )
                         }
-                    }
-                    add {
-                        var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
-                        SegmentedListItem(
-                            headlineContent = { Text(stringResource(id = R.string.settings_page_scale)) },
-                            supportingContent = { Text(stringResource(id = R.string.settings_page_scale_summary)) },
-                            leadingContent = {
-                                Icon(
-                                    Icons.Rounded.AspectRatio,
-                                    stringResource(id = R.string.settings_page_scale)
-                                )
-                            },
-                            trailingContent = { 
-                                Text(
-                                    "${(sliderValue * 100).toInt()}%",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            bottomContent = {
-
-                                Slider(
-                                    value = sliderValue,
-                                    onValueChange = { sliderValue = it },
-                                    onValueChangeFinished = { viewModel.setPageScale(sliderValue) },
-                                    valueRange = 0.8f..1.1f,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        )
                     }
                 }
             )
