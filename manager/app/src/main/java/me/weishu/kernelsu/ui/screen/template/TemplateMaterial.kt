@@ -69,8 +69,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveLazyColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
@@ -259,7 +259,7 @@ fun AppProfileTemplateScreenMaterial() {
             val navBars = WindowInsets.navigationBars.asPaddingValues()
             val captionBar = WindowInsets.captionBar.asPaddingValues()
             Box(Modifier.padding(innerPadding)) {
-                ExpressiveLazyColumn(
+                SegmentedLazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -294,7 +294,7 @@ private fun TemplateItem(
     navigator: Navigator,
     template: TemplateViewModel.TemplateInfo
 ) {
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = {
             navigator.push(Route.TemplateEditor(template, !template.local))
         },

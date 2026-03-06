@@ -49,10 +49,10 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.component.choosekmidialog.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveDropdownItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveRadioItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedRadioItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -194,12 +194,12 @@ fun InstallScreenMaterial() {
                     if (defaultPartition == name) "$name (default)" else name
                 }
             }
-            ExpressiveColumn(
+            SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = listOf(
                     {
                         if (partitions.isNotEmpty()) {
-                            ExpressiveDropdownItem(
+                            SegmentedDropdownItem(
                                 enabled = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
                                 items = displayPartitions,
                                 selectedIndex = partitionSelectionIndex,
@@ -213,7 +213,7 @@ fun InstallScreenMaterial() {
                         }
                     },
                     {
-                        ExpressiveListItem(
+                        SegmentedListItem(
                             leadingContent = { Icon(Icons.AutoMirrored.Filled.DriveFileMove, null) },
                             headlineContent = { Text(stringResource(R.string.install_upload_lkm_file)) },
                             supportingContent = {
@@ -307,12 +307,12 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     }
 
     key(isAbDevice) {
-        ExpressiveColumn(
+        SegmentedColumn(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             selectedIndices = radioOptions.indexOfFirst { it.javaClass == selectedOption?.javaClass }.let { if (it >= 0) setOf(it) else emptySet() },
             content = radioOptions.map { option ->
                 {
-                    ExpressiveRadioItem(
+                    SegmentedRadioItem(
                         title = stringResource(option.label),
                         summary = option.summary,
                         selected = option.javaClass == selectedOption?.javaClass,

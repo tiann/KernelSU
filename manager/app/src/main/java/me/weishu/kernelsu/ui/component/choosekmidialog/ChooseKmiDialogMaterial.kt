@@ -16,8 +16,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveRadioItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedRadioItem
 import me.weishu.kernelsu.ui.util.getCurrentKmi
 import me.weishu.kernelsu.ui.util.getSupportedKmis
 
@@ -72,11 +72,11 @@ fun ChooseKmiDialogMaterial(
             )
         },
         text = {
-            ExpressiveColumn(
+            SegmentedColumn(
                 selectedIndices = supportedKMIs.indexOf(selectedKmi.value).let { if (it >= 0) setOf(it) else emptySet() },
                 content = supportedKMIs.map { kmi ->
                     {
-                        ExpressiveRadioItem(
+                        SegmentedRadioItem(
                             title = kmi,
                             summary = if (kmi == currentKmi) stringResource(R.string.current_device_kmi) else null,
                             selected = selectedKmi.value == kmi,

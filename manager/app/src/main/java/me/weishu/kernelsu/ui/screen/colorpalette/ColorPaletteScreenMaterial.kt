@@ -83,8 +83,8 @@ import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveDropdownItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
@@ -221,12 +221,12 @@ fun ColorPaletteScreenMaterial() {
                     }
                 }
 
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier.padding(top = 4.dp),
                     content = listOf(
                         {
                             val styles = PaletteStyle.entries
-                            ExpressiveDropdownItem(
+                            SegmentedDropdownItem(
                                 title = stringResource(R.string.settings_color_style),
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOf(colorStyle),
@@ -239,7 +239,7 @@ fun ColorPaletteScreenMaterial() {
                         },
                         {
                             val specs = listOf("2021", "2025")
-                            ExpressiveDropdownItem(
+                            SegmentedDropdownItem(
                                 title = stringResource(R.string.settings_color_spec),
                                 items = specs,
                                 selectedIndex = if (colorSpec == ColorSpec.SpecVersion.SPEC_2025) 1 else 0,

@@ -61,8 +61,8 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.AppIconImage
-import me.weishu.kernelsu.ui.component.material.ExpressiveLazyColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.navigation3.Navigator
@@ -207,7 +207,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 }
             }
 
-            ExpressiveLazyColumn(
+            SegmentedLazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
@@ -272,7 +272,7 @@ private fun SimpleAppItem(
     app: AppInfo,
     onNavigate: () -> Unit,
 ) {
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = onNavigate,
         modifier = Modifier.padding(start = 8.dp),
         headlineContent = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
@@ -299,7 +299,7 @@ private fun GroupItem(
     } else {
         group.primary.packageName
     }
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = onClickPrimary,
         onLongClick = if (group.apps.size > 1) onToggleExpand else null,
         headlineContent = {

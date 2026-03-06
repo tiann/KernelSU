@@ -25,9 +25,9 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveTextField
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedTextField
 import me.weishu.kernelsu.ui.component.profile.dialogs.MultiSelectDialog
 import me.weishu.kernelsu.ui.component.profile.dialogs.SingleSelectDialog
 import me.weishu.kernelsu.ui.util.isSepolicyValid
@@ -108,11 +108,11 @@ private fun UidGidPanel(
     onUidChange: (Int) -> Unit,
     onGidChange: (Int) -> Unit
 ) {
-    ExpressiveColumn(
+    SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         content = listOf(
             {
-                ExpressiveTextField(
+                SegmentedTextField(
                     enabled = enabled,
                     value = uid.toString(),
                     onValueChange = { onUidChange(it.toIntOrNull() ?: 0) },
@@ -121,7 +121,7 @@ private fun UidGidPanel(
                 )
             },
             {
-                ExpressiveTextField(
+                SegmentedTextField(
                     enabled = enabled,
                     value = gid.toString(),
                     onValueChange = { onGidChange(it.toIntOrNull() ?: 0) },
@@ -179,10 +179,10 @@ private fun GroupsPanel(
         selected.joinToString(", ") { it.display }
     }
 
-    ExpressiveColumn(
+    SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         content = listOf {
-            ExpressiveListItem(
+            SegmentedListItem(
                 headlineContent = { Text(stringResource(R.string.profile_groups)) },
                 supportingContent = { Text(tag) },
                 onClick = if (enabled) { { showDialog.value = true } } else null
@@ -232,10 +232,10 @@ private fun MountNameSpacePanel(
         )
     }
 
-    ExpressiveColumn(
+    SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         content = listOf {
-            ExpressiveListItem(
+            SegmentedListItem(
                 headlineContent = { Text(stringResource(R.string.profile_namespace)) },
                 supportingContent = { Text(selectedOption.label) },
                 onClick = if (enabled) { { showDialog.value = true } } else null
@@ -288,10 +288,10 @@ private fun CapsPanel(
         selectedCaps.joinToString(", ") { it.display }
     }
 
-    ExpressiveColumn(
+    SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         content = listOf {
-            ExpressiveListItem(
+            SegmentedListItem(
                 headlineContent = { Text(stringResource(R.string.profile_capabilities)) },
                 supportingContent = { Text(tag) },
                 onClick = if (enabled) { { showDialog.value = true } } else null
@@ -323,10 +323,10 @@ private fun SELinuxPanel(
         )
     }
 
-    ExpressiveColumn(
+    SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         content = listOf {
-            ExpressiveListItem(
+            SegmentedListItem(
                 headlineContent = { Text(stringResource(R.string.profile_selinux_context)) },
                 supportingContent = { Text(context.ifEmpty { "—" }) },
                 onClick = if (enabled) { { showDialog.value = true } } else null

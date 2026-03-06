@@ -69,8 +69,8 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
@@ -335,7 +335,7 @@ private fun AppProfileInner(
                 if (isUidGroup) {
                     val appItems = affectedApps.map<SuperUserViewModel.AppInfo, @Composable () -> Unit> { app ->
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 headlineContent = { Text(app.label) },
                                 supportingContent = { Text(app.packageName) },
                                 leadingContent = {
@@ -348,7 +348,7 @@ private fun AppProfileInner(
                             )
                         }
                     }
-                    ExpressiveColumn(
+                    SegmentedColumn(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         title = stringResource(R.string.app_profile_affects_following_apps),
                         content = appItems

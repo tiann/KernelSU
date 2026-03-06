@@ -65,7 +65,7 @@ private val largeCorner = 20.dp
 private val smallCorner = 4.dp
 
 @Composable
-private fun ExpressiveItemWrapper(
+private fun SegmentedItemWrapper(
     isSelected: Boolean,
     isFirst: Boolean,
     isLast: Boolean,
@@ -110,7 +110,7 @@ private fun ExpressiveItemWrapper(
 }
 
 @Composable
-fun ExpressiveColumn(
+fun SegmentedColumn(
     modifier: Modifier = Modifier,
     title: String = "",
     selectedIndices: Set<Int> = emptySet(),
@@ -132,7 +132,7 @@ fun ExpressiveColumn(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             content.forEachIndexed { index, itemContent ->
-                ExpressiveItemWrapper(
+                SegmentedItemWrapper(
                     isSelected = selectedIndices.contains(index),
                     isFirst = index == 0,
                     isLast = index == content.size - 1,
@@ -144,7 +144,7 @@ fun ExpressiveColumn(
 }
 
 @Composable
-fun <T> ExpressiveLazyColumn(
+fun <T> SegmentedLazyColumn(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(all = 16.dp),
@@ -173,7 +173,7 @@ fun <T> ExpressiveLazyColumn(
                 items = items,
                 key = if (key != null) { _, item -> key(item) } else null
             ) { index, item ->
-                ExpressiveItemWrapper(
+                SegmentedItemWrapper(
                     isSelected = selected(item),
                     isFirst = index == 0,
                     isLast = index == items.size - 1,
@@ -186,7 +186,7 @@ fun <T> ExpressiveLazyColumn(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ExpressiveListItem(
+fun SegmentedListItem(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
@@ -253,7 +253,7 @@ fun ExpressiveListItem(
 }
 
 @Composable
-fun ExpressiveSwitchItem(
+fun SegmentedSwitchItem(
     icon: ImageVector? = null,
     title: String,
     summary: String? = null,
@@ -263,7 +263,7 @@ fun ExpressiveSwitchItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = { onCheckedChange(!checked) },
         modifier = Modifier.toggleable(
             value = checked,
@@ -288,7 +288,7 @@ fun ExpressiveSwitchItem(
 }
 
 @Composable
-fun ExpressiveDropdownItem(
+fun SegmentedDropdownItem(
     icon: ImageVector? = null,
     title: String,
     summary: String? = null,
@@ -306,7 +306,7 @@ fun ExpressiveDropdownItem(
         -1
     }
 
-    ExpressiveListItem(
+    SegmentedListItem(
         modifier = if (enabled) {
             Modifier.clickable { expanded = true }
         } else {
@@ -345,14 +345,14 @@ fun ExpressiveDropdownItem(
 }
 
 @Composable
-fun ExpressiveRadioItem(
+fun SegmentedRadioItem(
     title: String,
     summary: String? = null,
     selected: Boolean,
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = onClick,
         modifier = Modifier.toggleable(
             value = selected,
@@ -373,7 +373,7 @@ fun ExpressiveRadioItem(
 }
 
 @Composable
-fun ExpressiveCheckboxItem(
+fun SegmentedCheckboxItem(
     title: String,
     summary: String? = null,
     checked: Boolean,
@@ -382,7 +382,7 @@ fun ExpressiveCheckboxItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = { onCheckedChange(!checked) },
         modifier = Modifier.toggleable(
             value = checked,
@@ -407,7 +407,7 @@ fun ExpressiveCheckboxItem(
 }
 
 @Composable
-fun ExpressiveTextField(
+fun SegmentedTextField(
     modifier: Modifier = Modifier,
     label: String = "",
     value: String,
@@ -433,7 +433,7 @@ fun ExpressiveTextField(
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val coroutineScope = rememberCoroutineScope()
 
-    ExpressiveListItem(
+    SegmentedListItem(
         modifier = modifier.bringIntoViewRequester(bringIntoViewRequester),
         leadingContent = leadingContent,
         supportingContent = supportingContent,

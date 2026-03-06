@@ -40,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,11 +115,11 @@ fun AboutScreenMaterial() {
                 }
             }
             item {
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = result.map { linkInfo ->
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 onClick = { uriHandler.openUri(linkInfo.url) },
                                 headlineContent = { Text(linkInfo.fullText) }
                             )

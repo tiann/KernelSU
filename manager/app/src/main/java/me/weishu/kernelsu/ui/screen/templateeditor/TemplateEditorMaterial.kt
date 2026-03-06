@@ -43,8 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveTextField
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedTextField
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
@@ -126,7 +126,7 @@ fun TemplateEditorScreenMaterial(
             val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
             val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
 
-            ExpressiveColumn(
+            SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
                     add(
@@ -230,7 +230,7 @@ private fun TemplateEditorListItem(
     readOnly: Boolean = false,
     onValueChange: (String) -> Unit
 ) {
-    ExpressiveTextField(
+    SegmentedTextField(
         value = value,
         onValueChange = onValueChange,
         label = label,

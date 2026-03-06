@@ -98,8 +98,8 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -723,11 +723,11 @@ fun InfoPage(
     ) {
         if (module.authorsList.isNotEmpty()) {
             item {
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
                     content = module.authorsList.map { author ->
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 headlineContent = {
                                     Text(
                                         text = author.name,
@@ -757,11 +757,11 @@ fun InfoPage(
         }
         if (sourceUrl.isNotEmpty()) {
             item {
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = listOf(
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 headlineContent = {
                                     Text(
                                         text = sourceUrl,

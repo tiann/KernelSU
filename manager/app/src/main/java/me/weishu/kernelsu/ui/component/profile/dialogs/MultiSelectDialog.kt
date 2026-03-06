@@ -16,8 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveCheckboxItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedCheckboxItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
@@ -49,11 +49,11 @@ fun <T> MultiSelectDialog(
             }
         },
         text = {
-            ExpressiveColumn(
+            SegmentedColumn(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 content = items.map { item ->
                     {
-                        ExpressiveCheckboxItem(
+                        SegmentedCheckboxItem(
                             title = itemTitle(item),
                             summary = itemSubtitle(item),
                             checked = currentSelection.contains(item),
