@@ -192,4 +192,6 @@ inline std::pair<int, int> legacy_get_info() {
     return {version, flags};
 }
 
+ksu_get_info_cmd& get_info();
+
 #endif //KERNELSU_KSU_H

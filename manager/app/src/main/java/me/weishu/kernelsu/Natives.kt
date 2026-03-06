@@ -48,6 +48,9 @@ object Natives {
     val isManager: Boolean
         external get
 
+    val commit: String
+        external get
+
     external fun uidShouldUmount(uid: Int): Boolean
 
     /**
@@ -102,6 +105,8 @@ object Natives {
             return it.umountModules
         }
     }
+
+    fun ksuValid(): Boolean = apiVersion > MINIMAL_SUPPORTED_API
 
     fun requireNewKernel(): Boolean {
         val api = apiVersion

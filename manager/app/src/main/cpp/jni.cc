@@ -39,6 +39,14 @@ Java_me_weishu_kernelsu_Natives_getApiVersion(JNIEnv *env, jobject) {
 }
 
 extern "C"
+JNIEXPORT jstring JNICALL
+Java_me_weishu_kernelsu_Natives_getCommit(JNIEnv *env, jobject) {
+    auto info = get_info();
+    auto str = reinterpret_cast<char*>(info.commit);
+    return env->NewStringUTF(str);
+}
+
+extern "C"
 JNIEXPORT jint JNICALL
 Java_me_weishu_kernelsu_Natives_getSuperuserCount(JNIEnv *env, jobject) {
     struct ksu_new_get_allow_list_cmd cmd = {

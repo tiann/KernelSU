@@ -587,6 +587,14 @@ private fun InfoCard() {
                 content = systemInfo.managerVersion
             )
             InfoText(
+                title = stringResource(R.string.home_ksu_api),
+                content = systemInfo.ksuApi.toString()
+            )
+            InfoText(
+                title = stringResource(R.string.home_ksu_commit),
+                content = systemInfo.ksuCommit
+            )
+            InfoText(
                 title = stringResource(R.string.home_fingerprint),
                 content = systemInfo.fingerprint
             )

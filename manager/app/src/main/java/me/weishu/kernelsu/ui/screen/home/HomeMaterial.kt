@@ -462,6 +462,8 @@ private fun InfoCard() {
             }
 
             InfoCardItem(stringResource(R.string.home_kernel), systemInfo.kernelVersion)
+            InfoCardItem(stringResource(R.string.home_ksu_api), systemInfo.ksuApi.toString())
+            InfoCardItem(stringResource(R.string.home_ksu_commit), systemInfo.ksuCommit)
 
             Spacer(Modifier.height(16.dp))
             InfoCardItem(
