@@ -31,6 +31,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getInt("color_mode", 0)
         set(value) = prefs.edit { putInt("color_mode", value) }
 
+    override var miuixMonet: Boolean
+        get() = prefs.getBoolean("miuix_monet", false)
+        set(value) = prefs.edit { putBoolean("miuix_monet", value) }
+
     override var keyColor: Int
         get() = prefs.getInt("key_color", 0)
         set(value) = prefs.edit { putInt("key_color", value) }

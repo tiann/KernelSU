@@ -27,6 +27,7 @@ class SettingsViewModel(
             val checkUpdate = repo.checkUpdate
             val checkModuleUpdate = repo.checkModuleUpdate
             val themeMode = repo.themeMode
+            val miuixMonet = repo.miuixMonet
             val keyColor = repo.keyColor
             val enablePredictiveBack = repo.enablePredictiveBack
             val enableBlur = repo.enableBlur
@@ -54,6 +55,7 @@ class SettingsViewModel(
                     checkUpdate = checkUpdate,
                     checkModuleUpdate = checkModuleUpdate,
                     themeMode = themeMode,
+                    miuixMonet = miuixMonet,
                     keyColor = keyColor,
                     enablePredictiveBack = enablePredictiveBack,
                     enableBlur = enableBlur,
@@ -79,8 +81,25 @@ class SettingsViewModel(
     }
 
     fun setUiMode(mode: String) {
+        val oldMode = repo.uiMode
+        val currentThemeMode = repo.themeMode
+
+        val newThemeMode = when (oldMode) {
+            "material" if mode == "miuix" -> {
+                val baseMode = if (currentThemeMode == 6) 2 else currentThemeMode // Handle material dark amoled case
+                if (repo.miuixMonet && baseMode < 3) baseMode + 3 else baseMode
+            }
+            "miuix" if mode == "material" -> {
+                if (currentThemeMode >= 3) {
+                    (currentThemeMode - 3).coerceAtMost(2)
+                } else currentThemeMode
+            }
+            else -> currentThemeMode
+        }
+
         repo.uiMode = mode
-        _uiState.update { it.copy(uiMode = mode) }
+        repo.themeMode = newThemeMode
+        _uiState.update { it.copy(uiMode = mode, themeMode = newThemeMode) }
     }
 
     fun setCheckModuleUpdate(enabled: Boolean) {
@@ -89,8 +108,26 @@ class SettingsViewModel(
     }
 
     fun setThemeMode(mode: Int) {
-        repo.themeMode = mode
-        _uiState.update { it.copy(themeMode = mode) }
+        val currentUiMode = repo.uiMode
+        val effectiveMode = if (currentUiMode == "miuix" && _uiState.value.miuixMonet) {
+            mode + 3
+        } else {
+            mode
+        }
+        repo.themeMode = effectiveMode
+        _uiState.update { it.copy(themeMode = effectiveMode) }
+    }
+
+    fun setMiuixMonet(enabled: Boolean) {
+        val currentThemeMode = repo.themeMode
+        val newThemeMode = if (enabled) {
+            if (currentThemeMode < 3) currentThemeMode + 3 else currentThemeMode
+        } else {
+            if (currentThemeMode >= 3) currentThemeMode - 3 else currentThemeMode
+        }
+        repo.miuixMonet = enabled
+        repo.themeMode = newThemeMode
+        _uiState.update { it.copy(miuixMonet = enabled, themeMode = newThemeMode) }
     }
 
     fun setKeyColor(color: Int) {

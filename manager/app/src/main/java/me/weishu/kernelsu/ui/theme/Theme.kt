@@ -18,7 +18,7 @@ enum class ColorMode(val value: Int) {
     MONET_SYSTEM(3),
     MONET_LIGHT(4),
     MONET_DARK(5),
-    MONET_DARK_AMOLED(6);
+    DARK_AMOLED(6);
 
     companion object {
         fun fromValue(value: Int) = entries.find { it.value == value } ?: SYSTEM
@@ -40,7 +40,19 @@ data class AppSettings(
 object ThemeController {
     fun getAppSettings(context: Context): AppSettings {
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val colorMode = ColorMode.fromValue(prefs.getInt("color_mode", ColorMode.SYSTEM.value))
+        val uiMode = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
+        var colorModeValue = prefs.getInt("color_mode", ColorMode.SYSTEM.value)
+
+        if (uiMode == "miuix") {
+            val miuixMonet = prefs.getBoolean("miuix_monet", false)
+            if (!miuixMonet && colorModeValue >= 3) {
+                colorModeValue = colorModeValue.coerceAtMost(2)
+            } else if (miuixMonet && colorModeValue < 3) {
+                colorModeValue += 3
+            }
+        }
+
+        val colorMode = ColorMode.fromValue(colorModeValue)
         val keyColor = prefs.getInt("key_color", 0)
         val paletteStyleStr = prefs.getString("color_style", PaletteStyle.TonalSpot.name)
         val paletteStyle = try {

@@ -189,9 +189,6 @@ fun SettingPagerMiuix(
                         stringResource(id = R.string.settings_theme_mode_system),
                         stringResource(id = R.string.settings_theme_mode_light),
                         stringResource(id = R.string.settings_theme_mode_dark),
-                        stringResource(id = R.string.settings_theme_mode_monet_system),
-                        stringResource(id = R.string.settings_theme_mode_monet_light),
-                        stringResource(id = R.string.settings_theme_mode_monet_dark),
                     )
                     SuperDropdown(
                         title = stringResource(id = R.string.settings_theme),
@@ -205,14 +202,31 @@ fun SettingPagerMiuix(
                                 tint = colorScheme.onBackground
                             )
                         },
-                        selectedIndex = uiState.themeMode,
+                        selectedIndex = (if (uiState.themeMode >= 3) uiState.themeMode - 3 else uiState.themeMode).coerceIn(0, 2),
                         onSelectedIndexChange = { index ->
                             viewModel.setThemeMode(index)
                         }
                     )
 
+                    SuperSwitch(
+                        title = stringResource(id = R.string.settings_monet),
+                        summary = stringResource(id = R.string.settings_monet_summary),
+                        startAction = {
+                            Icon(
+                                Icons.Rounded.Colorize,
+                                modifier = Modifier.padding(end = 6.dp),
+                                contentDescription = stringResource(id = R.string.settings_monet),
+                                tint = colorScheme.onBackground
+                            )
+                        },
+                        checked = uiState.miuixMonet,
+                        onCheckedChange = {
+                            viewModel.setMiuixMonet(it)
+                        }
+                    )
+
                     AnimatedVisibility(
-                        visible = uiState.themeMode in 3..5
+                        visible = uiState.miuixMonet
                     ) {
                         val colorItems = listOf(
                             stringResource(id = R.string.settings_key_color_default),

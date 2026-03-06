@@ -177,10 +177,10 @@ fun ColorPaletteScreenMaterial() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val options = listOf(
-                    listOf(ColorMode.SYSTEM, ColorMode.MONET_SYSTEM) to stringResource(R.string.settings_theme_mode_system),
-                    listOf(ColorMode.LIGHT, ColorMode.MONET_LIGHT) to stringResource(R.string.settings_theme_mode_light),
-                    listOf(ColorMode.DARK, ColorMode.MONET_DARK) to stringResource(R.string.settings_theme_mode_dark),
-                    listOf(ColorMode.MONET_DARK_AMOLED) to stringResource(R.string.settings_theme_mode_dark)
+                    listOf(ColorMode.SYSTEM) to stringResource(R.string.settings_theme_mode_system),
+                    listOf(ColorMode.LIGHT) to stringResource(R.string.settings_theme_mode_light),
+                    listOf(ColorMode.DARK) to stringResource(R.string.settings_theme_mode_dark),
+                    listOf(ColorMode.DARK_AMOLED) to stringResource(R.string.settings_theme_mode_dark)
                 )
 
                 options.chunked(4).forEach { rowOptions ->
@@ -211,7 +211,7 @@ fun ColorPaletteScreenMaterial() {
                                         ColorMode.SYSTEM -> Icons.Filled.Brightness4
                                         ColorMode.LIGHT -> Icons.Filled.Brightness7
                                         ColorMode.DARK -> Icons.Filled.Brightness3
-                                        ColorMode.MONET_DARK_AMOLED -> Icons.Filled.Brightness1
+                                        ColorMode.DARK_AMOLED -> Icons.Filled.Brightness1
                                         else -> Icons.Filled.Brightness4
                                     },
                                     contentDescription = label
