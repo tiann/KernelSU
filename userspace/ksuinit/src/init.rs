@@ -192,6 +192,7 @@ fn has_kernelsu_v2() -> bool {
         // New method: try to get version info via ioctl
         let mut cmd = GetInfoCmd::default();
         let version = unsafe { syscall!(Sysno::ioctl, fd, KSU_IOCTL_GET_INFO, &mut cmd as *mut _) }
+            .map(|_| cmd.version)
             .unwrap_or_else(|_| {
                 let mut cmd = GetInfoCmdLegacy::default();
                 unsafe {
@@ -202,6 +203,7 @@ fn has_kernelsu_v2() -> bool {
                         &mut cmd as *mut _
                     )
                 }
+                .map(|_| cmd.version)
                 .unwrap_or(0)
             });
 
