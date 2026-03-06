@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Block
@@ -370,7 +369,7 @@ private fun WarningCard(
 fun TonalCard(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-    shape: Shape = RoundedCornerShape(20.dp),
+    shape: Shape = MaterialTheme.shapes.large,
     content: @Composable () -> Unit
 ) {
     Card(
