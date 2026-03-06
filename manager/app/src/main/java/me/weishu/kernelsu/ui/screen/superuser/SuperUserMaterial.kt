@@ -219,6 +219,11 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     bottom = 16.dp + bottomInnerPadding
                 ),
                 key = { it.uid },
+                selected = if (isSearching) {
+                    { false }
+                } else {
+                    { group -> expandedSearchUids.value.contains(group.uid) }
+                },
                 items = visibleGroups,
             ) { group ->
                 val expanded = isSearching || expandedSearchUids.value.contains(group.uid)
@@ -244,7 +249,12 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         exit = shrinkVertically() + fadeOut()
                     ) {
                         Column {
-                            group.apps.filter { it in uiState.appList }.forEach { app ->
+                            val filteredApps = if (isSearching) {
+                                group.apps.filter { it in uiState.searchResults }
+                            } else {
+                                group.apps.filter { it in uiState.appList }
+                            }
+                            filteredApps.forEach { app ->
                                 SimpleAppItem(app) {
                                     navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
                                 }
