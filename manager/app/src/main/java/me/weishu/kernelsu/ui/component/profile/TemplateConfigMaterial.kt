@@ -84,8 +84,8 @@ fun TemplateConfigMaterial(
 
     SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
-        content = listOf(
-            {
+        content = buildList {
+            add {
                 SegmentedListItem(
                     headlineContent = { Text(stringResource(R.string.profile_template)) },
                     supportingContent = { Text(selectedTemplateName) },
@@ -102,18 +102,16 @@ fun TemplateConfigMaterial(
                         }
                     }
                 )
-            },
-            {
-                if (template.value.isNotEmpty()) {
-                    SegmentedListItem(
-                        headlineContent = { Text(stringResource(R.string.app_profile_template_view)) },
-                        trailingContent = {
-                            Icon(Icons.AutoMirrored.Filled.ReadMore, contentDescription = null)
-                        },
-                        onClick = { onViewTemplate(template.value) }
-                    )
-                }
             }
-        )
+            if (template.value.isNotEmpty()) add {
+                SegmentedListItem(
+                    headlineContent = { Text(stringResource(R.string.app_profile_template_view)) },
+                    trailingContent = {
+                        Icon(Icons.AutoMirrored.Filled.ReadMore, contentDescription = null)
+                    },
+                    onClick = { onViewTemplate(template.value) }
+                )
+            }
+        }
     )
 }

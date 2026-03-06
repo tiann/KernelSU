@@ -60,7 +60,7 @@ fun RootProfileConfigMaterial(
             onSelectionChange = { selection ->
                 onProfileChange(
                     profile.copy(
-                        groups = selection.map { it.gid }.ifEmpty { listOf(0) },
+                        groups = selection.map { it.gid },
                         rootUseDefault = false
                     )
                 )

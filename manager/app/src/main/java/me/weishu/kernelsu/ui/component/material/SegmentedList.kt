@@ -453,7 +453,11 @@ fun SegmentedTextField(
                         },
                     enabled = enabled,
                     readOnly = readOnly,
-                    textStyle = textStyle.copy(colors.supportingContentColor, fontSize = MaterialTheme.typography.bodyMedium.fontSize),
+                    textStyle = textStyle.copy(
+                        colors.supportingContentColor,
+                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+                    ),
                     keyboardOptions = keyboardOptions,
                     keyboardActions = keyboardActions,
                     singleLine = singleLine,
