@@ -309,7 +309,6 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     key(isAbDevice) {
         SegmentedColumn(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            selectedIndices = radioOptions.indexOfFirst { it.javaClass == selectedOption?.javaClass }.let { if (it >= 0) setOf(it) else emptySet() },
             content = radioOptions.map { option ->
                 {
                     SegmentedRadioItem(

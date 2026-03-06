@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -219,11 +220,6 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     bottom = 16.dp + bottomInnerPadding
                 ),
                 key = { it.uid },
-                selected = if (isSearching) {
-                    { false }
-                } else {
-                    { group -> expandedSearchUids.value.contains(group.uid) }
-                },
                 items = visibleGroups,
             ) { group ->
                 val expanded = isSearching || expandedSearchUids.value.contains(group.uid)
@@ -239,6 +235,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 Column {
                     GroupItem(
                         group = group,
+                        selected = expanded && !isSearching,
                         onToggleExpand = onToggleExpand,
                     ) {
                         navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
@@ -277,15 +274,16 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SimpleAppItem(
     app: AppInfo,
     onNavigate: () -> Unit,
 ) {
-    SegmentedListItem(
+    ListItem(
         onClick = onNavigate,
         modifier = Modifier.padding(start = 8.dp),
-        headlineContent = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+        content = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         supportingContent = { Text(app.packageName, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         leadingContent = {
             AppIconImage(
@@ -294,13 +292,14 @@ private fun SimpleAppItem(
                 modifier = Modifier.size(40.dp)
             )
         },
-        trailingContent = { Icon(Icons.Filled.Remove, contentDescription = null)}
+        trailingContent = { Icon(Icons.Filled.Remove, contentDescription = null) },
     )
 }
 
 @Composable
 private fun GroupItem(
     group: GroupedApps,
+    selected: Boolean,
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
@@ -310,6 +309,7 @@ private fun GroupItem(
         group.primary.packageName
     }
     SegmentedListItem(
+        selected = selected,
         onClick = onClickPrimary,
         onLongClick = if (group.apps.size > 1) onToggleExpand else null,
         headlineContent = {

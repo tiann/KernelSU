@@ -28,7 +28,7 @@ fun ChooseKmiDialogMaterial(
 ) {
     if (!showDialog.value) return
 
-    val supportedKMIs by produceState(initialValue = emptyList<String>()) {
+    val supportedKMIs by produceState(initialValue = emptyList()) {
         value = getSupportedKmis()
     }
 
@@ -73,7 +73,6 @@ fun ChooseKmiDialogMaterial(
         },
         text = {
             SegmentedColumn(
-                selectedIndices = supportedKMIs.indexOf(selectedKmi.value).let { if (it >= 0) setOf(it) else emptySet() },
                 content = supportedKMIs.map { kmi ->
                     {
                         SegmentedRadioItem(

@@ -33,7 +33,6 @@ fun <T> SingleSelectDialog(
         text = {
             SegmentedColumn(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
-                selectedIndices = items.indexOf(selected).let { if (it >= 0) setOf(it) else emptySet() },
                 content = items.map { item ->
                     {
                         SegmentedRadioItem(
