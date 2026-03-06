@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
+import me.weishu.kernelsu.ui.theme.ColorMode
 
 class SettingsViewModel(
     private val repo: SettingsRepository = SettingsRepositoryImpl()
@@ -86,12 +87,18 @@ class SettingsViewModel(
 
         val newThemeMode = when (oldMode) {
             "material" if mode == "miuix" -> {
-                val baseMode = if (currentThemeMode == 6) 2 else currentThemeMode // Handle material dark amoled case
-                if (repo.miuixMonet && baseMode < 3) baseMode + 3 else baseMode
+                val colorMode = ColorMode.fromValue(currentThemeMode)
+                val baseMode = if (colorMode == ColorMode.DARK_AMOLED) 2 else currentThemeMode
+                if (repo.miuixMonet && !colorMode.isMonet) {
+                    ColorMode.fromValue(baseMode).toMonetMode()
+                } else if (!repo.miuixMonet && colorMode.isMonet) {
+                    ColorMode.fromValue(baseMode).toNonMonetMode()
+                } else baseMode
             }
             "miuix" if mode == "material" -> {
-                if (currentThemeMode >= 3) {
-                    (currentThemeMode - 3).coerceAtMost(2)
+                val colorMode = ColorMode.fromValue(currentThemeMode)
+                if (colorMode.isMonet) {
+                    colorMode.toNonMonetMode()
                 } else currentThemeMode
             }
             else -> currentThemeMode
@@ -120,10 +127,11 @@ class SettingsViewModel(
 
     fun setMiuixMonet(enabled: Boolean) {
         val currentThemeMode = repo.themeMode
+        val colorMode = ColorMode.fromValue(currentThemeMode)
         val newThemeMode = if (enabled) {
-            if (currentThemeMode < 3) currentThemeMode + 3 else currentThemeMode
+            if (!colorMode.isMonet) colorMode.toMonetMode() else currentThemeMode
         } else {
-            if (currentThemeMode >= 3) currentThemeMode - 3 else currentThemeMode
+            if (colorMode.isMonet) colorMode.toNonMonetMode() else currentThemeMode
         }
         repo.miuixMonet = enabled
         repo.themeMode = newThemeMode
