@@ -9,9 +9,29 @@ const EVENT_POST_FS_DATA: u32 = 1;
 const EVENT_BOOT_COMPLETED: u32 = 2;
 const EVENT_MODULE_MOUNTED: u32 = 3;
 
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct GetInfoCmd {
+    version: u32,
+    flags: u32,
+    features: u32,
+    api: u32,
+    commit: u64,
+    len: u32,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct GetInfoCmdLegacy {
+    version: u32,
+    flags: u32,
+    features: u32,
+}
+
 const K: u32 = b'K' as u32;
 const KSU_IOCTL_GRANT_ROOT: i32 = _IO(K, 1);
-const KSU_IOCTL_GET_INFO: i32 = _IOR::<()>(K, 2);
+const KSU_IOCTL_GET_INFO: i32 = _IOWR::<GetInfoCmd>(K, 2);
+const KSU_IOCTL_GET_INFO_LEGACY: i32 = _IOR::<()>(K, 2);
 const KSU_IOCTL_REPORT_EVENT: i32 = _IOW::<()>(K, 3);
 const KSU_IOCTL_SET_SEPOLICY: i32 = _IOWR::<()>(K, 4);
 const KSU_IOCTL_CHECK_SAFEMODE: i32 = _IOR::<()>(K, 5);
@@ -21,13 +41,6 @@ const KSU_IOCTL_GET_WRAPPER_FD: i32 = _IOW::<()>(K, 15);
 const KSU_IOCTL_MANAGE_MARK: i32 = _IOWR::<()>(K, 16);
 const KSU_IOCTL_NUKE_EXT4_SYSFS: i32 = _IOW::<()>(K, 17);
 const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
-
-#[repr(C)]
-#[derive(Clone, Copy, Default)]
-struct GetInfoCmd {
-    version: u32,
-    flags: u32,
-}
 
 #[repr(C)]
 struct ReportEventCmd {
@@ -104,7 +117,7 @@ const KSU_UMOUNT_DEL: u8 = 2;
 
 // Global driver fd cache
 static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
-static INFO_CACHE: OnceLock<GetInfoCmd> = OnceLock::new();
+static INFO_CACHE: OnceLock<KsuInfo> = OnceLock::new();
 
 const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
 const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
@@ -162,15 +175,59 @@ fn ksuctl<T>(request: i32, arg: *mut T) -> std::io::Result<i32> {
     }
 }
 
+#[allow(unused)]
+#[derive(Debug)]
+pub struct KsuInfo {
+    pub version: u32,
+    pub flags: u32,
+    pub features: u32,
+    pub api: Option<u32>,
+    pub commit: Option<String>,
+}
+
 // API implementations
-fn get_info() -> GetInfoCmd {
-    *INFO_CACHE.get_or_init(|| {
-        let mut cmd = GetInfoCmd {
-            version: 0,
-            flags: 0,
-        };
-        let _ = ksuctl(KSU_IOCTL_GET_INFO, &raw mut cmd);
-        cmd
+pub fn get_info() -> &'static KsuInfo {
+    INFO_CACHE.get_or_init(|| {
+        let mut cmd = std::mem::MaybeUninit::<GetInfoCmd>::uninit();
+        let ptr = cmd.as_mut_ptr();
+        let mut buf = std::mem::MaybeUninit::<[u8; 256]>::uninit();
+        unsafe {
+            (&raw mut (*ptr).len).write(256);
+            (&raw mut (*ptr).commit).write(buf.as_mut_ptr() as u64);
+        }
+        if ksuctl(KSU_IOCTL_GET_INFO, ptr).is_ok() {
+            let cmd = unsafe { cmd.assume_init() };
+            let buf = unsafe { buf.assume_init() };
+            let commit = String::from_utf8_lossy(&buf[..cmd.len as usize]).to_string();
+            KsuInfo {
+                version: cmd.version,
+                flags: cmd.flags,
+                features: cmd.features,
+                api: Some(cmd.api),
+                commit: Some(commit),
+            }
+        } else {
+            let mut legacy_cmd = std::mem::MaybeUninit::<GetInfoCmdLegacy>::uninit();
+            let ptr = legacy_cmd.as_mut_ptr();
+            if ksuctl(KSU_IOCTL_GET_INFO_LEGACY, ptr).is_ok() {
+                let legacy_cmd = unsafe { legacy_cmd.assume_init() };
+                KsuInfo {
+                    version: legacy_cmd.version,
+                    flags: legacy_cmd.flags,
+                    features: legacy_cmd.features,
+                    api: None,
+                    commit: None,
+                }
+            } else {
+                KsuInfo {
+                    version: 0,
+                    flags: 0,
+                    features: 0,
+                    api: None,
+                    commit: None,
+                }
+            }
+        }
     })
 }
 

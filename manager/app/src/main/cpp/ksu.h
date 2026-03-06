@@ -11,6 +11,8 @@
 
 uint32_t get_version();
 
+uint32_t get_api_version();
+
 bool uid_should_umount(int uid);
 
 bool is_safe_mode();
@@ -102,9 +104,14 @@ struct ksu_become_daemon_cmd {
 };
 
 struct ksu_get_info_cmd {
+    // begin ksu_get_info_legacy_cmd
     uint32_t version; // Output: KERNEL_SU_VERSION
     uint32_t flags;   // Output: flags (bit 0: MODULE mode)
     uint32_t features; // Output: max feature ID supported (KSU_FEATURE_MAX)
+    // end ksu_get_info_legacy_cmd
+    uint32_t api; // Output: KERNELSU_API_VERSION
+    uint64_t commit; // Output: pointer of buffer of KSU_COMMIT
+    uint32_t len; // Input/Output: length of KSU_COMMIT
 };
 
 struct ksu_report_event_cmd {
@@ -160,7 +167,8 @@ bool is_kernel_umount_enabled();
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)
-#define KSU_IOCTL_GET_INFO _IOC(_IOC_READ, 'K', 2, 0)
+#define KSU_IOCTL_GET_INFO_LEGACY _IOC(_IOC_READ, 'K', 2, 0)
+#define KSU_IOCTL_GET_INFO _IOWR('K', 2, struct ksu_get_info_cmd)
 #define KSU_IOCTL_REPORT_EVENT _IOC(_IOC_WRITE, 'K', 3, 0)
 #define KSU_IOCTL_SET_SEPOLICY _IOC(_IOC_READ|_IOC_WRITE, 'K', 4, 0)
 #define KSU_IOCTL_CHECK_SAFEMODE _IOC(_IOC_READ, 'K', 5, 0)
@@ -183,5 +191,7 @@ inline std::pair<int, int> legacy_get_info() {
     prctl(0xDEADBEEF, 2, &version, &flags, &result);
     return {version, flags};
 }
+
+ksu_get_info_cmd& get_info();
 
 #endif //KERNELSU_KSU_H

@@ -63,9 +63,10 @@ static int do_grant_root(void __user *arg)
     return 0;
 }
 
-static int do_get_info(void __user *arg)
+static int do_get_info_legacy(void __user *arg)
 {
-    struct ksu_get_info_cmd cmd = { .version = KERNEL_SU_VERSION, .flags = 0 };
+    struct ksu_get_info_legacy_cmd cmd = { .version = KERNEL_SU_VERSION,
+                                           .flags = 0 };
 
 #ifdef MODULE
     cmd.flags |= 0x1;
@@ -77,8 +78,56 @@ static int do_get_info(void __user *arg)
     cmd.features = KSU_FEATURE_MAX;
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
+        pr_err("get_version_legacy: copy_to_user failed\n");
+        return -EFAULT;
+    }
+
+    return 0;
+}
+
+static int do_get_info(void __user *arg)
+{
+    static const char *ksu_commit = __stringify(KSU_COMMIT);
+    static const u32 ksu_commit_len = sizeof(__stringify(KSU_COMMIT)) - 1;
+    struct ksu_get_info_cmd cmd = { .version = KERNEL_SU_VERSION,
+                                    .flags = 0,
+                                    .api = KERNEL_SU_API_VERSION };
+
+#ifdef MODULE
+    cmd.flags |= 0x1;
+#endif
+
+    if (is_manager()) {
+        cmd.flags |= 0x2;
+    }
+    cmd.features = KSU_FEATURE_MAX;
+
+    if (copy_to_user(arg, &cmd, offsetof(struct ksu_get_info_cmd, commit))) {
         pr_err("get_version: copy_to_user failed\n");
         return -EFAULT;
+    }
+
+    if (copy_from_user(&cmd.commit,
+                       arg + offsetof(struct ksu_get_info_cmd, commit),
+                       sizeof(struct ksu_get_info_cmd) -
+                           offsetof(struct ksu_get_info_cmd, commit))) {
+        pr_err("get_version: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    if (cmd.commit) {
+        cmd.len = min(cmd.len, ksu_commit_len);
+        if (copy_to_user(arg + offsetof(struct ksu_get_info_cmd, len), &cmd.len,
+                         sizeof(cmd.len))) {
+            pr_err("get_version: copy_to_user version len failed\n");
+            return -EFAULT;
+        }
+
+        if (cmd.len &&
+            copy_to_user((void *__user)cmd.commit, ksu_commit, cmd.len)) {
+            pr_err("get_version: copy_to_user version failed\n");
+            return -EFAULT;
+        }
     }
 
     return 0;
@@ -620,6 +669,10 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GET_INFO,
       .name = "GET_INFO",
       .handler = do_get_info,
+      .perm_check = always_allow },
+    { .cmd = KSU_IOCTL_GET_INFO_LEGACY,
+      .name = "GET_INFO_LEGACY",
+      .handler = do_get_info_legacy,
       .perm_check = always_allow },
     { .cmd = KSU_IOCTL_REPORT_EVENT,
       .name = "REPORT_EVENT",

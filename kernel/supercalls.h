@@ -19,6 +19,15 @@ struct ksu_get_info_cmd {
     __u32 version; // Output: KERNEL_SU_VERSION
     __u32 flags; // Output: flags (bit 0: MODULE mode)
     __u32 features; // Output: max feature ID supported
+    __u32 api; // Output: KERNELSU_API_VERSION
+    __u64 commit; // Output: pointer of buffer of KSU_COMMIT
+    __u32 len; // Input/Output: length of KSU_COMMIT
+};
+
+struct ksu_get_info_legacy_cmd {
+    __u32 version; // Output: KERNEL_SU_VERSION
+    __u32 flags; // Output: flags (bit 0: MODULE mode)
+    __u32 features; // Output: max feature ID supported
 };
 
 struct ksu_report_event_cmd {
@@ -112,7 +121,8 @@ struct ksu_add_try_umount_cmd {
 
 // IOCTL command definitions
 #define KSU_IOCTL_GRANT_ROOT _IOC(_IOC_NONE, 'K', 1, 0)
-#define KSU_IOCTL_GET_INFO _IOC(_IOC_READ, 'K', 2, 0)
+#define KSU_IOCTL_GET_INFO_LEGACY _IOC(_IOC_READ, 'K', 2, 0)
+#define KSU_IOCTL_GET_INFO _IOWR('K', 2, struct ksu_get_info_cmd)
 #define KSU_IOCTL_REPORT_EVENT _IOC(_IOC_WRITE, 'K', 3, 0)
 #define KSU_IOCTL_SET_SEPOLICY _IOC(_IOC_READ | _IOC_WRITE, 'K', 4, 0)
 #define KSU_IOCTL_CHECK_SAFEMODE _IOC(_IOC_READ, 'K', 5, 0)

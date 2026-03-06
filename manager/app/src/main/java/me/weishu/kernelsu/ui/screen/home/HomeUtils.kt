@@ -6,6 +6,7 @@ import android.system.Os
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.pm.PackageInfoCompat
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.util.getSELinuxStatus
 
 data class ManagerVersion(
@@ -16,8 +17,10 @@ data class ManagerVersion(
 data class SystemInfo(
     val kernelVersion: String,
     val managerVersion: String,
+    val ksuApi: Int,
+    val ksuCommit: String,
     val fingerprint: String,
-    val selinuxStatus: String
+    val selinuxStatus: String,
 )
 
 @Composable
@@ -29,6 +32,8 @@ fun rememberSystemInfo(): SystemInfo {
     return SystemInfo(
         kernelVersion = uname.release,
         managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode})",
+        ksuApi = Natives.apiVersion,
+        ksuCommit = Natives.commit,
         fingerprint = Build.FINGERPRINT,
         selinuxStatus = getSELinuxStatus()
     )

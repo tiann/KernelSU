@@ -40,6 +40,7 @@ ifneq ($(GIT_ROOT),$(KERNEL_GIT_ROOT))
 $(shell cd $(GIT_ROOT) && [ -f .git/shallow ] && $(GIT) fetch --unshallow 2>/dev/null || true)
 KSU_GIT_VERSION := $(shell cd $(GIT_ROOT) && $(GIT) rev-list --count HEAD 2>/dev/null)
 KSU_GIT_VERSION_VALID := 1
+KSU_COMMIT := $(shell cd $(GIT_ROOT) && $(GIT) rev-parse HEAD 2>/dev/null)
 $(info -- KernelSU: Git repo detected at $(GIT_ROOT))
 endif
 endif
@@ -53,11 +54,12 @@ ifdef KSU_GIT_VERSION_VALID
 # ksu_version: major * 10000 + git version + 200 for historical reasons
 $(eval KSU_VERSION=$(shell expr 30000 + $(KSU_GIT_VERSION)))
 $(info -- KernelSU version: $(KSU_VERSION))
-ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
+$(info -- KernelSU commit: $(KSU_COMMIT))
+ccflags-y += -DKSU_VERSION=$(KSU_VERSION) -DKSU_COMMIT=$(KSU_COMMIT)
 else
 # If there is no .git directory, use default version
 $(warning "KSU_GIT_VERSION not defined! It is better to make KernelSU a git repository!")
-ccflags-y += -DKSU_VERSION=16
+ccflags-y += -DKSU_VERSION=16 -DKSU_COMMIT=unknown
 endif
 
 ifndef KSU_EXPECTED_SIZE

@@ -8,7 +8,7 @@ fun KsuIsValid(
     content: @Composable () -> Unit
 ) {
     val isManager = Natives.isManager
-    val ksuVersion = if (isManager) Natives.version else null
+    val ksuVersion = if (isManager) Natives.ksuValid() else null
 
     if (ksuVersion != null) {
         content()

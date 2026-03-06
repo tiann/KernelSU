@@ -6,6 +6,7 @@ use android_logger::Config;
 use log::LevelFilter;
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
+use crate::ksucalls::get_info;
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
 
 /// KernelSU userspace cli
@@ -136,6 +137,9 @@ enum Debug {
 
     /// Get kernel version
     Version,
+
+    /// Get kernel info
+    Info,
 
     /// For testing
     Test,
@@ -565,6 +569,10 @@ pub fn run() -> Result<()> {
             }
             Debug::Version => {
                 println!("Kernel Version: {}", ksucalls::get_version());
+                Ok(())
+            }
+            Debug::Info => {
+                println!("{:#?}", get_info());
                 Ok(())
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),

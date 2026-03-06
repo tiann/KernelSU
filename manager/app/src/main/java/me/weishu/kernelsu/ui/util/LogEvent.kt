@@ -90,6 +90,10 @@ fun getBugreportFile(context: Context): File {
 
         val ksuKernel = Natives.version
         pw.println("KernelSU: $ksuKernel")
+        val api = Natives.apiVersion
+        pw.println("KernelSU API: $api")
+        val commit = Natives.commit
+        pw.println("KernelSU commit: $commit")
         val safeMode = Natives.isSafeMode
         pw.println("SafeMode: $safeMode")
         val lkmMode = Natives.isLkmMode

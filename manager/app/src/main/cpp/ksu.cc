@@ -11,6 +11,7 @@
 #include <android/log.h>
 #include <dirent.h>
 #include <cstdlib>
+#include <cerrno>
 
 #include <unistd.h>
 #include <climits>
@@ -74,18 +75,33 @@ static int ksuctl(unsigned long op, Args &&... args) {
     return ioctl(fd, op, std::forward<Args>(args)...);
 }
 
-static struct ksu_get_info_cmd g_version {};
+static char ksu_commit_buf[256] = {0};
 
-struct ksu_get_info_cmd get_info() {
-    if (!g_version.version) {
-        ksuctl(KSU_IOCTL_GET_INFO, &g_version);
-    }
-    return g_version;
+ksu_get_info_cmd& get_info() {
+    static auto res = []() -> ksu_get_info_cmd& {
+        static struct ksu_get_info_cmd g_version{.commit = (uint64_t) ksu_commit_buf, .len = sizeof(ksu_commit_buf) - 1};
+        if (ksuctl(KSU_IOCTL_GET_INFO, &g_version)) {
+            g_version.len = 0;
+            ksu_commit_buf[0] = 0;
+            if (errno == ENOTTY) {
+                ksuctl(KSU_IOCTL_GET_INFO_LEGACY, &g_version);
+            }
+        } else {
+            ksu_commit_buf[g_version.len] = 0;
+        }
+        return g_version;
+    }();
+    return res;
 }
 
 uint32_t get_version() {
     auto info = get_info();
     return info.version;
+}
+
+uint32_t get_api_version() {
+    auto info = get_info();
+    return info.api;
 }
 
 bool get_allow_list(struct ksu_new_get_allow_list_cmd *cmd) {

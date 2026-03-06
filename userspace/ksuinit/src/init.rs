@@ -154,13 +154,26 @@ fn has_kernelsu_v2() -> bool {
     use syscalls::{Sysno, syscall};
     const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
     const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
-    const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
+    const KSU_IOCTL_GET_INFO: u32 = 0xc0204b02; // _IOWR('K', 2, struct get_info_cmd)
+    const KSU_IOCTL_GET_INFO_LEGACY: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
 
     #[repr(C)]
     #[derive(Default)]
     struct GetInfoCmd {
         version: u32,
         flags: u32,
+        features: u32,
+        api: u32,
+        commit: u64,
+        len: u32,
+    }
+
+    #[repr(C)]
+    #[derive(Default)]
+    struct GetInfoCmdLegacy {
+        version: u32,
+        flags: u32,
+        features: u32,
     }
 
     // Try new method: get driver fd using reboot syscall with magic numbers
@@ -178,14 +191,21 @@ fn has_kernelsu_v2() -> bool {
     let version = if fd >= 0 {
         // New method: try to get version info via ioctl
         let mut cmd = GetInfoCmd::default();
-        let version = unsafe {
-            let ret = syscall!(Sysno::ioctl, fd, KSU_IOCTL_GET_INFO, &mut cmd as *mut _);
-
-            match ret {
-                Ok(_) => cmd.version,
-                Err(_) => 0,
-            }
-        };
+        let version = unsafe { syscall!(Sysno::ioctl, fd, KSU_IOCTL_GET_INFO, &mut cmd as *mut _) }
+            .map(|_| cmd.version)
+            .unwrap_or_else(|_| {
+                let mut cmd = GetInfoCmdLegacy::default();
+                unsafe {
+                    syscall!(
+                        Sysno::ioctl,
+                        fd,
+                        KSU_IOCTL_GET_INFO_LEGACY,
+                        &mut cmd as *mut _
+                    )
+                }
+                .map(|_| cmd.version)
+                .unwrap_or(0)
+            });
 
         unsafe {
             let _ = syscall!(Sysno::close, fd);
