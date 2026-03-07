@@ -27,6 +27,7 @@ const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
 struct GetInfoCmd {
     version: u32,
     flags: u32,
+    features: u32,
 }
 
 #[repr(C)]
@@ -168,6 +169,7 @@ fn get_info() -> GetInfoCmd {
         let mut cmd = GetInfoCmd {
             version: 0,
             flags: 0,
+            features: 0,
         };
         let _ = ksuctl(KSU_IOCTL_GET_INFO, &raw mut cmd);
         cmd
