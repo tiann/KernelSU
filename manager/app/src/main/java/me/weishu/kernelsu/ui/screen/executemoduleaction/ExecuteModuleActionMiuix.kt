@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.executemoduleaction
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -102,6 +103,8 @@ fun ExecuteModuleActionScreenMiuix(moduleId: String) {
         onTextUpdate = { text = it },
         onExit = exitExecute
     )
+
+    BackHandler { }
 
     Scaffold(
         topBar = {
