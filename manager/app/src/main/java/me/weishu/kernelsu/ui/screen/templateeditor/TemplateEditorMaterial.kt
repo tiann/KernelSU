@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen.templateeditor
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
