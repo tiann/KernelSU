@@ -65,14 +65,6 @@ fun TemplateEditorScreenMaterial(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
-    BackHandler {
-        if (!readOnly) {
-            navigator.setResult("template_edit", true)
-        } else {
-            navigator.pop()
-        }
-    }
-
     Scaffold(
         topBar = {
             val author = if (initialTemplate.author.isNotEmpty()) "@${initialTemplate.author}" else ""
