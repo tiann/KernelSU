@@ -285,46 +285,46 @@ fun ColorPaletteScreenMaterial() {
                         )
                     )
                 }
-            }
 
-            TonalCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                val settingsViewModel = viewModel<SettingsViewModel>()
-                val uiState by settingsViewModel.uiState.collectAsState()
-                var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+                TonalCard(modifier = Modifier.padding(top = 4.dp)) {
+                    val settingsViewModel = viewModel<SettingsViewModel>()
+                    val uiState by settingsViewModel.uiState.collectAsState()
+                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
 
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.settings_page_scale),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "${(sliderValue * 100).toInt()}%",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
                         Text(
-                            text = stringResource(R.string.settings_page_scale),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "${(sliderValue * 100).toInt()}%",
+                            text = stringResource(id = R.string.settings_page_scale_summary),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.outline
+                        )
+
+                        Slider(
+                            value = sliderValue,
+                            onValueChange = { sliderValue = it },
+                            onValueChangeFinished = { settingsViewModel.setPageScale(sliderValue) },
+                            valueRange = 0.8f..1.1f,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
-
-                    Text(
-                        text = stringResource(id = R.string.settings_page_scale_summary),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-
-                    Slider(
-                        value = sliderValue,
-                        onValueChange = { sliderValue = it },
-                        onValueChangeFinished = { settingsViewModel.setPageScale(sliderValue) },
-                        valueRange = 0.8f..1.1f,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
             }
 
