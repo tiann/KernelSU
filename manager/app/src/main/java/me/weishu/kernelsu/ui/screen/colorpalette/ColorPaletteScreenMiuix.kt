@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.colorpalette
 
 import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.CallToAction
@@ -52,6 +54,7 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import me.weishu.kernelsu.KernelSUApplication
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.miuix.ScaleDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -77,8 +80,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
 fun ColorPaletteScreenMiuix() {
-    val context = LocalContext.current
     val navigator = LocalNavigator.current
+    val context = LocalContext.current
+    val activity = LocalActivity.current
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlurState = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
@@ -332,6 +336,27 @@ fun ColorPaletteScreenMiuix() {
                         .padding(top = 12.dp)
                         .fillMaxWidth(),
                 ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_enable_predictive_back),
+                            summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Adb,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.enablePredictiveBack,
+                            onCheckedChange = {
+                                viewModel.setEnablePredictiveBack(it)
+                                KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
+                                activity?.recreate()
+                            }
+                        )
+                    }
+
                     var sliderValue by remember(uiState.pageScale) { mutableStateOf(uiState.pageScale) }
                     SuperArrow(
                         title = stringResource(id = R.string.settings_page_scale),

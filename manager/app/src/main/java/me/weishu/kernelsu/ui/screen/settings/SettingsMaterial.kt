@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.settings
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -32,7 +31,6 @@ import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
-import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,7 +66,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.BuildConfig
-import me.weishu.kernelsu.KernelSUApplication.Companion.setEnableOnBackInvokedCallback
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.UiMode
@@ -119,7 +116,6 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
         ) {
-
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
             val logSavedText = stringResource(R.string.log_saved)
@@ -201,24 +197,6 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
                             }
                         )
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        add {
-                            SegmentedSwitchItem(
-                                icon = Icons.Rounded.Adb,
-                                title = stringResource(id = R.string.settings_enable_predictive_back),
-                                summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
-                                checked = uiState.enablePredictiveBack,
-                                onCheckedChange = {
-                                    viewModel.setEnablePredictiveBack(it)
-                                    setEnableOnBackInvokedCallback(
-                                        context.applicationInfo,
-                                        it
-                                    )
-                                    (context as? android.app.Activity)?.recreate()
-                                }
-                            )
-                        }
                     }
                 }
             )

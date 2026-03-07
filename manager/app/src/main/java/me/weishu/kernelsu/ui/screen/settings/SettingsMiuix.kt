@@ -1,7 +1,5 @@
 package me.weishu.kernelsu.ui.screen.settings
 
-import android.os.Build
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Delete
@@ -46,7 +43,6 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import me.weishu.kernelsu.KernelSUApplication
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.KsuIsValid
@@ -108,8 +104,6 @@ fun SettingPagerMiuix(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val activity = LocalActivity.current
-
         val loadingDialog = rememberLoadingDialog()
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
@@ -206,27 +200,6 @@ fun SettingPagerMiuix(
                             viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
                         }
                     )
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_predictive_back),
-                            summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.Adb,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.enablePredictiveBack,
-                            onCheckedChange = {
-                                viewModel.setEnablePredictiveBack(it)
-                                KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
-                                activity?.recreate()
-                            }
-                        )
-                    }
                 }
 
                 KsuIsValid {

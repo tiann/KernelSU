@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.colorpalette
 
 import android.annotation.SuppressLint
 import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -45,6 +46,7 @@ import androidx.compose.material.icons.filled.Brightness3
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -85,9 +87,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
+import me.weishu.kernelsu.KernelSUApplication.Companion.setEnableOnBackInvokedCallback
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
+import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
@@ -98,6 +102,8 @@ import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 @Composable
 fun ColorPaletteScreenMaterial() {
     val navigator = LocalNavigator.current
+    val context = LocalContext.current
+    val activity = LocalActivity.current
     val viewModel = viewModel<SettingsViewModel>()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -258,6 +264,27 @@ fun ColorPaletteScreenMaterial() {
                         }
                     )
                 )
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    SegmentedColumn(
+                        modifier = Modifier.padding(top = 4.dp),
+                        content = listOf(
+                            {
+                                SegmentedSwitchItem(
+                                    icon = Icons.Rounded.Adb,
+                                    title = stringResource(id = R.string.settings_enable_predictive_back),
+                                    summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
+                                    checked = uiState.enablePredictiveBack,
+                                    onCheckedChange = {
+                                        viewModel.setEnablePredictiveBack(it)
+                                        setEnableOnBackInvokedCallback(context.applicationInfo, it)
+                                        activity?.recreate()
+                                    }
+                                )
+                            }
+                        )
+                    )
+                }
             }
 
             TonalCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
