@@ -36,6 +36,8 @@ class SettingsViewModel(
             val enableFloatingBottomBarBlur = repo.enableFloatingBottomBarBlur
             val pageScale = repo.pageScale
             val enableWebDebugging = repo.enableWebDebugging
+            val colorStyle = repo.colorStyle
+            val colorSpec = repo.colorSpec
             val isLkmMode = repo.isLkmMode()
 
             // Async loading for natives/features
@@ -64,6 +66,8 @@ class SettingsViewModel(
                     enableFloatingBottomBarBlur = enableFloatingBottomBarBlur,
                     pageScale = pageScale,
                     enableWebDebugging = enableWebDebugging,
+                    colorStyle = colorStyle,
+                    colorSpec = colorSpec,
                     suCompatStatus = suCompatStatus,
                     suCompatMode = suCompatMode,
                     isSuEnabled = isSuEnabled,
@@ -125,6 +129,11 @@ class SettingsViewModel(
         _uiState.update { it.copy(themeMode = effectiveMode) }
     }
 
+    fun setColorMode(mode: ColorMode) {
+        repo.themeMode = mode.value
+        _uiState.update { it.copy(themeMode = mode.value) }
+    }
+
     fun setMiuixMonet(enabled: Boolean) {
         val currentThemeMode = repo.themeMode
         val colorMode = ColorMode.fromValue(currentThemeMode)
@@ -141,6 +150,16 @@ class SettingsViewModel(
     fun setKeyColor(color: Int) {
         repo.keyColor = color
         _uiState.update { it.copy(keyColor = color) }
+    }
+
+    fun setColorStyle(style: String) {
+        repo.colorStyle = style
+        _uiState.update { it.copy(colorStyle = style) }
+    }
+
+    fun setColorSpec(spec: String) {
+        repo.colorSpec = spec
+        _uiState.update { it.copy(colorSpec = spec) }
     }
 
     fun setEnablePredictiveBack(enabled: Boolean) {

@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen.colorpalette
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -67,8 +66,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,7 +80,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
@@ -95,7 +91,6 @@ import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
-import me.weishu.kernelsu.ui.theme.ThemeController
 import me.weishu.kernelsu.ui.theme.keyColorOptions
 import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 
@@ -103,13 +98,21 @@ import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 @Composable
 fun ColorPaletteScreenMaterial() {
     val navigator = LocalNavigator.current
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    var appSettings by remember { mutableStateOf(ThemeController.getAppSettings(context)) }
-    var currentColorMode by remember { mutableStateOf(appSettings.colorMode) }
-    var currentKeyColor by remember { mutableIntStateOf(appSettings.keyColor) }
-    var colorStyle by remember { mutableStateOf(appSettings.paletteStyle) }
-    var colorSpec by remember { mutableStateOf(appSettings.colorSpec) }
+    val viewModel = viewModel<SettingsViewModel>()
+    val uiState by viewModel.uiState.collectAsState()
+
+    val currentColorMode = ColorMode.fromValue(uiState.themeMode)
+    val currentKeyColor = uiState.keyColor
+    val colorStyle = try {
+        PaletteStyle.valueOf(uiState.colorStyle)
+    } catch (_: Exception) {
+        PaletteStyle.TonalSpot
+    }
+    val colorSpec = try {
+        ColorSpec.SpecVersion.valueOf(uiState.colorSpec)
+    } catch (_: Exception) {
+        ColorSpec.SpecVersion.Default
+    }
 
     Scaffold(
         topBar = {
@@ -159,8 +162,7 @@ fun ColorPaletteScreenMaterial() {
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            currentKeyColor = 0
-                            prefs.edit { putInt("key_color", 0) }
+                            viewModel.setKeyColor(0)
                         }
                     )
                 }
@@ -173,8 +175,7 @@ fun ColorPaletteScreenMaterial() {
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            currentKeyColor = color
-                            prefs.edit { putInt("key_color", color) }
+                            viewModel.setKeyColor(color)
                         }
                     )
                 }
@@ -203,8 +204,7 @@ fun ColorPaletteScreenMaterial() {
                                 checked = currentColorMode in modes,
                                 onCheckedChange = {
                                     if (it) {
-                                        currentColorMode = modes.first()
-                                        prefs.edit { putInt("color_mode", currentColorMode.value) }
+                                        viewModel.setColorMode(modes.first())
                                     }
                                 },
                                 modifier = Modifier
@@ -241,22 +241,18 @@ fun ColorPaletteScreenMaterial() {
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOf(colorStyle),
                                 onItemSelected = { index ->
-                                    val style = styles[index]
-                                    colorStyle = style
-                                    prefs.edit { putString("color_style", style.name) }
+                                    viewModel.setColorStyle(styles[index].name)
                                 }
                             )
                         },
                         {
-                            val specs = listOf("2021", "2025")
+                            val specs = ColorSpec.SpecVersion.entries
                             SegmentedDropdownItem(
                                 title = stringResource(R.string.settings_color_spec),
-                                items = specs,
-                                selectedIndex = if (colorSpec == ColorSpec.SpecVersion.SPEC_2025) 1 else 0,
+                                items = specs.map { it.name },
+                                selectedIndex = specs.indexOf(colorSpec).coerceAtLeast(0),
                                 onItemSelected = { index ->
-                                    val spec = if (index == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021
-                                    colorSpec = spec
-                                    prefs.edit { putString("color_spec", if (index == 1) "SPEC_2025" else "SPEC_2021") }
+                                    viewModel.setColorSpec(specs[index].name)
                                 }
                             )
                         }

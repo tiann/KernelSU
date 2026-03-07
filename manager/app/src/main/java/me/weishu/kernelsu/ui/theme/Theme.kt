@@ -77,8 +77,12 @@ object ThemeController {
         } catch (_: Exception) {
             PaletteStyle.TonalSpot
         }
-        val colorSpecStr = prefs.getString("color_spec", "SPEC_2021")
-        val colorSpec = if (colorSpecStr == "SPEC_2025") ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021
+        val colorSpecStr = prefs.getString("color_spec", ColorSpec.SpecVersion.Default.name)
+        val colorSpec = try {
+            ColorSpec.SpecVersion.valueOf(colorSpecStr!!)
+        } catch (_: Exception) {
+            ColorSpec.SpecVersion.Default
+        }
 
         return AppSettings(colorMode, keyColor, paletteStyle, colorSpec)
     }
