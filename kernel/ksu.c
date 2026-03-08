@@ -32,6 +32,7 @@ unsigned long __stack_chk_guard __ro_after_init
 
 struct cred *ksu_cred;
 
+NO_STACK_PROTECTOR_WORKAROUND
 int __init kernelsu_init(void)
 {
 #if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_STACKPROTECTOR_PER_TASK)
