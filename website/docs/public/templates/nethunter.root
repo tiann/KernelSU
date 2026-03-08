@@ -10,12 +10,27 @@
         "ROOT"
     ],
     "capabilities": [
+        "CAP_CHOWN",
         "CAP_DAC_OVERRIDE",
         "CAP_DAC_READ_SEARCH",
+        "CAP_FOWNER",
+        "CAP_FSETID",
+        "CAP_SETGID",
+        "CAP_SETUID",
+        "CAP_NET_BIND_SERVICE",
+        "CAP_NET_ADMIN",
+        "CAP_NET_RAW",
+        "CAP_SYS_MODULE",
+        "CAP_SYS_RAWIO",
         "CAP_SYS_CHROOT",
         "CAP_SYS_PTRACE",
         "CAP_SYS_ADMIN",
-        "CAP_SETGID"
+        "CAP_SYS_BOOT",
+        "CAP_SYS_RESOURCE",
+        "CAP_SYS_TTY_CONFIG",
+        "CAP_MKNOD",
+        "CAP_SYSLOG",
+        "CAP_AUDIT_WRITE"
     ],
     "context": "u:r:su:s0",
     "locales": {

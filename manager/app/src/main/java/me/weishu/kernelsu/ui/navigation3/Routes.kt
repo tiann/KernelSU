@@ -4,8 +4,8 @@ import android.os.Parcelable
 import androidx.navigation3.runtime.NavKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import me.weishu.kernelsu.ui.screen.FlashIt
-import me.weishu.kernelsu.ui.screen.RepoModuleArg
+import me.weishu.kernelsu.ui.screen.flash.FlashIt
+import me.weishu.kernelsu.ui.screen.modulerepo.RepoModuleArg
 import me.weishu.kernelsu.ui.util.FlashItSerializer
 import me.weishu.kernelsu.ui.util.RepoModuleArgSerializer
 import me.weishu.kernelsu.ui.util.TemplateInfoSerializer
@@ -42,15 +42,22 @@ sealed interface Route : NavKey, Parcelable {
 
     @Parcelize
     @Serializable
+    data object ColorPalette : Route
+
+    @Parcelize
+    @Serializable
     data object AppProfileTemplate : Route
 
     @Parcelize
     @Serializable
-    data class TemplateEditor(@Serializable(with = TemplateInfoSerializer::class) val template: TemplateViewModel.TemplateInfo, val readOnly: Boolean) : Route
+    data class TemplateEditor(
+        @Serializable(with = TemplateInfoSerializer::class) val template: TemplateViewModel.TemplateInfo,
+        val readOnly: Boolean
+    ) : Route
 
     @Parcelize
     @Serializable
-    data class AppProfile(val packageName: String) : Route
+    data class AppProfile(val uid: Int, val packageName: String) : Route
 
     @Parcelize
     @Serializable

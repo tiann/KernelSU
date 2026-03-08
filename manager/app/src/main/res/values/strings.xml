@@ -171,8 +171,12 @@
     <string name="settings_key_color">Key color</string>
     <string name="settings_key_color_summary">Customize accent when using Monet.</string>
     <string name="settings_key_color_default">Default</string>
+    <string name="settings_ui_mode">UI Style</string>
+    <string name="settings_ui_mode_summary">Choose the interface style.</string>
     <string name="settings_page_scale">Page Scale</string>
     <string name="settings_page_scale_summary">Adjust the global display scale.</string>
+    <string name="settings_color_spec">Color Spec</string>
+    <string name="settings_color_style">Color Style</string>
     <string name="color_blue">Blue</string>
     <string name="color_red">Red</string>
     <string name="color_green">Green</string>
@@ -210,4 +214,11 @@
     <string name="select_file_tip_nogki">Please select the GKI device image file you want to patch</string>
     <string name="current_kmi">KMI version of this device: %s</string>
     <string name="current_device_kmi">This device KMI</string>
+    <string name="settings_enable_blur">Blur</string>
+    <string name="settings_enable_blur_summary">Enable blur effect for top and bottom bars</string>
+    <string name="settings_floating_bottom_bar">Floating bottom bar</string>
+    <string name="settings_floating_bottom_bar_summary">Use Apple style floating bottom bar</string>
+    <string name="settings_enable_glass">Liquid glass</string>
+    <string name="settings_enable_glass_summary">Enable liquid glass effect for floating bottom bar</string>
+    <string name="show_only_primary_user_apps">Show only primary user apps</string>
 </resources>

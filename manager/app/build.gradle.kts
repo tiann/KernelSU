@@ -151,6 +151,7 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
@@ -188,6 +189,9 @@ dependencies {
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
 
-    implementation(libs.haze)
+    implementation(libs.backdrop)
     implementation(libs.capsule)
+    implementation(libs.haze)
+
+    implementation(libs.material.kolor)
 }

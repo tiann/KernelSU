@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.IBinder
-import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
 import com.topjohnwu.superuser.ipc.RootService
@@ -26,19 +25,44 @@ class KsuService : RootService() {
         return Stub()
     }
 
-    private fun getUserIds(): List<Int> {
-        val result = ArrayList<Int>()
+    private fun getAllUserIds(): IntArray {
         val um = getSystemService(USER_SERVICE) as UserManager
-        val userProfiles = um.userProfiles
-        for (userProfile: UserHandle in userProfiles) {
-            result.add(userProfile.hashCode())
+        // getUsers(boolean excludeDying) was added in API 17, but marked as deprecated
+        try {
+            val method = um.javaClass.getMethod("getUsers", Boolean::class.javaPrimitiveType)
+            val users = method.invoke(um, true) as List<*>
+            return extractUserIds(users)
+        } catch (e: Exception) {
+            Log.w(TAG, "getUsers reflection failed", e)
         }
-        return result
+        // getAliveUsers() was added in API 31
+        try {
+            val method = um.javaClass.getMethod("getAliveUsers")
+            val users = method.invoke(um) as List<*>
+            return extractUserIds(users)
+        } catch (e: Exception) {
+            Log.e(TAG, "getAliveUsers reflection failed", e)
+        }
+
+        return intArrayOf(0)
+    }
+
+    private fun extractUserIds(users: List<*>?): IntArray {
+        if (users.isNullOrEmpty()) return intArrayOf(0)
+
+        return try {
+            users.map { user ->
+                user!!.javaClass.getField("id").getInt(user)
+            }.toIntArray()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting ID from UserInfo", e)
+            intArrayOf(0)
+        }
     }
 
     private fun getInstalledPackagesAll(flags: Int): ArrayList<PackageInfo> {
         val packages = ArrayList<PackageInfo>()
-        for (userId in getUserIds()) {
+        for (userId in getAllUserIds()) {
             Log.i(TAG, "getInstalledPackagesAll: $userId")
             packages.addAll(getInstalledPackagesAsUser(flags, userId))
         }
@@ -66,6 +90,12 @@ class KsuService : RootService() {
             val list = getInstalledPackagesAll(flags)
             Log.i(TAG, "getPackages: ${list.size}")
             return ParcelableListSlice(list)
+        }
+
+        override fun getUserIds(): IntArray {
+            val ids = getAllUserIds()
+            Log.i(TAG, "getUserIds: ${ids.contentToString()}")
+            return ids
         }
     }
 }

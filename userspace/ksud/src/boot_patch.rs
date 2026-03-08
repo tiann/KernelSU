@@ -487,6 +487,10 @@ pub struct BootPatchArgs {
     /// File name of the output.
     #[arg(long, default_value = None)]
     pub out_name: Option<String>,
+
+    /// Extra cmdline to append to boot image header
+    #[arg(long, default_value = None)]
+    pub cmdline: Option<String>,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -500,6 +504,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             magiskboot: magiskboot_path,
             kmi,
             out_name,
+            cmdline,
             ..
         } = args;
         #[cfg(target_os = "android")]
@@ -617,6 +622,13 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             .arg(bootimage)
             .status()?;
         ensure!(status.success(), "magiskboot unpack failed");
+
+        if let Some(ref cmdline_value) = cmdline {
+            let header_path = workdir.join("header");
+            std::fs::write(&header_path, format!("cmdline={cmdline_value}\n"))
+                .context("write header file failed")?;
+            println!("- Set cmdline to: {cmdline_value}");
+        }
 
         let mut ramdisk = workdir.join("ramdisk.cpio");
         if !ramdisk.exists() {

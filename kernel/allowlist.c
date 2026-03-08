@@ -16,6 +16,7 @@
 #include <linux/compiler_types.h>
 
 #include "klog.h" // IWYU pragma: keep
+#include "ksu.h"
 #include "ksud.h"
 #include "selinux/selinux.h"
 #include "allowlist.h"
@@ -40,31 +41,19 @@ static int allow_list_pointer __read_mostly = 0;
 
 static void remove_uid_from_arr(uid_t uid)
 {
-    int *temp_arr;
-    int i, j;
-
-    if (allow_list_pointer == 0)
-        return;
-
-    temp_arr = kzalloc(sizeof(allow_list_arr), GFP_KERNEL);
-    if (temp_arr == NULL) {
-        pr_err("%s: unable to allocate memory\n", __func__);
-        return;
+    int i;
+    for (i = 0; i < allow_list_pointer; i++) {
+        if (allow_list_arr[i] == uid) {
+            int remaining = allow_list_pointer - 1 - i;
+            if (remaining > 0) {
+                memmove(&allow_list_arr[i], &allow_list_arr[i + 1],
+                        remaining * sizeof(allow_list_arr[0]));
+            }
+            allow_list_pointer--;
+            allow_list_arr[allow_list_pointer] = -1;
+            return;
+        }
     }
-
-    for (i = j = 0; i < allow_list_pointer; i++) {
-        if (allow_list_arr[i] == uid)
-            continue;
-        temp_arr[j++] = allow_list_arr[i];
-    }
-
-    allow_list_pointer = j;
-
-    for (; j < ARRAY_SIZE(allow_list_arr); j++)
-        temp_arr[j] = -1;
-
-    memcpy(&allow_list_arr, temp_arr, PAGE_SIZE);
-    kfree(temp_arr);
 }
 
 static void init_default_profiles()
@@ -404,6 +393,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
     struct perm_data *p = NULL;
     loff_t off = 0;
 
+    const struct cred *saved = override_creds(ksu_cred);
     struct file *fp =
         filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
@@ -434,6 +424,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 close_file:
     filp_close(fp, 0);
 out:
+    revert_creds(saved);
     kfree(_cb);
 }
 
