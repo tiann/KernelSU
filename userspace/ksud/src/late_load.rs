@@ -29,6 +29,10 @@ pub fn run() -> Result<()> {
 
     utils::umask(0);
 
+    if let Err(e) = crate::module_config::clear_all_temp_configs() {
+        warn!("clear temp configs failed: {e}");
+    }
+
     // 5. Ensure binaries are extracted
     assets::ensure_binaries(true).context("Failed to extract bin assets")?;
 
