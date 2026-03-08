@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
@@ -31,6 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +41,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -81,8 +84,9 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
+    val searchListState = rememberLazyListState()
     val pullToRefreshState = rememberPullToRefreshState()
 
     val onRefresh: () -> Unit = {
@@ -119,11 +123,13 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
     }
 
     Scaffold(
-        modifier = Modifier.pullToRefresh(
-            state = pullToRefreshState,
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = onRefresh,
-        ),
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .pullToRefresh(
+                state = pullToRefreshState,
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = onRefresh,
+            ),
         topBar = {
             SearchAppBar(
                 title = { Text(stringResource(R.string.superuser)) },
@@ -137,7 +143,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     localSearchText = ""
                     scope.launch { viewModel.updateSearchText("") }
                 },
-                dropdownContent = {
+                actions = {
                     var showDropdown by remember { mutableStateOf(false) }
 
                     IconButton(
@@ -179,7 +185,60 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         }
                     }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                searchContent = { closeSearch ->
+                    LaunchedEffect(localSearchText) {
+                        searchListState.scrollToItem(0)
+                    }
+                    val allGroups = uiState.groupedApps
+                    val searchGroups = remember(uiState.searchResults) {
+                        uiState.searchResults.groupBy { it.uid }.keys
+                    }
+                    val visibleSearchGroups = remember(allGroups, searchGroups) {
+                        allGroups.filter { it.uid in searchGroups }
+                    }
+
+                    SegmentedLazyColumn(
+                        state = searchListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 16.dp + bottomInnerPadding
+                        ),
+                        key = { it.uid },
+                        items = visibleSearchGroups,
+                    ) { group ->
+                        Column {
+                            GroupItem(
+                                group = group,
+                                selected = false,
+                                onToggleExpand = {},
+                            ) {
+                                closeSearch()
+                                navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
+                            }
+                            AnimatedVisibility(
+                                visible = group.apps.size > 1,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column {
+                                    val filteredApps = group.apps.filter { it in uiState.searchResults }
+                                    filteredApps.forEach { app ->
+                                        SimpleAppItem(app) {
+                                            closeSearch()
+                                            navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
@@ -188,24 +247,8 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
             val allGroups = uiState.groupedApps
             val visibleUids = remember(uiState.appList) { uiState.appList.map { it.uid }.toSet() }
             val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
-            val searchText = uiState.searchStatus.searchText
-            val isSearching = searchText.isNotEmpty()
-
-            // When searching, use search results to determine visible groups
-            val searchGroups = remember(uiState.searchResults, searchText) {
-                if (isSearching) {
-                    uiState.searchResults.groupBy { it.uid }.keys
-                } else {
-                    null
-                }
-            }
-
-            val visibleGroups = remember(allGroups, visibleUids, searchGroups) {
-                if (isSearching && searchGroups != null) {
-                    allGroups.filter { it.uid in searchGroups }
-                } else {
-                    allGroups.filter { it.uid in visibleUids }
-                }
+            val visibleGroups = remember(allGroups, visibleUids) {
+                allGroups.filter { it.uid in visibleUids }
             }
 
             SegmentedLazyColumn(
@@ -216,13 +259,13 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = 16.dp,
+                    top = 8.dp,
                     bottom = 16.dp + bottomInnerPadding
                 ),
                 key = { it.uid },
                 items = visibleGroups,
             ) { group ->
-                val expanded = isSearching || expandedSearchUids.value.contains(group.uid)
+                val expanded = expandedSearchUids.value.contains(group.uid)
                 val onToggleExpand = {
                     if (group.apps.size > 1) {
                         expandedSearchUids.value = if (expandedSearchUids.value.contains(group.uid)) {
@@ -235,7 +278,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 Column {
                     GroupItem(
                         group = group,
-                        selected = expanded && !isSearching,
+                        selected = expanded,
                         onToggleExpand = onToggleExpand,
                     ) {
                         navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
@@ -246,11 +289,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         exit = shrinkVertically() + fadeOut()
                     ) {
                         Column {
-                            val filteredApps = if (isSearching) {
-                                group.apps.filter { it in uiState.searchResults }
-                            } else {
-                                group.apps.filter { it in uiState.appList }
-                            }
+                            val filteredApps = group.apps.filter { it in uiState.appList }
                             filteredApps.forEach { app ->
                                 SimpleAppItem(app) {
                                     navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
@@ -282,17 +321,27 @@ private fun SimpleAppItem(
 ) {
     ListItem(
         onClick = onNavigate,
-        modifier = Modifier.padding(start = 8.dp),
+        modifier = Modifier.padding(horizontal = 4.dp),
+        shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)),
         content = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         supportingContent = { Text(app.packageName, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         leadingContent = {
             AppIconImage(
                 packageInfo = app.packageInfo,
                 label = app.label,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(start = 4.dp)
             )
         },
-        trailingContent = { Icon(Icons.Filled.Remove, contentDescription = null) },
+        trailingContent = {
+            Icon(
+                Icons.Filled.Remove,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 4.dp)
+            )
+        }
     )
 }
 
