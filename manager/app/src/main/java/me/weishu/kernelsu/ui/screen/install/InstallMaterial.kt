@@ -204,23 +204,21 @@ fun InstallScreenMaterial() {
             }
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                content = listOf(
-                    {
-                        if (partitions.isNotEmpty()) {
-                            SegmentedDropdownItem(
-                                enabled = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
-                                items = displayPartitions,
-                                selectedIndex = partitionSelectionIndex,
-                                title = "${stringResource(R.string.install_select_partition)} (${suffix})",
-                                onItemSelected = { index ->
-                                    hasCustomSelected = true
-                                    partitionSelectionIndex = index
-                                },
-                                icon = Icons.Filled.Edit
-                            )
-                        }
-                    },
-                    {
+                content = buildList {
+                    if (partitions.isNotEmpty()) add {
+                        SegmentedDropdownItem(
+                            enabled = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
+                            items = displayPartitions,
+                            selectedIndex = partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${suffix})",
+                            onItemSelected = { index ->
+                                hasCustomSelected = true
+                                partitionSelectionIndex = index
+                            },
+                            icon = Icons.Filled.Edit
+                        )
+                    }
+                    add {
                         SegmentedListItem(
                             leadingContent = { Icon(Icons.AutoMirrored.Filled.DriveFileMove, null) },
                             headlineContent = { Text(stringResource(R.string.install_upload_lkm_file)) },
@@ -233,7 +231,7 @@ fun InstallScreenMaterial() {
                             onClick = { onLkmUpload() }
                         )
                     }
-                )
+                }
             )
             Button(
                 modifier = Modifier
