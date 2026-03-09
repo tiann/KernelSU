@@ -8,9 +8,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveSwitchItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveTextField
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
+import me.weishu.kernelsu.ui.component.material.SegmentedTextField
 
 @Composable
 fun AppProfileConfigMaterial(
@@ -22,10 +22,10 @@ fun AppProfileConfigMaterial(
 ) {
     Column(modifier = modifier) {
         if (!fixedName) {
-            ExpressiveColumn(
+            SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 content = listOf {
-                    ExpressiveTextField(
+                    SegmentedTextField(
                         value = profile.name,
                         onValueChange = { onProfileChange(profile.copy(name = it)) },
                         label = stringResource(R.string.profile_name),
@@ -36,10 +36,10 @@ fun AppProfileConfigMaterial(
             )
         }
 
-        ExpressiveColumn(
+        SegmentedColumn(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             content = listOf {
-                ExpressiveSwitchItem(
+                SegmentedSwitchItem(
                     title = stringResource(R.string.profile_umount_modules),
                     summary = stringResource(R.string.profile_umount_modules_summary),
                     checked = if (enabled) {

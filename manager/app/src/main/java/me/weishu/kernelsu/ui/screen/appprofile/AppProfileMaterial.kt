@@ -8,11 +8,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
@@ -32,18 +32,17 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -61,7 +60,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -69,9 +67,9 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
-import me.weishu.kernelsu.ui.component.material.SwitchItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
@@ -101,7 +99,7 @@ fun AppProfileScreenMaterial(
     val viewModel: SuperUserViewModel = viewModel()
     val navigator = LocalNavigator.current
     val snackBarHost = LocalSnackbarHost.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val scope = rememberCoroutineScope()
     val appInfoState = remember(uid, packageName) {
         derivedStateOf { SuperUserViewModel.apps.find { it.uid == uid && it.packageName == packageName } }
@@ -134,6 +132,10 @@ fun AppProfileScreenMaterial(
         mutableStateOf(initialProfile)
     }
 
+    LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
+    }
+
     Scaffold(
         topBar = {
             TopBar(
@@ -149,6 +151,7 @@ fun AppProfileScreenMaterial(
         AppProfileInner(
             modifier = Modifier
                 .padding(paddingValues)
+                .fillMaxHeight()
                 .imePadding()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState()),
@@ -226,41 +229,86 @@ private fun AppProfileInner(
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = profile.allowSu
+    val userId = appUid / 100000
+    val appId = appUid % 100000
+
+    val initialRootMode = if (profile.rootUseDefault) {
+        Mode.Default
+    } else if (profile.rootTemplate != null) {
+        Mode.Template
+    } else {
+        Mode.Custom
+    }
+    var rootMode by rememberSaveable(profile) {
+        mutableStateOf(initialRootMode)
+    }
+    val nonRootMode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
+    val mode = if (isRootGranted) rootMode else nonRootMode
 
     Column(modifier = modifier) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            ListItem(
-                headlineContent = { Text(appLabel) },
-                supportingContent = {
-                    Column {
-                        if (!isUidGroup) {
-                            Text("$appVersionName ($appVersionCode)", color = MaterialTheme.colorScheme.outline)
-                            Text(packageName, color = MaterialTheme.colorScheme.outline)
-                        } else {
-                            if (sharedUserId.isNotEmpty()) {
-                                Text(text = sharedUserId, color = MaterialTheme.colorScheme.outline)
+        SegmentedColumn(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            content = listOf(
+                {
+                    SegmentedListItem(
+                        headlineContent = { Text(appLabel) },
+                        supportingContent = {
+                            Column {
+                                if (!isUidGroup) {
+                                    Text("$appVersionName ($appVersionCode)", color = MaterialTheme.colorScheme.outline)
+                                    Text(packageName, color = MaterialTheme.colorScheme.outline)
+                                } else {
+                                    if (sharedUserId.isNotEmpty()) {
+                                        Text(text = sharedUserId, color = MaterialTheme.colorScheme.outline)
+                                    }
+                                    Text(
+                                        text = stringResource(R.string.group_contains_apps, affectedApps.size),
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                }
                             }
-                            Text(text = stringResource(R.string.group_contains_apps, affectedApps.size), color = MaterialTheme.colorScheme.outline)
+                        },
+                        leadingContent = appIcon,
+                        trailingContent = {
+                            Column {
+                                if (userId != 0) {
+                                    StatusTag(
+                                        label = "USER $userId",
+                                        contentColor = MaterialTheme.colorScheme.onTertiary,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                                    )
+                                    StatusTag(
+                                        label = "UID $appId",
+                                        contentColor = MaterialTheme.colorScheme.onTertiary,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                                    )
+                                } else {
+                                    StatusTag(
+                                        label = "UID $appUid",
+                                        contentColor = MaterialTheme.colorScheme.onTertiary,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                                    )
+                                }
+                            }
                         }
-                    }
+                    )
                 },
-                leadingContent = appIcon,
-                trailingContent = { 
-                    StatusTag(
-                        label = "UID$appUid",
-                        modifier = Modifier.padding(top = 4.dp),
-                        contentColor = MaterialTheme.colorScheme.onTertiary,
-                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                {
+                    SegmentedSwitchItem(
+                        icon = Icons.Filled.Security,
+                        title = stringResource(id = R.string.superuser),
+                        checked = isRootGranted,
+                        onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
+                    )
+                },
+                {
+                    SegmentedListItem(
+                        headlineContent = { Text(stringResource(R.string.profile)) },
+                        supportingContent = { Text(mode.text, color = MaterialTheme.colorScheme.outline) },
+                        leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
                     )
                 }
             )
-        }
-
-        SwitchItem(
-            icon = Icons.Filled.Security,
-            title = stringResource(id = R.string.superuser),
-            checked = isRootGranted,
-            onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
         )
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
@@ -268,16 +316,6 @@ private fun AppProfileInner(
                 modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
             ) {
                 if (current) {
-                    val initialMode = if (profile.rootUseDefault) {
-                        Mode.Default
-                    } else if (profile.rootTemplate != null) {
-                        Mode.Template
-                    } else {
-                        Mode.Custom
-                    }
-                    var mode by rememberSaveable {
-                        mutableStateOf(initialMode)
-                    }
                     ProfileBox(mode, true) {
                         // template mode shouldn't change profile here!
                         if (it == Mode.Default || it == Mode.Custom) {
@@ -288,7 +326,7 @@ private fun AppProfileInner(
                                 )
                             )
                         }
-                        mode = it
+                        rootMode = it
                     }
                     AnimatedVisibility(
                         visible = mode == Mode.Template,
@@ -315,7 +353,6 @@ private fun AppProfileInner(
                         )
                     }
                 } else {
-                    val mode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
                     ProfileBox(mode, false) {
                         onProfileChange(profile.copy(nonRootUseDefault = (it == Mode.Default)))
                     }
@@ -335,7 +372,7 @@ private fun AppProfileInner(
                 if (isUidGroup) {
                     val appItems = affectedApps.map<SuperUserViewModel.AppInfo, @Composable () -> Unit> { app ->
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 headlineContent = { Text(app.label) },
                                 supportingContent = { Text(app.packageName) },
                                 leadingContent = {
@@ -348,7 +385,7 @@ private fun AppProfileInner(
                             )
                         }
                     }
-                    ExpressiveColumn(
+                    SegmentedColumn(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         title = stringResource(R.string.app_profile_affects_following_apps),
                         content = appItems
@@ -359,7 +396,7 @@ private fun AppProfileInner(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
@@ -367,7 +404,7 @@ private fun TopBar(
     isUidGroup: Boolean = false,
     packageName: String = "",
 ) {
-    TopAppBar(
+    LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.profile)) },
         navigationIcon = {
             IconButton(
@@ -414,6 +451,10 @@ private fun TopBar(
                 }
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface
+        ),
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
@@ -426,44 +467,36 @@ private fun ProfileBox(
     hasTemplate: Boolean,
     onModeChange: (Mode) -> Unit,
 ) {
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.profile)) },
-        supportingContent = { Text(mode.text, color = MaterialTheme.colorScheme.outline) },
-        leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
-    )
-    HorizontalDivider(thickness = Dp.Hairline, modifier = Modifier.padding(horizontal = 16.dp))
-    ListItem(headlineContent = {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
-        ) {
-            val options = listOf(
-                Mode.Default to stringResource(R.string.profile_default),
-                Mode.Template to stringResource(R.string.profile_template),
-                Mode.Custom to stringResource(R.string.profile_custom),
-            )
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+    ) {
+        val options = listOf(
+            Mode.Default to stringResource(R.string.profile_default),
+            Mode.Template to stringResource(R.string.profile_template),
+            Mode.Custom to stringResource(R.string.profile_custom),
+        )
 
-            options.forEachIndexed { index, (m, label) ->
-                ToggleButton(
-                    checked = mode == m,
-                    onCheckedChange = {
-                        if (m != Mode.Template || hasTemplate) onModeChange(m)
-                    },
-                    enabled = if (m == Mode.Template) hasTemplate else true,
-                    modifier = Modifier
-                        .weight(1f)
-                        .semantics { role = Role.RadioButton },
-                    shapes = when (index) {
-                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                    },
-                ) {
-                    Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
+        options.forEachIndexed { index, (m, label) ->
+            ToggleButton(
+                checked = mode == m,
+                onCheckedChange = {
+                    if (m != Mode.Template || hasTemplate) onModeChange(m)
+                },
+                enabled = if (m == Mode.Template) hasTemplate else true,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { role = Role.RadioButton },
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                },
+            ) {
+                Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-    })
+    }
 }
 
 @Preview

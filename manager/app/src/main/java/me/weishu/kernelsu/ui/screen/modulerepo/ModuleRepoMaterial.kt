@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -40,6 +41,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Download
@@ -81,6 +83,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
@@ -95,12 +98,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.model.RepoModule
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
@@ -112,7 +116,6 @@ import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import java.text.Collator
-import java.util.Locale
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -127,6 +130,7 @@ fun ModuleRepoScreenMaterial() {
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val repoSortByNameState = remember { mutableStateOf(prefs.getBoolean("module_repo_sort_name", false)) }
     val listState = rememberLazyListState()
+    val searchListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     val offline = !isNetworkAvailable(context)
@@ -140,18 +144,35 @@ fun ModuleRepoScreenMaterial() {
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val openRepoDetail: (RepoModule) -> Unit = { module ->
+        val args = RepoModuleArg(
+            moduleId = module.moduleId,
+            moduleName = module.moduleName,
+            authors = module.authors,
+            authorsList = module.authorList.map { AuthorArg(it.name, it.link) },
+            latestRelease = module.latestRelease,
+            latestReleaseTime = module.latestReleaseTime,
+            releases = emptyList()
+        )
+        navigator.push(Route.ModuleRepoDetail(args))
+    }
 
     Scaffold(
         topBar = {
             SearchAppBar(
                 title = { Text(text = stringResource(R.string.module_repos)) },
-                onBackClick = { navigator.pop() },
                 searchText = uiState.searchStatus.searchText,
                 onSearchTextChange = { scope.launch { viewModel.updateSearchText(it) } },
                 onClearClick = { scope.launch { viewModel.updateSearchText("") } },
                 scrollBehavior = scrollBehavior,
-                dropdownContent = {
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigator.pop() },
+                        content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
+                    )
+                },
+                actions = {
                     var showDropdown by remember { mutableStateOf(false) }
 
                     IconButton(
@@ -177,6 +198,27 @@ fun ModuleRepoScreenMaterial() {
                             )
                         }
                     }
+                },
+                searchContent = { closeSearch ->
+                    LaunchedEffect(uiState.searchStatus.searchText) {
+                        searchListState.scrollToItem(0)
+                    }
+                    val sortByName = repoSortByNameState.value
+                    val collator = Collator.getInstance(LocalLocale.current.platformLocale)
+                    val searchModules = if (!sortByName) {
+                        uiState.searchResults
+                    } else {
+                        uiState.searchResults.sortedWith(compareBy(collator) { it.moduleName })
+                    }
+                    RepoModuleList(
+                        modules = searchModules,
+                        listState = searchListState,
+                        modifier = Modifier.fillMaxSize(),
+                        onModuleClick = {
+                            closeSearch()
+                            openRepoDetail(it)
+                        }
+                    )
                 }
             )
         },
@@ -207,125 +249,131 @@ fun ModuleRepoScreenMaterial() {
             }
         } else {
             val displayModules = run {
-                var base = uiState.modules
-                val searchText = uiState.searchStatus.searchText.trim()
-                if (searchText.isNotEmpty()) {
-                    base = uiState.searchResults
-                }
+                val base = uiState.modules
                 val sortByName = repoSortByNameState.value
-                val collator = Collator.getInstance(Locale.getDefault())
+                val collator = Collator.getInstance(LocalLocale.current.platformLocale)
                 if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
             }
-            val layoutDirection = LocalLayoutDirection.current
-            val navBars = WindowInsets.navigationBars.asPaddingValues()
-            LazyColumn(
+            RepoModuleList(
+                modules = displayModules,
+                listState = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(innerPadding),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp + navBars.calculateBottomPadding()
-                ),
-            ) {
-                items(displayModules, key = { it.moduleId }) { module ->
-                    val latestReleaseTime = remember(module.latestReleaseTime) { module.latestReleaseTime }
-                    val moduleAuthor = stringResource(id = R.string.module_author)
+                onModuleClick = openRepoDetail
+            )
+        }
+    }
+}
 
-                    TonalCard(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val args = RepoModuleArg(
-                                        moduleId = module.moduleId,
-                                        moduleName = module.moduleName,
-                                        authors = module.authors,
-                                        authorsList = module.authorList.map { AuthorArg(it.name, it.link) },
-                                        latestRelease = module.latestRelease,
-                                        latestReleaseTime = module.latestReleaseTime,
-                                        releases = emptyList()
-                                    )
-                                    navigator.push(Route.ModuleRepoDetail(args))
-                                }
-                                .padding(22.dp, 18.dp, 22.dp, 12.dp)
-                        ) {
-                            if (module.moduleName.isNotEmpty()) {
-                                Text(
-                                    text = module.moduleName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                                )
-                            }
-                            if (module.moduleId.isNotEmpty()) {
-                                Text(
-                                    text = "ID: ${module.moduleId}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Text(
-                                text = "$moduleAuthor: ${module.authors}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+@Composable
+private fun RepoModuleList(
+    modules: List<RepoModule>,
+    listState: LazyListState,
+    modifier: Modifier = Modifier,
+    onModuleClick: (RepoModule) -> Unit,
+) {
+    val navBars = WindowInsets.navigationBars.asPaddingValues()
+
+    LazyColumn(
+        modifier = modifier,
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            top = 8.dp,
+            end = 16.dp,
+            bottom = 16.dp + navBars.calculateBottomPadding()
+        ),
+    ) {
+        items(modules, key = { it.moduleId }) { module ->
+            val latestReleaseTime = remember(module.latestReleaseTime) { module.latestReleaseTime }
+            val moduleAuthor = stringResource(id = R.string.module_author)
+
+            TonalCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onModuleClick(module) }
+                        .padding(22.dp, 18.dp, 22.dp, 12.dp)
+                ) {
+                    if (module.moduleName.isNotEmpty()) {
+                        Text(
+                            text = module.moduleName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                        )
+                    }
+                    if (module.moduleId.isNotEmpty()) {
+                        Text(
+                            text = "ID: ${module.moduleId}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Text(
+                        text = "$moduleAuthor: ${module.authors}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (module.summary.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = module.summary,
+                            color = MaterialTheme.colorScheme.outline,
+                            style = MaterialTheme.typography.bodyMedium,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 4,
+                        )
+                    }
+
+                    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                        if (module.metamodule) {
+                            StatusTag(
+                                "META",
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                backgroundColor = MaterialTheme.colorScheme.primary
                             )
-                            if (module.summary.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                    HorizontalDivider(thickness = Dp.Hairline)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (module.stargazerCount > 0) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Star,
+                                    contentDescription = "stars",
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(16.dp)
+                                )
                                 Text(
-                                    text = module.summary,
-                                    color = MaterialTheme.colorScheme.outline,
+                                    text = module.stargazerCount.toString(),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 4,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.padding(start = 4.dp)
                                 )
                             }
-
-                            Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                                if (module.metamodule) StatusTag("META", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
-                            }
-                            HorizontalDivider(thickness = Dp.Hairline)
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                if (module.stargazerCount > 0) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Star,
-                                            contentDescription = "stars",
-                                            tint = MaterialTheme.colorScheme.outline,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Text(
-                                            text = module.stargazerCount.toString(),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.outline,
-                                            modifier = Modifier.padding(start = 4.dp)
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.weight(1f))
-                                if (latestReleaseTime.isNotEmpty()) {
-                                    Text(
-                                        text = latestReleaseTime,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.outline,
-                                    )
-                                }
-                            }
+                        }
+                        Spacer(Modifier.weight(1f))
+                        if (latestReleaseTime.isNotEmpty()) {
+                            Text(
+                                text = latestReleaseTime,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
                         }
                     }
                 }
-                item { Spacer(Modifier.height(12.dp)) }
             }
         }
+        item { Spacer(Modifier.height(12.dp)) }
     }
 }
 
@@ -723,11 +771,13 @@ fun InfoPage(
     ) {
         if (module.authorsList.isNotEmpty()) {
             item {
-                ExpressiveColumn(
-                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                SegmentedColumn(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 8.dp),
                     content = module.authorsList.map { author ->
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 headlineContent = {
                                     Text(
                                         text = author.name,
@@ -757,11 +807,11 @@ fun InfoPage(
         }
         if (sourceUrl.isNotEmpty()) {
             item {
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = listOf(
                         {
-                            ExpressiveListItem(
+                            SegmentedListItem(
                                 headlineContent = {
                                     Text(
                                         text = sourceUrl,

@@ -158,9 +158,6 @@
     <string name="settings_theme_mode_system">システムに従う</string>
     <string name="settings_theme_mode_light">ライト</string>
     <string name="settings_theme_mode_dark">ダーク</string>
-    <string name="settings_theme_mode_monet_system">Monet (システムに従う)</string>
-    <string name="settings_theme_mode_monet_light">Monet (ライト)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (ダーク)</string>
     <string name="settings_key_color">キーカラー</string>
     <string name="settings_key_color_summary">Monet を使用するときのアクセントカラーをカスタマイズします。</string>
     <string name="settings_key_color_default">デフォルト</string>

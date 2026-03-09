@@ -165,11 +165,8 @@
     <string name="settings_theme_mode_system">Follow system</string>
     <string name="settings_theme_mode_light">Light</string>
     <string name="settings_theme_mode_dark">Dark</string>
-    <string name="settings_theme_mode_monet_system">Monet (Follow system)</string>
-    <string name="settings_theme_mode_monet_light">Monet (Light)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (Dark)</string>
+    <string name="settings_monet">Enable Monet</string>
     <string name="settings_key_color">Key color</string>
-    <string name="settings_key_color_summary">Customize accent when using Monet.</string>
     <string name="settings_key_color_default">Default</string>
     <string name="settings_ui_mode">UI Style</string>
     <string name="settings_ui_mode_summary">Choose the interface style.</string>

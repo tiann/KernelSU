@@ -1,8 +1,5 @@
 package me.weishu.kernelsu.ui.screen.settings
 
-import android.os.Build
-import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -16,13 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Adb
-import androidx.compose.material.icons.rounded.AspectRatio
-import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.BugReport
-import androidx.compose.material.icons.rounded.CallToAction
-import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.ContactPage
+import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.Fence
@@ -32,18 +25,15 @@ import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
-import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -53,25 +43,19 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import me.weishu.kernelsu.KernelSUApplication
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
-import me.weishu.kernelsu.ui.component.miuix.ScaleDialog
 import me.weishu.kernelsu.ui.component.sendlogdialog.SendLogDialogMiuix
 import me.weishu.kernelsu.ui.component.uninstalldialog.UninstallDialogMiuix
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
-import me.weishu.kernelsu.ui.theme.keyColorOptions
 import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.Slider
-import top.yukonga.miuix.kmp.basic.SliderDefaults
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
@@ -89,7 +73,6 @@ fun SettingPagerMiuix(
     navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
-    val context = LocalContext.current
     val viewModel = viewModel<SettingsViewModel>()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -120,10 +103,7 @@ fun SettingPagerMiuix(
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val activity = LocalActivity.current
-
         val loadingDialog = rememberLoadingDialog()
-        val showScaleDialog = rememberSaveable { mutableStateOf(false) }
         val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
         val showSendLogDialog = rememberSaveable { mutableStateOf(false) }
 
@@ -185,73 +165,6 @@ fun SettingPagerMiuix(
                         .padding(top = 12.dp)
                         .fillMaxWidth(),
                 ) {
-                    val themeItems = listOf(
-                        stringResource(id = R.string.settings_theme_mode_system),
-                        stringResource(id = R.string.settings_theme_mode_light),
-                        stringResource(id = R.string.settings_theme_mode_dark),
-                        stringResource(id = R.string.settings_theme_mode_monet_system),
-                        stringResource(id = R.string.settings_theme_mode_monet_light),
-                        stringResource(id = R.string.settings_theme_mode_monet_dark),
-                    )
-                    SuperDropdown(
-                        title = stringResource(id = R.string.settings_theme),
-                        summary = stringResource(id = R.string.settings_theme_summary),
-                        items = themeItems,
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.Palette,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_theme),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        selectedIndex = uiState.themeMode,
-                        onSelectedIndexChange = { index ->
-                            viewModel.setThemeMode(index)
-                        }
-                    )
-
-                    AnimatedVisibility(
-                        visible = uiState.themeMode in 3..5
-                    ) {
-                        val colorItems = listOf(
-                            stringResource(id = R.string.settings_key_color_default),
-                            stringResource(id = R.string.color_red),
-                            stringResource(id = R.string.color_pink),
-                            stringResource(id = R.string.color_purple),
-                            stringResource(id = R.string.color_deep_purple),
-                            stringResource(id = R.string.color_indigo),
-                            stringResource(id = R.string.color_blue),
-                            stringResource(id = R.string.color_cyan),
-                            stringResource(id = R.string.color_teal),
-                            stringResource(id = R.string.color_green),
-                            stringResource(id = R.string.color_yellow),
-                            stringResource(id = R.string.color_amber),
-                            stringResource(id = R.string.color_orange),
-                            stringResource(id = R.string.color_brown),
-                            stringResource(id = R.string.color_blue_grey),
-                            stringResource(id = R.string.color_sakura),
-                        )
-                        val colorValues = listOf(0) + keyColorOptions
-                        SuperDropdown(
-                            title = stringResource(id = R.string.settings_key_color),
-                            summary = stringResource(id = R.string.settings_key_color_summary),
-                            items = colorItems,
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.Colorize,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_key_color),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            selectedIndex = colorValues.indexOf(uiState.keyColor).takeIf { it >= 0 } ?: 0,
-                            onSelectedIndexChange = { index ->
-                                viewModel.setKeyColor(colorValues[index])
-                            }
-                        )
-                    }
-
                     val uiModeItems = listOf(UiMode.Miuix.name, UiMode.Material.name)
                     SuperDropdown(
                         title = stringResource(id = R.string.settings_ui_mode),
@@ -259,7 +172,7 @@ fun SettingPagerMiuix(
                         items = uiModeItems,
                         startAction = {
                             Icon(
-                                Icons.Rounded.Palette,
+                                Icons.Rounded.Dashboard,
                                 modifier = Modifier.padding(end = 6.dp),
                                 contentDescription = stringResource(id = R.string.settings_ui_mode),
                                 tint = colorScheme.onBackground
@@ -270,121 +183,19 @@ fun SettingPagerMiuix(
                             viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
                         }
                     )
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_predictive_back),
-                            summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.Adb,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.enablePredictiveBack,
-                            onCheckedChange = {
-                                viewModel.setEnablePredictiveBack(it)
-                                KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
-                                activity?.recreate()
-                            }
-                        )
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_blur),
-                            summary = stringResource(id = R.string.settings_enable_blur_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.WaterDrop,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_blur),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.enableBlur,
-                            onCheckedChange = {
-                                viewModel.setEnableBlur(it)
-                            }
-                        )
-                    }
-                    SuperSwitch(
-                        title = stringResource(id = R.string.settings_floating_bottom_bar),
-                        summary = stringResource(id = R.string.settings_floating_bottom_bar_summary),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.CallToAction,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_floating_bottom_bar),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        checked = uiState.enableFloatingBottomBar,
-                        onCheckedChange = {
-                            viewModel.setEnableFloatingBottomBar(it)
-                        }
-                    )
-                    AnimatedVisibility(visible = uiState.enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_glass),
-                            summary = stringResource(id = R.string.settings_enable_glass_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.BlurOn,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_glass),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.enableFloatingBottomBarBlur,
-                            onCheckedChange = {
-                                viewModel.setEnableFloatingBottomBarBlur(it)
-                            }
-                        )
-                    }
-                    var sliderValue by remember(uiState.pageScale) { mutableStateOf(uiState.pageScale) }
                     SuperArrow(
-                        title = stringResource(id = R.string.settings_page_scale),
-                        summary = stringResource(id = R.string.settings_page_scale_summary),
+                        title = stringResource(id = R.string.settings_theme),
+                        summary = stringResource(id = R.string.settings_theme_summary),
                         startAction = {
                             Icon(
-                                Icons.Rounded.AspectRatio,
+                                Icons.Rounded.Palette,
                                 modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_page_scale),
+                                contentDescription = stringResource(id = R.string.settings_theme),
                                 tint = colorScheme.onBackground
                             )
                         },
-                        endActions = {
-                            Text(
-                                text = "${(sliderValue * 100).toInt()}%",
-                                color = colorScheme.onSurfaceVariantActions,
-                            )
-                        },
-                        onClick = { showScaleDialog.value = !showScaleDialog.value },
-                        holdDownState = showScaleDialog.value,
-                        bottomAction = {
-                            Slider(
-                                value = sliderValue,
-                                onValueChange = {
-                                    sliderValue = it
-                                },
-                                onValueChangeFinished = {
-                                    viewModel.setPageScale(sliderValue)
-                                },
-                                valueRange = 0.8f..1.1f,
-                                showKeyPoints = true,
-                                keyPoints = listOf(0.8f, 0.9f, 1f, 1.1f),
-                                magnetThreshold = 0.01f,
-                                hapticEffect = SliderDefaults.SliderHapticEffect.Step,
-                            )
-                        },
-                    )
-                    ScaleDialog(
-                        showScaleDialog,
-                        volumeState = { uiState.pageScale },
-                        onVolumeChange = {
-                            viewModel.setPageScale(it)
+                        onClick = {
+                            navigator.push(Route.ColorPalette)
                         }
                     )
                 }

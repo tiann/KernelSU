@@ -157,9 +157,6 @@
     <string name="settings_theme_mode_system">Ikuti sistem</string>
     <string name="settings_theme_mode_light">Terang</string>
     <string name="settings_theme_mode_dark">Gelap</string>
-    <string name="settings_theme_mode_monet_system">Monet (Ikuti sistem)</string>
-    <string name="settings_theme_mode_monet_light">Monet (Terang)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (Gelap)</string>
     <string name="settings_key_color">Warna utama</string>
     <string name="settings_key_color_summary">Sesuaikan aksen saat menggunakan Monet.</string>
     <string name="settings_key_color_default">Default</string>

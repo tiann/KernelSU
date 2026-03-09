@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen.templateeditor
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,16 +19,18 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,8 +44,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveTextField
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedTextField
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.util.deleteAppProfileTemplate
@@ -63,14 +64,10 @@ fun TemplateEditorScreenMaterial(
         mutableStateOf(initialTemplate)
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
-    BackHandler {
-        if (!readOnly) {
-            navigator.setResult("template_edit", true)
-        } else {
-            navigator.pop()
-        }
+    LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
     }
 
     Scaffold(
@@ -126,7 +123,7 @@ fun TemplateEditorScreenMaterial(
             val idConflictError = stringResource(id = R.string.app_profile_template_id_exist)
             val idInvalidError = stringResource(id = R.string.app_profile_template_id_invalid)
 
-            ExpressiveColumn(
+            SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
                     add(
@@ -230,7 +227,7 @@ private fun TemplateEditorListItem(
     readOnly: Boolean = false,
     onValueChange: (String) -> Unit
 ) {
-    ExpressiveTextField(
+    SegmentedTextField(
         value = value,
         onValueChange = onValueChange,
         label = label,
@@ -245,7 +242,7 @@ private fun TemplateEditorListItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     title: String,
@@ -256,7 +253,7 @@ private fun TopBar(
     onSave: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
-    TopAppBar(
+    LargeFlexibleTopAppBar(
         title = {
             Column {
                 Text(title)
@@ -274,7 +271,7 @@ private fun TopBar(
             }
         },
         actions = {
-            if (readOnly) return@TopAppBar
+            if (readOnly) return@LargeFlexibleTopAppBar
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Filled.DeleteForever,
@@ -288,6 +285,10 @@ private fun TopBar(
                 )
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface
+        ),
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )

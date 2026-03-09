@@ -34,11 +34,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -69,8 +69,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveLazyColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
@@ -90,7 +90,7 @@ fun AppProfileTemplateScreenMaterial() {
     val viewModel = viewModel<TemplateViewModel>()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val pullToRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
@@ -139,6 +139,10 @@ fun AppProfileTemplateScreenMaterial() {
                 viewModel.fetchTemplates()
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
     }
 
     val onRefresh: () -> Unit = {
@@ -259,7 +263,7 @@ fun AppProfileTemplateScreenMaterial() {
             val navBars = WindowInsets.navigationBars.asPaddingValues()
             val captionBar = WindowInsets.captionBar.asPaddingValues()
             Box(Modifier.padding(innerPadding)) {
-                ExpressiveLazyColumn(
+                SegmentedLazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -294,7 +298,7 @@ private fun TemplateItem(
     navigator: Navigator,
     template: TemplateViewModel.TemplateInfo
 ) {
-    ExpressiveListItem(
+    SegmentedListItem(
         onClick = {
             navigator.push(Route.TemplateEditor(template, !template.local))
         },
@@ -322,7 +326,7 @@ private fun TemplateItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
@@ -331,7 +335,7 @@ private fun TopBar(
     onExport: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
-    TopAppBar(
+    LargeFlexibleTopAppBar(
         title = {
             Text(stringResource(R.string.settings_profile_template))
         },
@@ -372,6 +376,10 @@ private fun TopBar(
                 }
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface
+        ),
         scrollBehavior = scrollBehavior
     )
 }

@@ -152,9 +152,6 @@
     <string name="settings_theme_mode_system">Следвай системата</string>
     <string name="settings_theme_mode_light">Светъл</string>
     <string name="settings_theme_mode_dark">Тъмен</string>
-    <string name="settings_theme_mode_monet_system">Monet (Следвай системата)</string>
-    <string name="settings_theme_mode_monet_light">Monet (Светъл)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (Тъмен)</string>
     <string name="settings_key_color">Цвят на копчето</string>
     <string name="settings_key_color_summary">Персонализирайте акцента, когато използвате Monet.</string>
     <string name="settings_key_color_default">По подразбиране</string>

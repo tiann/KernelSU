@@ -16,8 +16,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.profile.dialogs.SingleSelectDialog
 import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.setSepolicy
@@ -82,11 +82,11 @@ fun TemplateConfigMaterial(
 
     val selectedTemplateName = template.value.ifEmpty { "None" }
 
-    ExpressiveColumn(
+    SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
-        content = listOf(
-            {
-                ExpressiveListItem(
+        content = buildList {
+            add {
+                SegmentedListItem(
                     headlineContent = { Text(stringResource(R.string.profile_template)) },
                     supportingContent = { Text(selectedTemplateName) },
                     trailingContent = {
@@ -102,18 +102,16 @@ fun TemplateConfigMaterial(
                         }
                     }
                 )
-            },
-            {
-                if (template.value.isNotEmpty()) {
-                    ExpressiveListItem(
-                        headlineContent = { Text(stringResource(R.string.app_profile_template_view)) },
-                        trailingContent = {
-                            Icon(Icons.AutoMirrored.Filled.ReadMore, contentDescription = null)
-                        },
-                        onClick = { onViewTemplate(template.value) }
-                    )
-                }
             }
-        )
+            if (template.value.isNotEmpty()) add {
+                SegmentedListItem(
+                    headlineContent = { Text(stringResource(R.string.app_profile_template_view)) },
+                    trailingContent = {
+                        Icon(Icons.AutoMirrored.Filled.ReadMore, contentDescription = null)
+                    },
+                    onClick = { onViewTemplate(template.value) }
+                )
+            }
+        }
     )
 }

@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -47,11 +47,11 @@ fun UninstallDialogMaterial(
             onDismissRequest = { showDialog.value = false },
             title = { Text(stringResource(R.string.settings_uninstall)) },
             text = {
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier,
                     content = options.map { type ->
                         {
-                           ExpressiveListItem(
+                           SegmentedListItem(
                                 onClick = {
                                     showConfirmDialog.value = true
                                     runType.value = type
