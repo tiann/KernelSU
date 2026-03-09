@@ -179,11 +179,6 @@ int ksu_set_app_profile(struct app_profile *profile)
 #endif
 
     mutex_lock(&allowlist_mutex);
-    if (unlikely(allow_list_count == U16_MAX)) {
-        pr_err("too many app profile\n");
-        result = -E2BIG;
-        goto out_unlock;
-    }
 
     hash_for_each_possible (allow_list, p, list, profile->curr_uid) {
         if (profile->curr_uid == p->profile.curr_uid) {
@@ -202,6 +197,12 @@ int ksu_set_app_profile(struct app_profile *profile)
             kfree_rcu(p, rcu);
             goto out;
         }
+    }
+
+    if (unlikely(allow_list_count == U16_MAX)) {
+        pr_err("too many app profile\n");
+        result = -E2BIG;
+        goto out_unlock;
     }
 
     // not found, alloc a new node!
