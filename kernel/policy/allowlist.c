@@ -179,8 +179,11 @@ int ksu_set_app_profile(struct app_profile *profile)
 
     list_for_each_entry (p, &allow_list, list) {
         ++count;
-        // both uid and package must match, otherwise it will break multiple package with different user id
-        if (profile->current_uid == p->profile.current_uid && !strcmp(profile->key, p->profile.key)) {
+        if (profile->current_uid == p->profile.current_uid) {
+            if (strcmp(profile->key, p->profile.key) != 0) {
+                pr_warn("ksu_set_app_profile: key changed: uid=%d orig=%s new=%s\n", profile->current_uid,
+                        p->profile.key, profile->key);
+            }
             // found it, just override it all!
             np = (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
             if (!np) {
