@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
@@ -70,6 +71,7 @@ import me.weishu.kernelsu.ui.util.getDefaultPartition
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.rootAvailable
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -79,11 +81,12 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Close
 import top.yukonga.miuix.kmp.icon.extended.ConvertFile
 import top.yukonga.miuix.kmp.icon.extended.MoveFile
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
@@ -267,7 +270,7 @@ fun InstallScreenMiuix() {
                                 Icon(
                                     MiuixIcons.ConvertFile,
                                     tint = colorScheme.onSurface,
-                                    modifier = Modifier.padding(end = 16.dp),
+                                    modifier = Modifier.padding(end = 12.dp),
                                     contentDescription = null
                                 )
                             }
@@ -279,7 +282,7 @@ fun InstallScreenMiuix() {
                         .fillMaxWidth()
                         .padding(top = 12.dp),
                 ) {
-                    SuperArrow(
+                    BasicComponent(
                         title = stringResource(id = R.string.install_upload_lkm_file),
                         summary = (lkmSelection as? LkmSelection.LkmUri)?.let {
                             stringResource(
@@ -292,9 +295,36 @@ fun InstallScreenMiuix() {
                             Icon(
                                 MiuixIcons.MoveFile,
                                 tint = colorScheme.onSurface,
-                                modifier = Modifier.padding(end = 16.dp),
+                                modifier = Modifier.padding(end = 12.dp),
                                 contentDescription = null
                             )
+                        },
+                        endActions = {
+                            if (lkmSelection is LkmSelection.LkmUri) {
+                                IconButton(
+                                    onClick = { lkmSelection = LkmSelection.KmiNone }
+                                ) {
+                                    Icon(
+                                        MiuixIcons.Close,
+                                        modifier = Modifier.size(16.dp),
+                                        contentDescription = stringResource(android.R.string.cancel),
+                                        tint = colorScheme.onSurfaceVariantActions
+                                    )
+                                }
+                            } else {
+                                val layoutDirection = LocalLayoutDirection.current
+                                Icon(
+                                    modifier = Modifier
+                                        .size(width = 10.dp, height = 16.dp)
+                                        .graphicsLayer {
+                                            scaleX = if (layoutDirection == LayoutDirection.Rtl) -1f else 1f
+                                        }
+                                        .align(Alignment.CenterVertically),
+                                    imageVector = MiuixIcons.Basic.ArrowRight,
+                                    contentDescription = null,
+                                    tint = colorScheme.onSurfaceVariantActions,
+                                )
+                            }
                         }
                     )
                 }

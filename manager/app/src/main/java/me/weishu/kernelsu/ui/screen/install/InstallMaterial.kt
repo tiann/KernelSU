@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -227,7 +228,15 @@ fun InstallScreenMaterial() {
                                     Text(stringResource(R.string.selected_lkm, it.uri.lastPathSegment ?: "(file)"))
                                 }
                             },
-                            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
+                            trailingContent = {
+                                if (lkmSelection is LkmSelection.LkmUri) {
+                                    IconButton(onClick = { lkmSelection = LkmSelection.KmiNone }) {
+                                        Icon(Icons.Filled.Close, contentDescription = stringResource(android.R.string.cancel))
+                                    }
+                                } else {
+                                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
+                                }
+                            },
                             onClick = { onLkmUpload() }
                         )
                     }
