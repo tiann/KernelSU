@@ -164,18 +164,18 @@ static bool profile_valid(struct app_profile *profile)
     return true;
 }
 
-void release_perm_data(struct kref *ref)
+static void release_perm_data(struct kref *ref)
 {
     struct perm_data *p = container_of(ref, struct perm_data, ref);
     kfree(p);
 }
 
-void put_perm_data(struct perm_data *data)
+static void put_perm_data(struct perm_data *data)
 {
     kref_put(&data->ref, release_perm_data);
 }
 
-void put_perm_data_rcu(struct rcu_head *h)
+static void put_perm_data_rcu(struct rcu_head *h)
 {
     struct perm_data *p = container_of(h, struct perm_data, rcu);
     put_perm_data(p);
@@ -379,6 +379,7 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
     struct perm_data *p = NULL;
     struct root_profile *res = NULL;
 
+    rcu_read_lock();
     if (is_uid_manager(uid)) {
         goto use_default;
     }
@@ -387,7 +388,6 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
         goto use_default;
     }
 
-    rcu_read_lock();
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {

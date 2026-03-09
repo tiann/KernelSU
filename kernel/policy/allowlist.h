@@ -35,7 +35,7 @@ void ksu_persistent_allow_list();
 
 // should be called with rcu read lock
 struct app_profile *ksu_get_app_profile(uid_t uid);
-// only uysed to put the app_profile returned by ksu_get_app_profile
+// only used to put the app_profile returned by ksu_get_app_profile
 void ksu_put_app_profile(struct app_profile *);
 int ksu_set_app_profile(struct app_profile *);
 
