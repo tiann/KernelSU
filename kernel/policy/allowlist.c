@@ -102,7 +102,9 @@ struct app_profile *ksu_get_app_profile(uid_t uid)
     if (!p)
         return NULL;
 
-    kref_get(&p->ref);
+    if (!kref_get_unless_zero(&p->ref)) {
+        return NULL;
+    }
 
     return &p->profile;
 }
@@ -398,8 +400,8 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {
-                kref_get(&p->ref);
-                res = &p->profile.rp_config.profile;
+                if (kref_get_unless_zero(&p->ref))
+                    res = &p->profile.rp_config.profile;
             }
             break;
         }
@@ -409,8 +411,8 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
     use_default:
         res = current_default_root_profile;
         if (unlikely(res != &default_root_profile)) {
-            p = container_of(res, struct perm_data, profile.rp_config.profile);
-            kref_get(&p->ref);
+            if (kref_get_unless_zero(&p->ref))
+                p = container_of(res, struct perm_data, profile.rp_config.profile);
         }
     }
 
