@@ -266,8 +266,9 @@ out:
         if (unlikely(!strcmp(profile->key, "$"))) {
             // set default non root profile
             kref_get(&np->ref);
-            old_current_default_non_root_profile = current_default_non_root_profile;
-            current_default_non_root_profile = &np->profile.nrp_config.profile;
+            old_current_default_non_root_profile =
+                rcu_dereference_protected(current_default_non_root_profile, lockdep_is_held(&allowlist_mutex));
+            rcu_assign_pointer(current_default_non_root_profile, &np->profile.nrp_config.profile);
             if (unlikely(old_current_default_non_root_profile != &default_non_root_profile)) {
                 p = container_of(old_current_default_non_root_profile, struct perm_data, profile.nrp_config.profile);
                 put_perm_data_rcu(p);
@@ -276,8 +277,9 @@ out:
             // set default root profile
             // TODO: Do we really need this?
             kref_get(&np->ref);
-            old_current_default_root_profile = current_default_root_profile;
-            current_default_root_profile = &np->profile.rp_config.profile;
+            old_current_default_root_profile =
+                rcu_dereference_protected(current_default_root_profile, lockdep_is_held(&allowlist_mutex));
+            rcu_assign_pointer(current_default_root_profile, &np->profile.rp_config.profile);
             if (unlikely(old_current_default_root_profile != &default_root_profile)) {
                 p = container_of(old_current_default_root_profile, struct perm_data, profile.rp_config.profile);
                 put_perm_data_rcu(p);
