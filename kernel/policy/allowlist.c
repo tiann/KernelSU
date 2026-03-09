@@ -500,11 +500,14 @@ void ksu_persistent_allow_list()
 {
     struct task_struct *tsk;
 
+    rcu_read_lock();
     tsk = get_pid_task(find_vpid(1), PIDTYPE_PID);
     if (!tsk) {
+        rcu_read_unlock();
         pr_err("save_allow_list find init task err\n");
         return;
     }
+    rcu_read_unlock();
 
     struct callback_head *cb = kzalloc(sizeof(struct callback_head), GFP_KERNEL);
     if (!cb) {
