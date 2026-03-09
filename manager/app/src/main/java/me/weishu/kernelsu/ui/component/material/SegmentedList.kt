@@ -44,6 +44,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
@@ -426,10 +428,14 @@ fun SegmentedTextField(
 ) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val coroutineScope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
 
     SegmentedListItem(
-        modifier = modifier.bringIntoViewRequester(bringIntoViewRequester),
+        modifier = modifier
+            .bringIntoViewRequester(bringIntoViewRequester)
+            .focusRequester(focusRequester),
         colors = colors,
+        onClick = { focusRequester.requestFocus() },
         leadingContent = leadingContent,
         supportingContent = supportingContent,
         trailingContent = trailingContent,
@@ -443,6 +449,7 @@ fun SegmentedTextField(
                     onValueChange = onValueChange,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .focusRequester(focusRequester)
                         .onFocusChanged {
                             if (it.isFocused) {
                                 coroutineScope.launch {
