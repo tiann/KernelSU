@@ -70,7 +70,7 @@ void ksu_show_allow_list(void)
     pr_info("ksu_show_allow_list\n");
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
-        pr_info("uid :%d, allow: %d\n", p->profile.current_uid, p->profile.allow_su);
+        pr_info("uid :%d, allow: %d\n", p->profile.curr_uid, p->profile.allow_su);
     }
     rcu_read_unlock();
 }
@@ -82,7 +82,7 @@ bool ksu_get_app_profile(struct app_profile *profile)
 
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
-        bool uid_match = profile->current_uid == p->profile.current_uid;
+        bool uid_match = profile->curr_uid == p->profile.curr_uid;
         if (uid_match) {
             // found it, override it with ours
             memcpy(profile, &p->profile, sizeof(*profile));
@@ -179,10 +179,10 @@ int ksu_set_app_profile(struct app_profile *profile)
 
     list_for_each_entry (p, &allow_list, list) {
         ++count;
-        if (profile->current_uid == p->profile.current_uid) {
+        if (profile->curr_uid == p->profile.curr_uid) {
             if (strcmp(profile->key, p->profile.key) != 0) {
-                pr_warn("ksu_set_app_profile: key changed: uid=%d orig=%s new=%s\n", profile->current_uid,
-                        p->profile.key, profile->key);
+                pr_warn("ksu_set_app_profile: key changed: uid=%d orig=%s new=%s\n", profile->curr_uid, p->profile.key,
+                        profile->key);
             }
             // found it, just override it all!
             np = (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
@@ -213,10 +213,10 @@ int ksu_set_app_profile(struct app_profile *profile)
 
     memcpy(&p->profile, profile, sizeof(*profile));
     if (profile->allow_su) {
-        pr_info("set root profile, key: %s, uid: %d, gid: %d, context: %s\n", profile->key, profile->current_uid,
+        pr_info("set root profile, key: %s, uid: %d, gid: %d, context: %s\n", profile->key, profile->curr_uid,
                 profile->rp_config.profile.gid, profile->rp_config.profile.selinux_domain);
     } else {
-        pr_info("set app profile, key: %s, uid: %d, umount modules: %d\n", profile->key, profile->current_uid,
+        pr_info("set app profile, key: %s, uid: %d, umount modules: %d\n", profile->key, profile->curr_uid,
                 profile->nrp_config.profile.umount_modules);
     }
 
@@ -264,7 +264,7 @@ bool __ksu_is_allow_uid(uid_t uid)
 
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
-        if (uid == p->profile.current_uid && p->profile.allow_su) {
+        if (uid == p->profile.curr_uid && p->profile.allow_su) {
             rcu_read_unlock();
             return true;
         }
@@ -285,10 +285,8 @@ bool __ksu_is_allow_uid_for_current(uid_t uid)
 
 bool ksu_uid_should_umount(uid_t uid)
 {
-#ifndef CONFIG_KSU_DISABLE_POLICY
-    struct app_profile profile = { .current_uid = uid };
-#endif
-    if (unlikely(is_uid_manager(uid))) {
+    struct app_profile profile = { .curr_uid = uid };
+    if (likely(ksu_is_manager_appid_valid()) && unlikely(ksu_get_manager_appid() == uid % PER_USER_RANGE)) {
         // we should not umount on manager!
         return false;
     }
@@ -337,7 +335,7 @@ void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
 
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
-        if (uid == p->profile.current_uid && p->profile.allow_su) {
+        if (uid == p->profile.curr_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {
                 memcpy(profile, &p->profile.rp_config.profile, sizeof(*profile));
                 rcu_read_unlock();
@@ -360,9 +358,9 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
         // pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
-        if (p->profile.allow_su == allow && !is_uid_manager(p->profile.current_uid)) {
+        if (p->profile.allow_su == allow && !is_uid_manager(p->profile.curr_uid)) {
             if (j < length) {
-                array[j++] = p->profile.current_uid;
+                array[j++] = p->profile.curr_uid;
             }
             ++i;
         }
@@ -406,7 +404,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 
     mutex_lock(&allowlist_mutex);
     list_for_each_entry (p, &allow_list, list) {
-        pr_info("save allow list, name: %s uid :%d, allow: %d\n", p->profile.key, p->profile.current_uid,
+        pr_info("save allow list, name: %s uid :%d, allow: %d\n", p->profile.key, p->profile.curr_uid,
                 p->profile.allow_su);
 
         kernel_write(fp, &p->profile, sizeof(p->profile), &off);
@@ -488,7 +486,7 @@ void ksu_load_allow_list()
             break;
         }
 
-        pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.current_uid, profile.allow_su);
+        pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.curr_uid, profile.allow_su);
         ksu_set_app_profile(&profile);
     }
 
@@ -510,7 +508,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
     bool modified = false;
     mutex_lock(&allowlist_mutex);
     list_for_each_entry_safe (np, n, &allow_list, list) {
-        uid_t uid = np->profile.current_uid;
+        uid_t uid = np->profile.curr_uid;
         char *package = np->profile.key;
         // we use this uid for special cases, don't prune it!
         bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID;
