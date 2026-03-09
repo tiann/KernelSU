@@ -175,10 +175,15 @@ static void put_perm_data(struct perm_data *data)
     kref_put(&data->ref, release_perm_data);
 }
 
-static void put_perm_data_rcu(struct rcu_head *h)
+static void release_perm_data_rcu(struct kref *ref)
 {
-    struct perm_data *p = container_of(h, struct perm_data, rcu);
-    put_perm_data(p);
+    struct perm_data *p = container_of(ref, struct perm_data, ref);
+    kfree_rcu(p, rcu);
+}
+
+static void put_perm_data_rcu(struct perm_data *data)
+{
+    kref_put(&data->ref, release_perm_data_rcu);
 }
 
 int ksu_set_app_profile(struct app_profile *profile)
@@ -221,7 +226,7 @@ int ksu_set_app_profile(struct app_profile *profile)
             kref_init(&np->ref);
             memcpy(&np->profile, profile, sizeof(*profile));
             hlist_replace_rcu(&p->list, &np->list);
-            call_rcu(&p->rcu, put_perm_data_rcu);
+            put_perm_data_rcu(p);
             goto out;
         }
     }
@@ -265,7 +270,7 @@ out:
             current_default_non_root_profile = &np->profile.nrp_config.profile;
             if (unlikely(old_current_default_non_root_profile != &default_non_root_profile)) {
                 p = container_of(old_current_default_non_root_profile, struct perm_data, profile.nrp_config.profile);
-                call_rcu(&p->rcu, put_perm_data_rcu);
+                put_perm_data_rcu(p);
             }
         } else if (unlikely(!strcmp(profile->key, "#"))) {
             // set default root profile
@@ -275,7 +280,7 @@ out:
             current_default_root_profile = &np->profile.rp_config.profile;
             if (unlikely(old_current_default_root_profile != &default_root_profile)) {
                 p = container_of(old_current_default_root_profile, struct perm_data, profile.rp_config.profile);
-                call_rcu(&p->rcu, put_perm_data_rcu);
+                put_perm_data_rcu(p);
             }
         }
     }
@@ -588,7 +593,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
             modified = true;
             pr_info("prune uid: %d, package: %s\n", uid, package);
             hlist_del_rcu(&np->list);
-            call_rcu(&np->rcu, put_perm_data_rcu);
+            put_perm_data_rcu(np);
             --allow_list_count;
         }
     }
@@ -615,15 +620,15 @@ void __exit ksu_allowlist_exit(void)
     mutex_lock(&allowlist_mutex);
     if (unlikely(current_default_non_root_profile != &default_non_root_profile)) {
         np = container_of(current_default_non_root_profile, struct perm_data, profile.nrp_config.profile);
-        call_rcu(&np->rcu, put_perm_data_rcu);
+        put_perm_data_rcu(np);
     }
     if (unlikely(current_default_root_profile != &default_root_profile)) {
         np = container_of(current_default_root_profile, struct perm_data, profile.rp_config.profile);
-        call_rcu(&np->rcu, put_perm_data_rcu);
+        put_perm_data_rcu(np);
     }
     hash_for_each_safe (allow_list, i, tmp, np, list) {
         hlist_del(&np->list);
-        call_rcu(&np->rcu, put_perm_data_rcu);
+        put_perm_data_rcu(np);
     }
     mutex_unlock(&allowlist_mutex);
 }
