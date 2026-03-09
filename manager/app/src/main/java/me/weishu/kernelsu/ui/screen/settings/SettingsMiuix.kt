@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.ContactPage
+import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.Fence
@@ -33,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -73,7 +73,6 @@ fun SettingPagerMiuix(
     navigator: Navigator,
     bottomInnerPadding: Dp
 ) {
-    val context = LocalContext.current
     val viewModel = viewModel<SettingsViewModel>()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -166,6 +165,24 @@ fun SettingPagerMiuix(
                         .padding(top = 12.dp)
                         .fillMaxWidth(),
                 ) {
+                    val uiModeItems = listOf(UiMode.Miuix.name, UiMode.Material.name)
+                    SuperDropdown(
+                        title = stringResource(id = R.string.settings_ui_mode),
+                        summary = stringResource(id = R.string.settings_ui_mode_summary),
+                        items = uiModeItems,
+                        startAction = {
+                            Icon(
+                                Icons.Rounded.Dashboard,
+                                modifier = Modifier.padding(end = 6.dp),
+                                contentDescription = stringResource(id = R.string.settings_ui_mode),
+                                tint = colorScheme.onBackground
+                            )
+                        },
+                        selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
+                        onSelectedIndexChange = { index ->
+                            viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
+                        }
+                    )
                     SuperArrow(
                         title = stringResource(id = R.string.settings_theme),
                         summary = stringResource(id = R.string.settings_theme_summary),
@@ -179,25 +196,6 @@ fun SettingPagerMiuix(
                         },
                         onClick = {
                             navigator.push(Route.ColorPalette)
-                        }
-                    )
-
-                    val uiModeItems = listOf(UiMode.Miuix.name, UiMode.Material.name)
-                    SuperDropdown(
-                        title = stringResource(id = R.string.settings_ui_mode),
-                        summary = stringResource(id = R.string.settings_ui_mode_summary),
-                        items = uiModeItems,
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.Palette,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_ui_mode),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
-                        onSelectedIndexChange = { index ->
-                            viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
                         }
                     )
                 }

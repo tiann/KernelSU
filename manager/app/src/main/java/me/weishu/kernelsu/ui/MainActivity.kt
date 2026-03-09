@@ -143,6 +143,7 @@ class MainActivity : ComponentActivity() {
                         "enable_floating_bottom_bar" -> enableFloatingBottomBar = prefs.getBoolean("enable_floating_bottom_bar", false)
                         "enable_floating_bottom_bar_blur" -> enableFloatingBottomBarBlur =
                             prefs.getBoolean("enable_floating_bottom_bar_blur", false)
+
                         "ui_mode" -> uiModeValue = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
                     }
                 }
@@ -318,6 +319,7 @@ fun MainScreen() {
             UiMode.Material -> androidx.compose.material3.Scaffold(bottomBar = bottomBar) { innerPadding ->
                 content(innerPadding)
             }
+
             UiMode.Miuix -> Scaffold(bottomBar = bottomBar) { innerPadding ->
                 content(innerPadding)
             }

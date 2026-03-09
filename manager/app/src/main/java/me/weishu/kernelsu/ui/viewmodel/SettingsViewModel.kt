@@ -99,12 +99,14 @@ class SettingsViewModel(
                     ColorMode.fromValue(baseMode).toNonMonetMode()
                 } else baseMode
             }
+
             "miuix" if mode == "material" -> {
                 val colorMode = ColorMode.fromValue(currentThemeMode)
                 if (colorMode.isMonet) {
                     colorMode.toNonMonetMode()
                 } else currentThemeMode
             }
+
             else -> currentThemeMode
         }
 

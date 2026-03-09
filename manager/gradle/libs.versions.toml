@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.1"
+agp = "9.1.0"
 kotlin = "2.3.10"
 compose-bom = "2026.02.01"
 lifecycle = "2.10.0"

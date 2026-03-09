@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Style
+import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -177,10 +178,9 @@ fun ColorPaletteScreenMiuix() {
 
                     SuperSwitch(
                         title = stringResource(id = R.string.settings_monet),
-                        summary = stringResource(id = R.string.settings_monet_summary),
                         startAction = {
                             Icon(
-                                Icons.Rounded.Colorize,
+                                Icons.Rounded.Wallpaper,
                                 modifier = Modifier.padding(end = 6.dp),
                                 contentDescription = stringResource(id = R.string.settings_monet),
                                 tint = colorScheme.onBackground
@@ -217,7 +217,6 @@ fun ColorPaletteScreenMiuix() {
                             val colorValues = listOf(0) + keyColorOptions
                             SuperDropdown(
                                 title = stringResource(id = R.string.settings_key_color),
-                                summary = stringResource(id = R.string.settings_key_color_summary),
                                 items = colorItems,
                                 startAction = {
                                     Icon(
@@ -283,7 +282,7 @@ fun ColorPaletteScreenMiuix() {
                             summary = stringResource(id = R.string.settings_enable_blur_summary),
                             startAction = {
                                 Icon(
-                                    Icons.Rounded.WaterDrop,
+                                    Icons.Rounded.BlurOn,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_enable_blur),
                                     tint = colorScheme.onBackground
@@ -317,7 +316,7 @@ fun ColorPaletteScreenMiuix() {
                             summary = stringResource(id = R.string.settings_enable_glass_summary),
                             startAction = {
                                 Icon(
-                                    Icons.Rounded.BlurOn,
+                                    Icons.Rounded.WaterDrop,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_enable_glass),
                                     tint = colorScheme.onBackground
