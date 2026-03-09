@@ -35,25 +35,6 @@ static DEFINE_MUTEX(allowlist_mutex);
 static struct root_profile default_root_profile;
 static struct non_root_profile default_non_root_profile;
 
-static int allow_list_arr[PAGE_SIZE / sizeof(int)] __read_mostly __aligned(PAGE_SIZE);
-static int allow_list_pointer __read_mostly = 0;
-
-static void remove_uid_from_arr(uid_t uid)
-{
-    int i;
-    for (i = 0; i < allow_list_pointer; i++) {
-        if (allow_list_arr[i] == uid) {
-            int remaining = allow_list_pointer - 1 - i;
-            if (remaining > 0) {
-                memmove(&allow_list_arr[i], &allow_list_arr[i + 1], remaining * sizeof(allow_list_arr[0]));
-            }
-            allow_list_pointer--;
-            allow_list_arr[allow_list_pointer] = -1;
-            return;
-        }
-    }
-}
-
 static void __init init_default_profiles()
 {
     kernel_cap_t full_cap = CAP_FULL_SET;
@@ -78,9 +59,6 @@ struct perm_data {
 };
 
 static struct list_head allow_list;
-
-static uint8_t allow_list_bitmap[PAGE_SIZE] __read_mostly __aligned(PAGE_SIZE);
-#define BITMAP_UID_MAX ((sizeof(allow_list_bitmap) * BITS_PER_BYTE) - 1)
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
@@ -256,26 +234,6 @@ out:
         // TODO: Do we really need this?
         memcpy(&default_root_profile, &profile->rp_config.profile, sizeof(default_root_profile));
 #endif
-    } else if (profile->current_uid <= BITMAP_UID_MAX) {
-        if (profile->allow_su)
-            allow_list_bitmap[profile->current_uid / BITS_PER_BYTE] |= 1 << (profile->current_uid % BITS_PER_BYTE);
-        else
-            allow_list_bitmap[profile->current_uid / BITS_PER_BYTE] &= ~(1 << (profile->current_uid % BITS_PER_BYTE));
-    } else {
-        if (profile->allow_su) {
-            /*
-             * 1024 apps with uid higher than BITMAP_UID_MAX
-             * registered to request superuser?
-             */
-            if (allow_list_pointer >= ARRAY_SIZE(allow_list_arr)) {
-                pr_err("too many apps registered\n");
-                WARN_ON(1);
-            } else {
-                allow_list_arr[allow_list_pointer++] = profile->current_uid;
-            }
-        } else {
-            remove_uid_from_arr(profile->current_uid);
-        }
     }
 
 out_unlock:
@@ -285,7 +243,7 @@ out_unlock:
 
 bool __ksu_is_allow_uid(uid_t uid)
 {
-    int i;
+    struct perm_data *p;
 
     if (forbid_system_uid(uid)) {
         // do not bother going through the list if it's system
@@ -301,14 +259,14 @@ bool __ksu_is_allow_uid(uid_t uid)
         return true;
     }
 
-    if (likely(uid <= BITMAP_UID_MAX)) {
-        return !!(allow_list_bitmap[uid / BITS_PER_BYTE] & (1 << (uid % BITS_PER_BYTE)));
-    } else {
-        for (i = 0; i < allow_list_pointer; i++) {
-            if (allow_list_arr[i] == uid)
-                return true;
+    rcu_read_lock();
+    list_for_each_entry_rcu (p, &allow_list, list) {
+        if (uid == p->profile.current_uid && p->profile.allow_su) {
+            rcu_read_unlock();
+            return true;
         }
     }
+    rcu_read_unlock();
 
     return false;
 }
@@ -558,10 +516,6 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
             pr_info("prune uid: %d, package: %s\n", uid, package);
             list_del_rcu(&np->list);
             kfree_rcu(np, rcu);
-            if (likely(uid <= BITMAP_UID_MAX)) {
-                allow_list_bitmap[uid / BITS_PER_BYTE] &= ~(1 << (uid % BITS_PER_BYTE));
-            }
-            remove_uid_from_arr(uid);
         }
     }
     mutex_unlock(&allowlist_mutex);
@@ -574,14 +528,6 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 
 void __init ksu_allowlist_init(void)
 {
-    int i;
-
-    BUILD_BUG_ON(sizeof(allow_list_bitmap) != PAGE_SIZE);
-    BUILD_BUG_ON(sizeof(allow_list_arr) != PAGE_SIZE);
-
-    for (i = 0; i < ARRAY_SIZE(allow_list_arr); i++)
-        allow_list_arr[i] = -1;
-
     INIT_LIST_HEAD(&allow_list);
 
     init_default_profiles();
