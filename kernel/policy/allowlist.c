@@ -61,6 +61,7 @@ struct perm_data {
 
 #define ALLOW_LIST_BITS 8
 DEFINE_HASHTABLE(allow_list, ALLOW_LIST_BITS);
+u16 allow_list_count = 0;
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
@@ -160,7 +161,6 @@ int ksu_set_app_profile(struct app_profile *profile)
 {
     struct perm_data *p = NULL, *np;
     int result = 0;
-    u16 count = 0;
 
     if (!profile_valid(profile)) {
         pr_err("Failed to set app profile: invalid profile!\n");
@@ -179,9 +179,13 @@ int ksu_set_app_profile(struct app_profile *profile)
 #endif
 
     mutex_lock(&allowlist_mutex);
+    if (unlikely(allow_list_count == U16_MAX)) {
+        pr_err("too many app profile\n");
+        result = -E2BIG;
+        goto out_unlock;
+    }
 
     hash_for_each_possible (allow_list, p, list, profile->curr_uid) {
-        ++count;
         if (profile->curr_uid == p->profile.curr_uid) {
             if (strcmp(profile->key, p->profile.key) != 0) {
                 pr_warn("ksu_set_app_profile: key changed: uid=%d orig=%s new=%s\n", profile->curr_uid, p->profile.key,
@@ -198,12 +202,6 @@ int ksu_set_app_profile(struct app_profile *profile)
             kfree_rcu(p, rcu);
             goto out;
         }
-    }
-
-    if (unlikely(count == U16_MAX)) {
-        pr_err("too many app profile\n");
-        result = -E2BIG;
-        goto out_unlock;
     }
 
     // not found, alloc a new node!
@@ -224,6 +222,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     }
 
     hash_add_rcu(allow_list, &p->list, p->profile.curr_uid);
+    ++allow_list_count;
 
 out:
     result = 0;
@@ -523,6 +522,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
             pr_info("prune uid: %d, package: %s\n", uid, package);
             hlist_del_rcu(&np->list);
             kfree_rcu(np, rcu);
+            --allow_list_count;
         }
     }
     mutex_unlock(&allowlist_mutex);
