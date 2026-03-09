@@ -14,6 +14,7 @@
 #include <linux/types.h>
 #include <linux/version.h>
 #include <linux/compiler_types.h>
+#include <linux/hashtable.h>
 
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
@@ -53,12 +54,13 @@ static void __init init_default_profiles()
 }
 
 struct perm_data {
-    struct list_head list;
+    struct hlist_node list;
     struct rcu_head rcu;
     struct app_profile profile;
 };
 
-static struct list_head allow_list;
+#define ALLOW_LIST_BITS 8
+DEFINE_HASHTABLE(allow_list, ALLOW_LIST_BITS);
 
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
@@ -66,10 +68,11 @@ void ksu_persistent_allow_list(void);
 
 void ksu_show_allow_list(void)
 {
+    int i;
     struct perm_data *p = NULL;
     pr_info("ksu_show_allow_list\n");
     rcu_read_lock();
-    list_for_each_entry_rcu (p, &allow_list, list) {
+    hash_for_each_rcu (allow_list, i, p, list) {
         pr_info("uid :%d, allow: %d\n", p->profile.curr_uid, p->profile.allow_su);
     }
     rcu_read_unlock();
@@ -81,7 +84,7 @@ bool ksu_get_app_profile(struct app_profile *profile)
     bool found = false;
 
     rcu_read_lock();
-    list_for_each_entry_rcu (p, &allow_list, list) {
+    hash_for_each_possible_rcu (allow_list, p, list, profile->curr_uid) {
         bool uid_match = profile->curr_uid == p->profile.curr_uid;
         if (uid_match) {
             // found it, override it with ours
@@ -177,7 +180,7 @@ int ksu_set_app_profile(struct app_profile *profile)
 
     mutex_lock(&allowlist_mutex);
 
-    list_for_each_entry (p, &allow_list, list) {
+    hash_for_each_possible (allow_list, p, list, profile->curr_uid) {
         ++count;
         if (profile->curr_uid == p->profile.curr_uid) {
             if (strcmp(profile->key, p->profile.key) != 0) {
@@ -191,7 +194,7 @@ int ksu_set_app_profile(struct app_profile *profile)
                 goto out_unlock;
             }
             memcpy(&np->profile, profile, sizeof(*profile));
-            list_replace_rcu(&p->list, &np->list);
+            hlist_replace_rcu(&p->list, &np->list);
             kfree_rcu(p, rcu);
             goto out;
         }
@@ -220,7 +223,7 @@ int ksu_set_app_profile(struct app_profile *profile)
                 profile->nrp_config.profile.umount_modules);
     }
 
-    list_add_tail_rcu(&p->list, &allow_list);
+    hash_add_rcu(allow_list, &p->list, p->profile.curr_uid);
 
 out:
     result = 0;
@@ -263,7 +266,7 @@ bool __ksu_is_allow_uid(uid_t uid)
     }
 
     rcu_read_lock();
-    list_for_each_entry_rcu (p, &allow_list, list) {
+    hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
             rcu_read_unlock();
             return true;
@@ -334,7 +337,7 @@ void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
     }
 
     rcu_read_lock();
-    list_for_each_entry_rcu (p, &allow_list, list) {
+    hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {
                 memcpy(profile, &p->profile.rp_config.profile, sizeof(*profile));
@@ -355,8 +358,9 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
 {
     struct perm_data *p = NULL;
     u16 i = 0, j = 0;
+    int iter;
     rcu_read_lock();
-    list_for_each_entry_rcu (p, &allow_list, list) {
+    hash_for_each_rcu (allow_list, iter, p, list) {
         // pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
         if (p->profile.allow_su == allow && !is_uid_manager(p->profile.curr_uid)) {
             if (j < length) {
@@ -383,6 +387,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
     u32 version = FILE_FORMAT_VERSION;
     struct perm_data *p = NULL;
     loff_t off = 0;
+    int i;
 
     const struct cred *saved = override_creds(ksu_cred);
     struct file *fp = filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -403,7 +408,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
     }
 
     mutex_lock(&allowlist_mutex);
-    list_for_each_entry (p, &allow_list, list) {
+    hash_for_each (allow_list, i, p, list) {
         pr_info("save allow list, name: %s uid :%d, allow: %d\n", p->profile.key, p->profile.curr_uid,
                 p->profile.allow_su);
 
@@ -498,7 +503,8 @@ exit:
 void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data)
 {
     struct perm_data *np = NULL;
-    struct perm_data *n = NULL;
+    struct hlist_node *tmp;
+    int i;
 
     if (!ksu_boot_completed) {
         pr_info("boot not completed, skip prune\n");
@@ -507,7 +513,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 
     bool modified = false;
     mutex_lock(&allowlist_mutex);
-    list_for_each_entry_safe (np, n, &allow_list, list) {
+    hash_for_each_safe (allow_list, i, tmp, np, list) {
         uid_t uid = np->profile.curr_uid;
         char *package = np->profile.key;
         // we use this uid for special cases, don't prune it!
@@ -515,7 +521,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
         if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
             modified = true;
             pr_info("prune uid: %d, package: %s\n", uid, package);
-            list_del_rcu(&np->list);
+            hlist_del_rcu(&np->list);
             kfree_rcu(np, rcu);
         }
     }
@@ -529,20 +535,19 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
 
 void __init ksu_allowlist_init(void)
 {
-    INIT_LIST_HEAD(&allow_list);
-
     init_default_profiles();
 }
 
 void __exit ksu_allowlist_exit(void)
 {
     struct perm_data *np = NULL;
-    struct perm_data *n = NULL;
+    struct hlist_node *tmp;
+    int i;
 
     // free allowlist
     mutex_lock(&allowlist_mutex);
-    list_for_each_entry_safe (np, n, &allow_list, list) {
-        list_del(&np->list);
+    hash_for_each_safe (allow_list, i, tmp, np, list) {
+        hlist_del(&np->list);
         kfree(np);
     }
     mutex_unlock(&allowlist_mutex);
