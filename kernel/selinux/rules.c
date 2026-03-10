@@ -115,7 +115,7 @@ void apply_kernelsu_rules()
 
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
-    ksu_destroy_orig_sepolicy(old_pol);
+    ksu_destroy_sepolicy(old_pol);
 
     reset_avc_cache();
 out_unlock:
@@ -436,7 +436,7 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 exit:
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
-    ksu_destroy_orig_sepolicy(old_pol);
+    ksu_destroy_sepolicy(old_pol);
 
     reset_avc_cache();
 out_unlock:
