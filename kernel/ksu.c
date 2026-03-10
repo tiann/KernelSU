@@ -39,6 +39,8 @@ bool ksu_late_loaded;
 NO_STACK_PROTECTOR_WORKAROUND
 int __init kernelsu_init(void)
 {
+    bool late_load;
+
 #if defined(CONFIG_STACKPROTECTOR) && (defined(CONFIG_ARM64) && !defined(CONFIG_STACKPROTECTOR_PER_TASK))
     unsigned long canary;
 
