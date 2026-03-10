@@ -901,15 +901,15 @@ copy_class_datum_partially_callback(struct hashtab_node *new_node,
         }
         eprev = NULL;
         n->expr = NULL;
-        for (olde = n->expr; olde; olde = olde->next) {
-            e = kmemdup(olde, sizeof(struct constraint_node), GFP_KERNEL);
+        for (olde = oldn->expr; olde; olde = olde->next) {
+            e = kmemdup(olde, sizeof(struct constraint_expr), GFP_KERNEL);
             if (!e) {
                 goto out_nomem;
             }
             if (eprev) {
-                n->expr = e;
-            } else {
                 eprev->next = e;
+            } else {
+                n->expr = e;
             }
             if (olde->expr_type == CEXPR_NAMES) {
                 if (ebitmap_cpy(&e->names, &olde->names) < 0) {
@@ -960,9 +960,11 @@ static void free_class_datum_partially(struct policydb *db)
         kfree(db->class_val_to_struct);
     }
 
-    hashtab_map(&db->p_classes.table, destroy_class_datum_partially_callback,
-                NULL);
-    hashtab_destroy(&db->p_classes.table);
+    if (db->p_classes.table.htable) {
+        hashtab_map(&db->p_classes.table,
+                    destroy_class_datum_partially_callback, NULL);
+        hashtab_destroy(&db->p_classes.table);
+    }
 }
 
 static int copy_class_datum_partially(struct policydb *new_db,
@@ -970,7 +972,7 @@ static int copy_class_datum_partially(struct policydb *new_db,
 {
     int ret;
     u32 n = new_db->symtab[SYM_CLASSES].nprim;
-    struct class_datum *new_class_val_to_struct;
+    struct class_datum **new_class_val_to_struct;
 
     new_db->class_val_to_struct = NULL;
     memset(&new_db->p_classes.table, 0, sizeof(new_db->p_classes.table));
@@ -981,11 +983,11 @@ static int copy_class_datum_partially(struct policydb *new_db,
         ret = -ENOMEM;
         goto exit;
     }
-    new_db->class_val_to_struct[SYM_CLASSES] = new_class_val_to_struct;
+    new_db->class_val_to_struct = new_class_val_to_struct;
 
     ret = hashtab_duplicate(&new_db->p_classes.table, &old_db->p_classes.table,
                             copy_class_datum_partially_callback,
-                            destroy_class_datum_partially_callback, &new_db);
+                            destroy_class_datum_partially_callback, new_db);
 
     if (ret) {
         goto exit;
@@ -1003,16 +1005,21 @@ exit:
 static int copy_avtab(struct avtab *new_avtab, struct avtab *old_avtab)
 {
     int ret, i;
-    struct avtab_node *n;
+    struct avtab_node *n, *p;
     ret = avtab_alloc_dup(new_avtab, old_avtab);
     if (ret < 0)
         return ret;
 
     for (i = 0; i < old_avtab->nslot; i++) {
         n = old_avtab->htable[i];
-        ret = avtab_insert_nonunique(new_avtab, &n->key, &n->datum);
-        if (ret)
-            goto out_free;
+        while (n) {
+            p = avtab_insert_nonunique(new_avtab, &n->key, &n->datum);
+            if (!p) {
+                ret = -ENOMEM;
+                goto out_free;
+            }
+            n = n->next;
+        }
     }
 
     return 0;
@@ -1042,7 +1049,8 @@ copy_role_datum_partially_callback(struct hashtab_node *new_node,
     if (ret) {
         goto out;
     }
-    db->role_val_to_struct[role->value - 1] = role;
+    pr_info("ksu_sepolicy: set new role %d\n", role->value - 1);
+    db->role_val_to_struct[role->value - 1] = new_role;
     new_node->datum = new_role;
     new_node->key = old_node->key;
 
@@ -1066,9 +1074,11 @@ static void free_role_datum_partially(struct policydb *db)
     if (db->role_val_to_struct) {
         kfree(db->role_val_to_struct);
     }
-    hashtab_map(&db->p_classes.table, destroy_class_datum_partially_callback,
-                NULL);
-    hashtab_destroy(&db->p_classes.table);
+    if (db->p_roles.table.htable) {
+        hashtab_map(&db->p_roles.table, destroy_role_datum_partially_callback,
+                    NULL);
+        hashtab_destroy(&db->p_roles.table);
+    }
 }
 
 static int copy_role_datum_partially(struct policydb *new_db,
@@ -1077,21 +1087,22 @@ static int copy_role_datum_partially(struct policydb *new_db,
     int ret;
     struct role_datum **new_role_val_to_struct;
     u32 n = old_db->p_roles.nprim;
+    pr_info("ksu_sepolicy: role nr: %d\n", n);
 
     new_db->role_val_to_struct = NULL;
     memset(&new_db->p_roles.table, 0, sizeof(new_db->p_roles.table));
 
     new_role_val_to_struct =
         kcalloc(n, sizeof(*new_db->role_val_to_struct), GFP_KERNEL);
-    if (new_role_val_to_struct) {
+    if (!new_role_val_to_struct) {
         ret = -ENOMEM;
         goto out_free;
     }
     new_db->role_val_to_struct = new_role_val_to_struct;
 
     ret = hashtab_duplicate(&new_db->p_roles.table, &old_db->p_roles.table,
-                            copy_class_datum_partially_callback,
-                            destroy_class_datum_partially_callback, &new_db);
+                            copy_role_datum_partially_callback,
+                            destroy_role_datum_partially_callback, new_db);
     if (ret)
         goto out_free;
     return 0;
@@ -1102,7 +1113,7 @@ out_free:
     return ret;
 }
 
-// ======== type arrays ========
+// ======== type_datum ========
 
 static void free_type_datum_partially(struct policydb *db)
 {
@@ -1248,37 +1259,50 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
     struct selinux_policy *new_pol =
         kmemdup(old_pol, sizeof(*old_pol), GFP_KERNEL);
     if (!new_pol) {
-        goto out;
+        return NULL;
     }
     struct policydb *new_db = &new_pol->policydb, *old_db = &old_pol->policydb;
 
     ret = copy_class_datum_partially(new_db, old_db);
-    if (ret < 0)
+    if (ret < 0) {
+        pr_err("ksu_dup_sepolicy: copy_class_datum_partially\n");
         goto out;
+    }
 
     ret = copy_avtab(&new_db->te_avtab, &old_db->te_avtab);
-    if (ret < 0)
+    if (ret < 0) {
+        pr_err("ksu_dup_sepolicy: copy_avtab\n");
         goto out;
+    }
 
     ret = copy_role_datum_partially(new_db, old_db);
-    if (ret < 0)
+    if (ret < 0) {
+        pr_err("ksu_dup_sepolicy: copy_role_datum_partially\n");
         goto out;
+    }
 
     ret = copy_type_datum_partially(new_db, old_db);
-    if (ret < 0)
+    if (ret < 0) {
+        pr_err("ksu_dup_sepolicy: copy_type_datum_partially\n");
         goto out;
+    }
 
     ret = copy_permissive_map(new_db, old_db);
-    if (ret < 0)
+    if (ret < 0) {
+        pr_err("ksu_dup_sepolicy: copy_permissive_map\n");
         goto out;
+    }
 
     ret = copy_filename_trans(new_db, old_db);
-    if (ret < 0)
+    if (ret < 0) {
+        pr_err("ksu_dup_sepolicy: copy_filename_trans\n");
         goto out;
+    }
 
     return new_pol;
 
 out:
-    ksu_destroy_sepolicy(new_pol);
+    pr_err("ret=%d\n", ret);
+    kfree(new_pol);
     return NULL;
 }

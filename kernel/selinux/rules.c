@@ -120,6 +120,11 @@ void apply_kernelsu_rules()
     reset_avc_cache();
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
+    /*
+    pr_info("DEBUG: set permissive!!!\n");
+    selinux_state.enforcing = false;
+    selinux_status_update_setenforce(&selinux_state, 0);
+    call_blocking_lsm_notifier(LSM_POLICY_CHANGE, NULL);*/
 }
 
 #define MAX_SEPOL_LEN 128
