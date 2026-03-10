@@ -152,9 +152,6 @@
     <string name="settings_theme_mode_system">Prati sustav</string>
     <string name="settings_theme_mode_light">Svijetla</string>
     <string name="settings_theme_mode_dark">Tamna</string>
-    <string name="settings_theme_mode_monet_system">Monet (Prati sustav)</string>
-    <string name="settings_theme_mode_monet_light">Monet (Svijetla)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (Tamna)</string>
     <string name="settings_key_color">Boja ključa</string>
     <string name="settings_key_color_summary">Prilagodi naglasak prilikom korištenja Moneta.</string>
     <string name="settings_key_color_default">Zadano</string>

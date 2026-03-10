@@ -53,8 +53,8 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
@@ -202,7 +202,7 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
     }
     val hideInstallButton = isSafeMode || magiskInstalled
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val pullToRefreshState = rememberPullToRefreshState()
 
@@ -219,6 +219,7 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
     }
 
     val listState = rememberLazyListState()
+    val searchListState = rememberLazyListState()
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
     val fabExpanded by remember {
         var lastIndex = 0
@@ -321,31 +322,33 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
     }
 
     Scaffold(
-        modifier = Modifier.pullToRefresh(
-            state = pullToRefreshState,
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = onRefresh,
-        ),
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .pullToRefresh(
+                state = pullToRefreshState,
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = onRefresh,
+            ),
         topBar = {
             SearchAppBar(
                 title = { Text(stringResource(R.string.module)) },
                 searchText = uiState.searchStatus.searchText,
                 onSearchTextChange = { scope.launch { viewModel.updateSearchText(it) } },
                 onClearClick = { scope.launch { viewModel.updateSearchText("") } },
-                actionsContent = {
+                navigationIcon = {
                     IconButton(
                         onClick = { navigator.push(Route.ModuleRepo) }
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.CloudDownload,
+                            imageVector = Icons.Outlined.Cloud,
                             contentDescription = stringResource(id = R.string.module_repos)
                         )
                     }
-                    RebootListPopup()
                 },
-                dropdownContent = {
-                    var showDropdown by remember { mutableStateOf(false) }
+                actions = {
+                    RebootListPopup()
 
+                    var showDropdown by remember { mutableStateOf(false) }
                     IconButton(
                         onClick = { showDropdown = true }
                     ) {
@@ -389,6 +392,38 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     }
                 },
                 scrollBehavior = scrollBehavior,
+                searchContent = { closeSearch ->
+                    LaunchedEffect(uiState.searchStatus.searchText) {
+                        searchListState.scrollToItem(0)
+                    }
+                    ModuleList(
+                        bottomInnerPadding,
+                        navigator = navigator,
+                        viewModel = viewModel,
+                        modifier = Modifier,
+                        boxModifier = Modifier.fillMaxSize(),
+                        listState = searchListState,
+                        displayModules = uiState.searchResults,
+                        onClickModule = { id, name, hasWebUi ->
+                            if (hasWebUi) {
+                                webUILauncher.launch(
+                                    Intent(context, WebUIActivity::class.java)
+                                        .setData("kernelsu://webui/$id".toUri())
+                                        .putExtra("id", id)
+                                        .putExtra("name", name)
+                                )
+                                closeSearch()
+                            }
+                        },
+                        onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
+                        closeSearch = closeSearch,
+                        context = context,
+                        snackBarHost = snackBarHost,
+                        pullToRefreshState = pullToRefreshState,
+                        isRefreshing = false,
+                        scaleFraction = 0f
+                    )
+                }
             )
         },
         floatingActionButton = {
@@ -452,9 +487,6 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
             }
 
             else -> {
-                val isSearching = uiState.searchStatus.searchText.isNotEmpty()
-                val displayModules = if (isSearching) uiState.searchResults else uiState.moduleList
-
                 ModuleList(
                     bottomInnerPadding,
                     navigator = navigator,
@@ -462,7 +494,7 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     boxModifier = Modifier.padding(innerPadding),
                     listState = listState,
-                    displayModules = displayModules,
+                    displayModules = uiState.moduleList,
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             webUILauncher.launch(
@@ -619,7 +651,8 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModuleList(
-    bottomInnerPadding: Dp, navigator: Navigator,
+    bottomInnerPadding: Dp,
+    navigator: Navigator,
     viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
     boxModifier: Modifier = Modifier,
@@ -628,6 +661,7 @@ private fun ModuleList(
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     onModuleAddShortcut: (ModuleViewModel.ModuleInfo, ShortcutType) -> Unit,
     context: Context,
+    closeSearch: () -> Unit? = {},
     snackBarHost: SnackbarHostState,
     pullToRefreshState: PullToRefreshState,
     isRefreshing: Boolean,
@@ -771,7 +805,7 @@ private fun ModuleList(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(
                 start = 16.dp,
-                top = 16.dp,
+                top = 8.dp,
                 end = 16.dp,
                 bottom = 16.dp + bottomInnerPadding + 56.dp + 16.dp
             ),
@@ -797,7 +831,6 @@ private fun ModuleList(
                         val moduleUpdateInfo = uiState.updateInfo[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
 
                         ModuleItem(
-                            bottomInnerPadding = bottomInnerPadding,
                             navigator = navigator,
                             module = module,
                             updateUrl = moduleUpdateInfo.downloadUrl,
@@ -840,7 +873,8 @@ private fun ModuleList(
                                 }
                             },
                             onAddShortcut = { m, t -> onModuleAddShortcut(m, t) },
-                            onClick = { m -> onClickModule(m.id, m.name, m.hasWebUi) }
+                            onClick = { m -> onClickModule(m.id, m.name, m.hasWebUi) },
+                            closeSearch = { closeSearch() }
                         )
                     }
                 }
@@ -862,14 +896,15 @@ private fun ModuleList(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModuleItem(
-    bottomInnerPadding: Dp, navigator: Navigator,
+    navigator: Navigator,
     module: ModuleViewModel.ModuleInfo,
     updateUrl: String,
     onUninstallClicked: (ModuleViewModel.ModuleInfo) -> Unit,
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
     onAddShortcut: (ModuleViewModel.ModuleInfo, ShortcutType) -> Unit,
-    onClick: (ModuleViewModel.ModuleInfo) -> Unit
+    onClick: (ModuleViewModel.ModuleInfo) -> Unit,
+    closeSearch: () -> Unit
 ) {
     TonalCard(
         modifier = Modifier.fillMaxWidth()
@@ -983,7 +1018,14 @@ private fun ModuleItem(
             )
 
             Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                if (module.metamodule) StatusTag("META", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                if (module.metamodule) {
+                    StatusTag(
+                        "META",
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             HorizontalDivider(thickness = Dp.Hairline)
@@ -1008,6 +1050,7 @@ private fun ModuleItem(
                                 onClick = {
                                     navigator.push(Route.ExecuteModuleAction(module.id))
                                     viewModel.markNeedRefresh()
+                                    closeSearch()
                                 },
                                 onLongClick = { onAddShortcut(module, ShortcutType.Action) },
                                 modifier = Modifier.defaultMinSize(52.dp, 32.dp),
@@ -1036,7 +1079,10 @@ private fun ModuleItem(
 
                         if (module.hasWebUi) {
                             CombinedClickableButton(
-                                onClick = { onClick(module) },
+                                onClick = {
+                                    onClick(module)
+                                    closeSearch()
+                                },
                                 onLongClick = { onAddShortcut(module, ShortcutType.WebUI) },
                                 modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                                 shape = ButtonDefaults.filledTonalShape,

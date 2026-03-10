@@ -156,9 +156,6 @@
     <string name="settings_theme_mode_system">Taki jak w systemie</string>
     <string name="settings_theme_mode_light">Jasny</string>
     <string name="settings_theme_mode_dark">Ciemny</string>
-    <string name="settings_theme_mode_monet_system">Monet (jak w systemie)</string>
-    <string name="settings_theme_mode_monet_light">Monet (jasny)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (ciemny)</string>
     <string name="settings_key_color">Kolor przycisków</string>
     <string name="settings_key_color_summary">Dostosuj akcent gdy używany jest Monet.</string>
     <string name="settings_key_color_default">Domyślny</string>

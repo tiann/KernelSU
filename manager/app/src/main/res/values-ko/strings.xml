@@ -152,9 +152,6 @@
     <string name="settings_theme_mode_system">시스템 설정에 따름</string>
     <string name="settings_theme_mode_light">라이트</string>
     <string name="settings_theme_mode_dark">다크</string>
-    <string name="settings_theme_mode_monet_system">Monet (시스템 설정에 따름)</string>
-    <string name="settings_theme_mode_monet_light">Monet (라이트)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (다크)</string>
     <string name="settings_key_color">주 색상</string>
     <string name="settings_key_color_summary">Monet 사용 시 강조 색상을 사용자 지정합니다.</string>
     <string name="settings_key_color_default">기본값</string>

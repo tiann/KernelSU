@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -18,14 +19,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
@@ -49,10 +53,10 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.component.choosekmidialog.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveDropdownItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveListItem
-import me.weishu.kernelsu.ui.component.material.ExpressiveRadioItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SegmentedRadioItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -148,7 +152,11 @@ fun InstallScreenMaterial() {
         })
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
+    }
 
     Scaffold(
         topBar = {
@@ -162,6 +170,7 @@ fun InstallScreenMaterial() {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .fillMaxHeight()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -194,26 +203,24 @@ fun InstallScreenMaterial() {
                     if (defaultPartition == name) "$name (default)" else name
                 }
             }
-            ExpressiveColumn(
+            SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                content = listOf(
-                    {
-                        if (partitions.isNotEmpty()) {
-                            ExpressiveDropdownItem(
-                                enabled = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
-                                items = displayPartitions,
-                                selectedIndex = partitionSelectionIndex,
-                                title = "${stringResource(R.string.install_select_partition)} (${suffix})",
-                                onItemSelected = { index ->
-                                    hasCustomSelected = true
-                                    partitionSelectionIndex = index
-                                },
-                                icon = Icons.Filled.Edit
-                            )
-                        }
-                    },
-                    {
-                        ExpressiveListItem(
+                content = buildList {
+                    if (partitions.isNotEmpty()) add {
+                        SegmentedDropdownItem(
+                            enabled = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
+                            items = displayPartitions,
+                            selectedIndex = partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${suffix})",
+                            onItemSelected = { index ->
+                                hasCustomSelected = true
+                                partitionSelectionIndex = index
+                            },
+                            icon = Icons.Filled.Edit
+                        )
+                    }
+                    add {
+                        SegmentedListItem(
                             leadingContent = { Icon(Icons.AutoMirrored.Filled.DriveFileMove, null) },
                             headlineContent = { Text(stringResource(R.string.install_upload_lkm_file)) },
                             supportingContent = {
@@ -221,11 +228,19 @@ fun InstallScreenMaterial() {
                                     Text(stringResource(R.string.selected_lkm, it.uri.lastPathSegment ?: "(file)"))
                                 }
                             },
-                            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
+                            trailingContent = {
+                                if (lkmSelection is LkmSelection.LkmUri) {
+                                    IconButton(onClick = { lkmSelection = LkmSelection.KmiNone }) {
+                                        Icon(Icons.Filled.Close, contentDescription = stringResource(android.R.string.cancel))
+                                    }
+                                } else {
+                                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
+                                }
+                            },
                             onClick = { onLkmUpload() }
                         )
                     }
-                )
+                }
             )
             Button(
                 modifier = Modifier
@@ -307,12 +322,11 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     }
 
     key(isAbDevice) {
-        ExpressiveColumn(
+        SegmentedColumn(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            selectedIndices = radioOptions.indexOfFirst { it.javaClass == selectedOption?.javaClass }.let { if (it >= 0) setOf(it) else emptySet() },
             content = radioOptions.map { option ->
                 {
-                    ExpressiveRadioItem(
+                    SegmentedRadioItem(
                         title = stringResource(option.label),
                         summary = option.summary,
                         selected = option.javaClass == selectedOption?.javaClass,
@@ -324,19 +338,23 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
-    TopAppBar(
+    LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.install)) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface
+        ),
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )

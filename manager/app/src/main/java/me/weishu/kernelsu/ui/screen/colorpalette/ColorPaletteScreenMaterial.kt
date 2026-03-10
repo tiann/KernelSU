@@ -1,8 +1,8 @@
 package me.weishu.kernelsu.ui.screen.colorpalette
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -22,14 +22,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -43,26 +47,32 @@ import androidx.compose.material.icons.filled.Brightness3
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.rounded.Adb
+import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.expressiveLightColorScheme
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -70,6 +80,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -77,35 +88,52 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
+import me.weishu.kernelsu.KernelSUApplication.Companion.setEnableOnBackInvokedCallback
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.material.ExpressiveColumn
-import me.weishu.kernelsu.ui.component.material.ExpressiveDropdownItem
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
+import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
-import me.weishu.kernelsu.ui.theme.ThemeController
 import me.weishu.kernelsu.ui.theme.keyColorOptions
+import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ColorPaletteScreenMaterial() {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    var appSettings by remember { mutableStateOf(ThemeController.getAppSettings(context)) }
-    var currentColorMode by remember { mutableStateOf(appSettings.colorMode) }
-    var currentKeyColor by remember { mutableIntStateOf(appSettings.keyColor) }
-    var colorStyle by remember { mutableStateOf(appSettings.paletteStyle) }
-    var colorSpec by remember { mutableStateOf(appSettings.colorSpec) }
+    val activity = LocalActivity.current
+    val viewModel = viewModel<SettingsViewModel>()
+    val uiState by viewModel.uiState.collectAsState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    val currentColorMode = ColorMode.fromValue(uiState.themeMode)
+    val currentKeyColor = uiState.keyColor
+    val colorStyle = try {
+        PaletteStyle.valueOf(uiState.colorStyle)
+    } catch (_: Exception) {
+        PaletteStyle.TonalSpot
+    }
+    val colorSpec = try {
+        ColorSpec.SpecVersion.valueOf(uiState.colorSpec)
+    } catch (_: Exception) {
+        ColorSpec.SpecVersion.Default
+    }
+
+    LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeFlexibleTopAppBar(
                 navigationIcon = {
                     IconButton(
                         onClick = dropUnlessResumed {
@@ -114,22 +142,30 @@ fun ColorPaletteScreenMaterial() {
                     ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
                 },
                 title = { Text(stringResource(R.string.settings_theme)) },
-                windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+                scrollBehavior = scrollBehavior
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
+        val navBars = WindowInsets.navigationBars.asPaddingValues()
+        val captionBar = WindowInsets.captionBar.asPaddingValues()
+
         Column(
             modifier = Modifier
                 .padding(paddingValues)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val isDark = currentColorMode.isDark || currentColorMode.isSystem && isSystemInDarkTheme()
-            ThemePreviewCardMaterial(
+            ThemePreviewCard(
                 keyColor = currentKeyColor,
                 isDark = isDark,
-                colorMode = currentColorMode,
                 paletteStyle = colorStyle,
                 colorSpec = colorSpec,
             )
@@ -149,8 +185,7 @@ fun ColorPaletteScreenMaterial() {
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            currentKeyColor = 0
-                            prefs.edit { putInt("key_color", 0) }
+                            viewModel.setKeyColor(0)
                         }
                     )
                 }
@@ -163,8 +198,7 @@ fun ColorPaletteScreenMaterial() {
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            currentKeyColor = color
-                            prefs.edit { putInt("key_color", color) }
+                            viewModel.setKeyColor(color)
                         }
                     )
                 }
@@ -177,10 +211,10 @@ fun ColorPaletteScreenMaterial() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val options = listOf(
-                    listOf(ColorMode.SYSTEM, ColorMode.MONET_SYSTEM) to stringResource(R.string.settings_theme_mode_system),
-                    listOf(ColorMode.LIGHT, ColorMode.MONET_LIGHT) to stringResource(R.string.settings_theme_mode_light),
-                    listOf(ColorMode.DARK, ColorMode.MONET_DARK) to stringResource(R.string.settings_theme_mode_dark),
-                    listOf(ColorMode.MONET_DARK_AMOLED) to stringResource(R.string.settings_theme_mode_dark)
+                    listOf(ColorMode.SYSTEM) to stringResource(R.string.settings_theme_mode_system),
+                    listOf(ColorMode.LIGHT) to stringResource(R.string.settings_theme_mode_light),
+                    listOf(ColorMode.DARK) to stringResource(R.string.settings_theme_mode_dark),
+                    listOf(ColorMode.DARK_AMOLED) to stringResource(R.string.settings_theme_mode_dark)
                 )
 
                 options.chunked(4).forEach { rowOptions ->
@@ -193,8 +227,7 @@ fun ColorPaletteScreenMaterial() {
                                 checked = currentColorMode in modes,
                                 onCheckedChange = {
                                     if (it) {
-                                        currentColorMode = modes.first()
-                                        prefs.edit { putInt("color_mode", currentColorMode.value) }
+                                        viewModel.setColorMode(modes.first())
                                     }
                                 },
                                 modifier = Modifier
@@ -211,7 +244,7 @@ fun ColorPaletteScreenMaterial() {
                                         ColorMode.SYSTEM -> Icons.Filled.Brightness4
                                         ColorMode.LIGHT -> Icons.Filled.Brightness7
                                         ColorMode.DARK -> Icons.Filled.Brightness3
-                                        ColorMode.MONET_DARK_AMOLED -> Icons.Filled.Brightness1
+                                        ColorMode.DARK_AMOLED -> Icons.Filled.Brightness1
                                         else -> Icons.Filled.Brightness4
                                     },
                                     contentDescription = label
@@ -221,40 +254,107 @@ fun ColorPaletteScreenMaterial() {
                     }
                 }
 
-                ExpressiveColumn(
+                SegmentedColumn(
                     modifier = Modifier.padding(top = 4.dp),
                     content = listOf(
                         {
                             val styles = PaletteStyle.entries
-                            ExpressiveDropdownItem(
+                            SegmentedDropdownItem(
                                 title = stringResource(R.string.settings_color_style),
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOf(colorStyle),
                                 onItemSelected = { index ->
-                                    val style = styles[index]
-                                    colorStyle = style
-                                    prefs.edit { putString("color_style", style.name) }
+                                    viewModel.setColorStyle(styles[index].name)
                                 }
                             )
                         },
                         {
-                            val specs = listOf("2021", "2025")
-                            ExpressiveDropdownItem(
+                            val specs = ColorSpec.SpecVersion.entries
+                            SegmentedDropdownItem(
                                 title = stringResource(R.string.settings_color_spec),
-                                items = specs,
-                                selectedIndex = if (colorSpec == ColorSpec.SpecVersion.SPEC_2025) 1 else 0,
+                                items = specs.map { it.name },
+                                selectedIndex = specs.indexOf(colorSpec).coerceAtLeast(0),
                                 onItemSelected = { index ->
-                                    val spec = if (index == 1) ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021
-                                    colorSpec = spec
-                                    prefs.edit { putString("color_spec", if (index == 1) "SPEC_2025" else "SPEC_2021") }
+                                    viewModel.setColorSpec(specs[index].name)
                                 }
                             )
                         }
                     )
                 )
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    SegmentedColumn(
+                        modifier = Modifier.padding(top = 4.dp),
+                        content = listOf(
+                            {
+                                SegmentedSwitchItem(
+                                    icon = Icons.Rounded.Adb,
+                                    title = stringResource(id = R.string.settings_enable_predictive_back),
+                                    summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
+                                    checked = uiState.enablePredictiveBack,
+                                    onCheckedChange = {
+                                        viewModel.setEnablePredictiveBack(it)
+                                        setEnableOnBackInvokedCallback(context.applicationInfo, it)
+                                        activity?.recreate()
+                                    }
+                                )
+                            }
+                        )
+                    )
+                }
+
+                TonalCard(modifier = Modifier.padding(top = 4.dp)) {
+                    val settingsViewModel = viewModel<SettingsViewModel>()
+                    val uiState by settingsViewModel.uiState.collectAsState()
+                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Rounded.AspectRatio,
+                                contentDescription = stringResource(id = R.string.settings_page_scale),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.settings_page_scale),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = stringResource(id = R.string.settings_page_scale_summary),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                            Text(
+                                text = "${(sliderValue * 100).toInt()}%",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Slider(
+                            value = sliderValue,
+                            onValueChange = { sliderValue = it },
+                            onValueChangeFinished = { settingsViewModel.setPageScale(sliderValue) },
+                            valueRange = 0.8f..1.1f,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp + navBars.calculateBottomPadding() + captionBar.calculateBottomPadding()))
         }
     }
 }
@@ -262,10 +362,9 @@ fun ColorPaletteScreenMaterial() {
 @SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun ThemePreviewCardMaterial(
+private fun ThemePreviewCard(
     keyColor: Int,
     isDark: Boolean,
-    colorMode: ColorMode,
     paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
     colorSpec: ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2021,
 ) {

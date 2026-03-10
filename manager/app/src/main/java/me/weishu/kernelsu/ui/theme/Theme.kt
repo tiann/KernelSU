@@ -18,7 +18,7 @@ enum class ColorMode(val value: Int) {
     MONET_SYSTEM(3),
     MONET_LIGHT(4),
     MONET_DARK(5),
-    MONET_DARK_AMOLED(6);
+    DARK_AMOLED(6);
 
     companion object {
         fun fromValue(value: Int) = entries.find { it.value == value } ?: SYSTEM
@@ -28,6 +28,20 @@ enum class ColorMode(val value: Int) {
     val isDark: Boolean get() = value == 2 || value == 5 || value == 6
     val isAmoled: Boolean get() = value == 6
     val isMonet: Boolean get() = value >= 3
+
+    fun toNonMonetMode(): Int = when (this) {
+        MONET_SYSTEM -> 0
+        MONET_LIGHT -> 1
+        MONET_DARK, DARK_AMOLED -> 2
+        else -> value
+    }
+
+    fun toMonetMode(): Int = when (this) {
+        SYSTEM -> 3
+        LIGHT -> 4
+        DARK -> 5
+        else -> value
+    }
 }
 
 data class AppSettings(
@@ -40,7 +54,22 @@ data class AppSettings(
 object ThemeController {
     fun getAppSettings(context: Context): AppSettings {
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val colorMode = ColorMode.fromValue(prefs.getInt("color_mode", ColorMode.SYSTEM.value))
+        val uiMode = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
+        var colorModeValue = prefs.getInt("color_mode", ColorMode.SYSTEM.value)
+
+        if (uiMode == "miuix") {
+            val miuixMonet = prefs.getBoolean("miuix_monet", false)
+            val colorMode = ColorMode.fromValue(colorModeValue)
+            colorModeValue = if (!miuixMonet && colorMode.isMonet) {
+                colorMode.toNonMonetMode()
+            } else if (miuixMonet && !colorMode.isMonet) {
+                colorMode.toMonetMode()
+            } else {
+                colorModeValue
+            }
+        }
+
+        val colorMode = ColorMode.fromValue(colorModeValue)
         val keyColor = prefs.getInt("key_color", 0)
         val paletteStyleStr = prefs.getString("color_style", PaletteStyle.TonalSpot.name)
         val paletteStyle = try {
@@ -48,8 +77,12 @@ object ThemeController {
         } catch (_: Exception) {
             PaletteStyle.TonalSpot
         }
-        val colorSpecStr = prefs.getString("color_spec", "SPEC_2021")
-        val colorSpec = if (colorSpecStr == "SPEC_2025") ColorSpec.SpecVersion.SPEC_2025 else ColorSpec.SpecVersion.SPEC_2021
+        val colorSpecStr = prefs.getString("color_spec", ColorSpec.SpecVersion.Default.name)
+        val colorSpec = try {
+            ColorSpec.SpecVersion.valueOf(colorSpecStr!!)
+        } catch (_: Exception) {
+            ColorSpec.SpecVersion.Default
+        }
 
         return AppSettings(colorMode, keyColor, paletteStyle, colorSpec)
     }

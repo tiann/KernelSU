@@ -90,7 +90,7 @@ fun RootProfileConfigMiuix(
 
         }
 
-        val selectedGroups = profile.groups.ifEmpty { listOf(0) }.let { e ->
+        val selectedGroups = profile.groups.let { e ->
             e.mapNotNull { g ->
                 Groups.entries.find { it.gid == g }
             }
@@ -99,7 +99,7 @@ fun RootProfileConfigMiuix(
         GroupsPanel(enabled, selectedGroups) {
             onProfileChange(
                 profile.copy(
-                    groups = it.map { group -> group.gid }.ifEmpty { listOf(0) },
+                    groups = it.map { group -> group.gid },
                     rootUseDefault = false
                 )
             )
@@ -149,15 +149,14 @@ private fun GroupsPanel(
 
     val groups = remember {
         Groups.entries.toTypedArray().sortedWith(
-            compareBy<Groups> { if (selected.contains(it)) 0 else 1 }
-                .then(compareBy {
-                    when (it) {
-                        Groups.ROOT -> 0
-                        Groups.SYSTEM -> 1
-                        Groups.SHELL -> 2
-                        else -> Int.MAX_VALUE
-                    }
-                })
+            compareBy<Groups> {
+                when (it) {
+                    Groups.ROOT -> 0
+                    Groups.SYSTEM -> 1
+                    Groups.SHELL -> 2
+                    else -> Int.MAX_VALUE
+                }
+            }
                 .then(compareBy { it.name })
         )
     }
@@ -235,6 +234,7 @@ private fun GroupsPanel(
     )
 
 }
+
 @Composable
 private fun MountNameSpacePanel(
     enabled: Boolean,
@@ -264,10 +264,7 @@ private fun CapsPanel(
     val showDialog = remember { mutableStateOf(false) }
 
     val caps = remember {
-        Capabilities.entries.toTypedArray().sortedWith(
-            compareBy<Capabilities> { if (selected.contains(it)) 0 else 1 }
-                .then(compareBy { it.name })
-        )
+        Capabilities.entries.toTypedArray().sortedBy { it.display }
     }
 
     val currentSelection = remember { mutableStateOf(selected.toSet()) }

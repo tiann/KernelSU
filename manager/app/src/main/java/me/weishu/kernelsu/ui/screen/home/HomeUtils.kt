@@ -25,7 +25,7 @@ fun rememberSystemInfo(): SystemInfo {
     val context = LocalContext.current
     val uname = Os.uname()
     val managerVersion = getManagerVersion(context)
-    
+
     return SystemInfo(
         kernelVersion = uname.release,
         managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode})",

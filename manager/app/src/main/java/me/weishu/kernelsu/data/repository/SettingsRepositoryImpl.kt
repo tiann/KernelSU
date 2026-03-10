@@ -2,6 +2,8 @@ package me.weishu.kernelsu.data.repository
 
 import android.content.Context
 import androidx.core.content.edit
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.UiMode
@@ -31,9 +33,21 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getInt("color_mode", 0)
         set(value) = prefs.edit { putInt("color_mode", value) }
 
+    override var miuixMonet: Boolean
+        get() = prefs.getBoolean("miuix_monet", false)
+        set(value) = prefs.edit { putBoolean("miuix_monet", value) }
+
     override var keyColor: Int
         get() = prefs.getInt("key_color", 0)
         set(value) = prefs.edit { putInt("key_color", value) }
+
+    override var colorStyle: String
+        get() = prefs.getString("color_style", PaletteStyle.TonalSpot.name) ?: PaletteStyle.TonalSpot.name
+        set(value) = prefs.edit { putString("color_style", value) }
+
+    override var colorSpec: String
+        get() = prefs.getString("color_spec", ColorSpec.SpecVersion.Default.name) ?: ColorSpec.SpecVersion.Default.name
+        set(value) = prefs.edit { putString("color_spec", value) }
 
     override var enablePredictiveBack: Boolean
         get() = prefs.getBoolean("enable_predictive_back", false)
