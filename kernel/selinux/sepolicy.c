@@ -1044,15 +1044,14 @@ copy_role_datum_partially_callback(struct hashtab_node *new_node,
         ret = -ENOMEM;
         goto out;
     }
+    new_node->datum = new_role;
+    new_node->key = old_node->key;
 
     ret = ebitmap_cpy(&new_role->types, &role->types);
     if (ret) {
         goto out;
     }
-    pr_info("ksu_sepolicy: set new role %d\n", role->value - 1);
     db->role_val_to_struct[role->value - 1] = new_role;
-    new_node->datum = new_role;
-    new_node->key = old_node->key;
 
 out:
     return ret;
@@ -1087,7 +1086,6 @@ static int copy_role_datum_partially(struct policydb *new_db,
     int ret;
     struct role_datum **new_role_val_to_struct;
     u32 n = old_db->p_roles.nprim;
-    pr_info("ksu_sepolicy: role nr: %d\n", n);
 
     new_db->role_val_to_struct = NULL;
     memset(&new_db->p_roles.table, 0, sizeof(new_db->p_roles.table));
@@ -1302,7 +1300,6 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
     return new_pol;
 
 out:
-    pr_err("ret=%d\n", ret);
     kfree(new_pol);
     return NULL;
 }

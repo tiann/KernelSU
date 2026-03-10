@@ -3,6 +3,7 @@
 #include <linux/uaccess.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#include <linux/lockdep.h>
 
 #include "../klog.h" // IWYU pragma: keep
 #include "selinux.h"
@@ -46,9 +47,10 @@ void apply_kernelsu_rules()
     }
 
     mutex_lock(&selinux_state.policy_mutex);
-    pol = ksu_dup_sepolicy(old_pol);
+    pol = ksu_dup_sepolicy(rcu_dereference_protected(
+        old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (!pol) {
-        pr_err("failed to dup selinux_policy");
+        pr_err("failed to dup selinux_policy\n");
         goto out_unlock;
     }
 
@@ -184,7 +186,8 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4)
 
     mutex_lock(&selinux_state.policy_mutex);
 
-    pol = ksu_dup_sepolicy(old_pol);
+    pol = ksu_dup_sepolicy(rcu_dereference_protected(
+        old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (!pol) {
         ret = -ENOMEM;
         goto out_unlock;
