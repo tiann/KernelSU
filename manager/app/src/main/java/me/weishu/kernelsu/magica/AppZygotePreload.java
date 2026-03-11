@@ -25,7 +25,7 @@ public class AppZygotePreload implements ZygotePreload {
             Log.d(TAG, "set uid 0 ...");
             var nullFile = new File("/dev/null");
             var proc = new ProcessBuilder()
-                    .command(f.getAbsolutePath(), "late-load", "")
+                    .command(f.getAbsolutePath(), "late-load", "--magica", "5555")
                     .redirectOutput(nullFile)
                     .redirectInput(nullFile)
                     .redirectError(nullFile)
