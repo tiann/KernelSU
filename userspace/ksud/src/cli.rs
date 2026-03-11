@@ -3,7 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 use android_logger::Config;
-use log::LevelFilter;
+use log::{error, LevelFilter};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
@@ -540,7 +540,10 @@ pub fn run() -> Result<()> {
         },
         Commands::LateLoad { magica } => {
             if let Some(port) = magica {
-                return crate::magica::run(port);
+                return crate::magica::run(port).map_err(|e| {
+                    error!("Error running magica: {}", e);
+                    e
+                });
             }
             crate::late_load::run()
         }
