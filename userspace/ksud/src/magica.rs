@@ -14,19 +14,6 @@ pub fn run(port: u16) -> Result<()> {
         .get_device()
         .context("Failed to get ADB device")?;
 
-    info!("Requesting adb root...");
-    device.root().context("Failed to execute adb root")?;
-
-    // adb root restarts adbd, wait for it to come back
-    info!("Waiting for adbd to restart...");
-    std::thread::sleep(std::time::Duration::from_secs(3));
-
-    // Reconnect after adbd restart
-    let mut server = ADBServer::new(addr);
-    let mut device = server
-        .get_device()
-        .context("Failed to reconnect after adb root")?;
-
     let self_path = std::env::current_exe().context("Failed to get self exe path")?;
     let cmd = format!("{} late-load", self_path.display());
     info!("Executing '{cmd}' via adb shell...");
