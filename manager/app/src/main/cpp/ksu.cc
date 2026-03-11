@@ -106,6 +106,14 @@ bool is_lkm_mode() {
     return (legacy_get_info().second & 0x1) != 0;
 }
 
+bool is_late_load_mode() {
+    auto info = get_info();
+    if (info.version > 0) {
+        return (info.flags & 0x4) != 0;
+    }
+    return false;
+}
+
 bool is_manager() {
     auto info = get_info();
     if (info.version > 0) {

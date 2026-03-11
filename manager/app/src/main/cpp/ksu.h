@@ -17,6 +17,8 @@ bool is_safe_mode();
 
 bool is_lkm_mode();
 
+bool is_late_load_mode();
+
 bool is_manager();
 
 #define KSU_APP_PROFILE_VER 2
