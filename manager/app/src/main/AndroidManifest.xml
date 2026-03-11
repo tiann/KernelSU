@@ -87,6 +87,9 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="me.weishu.kernelsu.magica.LAUNCH" />
+            </intent-filter>
         </receiver>
     </application>
 

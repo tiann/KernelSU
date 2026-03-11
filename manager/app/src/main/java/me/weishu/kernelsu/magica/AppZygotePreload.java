@@ -33,7 +33,9 @@ public class AppZygotePreload implements ZygotePreload {
             ;
             var res = proc.waitFor();
             Log.d(TAG, "res=" + res);
-            Os.setuid(uid);
+            // we need to exit to prevent from app being blocked
+            System.exit(0);
+            // Os.setuid(uid);
         } catch (Throwable t) {
             Log.e(TAG, "failed to late load", t);
         }
