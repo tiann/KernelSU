@@ -147,6 +147,14 @@ enum Debug {
     /// For testing
     Test,
 
+    /// Extract an embedded binary to a specified path
+    ExtractBinary {
+        /// binary name (e.g. busybox, resetprop, bootctl)
+        name: String,
+        /// destination file path
+        path: PathBuf,
+    },
+
     /// Process mark management
     Mark {
         #[command(subcommand)]
@@ -582,6 +590,10 @@ pub fn run() -> Result<()> {
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
             Debug::Test => assets::ensure_binaries(false),
+            Debug::ExtractBinary { name, path } => {
+                let data = assets::get_asset_data(&name)?;
+                utils::ensure_binary(&path, &data, false)
+            }
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
                 MarkCommand::Mark { pid } => debug::mark_set(pid),
