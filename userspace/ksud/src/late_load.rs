@@ -35,15 +35,6 @@ pub fn run() -> Result<()> {
 
     utils::install(None).context("Failed to install ksud")?;
 
-    let safe_mode = utils::is_safe_mode();
-    if safe_mode {
-        warn!("safe mode, skip late-load scripts and disable all modules!");
-        if let Err(e) = crate::module::disable_all_modules() {
-            warn!("disable all modules failed: {e}");
-        }
-        return Ok(());
-    }
-
     // 5. Handle module updates
     if let Err(e) = handle_updated_modules() {
         warn!("handle updated modules failed: {e}");
