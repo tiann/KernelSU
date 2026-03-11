@@ -541,7 +541,7 @@ pub fn run() -> Result<()> {
         Commands::LateLoad { magica } => {
             if let Some(port) = magica {
                 return crate::magica::run(port).map_err(|e| {
-                    error!("Error running magica: {}", e);
+                    error!("Error running magica: {e}");
                     e
                 });
             }

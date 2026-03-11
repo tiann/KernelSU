@@ -114,7 +114,7 @@ fn connect_to_device(port: u16) -> Result<ADBTcpDevice> {
         {
             Ok(device) => return Ok(device),
             Err(e) => {
-                error!("Failed to connect to ADB device: {:?}, retry after 1s", e);
+                error!("Failed to connect to ADB device: {e:?}, retry after 1s");
             }
         }
     }
