@@ -109,7 +109,9 @@ fn connect_to_device(port: u16) -> Result<ADBTcpDevice> {
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
         info!("Connecting to ADB device at {addr}");
         unsafe { std::env::set_var("HOME", "/dev") };
-        match ADBTcpDevice::new_with_custom_private_key(addr, Path::new("/dev/adbkey")).context("Failed to create ADBTcpDevice") {
+        match ADBTcpDevice::new_with_custom_private_key(addr, Path::new("/dev/adbkey"))
+            .context("Failed to create ADBTcpDevice")
+        {
             Ok(device) => return Ok(device),
             Err(e) => {
                 error!("Failed to connect to ADB device: {:?}, retry after 1s", e);

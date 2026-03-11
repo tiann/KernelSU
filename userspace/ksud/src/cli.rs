@@ -3,7 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 use android_logger::Config;
-use log::{error, LevelFilter};
+use log::{LevelFilter, error};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
