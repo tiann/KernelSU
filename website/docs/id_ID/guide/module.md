@@ -280,3 +280,71 @@ Di KernelSU, skrip startup dibagi menjadi dua jenis berdasarkan lokasi penyimpan
    - `post-fs-data.sh` berjalan dalam mode post-fs-data, dan `service.sh` berjalan dalam mode layanan late_start.
 
 Semua skrip boot akan berjalan di shell BusyBox `ash` KernelSU dengan "Mode Mandiri" diaktifkan.
+
+## Mode late-load {#late-load-mode}
+
+Selain alur boot standar yang dijelaskan di atas, KernelSU mendukung **mode late-load** untuk skenario LKM (Loadable Kernel Module). Dalam mode ini, modul kernel KernelSU dimuat **setelah sistem sepenuhnya boot**, bukan selama proses init.
+
+### Kapan late-load terjadi?
+
+Late-load dipicu dengan menjalankan perintah `ksud late-load`. Perintah ini:
+
+1. Mendeteksi versi KMI saat ini dan memuat `kernelsu.ko` yang sesuai dari aset tertanam.
+2. Melakukan inisialisasi modul (aturan SELinux, daftar izin, fitur, dll.) yang biasanya terjadi saat boot.
+
+Karena sistem sudah sepenuhnya berjalan, mekanisme tertentu saat boot tidak tersedia atau tidak diperlukan.
+
+### Perbedaan dari boot standar
+
+| Perilaku | Boot standar | Mode late-load |
+|----------|:---:|:---:|
+| Modul kernel dimuat oleh init (PID 1) | Ya | Tidak (dimuat setelah boot) |
+| Hook kprobe ksud (execve/read/fstat/input) | Ya | Dilewati |
+| Deteksi mode aman (tombol volume) | Ya | Selalu dinonaktifkan |
+| Pengambilan log boot (logcat/dmesg) | Ya | Dilewati |
+| Pemeriksaan koeksistensi Magisk | Ya | Dilewati |
+| Event `post-fs-data` dilaporkan ke kernel | Ya | Dilewati |
+| Event `boot-completed` dilaporkan ke kernel | Ya | Diatur langsung saat init |
+| Skrip `post-fs-data.sh` / `post-fs-data.d/` | Ya | Digantikan oleh tahap `late-load` |
+| Pemuatan `system.prop` | Ya | Ya |
+| Mount OverlayFS (metamodule) | Ya | Ya |
+| Skrip `post-mount.sh` / `post-mount.d/` | Ya | Ya |
+| Skrip `service.sh` / `service.d/` | Ya | Ya |
+| Skrip `boot-completed.sh` / `boot-completed.d/` | Ya | Ya |
+| Variabel lingkungan `KSU_LATE_LOAD` | Tidak diatur | Diatur ke `1` |
+| Flag info kernel `0x4` | Tidak diatur | Diatur |
+
+### Urutan eksekusi skrip
+
+Dalam mode late-load, urutan eksekusi skrip adalah:
+
+```txt
+ksud late-load:
+  1. Muat kernelsu.ko (jika belum dimuat)
+  2. Ekstrak biner, tangani pembaruan modul, muat aturan SELinux, inisialisasi fitur
+  3. Jalankan skrip late-load.d/ dan skrip late-load modul (blocking)
+  4. Muat system.prop (resetprop -n)
+  5. Jalankan skrip mount metamodule (OverlayFS)
+  6. Jalankan skrip post-mount.d/ dan post-mount.sh modul (blocking)
+  7. Jalankan skrip service.d/ dan service.sh modul (non-blocking)
+  8. Jalankan skrip boot-completed.d/ dan boot-completed.sh modul (non-blocking)
+```
+
+### Skrip khusus late-load
+
+Modul dapat menyediakan skrip `late-load.sh` yang dijalankan **hanya** dalam mode late-load, sebagai pengganti `post-fs-data.sh`. Skrip ini berjalan sebelum mount OverlayFS, mirip dengan `post-fs-data.sh` dalam alur standar.
+
+Selain itu, skrip umum dapat ditempatkan di `/data/adb/late-load.d/` untuk dijalankan pada tahap ini.
+
+### Mendeteksi mode late-load dalam skrip
+
+Modul dapat mendeteksi mode late-load dengan memeriksa variabel lingkungan `KSU_LATE_LOAD`:
+
+```sh
+if [ "$KSU_LATE_LOAD" = "1" ]; then
+    # Berjalan dalam mode late-load
+    echo "Late-load mode detected"
+fi
+```
+
+Ini memungkinkan modul menyesuaikan perilakunya, misalnya melewatkan operasi yang hanya diperlukan saat boot awal.
