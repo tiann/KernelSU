@@ -31,9 +31,21 @@ struct ksu_report_event_cmd {
 };
 
 struct ksu_set_sepolicy_cmd {
-    __u64 cmd; // Input: sepolicy command
-    __aligned_u64 arg; // Input: sepolicy argument pointer
+    __u64 data_len; // Input: bytes of serialized command payload
+    __aligned_u64 data; // Input: pointer to serialized payload
 };
+
+struct ksu_sepolicy_cmd_hdr {
+    __u32 cmd; // Input: command type, CMD_*
+    __u32 subcmd; // Input: command subtype
+};
+// After each ksu_sepolicy_cmd_hdr, command arguments are encoded sequentially as:
+// [u32 len][len bytes][\0], where len excludes the trailing '\0'.
+// len == 0 represents ALL.
+// Argument count is derived from cmd:
+// CMD_NORMAL_PERM=4, CMD_XPERM=5, CMD_TYPE_STATE=1, CMD_TYPE=2,
+// CMD_TYPE_ATTR=2, CMD_ATTR=1, CMD_TYPE_TRANSITION=5,
+// CMD_TYPE_CHANGE=4, CMD_GENFSCON=3.
 
 struct ksu_check_safemode_cmd {
     __u8 in_safe_mode; // Output: true if in safe mode, false otherwise

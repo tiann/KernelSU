@@ -32,7 +32,7 @@ bool is_init(const struct cred *cred);
 
 void apply_kernelsu_rules();
 
-int handle_sepolicy(unsigned long arg3, void __user *arg4);
+int handle_sepolicy(void __user *user_data, u64 data_len);
 
 void setup_ksu_cred();
 
