@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.home
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -29,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -67,6 +69,8 @@ import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
 import me.weishu.kernelsu.ui.util.getSuperuserCount
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
+import me.weishu.kernelsu.magica.MagicaService
+import me.weishu.kernelsu.ui.util.isSELinuxPermissive
 import me.weishu.kernelsu.ui.util.rootAvailable
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,6 +102,7 @@ fun HomePagerMaterial(
             val mainState = LocalMainPagerState.current
 
             val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+            val context = LocalContext.current
 
             StatusCard(
                 kernelVersion,
@@ -105,6 +110,9 @@ fun HomePagerMaterial(
                 lkmMode,
                 fullFeatured,
                 onClickInstall = { navigator.push(Route.Install) },
+                onClickJailbreak = {
+                    context.startService(Intent(context, MagicaService::class.java))
+                },
                 onClickSuperuser = { mainState.animateToPage(1) },
                 onclickModule = { mainState.animateToPage(2) },
             )
@@ -126,7 +134,6 @@ fun HomePagerMaterial(
                     stringResource(id = R.string.grant_root_failed)
                 )
             }
-            val context = LocalContext.current
             val checkUpdate = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                 .getBoolean("check_update", true)
             if (checkUpdate) {
@@ -207,6 +214,7 @@ private fun StatusCard(
     lkmMode: Boolean?,
     fullFeatured: Boolean?,
     onClickInstall: () -> Unit = {},
+    onClickJailbreak: () -> Unit = {},
     onClickSuperuser: () -> Unit = {},
     onclickModule: () -> Unit = {},
 ) {
@@ -275,7 +283,7 @@ private fun StatusCard(
 
                     kernelVersion.isGKI() -> {
                         Icon(Icons.Outlined.Warning, stringResource(R.string.home_not_installed))
-                        Column(Modifier.padding(start = 20.dp)) {
+                        Column(Modifier.padding(start = 20.dp).weight(1f)) {
                             Text(
                                 text = stringResource(R.string.home_not_installed),
                                 style = MaterialTheme.typography.titleMedium
@@ -285,6 +293,11 @@ private fun StatusCard(
                                 text = stringResource(R.string.home_click_to_install),
                                 style = MaterialTheme.typography.bodyMedium
                             )
+                        }
+                        if (isSELinuxPermissive()) {
+                            FilledTonalButton(onClick = onClickJailbreak) {
+                                Text(stringResource(R.string.home_jailbreak))
+                            }
                         }
                     }
 

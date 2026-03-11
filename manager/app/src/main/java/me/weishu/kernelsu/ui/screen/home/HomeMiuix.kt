@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.home
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircleOutline
+import androidx.compose.material.icons.rounded.ElectricalServices
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -67,6 +69,8 @@ import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
 import me.weishu.kernelsu.ui.util.getSuperuserCount
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
+import me.weishu.kernelsu.magica.MagicaService
+import me.weishu.kernelsu.ui.util.isSELinuxPermissive
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -160,6 +164,9 @@ fun HomePagerMiuix(
                         kernelVersion, ksuVersion, lkmMode,
                         onClickInstall = {
                             navigator.push(Route.Install)
+                        },
+                        onClickJailbreak = {
+                            context.startService(Intent(context, MagicaService::class.java))
                         },
                         onClickSuperuser = {
                             mainState.animateToPage(1)
@@ -259,6 +266,7 @@ private fun StatusCard(
     ksuVersion: Int?,
     lkmMode: Boolean?,
     onClickInstall: () -> Unit = {},
+    onClickJailbreak: () -> Unit = {},
     onClickSuperuser: () -> Unit = {},
     onclickModule: () -> Unit = {},
 ) {
@@ -418,26 +426,51 @@ private fun StatusCard(
             }
 
             kernelVersion.isGKI() -> {
-                Card(
-                    onClick = {
-                        onClickInstall()
-                    },
-                    showIndication = true,
-                    pressFeedbackType = PressFeedbackType.Sink
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    BasicComponent(
-                        title = stringResource(R.string.home_not_installed),
-                        summary = stringResource(R.string.home_click_to_install),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.ErrorOutline,
-                                stringResource(R.string.home_not_installed),
-                                modifier = Modifier
-                                    .padding(end = 16.dp),
-                                tint = colorScheme.onBackground,
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            onClickInstall()
+                        },
+                        showIndication = true,
+                        pressFeedbackType = PressFeedbackType.Sink
+                    ) {
+                        BasicComponent(
+                            title = stringResource(R.string.home_not_installed),
+                            summary = stringResource(R.string.home_click_to_install),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.ErrorOutline,
+                                    stringResource(R.string.home_not_installed),
+                                    modifier = Modifier
+                                        .padding(end = 16.dp),
+                                    tint = colorScheme.onBackground,
+                                )
+                            }
+                        )
+                    }
+                    if (isSELinuxPermissive()) {
+                        Card(
+                            onClick = { onClickJailbreak() },
+                            showIndication = true,
+                            pressFeedbackType = PressFeedbackType.Sink
+                        ) {
+                            BasicComponent(
+                                title = stringResource(R.string.home_jailbreak),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.ElectricalServices,
+                                        stringResource(R.string.home_jailbreak),
+                                        modifier = Modifier
+                                            .padding(end = 16.dp),
+                                        tint = colorScheme.onBackground,
+                                    )
+                                }
                             )
                         }
-                    )
+                    }
                 }
             }
 
