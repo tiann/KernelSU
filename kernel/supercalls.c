@@ -68,14 +68,14 @@ static int do_get_info(void __user *arg)
     struct ksu_get_info_cmd cmd = { .version = KERNEL_SU_VERSION, .flags = 0 };
 
 #ifdef MODULE
-    cmd.flags |= 0x1;
+    cmd.flags |= KSU_GET_INFO_FLAG_LKM;
 #endif
 
     if (is_manager()) {
-        cmd.flags |= 0x2;
+        cmd.flags |= KSU_GET_INFO_FLAG_MANAGER;
     }
     if (ksu_late_loaded) {
-        cmd.flags |= 0x4;
+        cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
     }
     cmd.features = KSU_FEATURE_MAX;
 
