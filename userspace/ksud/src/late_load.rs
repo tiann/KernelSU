@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use log::{info, warn};
 
 use crate::module::{handle_updated_modules, prune_modules};
-use crate::{assets, init_event, restorecon, utils};
+use crate::{assets, defs, init_event, metamodule, restorecon, utils};
 
 pub fn run() -> Result<()> {
     info!("late-load command triggered!");
@@ -75,8 +75,24 @@ pub fn run() -> Result<()> {
     // 9. Execute late-load stage scripts (blocking)
     init_event::run_stage("late-load", true);
 
-    // 10. Execute service stage scripts (non-blocking)
+    // 10. Load system.prop
+    if let Err(e) = crate::module::load_system_prop() {
+        warn!("load system.prop failed: {e}");
+    }
+
+    // 11. Execute metamodule mount script (OverlayFS)
+    if let Err(e) = metamodule::exec_mount_script(defs::MODULE_DIR) {
+        warn!("execute metamodule mount failed: {e}");
+    }
+
+    // 12. Execute post-mount stage scripts (blocking)
+    init_event::run_stage("post-mount", true);
+
+    // 13. Execute service stage scripts (non-blocking)
     init_event::run_stage("service", false);
+
+    // 14. Execute boot-completed stage scripts (non-blocking)
+    init_event::run_stage("boot-completed", false);
 
     Ok(())
 }
