@@ -29,7 +29,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KernelSU"
         android:directBootAware="true"
-        android:zygotePreloadName="io.github.vvb2060.puellamagi.AppZygote"
+        android:zygotePreloadName="me.weishu.kernelsu.magica.AppZygotePreload"
         tools:targetApi="29">
         <activity
             android:name=".ui.MainActivity"

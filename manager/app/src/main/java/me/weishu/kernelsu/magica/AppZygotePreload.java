@@ -20,8 +20,19 @@ public class AppZygotePreload implements ZygotePreload {
         File f = new File(appInfo.nativeLibraryDir, "libksud.so");
         try {
             var uid = Os.getuid();
+            Log.d(TAG, "executing magica ...");
             Os.setuid(0);
-            Runtime.getRuntime().exec(new String[] {f.getAbsolutePath(), "late-load", ""});
+            Log.d(TAG, "set uid 0 ...");
+            var nullFile = new File("/dev/null");
+            var proc = new ProcessBuilder()
+                    .command(f.getAbsolutePath(), "late-load", "")
+                    .redirectOutput(nullFile)
+                    .redirectInput(nullFile)
+                    .redirectError(nullFile)
+                    .start()
+            ;
+            var res = proc.waitFor();
+            Log.d(TAG, "res=" + res);
             Os.setuid(uid);
         } catch (Throwable t) {
             Log.e(TAG, "failed to late load", t);
