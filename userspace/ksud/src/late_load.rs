@@ -33,8 +33,7 @@ pub fn run() -> Result<()> {
         warn!("clear temp configs failed: {e}");
     }
 
-    // 5. Ensure binaries are extracted
-    assets::ensure_binaries(true).context("Failed to extract bin assets")?;
+    utils::install(None).context("Failed to install ksud")?;
 
     let safe_mode = utils::is_safe_mode();
     if safe_mode {
@@ -45,7 +44,7 @@ pub fn run() -> Result<()> {
         return Ok(());
     }
 
-    // 6. Handle module updates
+    // 5. Handle module updates
     if let Err(e) = handle_updated_modules() {
         warn!("handle updated modules failed: {e}");
     }
@@ -58,7 +57,7 @@ pub fn run() -> Result<()> {
         warn!("restorecon failed: {e}");
     }
 
-    // 7. Load SELinux rules
+    // 6. Load SELinux rules
     if crate::module::load_sepolicy_rule().is_err() {
         warn!("load sepolicy.rule failed");
     }
@@ -67,31 +66,31 @@ pub fn run() -> Result<()> {
         warn!("apply root profile sepolicy failed: {e}");
     }
 
-    // 8. Initialize features
+    // 7. Initialize features
     if let Err(e) = crate::feature::init_features() {
         warn!("init features failed: {e}");
     }
 
-    // 9. Execute late-load stage scripts (blocking)
+    // 8. Execute late-load stage scripts (blocking)
     init_event::run_stage("late-load", true);
 
-    // 10. Load system.prop
+    // 9. Load system.prop
     if let Err(e) = crate::module::load_system_prop() {
         warn!("load system.prop failed: {e}");
     }
 
-    // 11. Execute metamodule mount script (OverlayFS)
+    // 10. Execute metamodule mount script (OverlayFS)
     if let Err(e) = metamodule::exec_mount_script(defs::MODULE_DIR) {
         warn!("execute metamodule mount failed: {e}");
     }
 
-    // 12. Execute post-mount stage scripts (blocking)
+    // 11. Execute post-mount stage scripts (blocking)
     init_event::run_stage("post-mount", true);
 
-    // 13. Execute service stage scripts (non-blocking)
+    // 12. Execute service stage scripts (non-blocking)
     init_event::run_stage("service", false);
 
-    // 14. Execute boot-completed stage scripts (non-blocking)
+    // 13. Execute boot-completed stage scripts (non-blocking)
     init_event::run_stage("boot-completed", false);
 
     Ok(())
