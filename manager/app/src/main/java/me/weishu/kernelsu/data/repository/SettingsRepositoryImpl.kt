@@ -1,11 +1,16 @@
 package me.weishu.kernelsu.data.repository
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.content.edit
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import me.weishu.kernelsu.KernelSUApplication
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.magica.BootCompletedReceiver
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.getFeaturePersistValue
@@ -75,7 +80,20 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override var autoJailbreak: Boolean
         get() = prefs.getBoolean("auto_jailbreak", false)
-        set(value) = prefs.edit { putBoolean("auto_jailbreak", value) }
+        set(value) {
+            runCatching {
+                ksuApp.packageManager.setComponentEnabledSetting(
+                    ComponentName(ksuApp, BootCompletedReceiver::class.java),
+                    if (value) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+            }.onFailure {
+                Log.e("Settings", "failed to change boot receiver state to $value", it)
+            }
+            prefs.edit {
+                putBoolean("auto_jailbreak", value)
+            }
+        }
 
     override suspend fun getSuCompatStatus(): String = getFeatureStatus("su_compat")
 
