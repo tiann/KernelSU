@@ -5,6 +5,15 @@ import androidx.compose.ui.res.stringResource
 import com.topjohnwu.superuser.Shell
 import me.weishu.kernelsu.R
 
+fun isSELinuxPermissive(): Boolean {
+    val shell = Shell.Builder.create().build("sh")
+    val stdoutList = ArrayList<String>()
+    val result = shell.use {
+        it.newJob().add("getenforce").to(stdoutList).exec()
+    }
+    return result.isSuccess && stdoutList.joinToString("").trim() == "Permissive"
+}
+
 @Composable
 fun getSELinuxStatus(): String {
     val shell = Shell.Builder.create().build("sh")

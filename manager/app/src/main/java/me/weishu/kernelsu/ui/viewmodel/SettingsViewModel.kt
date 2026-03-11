@@ -51,6 +51,7 @@ class SettingsViewModel(
             val isKernelUmountEnabled = repo.isKernelUmountEnabled()
             val isDefaultUmountModules = repo.isDefaultUmountModules()
             val uiMode = repo.uiMode
+            val autoJailbreak = repo.autoJailbreak
 
             _uiState.update {
                 it.copy(
@@ -74,7 +75,8 @@ class SettingsViewModel(
                     kernelUmountStatus = kernelUmountStatus,
                     isKernelUmountEnabled = isKernelUmountEnabled,
                     isDefaultUmountModules = isDefaultUmountModules,
-                    isLkmMode = isLkmMode
+                    isLkmMode = isLkmMode,
+                    autoJailbreak = autoJailbreak
                 )
             }
         }
@@ -229,6 +231,11 @@ class SettingsViewModel(
                 _uiState.update { it.copy(isKernelUmountEnabled = enabled) }
             }
         }
+    }
+
+    fun setAutoJailbreak(enabled: Boolean) {
+        repo.autoJailbreak = enabled
+        _uiState.update { it.copy(autoJailbreak = enabled) }
     }
 
     fun setDefaultUmountModules(enabled: Boolean) {

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.ContactPage
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeveloperMode
+import androidx.compose.material.icons.filled.ElectricalServices
 import androidx.compose.material.icons.filled.Fence
 import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.Palette
@@ -287,6 +288,17 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 checked = uiState.enableWebDebugging,
                                 onCheckedChange = {
                                     viewModel.setEnableWebDebugging(it)
+                                }
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Filled.ElectricalServices,
+                                title = stringResource(id = R.string.settings_auto_jailbreak),
+                                summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
+                                checked = uiState.autoJailbreak,
+                                onCheckedChange = {
+                                    viewModel.setAutoJailbreak(it)
                                 }
                             )
                         }

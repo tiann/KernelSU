@@ -73,6 +73,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getBoolean("enable_web_debugging", false)
         set(value) = prefs.edit { putBoolean("enable_web_debugging", value) }
 
+    override var autoJailbreak: Boolean
+        get() = prefs.getBoolean("auto_jailbreak", false)
+        set(value) = prefs.edit { putBoolean("auto_jailbreak", value) }
+
     override suspend fun getSuCompatStatus(): String = getFeatureStatus("su_compat")
 
     override suspend fun getSuCompatPersistValue(): Long? = getFeaturePersistValue("su_compat")
