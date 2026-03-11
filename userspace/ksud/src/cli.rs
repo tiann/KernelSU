@@ -34,7 +34,11 @@ enum Commands {
     BootCompleted,
 
     /// Load kernelsu.ko and execute late-load stage scripts
-    LateLoad,
+    LateLoad {
+        /// Use adb to execute late-load remotely (adb root + adb shell ksud late-load)
+        #[arg(long, default_missing_value = "5555", num_args = 0..=1)]
+        magica: Option<u16>,
+    },
 
     /// Install KernelSU userspace component to system
     Install {
@@ -526,7 +530,12 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad => crate::late_load::run(),
+        Commands::LateLoad { magica } => {
+            if let Some(port) = magica {
+                return crate::magica::run(port);
+            }
+            crate::late_load::run()
+        }
         Commands::Services => {
             init_event::on_services();
             Ok(())
