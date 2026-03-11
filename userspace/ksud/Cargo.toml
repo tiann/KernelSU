@@ -51,6 +51,7 @@ is_executable = "1"
 nom = "8"
 derive-new = "0.7"
 getopts = "0.2"
+ksuinit = { path = "../ksuinit" }
 
 [profile.release]
 strip = true

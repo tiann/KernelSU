@@ -22,6 +22,9 @@ const KSU_IOCTL_MANAGE_MARK: i32 = _IOWR::<()>(K, 16);
 const KSU_IOCTL_NUKE_EXT4_SYSFS: i32 = _IOW::<()>(K, 17);
 const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
 
+// Keep in sync with kernel/supercalls.h.
+const KSU_GET_INFO_FLAG_LATE_LOAD: u32 = 1 << 2;
+
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 struct GetInfoCmd {
@@ -178,6 +181,10 @@ fn get_info() -> GetInfoCmd {
 
 pub fn get_version() -> i32 {
     get_info().version as i32
+}
+
+pub fn is_late_load() -> bool {
+    get_info().flags & KSU_GET_INFO_FLAG_LATE_LOAD != 0
 }
 
 pub fn grant_root() -> std::io::Result<()> {

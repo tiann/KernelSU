@@ -58,7 +58,7 @@ pub fn validate_module_id(module_id: &str) -> Result<()> {
 
 /// Get common environment variables for script execution
 pub fn get_common_script_envs() -> Vec<(&'static str, String)> {
-    vec![
+    let mut envs = vec![
         ("ASH_STANDALONE", "1".to_string()),
         ("KSU", "true".to_string()),
         ("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string()),
@@ -72,7 +72,13 @@ pub fn get_common_script_envs() -> Vec<(&'static str, String)> {
                 defs::BINARY_DIR.trim_end_matches('/')
             ),
         ),
-    ]
+    ];
+
+    if ksucalls::is_late_load() {
+        envs.push(("KSU_LATE_LOAD", "1".to_string()));
+    }
+
+    envs
 }
 
 fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {

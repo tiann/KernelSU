@@ -282,3 +282,71 @@ Trong KernelSU, tập lệnh khởi động được chia thành hai loại dự
    - `post-fs-data.sh` chạy ở chế độ post-fs-data, `service.sh` chạy ở chế độ dịch vụ late_start, `boot-completed.sh` chạy khi khởi động xong, `post-mount.sh` chạy trên overlayfs được gắn kết.
 
 Tất cả các tập lệnh khởi động sẽ chạy trong shell `ash` BusyBox của KernelSU với "Standalone Mode" được bật.
+
+## Chế độ late-load {#late-load-mode}
+
+Ngoài quy trình khởi động tiêu chuẩn được mô tả ở trên, KernelSU hỗ trợ **chế độ late-load** cho các tình huống LKM (Loadable Kernel Module). Trong chế độ này, mô-đun kernel KernelSU được tải **sau khi hệ thống đã khởi động hoàn toàn**, thay vì trong quá trình init.
+
+### Khi nào late-load xảy ra?
+
+Late-load được kích hoạt bằng cách chạy lệnh `ksud late-load`. Lệnh này:
+
+1. Phát hiện phiên bản KMI hiện tại và tải `kernelsu.ko` tương ứng từ tài nguyên nhúng.
+2. Thực hiện khởi tạo mô-đun (quy tắc SELinux, danh sách cho phép, tính năng, v.v.) thường xảy ra trong quá trình khởi động.
+
+Vì hệ thống đã chạy hoàn toàn, một số cơ chế thời gian khởi động không khả dụng hoặc không cần thiết.
+
+### Sự khác biệt so với khởi động tiêu chuẩn
+
+| Hành vi | Khởi động tiêu chuẩn | Chế độ late-load |
+|---------|:---:|:---:|
+| Mô-đun kernel được tải bởi init (PID 1) | Có | Không (tải sau khi khởi động) |
+| Hook kprobe của ksud (execve/read/fstat/input) | Có | Bỏ qua |
+| Phát hiện chế độ an toàn (phím âm lượng) | Có | Luôn tắt |
+| Thu thập nhật ký khởi động (logcat/dmesg) | Có | Bỏ qua |
+| Kiểm tra cùng tồn tại với Magisk | Có | Bỏ qua |
+| Sự kiện `post-fs-data` báo cáo cho kernel | Có | Bỏ qua |
+| Sự kiện `boot-completed` báo cáo cho kernel | Có | Đặt trực tiếp khi khởi tạo |
+| Tập lệnh `post-fs-data.sh` / `post-fs-data.d/` | Có | Thay thế bằng giai đoạn `late-load` |
+| Tải `system.prop` | Có | Có |
+| Gắn kết OverlayFS (metamodule) | Có | Có |
+| Tập lệnh `post-mount.sh` / `post-mount.d/` | Có | Có |
+| Tập lệnh `service.sh` / `service.d/` | Có | Có |
+| Tập lệnh `boot-completed.sh` / `boot-completed.d/` | Có | Có |
+| Biến môi trường `KSU_LATE_LOAD` | Không đặt | Đặt thành `1` |
+| Cờ info kernel `0x4` | Không đặt | Đã đặt |
+
+### Thứ tự thực thi tập lệnh
+
+Trong chế độ late-load, thứ tự thực thi tập lệnh như sau:
+
+```txt
+ksud late-load:
+  1. Tải kernelsu.ko (nếu chưa được tải)
+  2. Giải nén tệp nhị phân, xử lý cập nhật mô-đun, tải quy tắc SELinux, khởi tạo tính năng
+  3. Thực thi tập lệnh late-load.d/ và tập lệnh late-load của mô-đun (chặn)
+  4. Tải system.prop (resetprop -n)
+  5. Thực thi tập lệnh mount của metamodule (OverlayFS)
+  6. Thực thi tập lệnh post-mount.d/ và post-mount.sh của mô-đun (chặn)
+  7. Thực thi tập lệnh service.d/ và service.sh của mô-đun (không chặn)
+  8. Thực thi tập lệnh boot-completed.d/ và boot-completed.sh của mô-đun (không chặn)
+```
+
+### Tập lệnh dành riêng cho late-load
+
+Mô-đun có thể cung cấp tập lệnh `late-load.sh` chỉ chạy **trong chế độ late-load**, thay thế cho `post-fs-data.sh`. Tập lệnh này chạy trước khi gắn kết OverlayFS, tương tự như `post-fs-data.sh` trong luồng tiêu chuẩn.
+
+Ngoài ra, các tập lệnh chung có thể được đặt trong `/data/adb/late-load.d/` để thực thi trong giai đoạn này.
+
+### Phát hiện chế độ late-load trong tập lệnh
+
+Mô-đun có thể phát hiện chế độ late-load bằng cách kiểm tra biến môi trường `KSU_LATE_LOAD`:
+
+```sh
+if [ "$KSU_LATE_LOAD" = "1" ]; then
+    # Đang chạy trong chế độ late-load
+    echo "Late-load mode detected"
+fi
+```
+
+Điều này cho phép các mô-đun điều chỉnh hành vi của mình, ví dụ bỏ qua các thao tác chỉ cần thiết trong quá trình khởi động sớm.

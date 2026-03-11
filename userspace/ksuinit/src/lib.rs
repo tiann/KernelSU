@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use goblin::elf::{Elf, section_header, sym::Sym};
-use rustix::{cstr, system::init_module};
 use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
 use std::fs;
@@ -50,13 +49,10 @@ fn parse_kallsyms() -> Result<HashMap<String, u64>> {
     Ok(allsyms)
 }
 
-pub fn load_module(path: &str) -> Result<()> {
-    // check if self is init process(pid == 1)
-    if !rustix::process::getpid().is_init() {
-        anyhow::bail!("{}", "Invalid process");
-    }
-
-    let mut buffer = fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
+/// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
+/// then load it via init_module syscall.
+pub fn load_module(data: &[u8]) -> Result<()> {
+    let mut buffer = data.to_vec();
     let elf = Elf::parse(&buffer)?;
 
     let kernel_symbols = parse_kallsyms().context("Cannot parse kallsyms")?;
@@ -89,6 +85,81 @@ pub fn load_module(path: &str) -> Result<()> {
     for ele in modifications {
         buffer.pwrite_with(ele.0, ele.1, ctx)?;
     }
-    init_module(&buffer, cstr!("")).context("init_module failed.")?;
+
+    rustix::system::init_module(&buffer, c"").context("init_module failed")?;
     Ok(())
+}
+
+fn has_kernelsu_legacy() -> bool {
+    use syscalls::{Sysno, syscall};
+    let mut version = 0;
+    const CMD_GET_VERSION: i32 = 2;
+    unsafe {
+        let _ = syscall!(
+            Sysno::prctl,
+            0xDEADBEEF,
+            CMD_GET_VERSION,
+            std::ptr::addr_of_mut!(version)
+        );
+    }
+
+    log::info!("KernelSU version: {}", version);
+
+    version != 0
+}
+
+fn has_kernelsu_v2() -> bool {
+    use syscalls::{Sysno, syscall};
+    const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
+    const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
+    const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
+
+    #[repr(C)]
+    #[derive(Default)]
+    struct GetInfoCmd {
+        version: u32,
+        flags: u32,
+        features: u32,
+    }
+
+    // Try new method: get driver fd using reboot syscall with magic numbers
+    let mut fd: i32 = -1;
+    unsafe {
+        let _ = syscall!(
+            Sysno::reboot,
+            KSU_INSTALL_MAGIC1,
+            KSU_INSTALL_MAGIC2,
+            0,
+            std::ptr::addr_of_mut!(fd)
+        );
+    }
+
+    let version = if fd >= 0 {
+        // New method: try to get version info via ioctl
+        let mut cmd = GetInfoCmd::default();
+        let version = unsafe {
+            let ret = syscall!(Sysno::ioctl, fd, KSU_IOCTL_GET_INFO, &mut cmd as *mut _);
+
+            match ret {
+                Ok(_) => cmd.version,
+                Err(_) => 0,
+            }
+        };
+
+        unsafe {
+            let _ = syscall!(Sysno::close, fd);
+        }
+
+        version
+    } else {
+        0
+    };
+
+    log::info!("KernelSU version: {}", version);
+
+    version != 0
+}
+
+pub fn has_kernelsu() -> bool {
+    has_kernelsu_v2() || has_kernelsu_legacy()
 }

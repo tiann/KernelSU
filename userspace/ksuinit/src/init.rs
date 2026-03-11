@@ -1,7 +1,6 @@
 use std::io::{ErrorKind, Write};
 
-use crate::loader::load_module;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rustix::fs::{Mode, symlink, unlink};
 use rustix::{
     fd::AsFd,
@@ -109,11 +108,11 @@ pub fn init() -> Result<()> {
     // This relies on the fact that we have /proc mounted
     unlimit_kmsg();
 
-    if has_kernelsu() {
+    if ksuinit::has_kernelsu() {
         log::info!("KernelSU may be already loaded in kernel, skip!");
     } else {
         log::info!("Loading kernelsu.ko..");
-        if let Err(e) = load_module("/kernelsu.ko") {
+        if let Err(e) = load_module_from_path("/kernelsu.ko") {
             log::error!("Cannot load kernelsu.ko: {:?}", e);
         }
     }
@@ -132,76 +131,8 @@ pub fn init() -> Result<()> {
     Ok(())
 }
 
-fn has_kernelsu_legacy() -> bool {
-    use syscalls::{Sysno, syscall};
-    let mut version = 0;
-    const CMD_GET_VERSION: i32 = 2;
-    unsafe {
-        let _ = syscall!(
-            Sysno::prctl,
-            0xDEADBEEF,
-            CMD_GET_VERSION,
-            std::ptr::addr_of_mut!(version)
-        );
-    }
-
-    log::info!("KernelSU version: {}", version);
-
-    version != 0
-}
-
-fn has_kernelsu_v2() -> bool {
-    use syscalls::{Sysno, syscall};
-    const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
-    const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
-    const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
-
-    #[repr(C)]
-    #[derive(Default)]
-    struct GetInfoCmd {
-        version: u32,
-        flags: u32,
-        features: u32,
-    }
-
-    // Try new method: get driver fd using reboot syscall with magic numbers
-    let mut fd: i32 = -1;
-    unsafe {
-        let _ = syscall!(
-            Sysno::reboot,
-            KSU_INSTALL_MAGIC1,
-            KSU_INSTALL_MAGIC2,
-            0,
-            std::ptr::addr_of_mut!(fd)
-        );
-    }
-
-    let version = if fd >= 0 {
-        // New method: try to get version info via ioctl
-        let mut cmd = GetInfoCmd::default();
-        let version = unsafe {
-            let ret = syscall!(Sysno::ioctl, fd, KSU_IOCTL_GET_INFO, &mut cmd as *mut _);
-
-            match ret {
-                Ok(_) => cmd.version,
-                Err(_) => 0,
-            }
-        };
-
-        unsafe {
-            let _ = syscall!(Sysno::close, fd);
-        }
-
-        version
-    } else {
-        0
-    };
-
-    log::info!("KernelSU version: {}", version);
-
-    version != 0
-}
-
-pub fn has_kernelsu() -> bool {
-    has_kernelsu_v2() || has_kernelsu_legacy()
+fn load_module_from_path(path: &str) -> Result<()> {
+    anyhow::ensure!(rustix::process::getpid().is_init(), "Invalid process");
+    let buffer = std::fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
+    ksuinit::load_module(&buffer)
 }

@@ -225,11 +225,6 @@ private fun StatusCard(
             ) {
                 when {
                     ksuVersion != null -> {
-                        val safeMode = when {
-                            Natives.isSafeMode -> stringResource(id = R.string.safe_mode)
-                            else -> ""
-                        }
-
                         val workingMode = when (lkmMode) {
                             null -> ""
                             true -> "LKM"
@@ -253,10 +248,18 @@ private fun StatusCard(
                                         backgroundColor = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                                if (safeMode.isNotEmpty()) {
+                                if (Natives.isSafeMode) {
                                     Spacer(Modifier.width(8.dp))
                                     StatusTag(
-                                        label = safeMode,
+                                        label = stringResource(id = R.string.safe_mode),
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                                        backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                    )
+                                }
+                                if (Natives.isLateLoadMode) {
+                                    Spacer(Modifier.width(8.dp))
+                                    StatusTag(
+                                        label = stringResource(id = R.string.jailbreak_mode),
                                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
                                         backgroundColor = MaterialTheme.colorScheme.errorContainer
                                     )
