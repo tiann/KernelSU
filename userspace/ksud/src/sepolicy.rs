@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use derive_new::new;
 use nom::{
     AsChar, IResult, Parser,
@@ -7,7 +7,7 @@ use nom::{
     character::complete::{space0, space1},
     combinator::map,
 };
-use std::{ffi, path::Path, vec};
+use std::{path::Path, vec};
 
 type SeObject<'a> = Vec<&'a str>;
 
@@ -364,8 +364,6 @@ where
     Ok(statements)
 }
 
-const SEPOLICY_MAX_LEN: usize = 128;
-
 const CMD_NORMAL_PERM: u32 = 1;
 const CMD_XPERM: u32 = 2;
 const CMD_TYPE_STATE: u32 = 3;
@@ -376,10 +374,25 @@ const CMD_TYPE_TRANSITION: u32 = 7;
 const CMD_TYPE_CHANGE: u32 = 8;
 const CMD_GENFSCON: u32 = 9;
 
+const SUBCMD_NORMAL_PERM_ALLOW: u32 = 1;
+const SUBCMD_NORMAL_PERM_DENY: u32 = 2;
+const SUBCMD_NORMAL_PERM_AUDITALLOW: u32 = 3;
+const SUBCMD_NORMAL_PERM_DONTAUDIT: u32 = 4;
+
+const SUBCMD_XPERM_ALLOW: u32 = 1;
+const SUBCMD_XPERM_AUDITALLOW: u32 = 2;
+const SUBCMD_XPERM_DONTAUDIT: u32 = 3;
+
+const SUBCMD_TYPE_STATE_PERMISSIVE: u32 = 1;
+const SUBCMD_TYPE_STATE_ENFORCE: u32 = 2;
+
+const SUBCMD_TYPE_CHANGE_CHANGE: u32 = 1;
+const SUBCMD_TYPE_CHANGE_MEMBER: u32 = 2;
+
 #[derive(Debug, Default)]
 enum PolicyObject {
-    All, // for "*", stand for all objects, and is NULL in ffi
-    One([u8; SEPOLICY_MAX_LEN]),
+    All,
+    One(Vec<u8>),
     #[default]
     None,
 }
@@ -387,13 +400,11 @@ enum PolicyObject {
 impl TryFrom<&str> for PolicyObject {
     type Error = anyhow::Error;
     fn try_from(s: &str) -> Result<Self> {
-        anyhow::ensure!(s.len() <= SEPOLICY_MAX_LEN, "policy object too long");
+        anyhow::ensure!(!s.as_bytes().contains(&0), "policy object contains NUL");
         if s == "*" {
             return Ok(Self::All);
         }
-        let mut buf = [0u8; SEPOLICY_MAX_LEN];
-        buf[..s.len()].copy_from_slice(s.as_bytes());
-        Ok(Self::One(buf))
+        Ok(Self::One(s.as_bytes().to_vec()))
     }
 }
 
@@ -420,10 +431,10 @@ impl<'a> TryFrom<&'a NormalPerm<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a NormalPerm<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "allow" => 1,
-            "deny" => 2,
-            "auditallow" => 3,
-            "dontaudit" => 4,
+            "allow" => SUBCMD_NORMAL_PERM_ALLOW,
+            "deny" => SUBCMD_NORMAL_PERM_DENY,
+            "auditallow" => SUBCMD_NORMAL_PERM_AUDITALLOW,
+            "dontaudit" => SUBCMD_NORMAL_PERM_DONTAUDIT,
             _ => 0,
         };
         for &s in &perm.source {
@@ -454,9 +465,9 @@ impl<'a> TryFrom<&'a XPerm<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a XPerm<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "allowxperm" => 1,
-            "auditallowxperm" => 2,
-            "dontauditxperm" => 3,
+            "allowxperm" => SUBCMD_XPERM_ALLOW,
+            "auditallowxperm" => SUBCMD_XPERM_AUDITALLOW,
+            "dontauditxperm" => SUBCMD_XPERM_DONTAUDIT,
             _ => 0,
         };
         for &s in &perm.source {
@@ -485,8 +496,8 @@ impl<'a> TryFrom<&'a TypeState<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a TypeState<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "permissive" => 1,
-            "enforcing" => 2,
+            "permissive" => SUBCMD_TYPE_STATE_PERMISSIVE,
+            "enforce" => SUBCMD_TYPE_STATE_ENFORCE,
             _ => 0,
         };
         for &t in &perm.stype {
@@ -596,8 +607,8 @@ impl<'a> TryFrom<&'a TypeChange<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a TypeChange<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "type_change" => 1,
-            "type_member" => 2,
+            "type_change" => SUBCMD_TYPE_CHANGE_CHANGE,
+            "type_member" => SUBCMD_TYPE_CHANGE_MEMBER,
             _ => 0,
         };
         result.push(AtomicStatement {
@@ -650,60 +661,106 @@ impl<'a> TryFrom<&'a PolicyStatement<'a>> for Vec<AtomicStatement> {
     }
 }
 
-////////////////////////////////////////////////////////////////
-///  for C FFI to call kernel interface
-///////////////////////////////////////////////////////////////
-
-#[derive(Debug)]
-#[repr(C)]
-struct FfiPolicy {
-    cmd: u32,
-    subcmd: u32,
-    sepol1: *const ffi::c_char,
-    sepol2: *const ffi::c_char,
-    sepol3: *const ffi::c_char,
-    sepol4: *const ffi::c_char,
-    sepol5: *const ffi::c_char,
-    sepol6: *const ffi::c_char,
-    sepol7: *const ffi::c_char,
-}
-
-const fn to_c_ptr(pol: &PolicyObject) -> *const ffi::c_char {
-    match pol {
-        PolicyObject::None | PolicyObject::All => std::ptr::null(),
-        PolicyObject::One(s) => s.as_ptr().cast::<ffi::c_char>(),
+const fn cmd_expected_argc(cmd: u32) -> Option<usize> {
+    match cmd {
+        CMD_NORMAL_PERM | CMD_TYPE_CHANGE => Some(4),
+        CMD_XPERM | CMD_TYPE_TRANSITION => Some(5),
+        CMD_TYPE_STATE | CMD_ATTR => Some(1),
+        CMD_TYPE | CMD_TYPE_ATTR => Some(2),
+        CMD_GENFSCON => Some(3),
+        _ => None,
     }
 }
 
-impl From<AtomicStatement> for FfiPolicy {
-    fn from(policy: AtomicStatement) -> Self {
-        Self {
-            cmd: policy.cmd,
-            subcmd: policy.subcmd,
-            sepol1: to_c_ptr(&policy.sepol1),
-            sepol2: to_c_ptr(&policy.sepol2),
-            sepol3: to_c_ptr(&policy.sepol3),
-            sepol4: to_c_ptr(&policy.sepol4),
-            sepol5: to_c_ptr(&policy.sepol5),
-            sepol6: to_c_ptr(&policy.sepol6),
-            sepol7: to_c_ptr(&policy.sepol7),
+fn encode_policy_object(payload: &mut Vec<u8>, object: &PolicyObject) -> Result<()> {
+    let bytes = match object {
+        PolicyObject::None | PolicyObject::All => &[][..],
+        PolicyObject::One(value) => value.as_slice(),
+    };
+
+    let len = u32::try_from(bytes.len()).context("policy object too long to encode")?;
+    payload.extend_from_slice(&len.to_ne_bytes());
+    payload.extend_from_slice(bytes);
+    payload.push(0);
+
+    Ok(())
+}
+
+fn append_atomic_statement(payload: &mut Vec<u8>, statement: &AtomicStatement) -> Result<()> {
+    let expected_argc = cmd_expected_argc(statement.cmd)
+        .ok_or_else(|| anyhow::anyhow!("unknown sepolicy cmd {}", statement.cmd))?;
+
+    payload.extend_from_slice(&statement.cmd.to_ne_bytes());
+    payload.extend_from_slice(&statement.subcmd.to_ne_bytes());
+
+    let args = [
+        &statement.sepol1,
+        &statement.sepol2,
+        &statement.sepol3,
+        &statement.sepol4,
+        &statement.sepol5,
+        &statement.sepol6,
+        &statement.sepol7,
+    ];
+
+    for object in args.iter().take(expected_argc) {
+        encode_policy_object(payload, object)?;
+    }
+
+    Ok(())
+}
+
+fn serialize_atomic_statements(statements: &[AtomicStatement]) -> Result<Vec<u8>> {
+    let mut payload = vec![];
+    for statement in statements {
+        append_atomic_statement(&mut payload, statement)?;
+    }
+    Ok(payload)
+}
+
+fn flatten_atomic_statements<'a>(
+    statements: &'a [PolicyStatement<'a>],
+) -> Result<Vec<AtomicStatement>> {
+    let mut policies = vec![];
+    for statement in statements {
+        let mut expanded: Vec<AtomicStatement> = statement.try_into()?;
+        policies.append(&mut expanded);
+    }
+    Ok(policies)
+}
+
+fn apply_rules_batch<'a>(statements: &'a [PolicyStatement<'a>], strict: bool) -> Result<()> {
+    let policies = flatten_atomic_statements(statements)?;
+    if policies.is_empty() {
+        return Ok(());
+    }
+
+    let payload = serialize_atomic_statements(&policies)?;
+
+    let cmd = crate::ksucalls::SetSepolicyCmd {
+        data_len: payload.len() as u64,
+        data: payload.as_ptr() as u64,
+    };
+
+    match crate::ksucalls::set_sepolicy(&cmd) {
+        Ok(applied_count) => {
+            let applied_count = usize::try_from(applied_count)
+                .context("kernel returned negative sepolicy applied count")?;
+            if applied_count < policies.len() {
+                let err = anyhow::anyhow!(
+                    "apply sepolicy batch partially succeeded: {applied_count}/{}",
+                    policies.len()
+                );
+                if strict {
+                    return Err(err);
+                }
+                log::warn!("{err}");
+            }
         }
-    }
-}
-
-fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Result<()> {
-    let policies: Vec<AtomicStatement> = statement.try_into()?;
-
-    for policy in policies {
-        let ffi_policy = FfiPolicy::from(policy);
-        let cmd = crate::ksucalls::SetSepolicyCmd {
-            cmd: 0,
-            arg: &raw const ffi_policy as u64,
-        };
-        if let Err(e) = crate::ksucalls::set_sepolicy(&cmd) {
-            log::warn!("apply rule {statement:?} failed: {e}");
+        Err(e) => {
+            log::warn!("apply sepolicy batch failed: {e}");
             if strict {
-                return Err(anyhow::anyhow!("apply rule {statement:?} failed: {e}"));
+                return Err(anyhow::anyhow!("apply sepolicy batch failed: {e}"));
             }
         }
     }
@@ -713,10 +770,10 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
 
 pub fn live_patch(policy: &str) -> Result<()> {
     let result = parse_sepolicy(policy.trim(), false)?;
-    for statement in result {
+    for statement in &result {
         println!("{statement:?}");
-        apply_one_rule(&statement, false)?;
     }
+    apply_rules_batch(&result, false)?;
     Ok(())
 }
 
