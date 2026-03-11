@@ -52,7 +52,11 @@ int __init kernelsu_init(void)
     canary &= CANARY_MASK;
     __stack_chk_guard = canary;
 #endif
+#ifdef MODULE
     late_load = (current->pid != 1);
+#else
+    late_load = false;
+#endif
     ksu_late_loaded = late_load;
 #ifdef CONFIG_KSU_DEBUG
     pr_alert("*************************************************************");
