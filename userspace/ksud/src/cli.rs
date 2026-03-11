@@ -35,7 +35,7 @@ enum Commands {
 
     /// Load kernelsu.ko and execute late-load stage scripts
     LateLoad {
-        /// Use adb to execute late-load remotely (adb root + adb shell ksud late-load)
+        /// Use adb root to execute late-load for jailbreaking by Magica
         #[arg(long, default_missing_value = "5555", num_args = 0..=1)]
         magica: Option<u16>,
     },
