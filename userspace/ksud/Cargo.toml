@@ -52,6 +52,7 @@ nom = "8"
 derive-new = "0.7"
 getopts = "0.2"
 ksuinit = { path = "../ksuinit" }
+adb_client = "3"
 
 [profile.release]
 strip = true
