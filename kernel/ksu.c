@@ -91,6 +91,11 @@ int __init kernelsu_init(void)
         cache_sid();
         setup_ksu_cred();
 
+        if (!getenforce()) {
+            pr_info("Permissive SELinux, enforcing\n");
+            setenforce(true);
+        }
+
         ksu_allowlist_init();
         ksu_load_allow_list();
 
