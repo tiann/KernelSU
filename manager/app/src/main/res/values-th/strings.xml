@@ -153,7 +153,6 @@
     <string name="settings_theme_mode_light">สว่าง</string>
     <string name="settings_theme_mode_dark">มืด</string>
     <string name="settings_key_color">สีหลัก</string>
-    <string name="settings_key_color_summary">ปรับแต่งสีที่เน้นเมื่อใช้ธีมโมเนต์</string>
     <string name="settings_key_color_default">ค่าเริ่มต้น</string>
     <string name="color_blue">สีน้ำเงิน</string>
     <string name="color_red">สีแดง</string>

@@ -157,7 +157,6 @@
     <string name="feature_status_managed_summary">Эта функция управляется модулем.</string>
     <string name="feature_status_unsupported_summary">Ядро не поддерживает эту функцию.</string>
     <string name="settings_key_color">Ключевой цвет</string>
-    <string name="settings_key_color_summary">Настройте акцент при использовании Monet.</string>
     <string name="settings_key_color_default">По умолчанию</string>
     <string name="color_blue">Синий</string>
     <string name="color_red">Красный</string>

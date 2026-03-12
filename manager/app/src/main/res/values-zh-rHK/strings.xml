@@ -154,7 +154,6 @@
     <string name="settings_theme_mode_light">淺色模式</string>
     <string name="settings_theme_mode_dark">深色模式</string>
     <string name="settings_key_color">主題色</string>
-    <string name="settings_key_color_summary">使用 Monet 時自訂強調色。</string>
     <string name="group_contains_apps">內含 %d 個應用程式</string>
     <string name="app_profile_affects_following_apps">受影響程式如下</string>
     <string name="settings_module_check_update">檢查模組更新</string>
