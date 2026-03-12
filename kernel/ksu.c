@@ -6,6 +6,7 @@
 #include <linux/workqueue.h>
 
 #include "allowlist.h"
+#include "app_profile.h"
 #include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager.h"
@@ -90,6 +91,11 @@ int __init kernelsu_init(void)
         apply_kernelsu_rules();
         cache_sid();
         setup_ksu_cred();
+
+        // Grant current process (ksud late-load) root
+        // with KSU SELinux domain before enforcing SELinux, so it
+        // can continue to access /data/app etc. after enforcement.
+        escape_to_root_for_init();
 
         if (!getenforce()) {
             pr_info("Permissive SELinux, enforcing\n");
