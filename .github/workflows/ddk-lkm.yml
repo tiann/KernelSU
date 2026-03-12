@@ -47,6 +47,10 @@ jobs:
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
         EXTRA_ARGS=""
+        if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
+          echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
+          exit 1
+        fi
         if [ -n "$EXPECTED_SIZE2" ]; then
           EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
         fi

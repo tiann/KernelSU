@@ -205,9 +205,15 @@ jobs:
           cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
 
       - name: Build with Gradle
-        run: ./gradlew clean assembleRelease
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ./gradlew clean assembleRelease -PIS_PR_BUILD=true
+          else
+            ./gradlew clean assembleRelease
+          fi
 
       - name: Upload build artifact
+        if: ${{ github.event_name == 'pull_request' || (github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) || github.ref_type == 'tag' }}
         uses: actions/upload-artifact@v6
         with:
           name: manager

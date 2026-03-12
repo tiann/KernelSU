@@ -110,6 +110,9 @@ android {
         versionCode = managerVersionCode
         versionName = managerVersionName
 
+        val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
+        buildConfigField("boolean", "IS_PR_BUILD", isPrBuild.toString())
+
         externalNativeBuild {
             cmake {
                 arguments += "-DANDROID_STL=none"
