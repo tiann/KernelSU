@@ -31,6 +31,7 @@ fun RebootDropdownItems(onItemClick: (String) -> Unit) {
 
     val rebootOptions = mutableListOf(
         Pair(R.string.reboot, ""),
+        Pair(R.string.reboot_soft, "soft_reboot"),
         Pair(R.string.reboot_recovery, "recovery"),
         Pair(R.string.reboot_bootloader, "bootloader"),
         Pair(R.string.reboot_download, "download"),
