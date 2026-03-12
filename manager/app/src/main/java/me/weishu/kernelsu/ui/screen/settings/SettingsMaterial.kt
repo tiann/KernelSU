@@ -176,6 +176,18 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
                     add {
+                        SegmentedDropdownItem(
+                            icon = Icons.Rounded.Palette,
+                            title = stringResource(id = R.string.settings_ui_mode),
+                            summary = stringResource(id = R.string.settings_ui_mode_summary),
+                            items = uiModeItems,
+                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
+                            onItemSelected = { index ->
+                                viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
+                            }
+                        )
+                    }
+                    add {
                         SegmentedListItem(
                             onClick = { navigator.push(Route.ColorPalette) },
                             headlineContent = { Text(stringResource(id = R.string.settings_theme)) },
@@ -186,18 +198,6 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     null
                                 )
-                            }
-                        )
-                    }
-                    add {
-                        SegmentedDropdownItem(
-                            icon = Icons.Rounded.Palette,
-                            title = stringResource(id = R.string.settings_ui_mode),
-                            summary = stringResource(id = R.string.settings_ui_mode_summary),
-                            items = uiModeItems,
-                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
-                            onItemSelected = { index ->
-                                viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
                             }
                         )
                     }
