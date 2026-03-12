@@ -3,22 +3,39 @@
 # Replace all UPPERCASE variables (ANDROID_NDK_ROOT, CLANG_PATH, etc.) with real paths.
 
 # Linux
-# CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang
-# CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++
+# AARCH64_CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang
+# AARCH64_CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++
+# X86_64_CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang
+# X86_64_CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang++
+# AR_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
 
 # macOS
-# CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang
-# CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++
+# AARCH64_CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang
+# AARCH64_CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++
+# X86_64_CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/x86_64-linux-android26-clang
+# X86_64_CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/x86_64-linux-android26-clang++
+# AR_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar
 
 # Windows
-# CLANG_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang.cmd
-# CLANG++_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang++.cmd
+# AARCH64_CLANG_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang.cmd
+# AARCH64_CLANG++_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang++.cmd
+# X86_64_CLANG_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\x86_64-linux-android26-clang.cmd
+# X86_64_CLANG++_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\x86_64-linux-android26-clang++.cmd
+# AR_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\llvm-ar.exe
 
 # Run `cargo build --target aarch64-linux-android` to build.
 
 [target.aarch64-linux-android]
-linker = "CLANG_PATH"
+linker = "AARCH64_CLANG_PATH"
+
+[target.x86_64-linux-android]
+linker = "X86_64_CLANG_PATH"
 
 [env]
-CC_aarch64_linux_android = "CLANG_PATH"
-CXX_aarch64_linux_android = "CLANG++_PATH"
+CC_aarch64_linux_android = "AARCH64_CLANG_PATH"
+CXX_aarch64_linux_android = "AARCH64_CLANG++_PATH"
+AR_aarch64_linux_android = "AR_PATH"
+
+CC_x86_64_linux_android = "X86_64_CLANG_PATH"
+CXX_x86_64_linux_android = "X86_64_CLANG++_PATH"
+AR_x86_64_linux_android = "AR_PATH"

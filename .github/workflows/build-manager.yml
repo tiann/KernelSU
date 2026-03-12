@@ -42,6 +42,8 @@ jobs:
     with:
       target: ${{ matrix.target }}
       os: ${{ matrix.os }}
+      pack_lkm: true
+      pack_ksuinit: true
   
   build-ksud-extra:
     needs: [build-lkm, build-ksuinit]
@@ -58,10 +60,12 @@ jobs:
             os: ubuntu-latest
           - target: x86_64-unknown-linux-musl # x86 Linux
             os: ubuntu-latest
-    uses: ./.github/workflows/ksud.yml
+    uses: ./.github/workflows/ksud-extra.yml
     with:
       target: ${{ matrix.target }}
       os: ${{ matrix.os }}
+      pack_lkm: true
+      pack_ksuinit: true
 
   build-manager:
     needs: build-ksud

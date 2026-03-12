@@ -1,4 +1,4 @@
-name: Build ksud
+name: Build ksud with cross
 on:
   workflow_call:
     inputs:
@@ -45,29 +45,20 @@ jobs:
     - name: Setup rustup
       run: |
         rustup update stable
-        rustup target add ${{ inputs.target }}
-
+        if [[ ${{ inputs.target }} == *"-apple-darwin" ]]; then
+          rustup target add ${{ inputs.target }}
+        fi
     - uses: Swatinem/rust-cache@v2
       with:
         workspaces: userspace/ksud
         cache-targets: false
 
-    - name: Build ksud
+    - name: Install cross
       run: |
-        TRIPLE=${{ inputs.target }}
-        # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#environment-variables-2
-        # We use the latest ndk that the image provided
-        echo "ANDROID_NDK_LATEST_HOME=$ANDROID_NDK_LATEST_HOME"
-        LLVM_PATH=$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
-        CLANG_PATH=$LLVM_PATH/${TRIPLE}26-clang
-        UTRIPLE=$(echo $TRIPLE | sed 's/-/_/g')
-        UUTRIPLE=$(echo $UTRIPLE | tr a-z A-Z)
+        RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
 
-        export CC_$UTRIPLE=$CLANG_PATH
-        export CXX_$UTRIPLE=${CLANG_PATH}++
-        export AR_$UTRIPLE=$LLVM_PATH/llvm-ar
-        export CARGO_TARGET_${UUTRIPLE}_LINKER=$CLANG_PATH
-        cargo build --target $TRIPLE --release --manifest-path ./userspace/ksud/Cargo.toml
+    - name: Build ksud
+      run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
       uses: actions/upload-artifact@v6
