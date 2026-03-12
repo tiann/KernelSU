@@ -21,6 +21,7 @@ public class AppZygotePreload implements ZygotePreload {
     public void doPreload(@NonNull ApplicationInfo appInfo) {
         File f = new File(appInfo.nativeLibraryDir, "libksud.so");
         try {
+            System.loadLibrary("kernelsu");
             var uid = Os.getuid();
             Log.d(TAG, "set uid 0 ...");
             Os.setuid(0);
