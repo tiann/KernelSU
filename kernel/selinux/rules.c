@@ -13,6 +13,8 @@
 
 #define ALL NULL
 
+static void reset_avc_cache(void);
+
 static struct policydb *get_policydb(void)
 {
     struct policydb *db;
@@ -95,6 +97,8 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
     mutex_unlock(&ksu_rules);
+
+    reset_avc_cache();
 }
 
 #define MAX_SEPOL_LEN 128
@@ -143,7 +147,7 @@ extern int avc_ss_reset(u32 seqno);
 extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
 #endif
 // reset avc cache table, otherwise the new rules will not take effect if already denied
-static void reset_avc_cache()
+static void reset_avc_cache(void)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
     avc_ss_reset(0);
