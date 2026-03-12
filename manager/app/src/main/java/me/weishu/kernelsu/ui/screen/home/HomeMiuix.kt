@@ -467,6 +467,7 @@ private fun StatusCard(
                                 if (isSELinuxPermissive) {
                                     TextButton(
                                         text = stringResource(R.string.home_jailbreak),
+                                        insideMargin = PaddingValues(12.dp),
                                         onClick = {
                                             onClickJailbreak()
                                         },
