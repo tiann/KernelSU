@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import me.weishu.kernelsu.R
 
-enum class Mode(@StringRes private val res: Int) {
+enum class Mode(@field:StringRes private val res: Int) {
     Default(R.string.profile_default),
     Template(R.string.profile_template),
     Custom(R.string.profile_custom);
