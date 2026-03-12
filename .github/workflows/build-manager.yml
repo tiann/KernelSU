@@ -23,7 +23,6 @@ on:
 
 jobs:
   generate-key:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       expected_size: ${{ steps.extract.outputs.expected_size }}
@@ -33,6 +32,7 @@ jobs:
       key_password: ${{ steps.gen.outputs.key_password }}
     steps:
       - name: Generate temporary keystore
+        if: github.event_name == 'pull_request'
         id: gen
         run: |
           KEYSTORE_PASSWORD=$(openssl rand -hex 32)
@@ -53,6 +53,7 @@ jobs:
           echo "keystore=$(base64 -w 0 pr-key.jks)" >> $GITHUB_OUTPUT
 
       - name: Extract certificate hash and size
+        if: github.event_name == 'pull_request'
         id: extract
         env:
           STORE_PASS: ${{ steps.gen.outputs.keystore_password }}
@@ -78,7 +79,6 @@ jobs:
 
   build-lkm:
     needs: generate-key
-    if: always()
     uses: ./.github/workflows/build-lkm.yml
     with:
       expected_size2: ${{ needs.generate-key.outputs.expected_size || '' }}
@@ -124,7 +124,7 @@ jobs:
 
   build-manager:
     needs: [build-ksud, generate-key]
-    if: always() && needs.build-ksud.result == 'success' && (needs.generate-key.result == 'success' || needs.generate-key.result == 'skipped')
+    if: always() && needs.build-ksud.result == 'success' && needs.generate-key.result == 'success'
     runs-on: ubuntu-latest
     defaults:
       run:
