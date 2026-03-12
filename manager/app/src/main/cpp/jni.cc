@@ -366,7 +366,7 @@ static int fork_dont_care() {
 extern "C"
 JNIEXPORT void JNICALL
 Java_me_weishu_kernelsu_Natives_forkDontCareAndExecKsud(JNIEnv *env, jobject thiz,
-                                                                        jstring ksud_path) {
+                                                        jstring ksud_path) {
     auto path = env->GetStringUTFChars(ksud_path, nullptr);
     LOGD("executing magica %s", path);
     if (fork_dont_care() == 0) {
