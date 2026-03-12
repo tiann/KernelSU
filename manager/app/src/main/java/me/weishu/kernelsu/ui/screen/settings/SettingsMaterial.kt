@@ -235,8 +235,8 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
 
                 SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    content = listOf(
-                        {
+                    content = buildList {
+                        add {
                             val suSummary = when (uiState.suCompatStatus) {
                                 "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                                 "managed" -> stringResource(id = R.string.feature_status_managed_summary)
@@ -253,8 +253,8 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                     viewModel.setSuCompatMode(index)
                                 }
                             )
-                        },
-                        {
+                        }
+                        add {
                             val umountSummary = when (uiState.kernelUmountStatus) {
                                 "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                                 "managed" -> stringResource(id = R.string.feature_status_managed_summary)
@@ -269,8 +269,8 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             ) {
                                 viewModel.setKernelUmountEnabled(it)
                             }
-                        },
-                        {
+                        }
+                        add {
                             SegmentedSwitchItem(
                                 icon = Icons.Filled.FolderDelete,
                                 title = stringResource(id = R.string.settings_umount_modules_default),
@@ -280,8 +280,8 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                     viewModel.setDefaultUmountModules(it)
                                 }
                             )
-                        },
-                        {
+                        }
+                        add {
                             SegmentedSwitchItem(
                                 icon = Icons.Filled.DeveloperMode,
                                 title = stringResource(id = R.string.enable_web_debugging),
@@ -291,9 +291,9 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                     viewModel.setEnableWebDebugging(it)
                                 }
                             )
-                        },
-                        {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            add {
                                 SegmentedSwitchItem(
                                     icon = Icons.Filled.ElectricalServices,
                                     title = stringResource(id = R.string.settings_auto_jailbreak),
@@ -305,7 +305,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 )
                             }
                         }
-                    )
+                    }
                 )
             }
 
