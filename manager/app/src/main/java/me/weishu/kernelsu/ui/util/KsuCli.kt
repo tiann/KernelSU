@@ -348,13 +348,21 @@ fun installBoot(
 
 fun reboot(reason: String = "") {
     val shell = getRootShell()
-    if (reason == "soft_reboot") {
-        ShellUtils.fastCmd(shell, "setprop ctl.restart zygote")
-        return
-    }
-    if (reason == "recovery") {
-        // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
-        ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
+    when (reason) {
+        "soft_reboot" -> {
+            ShellUtils.fastCmd(shell, "setprop ctl.restart zygote")
+            return
+        }
+        "restart_services" -> {
+            restartLspd()
+            restartZygiskSu()
+            reboot("soft_reboot")
+            return
+        }
+        "recovery" -> {
+            // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
+            ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
+        }
     }
     ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
 }
@@ -489,4 +497,60 @@ fun launchApp(packageName: String) {
 fun restartApp(packageName: String) {
     forceStopApp(packageName)
     launchApp(packageName)
+}
+
+fun restartLspd() {
+    val shell = getRootShell(true)
+    val script = """
+        PATH=/system/bin:/vendor/bin:/data/adb/ksu/bin:${'$'}{PATH}
+        export PATH
+
+        MODDIR="/data/adb/modules/zygisk_lsposed"
+
+        for PID in $$(ps -A -o PID,NAME 2>/dev/null | grep 'lspd' | awk '{print ${'$'}1}'); do
+            kill -9 "${'$'}{PID}" 2>/dev/null
+        done
+        sleep 1
+
+        ZPID=$$(ps -A -o PID,NAME 2>/dev/null | grep 'zygote64' | awk '{print ${'$'}1}' | head -1)
+        if [ -z "${'$'}{ZPID}" ]; then exit 1; fi
+
+        BOOTCP=$$(cat /proc/${'$'}{ZPID}/environ 2>/dev/null | tr '\0' '\n' | grep '^BOOTCLASSPATH=' | head -1)
+        DEX2OAT=$$(cat /proc/${'$'}{ZPID}/environ 2>/dev/null | tr '\0' '\n' | grep '^DEX2OATBOOTCLASSPATH=' | head -1)
+        if [ -z "${'$'}{BOOTCP}" ]; then exit 1; fi
+
+        rm -f /data/adb/lspd/monitor 2>/dev/null
+        rm -f /data/adb/lspd/lock 2>/dev/null
+
+        java_options="-Djava.class.path=${'$'}{MODDIR}/daemon.apk -Xnoimage-dex2oat"
+        setsid nsenter -t 1 -m -- /system/bin/sh -c "
+            cd ${'$'}{MODDIR}
+            export ${'$'}{BOOTCP}
+            export ${'$'}{DEX2OAT}
+            export PATH=${'$'}{PATH}
+            exec /system/bin/app_process ${'$'}{java_options} /system/bin --nice-name=lspd org.lsposed.lspd.Main
+        " >/dev/null 2>&1 &
+    """.trimIndent()
+    shell.newJob().add(script).to(null, null).exec()
+}
+
+fun restartZygiskSu() {
+    val shell = getRootShell(true)
+    val script = """
+        PATH=/system/bin:/vendor/bin:/data/adb/ksu/bin:${'$'}{PATH}
+        export PATH
+
+        ZYGISKDIR="/data/adb/modules/zygisksu"
+
+        if [ ! -d "${'$'}{ZYGISKDIR}" ]; then
+            exit 1
+        fi
+
+        cd "${'$'}{ZYGISKDIR}" || exit 1
+
+        ./bin/zygiskd daemon > /dev/null 2>&1 &
+        sleep 3
+        ./bin/zygiskd service-stage > /dev/null 2>&1 &
+    """.trimIndent()
+    shell.newJob().add(script).to(null, null).exec()
 }

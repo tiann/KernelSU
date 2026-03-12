@@ -57,6 +57,7 @@ fun RebootListPopupMiuix(
                 val rebootOptions = mutableListOf(
                     Pair(R.string.reboot, ""),
                     Pair(R.string.reboot_soft, "soft_reboot"),
+                    Pair(R.string.restart_services_and_soft_reboot, "restart_services"),
                     Pair(R.string.reboot_recovery, "recovery"),
                     Pair(R.string.reboot_bootloader, "bootloader"),
                     Pair(R.string.reboot_download, "download"),
