@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.webui
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -37,9 +36,7 @@ class WebUIActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         enableEdgeToEdge()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isNavigationBarContrastEnforced = false
-        }
+        window.isNavigationBarContrastEnforced = false
 
         super.onCreate(savedInstanceState)
 

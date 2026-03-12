@@ -63,10 +63,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.expressiveLightColorScheme
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -375,31 +373,27 @@ private fun ThemePreviewCard(
     val screenRatio = screenWidth / screenHeight
     val dynamicColor = keyColor == 0
 
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            rememberDynamicColorScheme(
-                seedColor = Color.Unspecified,
-                isDark = isDark,
-                style = paletteStyle,
-                specVersion = colorSpec,
-                primary = baseScheme.primary,
-                secondary = baseScheme.secondary,
-                tertiary = baseScheme.tertiary,
-                neutral = baseScheme.surface,
-                neutralVariant = baseScheme.surfaceVariant,
-                error = baseScheme.error
-            )
-        }
-        !dynamicColor -> rememberDynamicColorScheme(
+    val colorScheme = if (dynamicColor) {
+        val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        rememberDynamicColorScheme(
+            seedColor = Color.Unspecified,
+            isDark = isDark,
+            style = paletteStyle,
+            specVersion = colorSpec,
+            primary = baseScheme.primary,
+            secondary = baseScheme.secondary,
+            tertiary = baseScheme.tertiary,
+            neutral = baseScheme.surface,
+            neutralVariant = baseScheme.surfaceVariant,
+            error = baseScheme.error
+        )
+    } else {
+        rememberDynamicColorScheme(
             seedColor = Color(keyColor),
             isDark = isDark,
             style = paletteStyle,
             specVersion = colorSpec,
         )
-        else -> {
-            if (isDark) darkColorScheme() else expressiveLightColorScheme()
-        }
     }
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
@@ -503,23 +497,19 @@ private fun ColorButtonMaterial(
 ) {
     val context = LocalContext.current
     val colorScheme = if (color == Color.Unspecified) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            rememberDynamicColorScheme(
-                seedColor = Color.Unspecified,
-                isDark = isDark,
-                style = paletteStyle,
-                specVersion = colorSpec,
-                primary = baseScheme.primary,
-                secondary = baseScheme.secondary,
-                tertiary = baseScheme.tertiary,
-                neutral = baseScheme.surface,
-                neutralVariant = baseScheme.surfaceVariant,
-                error = baseScheme.error
-            )
-        } else {
-            MaterialTheme.colorScheme
-        }
+        val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        rememberDynamicColorScheme(
+            seedColor = Color.Unspecified,
+            isDark = isDark,
+            style = paletteStyle,
+            specVersion = colorSpec,
+            primary = baseScheme.primary,
+            secondary = baseScheme.secondary,
+            tertiary = baseScheme.tertiary,
+            neutral = baseScheme.surface,
+            neutralVariant = baseScheme.surfaceVariant,
+            error = baseScheme.error
+        )
     } else {
         rememberDynamicColorScheme(
             seedColor = color,
