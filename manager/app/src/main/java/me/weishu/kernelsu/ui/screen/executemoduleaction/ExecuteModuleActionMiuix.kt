@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.executemoduleaction
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,24 +22,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.dropUnlessResumed
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
@@ -48,7 +40,6 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -63,13 +54,10 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun ExecuteModuleActionScreenMiuix(moduleId: String) {
-    val navigator = LocalNavigator.current
-    var text by rememberSaveable { mutableStateOf("") }
-    val logContent = rememberSaveable { StringBuilder() }
-    val context = LocalContext.current
-    val activity = LocalActivity.current
-    val scope = rememberCoroutineScope()
+fun ExecuteModuleActionScreenMiuix(
+    state: ExecuteModuleActionUiState,
+    actions: ExecuteModuleActionScreenActions,
+) {
     val scrollState = rememberScrollState()
     val enableBlur = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
@@ -82,42 +70,21 @@ fun ExecuteModuleActionScreenMiuix(moduleId: String) {
         HazeStyle.Unspecified
     }
 
-    val fromShortcut = remember(activity) {
-        val intent = activity?.intent
-        intent?.getStringExtra("shortcut_type") == "module_action"
-    }
-
-    val exitExecute = {
-        if (fromShortcut && activity != null) {
-            activity.finishAndRemoveTask()
-        } else {
-            navigator.pop()
-        }
-    }
-
-    ExecuteModuleActionEffect(
-        moduleId = moduleId,
-        text = text,
-        logContent = logContent,
-        fromShortcut = fromShortcut,
-        onTextUpdate = { text = it },
-        onExit = exitExecute
-    )
-
     BackHandler { }
 
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.pop() },
-                onSave = saveLog(logContent, context, scope),
+                onBack = actions.onBack,
+                onSave = actions.onSaveLog,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
                 enableBlur = enableBlur,
             )
         },
         popupHost = { },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout)
+            .only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
         KeyEventBlocker {
@@ -134,13 +101,13 @@ fun ExecuteModuleActionScreenMiuix(moduleId: String) {
                 )
                 .verticalScroll(scrollState),
         ) {
-            LaunchedEffect(text) {
+            LaunchedEffect(state.text) {
                 scrollState.animateScrollTo(scrollState.maxValue)
             }
             Spacer(Modifier.height(innerPadding.calculateTopPadding()))
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = text,
+                text = state.text,
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace,
             )

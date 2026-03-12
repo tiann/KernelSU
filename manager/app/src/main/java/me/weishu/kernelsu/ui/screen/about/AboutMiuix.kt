@@ -30,23 +30,18 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.dropUnlessResumed
 import com.kyant.capsule.ContinuousRoundedRectangle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -62,9 +57,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-fun AboutScreenMiuix() {
-    val navigator = LocalNavigator.current
-    val uriHandler = LocalUriHandler.current
+fun AboutScreenMiuix(
+    state: AboutUiState,
+    actions: AboutScreenActions,
+) {
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlur = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
@@ -76,13 +72,6 @@ fun AboutScreenMiuix() {
     } else {
         HazeStyle.Unspecified
     }
-
-    val htmlString = stringResource(
-        id = R.string.about_source_code,
-        "<b><a href=\"https://github.com/tiann/KernelSU\">GitHub</a></b>",
-        "<b><a href=\"https://t.me/KernelSU\">Telegram</a></b>"
-    )
-    val result = extractLinks(htmlString)
 
     Scaffold(
         topBar = {
@@ -97,11 +86,11 @@ fun AboutScreenMiuix() {
                     Modifier
                 },
                 color = if (enableBlur) Color.Transparent else colorScheme.surface,
-                title = stringResource(R.string.about),
+                title = state.title,
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
-                        onClick = dropUnlessResumed { navigator.pop() }
+                        onClick = actions.onBack
                     ) {
                         val layoutDirection = LocalLayoutDirection.current
                         Icon(
@@ -153,12 +142,12 @@ fun AboutScreenMiuix() {
                     }
                     Text(
                         modifier = Modifier.padding(top = 12.dp),
-                        text = stringResource(id = R.string.app_name),
+                        text = state.appName,
                         fontWeight = FontWeight.Medium,
                         fontSize = 26.sp
                     )
                     Text(
-                        text = BuildConfig.VERSION_NAME,
+                        text = state.versionName,
                         fontSize = 14.sp
                     )
                 }
@@ -167,11 +156,11 @@ fun AboutScreenMiuix() {
                 Card(
                     modifier = Modifier.padding(bottom = 12.dp)
                 ) {
-                    result.forEach {
+                    state.links.forEach {
                         SuperArrow(
                             title = it.fullText,
                             onClick = {
-                                uriHandler.openUri(it.url)
+                                actions.onOpenLink(it.url)
                             }
                         )
                     }

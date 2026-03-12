@@ -25,39 +25,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.dropUnlessResumed
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
-import me.weishu.kernelsu.ui.util.reboot
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -80,20 +67,11 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @Composable
 fun FlashScreenMiuix(
-    flashIt: FlashIt
+    state: FlashUiState,
+    actions: FlashScreenActions,
 ) {
-    val navigator = LocalNavigator.current
-    var text by rememberSaveable { mutableStateOf("") }
-    val logContent = rememberSaveable { StringBuilder() }
-    var showFloatAction by rememberSaveable { mutableStateOf(false) }
-
-    val context = LocalContext.current
     val enableBlur = LocalEnableBlur.current
-    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    var flashing by rememberSaveable {
-        mutableStateOf(FlashingStatus.FLASHING)
-    }
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
         HazeStyle(
@@ -104,39 +82,26 @@ fun FlashScreenMiuix(
         HazeStyle.Unspecified
     }
 
-    val needJailbreakWarning = flashIt is FlashIt.FlashBoot && Natives.isLateLoadMode
-    var flashEnabled by rememberSaveable { mutableStateOf(!needJailbreakWarning) }
-
-    if (needJailbreakWarning && !flashEnabled) {
+    if (state.showJailbreakWarning) {
         JailbreakFlashWarningDialog(
-            onConfirm = { flashEnabled = true },
-            onDismiss = { navigator.pop() }
+            onConfirm = actions.onConfirmJailbreakWarning,
+            onDismiss = actions.onDismissJailbreakWarning,
         )
     }
-
-    FlashEffect(
-        flashIt = flashIt,
-        text = text,
-        logContent = logContent,
-        onTextUpdate = { text = it },
-        onShowRebootChange = { showFloatAction = it },
-        onFlashingStatusChange = { flashing = it },
-        enabled = flashEnabled
-    )
 
     Scaffold(
         topBar = {
             TopBar(
-                flashing,
-                onBack = dropUnlessResumed { navigator.pop() },
-                onSave = saveLog(logContent, context, scope),
+                state.flashingStatus,
+                onBack = actions.onBack,
+                onSave = actions.onSaveLog,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
                 enableBlur = enableBlur,
             )
         },
         floatingActionButton = {
-            if (showFloatAction) {
+            if (state.showRebootAction) {
                 val reboot = stringResource(id = R.string.reboot)
                 FloatingActionButton(
                     modifier = Modifier
@@ -146,13 +111,7 @@ fun FlashScreenMiuix(
                             end = 20.dp
                         )
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
-                    onClick = {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                reboot()
-                            }
-                        }
-                    },
+                    onClick = actions.onReboot,
                     shadowElevation = 0.dp,
                     content = {
                         Icon(
@@ -184,13 +143,13 @@ fun FlashScreenMiuix(
                 )
                 .verticalScroll(scrollState),
         ) {
-            LaunchedEffect(text) {
+            LaunchedEffect(state.text) {
                 scrollState.animateScrollTo(scrollState.maxValue)
             }
             Spacer(Modifier.height(innerPadding.calculateTopPadding()))
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = text,
+                text = state.text,
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace,
             )

@@ -1,9 +1,12 @@
-package me.weishu.kernelsu.ui.viewmodel
+package me.weishu.kernelsu.ui.screen.superuser
 
+import android.os.Parcelable
 import androidx.compose.runtime.Immutable
+import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.SearchStatus
 
+@Parcelize
 @Immutable
 data class GroupedApps(
     val uid: Int,
@@ -13,16 +16,27 @@ data class GroupedApps(
     val anyCustom: Boolean,
     val shouldUmount: Boolean,
     val ownerName: String? = null,
-)
+    val matchedPackageNames: Set<String> = emptySet(),
+) : Parcelable
 
 data class SuperUserUiState(
     val isRefreshing: Boolean = false,
-    val appList: List<AppInfo> = emptyList(),
     val groupedApps: List<GroupedApps> = emptyList(),
     val userIds: List<Int> = emptyList(),
     val searchStatus: SearchStatus = SearchStatus(""),
-    val searchResults: List<AppInfo> = emptyList(),
+    val searchResults: List<GroupedApps> = emptyList(),
     val showSystemApps: Boolean = false,
     val showOnlyPrimaryUserApps: Boolean = false,
     val error: Throwable? = null
+)
+
+@Immutable
+data class SuperUserActions(
+    val onRefresh: () -> Unit,
+    val onSearchTextChange: (String) -> Unit,
+    val onSearchStatusChange: (SearchStatus) -> Unit,
+    val onClearSearch: () -> Unit,
+    val onToggleShowSystemApps: () -> Unit,
+    val onToggleShowOnlyPrimaryUserApps: () -> Unit,
+    val onOpenProfile: (GroupedApps) -> Unit,
 )

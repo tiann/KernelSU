@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen.colorpalette
 
 import android.os.Build
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,8 +30,8 @@ import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,13 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.dropUnlessResumed
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import dev.chrisbanes.haze.HazeState
@@ -55,13 +51,10 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import me.weishu.kernelsu.KernelSUApplication
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.miuix.ScaleDialog
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.keyColorOptions
-import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -80,10 +73,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
-fun ColorPaletteScreenMiuix() {
-    val navigator = LocalNavigator.current
-    val context = LocalContext.current
-    val activity = LocalActivity.current
+fun ColorPaletteScreenMiuix(
+    state: ColorPaletteUiState,
+    actions: ColorPaletteScreenActions,
+) {
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlurState = LocalEnableBlur.current
     val hazeState = remember { HazeState() }
@@ -95,9 +88,7 @@ fun ColorPaletteScreenMiuix() {
     } else {
         HazeStyle.Unspecified
     }
-
-    val viewModel = viewModel<SettingsViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState = state.uiState
 
     Scaffold(
         topBar = {
@@ -116,7 +107,7 @@ fun ColorPaletteScreenMiuix() {
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
-                        onClick = dropUnlessResumed { navigator.pop() }
+                        onClick = actions.onBack
                     ) {
                         val layoutDirection = LocalLayoutDirection.current
                         Icon(
@@ -172,7 +163,7 @@ fun ColorPaletteScreenMiuix() {
                         },
                         selectedIndex = (if (uiState.themeMode >= 3) uiState.themeMode - 3 else uiState.themeMode).coerceIn(0, 2),
                         onSelectedIndexChange = { index ->
-                            viewModel.setThemeMode(index)
+                            actions.onSetThemeMode(index)
                         }
                     )
 
@@ -188,7 +179,7 @@ fun ColorPaletteScreenMiuix() {
                         },
                         checked = uiState.miuixMonet,
                         onCheckedChange = {
-                            viewModel.setMiuixMonet(it)
+                            actions.onSetMiuixMonet(it)
                         }
                     )
 
@@ -228,7 +219,7 @@ fun ColorPaletteScreenMiuix() {
                                 },
                                 selectedIndex = colorValues.indexOf(uiState.keyColor).takeIf { it >= 0 } ?: 0,
                                 onSelectedIndexChange = { index ->
-                                    viewModel.setKeyColor(colorValues[index])
+                                    actions.onSetKeyColor(colorValues[index])
                                 }
                             )
 
@@ -246,7 +237,7 @@ fun ColorPaletteScreenMiuix() {
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOfFirst { it.name == uiState.colorStyle }.coerceAtLeast(0),
                                 onSelectedIndexChange = { index ->
-                                    viewModel.setColorStyle(styles[index].name)
+                                    actions.onSetColorStyle(styles[index].name)
                                 }
                             )
 
@@ -264,7 +255,7 @@ fun ColorPaletteScreenMiuix() {
                                 items = specs.map { it.name },
                                 selectedIndex = specs.indexOfFirst { it.name == uiState.colorSpec }.coerceAtLeast(0),
                                 onSelectedIndexChange = { index ->
-                                    viewModel.setColorSpec(specs[index].name)
+                                    actions.onSetColorSpec(specs[index].name)
                                 }
                             )
                         }
@@ -290,7 +281,7 @@ fun ColorPaletteScreenMiuix() {
                             },
                             checked = uiState.enableBlur,
                             onCheckedChange = {
-                                viewModel.setEnableBlur(it)
+                                actions.onSetEnableBlur(it)
                             }
                         )
                     }
@@ -307,7 +298,7 @@ fun ColorPaletteScreenMiuix() {
                         },
                         checked = uiState.enableFloatingBottomBar,
                         onCheckedChange = {
-                            viewModel.setEnableFloatingBottomBar(it)
+                            actions.onSetEnableFloatingBottomBar(it)
                         }
                     )
                     AnimatedVisibility(visible = uiState.enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -324,7 +315,7 @@ fun ColorPaletteScreenMiuix() {
                             },
                             checked = uiState.enableFloatingBottomBarBlur,
                             onCheckedChange = {
-                                viewModel.setEnableFloatingBottomBarBlur(it)
+                                actions.onSetEnableFloatingBottomBarBlur(it)
                             }
                         )
                     }
@@ -349,14 +340,12 @@ fun ColorPaletteScreenMiuix() {
                             },
                             checked = uiState.enablePredictiveBack,
                             onCheckedChange = {
-                                viewModel.setEnablePredictiveBack(it)
-                                KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
-                                activity?.recreate()
+                                actions.onSetEnablePredictiveBack(it)
                             }
                         )
                     }
 
-                    var sliderValue by remember(uiState.pageScale) { mutableStateOf(uiState.pageScale) }
+                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
                     SuperArrow(
                         title = stringResource(id = R.string.settings_page_scale),
                         summary = stringResource(id = R.string.settings_page_scale_summary),
@@ -383,7 +372,7 @@ fun ColorPaletteScreenMiuix() {
                                     sliderValue = it
                                 },
                                 onValueChangeFinished = {
-                                    viewModel.setPageScale(sliderValue)
+                                    actions.onSetPageScale(sliderValue)
                                 },
                                 valueRange = 0.8f..1.1f,
                                 showKeyPoints = true,
@@ -397,7 +386,7 @@ fun ColorPaletteScreenMiuix() {
                         showScaleDialog,
                         volumeState = { uiState.pageScale },
                         onVolumeChange = {
-                            viewModel.setPageScale(it)
+                            actions.onSetPageScale(it)
                         }
                     )
                 }

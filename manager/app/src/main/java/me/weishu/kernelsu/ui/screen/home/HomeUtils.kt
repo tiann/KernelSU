@@ -21,7 +21,7 @@ data class SystemInfo(
 )
 
 @Composable
-fun rememberSystemInfo(): SystemInfo {
+fun getSystemInfo(): SystemInfo {
     val context = LocalContext.current
     val uname = Os.uname()
     val managerVersion = getManagerVersion(context)

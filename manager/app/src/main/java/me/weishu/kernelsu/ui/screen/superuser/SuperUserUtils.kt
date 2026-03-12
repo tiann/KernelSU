@@ -1,19 +1,8 @@
 package me.weishu.kernelsu.ui.screen.superuser
 
-import androidx.compose.runtime.Immutable
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.util.pickPrimary
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
-
-@Immutable
-data class GroupedApps(
-    val uid: Int,
-    val apps: List<SuperUserViewModel.AppInfo>,
-    val primary: SuperUserViewModel.AppInfo,
-    val anyAllowSu: Boolean,
-    val anyCustom: Boolean,
-    val shouldUmount: Boolean,
-)
 
 private val uidShouldUmountCache = mutableMapOf<Int, Boolean>()
 

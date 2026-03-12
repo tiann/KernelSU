@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.viewmodel
 
 import android.os.SystemClock
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -16,20 +17,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.data.model.Module
+import me.weishu.kernelsu.data.model.ModuleUpdateInfo
 import me.weishu.kernelsu.data.repository.ModuleRepository
 import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
+import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
-import me.weishu.kernelsu.ui.util.HanziToPinyin
+import me.weishu.kernelsu.ui.screen.module.ModuleUiState
+import me.weishu.kernelsu.ui.util.hasMagisk
 import java.text.Collator
 import java.util.Locale
 
 class ModuleViewModel(
     private val repo: ModuleRepository = ModuleRepositoryImpl()
 ) : ViewModel() {
-
-    typealias ModuleInfo = Module
-    typealias ModuleUpdateInfo = me.weishu.kernelsu.data.model.ModuleUpdateInfo
 
     companion object {
         private const val TAG = "ModuleViewModel"
@@ -54,71 +56,109 @@ class ModuleViewModel(
     private val updateInfoMutex = Mutex()
     private var updateInfoCache: MutableMap<String, ModuleUpdateCache> = mutableMapOf()
     private val updateInfoInFlight = mutableSetOf<String>()
+    private val searchQuery = MutableStateFlow("")
 
     var isNeedRefresh = false
         private set
+
+    init {
+        viewModelScope.launchSearchQueryCollector(searchQuery, ::applySearchText)
+    }
 
     fun markNeedRefresh() {
         isNeedRefresh = true
     }
 
-    fun setSortEnabledFirst(enabled: Boolean) {
-        _uiState.update { it.copy(sortEnabledFirst = enabled) }
+    fun initializePreferences() {
+        val prefs = ksuApp.getSharedPreferences("settings", 0)
+        _uiState.update {
+            it.copy(
+                checkModuleUpdate = prefs.getBoolean("module_check_update", true),
+                sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false),
+                sortActionFirst = prefs.getBoolean("module_sort_action_first", false),
+            )
+        }
         updateModuleList()
     }
 
-    fun setSortActionFirst(enabled: Boolean) {
-        _uiState.update { it.copy(sortActionFirst = enabled) }
+    fun toggleSortActionFirst() {
+        val newValue = !_uiState.value.sortActionFirst
+        ksuApp.getSharedPreferences("settings", 0).edit {
+            putBoolean("module_sort_action_first", newValue)
+        }
+        _uiState.update { it.copy(sortActionFirst = newValue) }
         updateModuleList()
     }
 
-    fun setCheckModuleUpdate(enabled: Boolean) {
-        _uiState.update { it.copy(checkModuleUpdate = enabled) }
+    fun toggleSortEnabledFirst() {
+        val newValue = !_uiState.value.sortEnabledFirst
+        ksuApp.getSharedPreferences("settings", 0).edit {
+            putBoolean("module_sort_enabled_first", newValue)
+        }
+        _uiState.update { it.copy(sortEnabledFirst = newValue) }
+        updateModuleList()
+    }
+
+    fun refreshEnvironmentState() {
+        viewModelScope.launch {
+            val magiskInstalled = withContext(Dispatchers.IO) { hasMagisk() }
+            val isSafeMode = Natives.isSafeMode
+            _uiState.update {
+                it.copy(
+                    magiskInstalled = magiskInstalled,
+                    isSafeMode = isSafeMode,
+                )
+            }
+        }
     }
 
     fun updateSearchStatus(status: SearchStatus) {
+        val previous = _uiState.value.searchStatus
         _uiState.update { it.copy(searchStatus = status) }
+        if (previous.searchText != status.searchText) {
+            searchQuery.value = status.searchText
+        }
     }
 
-    suspend fun updateSearchText(text: String) {
+    fun updateSearchText(text: String) {
+        updateSearchStatus(_uiState.value.searchStatus.copy(searchText = text))
+    }
+
+    private fun filterModules(modules: List<Module>, text: String): List<Module> {
+        if (text.isEmpty()) return emptyList()
+
+        return modules.filter {
+            it.id.contains(text, true) || it.name.contains(text, true) ||
+                    it.description.contains(text, true) || it.author.contains(text, true) ||
+                    me.weishu.kernelsu.ui.util.HanziToPinyin.getInstance().toPinyinString(it.name)
+                        .contains(text, true)
+        }
+    }
+
+    private suspend fun applySearchText(text: String) {
         _uiState.update {
             it.copy(
-                searchStatus = it.searchStatus.copy(searchText = text)
+                searchStatus = it.searchStatus.copy(
+                    resultStatus = searchLoadingStatusFor(text)
+                )
             )
         }
 
         if (text.isEmpty()) {
-            _uiState.update {
-                it.copy(
-                    searchStatus = it.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.DEFAULT),
-                    searchResults = emptyList()
-                )
-            }
             updateModuleList()
             return
         }
 
-        _uiState.update {
-            it.copy(searchStatus = it.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.LOAD))
-        }
-
         val result = withContext(Dispatchers.IO) {
-            val modules = _uiState.value.modules
-            modules.filter {
-                it.id.contains(text, true) || it.name.contains(text, true) ||
-                        it.description.contains(text, true) || it.author.contains(text, true) ||
-                        HanziToPinyin.getInstance().toPinyinString(it.name).contains(text, true)
-            }.let { filteredModules ->
-                val comparator = moduleComparator(_uiState.value)
-                filteredModules.sortedWith(comparator)
-            }
+            val state = _uiState.value
+            filterModules(state.modules, text).sortedWith(moduleComparator(state))
         }
 
         _uiState.update {
             it.copy(
                 searchResults = result,
                 searchStatus = it.searchStatus.copy(
-                    resultStatus = if (result.isEmpty()) SearchStatus.ResultStatus.EMPTY else SearchStatus.ResultStatus.SHOW
+                    resultStatus = searchResultStatusFor(text, result.isEmpty())
                 )
             )
         }
@@ -128,17 +168,18 @@ class ModuleViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val state = _uiState.value
             val searchText = state.searchStatus.searchText
+            val shorted = state.modules.sortedWith(moduleComparator(state))
+            val searchResults = filterModules(shorted, searchText)
 
-            // Re-apply filter and sort
-            val filtered = state.modules.filter {
-                it.id.contains(searchText, true) || it.name.contains(
-                    searchText,
-                    true
-                ) || HanziToPinyin.getInstance()
-                    .toPinyinString(it.name).contains(searchText, true)
-            }.sortedWith(moduleComparator(state))
-
-            _uiState.update { it.copy(moduleList = filtered) }
+            _uiState.update {
+                it.copy(
+                    moduleList = shorted,
+                    searchResults = searchResults,
+                    searchStatus = it.searchStatus.copy(
+                        resultStatus = searchResultStatusFor(searchText, searchResults.isEmpty())
+                    )
+                )
+            }
         }
     }
 

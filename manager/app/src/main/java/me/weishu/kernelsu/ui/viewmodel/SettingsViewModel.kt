@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
+import me.weishu.kernelsu.ui.screen.settings.SettingsUiState
 import me.weishu.kernelsu.ui.theme.ColorMode
 
 class SettingsViewModel(

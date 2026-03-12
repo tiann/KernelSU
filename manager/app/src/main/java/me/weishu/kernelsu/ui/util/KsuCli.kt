@@ -471,22 +471,24 @@ fun deleteAppProfileTemplate(id: String): Boolean {
         .to(ArrayList(), null).exec().isSuccess
 }
 
-fun forceStopApp(packageName: String) {
+fun forceStopApp(packageName: String, userId: Int? = null) {
     val shell = getRootShell()
-    val result = shell.newJob().add("am force-stop $packageName").exec()
+    val userArg = userId?.let { " --user $it" } ?: ""
+    val result = shell.newJob().add("am force-stop$userArg $packageName").exec()
     Log.i(TAG, "force stop $packageName result: $result")
 }
 
-fun launchApp(packageName: String) {
+fun launchApp(packageName: String, userId: Int? = null) {
     val shell = getRootShell()
+    val userArg = userId?.let { " --user $it" } ?: ""
     val result =
         shell.newJob()
-            .add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n")
+            .add("cmd package resolve-activity --brief$userArg $packageName | tail -n 1 | xargs cmd activity start-activity$userArg -n")
             .exec()
     Log.i(TAG, "launch $packageName result: $result")
 }
 
-fun restartApp(packageName: String) {
-    forceStopApp(packageName)
-    launchApp(packageName)
+fun restartApp(packageName: String, userId: Int? = null) {
+    forceStopApp(packageName, userId)
+    launchApp(packageName, userId)
 }

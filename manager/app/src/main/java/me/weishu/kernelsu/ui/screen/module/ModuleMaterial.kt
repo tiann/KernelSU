@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.module
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -81,25 +80,21 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -109,14 +104,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -128,90 +122,38 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import androidx.core.net.toUri
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.component.dialog.ConfirmResult
+import me.weishu.kernelsu.data.model.Module
+import me.weishu.kernelsu.data.model.ModuleUpdateInfo
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.material.ExpressiveSwitch
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.navigation3.Navigator
-import me.weishu.kernelsu.ui.navigation3.Route
-import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.download
-import me.weishu.kernelsu.ui.util.hasMagisk
-import me.weishu.kernelsu.ui.util.module.Shortcut
-import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
 import me.weishu.kernelsu.ui.util.reboot
-import me.weishu.kernelsu.ui.util.toggleModule
-import me.weishu.kernelsu.ui.util.undoUninstallModule
-import me.weishu.kernelsu.ui.util.uninstallModule
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
-import me.weishu.kernelsu.ui.webui.WebUIActivity
-import okhttp3.Request
 
 @SuppressLint("StringFormatInvalid")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
-    val viewModel = viewModel<ModuleViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
-    val scope = rememberCoroutineScope()
+fun ModulePagerMaterial(
+    uiState: ModuleUiState,
+    confirmDialogState: ModuleConfirmDialogState?,
+    effect: ModuleEffect?,
+    actions: ModuleActions,
+    bottomInnerPadding: Dp,
+) {
     val snackBarHost = LocalSnackbarHost.current
 
     val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-
-    val modules = uiState.moduleList
-
-    LaunchedEffect(Unit) {
-        viewModel.setCheckModuleUpdate(prefs.getBoolean("module_check_update", true))
-        viewModel.setSortEnabledFirst(prefs.getBoolean("module_sort_enabled_first", false))
-        viewModel.setSortActionFirst(prefs.getBoolean("module_sort_action_first", false))
-
-        when {
-            uiState.moduleList.isEmpty() || viewModel.isNeedRefresh -> {
-                viewModel.fetchModuleList()
-                scope.launch { viewModel.syncModuleUpdateInfo(uiState.moduleList) }
-            }
-        }
-    }
-
-    LaunchedEffect(modules) {
-        viewModel.syncModuleUpdateInfo(modules)
-    }
-
-    val webUILauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList() }
-
-    val isSafeMode = Natives.isSafeMode
-    val magiskInstalled by produceState(initialValue = false) {
-        value = withContext(Dispatchers.IO) { hasMagisk() }
-    }
-    val hideInstallButton = isSafeMode || magiskInstalled
+    val resource = LocalResources.current
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val pullToRefreshState = rememberPullToRefreshState()
-
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            viewModel.fetchModuleList()
-            scope.launch { viewModel.syncModuleUpdateInfo(uiState.moduleList) }
-        }
-    }
 
     val scaleFraction = {
         if (uiState.isRefreshing) 1f
@@ -253,72 +195,70 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
         }
     }
 
-    var shortcutModuleId by rememberSaveable { mutableStateOf<String?>(null) }
-    var shortcutName by rememberSaveable { mutableStateOf("") }
-    var shortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var defaultShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var defaultActionShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var defaultWebUiShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedShortcutType by rememberSaveable { mutableStateOf<ShortcutType?>(null) }
+    val shortcutState = rememberModuleShortcutState(context)
     val showShortcutDialog = remember { mutableStateOf(false) }
+    val confirmDialog = rememberConfirmDialog(
+        onConfirm = {
+            when (val request = confirmDialogState?.request) {
+                is ModuleConfirmRequest.Uninstall -> actions.onUninstallModule(request.module)
+                is ModuleConfirmRequest.Update -> actions.onConfirmUpdate(request)
+                null -> Unit
+            }
+        },
+        onDismiss = actions.onDismissConfirmRequest,
+    )
 
     fun openShortcutDialogForType(type: ShortcutType) {
-        selectedShortcutType = type
-        val defaultIcon = when (type) {
-            ShortcutType.Action -> defaultActionShortcutIconUri ?: defaultWebUiShortcutIconUri
-            ShortcutType.WebUI -> defaultWebUiShortcutIconUri ?: defaultActionShortcutIconUri
-        }
-        defaultShortcutIconUri = defaultIcon
-        shortcutIconUri = defaultIcon
+        shortcutState.selectType(type)
         showShortcutDialog.value = true
     }
 
     val pickShortcutIconLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        shortcutIconUri = uri?.toString()
+        shortcutState.updateIconUri(uri?.toString())
     }
 
-    val shortcutPreviewIcon = remember { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(shortcutIconUri) {
-        val uriStr = shortcutIconUri
-        if (uriStr.isNullOrBlank()) {
-            shortcutPreviewIcon.value = null
-            return@LaunchedEffect
-        }
-        val bitmap = withContext(Dispatchers.IO) {
-            Shortcut.loadShortcutBitmap(context, uriStr)
-        }
-        shortcutPreviewIcon.value = bitmap?.asImageBitmap()
-    }
-
-    var hasExistingShortcut by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(shortcutModuleId, selectedShortcutType, showShortcutDialog.value) {
-        val moduleId = shortcutModuleId
-        val type = selectedShortcutType
-        if (!showShortcutDialog.value || moduleId.isNullOrBlank() || type == null) {
-            hasExistingShortcut = false
-            return@LaunchedEffect
-        }
-        val exists = withContext(Dispatchers.IO) {
-            hasModuleShortcut(context, moduleId, type)
-        }
-        hasExistingShortcut = exists
-    }
-
-    fun onModuleAddShortcut(module: ModuleViewModel.ModuleInfo, type: ShortcutType) {
-        shortcutModuleId = module.id
-        shortcutName = module.name
-        shortcutIconUri = null
-        defaultShortcutIconUri = null
-        defaultActionShortcutIconUri = module.actionIconPath
-            ?.takeIf { it.isNotBlank() }
-            ?.let { "su:$it" }
-        defaultWebUiShortcutIconUri = module.webUiIconPath
-            ?.takeIf { it.isNotBlank() }
-            ?.let { "su:$it" }
-
+    fun onModuleAddShortcut(module: Module, type: ShortcutType) {
+        shortcutState.bindModule(module)
         openShortcutDialogForType(type)
+    }
+
+    LaunchedEffect(confirmDialogState) {
+        confirmDialogState?.let {
+            confirmDialog.showConfirm(
+                title = it.title,
+                content = it.content,
+                markdown = it.markdown,
+                html = it.html,
+                confirm = it.confirm,
+                dismiss = it.dismiss,
+            )
+        }
+    }
+
+    LaunchedEffect(effect) {
+        when (effect) {
+            is ModuleEffect.Toast -> {
+                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                actions.onConsumeEffect()
+            }
+
+            is ModuleEffect.SnackBar -> {
+                snackBarHost.currentSnackbarData?.dismiss()
+                val result = snackBarHost.showSnackbar(
+                    message = effect.message,
+                    actionLabel = resource.getString(R.string.reboot),
+                    duration = SnackbarDuration.Long
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    reboot()
+                }
+                actions.onConsumeEffect()
+            }
+
+            null -> Unit
+        }
     }
 
     Scaffold(
@@ -327,17 +267,19 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = onRefresh,
+                onRefresh = {
+                    actions.onRefresh()
+                },
             ),
         topBar = {
             SearchAppBar(
                 title = { Text(stringResource(R.string.module)) },
                 searchText = uiState.searchStatus.searchText,
-                onSearchTextChange = { scope.launch { viewModel.updateSearchText(it) } },
-                onClearClick = { scope.launch { viewModel.updateSearchText("") } },
+                onSearchTextChange = actions.onSearchTextChange,
+                onClearClick = actions.onClearSearch,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navigator.push(Route.ModuleRepo) }
+                        onClick = actions.onOpenRepo
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Cloud,
@@ -364,28 +306,14 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 text = { Text(stringResource(R.string.module_sort_action_first)) },
                                 trailingIcon = { Checkbox(uiState.sortActionFirst, null) },
                                 onClick = {
-                                    val newValue = !uiState.sortActionFirst
-                                    viewModel.setSortActionFirst(newValue)
-                                    prefs.edit {
-                                        putBoolean("module_sort_action_first", newValue)
-                                    }
-                                    scope.launch {
-                                        viewModel.fetchModuleList()
-                                    }
+                                    actions.onToggleSortActionFirst()
                                 }
                             )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.module_sort_enabled_first)) },
                                 trailingIcon = { Checkbox(uiState.sortEnabledFirst, null) },
                                 onClick = {
-                                    val newValue = !uiState.sortEnabledFirst
-                                    viewModel.setSortEnabledFirst(newValue)
-                                    prefs.edit {
-                                        putBoolean("module_sort_enabled_first", newValue)
-                                    }
-                                    scope.launch {
-                                        viewModel.fetchModuleList()
-                                    }
+                                    actions.onToggleSortEnabledFirst()
                                 }
                             )
                         }
@@ -397,37 +325,26 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         searchListState.scrollToItem(0)
                     }
                     ModuleList(
-                        bottomInnerPadding,
-                        navigator = navigator,
-                        viewModel = viewModel,
-                        modifier = Modifier,
-                        boxModifier = Modifier.fillMaxSize(),
+                        bottomInnerPadding = bottomInnerPadding,
+                        modifier = Modifier.fillMaxSize(),
                         listState = searchListState,
                         displayModules = uiState.searchResults,
-                        onClickModule = { id, name, hasWebUi ->
-                            if (hasWebUi) {
-                                webUILauncher.launch(
-                                    Intent(context, WebUIActivity::class.java)
-                                        .setData("kernelsu://webui/$id".toUri())
-                                        .putExtra("id", id)
-                                        .putExtra("name", name)
-                                )
+                        updateInfoMap = uiState.updateInfo,
+                        actions = actions,
+                        onClickModule = { module ->
+                            if (module.hasWebUi) {
+                                actions.onOpenWebUi(module)
                                 closeSearch()
                             }
                         },
                         onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
                         closeSearch = closeSearch,
-                        context = context,
-                        snackBarHost = snackBarHost,
-                        pullToRefreshState = pullToRefreshState,
-                        isRefreshing = false,
-                        scaleFraction = 0f
                     )
                 }
             )
         },
         floatingActionButton = {
-            if (!hideInstallButton) {
+            if (uiState.installButtonVisible) {
                 val moduleInstall = stringResource(id = R.string.module_install)
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
@@ -447,8 +364,7 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         data.data?.let { uris.add(it) }
                     }
 
-                    navigator.push(Route.Flash(FlashIt.FlashModules(uris)))
-                    viewModel.markNeedRefresh()
+                    actions.onOpenFlash(uris)
                 }
 
                 ExtendedFloatingActionButton(
@@ -470,425 +386,255 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         snackbarHost = { SnackbarHost(hostState = snackBarHost) }
     ) { innerPadding ->
-
-        when {
-            magiskInstalled -> {
+        if (uiState.magiskInstalled) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    stringResource(R.string.module_magisk_conflict),
+                    textAlign = TextAlign.Center,
+                )
+            }
+            return@Scaffold
+        }
+        Box(modifier = Modifier.padding(innerPadding)) {
+            if (uiState.moduleList.isEmpty()) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        stringResource(R.string.module_magisk_conflict),
+                        stringResource(R.string.module_empty),
                         textAlign = TextAlign.Center,
                     )
                 }
-            }
-
-            else -> {
+            } else {
                 ModuleList(
-                    bottomInnerPadding,
-                    navigator = navigator,
-                    viewModel = viewModel,
+                    bottomInnerPadding = bottomInnerPadding,
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                    boxModifier = Modifier.padding(innerPadding),
                     listState = listState,
                     displayModules = uiState.moduleList,
-                    onClickModule = { id, name, hasWebUi ->
-                        if (hasWebUi) {
-                            webUILauncher.launch(
-                                Intent(context, WebUIActivity::class.java)
-                                    .setData("kernelsu://webui/$id".toUri())
-                                    .putExtra("id", id)
-                                    .putExtra("name", name)
-                            )
+                    updateInfoMap = uiState.updateInfo,
+                    actions = actions,
+                    onClickModule = { module ->
+                        if (module.hasWebUi) {
+                            actions.onOpenWebUi(module)
                         }
                     },
                     onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
-                    context = context,
-                    snackBarHost = snackBarHost,
-                    pullToRefreshState = pullToRefreshState,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        scaleX = scaleFraction()
+                        scaleY = scaleFraction()
+                    }
+            ) {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullToRefreshState,
                     isRefreshing = uiState.isRefreshing,
-                    scaleFraction = scaleFraction()
                 )
             }
         }
     }
 
-    if (showShortcutDialog.value) {
-        ModalBottomSheet(
-            onDismissRequest = { showShortcutDialog.value = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.module_shortcut_title),
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(25.dp))
-                ) {
-                    val preview = shortcutPreviewIcon.value
-                    if (preview != null) {
-                        Image(
-                            bitmap = preview,
-                            modifier = Modifier.size(100.dp),
-                            contentDescription = null,
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .background(Color.White)
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            contentScale = FixedScale(1.5f)
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        onClick = { pickShortcutIconLauncher.launch("image/*") },
-                    ) {
-                        Text(stringResource(id = R.string.module_shortcut_icon_pick))
-                    }
-                    AnimatedVisibility(
-                        visible = shortcutIconUri != defaultShortcutIconUri,
-                        enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
-                        exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
-                    ) {
-                        IconButton(
-                            onClick = { shortcutIconUri = defaultShortcutIconUri },
-                            modifier = Modifier.padding(start = 12.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                            )
-                        }
-                    }
-                }
-                OutlinedTextField(
-                    value = shortcutName,
-                    onValueChange = { shortcutName = it },
-                    label = { Text(stringResource(id = R.string.module_shortcut_name_label)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (hasExistingShortcut) {
-                    TextButton(
-                        onClick = {
-                            val moduleId = shortcutModuleId
-                            val type = selectedShortcutType
-                            if (!moduleId.isNullOrBlank() && type != null) {
-                                deleteModuleShortcut(context, moduleId, type)
-                            }
-                            showShortcutDialog.value = false
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text(stringResource(id = R.string.module_shortcut_delete))
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedButton(
-                        onClick = { showShortcutDialog.value = false },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                         Text(stringResource(id = android.R.string.cancel))
-                    }
-                    Button(
-                        onClick = {
-                            val moduleId = shortcutModuleId
-                            val type = selectedShortcutType
-                            if (!moduleId.isNullOrBlank() && shortcutName.isNotBlank() && type != null) {
-                                createModuleShortcut(
-                                    context = context,
-                                    moduleId = moduleId,
-                                    name = shortcutName,
-                                    iconUri = shortcutIconUri,
-                                    type = type
-                                )
-                            }
-                            showShortcutDialog.value = false
-                        },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(if (hasExistingShortcut) {
-                            stringResource(id = R.string.module_update)
-                        } else {
-                            stringResource(id = android.R.string.ok)
-                        })
-                    }
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
+    ModuleShortcutSheet(
+        show = showShortcutDialog.value,
+        shortcutState = shortcutState,
+        onDismiss = { showShortcutDialog.value = false },
+        onPickShortcutIcon = { pickShortcutIconLauncher.launch("image/*") },
+        onDeleteShortcut = {
+            shortcutState.deleteShortcut(context)
+            showShortcutDialog.value = false
+        },
+        onConfirmShortcut = {
+            shortcutState.createShortcut(context)
+            showShortcutDialog.value = false
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModuleList(
     bottomInnerPadding: Dp,
-    navigator: Navigator,
-    viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
-    boxModifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
-    displayModules: List<ModuleViewModel.ModuleInfo>,
-    onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
-    onModuleAddShortcut: (ModuleViewModel.ModuleInfo, ShortcutType) -> Unit,
-    context: Context,
+    displayModules: List<Module>,
+    updateInfoMap: Map<String, ModuleUpdateInfo>,
+    actions: ModuleActions,
+    onClickModule: (Module) -> Unit,
+    onModuleAddShortcut: (Module, ShortcutType) -> Unit,
     closeSearch: () -> Unit? = {},
-    snackBarHost: SnackbarHostState,
-    pullToRefreshState: PullToRefreshState,
-    isRefreshing: Boolean,
-    scaleFraction: Float
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val failedEnable = stringResource(R.string.module_failed_to_enable)
-    val failedDisable = stringResource(R.string.module_failed_to_disable)
-    val failedUninstall = stringResource(R.string.module_uninstall_failed)
-    val successUninstall = stringResource(R.string.module_uninstall_success)
-    val reboot = stringResource(R.string.reboot)
-    val rebootToApply = stringResource(R.string.reboot_to_apply)
-    val moduleStr = stringResource(R.string.module)
-    val uninstall = stringResource(R.string.uninstall)
-    val cancel = stringResource(android.R.string.cancel)
-    val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
-    val metaModuleUninstallConfirm = stringResource(R.string.metamodule_uninstall_confirm)
-    val updateText = stringResource(R.string.module_update)
-    val changelogText = stringResource(R.string.module_changelog)
-    val downloadingText = stringResource(R.string.module_downloading)
-    val startDownloadingText = stringResource(R.string.module_start_downloading)
-
-    val scope = rememberCoroutineScope()
     val loadingDialog = rememberLoadingDialog()
-    val confirmDialog = rememberConfirmDialog()
-
-    suspend fun onModuleUpdate(
-        module: ModuleViewModel.ModuleInfo,
-        changelogUrl: String,
-        downloadUrl: String,
-        fileName: String,
-        onInstallModule: (Uri) -> Unit
+    LazyColumn(
+        state = listState,
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            top = 8.dp,
+            end = 16.dp,
+            bottom = 16.dp + bottomInnerPadding + 56.dp + 16.dp
+        ),
     ) {
-        val changelogResult = if (changelogUrl.isNotEmpty()) {
-            loadingDialog.withLoading {
-                withContext(Dispatchers.IO) {
-                    var url = changelogUrl
-                    var isHtml = false
-                    if (url.startsWith("#") && url.contains('@')) {
-                        val parts = url.substring(1).split('@', limit = 2)
-                        val moduleId = parts[0]
-                        val tagName = parts[1]
-                        fetchReleaseDescriptionHtml(moduleId, tagName)?.let {
-                            url = it
-                            isHtml = true
-                        }
+        items(displayModules, key = { it.id }) { module ->
+            val scope = rememberCoroutineScope()
+            val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleUpdateInfo.Empty
+
+            ModuleItem(
+                module = module,
+                updateUrl = moduleUpdateInfo.downloadUrl,
+                onUninstallClicked = {
+                    if (module.remove) {
+                        actions.onUndoUninstallModule(module)
                     } else {
-                        // old update json changelog
-                        url = runCatching {
-                            ksuApp.okhttpClient.newCall(
-                                Request.Builder().url(url).build()
-                            ).execute().body.string()
-                        }.getOrDefault("")
+                        actions.onRequestUninstallConfirmation(module)
                     }
-                    url to isHtml
-                }
-            }
-        } else {
-            null
-        }
-
-        val changelog = changelogResult?.first ?: ""
-        val isHtml = changelogResult?.second ?: false
-
-        val confirmResult = confirmDialog.awaitConfirm(
-            if (changelog.isNotEmpty()) changelogText else updateText,
-            content = changelog.ifBlank { startDownloadingText.format(module.name) },
-            html = isHtml,
-            markdown = !isHtml && changelog.isNotEmpty(),
-            confirm = updateText,
-        )
-
-        if (confirmResult != ConfirmResult.Confirmed) {
-            return
-        }
-
-        withContext(Dispatchers.IO) {
-            download(
-                url = downloadUrl,
-                fileName = fileName,
-                onDownloaded = onInstallModule,
-                onDownloading = {
-                    scope.launch(Dispatchers.Main) {
-                        Toast.makeText(context, downloadingText.format(module.name), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            )
-        }
-    }
-
-    suspend fun onModuleUninstallClicked(module: ModuleViewModel.ModuleInfo) {
-        val isUninstall = !module.remove
-        if (isUninstall) {
-            val formatter = if (module.metamodule) metaModuleUninstallConfirm else moduleUninstallConfirm
-            val confirmResult = confirmDialog.awaitConfirm(
-                moduleStr,
-                content = formatter.format(module.name),
-                confirm = uninstall,
-                dismiss = cancel
-            )
-            if (confirmResult != ConfirmResult.Confirmed) {
-                return
-            }
-        }
-
-        val success = withContext(Dispatchers.IO) {
-            if (isUninstall) {
-                uninstallModule(module.id)
-            } else {
-                undoUninstallModule(module.id)
-            }
-        }
-
-        if (success) {
-            viewModel.fetchModuleList()
-        }
-        if (!isUninstall) return
-        val message = if (success) {
-            successUninstall.format(module.name)
-        } else {
-            failedUninstall.format(module.name)
-        }
-        val actionLabel = if (success) {
-            reboot
-        } else {
-            null
-        }
-        val result = snackBarHost.showSnackbar(
-            message = message,
-            actionLabel = actionLabel,
-            duration = SnackbarDuration.Long
-        )
-        if (result == SnackbarResult.ActionPerformed) {
-            reboot()
-        }
-    }
-    Box(modifier = boxModifier) {
-        LazyColumn(
-            state = listState,
-            modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                top = 8.dp,
-                end = 16.dp,
-                bottom = 16.dp + bottomInnerPadding + 56.dp + 16.dp
-            ),
-        ) {
-            when {
-                displayModules.isEmpty() -> {
-                    item {
-                        Box(
-                            modifier = Modifier.fillParentMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                stringResource(R.string.module_empty),
-                                textAlign = TextAlign.Center
-                            )
+                },
+                onCheckChanged = {
+                    actions.onToggleModule(module)
+                },
+                onUpdate = {
+                    scope.launch {
+                        loadingDialog.withLoading {
+                            actions.onRequestUpdateConfirmation(module, moduleUpdateInfo)
                         }
                     }
+                },
+                onAddShortcut = { type -> onModuleAddShortcut(module, type) },
+                onClick = { onClickModule(module) },
+                onExecuteAction = { actions.onExecuteModuleAction(module) },
+                closeSearch = { closeSearch() }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModuleShortcutSheet(
+    show: Boolean,
+    shortcutState: ModuleShortcutState,
+    onDismiss: () -> Unit,
+    onPickShortcutIcon: () -> Unit,
+    onDeleteShortcut: () -> Unit,
+    onConfirmShortcut: () -> Unit,
+) {
+    if (!show) return
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.module_shortcut_title),
+                style = MaterialTheme.typography.titleLarge
+            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(25.dp))
+            ) {
+                val preview = shortcutState.previewIcon
+                if (preview != null) {
+                    Image(
+                        bitmap = preview,
+                        modifier = Modifier.size(100.dp),
+                        contentDescription = null,
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .background(Color.White)
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        contentScale = FixedScale(1.5f)
+                    )
                 }
-
-                else -> {
-                    items(displayModules, key = { it.id }) { module ->
-                        val scope = rememberCoroutineScope()
-                        val moduleUpdateInfo = uiState.updateInfo[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
-
-                        ModuleItem(
-                            navigator = navigator,
-                            module = module,
-                            updateUrl = moduleUpdateInfo.downloadUrl,
-                            onUninstallClicked = {
-                                scope.launch { onModuleUninstallClicked(module) }
-                            },
-                            onCheckChanged = {
-                                scope.launch {
-                                    val success = withContext(Dispatchers.IO) {
-                                        toggleModule(module.id, !module.enabled)
-                                    }
-                                    if (success) {
-                                        viewModel.fetchModuleList()
-
-                                        val result = snackBarHost.showSnackbar(
-                                            message = rebootToApply,
-                                            actionLabel = reboot,
-                                            duration = SnackbarDuration.Long
-                                        )
-                                        if (result == SnackbarResult.ActionPerformed) {
-                                            reboot()
-                                        }
-                                    } else {
-                                        val message = if (module.enabled) failedDisable else failedEnable
-                                        snackBarHost.showSnackbar(message.format(module.name))
-                                    }
-                                }
-                            },
-                            onUpdate = {
-                                scope.launch {
-                                    onModuleUpdate(
-                                        module,
-                                        moduleUpdateInfo.changelog,
-                                        moduleUpdateInfo.downloadUrl,
-                                        "${module.name}-${moduleUpdateInfo.version}.zip"
-                                    ) { uri ->
-                                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
-                                        viewModel.markNeedRefresh()
-                                    }
-                                }
-                            },
-                            onAddShortcut = { m, t -> onModuleAddShortcut(m, t) },
-                            onClick = { m -> onClickModule(m.id, m.name, m.hasWebUi) },
-                            closeSearch = { closeSearch() }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onPickShortcutIcon) {
+                    Text(stringResource(id = R.string.module_shortcut_icon_pick))
+                }
+                AnimatedVisibility(
+                    visible = shortcutState.iconUri != shortcutState.defaultShortcutIconUri,
+                    enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
+                    exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
+                ) {
+                    IconButton(
+                        onClick = shortcutState::resetIconToDefault,
+                        modifier = Modifier.padding(start = 12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 }
             }
-        }
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .graphicsLayer {
-                    scaleX = scaleFraction
-                    scaleY = scaleFraction
+            OutlinedTextField(
+                value = shortcutState.name,
+                onValueChange = shortcutState::updateName,
+                label = { Text(stringResource(id = R.string.module_shortcut_name_label)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (shortcutState.hasExistingShortcut) {
+                TextButton(
+                    onClick = onDeleteShortcut,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(id = R.string.module_shortcut_delete))
                 }
-        ) {
-            PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = isRefreshing)
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(id = android.R.string.cancel))
+                }
+                Button(
+                    onClick = onConfirmShortcut,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        if (shortcutState.hasExistingShortcut) {
+                            stringResource(id = R.string.module_update)
+                        } else {
+                            stringResource(id = android.R.string.ok)
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -896,14 +642,14 @@ private fun ModuleList(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModuleItem(
-    navigator: Navigator,
-    module: ModuleViewModel.ModuleInfo,
+    module: Module,
     updateUrl: String,
-    onUninstallClicked: (ModuleViewModel.ModuleInfo) -> Unit,
+    onUninstallClicked: () -> Unit,
     onCheckChanged: (Boolean) -> Unit,
-    onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
-    onAddShortcut: (ModuleViewModel.ModuleInfo, ShortcutType) -> Unit,
-    onClick: (ModuleViewModel.ModuleInfo) -> Unit,
+    onUpdate: () -> Unit,
+    onAddShortcut: (ShortcutType) -> Unit,
+    onClick: () -> Unit,
+    onExecuteAction: () -> Unit,
     closeSearch: () -> Unit
 ) {
     TonalCard(
@@ -912,7 +658,6 @@ private fun ModuleItem(
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
-        val viewModel = viewModel<ModuleViewModel>()
         var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
         var isOverflowing by remember { mutableStateOf(false) }
 
@@ -926,7 +671,7 @@ private fun ModuleItem(
                             interactionSource = interactionSource,
                             role = Role.Button,
                             indication = indication,
-                            onValueChange = { onClick(module) }
+                            onValueChange = { onClick() }
                         )
                     } else {
                         this
@@ -1048,11 +793,10 @@ private fun ModuleItem(
                         if (module.hasActionScript) {
                             CombinedClickableButton(
                                 onClick = {
-                                    navigator.push(Route.ExecuteModuleAction(module.id))
-                                    viewModel.markNeedRefresh()
+                                    onExecuteAction()
                                     closeSearch()
                                 },
-                                onLongClick = { onAddShortcut(module, ShortcutType.Action) },
+                                onLongClick = { onAddShortcut(ShortcutType.Action) },
                                 modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                                 shape = ButtonDefaults.filledTonalShape,
                                 colors = ButtonDefaults.buttonColors(
@@ -1080,10 +824,10 @@ private fun ModuleItem(
                         if (module.hasWebUi) {
                             CombinedClickableButton(
                                 onClick = {
-                                    onClick(module)
+                                    onClick()
                                     closeSearch()
                                 },
-                                onLongClick = { onAddShortcut(module, ShortcutType.WebUI) },
+                                onLongClick = { onAddShortcut(ShortcutType.WebUI) },
                                 modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                                 shape = ButtonDefaults.filledTonalShape,
                                 colors = ButtonDefaults.buttonColors(
@@ -1121,7 +865,7 @@ private fun ModuleItem(
                         Button(
                             modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                             enabled = !module.remove,
-                            onClick = { onUpdate(module) },
+                            onClick = onUpdate,
                             shape = ButtonDefaults.textShape,
                             contentPadding = ButtonDefaults.TextButtonContentPadding
                         ) {
@@ -1146,7 +890,7 @@ private fun ModuleItem(
 
                 FilledTonalButton(
                     modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                    onClick = { onUninstallClicked(module) },
+                    onClick = onUninstallClicked,
                     contentPadding = ButtonDefaults.TextButtonContentPadding
                 ) {
                     if (!module.remove) {
@@ -1157,7 +901,9 @@ private fun ModuleItem(
                         )
                     } else {
                         Icon(
-                            modifier = Modifier.size(20.dp).rotate(180f),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .rotate(180f),
                             imageVector = Icons.Outlined.Refresh,
                             contentDescription = null,
                         )

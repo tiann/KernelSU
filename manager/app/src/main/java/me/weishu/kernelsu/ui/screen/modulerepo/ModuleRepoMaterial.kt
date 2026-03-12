@@ -69,7 +69,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,19 +81,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocale
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.RepoModule
 import me.weishu.kernelsu.ui.component.GithubMarkdown
@@ -104,69 +99,33 @@ import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Route
-import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.util.download
-import me.weishu.kernelsu.ui.util.isNetworkAvailable
-import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
-import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import java.text.Collator
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ModuleRepoScreenMaterial() {
-    val navigator = LocalNavigator.current
-    val viewModel = viewModel<ModuleRepoViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
-    val installedVm = viewModel<ModuleViewModel>()
-    val installedUiState by installedVm.uiState.collectAsState()
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val repoSortByNameState = remember { mutableStateOf(prefs.getBoolean("module_repo_sort_name", false)) }
+fun ModuleRepoScreenMaterial(
+    state: ModuleRepoUiState,
+    actions: ModuleRepoActions,
+) {
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-
-    val offline = !isNetworkAvailable(context)
-
-    LaunchedEffect(Unit) {
-        if (uiState.modules.isEmpty()) {
-            viewModel.refresh()
-        }
-        if (installedUiState.moduleList.isEmpty()) {
-            installedVm.fetchModuleList()
-        }
-    }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val openRepoDetail: (RepoModule) -> Unit = { module ->
-        val args = RepoModuleArg(
-            moduleId = module.moduleId,
-            moduleName = module.moduleName,
-            authors = module.authors,
-            authorsList = module.authorList.map { AuthorArg(it.name, it.link) },
-            latestRelease = module.latestRelease,
-            latestReleaseTime = module.latestReleaseTime,
-            releases = emptyList()
-        )
-        navigator.push(Route.ModuleRepoDetail(args))
-    }
 
     Scaffold(
         topBar = {
             SearchAppBar(
                 title = { Text(text = stringResource(R.string.module_repos)) },
-                searchText = uiState.searchStatus.searchText,
-                onSearchTextChange = { scope.launch { viewModel.updateSearchText(it) } },
-                onClearClick = { scope.launch { viewModel.updateSearchText("") } },
+                searchText = state.searchStatus.searchText,
+                onSearchTextChange = actions.onSearchTextChange,
+                onClearClick = actions.onClearSearch,
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navigator.pop() },
+                        onClick = actions.onBack,
                         content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
                     )
                 },
@@ -186,27 +145,24 @@ fun ModuleRepoScreenMaterial() {
                         }) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.module_repos_sort_name)) },
-                                trailingIcon = { Checkbox(repoSortByNameState.value, null) },
+                                trailingIcon = { Checkbox(state.sortByName, null) },
                                 onClick = {
-                                    repoSortByNameState.value = !repoSortByNameState.value
-                                    prefs.edit {
-                                        putBoolean("module_repo_sort_name", repoSortByNameState.value)
-                                    }
+                                    actions.onToggleSortByName()
                                 }
                             )
                         }
                     }
                 },
                 searchContent = { closeSearch ->
-                    LaunchedEffect(uiState.searchStatus.searchText) {
+                    LaunchedEffect(state.searchStatus.searchText) {
                         searchListState.scrollToItem(0)
                     }
-                    val sortByName = repoSortByNameState.value
+                    val sortByName = state.sortByName
                     val collator = Collator.getInstance(LocalLocale.current.platformLocale)
                     val searchModules = if (!sortByName) {
-                        uiState.searchResults
+                        state.searchResults
                     } else {
-                        uiState.searchResults.sortedWith(compareBy(collator) { it.moduleName })
+                        state.searchResults.sortedWith(compareBy(collator) { it.moduleName })
                     }
                     RepoModuleList(
                         modules = searchModules,
@@ -214,7 +170,7 @@ fun ModuleRepoScreenMaterial() {
                         modifier = Modifier.fillMaxSize(),
                         onModuleClick = {
                             closeSearch()
-                            openRepoDetail(it)
+                            actions.onOpenRepoDetail(it)
                         }
                     )
                 }
@@ -222,7 +178,7 @@ fun ModuleRepoScreenMaterial() {
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val isLoading = uiState.modules.isEmpty()
+        val isLoading = state.modules.isEmpty()
 
         if (isLoading) {
             Box(
@@ -231,12 +187,12 @@ fun ModuleRepoScreenMaterial() {
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                if (offline) {
+                if (state.offline) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.height(12.dp))
                         Button(
-                            onClick = { viewModel.refresh() },
+                            onClick = actions.onRefresh,
                         ) {
                             Text(stringResource(R.string.network_retry))
                         }
@@ -247,8 +203,8 @@ fun ModuleRepoScreenMaterial() {
             }
         } else {
             val displayModules = run {
-                val base = uiState.modules
-                val sortByName = repoSortByNameState.value
+                val base = state.modules
+                val sortByName = state.sortByName
                 val collator = Collator.getInstance(LocalLocale.current.platformLocale)
                 if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
             }
@@ -259,7 +215,7 @@ fun ModuleRepoScreenMaterial() {
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(innerPadding),
-                onModuleClick = openRepoDetail
+                onModuleClick = actions.onOpenRepoDetail
             )
         }
     }
@@ -379,24 +335,15 @@ private fun RepoModuleList(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModuleRepoDetailScreenMaterial(
-    module: RepoModuleArg
+    state: ModuleRepoDetailUiState,
+    actions: ModuleRepoDetailActions,
 ) {
-    val navigator = LocalNavigator.current
+    val module = state.module
     val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     val confirmTitle = stringResource(R.string.module_install)
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
-    val onInstallModule: (Uri) -> Unit = { uri ->
-        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
-    }
-
-    var readmeHtml by remember(module.moduleId) { mutableStateOf<String?>(null) }
-    var readmeLoaded by remember(module.moduleId) { mutableStateOf(false) }
-    var detailReleases by remember(module.moduleId) { mutableStateOf<List<ReleaseArg>>(emptyList()) }
-    var webUrl by remember(module.moduleId) { mutableStateOf("https://modules.kernelsu.org/module/${module.moduleId}") }
-    var sourceUrl by remember(module.moduleId) { mutableStateOf("https://github.com/KernelSU-Modules-Repo/${module.moduleId}") }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -409,7 +356,7 @@ fun ModuleRepoDetailScreenMaterial(
             LargeFlexibleTopAppBar(
                 title = { Text(text = module.moduleName) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.pop() }) {
+                    IconButton(onClick = actions.onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
@@ -417,8 +364,8 @@ fun ModuleRepoDetailScreenMaterial(
                     }
                 },
                 actions = {
-                    if (webUrl.isNotEmpty()) {
-                        IconButton(onClick = { uriHandler.openUri(webUrl) }) {
+                    if (state.webUrl.isNotEmpty()) {
+                        IconButton(onClick = actions.onOpenWebUrl) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ChromeReaderMode,
                                 contentDescription = null,
@@ -435,37 +382,6 @@ fun ModuleRepoDetailScreenMaterial(
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
-        LaunchedEffect(module.moduleId) {
-            if (module.moduleId.isNotEmpty()) {
-                withContext(Dispatchers.IO) {
-                    runCatching {
-                        val detail = fetchModuleDetail(module.moduleId)
-                        if (detail != null) {
-                            readmeHtml = detail.readmeHtml
-                            if (detail.sourceUrl.isNotEmpty()) sourceUrl = detail.sourceUrl
-                            detailReleases = detail.releases.map { r ->
-                                ReleaseArg(
-                                    tagName = r.tagName,
-                                    name = r.name,
-                                    publishedAt = r.publishedAt,
-                                    assets = r.assets.map { a -> ReleaseAssetArg(a.name, a.downloadUrl, a.size, a.downloadCount) },
-                                    descriptionHTML = r.descriptionHTML
-                                )
-                            }
-                        } else {
-                            detailReleases = emptyList()
-                        }
-                    }.onSuccess {
-                        readmeLoaded = true
-                    }.onFailure {
-                        readmeLoaded = true
-                        detailReleases = emptyList()
-                    }
-                }
-            } else {
-                readmeLoaded = true
-            }
-        }
         val tabs = listOf(
             stringResource(R.string.tab_readme),
             stringResource(R.string.tab_releases),
@@ -487,28 +403,32 @@ fun ModuleRepoDetailScreenMaterial(
                 )
                 when (page) {
                     0 -> ReadmePage(
-                        readmeHtml = readmeHtml,
-                        readmeLoaded = readmeLoaded,
+                        readmeHtml = state.readmeHtml,
+                        readmeLoaded = state.readmeLoaded,
                         innerPadding = paddedInnerPadding,
                         scrollBehavior = scrollBehavior
                     )
+
                     1 -> ReleasesPage(
-                        detailReleases = detailReleases,
+                        detailReleases = state.detailReleases,
                         innerPadding = paddedInnerPadding,
                         scrollBehavior = scrollBehavior,
                         confirmTitle = confirmTitle,
                         confirmDialog = confirmDialog,
                         scope = scope,
-                        onInstallModule = onInstallModule,
+                        onInstallModule = actions.onInstallModule,
                         context = context,
                         setPendingDownload = { pendingDownload = it }
                     )
+
                     2 -> InfoPage(
                         module = module,
                         innerPadding = paddedInnerPadding,
                         scrollBehavior = scrollBehavior,
-                        uriHandler = uriHandler,
-                        sourceUrl = sourceUrl
+                        uriHandler = object : UriHandler {
+                            override fun openUri(uri: String) = actions.onOpenUrl(uri)
+                        },
+                        sourceUrl = state.sourceUrl
                     )
                 }
             }

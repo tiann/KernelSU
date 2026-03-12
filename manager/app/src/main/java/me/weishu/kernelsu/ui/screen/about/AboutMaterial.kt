@@ -35,39 +35,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.dropUnlessResumed
-import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun AboutScreenMaterial() {
-    val navigator = LocalNavigator.current
-    val uriHandler = LocalUriHandler.current
+fun AboutScreenMaterial(
+    state: AboutUiState,
+    actions: AboutScreenActions,
+) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
-    val htmlString = stringResource(
-        id = R.string.about_source_code,
-        "<b><a href=\"https://github.com/tiann/KernelSU\">GitHub</a></b>",
-        "<b><a href=\"https://t.me/KernelSU\">Telegram</a></b>"
-    )
-    val result = extractLinks(htmlString)
 
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.about)) },
+                title = { Text(state.title) },
                 navigationIcon = {
                     IconButton(
-                        onClick = dropUnlessResumed { navigator.pop() }
+                        onClick = actions.onBack
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -112,12 +101,12 @@ fun AboutScreenMaterial() {
                     }
                     Text(
                         modifier = Modifier.padding(top = 12.dp),
-                        text = stringResource(id = R.string.app_name),
+                        text = state.appName,
                         fontWeight = FontWeight.Medium,
                         fontSize = MaterialTheme.typography.headlineMedium.fontSize
                     )
                     Text(
-                        text = BuildConfig.VERSION_NAME,
+                        text = state.versionName,
                         fontSize = MaterialTheme.typography.bodyMedium.fontSize
                     )
                 }
@@ -125,10 +114,10 @@ fun AboutScreenMaterial() {
             item {
                 SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    content = result.map { linkInfo ->
+                    content = state.links.map { linkInfo ->
                         {
                             SegmentedListItem(
-                                onClick = { uriHandler.openUri(linkInfo.url) },
+                                onClick = { actions.onOpenLink(linkInfo.url) },
                                 headlineContent = { Text(linkInfo.fullText) }
                             )
                         }

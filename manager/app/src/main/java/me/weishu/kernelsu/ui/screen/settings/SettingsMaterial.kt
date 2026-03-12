@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.rounded.Dashboard
-import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -48,7 +47,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,12 +63,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.BuildConfig
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.KsuIsValid
@@ -80,11 +76,8 @@ import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
 import me.weishu.kernelsu.ui.component.uninstalldialog.UninstallDialog
-import me.weishu.kernelsu.ui.navigation3.Navigator
-import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.getBugreportFile
-import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -94,11 +87,38 @@ import java.time.format.DateTimeFormatter
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
-    val viewModel = viewModel<SettingsViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
+fun SettingPagerMaterial(
+    uiState: SettingsUiState,
+    actions: SettingsScreenActions,
+    bottomInnerPadding: Dp,
+) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val loadingDialog = rememberLoadingDialog()
+    val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
+    var showBottomsheet by remember { mutableStateOf(false) }
+    val logSavedText = stringResource(R.string.log_saved)
+    val sendLogText = stringResource(R.string.send_log)
+
+    val exportBugreportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/gzip")
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch(Dispatchers.IO) {
+            loadingDialog.show()
+            context.contentResolver.openOutputStream(uri)?.use { output ->
+                getBugreportFile(context).inputStream().use {
+                    it.copyTo(output)
+                }
+            }
+            loadingDialog.hide()
+            snackBarHost.showSnackbar(logSavedText)
+        }
+    }
+
+    UninstallDialog(showUninstallDialog)
 
     Scaffold(
         topBar = {
@@ -109,38 +129,12 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
         snackbarHost = { SnackbarHost(snackBarHost) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
-        val loadingDialog = rememberLoadingDialog()
-        val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
-
-        UninstallDialog(showUninstallDialog, navigator)
-
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
         ) {
-            val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-            val logSavedText = stringResource(R.string.log_saved)
-            val sendLogText = stringResource(R.string.send_log)
-
-            val exportBugreportLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.CreateDocument("application/gzip")
-            ) { uri: Uri? ->
-                if (uri == null) return@rememberLauncherForActivityResult
-                scope.launch(Dispatchers.IO) {
-                    loadingDialog.show()
-                    context.contentResolver.openOutputStream(uri)?.use { output ->
-                        getBugreportFile(context).inputStream().use {
-                            it.copyTo(output)
-                        }
-                    }
-                    loadingDialog.hide()
-                    snackBarHost.showSnackbar(logSavedText)
-                }
-            }
-
             Spacer(modifier = Modifier.height(8.dp))
             KsuIsValid {
                 SegmentedColumn(
@@ -152,9 +146,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 title = stringResource(id = R.string.settings_check_update),
                                 summary = stringResource(id = R.string.settings_check_update_summary),
                                 checked = uiState.checkUpdate,
-                                onCheckedChange = { bool ->
-                                    viewModel.setCheckUpdate(bool)
-                                }
+                                onCheckedChange = actions.onSetCheckUpdate
                             )
                         },
                         {
@@ -163,16 +155,13 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 title = stringResource(id = R.string.settings_module_check_update),
                                 summary = stringResource(id = R.string.settings_check_update_summary),
                                 checked = uiState.checkModuleUpdate,
-                                onCheckedChange = { bool ->
-                                    viewModel.setCheckModuleUpdate(bool)
-                                }
+                                onCheckedChange = actions.onSetCheckModuleUpdate
                             )
                         }
                     )
                 )
             }
 
-            val uiModeItems = listOf(UiMode.Miuix.name, UiMode.Material.name)
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
@@ -181,16 +170,14 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             icon = Icons.Rounded.Dashboard,
                             title = stringResource(id = R.string.settings_ui_mode),
                             summary = stringResource(id = R.string.settings_ui_mode_summary),
-                            items = uiModeItems,
+                            items = UiMode.entries.map { it.name },
                             selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
-                            onItemSelected = { index ->
-                                viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
-                            }
+                            onItemSelected = actions.onSetUiModeIndex
                         )
                     }
                     add {
                         SegmentedListItem(
-                            onClick = { navigator.push(Route.ColorPalette) },
+                            onClick = actions.onOpenTheme,
                             headlineContent = { Text(stringResource(id = R.string.settings_theme)) },
                             supportingContent = { Text(stringResource(id = R.string.settings_theme_summary)) },
                             leadingContent = { Icon(Icons.Filled.Palette, stringResource(id = R.string.settings_theme)) },
@@ -211,7 +198,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = listOf {
                         SegmentedListItem(
-                            onClick = { navigator.push(Route.AppProfileTemplate) },
+                            onClick = actions.onOpenProfileTemplate,
                             headlineContent = { Text(profileTemplate) },
                             supportingContent = { Text(stringResource(id = R.string.settings_profile_template_summary)) },
                             leadingContent = { Icon(Icons.Filled.Fence, profileTemplate) },
@@ -249,9 +236,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 items = suCompatModeItems,
                                 enabled = uiState.suCompatStatus == "supported",
                                 selectedIndex = uiState.suCompatMode,
-                                onItemSelected = { index ->
-                                    viewModel.setSuCompatMode(index)
-                                }
+                                onItemSelected = actions.onSetSuCompatMode
                             )
                         },
                         {
@@ -266,9 +251,8 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 summary = umountSummary,
                                 enabled = uiState.kernelUmountStatus == "supported",
                                 checked = uiState.isKernelUmountEnabled,
-                            ) {
-                                viewModel.setKernelUmountEnabled(it)
-                            }
+                                onCheckedChange = actions.onSetKernelUmountEnabled
+                            )
                         },
                         {
                             SegmentedSwitchItem(
@@ -276,9 +260,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 title = stringResource(id = R.string.settings_umount_modules_default),
                                 summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                                 checked = uiState.isDefaultUmountModules,
-                                onCheckedChange = {
-                                    viewModel.setDefaultUmountModules(it)
-                                }
+                                onCheckedChange = actions.onSetDefaultUmountModules
                             )
                         },
                         {
@@ -287,9 +269,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 title = stringResource(id = R.string.enable_web_debugging),
                                 summary = stringResource(id = R.string.enable_web_debugging_summary),
                                 checked = uiState.enableWebDebugging,
-                                onCheckedChange = {
-                                    viewModel.setEnableWebDebugging(it)
-                                }
+                                onCheckedChange = actions.onSetEnableWebDebugging
                             )
                         },
                         {
@@ -298,16 +278,14 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 title = stringResource(id = R.string.settings_auto_jailbreak),
                                 summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
                                 checked = uiState.autoJailbreak,
-                                onCheckedChange = {
-                                    viewModel.setAutoJailbreak(it)
-                                }
+                                onCheckedChange = actions.onSetAutoJailbreak
                             )
                         }
                     )
                 )
             }
 
-            if (Natives.isLkmMode) {
+            if (uiState.isLkmMode) {
                 SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = listOf(
@@ -323,7 +301,6 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 )
             }
 
-            var showBottomsheet by remember { mutableStateOf(false) }
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = listOf(
@@ -341,7 +318,7 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     },
                     {
                         SegmentedListItem(
-                            onClick = { navigator.push(Route.About) },
+                            onClick = actions.onOpenAbout,
                             headlineContent = { Text(stringResource(id = R.string.about)) },
                             leadingContent = {
                                 Icon(

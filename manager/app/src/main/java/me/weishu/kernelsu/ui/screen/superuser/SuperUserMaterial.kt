@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.superuser
 
-import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -44,7 +43,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,13 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
@@ -69,57 +64,29 @@ import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.navigation3.Navigator
-import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.ownerNameForUid
-import me.weishu.kernelsu.ui.viewmodel.GroupedApps
-import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
-    val viewModel = viewModel<SuperUserViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
+fun SuperUserPagerMaterial(
+    uiState: SuperUserUiState,
+    actions: SuperUserActions,
+    bottomInnerPadding: Dp,
+) {
     val scope = rememberCoroutineScope()
-
-    val context = LocalContext.current
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
     val pullToRefreshState = rememberPullToRefreshState()
-
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            viewModel.loadAppList(true)
-        }
-    }
 
     val scaleFraction = {
         if (uiState.isRefreshing) 1f
         else LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
     }
 
-    LaunchedEffect(key1 = Unit) {
-        when {
-            uiState.appList.isEmpty() -> {
-                viewModel.setShowSystemApps(prefs.getBoolean("show_system_apps", false))
-                viewModel.setShowOnlyPrimaryUserApps(prefs.getBoolean("show_only_primary_user_apps", false))
-                viewModel.loadAppList()
-            }
-            viewModel.isNeedRefresh -> {
-                viewModel.loadAppList(resort = false)
-            }
-        }
-    }
-
     var localSearchText by remember { mutableStateOf(uiState.searchStatus.searchText) }
     LaunchedEffect(uiState.searchStatus.searchText) {
         localSearchText = uiState.searchStatus.searchText
-    }
-
-    val isMultiUser = remember(uiState.userIds) {
-        uiState.userIds.size > 1
     }
 
     Scaffold(
@@ -128,7 +95,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = onRefresh,
+                onRefresh = actions.onRefresh,
             ),
         topBar = {
             SearchAppBar(
@@ -136,19 +103,17 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 searchText = localSearchText,
                 onSearchTextChange = {
                     localSearchText = it
-                    scope.launch { viewModel.updateSearchText(it) }
+                    actions.onSearchTextChange(it)
                     scope.launch { listState.scrollToItem(0) }
                 },
                 onClearClick = {
                     localSearchText = ""
-                    scope.launch { viewModel.updateSearchText("") }
+                    actions.onClearSearch()
                 },
                 actions = {
                     var showDropdown by remember { mutableStateOf(false) }
 
-                    IconButton(
-                        onClick = { showDropdown = true },
-                    ) {
+                    IconButton(onClick = { showDropdown = true }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = stringResource(id = R.string.settings)
@@ -162,26 +127,20 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 text = { Text(stringResource(R.string.show_system_apps)) },
                                 trailingIcon = { Checkbox(uiState.showSystemApps, null) },
                                 onClick = {
-                                    val newValue = !uiState.showSystemApps
-                                    viewModel.setShowSystemApps(newValue)
-                                    prefs.edit {
-                                        putBoolean("show_system_apps", newValue)
-                                    }
+                                    actions.onToggleShowSystemApps()
                                     showDropdown = false
                                 }
                             )
-                            if (isMultiUser) DropdownMenuItem(
-                                text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
-                                trailingIcon = { Checkbox(uiState.showOnlyPrimaryUserApps, null) },
-                                onClick = {
-                                    val newValue = !uiState.showOnlyPrimaryUserApps
-                                    viewModel.setShowOnlyPrimaryUserApps(newValue)
-                                    prefs.edit {
-                                        putBoolean("show_only_primary_user_apps", newValue)
+                            if (uiState.userIds.size > 1) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
+                                    trailingIcon = { Checkbox(uiState.showOnlyPrimaryUserApps, null) },
+                                    onClick = {
+                                        actions.onToggleShowOnlyPrimaryUserApps()
+                                        showDropdown = false
                                     }
-                                    showDropdown = false
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 },
@@ -190,14 +149,6 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     LaunchedEffect(localSearchText) {
                         searchListState.scrollToItem(0)
                     }
-                    val allGroups = uiState.groupedApps
-                    val searchGroups = remember(uiState.searchResults) {
-                        uiState.searchResults.groupBy { it.uid }.keys
-                    }
-                    val visibleSearchGroups = remember(allGroups, searchGroups) {
-                        allGroups.filter { it.uid in searchGroups }
-                    }
-
                     SegmentedLazyColumn(
                         state = searchListState,
                         modifier = Modifier
@@ -210,7 +161,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             bottom = 16.dp + bottomInnerPadding
                         ),
                         key = { it.uid },
-                        items = visibleSearchGroups,
+                        items = uiState.searchResults,
                     ) { group ->
                         Column {
                             GroupItem(
@@ -219,8 +170,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 onToggleExpand = {},
                             ) {
                                 closeSearch()
-                                navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
-                                viewModel.markNeedRefresh()
+                                actions.onOpenProfile(group)
                             }
                             AnimatedVisibility(
                                 visible = group.apps.size > 1,
@@ -228,12 +178,13 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                 exit = shrinkVertically() + fadeOut()
                             ) {
                                 Column {
-                                    val filteredApps = group.apps.filter { it in uiState.searchResults }
-                                    filteredApps.forEach { app ->
-                                        SimpleAppItem(app) {
+                                    group.apps.forEach { app ->
+                                        SimpleAppItem(
+                                            app = app,
+                                            matched = group.matchedPackageNames.contains(app.packageName),
+                                        ) {
                                             closeSearch()
-                                            navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
-                                            viewModel.markNeedRefresh()
+                                            actions.onOpenProfile(group)
                                         }
                                     }
                                 }
@@ -246,12 +197,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            val allGroups = uiState.groupedApps
-            val visibleUids = remember(uiState.appList) { uiState.appList.map { it.uid }.toSet() }
             val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
-            val visibleGroups = remember(allGroups, visibleUids) {
-                allGroups.filter { it.uid in visibleUids }
-            }
 
             SegmentedLazyColumn(
                 state = listState,
@@ -265,7 +211,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                     bottom = 16.dp + bottomInnerPadding
                 ),
                 key = { it.uid },
-                items = visibleGroups,
+                items = uiState.groupedApps,
             ) { group ->
                 val expanded = expandedSearchUids.value.contains(group.uid)
                 val onToggleExpand = {
@@ -283,8 +229,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         selected = expanded,
                         onToggleExpand = onToggleExpand,
                     ) {
-                        navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
-                        viewModel.markNeedRefresh()
+                        actions.onOpenProfile(group)
                     }
                     AnimatedVisibility(
                         visible = expanded && group.apps.size > 1,
@@ -292,11 +237,9 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         exit = shrinkVertically() + fadeOut()
                     ) {
                         Column {
-                            val filteredApps = group.apps.filter { it in uiState.appList }
-                            filteredApps.forEach { app ->
-                                SimpleAppItem(app) {
-                                    navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
-                                    viewModel.markNeedRefresh()
+                            group.apps.forEach { app ->
+                                SimpleAppItem(app = app) {
+                                    actions.onOpenProfile(group)
                                 }
                             }
                         }
@@ -311,7 +254,10 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         scaleY = scaleFraction()
                     }
             ) {
-                PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = uiState.isRefreshing)
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isRefreshing
+                )
             }
         }
     }
@@ -321,13 +267,20 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
 @Composable
 private fun SimpleAppItem(
     app: AppInfo,
+    matched: Boolean = false,
     onNavigate: () -> Unit,
 ) {
     ListItem(
         onClick = onNavigate,
         modifier = Modifier.padding(horizontal = 4.dp),
         shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
-        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)),
+        colors = ListItemDefaults.colors(
+            containerColor = if (matched) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+            }
+        ),
         content = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         supportingContent = { Text(app.packageName, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         leadingContent = {
@@ -417,7 +370,8 @@ private fun GroupItem(
                         )
                     }
                     if (applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
+                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                    ) {
                         StatusTag(
                             label = "SYSTEM",
                             modifier = Modifier.padding(top = 4.dp),

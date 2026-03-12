@@ -1,11 +1,11 @@
 package me.weishu.kernelsu.ui.screen.templateeditor
 
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.data.model.TemplateInfo
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
-import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 
-fun toNativeProfile(templateInfo: TemplateViewModel.TemplateInfo): Natives.Profile {
+fun toNativeProfile(templateInfo: TemplateInfo): Natives.Profile {
     return Natives.Profile().copy(
         rootTemplate = templateInfo.id,
         uid = templateInfo.uid,
@@ -18,7 +18,7 @@ fun toNativeProfile(templateInfo: TemplateViewModel.TemplateInfo): Natives.Profi
     )
 }
 
-fun isTemplateValid(template: TemplateViewModel.TemplateInfo): Boolean {
+fun isTemplateValid(template: TemplateInfo): Boolean {
     if (template.id.isBlank()) {
         return false
     }
@@ -32,7 +32,7 @@ fun idCheck(value: String): Int {
     return if (value.isEmpty()) 0 else if (isTemplateExist(value)) 1 else if (!isValidTemplateId(value)) 2 else 0
 }
 
-fun saveTemplate(template: TemplateViewModel.TemplateInfo, isCreation: Boolean = false): Boolean {
+fun saveTemplate(template: TemplateInfo, isCreation: Boolean = false): Boolean {
     if (!isTemplateValid(template)) {
         return false
     }

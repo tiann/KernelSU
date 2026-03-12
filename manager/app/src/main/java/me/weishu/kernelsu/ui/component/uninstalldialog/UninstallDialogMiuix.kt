@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.screen.flash.UninstallType
@@ -33,11 +33,9 @@ import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
-fun UninstallDialogMiuix(
-    showDialog: MutableState<Boolean>,
-    navigator: Navigator,
-) {
+fun UninstallDialogMiuix(showDialog: MutableState<Boolean>) {
     val context = LocalContext.current
+    val navigator = LocalNavigator.current
     val options = listOf(
         // TEMPORARY,
         PERMANENT,

@@ -14,7 +14,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
-import me.weishu.kernelsu.ui.navigation3.Navigator
+import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.screen.flash.UninstallType
@@ -22,10 +22,8 @@ import me.weishu.kernelsu.ui.screen.flash.UninstallType.PERMANENT
 import me.weishu.kernelsu.ui.screen.flash.UninstallType.RESTORE_STOCK_IMAGE
 
 @Composable
-fun UninstallDialogMaterial(
-    showDialog: MutableState<Boolean>,
-    navigator: Navigator
-) {
+fun UninstallDialogMaterial(showDialog: MutableState<Boolean>) {
+    val navigator = LocalNavigator.current
     val options = listOf(
         // TEMPORARY,
         PERMANENT,
@@ -51,7 +49,7 @@ fun UninstallDialogMaterial(
                     modifier = Modifier,
                     content = options.map { type ->
                         {
-                           SegmentedListItem(
+                            SegmentedListItem(
                                 onClick = {
                                     showConfirmDialog.value = true
                                     runType.value = type
