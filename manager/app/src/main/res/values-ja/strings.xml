@@ -159,7 +159,6 @@
     <string name="settings_theme_mode_light">ライト</string>
     <string name="settings_theme_mode_dark">ダーク</string>
     <string name="settings_key_color">キーカラー</string>
-    <string name="settings_key_color_summary">Monet を使用するときのアクセントカラーをカスタマイズします。</string>
     <string name="settings_key_color_default">デフォルト</string>
     <string name="color_blue">ブルー</string>
     <string name="color_red">レッド</string>

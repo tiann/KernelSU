@@ -157,7 +157,6 @@
     <string name="settings_theme_mode_light">Jasny</string>
     <string name="settings_theme_mode_dark">Ciemny</string>
     <string name="settings_key_color">Kolor przycisków</string>
-    <string name="settings_key_color_summary">Dostosuj akcent gdy używany jest Monet.</string>
     <string name="settings_key_color_default">Domyślny</string>
     <string name="color_blue">Niebieski</string>
     <string name="color_red">Czerwony</string>

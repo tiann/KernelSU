@@ -153,7 +153,6 @@
     <string name="settings_theme_mode_light">Светъл</string>
     <string name="settings_theme_mode_dark">Тъмен</string>
     <string name="settings_key_color">Цвят на копчето</string>
-    <string name="settings_key_color_summary">Персонализирайте акцента, когато използвате Monet.</string>
     <string name="settings_key_color_default">По подразбиране</string>
     <string name="color_blue">Син</string>
     <string name="color_red">Червен</string>

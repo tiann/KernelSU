@@ -166,11 +166,12 @@ fun HomePagerMiuix(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    if (isManager && BuildConfig.IS_PR_BUILD) {
-                        WarningCard(stringResource(id = R.string.home_pr_build_warning))
-                    }
-                    if (isManager && !BuildConfig.IS_PR_BUILD && Natives.isPrBuild) {
-                        WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
+                    if (isManager) {
+                        if (BuildConfig.IS_PR_BUILD) {
+                            WarningCard(stringResource(id = R.string.home_pr_build_warning))
+                        } else if (Natives.isPrBuild) {
+                            WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
+                        }
                     }
                     if (ksuVersion != null && !Natives.isLkmMode) {
                         WarningCard(stringResource(id = R.string.home_gki_warning))

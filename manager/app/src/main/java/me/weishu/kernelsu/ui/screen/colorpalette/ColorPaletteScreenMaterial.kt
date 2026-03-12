@@ -50,6 +50,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.DesignServices
+import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -260,6 +262,7 @@ fun ColorPaletteScreenMaterial() {
                         {
                             val styles = PaletteStyle.entries
                             SegmentedDropdownItem(
+                                icon = Icons.Rounded.Style,
                                 title = stringResource(R.string.settings_color_style),
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOf(colorStyle),
@@ -271,6 +274,7 @@ fun ColorPaletteScreenMaterial() {
                         {
                             val specs = ColorSpec.SpecVersion.entries
                             SegmentedDropdownItem(
+                                icon = Icons.Rounded.DesignServices,
                                 title = stringResource(R.string.settings_color_spec),
                                 items = specs.map { it.name },
                                 selectedIndex = specs.indexOf(colorSpec).coerceAtLeast(0),
@@ -477,7 +481,7 @@ private fun ThemePreviewCard(
                 ) {
                     Row(
                         modifier = Modifier
-                            .height(56.dp)
+                            .height(40.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically

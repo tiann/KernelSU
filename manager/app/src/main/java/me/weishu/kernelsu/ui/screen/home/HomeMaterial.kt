@@ -150,11 +150,12 @@ fun HomePagerMaterial(
                 onClickSuperuser = { mainState.animateToPage(1) },
                 onclickModule = { mainState.animateToPage(2) },
             )
-            if (isManager && BuildConfig.IS_PR_BUILD) {
-                WarningCard(stringResource(id = R.string.home_pr_build_warning))
-            }
-            if (isManager && !BuildConfig.IS_PR_BUILD && Natives.isPrBuild) {
-                WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
+            if (isManager) {
+                if (BuildConfig.IS_PR_BUILD) {
+                    WarningCard(stringResource(id = R.string.home_pr_build_warning))
+                } else if (Natives.isPrBuild) {
+                    WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
+                }
             }
             if (ksuVersion != null && !Natives.isLkmMode) {
                 WarningCard(

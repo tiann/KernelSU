@@ -151,7 +151,6 @@
     <string name="settings_theme_mode_light">Світло</string>
     <string name="settings_theme_mode_dark">Темний</string>
     <string name="settings_key_color">Ключовий колір</string>
-    <string name="settings_key_color_summary">Налаштуйте акцент під час використання Monet.</string>
     <string name="settings_key_color_default">За замовчуванням</string>
     <string name="color_blue">Синій</string>
     <string name="color_red">Червоний</string>

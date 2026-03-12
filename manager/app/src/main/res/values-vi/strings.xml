@@ -151,7 +151,6 @@
     <string name="settings_theme_mode_system">Mặc định theo hệ thống</string>
     <string name="settings_theme_mode_light">Sáng</string>
     <string name="settings_theme_mode_dark">Tối</string>
-    <string name="settings_key_color_summary">Tùy chỉnh màu nhấn khi sử dụng Monet.</string>
     <string name="settings_key_color_default">Mặc định</string>
     <string name="color_blue">Xanh dương</string>
     <string name="color_red">Đỏ</string>

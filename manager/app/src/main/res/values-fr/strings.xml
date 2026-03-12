@@ -151,7 +151,6 @@
     <string name="settings_theme_mode_light">Clair</string>
     <string name="settings_theme_mode_dark">Sombre</string>
     <string name="settings_key_color">Couleur clé</string>
-    <string name="settings_key_color_summary">Personnalisez la couleur d\'accentuation Monet.</string>
     <string name="settings_key_color_default">Par défaut</string>
     <string name="color_blue">Bleu</string>
     <string name="color_red">Rouge</string>

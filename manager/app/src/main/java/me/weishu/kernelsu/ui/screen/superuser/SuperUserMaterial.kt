@@ -100,7 +100,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
         else LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
     }
 
-    LaunchedEffect(key1 = navigator) {
+    LaunchedEffect(key1 = Unit) {
         when {
             uiState.appList.isEmpty() -> {
                 viewModel.setShowSystemApps(prefs.getBoolean("show_system_apps", false))
@@ -220,6 +220,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             ) {
                                 closeSearch()
                                 navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
+                                viewModel.markNeedRefresh()
                             }
                             AnimatedVisibility(
                                 visible = group.apps.size > 1,
@@ -232,6 +233,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                                         SimpleAppItem(app) {
                                             closeSearch()
                                             navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
+                                            viewModel.markNeedRefresh()
                                         }
                                     }
                                 }
@@ -282,6 +284,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         onToggleExpand = onToggleExpand,
                     ) {
                         navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
+                        viewModel.markNeedRefresh()
                     }
                     AnimatedVisibility(
                         visible = expanded && group.apps.size > 1,
@@ -293,6 +296,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             filteredApps.forEach { app ->
                                 SimpleAppItem(app) {
                                     navigator.push(Route.AppProfile(group.uid, group.primary.packageName))
+                                    viewModel.markNeedRefresh()
                                 }
                             }
                         }
