@@ -33,7 +33,8 @@
     <string name="install">Install</string>
     <string name="reboot">Reboot</string>
     <string name="settings">Settings</string>
-    <string name="reboot_userspace">Soft reboot</string>
+    <string name="reboot_soft">Soft restart</string>
+    <string name="reboot_userspace">Userspace reboot</string>
     <string name="reboot_recovery">Reboot to Recovery</string>
     <string name="reboot_bootloader">Reboot to Bootloader</string>
     <string name="reboot_download">Reboot to Download</string>
