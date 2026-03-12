@@ -37,8 +37,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -59,13 +57,13 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
@@ -287,7 +285,7 @@ private fun RepoModuleList(
             bottom = 16.dp + navBars.calculateBottomPadding()
         ),
     ) {
-        items(modules, key = { it.moduleId }) { module ->
+        items(modules, key = { it.moduleId }, contentType = { "module" }) { module ->
             val latestReleaseTime = remember(module.latestReleaseTime) { module.latestReleaseTime }
             val moduleAuthor = stringResource(id = R.string.module_author)
 
@@ -400,11 +398,15 @@ fun ModuleRepoDetailScreenMaterial(
     var webUrl by remember(module.moduleId) { mutableStateOf("https://modules.kernelsu.org/module/${module.moduleId}") }
     var sourceUrl by remember(module.moduleId) { mutableStateOf("https://github.com/KernelSU-Modules-Repo/${module.moduleId}") }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    LaunchedEffect(Unit) {
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeFlexibleTopAppBar(
                 title = { Text(text = module.moduleName) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.pop() }) {
@@ -425,8 +427,10 @@ fun ModuleRepoDetailScreenMaterial(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor =  MaterialTheme.colorScheme.surfaceContainer,
-                )
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                scrollBehavior = scrollBehavior
             )
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
@@ -472,7 +476,8 @@ fun ModuleRepoDetailScreenMaterial(
         Box(modifier = Modifier.fillMaxSize()) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 2
             ) { page ->
                 val paddedInnerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + 56.dp + 8.dp,
@@ -509,7 +514,7 @@ fun ModuleRepoDetailScreenMaterial(
             }
             PrimaryTabRow(
                 selectedTabIndex = pagerState.currentPage,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                containerColor = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
             ) {
                 tabs.forEachIndexed { index, tab ->
@@ -533,37 +538,37 @@ private fun ReadmePage(
     innerPadding: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        val isLoading = remember { mutableStateOf(true) }
-        if (isLoading.value) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                LoadingIndicator()
+    val layoutDirection = LocalLayoutDirection.current
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentPadding = PaddingValues(
+            top = innerPadding.calculateTopPadding(),
+            start = innerPadding.calculateStartPadding(layoutDirection),
+            end = innerPadding.calculateEndPadding(layoutDirection),
+            bottom = innerPadding.calculateBottomPadding(),
+        ),
+    ) {
+        item {
+            val isLoading = remember { mutableStateOf(true) }
+            if (isLoading.value) {
+                Box(
+                    modifier = Modifier.fillParentMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LoadingIndicator()
+                }
             }
-        }
-        if (readmeLoaded && readmeHtml != null) {
-            val layoutDirection = LocalLayoutDirection.current
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .padding(
-                        top = innerPadding.calculateTopPadding(),
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection),
-                        bottom = innerPadding.calculateBottomPadding(),
+            if (readmeLoaded && readmeHtml != null) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    GithubMarkdown(
+                        content = readmeHtml,
+                        isLoading = isLoading,
+                        containerColor = MaterialTheme.colorScheme.surface,
                     )
-            ) {
-                GithubMarkdown(
-                    content = readmeHtml,
-                    isLoading = isLoading,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                )
+                }
             }
         }
     }
@@ -594,12 +599,13 @@ fun ReleasesPage(
             end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
             bottom = innerPadding.calculateBottomPadding(),
         ),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         if (detailReleases.isNotEmpty()) {
             items(
                 items = detailReleases,
                 key = { it.tagName },
+                contentType = { "release" }
             ) { rel ->
                 val title = remember(rel.name, rel.tagName) { rel.name.ifBlank { rel.tagName } }
                 TonalCard {
@@ -772,6 +778,7 @@ fun InfoPage(
         if (module.authorsList.isNotEmpty()) {
             item {
                 SegmentedColumn(
+                    title = stringResource(R.string.module_author),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 8.dp),
@@ -808,6 +815,7 @@ fun InfoPage(
         if (sourceUrl.isNotEmpty()) {
             item {
                 SegmentedColumn(
+                    title = stringResource(R.string.module_repos_source_code),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = listOf(
                         {
