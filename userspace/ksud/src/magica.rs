@@ -1,4 +1,5 @@
 use crate::assets;
+use crate::ksucalls;
 use adb_client::ADBDeviceExt;
 use adb_client::tcp::ADBTcpDevice;
 use anyhow::{Context, Result, bail};
@@ -148,6 +149,9 @@ pub fn run(port: u16) -> Result<()> {
         Some(code) => anyhow::bail!("ksud late-load exited with code {code}"),
         None => info!("ksud late-load completed (no exit code)"),
     }
+
+    info!("Granting root privileges for restoring adb properties...");
+    ksucalls::grant_root().context("Failed to grant root")?;
 
     info!("Restoring adb properties...");
     disable_adb_root()?;
