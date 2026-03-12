@@ -481,7 +481,7 @@ private fun ThemePreviewCard(
                 ) {
                     Row(
                         modifier = Modifier
-                            .height(56.dp)
+                            .height(40.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
