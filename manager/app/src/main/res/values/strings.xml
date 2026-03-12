@@ -116,6 +116,8 @@
     <string name="settings_enable_predictive_back_summary">Enable predictive back gesture support.</string>
     <string name="settings_module_check_update">Check for module updates</string>
     <string name="grant_root_failed">Failed to grant root!</string>
+    <string name="home_pr_build_warning">This is a PR debug build. Do NOT use it in production!</string>
+    <string name="home_pr_kernel_warning">The kernel was built with PR signature support. This is not a production kernel!</string>
     <string name="action">Action</string>
     <string name="open">Open</string>
     <string name="enable_web_debugging">WebView debugging</string>

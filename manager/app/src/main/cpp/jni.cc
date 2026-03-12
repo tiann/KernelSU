@@ -61,6 +61,12 @@ Java_me_weishu_kernelsu_Natives_isManager(JNIEnv *env, jclass clazz) {
     return is_manager();
 }
 
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isPrBuild(JNIEnv *env, jclass clazz) {
+    return is_pr_build();
+}
+
 static void fillIntArray(JNIEnv *env, jobject list, int *data, int count) {
     auto cls = env->GetObjectClass(list);
     auto add = env->GetMethodID(cls, "add", "(Ljava/lang/Object;)Z");
