@@ -353,7 +353,7 @@ fun reboot(reason: String = "") {
             ShellUtils.fastCmd(shell, "setprop ctl.restart zygote")
             return
         }
-        "restart_services" -> {
+        "restart_lsp_zygisk" -> {
             restartLspd()
             restartZygiskSu()
             reboot("soft_reboot")

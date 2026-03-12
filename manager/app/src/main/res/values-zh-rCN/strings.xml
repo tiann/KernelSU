@@ -31,7 +31,7 @@
     <string name="reboot">重启</string>
     <string name="settings">设置</string>
     <string name="reboot_soft">软重启</string>
-    <string name="restart_services_and_soft_reboot">重启服务并软重启</string>
+    <string name="restart_lsp_zygisk">重启LSP和Zygisk</string>
     <string name="reboot_userspace">用户空间重启</string>
     <string name="reboot_recovery">重启到 Recovery</string>
     <string name="reboot_bootloader">重启到 BootLoader</string>
