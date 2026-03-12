@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.settings
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -292,15 +293,17 @@ fun SettingPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                             )
                         },
                         {
-                            SegmentedSwitchItem(
-                                icon = Icons.Filled.ElectricalServices,
-                                title = stringResource(id = R.string.settings_auto_jailbreak),
-                                summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
-                                checked = uiState.autoJailbreak,
-                                onCheckedChange = {
-                                    viewModel.setAutoJailbreak(it)
-                                }
-                            )
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                SegmentedSwitchItem(
+                                    icon = Icons.Filled.ElectricalServices,
+                                    title = stringResource(id = R.string.settings_auto_jailbreak),
+                                    summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
+                                    checked = uiState.autoJailbreak,
+                                    onCheckedChange = {
+                                        viewModel.setAutoJailbreak(it)
+                                    }
+                                )
+                            }
                         }
                     )
                 )

@@ -34,7 +34,12 @@ private fun getKsuDaemonPath(): String {
 }
 
 data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
-    constructor(result: Shell.Result, showReboot: Boolean) : this(result.code, result.err.joinToString("\n"), showReboot)
+    constructor(result: Shell.Result, showReboot: Boolean) : this(
+        result.code,
+        result.err.joinToString("\n"),
+        showReboot
+    )
+
     constructor(result: Shell.Result) : this(result, result.isSuccess)
 }
 
@@ -105,14 +110,16 @@ fun execKsud(args: String, newShell: Boolean = false): Boolean {
 suspend fun getFeatureStatus(feature: String): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val out = shell.newJob()
-        .add("${getKsuDaemonPath()} feature check $feature").to(ArrayList<String>(), null).exec().out
+        .add("${getKsuDaemonPath()} feature check $feature").to(ArrayList<String>(), null)
+        .exec().out
     out.firstOrNull()?.trim().orEmpty()
 }
 
 suspend fun getFeaturePersistValue(feature: String): Long? = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val out = shell.newJob()
-        .add("${getKsuDaemonPath()} feature get --config $feature").to(ArrayList<String>(), null).exec().out
+        .add("${getKsuDaemonPath()} feature get --config $feature").to(ArrayList<String>(), null)
+        .exec().out
     val valueLine = out.firstOrNull { it.trim().startsWith("Value:") } ?: return@withContext null
     valueLine.substringAfter("Value:").trim().toLongOrNull()
 }
@@ -142,6 +149,10 @@ fun getModuleCount(): Int {
 
 fun getSuperuserCount(): Int {
     return Natives.getSuperuserCount()
+}
+
+fun forkDontCareAndExecKsud() {
+    return Natives.forkDontCareAndExecKsud(getKsuDaemonPath())
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {
@@ -241,7 +252,11 @@ fun restoreBoot(
     onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): FlashResult {
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
-    val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot", onStdout, onStderr)
+    val result = flashWithIO(
+        "${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot",
+        onStdout,
+        onStderr
+    )
     return FlashResult(result)
 }
 

@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.home
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -492,7 +493,7 @@ private fun StatusCard(
                                 )
                             },
                             endActions = {
-                                if (isSELinuxPermissive) {
+                                if (isSELinuxPermissive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                     TextButton(
                                         text = stringResource(R.string.home_jailbreak),
                                         insideMargin = PaddingValues(12.dp),

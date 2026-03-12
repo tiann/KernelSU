@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen.settings
 
+import android.os.Build
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -318,22 +319,24 @@ fun SettingPagerMiuix(
                                 viewModel.setEnableWebDebugging(it)
                             }
                         )
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_auto_jailbreak),
-                            summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.ElectricalServices,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_auto_jailbreak),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.autoJailbreak,
-                            onCheckedChange = {
-                                viewModel.setAutoJailbreak(it)
-                            }
-                        )
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            SuperSwitch(
+                                title = stringResource(id = R.string.settings_auto_jailbreak),
+                                summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.ElectricalServices,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_auto_jailbreak),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                checked = uiState.autoJailbreak,
+                                onCheckedChange = {
+                                    viewModel.setAutoJailbreak(it)
+                                }
+                            )
+                        }
                     }
                 }
 

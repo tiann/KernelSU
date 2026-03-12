@@ -84,6 +84,8 @@ object Natives {
 
     external fun getSuperuserCount(): Int
 
+    external fun forkDontCareAndExecKsud(ksudPath: String?)
+
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
     private const val NOBODY_UID = 9999
 

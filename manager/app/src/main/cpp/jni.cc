@@ -340,7 +340,7 @@ Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid)
     return nullptr;
 }
 
-int fork_dont_care() {
+static int fork_dont_care() {
     int pid = fork();
     if (pid < 0) {
         PLOGE("fork");
@@ -365,7 +365,7 @@ int fork_dont_care() {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_me_weishu_kernelsu_magica_AppZygotePreload_forkDontCareAndExecKsud(JNIEnv *env, jclass clazz,
+Java_me_weishu_kernelsu_Natives_forkDontCareAndExecKsud(JNIEnv *env, jobject thiz,
                                                                         jstring ksud_path) {
     auto path = env->GetStringUTFChars(ksud_path, nullptr);
     LOGD("executing magica %s", path);
