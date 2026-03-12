@@ -41,6 +41,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
@@ -50,7 +51,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +62,7 @@ import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
+import me.weishu.kernelsu.magica.MagicaService
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
@@ -68,9 +72,8 @@ import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
 import me.weishu.kernelsu.ui.util.getSuperuserCount
-import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
-import me.weishu.kernelsu.magica.MagicaService
 import me.weishu.kernelsu.ui.util.isSELinuxPermissive
+import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import me.weishu.kernelsu.ui.util.rootAvailable
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,6 +112,11 @@ fun HomePagerMaterial(
                 ksuVersion,
                 lkmMode,
                 fullFeatured,
+                isSafeMode = Natives.isSafeMode,
+                isLateLoadMode = Natives.isLateLoadMode,
+                isSELinuxPermissive = isSELinuxPermissive(),
+                superuserCount = getSuperuserCount(),
+                moduleCount = getModuleCount(),
                 onClickInstall = { navigator.push(Route.Install) },
                 onClickJailbreak = {
                     context.startService(Intent(context, MagicaService::class.java))
@@ -213,6 +221,11 @@ private fun StatusCard(
     ksuVersion: Int?,
     lkmMode: Boolean?,
     fullFeatured: Boolean?,
+    isSafeMode: Boolean,
+    isLateLoadMode: Boolean,
+    isSELinuxPermissive: Boolean,
+    superuserCount: Int,
+    moduleCount: Int,
     onClickInstall: () -> Unit = {},
     onClickJailbreak: () -> Unit = {},
     onClickSuperuser: () -> Unit = {},
@@ -256,7 +269,7 @@ private fun StatusCard(
                                         backgroundColor = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                                if (Natives.isSafeMode) {
+                                if (isSafeMode) {
                                     Spacer(Modifier.width(8.dp))
                                     StatusTag(
                                         label = stringResource(id = R.string.safe_mode),
@@ -264,7 +277,7 @@ private fun StatusCard(
                                         backgroundColor = MaterialTheme.colorScheme.errorContainer
                                     )
                                 }
-                                if (Natives.isLateLoadMode) {
+                                if (isLateLoadMode) {
                                     Spacer(Modifier.width(8.dp))
                                     StatusTag(
                                         label = stringResource(id = R.string.jailbreak_mode),
@@ -283,7 +296,9 @@ private fun StatusCard(
 
                     kernelVersion.isGKI() -> {
                         Icon(Icons.Outlined.Warning, stringResource(R.string.home_not_installed))
-                        Column(Modifier.padding(start = 20.dp).weight(1f)) {
+                        Column(Modifier
+                            .padding(start = 20.dp)
+                            .weight(1f)) {
                             Text(
                                 text = stringResource(R.string.home_not_installed),
                                 style = MaterialTheme.typography.titleMedium
@@ -294,7 +309,7 @@ private fun StatusCard(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
-                        if (isSELinuxPermissive()) {
+                        if (isSELinuxPermissive) {
                             FilledTonalButton(onClick = onClickJailbreak) {
                                 Text(stringResource(R.string.home_jailbreak))
                             }
@@ -336,7 +351,7 @@ private fun StatusCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = getSuperuserCount().toString(),
+                            text = superuserCount.toString(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )
@@ -355,7 +370,7 @@ private fun StatusCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = getModuleCount().toString(),
+                            text = moduleCount.toString(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )
@@ -462,9 +477,7 @@ private fun DonateCard() {
 }
 
 @Composable
-private fun InfoCard() {
-    val systemInfo = rememberSystemInfo()
-
+private fun InfoCard(systemInfo: SystemInfo = rememberSystemInfo()) {
     TonalCard {
         Column(
             modifier = Modifier
@@ -496,4 +509,161 @@ private fun InfoCard() {
             InfoCardItem(stringResource(R.string.home_selinux_status), systemInfo.selinuxStatus)
         }
     }
+}
+
+@Preview(name = "Activated")
+@Composable
+private fun StatusCardActivatedPreview() {
+    StatusCard(
+        kernelVersion = KernelVersion(6, 1, 0),
+        ksuVersion = 12345,
+        lkmMode = true,
+        fullFeatured = true,
+        isSafeMode = false,
+        isLateLoadMode = false,
+        isSELinuxPermissive = false,
+        superuserCount = 5,
+        moduleCount = 10,
+    )
+}
+
+@Preview(name = "Not Activated")
+@Composable
+private fun StatusCardNotActivatedPreview() {
+    StatusCard(
+        kernelVersion = KernelVersion(6, 1, 0),
+        ksuVersion = null,
+        lkmMode = null,
+        fullFeatured = false,
+        isSafeMode = false,
+        isLateLoadMode = false,
+        isSELinuxPermissive = false,
+        superuserCount = 0,
+        moduleCount = 0,
+    )
+}
+
+@Preview(name = "Permissive")
+@Composable
+private fun StatusCardPermissivePreview() {
+    StatusCard(
+        kernelVersion = KernelVersion(6, 1, 0),
+        ksuVersion = null,
+        lkmMode = null,
+        fullFeatured = false,
+        isSafeMode = false,
+        isLateLoadMode = false,
+        isSELinuxPermissive = true,
+        superuserCount = 0,
+        moduleCount = 0,
+    )
+}
+
+@Preview(name = "Jailbreak")
+@Composable
+private fun StatusCardJailbreakPreview() {
+    StatusCard(
+        kernelVersion = KernelVersion(6, 1, 0),
+        ksuVersion = 12345,
+        lkmMode = true,
+        fullFeatured = true,
+        isSafeMode = false,
+        isLateLoadMode = true,
+        isSELinuxPermissive = false,
+        superuserCount = 5,
+        moduleCount = 10,
+    )
+}
+
+private val previewSystemInfo = SystemInfo(
+    kernelVersion = "6.1.0-android14-0-g1234567",
+    managerVersion = "1.0.0 (10000)",
+    fingerprint = "google/raven/raven:14/AP1A.240305.019:user/release-keys",
+    selinuxStatus = "Enforcing"
+)
+
+private val previewUriHandler = object : UriHandler {
+    override fun openUri(uri: String) {}
+}
+
+@Composable
+private fun HomeScreenPreviewContent(
+    ksuVersion: Int?,
+    lkmMode: Boolean?,
+    fullFeatured: Boolean?,
+    isSafeMode: Boolean = false,
+    isLateLoadMode: Boolean = false,
+    isSELinuxPermissive: Boolean = false,
+    superuserCount: Int = 0,
+    moduleCount: Int = 0,
+    selinuxStatus: String = "Enforcing",
+) {
+    CompositionLocalProvider(LocalUriHandler provides previewUriHandler) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            StatusCard(
+                kernelVersion = KernelVersion(6, 1, 0),
+                ksuVersion = ksuVersion,
+                lkmMode = lkmMode,
+                fullFeatured = fullFeatured,
+                isSafeMode = isSafeMode,
+                isLateLoadMode = isLateLoadMode,
+                isSELinuxPermissive = isSELinuxPermissive,
+                superuserCount = superuserCount,
+                moduleCount = moduleCount,
+            )
+            InfoCard(previewSystemInfo.copy(selinuxStatus = selinuxStatus))
+            DonateCard()
+            LearnMoreCard()
+        }
+    }
+}
+
+@Preview(name = "Home Activated", showBackground = true)
+@Composable
+private fun HomeScreenActivatedPreview() {
+    HomeScreenPreviewContent(
+        ksuVersion = 12345,
+        lkmMode = true,
+        fullFeatured = true,
+        superuserCount = 5,
+        moduleCount = 10,
+    )
+}
+
+@Preview(name = "Home Not Activated", showBackground = true)
+@Composable
+private fun HomeScreenNotActivatedPreview() {
+    HomeScreenPreviewContent(
+        ksuVersion = null,
+        lkmMode = null,
+        fullFeatured = false,
+    )
+}
+
+@Preview(name = "Home Permissive", showBackground = true)
+@Composable
+private fun HomeScreenPermissivePreview() {
+    HomeScreenPreviewContent(
+        ksuVersion = null,
+        lkmMode = null,
+        fullFeatured = false,
+        isSELinuxPermissive = true,
+        selinuxStatus = "Permissive",
+    )
+}
+
+@Preview(name = "Home Jailbreak", showBackground = true)
+@Composable
+private fun HomeScreenJailbreakPreview() {
+    HomeScreenPreviewContent(
+        ksuVersion = 12345,
+        lkmMode = true,
+        fullFeatured = true,
+        isLateLoadMode = true,
+        superuserCount = 5,
+        moduleCount = 10,
+    )
 }
