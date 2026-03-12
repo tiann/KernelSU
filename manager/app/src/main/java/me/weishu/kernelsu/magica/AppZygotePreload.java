@@ -15,27 +15,18 @@ import java.io.File;
 public class AppZygotePreload implements ZygotePreload {
     public static final String TAG = "KernelSUMagica";
 
+    private static native void forkDontCareAndExecKsud(String ksudPath);
+
     @Override
     public void doPreload(@NonNull ApplicationInfo appInfo) {
         File f = new File(appInfo.nativeLibraryDir, "libksud.so");
         try {
             var uid = Os.getuid();
-            Log.d(TAG, "executing magica ...");
-            Os.setuid(0);
             Log.d(TAG, "set uid 0 ...");
-            var nullFile = new File("/dev/null");
-            var proc = new ProcessBuilder()
-                    .command(f.getAbsolutePath(), "late-load", "--magica", "5555")
-                    .redirectOutput(nullFile)
-                    .redirectInput(nullFile)
-                    .redirectError(nullFile)
-                    .start()
-            ;
-            var res = proc.waitFor();
-            Log.d(TAG, "res=" + res);
-            // we need to exit to prevent from app being blocked
-            System.exit(0);
-            // Os.setuid(uid);
+            Os.setuid(0);
+            Log.d(TAG, "executing magica ...");
+            forkDontCareAndExecKsud(f.getAbsolutePath());
+            Os.setuid(uid);
         } catch (Throwable t) {
             Log.e(TAG, "failed to late load", t);
         }
