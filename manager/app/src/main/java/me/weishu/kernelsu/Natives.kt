@@ -45,6 +45,9 @@ object Natives {
     val isManager: Boolean
         external get
 
+    val isPrBuild: Boolean
+        external get
+
     external fun uidShouldUmount(uid: Int): Boolean
 
     /**

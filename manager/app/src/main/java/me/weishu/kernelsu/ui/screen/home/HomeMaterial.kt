@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
+import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
@@ -125,6 +126,12 @@ fun HomePagerMaterial(
                 onClickSuperuser = { mainState.animateToPage(1) },
                 onclickModule = { mainState.animateToPage(2) },
             )
+            if (isManager && BuildConfig.IS_PR_BUILD) {
+                WarningCard(stringResource(id = R.string.home_pr_build_warning))
+            }
+            if (isManager && !BuildConfig.IS_PR_BUILD && Natives.isPrBuild) {
+                WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
+            }
             if (ksuVersion != null && !Natives.isLkmMode) {
                 WarningCard(
                     stringResource(id = R.string.home_gki_warning),

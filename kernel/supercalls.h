@@ -18,6 +18,7 @@ struct ksu_become_daemon_cmd {
 #define KSU_GET_INFO_FLAG_LKM (1U << 0)
 #define KSU_GET_INFO_FLAG_MANAGER (1U << 1)
 #define KSU_GET_INFO_FLAG_LATE_LOAD (1U << 2)
+#define KSU_GET_INFO_FLAG_PR_BUILD (1U << 3)
 
 struct ksu_get_info_cmd {
     __u32 version; // Output: KERNEL_SU_VERSION

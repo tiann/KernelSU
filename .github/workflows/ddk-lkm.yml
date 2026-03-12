@@ -12,6 +12,16 @@ on:
         required: false
         default: '20251104'
         type: string
+      expected_size2:
+        description: 'Second expected signature size (for PR builds)'
+        required: false
+        default: ''
+        type: string
+      expected_hash2:
+        description: 'Second expected signature hash (for PR builds)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   build-kernelsu-ko:
@@ -26,6 +36,9 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Build kernelsu.ko
+      env:
+        EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
+        EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
       run: |
         git config --global --add safe.directory /__w/KernelSU/KernelSU
 
@@ -33,7 +46,19 @@ jobs:
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        CONFIG_KSU=m CC=clang make
+        EXTRA_ARGS=""
+        if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
+          echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
+          exit 1
+        fi
+        if [ -z "$EXPECTED_SIZE2" ] && [ -n "$EXPECTED_HASH2" ]; then
+          echo "ERROR: expected_size2 must be provided when expected_hash2 is set."
+          exit 1
+        fi
+        if [ -n "$EXPECTED_SIZE2" ]; then
+          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+        fi
+        CONFIG_KSU=m CC=clang make $EXTRA_ARGS
         
         echo "=== Build completed ==="
 
