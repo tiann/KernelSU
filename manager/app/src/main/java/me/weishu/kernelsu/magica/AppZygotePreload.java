@@ -10,6 +10,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.io.File;
+
 @SuppressLint("NewApi")
 public class AppZygotePreload implements ZygotePreload {
     public static final String TAG = "KernelSUMagica";
@@ -21,7 +23,7 @@ public class AppZygotePreload implements ZygotePreload {
             Log.d(TAG, "set uid 0 ...");
             Os.setuid(0);
             Log.d(TAG, "executing magica ...");
-            forkDontCareAndExecKsud();
+            forkDontCareAndExecKsud(appInfo.nativeLibraryDir + File.separator + "libksud.so");
             Os.setuid(uid);
         } catch (Throwable t) {
             Log.e(TAG, "failed to late load", t);

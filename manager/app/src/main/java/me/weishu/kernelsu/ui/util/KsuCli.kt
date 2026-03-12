@@ -151,8 +151,8 @@ fun getSuperuserCount(): Int {
     return Natives.getSuperuserCount()
 }
 
-fun forkDontCareAndExecKsud() {
-    return Natives.forkDontCareAndExecKsud(getKsuDaemonPath())
+fun forkDontCareAndExecKsud(ksudPath: String) {
+    Natives.forkDontCareAndExecKsud(ksudPath)
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {
