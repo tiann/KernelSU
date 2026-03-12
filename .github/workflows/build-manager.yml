@@ -22,8 +22,67 @@ on:
   workflow_call:
 
 jobs:
+  generate-key:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      expected_size: ${{ steps.extract.outputs.expected_size }}
+      expected_hash: ${{ steps.extract.outputs.expected_hash }}
+      keystore: ${{ steps.gen.outputs.keystore }}
+      keystore_password: ${{ steps.gen.outputs.keystore_password }}
+      key_password: ${{ steps.gen.outputs.key_password }}
+    steps:
+      - name: Generate temporary keystore
+        id: gen
+        run: |
+          KEYSTORE_PASSWORD=$(openssl rand -hex 32)
+          KEY_PASSWORD=$(openssl rand -hex 32)
+          echo "keystore_password=$KEYSTORE_PASSWORD" >> $GITHUB_OUTPUT
+          echo "key_password=$KEY_PASSWORD" >> $GITHUB_OUTPUT
+
+          keytool -genkeypair \
+            -alias pr-key \
+            -keyalg RSA -keysize 2048 \
+            -validity 1 \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -dname "CN=KernelSU PR Build" \
+            -storetype JKS \
+            -keystore pr-key.jks
+
+          echo "keystore=$(base64 -w 0 pr-key.jks)" >> $GITHUB_OUTPUT
+
+      - name: Extract certificate hash and size
+        id: extract
+        env:
+          STORE_PASS: ${{ steps.gen.outputs.keystore_password }}
+        run: |
+          # Export DER certificate
+          keytool -exportcert \
+            -alias pr-key \
+            -keystore pr-key.jks \
+            -storepass "$STORE_PASS" \
+            -file pr-cert.der
+
+          # Calculate size in hex
+          SIZE_DEC=$(stat -c%s pr-cert.der)
+          SIZE_HEX=$(printf '0x%04x' "$SIZE_DEC")
+          echo "expected_size=$SIZE_HEX" >> $GITHUB_OUTPUT
+
+          # Calculate SHA256 hash
+          HASH=$(sha256sum pr-cert.der | awk '{print $1}')
+          echo "expected_hash=$HASH" >> $GITHUB_OUTPUT
+
+          echo "Certificate size: $SIZE_HEX ($SIZE_DEC bytes)"
+          echo "Certificate hash: $HASH"
+
   build-lkm:
+    needs: generate-key
+    if: always()
     uses: ./.github/workflows/build-lkm.yml
+    with:
+      expected_size2: ${{ needs.generate-key.outputs.expected_size || '' }}
+      expected_hash2: ${{ needs.generate-key.outputs.expected_hash || '' }}
     secrets: inherit
 
   build-ksuinit:
@@ -42,7 +101,7 @@ jobs:
     with:
       target: ${{ matrix.target }}
       os: ${{ matrix.os }}
-  
+
   build-ksud-extra:
     needs: [build-lkm, build-ksuinit]
     strategy:
@@ -64,7 +123,8 @@ jobs:
       os: ${{ matrix.os }}
 
   build-manager:
-    needs: build-ksud
+    needs: [build-ksud, generate-key]
+    if: always() && needs.build-ksud.result == 'success' && (needs.generate-key.result == 'success' || needs.generate-key.result == 'skipped')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -97,6 +157,21 @@ jobs:
             } >> gradle.properties
             echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
           fi
+
+      - name: Write PR key
+        if: github.event_name == 'pull_request'
+        env:
+          PR_KEYSTORE: ${{ needs.generate-key.outputs.keystore }}
+          PR_KEYSTORE_PASSWORD: ${{ needs.generate-key.outputs.keystore_password }}
+          PR_KEY_PASSWORD: ${{ needs.generate-key.outputs.key_password }}
+        run: |
+          echo "$PR_KEYSTORE" | base64 -d > pr-key.jks
+          {
+            echo KEYSTORE_PASSWORD="$PR_KEYSTORE_PASSWORD"
+            echo KEY_ALIAS='pr-key'
+            echo KEY_PASSWORD="$PR_KEY_PASSWORD"
+            echo KEYSTORE_FILE='pr-key.jks'
+          } >> gradle.properties
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -134,7 +209,6 @@ jobs:
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
-        if: ${{ ( github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' )) || github.ref_type == 'tag' }}
         with:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk

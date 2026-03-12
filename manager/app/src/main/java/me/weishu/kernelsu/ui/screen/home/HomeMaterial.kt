@@ -108,6 +108,9 @@ fun HomePagerMaterial(
                 onClickSuperuser = { mainState.animateToPage(1) },
                 onclickModule = { mainState.animateToPage(2) },
             )
+            if (isManager && Natives.isPrBuild) {
+                WarningCard(stringResource(id = R.string.home_pr_build_warning))
+            }
             if (ksuVersion != null && !Natives.isLkmMode) {
                 WarningCard(
                     stringResource(id = R.string.home_gki_warning),

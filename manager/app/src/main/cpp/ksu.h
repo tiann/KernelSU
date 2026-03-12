@@ -21,6 +21,8 @@ bool is_late_load_mode();
 
 bool is_manager();
 
+bool is_pr_build();
+
 #define KSU_APP_PROFILE_VER 2
 #define KSU_MAX_PACKAGE_NAME 256
 // NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups.
@@ -107,6 +109,7 @@ enum ksu_get_info_flag : uint32_t {
     KSU_GET_INFO_FLAG_LKM = 1U << 0,
     KSU_GET_INFO_FLAG_MANAGER = 1U << 1,
     KSU_GET_INFO_FLAG_LATE_LOAD = 1U << 2,
+    KSU_GET_INFO_FLAG_PR_BUILD = 1U << 3,
 };
 
 struct ksu_get_info_cmd {
