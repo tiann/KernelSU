@@ -1,10 +1,7 @@
 package me.weishu.kernelsu.ui.screen.home
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -50,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +62,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.BuildConfig
@@ -101,6 +101,7 @@ fun HomePagerMaterial(
         val context = LocalContext.current
         val loadingDialog = rememberLoadingDialog()
         var refreshKey by remember { mutableIntStateOf(0) }
+        val scope = rememberCoroutineScope()
 
         Column(
             modifier = Modifier
@@ -134,15 +135,22 @@ fun HomePagerMaterial(
                 onClickInstall = { navigator.push(Route.Install) },
                 onClickJailbreak = {
                     loadingDialog.showLoading()
-                    val intent = Intent(context, MagicaService::class.java)
-                    context.bindService(intent, object : ServiceConnection {
-                        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {}
-                        override fun onServiceDisconnected(name: ComponentName?) {
-                            context.unbindService(this)
+                    context.startService(Intent(context, MagicaService::class.java))
+                    scope.launch(Dispatchers.IO) {
+                        val maxAttempts = 30
+                        var success = false
+                        for (i in 1..maxAttempts) {
+                            delay(1000)
+                            if (Natives.version > 0) {
+                                success = true
+                                break
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
                             loadingDialog.hide()
                             refreshKey++
                         }
-                    }, Context.BIND_AUTO_CREATE)
+                    }
                 },
                 onClickSuperuser = { mainState.animateToPage(1) },
                 onclickModule = { mainState.animateToPage(2) },

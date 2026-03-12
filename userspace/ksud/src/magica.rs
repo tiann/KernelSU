@@ -103,8 +103,9 @@ fn disable_adb_root() -> Result<()> {
 }
 
 fn connect_to_device(port: u16) -> Result<ADBTcpDevice> {
-    loop {
-        info!("Waiting for adbd to restart...");
+    const MAX_RETRIES: u32 = 30;
+    for attempt in 1..=MAX_RETRIES {
+        info!("Waiting for adbd to restart... (attempt {attempt}/{MAX_RETRIES})");
         std::thread::sleep(std::time::Duration::from_secs(1));
 
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
@@ -119,6 +120,7 @@ fn connect_to_device(port: u16) -> Result<ADBTcpDevice> {
             }
         }
     }
+    bail!("Failed to connect to ADB device after {MAX_RETRIES} attempts")
 }
 
 pub fn run(port: u16) -> Result<()> {
@@ -131,9 +133,9 @@ pub fn run(port: u16) -> Result<()> {
     info!("Executing '{cmd}' via adb shell...");
     let mut stdout = Vec::new();
     let mut stderr = Vec::new();
-    let status = device
-        .shell_command(&cmd, Some(&mut stdout), Some(&mut stderr))
-        .context("Failed to execute ksud late-load via adb shell")?;
+    if let Err(e) = device.shell_command(&cmd, Some(&mut stdout), Some(&mut stderr)) {
+        info!("adb shell finished with error (may be expected): {e}");
+    }
 
     if !stdout.is_empty() {
         let out = String::from_utf8_lossy(&stdout);
@@ -144,14 +146,8 @@ pub fn run(port: u16) -> Result<()> {
         info!("stderr: {err}");
     }
 
-    match status {
-        Some(0) => info!("ksud late-load completed successfully"),
-        Some(code) => anyhow::bail!("ksud late-load exited with code {code}"),
-        None => info!("ksud late-load completed (no exit code)"),
-    }
-
     info!("Granting root privileges for restoring adb properties...");
-    ksucalls::grant_root().context("Failed to grant root")?;
+    ksucalls::grant_root().context("Failed to grant root, late-load may have failed")?;
 
     info!("Restoring adb properties...");
     disable_adb_root()?;
