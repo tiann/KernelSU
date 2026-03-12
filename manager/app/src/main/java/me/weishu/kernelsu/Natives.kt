@@ -84,6 +84,7 @@ object Natives {
 
     external fun getSuperuserCount(): Int
 
+    @JvmStatic
     external fun forkDontCareAndExecKsud(ksudPath: String)
 
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"

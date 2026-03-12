@@ -151,10 +151,6 @@ fun getSuperuserCount(): Int {
     return Natives.getSuperuserCount()
 }
 
-fun forkDontCareAndExecKsud(ksudPath: String) {
-    Natives.forkDontCareAndExecKsud(ksudPath)
-}
-
 fun toggleModule(id: String, enable: Boolean): Boolean {
     val cmd = if (enable) {
         "module enable $id"
