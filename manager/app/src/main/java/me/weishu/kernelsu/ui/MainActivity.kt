@@ -213,10 +213,10 @@ class MainActivity : ComponentActivity() {
                                 entry<Route.Install> { InstallScreen() }
                                 entry<Route.Flash> { key -> FlashScreen(key.flashIt) }
                                 entry<Route.ExecuteModuleAction> { key -> ExecuteModuleActionScreen(key.moduleId) }
-                                entry<Route.Home> { MainScreen() }
-                                entry<Route.SuperUser> { MainScreen() }
-                                entry<Route.Module> { MainScreen() }
-                                entry<Route.Settings> { MainScreen() }
+                                entry<Route.Home> { MainScreen(initialPage = 0) }
+                                entry<Route.SuperUser> { MainScreen(initialPage = 1) }
+                                entry<Route.Module> { MainScreen(initialPage = 2) }
+                                entry<Route.Settings> { MainScreen(initialPage = 3) }
                             }
                         )
                     }
@@ -241,12 +241,13 @@ class MainActivity : ComponentActivity() {
 val LocalMainPagerState = staticCompositionLocalOf<MainPagerState> { error("LocalMainPagerState not provided") }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(initialPage: Int = 0) {
     val navController = LocalNavigator.current
     val enableBlur = LocalEnableBlur.current
     val enableFloatingBottomBar = LocalEnableFloatingBottomBar.current
     val enableFloatingBottomBarBlur = LocalEnableFloatingBottomBarBlur.current
-    var currentPage by rememberSaveable { mutableIntStateOf(0) }
+    // Use initialPage as key to ensure different routes have independent saved states
+    var currentPage by rememberSaveable(initialPage) { mutableIntStateOf(initialPage) }
     val pagerState = rememberPagerState(initialPage = currentPage, pageCount = { 4 })
     LaunchedEffect(pagerState.currentPage) {
         currentPage = pagerState.currentPage

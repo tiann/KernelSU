@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,6 +35,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -94,14 +96,16 @@ fun HomePagerMaterial(
 ) {
     val kernelVersion = getKernelVersion()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    var refreshKey by remember { mutableIntStateOf(0) }
+    val isManager = remember(refreshKey) { Natives.isManager }
+    val fullFeatured = remember(refreshKey) { isManager && !Natives.requireNewKernel() && rootAvailable() }
 
     Scaffold(
-        topBar = { TopBar(scrollBehavior = scrollBehavior) },
+        topBar = { TopBar(navigator = navigator, fullFeatured = fullFeatured, scrollBehavior = scrollBehavior) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val context = LocalContext.current
         val loadingDialog = rememberLoadingDialog()
-        var refreshKey by remember { mutableIntStateOf(0) }
         val scope = rememberCoroutineScope()
 
         Column(
@@ -112,7 +116,6 @@ fun HomePagerMaterial(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val isManager = remember(refreshKey) { Natives.isManager }
             val ksuVersion = remember(refreshKey) { if (isManager) Natives.version else null }
             val lkmMode = remember(refreshKey) {
                 ksuVersion?.let {
@@ -120,8 +123,6 @@ fun HomePagerMaterial(
                 }
             }
             val mainState = LocalMainPagerState.current
-
-            val fullFeatured = remember(refreshKey) { isManager && !Natives.requireNewKernel() && rootAvailable() }
 
             StatusCard(
                 kernelVersion,
@@ -233,11 +234,24 @@ private fun UpdateCard() {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
+    navigator: Navigator,
+    fullFeatured: Boolean,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.app_name)) },
-        actions = { RebootListPopup() },
+        actions = {
+            if (fullFeatured) {
+                RebootListPopup()
+            } else {
+                IconButton(onClick = { navigator.push(Route.Settings) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.settings)
+                    )
+                }
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surface,
             scrolledContainerColor = MaterialTheme.colorScheme.surface

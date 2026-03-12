@@ -87,6 +87,7 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
@@ -95,6 +96,7 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Link
+import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.isDynamicColor
@@ -123,14 +125,19 @@ fun HomePagerMiuix(
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val checkUpdate = prefs.getBoolean("check_update", true)
+    var refreshKey by remember { mutableIntStateOf(0) }
+    val isManager = remember(refreshKey) { Natives.isManager }
+    val fullFeatured = remember(refreshKey) { isManager && !Natives.requireNewKernel() && rootAvailable() }
 
     Scaffold(
         topBar = {
             TopBar(
+                navigator = navigator,
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
                 enableBlur = enableBlur,
+                fullFeatured = fullFeatured,
             )
         },
         popupHost = { },
@@ -149,10 +156,8 @@ fun HomePagerMiuix(
         ) {
             item {
                 val loadingDialog = rememberLoadingDialog()
-                var refreshKey by remember { mutableIntStateOf(0) }
                 val scope = rememberCoroutineScope()
 
-                val isManager = remember(refreshKey) { Natives.isManager }
                 val ksuVersion = remember(refreshKey) { if (isManager) Natives.version else null }
                 val lkmMode = remember(refreshKey) {
                     ksuVersion?.let {
@@ -271,10 +276,12 @@ private fun UpdateCard() {
 
 @Composable
 private fun TopBar(
+    navigator: Navigator,
     scrollBehavior: ScrollBehavior,
     hazeState: HazeState,
     hazeStyle: HazeStyle,
     enableBlur: Boolean,
+    fullFeatured: Boolean,
 ) {
     TopAppBar(
         modifier = if (enableBlur) {
@@ -289,9 +296,15 @@ private fun TopBar(
         color = if (enableBlur) Color.Transparent else colorScheme.surface,
         title = stringResource(R.string.app_name),
         actions = {
-            RebootListPopupMiuix(
-                modifier = Modifier.padding(end = 16.dp),
-            )
+            if (fullFeatured) {
+                RebootListPopupMiuix()
+            }
+            IconButton(onClick = { navigator.push(Route.Settings) }) {
+                Icon(
+                    imageVector = MiuixIcons.Settings,
+                    contentDescription = stringResource(R.string.settings)
+                )
+            }
         },
         scrollBehavior = scrollBehavior
     )
