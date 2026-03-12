@@ -26,11 +26,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -281,8 +282,8 @@ private fun StatusCard(
                                     Spacer(Modifier.width(8.dp))
                                     StatusTag(
                                         label = stringResource(id = R.string.jailbreak_mode),
-                                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                                        backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
                                     )
                                 }
                             }
@@ -296,9 +297,11 @@ private fun StatusCard(
 
                     kernelVersion.isGKI() -> {
                         Icon(Icons.Outlined.Warning, stringResource(R.string.home_not_installed))
-                        Column(Modifier
-                            .padding(start = 20.dp)
-                            .weight(1f)) {
+                        Column(
+                            Modifier
+                                .padding(start = 20.dp)
+                                .weight(1f)
+                        ) {
                             Text(
                                 text = stringResource(R.string.home_not_installed),
                                 style = MaterialTheme.typography.titleMedium
@@ -310,7 +313,13 @@ private fun StatusCard(
                             )
                         }
                         if (isSELinuxPermissive) {
-                            FilledTonalButton(onClick = onClickJailbreak) {
+                            Button(
+                                onClick = onClickJailbreak,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError
+                                )
+                            ) {
                                 Text(stringResource(R.string.home_jailbreak))
                             }
                         }
