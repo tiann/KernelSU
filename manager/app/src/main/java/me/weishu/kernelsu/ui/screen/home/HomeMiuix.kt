@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.home
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -197,18 +198,10 @@ fun HomePagerMiuix(
                             loadingDialog.showLoading()
                             context.startService(Intent(context, MagicaService::class.java))
                             scope.launch(Dispatchers.IO) {
-                                val maxAttempts = 30
-                                var success = false
-                                for (i in 1..maxAttempts) {
-                                    delay(1000)
-                                    if (Natives.version > 0) {
-                                        success = true
-                                        break
-                                    }
-                                }
+                                delay(30_000)
                                 withContext(Dispatchers.Main) {
                                     loadingDialog.hide()
-                                    refreshKey++
+                                    Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
                                 }
                             }
                         },

@@ -38,6 +38,10 @@ enum Commands {
         /// Use adb root to execute late-load for jailbreaking by Magica
         #[arg(long, default_missing_value = "5555", num_args = 0..=1)]
         magica: Option<u16>,
+
+        /// Restore adb properties after magica late-load
+        #[arg(long)]
+        post_magica: bool,
     },
 
     /// Install KernelSU userspace component to system
@@ -538,14 +542,21 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad { magica } => {
+        Commands::LateLoad { magica, post_magica } => {
             if let Some(port) = magica {
                 return crate::magica::run(port).map_err(|e| {
                     error!("Error running magica: {e}");
                     e
                 });
             }
-            crate::late_load::run()
+            let result = crate::late_load::run();
+            if post_magica {
+                info!("Restoring adb properties (post-magica cleanup)...");
+                if let Err(e) = crate::magica::disable_adb_root() {
+                    error!("disable adb root failed: {e}");
+                }
+            }
+            result
         }
         Commands::Services => {
             init_event::on_services();

@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use log::{info, warn};
+use std::process::Command;
 
 use crate::module::{handle_updated_modules, prune_modules};
 use crate::{assets, defs, init_event, metamodule, restorecon, utils};
@@ -114,6 +115,18 @@ pub fn run() -> Result<()> {
 
     // 13. Execute boot-completed stage scripts (non-blocking)
     init_event::run_stage("boot-completed", false);
+
+    // 14. Restart Manager so it gets a fresh ksu fd from the newly loaded kernel module
+    info!("Restarting KernelSU Manager...");
+    let pkg = "me.weishu.kernelsu";
+    let _ = Command::new("am").args(["force-stop", pkg]).status();
+    let _ = Command::new("am")
+        .args([
+            "start",
+            "-n",
+            &format!("{pkg}/.ui.MainActivity"),
+        ])
+        .status();
 
     Ok(())
 }

@@ -1,5 +1,4 @@
 use crate::assets;
-use crate::ksucalls;
 use adb_client::ADBDeviceExt;
 use adb_client::tcp::ADBTcpDevice;
 use anyhow::{Context, Result, bail};
@@ -75,7 +74,7 @@ fn enable_adb_root(port: u16) -> Result<()> {
     Ok(())
 }
 
-fn disable_adb_root() -> Result<()> {
+pub fn disable_adb_root() -> Result<()> {
     // We have full root now, no need to chmod
     let resetprop_path = "/dev/resetprop";
 
@@ -129,28 +128,24 @@ pub fn run(port: u16) -> Result<()> {
     let mut device = connect_to_device(port)?;
 
     let self_path = std::env::current_exe().context("Failed to get self exe path")?;
-    let cmd = format!("{} late-load", self_path.display());
+
+    // Execute late-load with --post-magica via adb shell.
+    // The late-load process has full root + su domain and will:
+    // 1. Load kernelsu.ko, enforce SELinux, run stage scripts
+    // 2. Restore adb properties (disable adb root/tcp mode)
+    let cmd = format!("{} late-load --post-magica", self_path.display());
     info!("Executing '{cmd}' via adb shell...");
     let mut stdout = Vec::new();
     let mut stderr = Vec::new();
     if let Err(e) = device.shell_command(&cmd, Some(&mut stdout), Some(&mut stderr)) {
         info!("adb shell finished with error (may be expected): {e}");
     }
-
     if !stdout.is_empty() {
-        let out = String::from_utf8_lossy(&stdout);
-        info!("stdout: {out}");
+        info!("stdout: {}", String::from_utf8_lossy(&stdout));
     }
     if !stderr.is_empty() {
-        let err = String::from_utf8_lossy(&stderr);
-        info!("stderr: {err}");
+        info!("stderr: {}", String::from_utf8_lossy(&stderr));
     }
-
-    info!("Granting root privileges for restoring adb properties...");
-    ksucalls::grant_root().context("Failed to grant root, late-load may have failed")?;
-
-    info!("Restoring adb properties...");
-    disable_adb_root()?;
 
     Ok(())
 }
