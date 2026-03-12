@@ -425,8 +425,6 @@ private fun ShortcutIntentHandler(
         val intent = activity.intent
         val type = intent?.getStringExtra("shortcut_type") ?: return@LaunchedEffect
 
-        intent.removeExtra("shortcut_type")
-
         when (type) {
             "module_action" -> {
                 val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
