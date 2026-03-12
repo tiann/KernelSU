@@ -3,7 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 use android_logger::Config;
-use log::{LevelFilter, error};
+use log::{LevelFilter, error, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
@@ -542,7 +542,10 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad { magica, post_magica } => {
+        Commands::LateLoad {
+            magica,
+            post_magica,
+        } => {
             if let Some(port) = magica {
                 return crate::magica::run(port).map_err(|e| {
                     error!("Error running magica: {e}");

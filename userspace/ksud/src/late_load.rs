@@ -121,11 +121,7 @@ pub fn run() -> Result<()> {
     let pkg = "me.weishu.kernelsu";
     let _ = Command::new("am").args(["force-stop", pkg]).status();
     let _ = Command::new("am")
-        .args([
-            "start",
-            "-n",
-            &format!("{pkg}/.ui.MainActivity"),
-        ])
+        .args(["start", "-n", &format!("{pkg}/.ui.MainActivity")])
         .status();
 
     Ok(())
