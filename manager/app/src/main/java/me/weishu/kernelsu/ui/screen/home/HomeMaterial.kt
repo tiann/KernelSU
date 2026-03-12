@@ -1,7 +1,10 @@
 package me.weishu.kernelsu.ui.screen.home
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -44,7 +47,10 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,6 +73,7 @@ import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.magica.MagicaService
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.navigation3.Navigator
@@ -91,6 +98,10 @@ fun HomePagerMaterial(
         topBar = { TopBar(scrollBehavior = scrollBehavior) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        val context = LocalContext.current
+        val loadingDialog = rememberLoadingDialog()
+        var refreshKey by remember { mutableIntStateOf(0) }
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -99,29 +110,39 @@ fun HomePagerMaterial(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val isManager = Natives.isManager
-            val ksuVersion = if (isManager) Natives.version else null
-            val lkmMode = ksuVersion?.let {
-                if (kernelVersion.isGKI()) Natives.isLkmMode else null
+            val isManager = remember(refreshKey) { Natives.isManager }
+            val ksuVersion = remember(refreshKey) { if (isManager) Natives.version else null }
+            val lkmMode = remember(refreshKey) {
+                ksuVersion?.let {
+                    if (kernelVersion.isGKI()) Natives.isLkmMode else null
+                }
             }
             val mainState = LocalMainPagerState.current
 
-            val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
-            val context = LocalContext.current
+            val fullFeatured = remember(refreshKey) { isManager && !Natives.requireNewKernel() && rootAvailable() }
 
             StatusCard(
                 kernelVersion,
                 ksuVersion,
                 lkmMode,
                 fullFeatured,
-                isSafeMode = Natives.isSafeMode,
-                isLateLoadMode = Natives.isLateLoadMode,
+                isSafeMode = remember(refreshKey) { Natives.isSafeMode },
+                isLateLoadMode = remember(refreshKey) { Natives.isLateLoadMode },
                 isSELinuxPermissive = isSELinuxPermissive(),
                 superuserCount = getSuperuserCount(),
                 moduleCount = getModuleCount(),
                 onClickInstall = { navigator.push(Route.Install) },
                 onClickJailbreak = {
-                    context.startService(Intent(context, MagicaService::class.java))
+                    loadingDialog.showLoading()
+                    val intent = Intent(context, MagicaService::class.java)
+                    context.bindService(intent, object : ServiceConnection {
+                        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {}
+                        override fun onServiceDisconnected(name: ComponentName?) {
+                            context.unbindService(this)
+                            loadingDialog.hide()
+                            refreshKey++
+                        }
+                    }, Context.BIND_AUTO_CREATE)
                 },
                 onClickSuperuser = { mainState.animateToPage(1) },
                 onclickModule = { mainState.animateToPage(2) },
