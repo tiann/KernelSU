@@ -1,11 +1,42 @@
 use anyhow::{Context, Result};
 use log::{info, warn};
+use std::process::Command;
 
 use crate::module::{handle_updated_modules, prune_modules};
 use crate::{assets, defs, init_event, metamodule, restorecon, utils};
 
+fn dump_process_info(label: &str) {
+    use rustix::process::{getgid, getgroups, getpid, getuid};
+
+    let pid = getpid().as_raw_nonzero();
+    let uid = getuid().as_raw();
+    let gid = getgid().as_raw();
+    let groups: Vec<String> = getgroups()
+        .unwrap_or_default()
+        .iter()
+        .map(|g| g.as_raw().to_string())
+        .collect();
+    let selinux = std::fs::read_to_string("/proc/self/attr/current")
+        .unwrap_or_else(|_| "unknown".to_string());
+    let seccomp = std::fs::read_to_string("/proc/self/status")
+        .ok()
+        .and_then(|s| {
+            s.lines()
+                .find(|l| l.starts_with("Seccomp:"))
+                .map(|l| l.trim().to_string())
+        })
+        .unwrap_or_else(|| "unknown".to_string());
+
+    info!(
+        "[{label}] pid={pid}, uid={uid}, gid={gid}, groups=[{}], selinux={}, {seccomp}",
+        groups.join(","),
+        selinux.trim(),
+    );
+}
+
 pub fn run() -> Result<()> {
     info!("late-load command triggered!");
+    dump_process_info("late-load start");
 
     // 1. Check if KernelSU is already loaded
     if ksuinit::has_kernelsu() {
@@ -25,6 +56,7 @@ pub fn run() -> Result<()> {
         info!("Loading kernelsu.ko for KMI {kmi}...");
         ksuinit::load_module(&ko_data).context("Failed to load kernelsu.ko")?;
         info!("kernelsu.ko loaded successfully!");
+        dump_process_info("after load_module");
     }
 
     utils::umask(0);
@@ -83,6 +115,14 @@ pub fn run() -> Result<()> {
 
     // 13. Execute boot-completed stage scripts (non-blocking)
     init_event::run_stage("boot-completed", false);
+
+    // 14. Restart Manager so it gets a fresh ksu fd from the newly loaded kernel module
+    info!("Restarting KernelSU Manager...");
+    let pkg = "me.weishu.kernelsu";
+    let _ = Command::new("am").args(["force-stop", pkg]).status();
+    let _ = Command::new("am")
+        .args(["start", "-n", &format!("{pkg}/.ui.MainActivity")])
+        .status();
 
     Ok(())
 }

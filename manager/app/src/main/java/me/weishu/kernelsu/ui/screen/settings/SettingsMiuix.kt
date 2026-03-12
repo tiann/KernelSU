@@ -18,6 +18,7 @@ import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeveloperMode
+import androidx.compose.material.icons.rounded.ElectricalServices
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material.icons.rounded.Palette
@@ -315,6 +316,22 @@ fun SettingPagerMiuix(
                             checked = uiState.enableWebDebugging,
                             onCheckedChange = {
                                 viewModel.setEnableWebDebugging(it)
+                            }
+                        )
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_auto_jailbreak),
+                            summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.ElectricalServices,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_auto_jailbreak),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.autoJailbreak,
+                            onCheckedChange = {
+                                viewModel.setAutoJailbreak(it)
                             }
                         )
                     }

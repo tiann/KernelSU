@@ -49,6 +49,8 @@
     <string name="send_log">Send logs</string>
     <string name="safe_mode">Safe mode</string>
     <string name="jailbreak_mode">Jailbreak mode</string>
+    <string name="home_jailbreak">Jailbreak</string>
+    <string name="jailbreak_timeout">Jailbreak may have failed, please check logs</string>
     <string name="safe_mode_module_disabled">Module installation is disabled in safe mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>
     <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
@@ -126,6 +128,8 @@
     <string name="select_file">Select a file</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
     <string name="install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
+    <string name="jailbreak_flash_warning">You are in **Jailbreak mode**. Flashing a partition on a device with a **locked bootloader** will break AVB (Android Verified Boot) and may cause the device to **fail to boot**.\n\nMake sure your bootloader is unlocked before proceeding!</string>
+    <string name="jailbreak_flash_warning_countdown">Continue (%1$d)</string>
     <string name="install_next">Next</string>
     <string name="install_select_partition">Select partition</string>
     <string name="install_upload_lkm_file">Use local LKM file</string>
@@ -221,4 +225,6 @@
     <string name="settings_enable_glass">Liquid glass</string>
     <string name="settings_enable_glass_summary">Enable liquid glass effect for floating bottom bar</string>
     <string name="show_only_primary_user_apps">Show only primary user apps</string>
+    <string name="settings_auto_jailbreak">Auto jailbreak</string>
+    <string name="settings_auto_jailbreak_summary">Automatically use Magica to escalate privileges when Permissive SELinux is detected at boot. Requires granting autostart permission to this app.</string>
 </resources>

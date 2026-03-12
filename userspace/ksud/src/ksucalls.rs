@@ -41,8 +41,8 @@ struct ReportEventCmd {
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct SetSepolicyCmd {
-    pub cmd: u64,
-    pub arg: u64,
+    pub data_len: u64,
+    pub data: u64,
 }
 
 #[repr(C)]
@@ -215,10 +215,9 @@ pub fn check_kernel_safemode() -> bool {
     cmd.in_safe_mode != 0
 }
 
-pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
+pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<i32> {
     let mut ioctl_cmd = *cmd;
-    ksuctl(KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)?;
-    Ok(())
+    ksuctl(KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)
 }
 
 /// Get feature value and support status from kernel

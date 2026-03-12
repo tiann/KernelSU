@@ -145,7 +145,7 @@ static int do_set_sepolicy(void __user *arg)
         return -EFAULT;
     }
 
-    return handle_sepolicy(cmd.cmd, (void __user *)cmd.arg);
+    return handle_sepolicy((void __user *)cmd.data, cmd.data_len);
 }
 
 static int do_check_safemode(void __user *arg)

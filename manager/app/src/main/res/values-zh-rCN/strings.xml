@@ -46,6 +46,8 @@
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>
     <string name="jailbreak_mode">越狱模式</string>
+    <string name="home_jailbreak">越狱</string>
+    <string name="jailbreak_timeout">越狱可能失败，请检查日志</string>
     <string name="safe_mode_module_disabled">处于安全模式下，禁止安装模块</string>
     <string name="reboot_to_apply">重启生效</string>
     <string name="module_magisk_conflict">因与 Magisk 有冲突，所有模块不可用！</string>
@@ -121,6 +123,8 @@
     <string name="select_file">选择一个文件</string>
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
     <string name="install_inactive_slot_warning">将在重启后强制切换到另一个槽位！注意只能在 OTA 更新完成后的重启之前使用</string>
+    <string name="jailbreak_flash_warning">当前处于**越狱模式**。在**未解锁 Bootloader** 的设备上刷写分区会破坏 AVB（Android 验证启动），可能导致设备**无法开机**。\n\n请确保 Bootloader 已解锁后再继续操作！</string>
+    <string name="jailbreak_flash_warning_countdown">继续 (%1$d)</string>
     <string name="install_next">下一步</string>
     <string name="install_select_partition">选择分区</string>
     <string name="install_upload_lkm_file">使用本地 LKM 文件</string>
@@ -219,4 +223,6 @@
     <string name="settings_enable_glass">液态玻璃</string>
     <string name="settings_enable_glass_summary">启用悬浮底栏的液态玻璃效果</string>
     <string name="show_only_primary_user_apps">只显示主用户应用</string>
+    <string name="settings_auto_jailbreak">自动越狱</string>
+    <string name="settings_auto_jailbreak_summary">开机检测到 Permissive SELinux 时自动使用 Magica 提权。需要授予本应用自启动权限。</string>
 </resources>

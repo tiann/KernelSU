@@ -16,6 +16,7 @@ on:
 
 env:
   RUSTFLAGS: '-Dwarnings'
+  CROSS_NO_WARNINGS: '0'
 
 jobs:
   clippy:

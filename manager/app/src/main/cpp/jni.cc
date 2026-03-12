@@ -3,18 +3,14 @@
 #include <sys/prctl.h>
 #include <linux/capability.h>
 #include <pwd.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #include <android/log.h>
 #include <cstring>
 
 #include "ksu.h"
-
-#define LOG_TAG "KernelSU"
-#ifdef NDEBUG
-#define LOGD(...) (void)0
-#else
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#endif
+#include "logging.h"
 
 extern "C"
 JNIEXPORT jint JNICALL
@@ -342,4 +338,41 @@ Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid)
         return env->NewStringUTF(pw->pw_name);
     }
     return nullptr;
+}
+
+int fork_dont_care() {
+    int pid = fork();
+    if (pid < 0) {
+        PLOGE("fork");
+        return pid;
+    } else if (pid > 0) {
+        TEMP_FAILURE_RETRY(waitpid(pid, nullptr, 0));
+        return pid;
+    }
+    // child
+
+    pid = fork();
+    if (pid < 0) {
+        PLOGE("fork 2");
+        _exit(1);
+    } else if (pid > 0) {
+        _exit(0);
+    }
+
+    // grandchild
+    return 0;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_weishu_kernelsu_magica_AppZygotePreload_forkDontCareAndExecKsud(JNIEnv *env, jclass clazz,
+                                                                        jstring ksud_path) {
+    auto path = env->GetStringUTFChars(ksud_path, nullptr);
+    LOGD("executing magica %s", path);
+    if (fork_dont_care() == 0) {
+        execl(path, "ksud", "late-load", "--magica", "5555", nullptr);
+        PLOGE("exec magica");
+        _exit(1);
+    }
+    env->ReleaseStringUTFChars(ksud_path, path);
 }

@@ -52,6 +52,7 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -103,13 +104,24 @@ fun FlashScreenMiuix(
         HazeStyle.Unspecified
     }
 
+    val needJailbreakWarning = flashIt is FlashIt.FlashBoot && Natives.isLateLoadMode
+    var flashEnabled by rememberSaveable { mutableStateOf(!needJailbreakWarning) }
+
+    if (needJailbreakWarning && !flashEnabled) {
+        JailbreakFlashWarningDialog(
+            onConfirm = { flashEnabled = true },
+            onDismiss = { navigator.pop() }
+        )
+    }
+
     FlashEffect(
         flashIt = flashIt,
         text = text,
         logContent = logContent,
         onTextUpdate = { text = it },
         onShowRebootChange = { showFloatAction = it },
-        onFlashingStatusChange = { flashing = it }
+        onFlashingStatusChange = { flashing = it },
+        enabled = flashEnabled
     )
 
     Scaffold(

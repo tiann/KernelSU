@@ -15,6 +15,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage"
         tools:node="remove" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".KernelSUApplication"
@@ -27,6 +28,8 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.KernelSU"
+        android:directBootAware="true"
+        android:zygotePreloadName="me.weishu.kernelsu.magica.AppZygotePreload"
         tools:targetApi="29">
         <activity
             android:name=".ui.MainActivity"
@@ -67,6 +70,27 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
+        <service
+            android:name=".magica.MagicaService"
+            android:directBootAware="true"
+            android:exported="false"
+            android:isolatedProcess="true"
+            android:useAppZygote="true" />
+
+        <receiver
+            android:name=".magica.BootCompletedReceiver"
+            android:directBootAware="true"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="me.weishu.kernelsu.magica.LAUNCH" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
