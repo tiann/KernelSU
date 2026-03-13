@@ -52,7 +52,7 @@ fun <T> MultiSelectDialog(
         } else {
             items.filter { item ->
                 itemTitle(item).contains(searchQuery, ignoreCase = true) ||
-                    itemSubtitle(item)?.contains(searchQuery, ignoreCase = true) == true
+                        itemSubtitle(item)?.contains(searchQuery, ignoreCase = true) == true
             }
         }
     }

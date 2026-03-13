@@ -76,6 +76,17 @@ Elf64_Shdr *find_symtab(ElfFile *elf)
     return NULL;
 }
 
+Elf64_Shdr *find_section(ElfFile *elf, const char *name)
+{
+    for (int i = 0; i < elf->ehdr->e_shnum; i++) {
+        const char *section_name = elf->shstrtab + elf->shdr[i].sh_name;
+        if (strcmp(section_name, name) == 0) {
+            return &elf->shdr[i];
+        }
+    }
+    return NULL;
+}
+
 Elf64_Sym *find_symbol(ElfFile *elf, const char *name, Elf64_Shdr *symtab,
                        char *strtab)
 {
@@ -114,6 +125,7 @@ int main(int argc, char *argv[])
 
     Elf64_Shdr *ko_symtab = find_symtab(&ko_elf);
     Elf64_Shdr *vmlinux_symtab = find_symtab(&vmlinux);
+    Elf64_Shdr *ko_version_sec = find_section(&ko_elf, "__versions");
 
     if (!ko_symtab) {
         fprintf(stderr, "Error: No symbol table found in %s\n", ko_path);
@@ -124,6 +136,23 @@ int main(int argc, char *argv[])
 
     if (!vmlinux_symtab) {
         fprintf(stderr, "Error: No symbol table found in %s\n", vmlinux_path);
+        close_elf(&ko_elf);
+        close_elf(&vmlinux);
+        return 1;
+    }
+
+    if (!ko_version_sec) {
+        fprintf(stderr, "Error: No __versions section found in %s\n", ko_path);
+        close_elf(&ko_elf);
+        close_elf(&vmlinux);
+        return 1;
+    }
+
+    if (ko_version_sec->sh_size != 0) {
+        fprintf(
+            stderr,
+            "Error: __versions section in %s must have size 0 (actual=%llu)\n",
+            ko_path, (unsigned long long)ko_version_sec->sh_size);
         close_elf(&ko_elf);
         close_elf(&vmlinux);
         return 1;

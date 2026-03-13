@@ -97,3 +97,15 @@ fun BottomBar(
         UiMode.Material -> BottomBarMaterial()
     }
 }
+
+@Composable
+fun SideRail(
+    hazeState: HazeState,
+    hazeStyle: HazeStyle,
+    modifier: Modifier = Modifier,
+) {
+    when (LocalUiMode.current) {
+        UiMode.Miuix -> NavigationRailMiuix(hazeState, hazeStyle, modifier)
+        UiMode.Material -> NavigationRailMaterial(modifier)
+    }
+}

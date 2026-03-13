@@ -1,7 +1,5 @@
 package me.weishu.kernelsu.ui.screen.home
 
-import android.content.Intent
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -43,28 +41,20 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.magica.MagicaService
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
@@ -76,9 +66,6 @@ fun HomePagerMaterial(
     bottomInnerPadding: Dp,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val context = LocalContext.current
-    val loadingDialog = rememberLoadingDialog()
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = { TopBar(scrollBehavior = scrollBehavior) },
@@ -95,17 +82,6 @@ fun HomePagerMaterial(
             StatusCard(
                 state = state,
                 actions = actions,
-                onClickJailbreak = {
-                    loadingDialog.showLoading()
-                    context.startService(Intent(context, MagicaService::class.java))
-                    scope.launch(Dispatchers.IO) {
-                        delay(30_000)
-                        withContext(Dispatchers.Main) {
-                            loadingDialog.hide()
-                            Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                },
             )
             if (state.showManagerPrBuildWarning) {
                 WarningCard(stringResource(id = R.string.home_pr_build_warning))
@@ -194,7 +170,6 @@ private fun TopBar(
 private fun StatusCard(
     state: HomeUiState,
     actions: HomeActions,
-    onClickJailbreak: () -> Unit = {},
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TonalCard(
@@ -278,7 +253,7 @@ private fun StatusCard(
                         }
                         if (state.isSELinuxPermissive) {
                             Button(
-                                onClick = onClickJailbreak,
+                                onClick = actions.onJailbreakClick,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.error,
                                     contentColor = MaterialTheme.colorScheme.onError

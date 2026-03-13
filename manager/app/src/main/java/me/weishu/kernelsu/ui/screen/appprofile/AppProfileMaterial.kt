@@ -36,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -67,6 +68,7 @@ import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
+import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 
@@ -81,6 +83,7 @@ fun AppProfileScreenMaterial(
     actions: AppProfileActions,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val snackBarHost = LocalSnackbarHost.current
 
     LaunchedEffect(Unit) {
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
@@ -99,6 +102,7 @@ fun AppProfileScreenMaterial(
                 onRestartApp = actions.onRestartApp,
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         AppProfileInner(
@@ -328,9 +332,9 @@ private fun TopBar(
     isUidGroup: Boolean = false,
     packageName: String = "",
     userId: Int = 0,
-    onLaunchApp: (String, Int) -> Unit = { _, _ -> },
-    onForceStopApp: (String, Int) -> Unit = { _, _ -> },
-    onRestartApp: (String, Int) -> Unit = { _, _ -> },
+    onLaunchApp: (String, Int) -> Unit,
+    onForceStopApp: (String, Int) -> Unit,
+    onRestartApp: (String, Int) -> Unit,
 ) {
     LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.profile)) },

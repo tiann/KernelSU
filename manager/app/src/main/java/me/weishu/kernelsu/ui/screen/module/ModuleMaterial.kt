@@ -267,9 +267,7 @@ fun ModulePagerMaterial(
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = {
-                    actions.onRefresh()
-                },
+                onRefresh = { actions.onRefresh() },
             ),
         topBar = {
             SearchAppBar(

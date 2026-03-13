@@ -1,7 +1,5 @@
 package me.weishu.kernelsu.ui.screen.home
 
-import android.content.Intent
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -34,12 +32,10 @@ import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
@@ -53,15 +49,9 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.magica.MagicaService
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -102,10 +92,6 @@ fun HomePagerMiuix(
     } else {
         HazeStyle.Unspecified
     }
-    val context = LocalContext.current
-    val loadingDialog = rememberLoadingDialog()
-    val scope = rememberCoroutineScope()
-
     Scaffold(
         topBar = {
             TopBar(
@@ -155,17 +141,6 @@ fun HomePagerMiuix(
                     StatusCard(
                         state = state,
                         actions = actions,
-                        onClickJailbreak = {
-                            loadingDialog.showLoading()
-                            context.startService(Intent(context, MagicaService::class.java))
-                            scope.launch(Dispatchers.IO) {
-                                delay(30_000)
-                                withContext(Dispatchers.Main) {
-                                    loadingDialog.hide()
-                                    Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        },
                     )
 
                     if (state.checkUpdateEnabled) {
@@ -244,7 +219,6 @@ private fun TopBar(
 private fun StatusCard(
     state: HomeUiState,
     actions: HomeActions,
-    onClickJailbreak: () -> Unit = {},
 ) {
     Column {
         when {
@@ -411,7 +385,7 @@ private fun StatusCard(
                                     TextButton(
                                         text = stringResource(R.string.home_jailbreak),
                                         insideMargin = PaddingValues(12.dp),
-                                        onClick = onClickJailbreak,
+                                        onClick = actions.onJailbreakClick,
                                         colors = ButtonDefaults.textButtonColorsPrimary()
                                     )
                                 }
@@ -499,9 +473,7 @@ private fun LearnMoreCard(
 }
 
 @Composable
-private fun DonateCard(
-    onOpenUrl: (String) -> Unit,
-) {
+private fun DonateCard(onOpenUrl: (String) -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         BasicComponent(
             title = stringResource(R.string.home_support_title),
@@ -520,14 +492,12 @@ private fun DonateCard(
 }
 
 @Composable
-private fun InfoCard(
-    systemInfo: SystemInfo,
-) {
+private fun InfoCard(systemInfo: SystemInfo) {
     @Composable
     fun InfoText(
         title: String,
         content: String,
-        bottomPadding: Dp = 24.dp,
+        bottomPadding: Dp = 24.dp
     ) {
         Text(
             text = title,

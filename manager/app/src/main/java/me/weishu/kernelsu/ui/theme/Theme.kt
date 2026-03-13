@@ -102,6 +102,7 @@ fun KernelSUTheme(
             appSettings = currentAppSettings,
             content = content
         )
+
         UiMode.Material -> MaterialKernelSUTheme(
             appSettings = currentAppSettings,
             content = content
