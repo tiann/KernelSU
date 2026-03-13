@@ -23,6 +23,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalMainPagerState
@@ -64,7 +65,13 @@ fun BottomBarMaterial() {
                         stringResource(label)
                     )
                 },
-                label = { Text(stringResource(label)) }
+                label = {
+                    Text(
+                        stringResource(label),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             )
         }
     }

@@ -49,6 +49,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -293,7 +294,11 @@ private fun StatusCard(
                             .clickable { actions.onSuperuserClick() }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
-                        Text(text = stringResource(R.string.superuser), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = stringResource(R.string.superuser), style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = state.superuserCount.toString(),
@@ -309,7 +314,11 @@ private fun StatusCard(
                             .clickable { actions.onModuleClick() }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
-                        Text(text = stringResource(R.string.module), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = stringResource(R.string.module), style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = state.moduleCount.toString(),
