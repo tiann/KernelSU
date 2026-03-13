@@ -51,7 +51,7 @@ fun UninstallDialogMaterial(
                     modifier = Modifier,
                     content = options.map { type ->
                         {
-                           SegmentedListItem(
+                            SegmentedListItem(
                                 onClick = {
                                     showConfirmDialog.value = true
                                     runType.value = type

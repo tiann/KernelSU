@@ -332,6 +332,7 @@ private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: Confi
                 dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
                 showDialog = visible
             )
+
             UiMode.Material -> ConfirmDialogMaterial(
                 handle.visuals,
                 confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
