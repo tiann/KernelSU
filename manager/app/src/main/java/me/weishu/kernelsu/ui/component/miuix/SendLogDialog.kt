@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.component.sendlogdialog
+package me.weishu.kernelsu.ui.component.miuix
 
 import android.content.Intent
 import android.net.Uri
@@ -40,7 +40,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun SendLogDialogMiuix(
+fun SendLogDialog(
     showDialog: MutableState<Boolean>,
     loadingDialog: LoadingDialogHandle,
 ) {

@@ -45,7 +45,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
-import me.weishu.kernelsu.ui.component.sendlogdialog.SendLogDialogMiuix
+import me.weishu.kernelsu.ui.component.miuix.SendLogDialog
 import me.weishu.kernelsu.ui.component.uninstalldialog.UninstallDialog
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -347,7 +347,7 @@ fun SettingPagerMiuix(
                         },
                         onClick = { showSendLogDialog.value = true },
                     )
-                    SendLogDialogMiuix(showSendLogDialog, loadingDialog)
+                    SendLogDialog(showSendLogDialog, loadingDialog)
                     val about = stringResource(id = R.string.about)
                     SuperArrow(
                         title = about,
