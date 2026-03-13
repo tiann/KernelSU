@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.executemoduleaction
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,58 +32,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.dropUnlessResumed
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExecuteModuleActionScreenMaterial(moduleId: String) {
-    val navigator = LocalNavigator.current
-    var text by rememberSaveable { mutableStateOf("") }
-    val logContent = rememberSaveable { StringBuilder() }
-    val context = LocalContext.current
-    val activity = LocalActivity.current
-    val scope = rememberCoroutineScope()
+fun ExecuteModuleActionScreenMaterial(
+    state: ExecuteModuleActionUiState,
+    actions: ExecuteModuleActionScreenActions,
+) {
     val scrollState = rememberScrollState()
-
-    val fromShortcut = remember(activity) {
-        val intent = activity?.intent
-        intent?.getStringExtra("shortcut_type") == "module_action"
-    }
-
-    val exitExecute = {
-        if (fromShortcut && activity != null) {
-            activity.finishAndRemoveTask()
-        } else {
-            navigator.pop()
-        }
-    }
-
-    ExecuteModuleActionEffect(
-        moduleId = moduleId,
-        text = text,
-        logContent = logContent,
-        fromShortcut = fromShortcut,
-        onTextUpdate = { text = it },
-        onExit = exitExecute
-    )
 
     BackHandler { }
 
@@ -93,7 +58,7 @@ fun ExecuteModuleActionScreenMaterial(moduleId: String) {
             TopAppBar(
                 title = { Text(stringResource(R.string.action)) },
                 navigationIcon = {
-                    IconButton(onClick = dropUnlessResumed { navigator.pop() }) {
+                    IconButton(onClick = actions.onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null
@@ -101,7 +66,7 @@ fun ExecuteModuleActionScreenMaterial(moduleId: String) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = saveLog(logContent, context, scope)) {
+                    IconButton(onClick = actions.onSaveLog) {
                         Icon(
                             imageVector = Icons.Filled.Save,
                             contentDescription = stringResource(R.string.save_log)
@@ -110,7 +75,8 @@ fun ExecuteModuleActionScreenMaterial(moduleId: String) {
                 }
             )
         },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout)
+            .only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
         val navBars = WindowInsets.navigationBars.asPaddingValues()
@@ -127,13 +93,13 @@ fun ExecuteModuleActionScreenMaterial(moduleId: String) {
                 )
                 .verticalScroll(scrollState)
         ) {
-            LaunchedEffect(text) {
+            LaunchedEffect(state.text) {
                 scrollState.animateScrollTo(scrollState.maxValue)
             }
             Spacer(Modifier.height(innerPadding.calculateTopPadding()))
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = text,
+                text = state.text,
                 style = MaterialTheme.typography.bodySmall,
                 fontFamily = FontFamily.Monospace,
             )

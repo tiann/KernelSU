@@ -1,11 +1,6 @@
 package me.weishu.kernelsu.ui.screen.install
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -31,46 +26,26 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.dropUnlessResumed
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.getKernelVersion
-import me.weishu.kernelsu.ui.component.choosekmidialog.ChooseKmiDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Route
-import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.LkmSelection
-import me.weishu.kernelsu.ui.util.getAvailablePartitions
-import me.weishu.kernelsu.ui.util.getCurrentKmi
-import me.weishu.kernelsu.ui.util.getDefaultPartition
-import me.weishu.kernelsu.ui.util.getSlotSuffix
-import me.weishu.kernelsu.ui.util.isAbDevice
-import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -99,84 +74,11 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun InstallScreenMiuix() {
-    val navigator = LocalNavigator.current
-    val context = LocalContext.current
+internal fun InstallScreenMiuix(
+    uiState: InstallUiState,
+    actions: InstallScreenActions,
+) {
     val enableBlur = LocalEnableBlur.current
-    var installMethod by remember {
-        mutableStateOf<InstallMethod?>(null)
-    }
-
-    var lkmSelection by remember {
-        mutableStateOf<LkmSelection>(LkmSelection.KmiNone)
-    }
-
-    var partitionSelectionIndex by remember { mutableIntStateOf(0) }
-    var partitionsState by remember { mutableStateOf<List<String>>(emptyList()) }
-    var hasCustomSelected by remember { mutableStateOf(false) }
-
-    val onInstall = {
-        installMethod?.let { method ->
-            val isOta = method is InstallMethod.DirectInstallToInactiveSlot
-            val partitionSelection = partitionsState.getOrNull(partitionSelectionIndex)
-            val flashIt = FlashIt.FlashBoot(
-                boot = if (method is InstallMethod.SelectFile) method.uri else null,
-                lkm = lkmSelection,
-                ota = isOta,
-                partition = partitionSelection
-            )
-            navigator.push(Route.Flash(flashIt))
-        }
-    }
-
-    val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
-
-    val showChooseKmiDialog = rememberSaveable { mutableStateOf(false) }
-    val chooseKmiDialog = ChooseKmiDialog(showChooseKmiDialog) { kmi ->
-        kmi?.let {
-            lkmSelection = LkmSelection.KmiString(it)
-            onInstall()
-        }
-    }
-
-    val onClickNext = {
-        val isLkmSelected = lkmSelection != LkmSelection.KmiNone
-        val isKmiUnknown = currentKmi.isBlank()
-        val isSelectFileMode = installMethod is InstallMethod.SelectFile
-        if (!isLkmSelected && (isKmiUnknown || isSelectFileMode)) {
-            // no lkm file selected and cannot get current kmi or select file mode
-            showChooseKmiDialog.value = true
-            chooseKmiDialog
-        } else {
-            onInstall()
-        }
-    }
-
-    val selectLkmLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == Activity.RESULT_OK) {
-                it.data?.data?.let { uri ->
-                    val isKo = isKoFile(context, uri)
-                    if (isKo) {
-                        lkmSelection = LkmSelection.LkmUri(uri)
-                    } else {
-                        lkmSelection = LkmSelection.KmiNone
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.install_only_support_ko_file),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
-        }
-
-    val onLkmUpload = {
-        selectLkmLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "application/octet-stream"
-        })
-    }
-
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
@@ -191,7 +93,7 @@ fun InstallScreenMiuix() {
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.pop() },
+                onBack = actions.onBack,
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
@@ -215,15 +117,16 @@ fun InstallScreenMiuix() {
         ) {
             item {
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    SelectInstallMethod { method ->
-                        installMethod = method
-                    }
+                    SelectInstallMethod(
+                        state = uiState,
+                        onSelected = actions.onSelectMethod,
+                        onSelectBootImage = actions.onSelectBootImage,
+                    )
                 }
                 AnimatedVisibility(
-                    visible = installMethod is InstallMethod.DirectInstall || installMethod is InstallMethod.DirectInstallToInactiveSlot,
+                    visible = uiState.canSelectPartition,
                     enter = expandVertically(),
                     exit = shrinkVertically()
                 ) {
@@ -232,40 +135,11 @@ fun InstallScreenMiuix() {
                             .fillMaxWidth()
                             .padding(top = 12.dp),
                     ) {
-                        val isOta = installMethod is InstallMethod.DirectInstallToInactiveSlot
-                        val suffix = produceState(initialValue = "", isOta) {
-                            value = getSlotSuffix(isOta)
-                        }.value
-                        val partitions by produceState(initialValue = emptyList<String>()) {
-                            value = getAvailablePartitions()
-                        }
-                        val defaultPartition by produceState(initialValue = "") {
-                            value = getDefaultPartition()
-                        }
-                        LaunchedEffect(partitions) {
-                            partitionsState = partitions
-                        }
-                        val defaultIndex = remember(partitions, defaultPartition) {
-                            partitions.indexOf(defaultPartition).coerceAtLeast(0)
-                        }
-                        LaunchedEffect(defaultIndex, hasCustomSelected) {
-                            if (!hasCustomSelected) {
-                                partitionSelectionIndex = defaultIndex
-                            }
-                        }
-                        val displayPartitions = remember(partitions, defaultPartition) {
-                            partitions.map { name ->
-                                if (defaultPartition == name) "$name (default)" else name
-                            }
-                        }
                         SuperDropdown(
-                            items = displayPartitions,
-                            selectedIndex = partitionSelectionIndex,
-                            title = "${stringResource(R.string.install_select_partition)} (${suffix})",
-                            onSelectedIndexChange = { index ->
-                                hasCustomSelected = true
-                                partitionSelectionIndex = index
-                            },
+                            items = uiState.displayPartitions,
+                            selectedIndex = uiState.partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})",
+                            onSelectedIndexChange = actions.onSelectPartition,
                             startAction = {
                                 Icon(
                                     MiuixIcons.ConvertFile,
@@ -284,13 +158,10 @@ fun InstallScreenMiuix() {
                 ) {
                     BasicComponent(
                         title = stringResource(id = R.string.install_upload_lkm_file),
-                        summary = (lkmSelection as? LkmSelection.LkmUri)?.let {
-                            stringResource(
-                                id = R.string.selected_lkm,
-                                it.uri.lastPathSegment ?: "(file)"
-                            )
+                        summary = (uiState.lkmSelection as? LkmSelection.LkmUri)?.let {
+                            stringResource(id = R.string.selected_lkm, it.uri.lastPathSegment ?: "(file)")
                         },
-                        onClick = onLkmUpload,
+                        onClick = actions.onUploadLkm,
                         startAction = {
                             Icon(
                                 MiuixIcons.MoveFile,
@@ -300,10 +171,8 @@ fun InstallScreenMiuix() {
                             )
                         },
                         endActions = {
-                            if (lkmSelection is LkmSelection.LkmUri) {
-                                IconButton(
-                                    onClick = { lkmSelection = LkmSelection.KmiNone }
-                                ) {
+                            if (uiState.lkmSelection is LkmSelection.LkmUri) {
+                                IconButton(onClick = actions.onClearLkm) {
                                     Icon(
                                         MiuixIcons.Close,
                                         modifier = Modifier.size(16.dp),
@@ -333,9 +202,9 @@ fun InstallScreenMiuix() {
                         .fillMaxWidth()
                         .padding(top = 12.dp),
                     text = stringResource(id = R.string.install_next),
-                    enabled = installMethod != null,
+                    enabled = uiState.installMethod != null,
                     colors = ButtonDefaults.textButtonColorsPrimary(),
-                    onClick = { onClickNext() }
+                    onClick = actions.onNext
                 )
                 Spacer(
                     Modifier.height(
@@ -349,47 +218,13 @@ fun InstallScreenMiuix() {
 }
 
 @Composable
-private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
-    val rootAvailable = rootAvailable()
-    val isAbDevice = produceState(initialValue = false) {
-        value = isAbDevice()
-    }.value
-    val defaultPartitionName = produceState(initialValue = "boot") {
-        value = getDefaultPartition()
-    }.value
-    val isGkiDevice = produceState(initialValue = false) {
-        value = getKernelVersion().isGKI()
-    }.value
-    val selectFileTip = stringResource(
-        id = R.string.select_file_tip, defaultPartitionName
-    )
-    val selectFileTipNoGKI = stringResource(id = R.string.select_file_tip_nogki)
-    val radioOptions =
-        mutableListOf<InstallMethod>(InstallMethod.SelectFile(summary = if (isGkiDevice) selectFileTip else selectFileTipNoGKI))
-    if (rootAvailable && isGkiDevice) {
-        radioOptions.add(InstallMethod.DirectInstall)
-
-        if (isAbDevice) {
-            radioOptions.add(InstallMethod.DirectInstallToInactiveSlot)
-        }
-    }
-
-    var selectedOption by remember { mutableStateOf<InstallMethod?>(null) }
-    val selectImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (it.resultCode == Activity.RESULT_OK) {
-            it.data?.data?.let { uri ->
-                val option = InstallMethod.SelectFile(uri, summary = selectFileTip)
-                selectedOption = option
-                onSelected(option)
-            }
-        }
-    }
-
+private fun SelectInstallMethod(
+    state: InstallUiState,
+    onSelected: (InstallMethod) -> Unit,
+    onSelectBootImage: () -> Unit,
+) {
     val confirmDialog = rememberConfirmDialog(
         onConfirm = {
-            selectedOption = InstallMethod.DirectInstallToInactiveSlot
             onSelected(InstallMethod.DirectInstallToInactiveSlot)
         }
     )
@@ -397,37 +232,23 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
     val dialogContent = stringResource(id = R.string.install_inactive_slot_warning)
 
     val onClick = { option: InstallMethod ->
-
         when (option) {
-            is InstallMethod.SelectFile -> {
-                selectImageLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply {
-                    type = "application/octet-stream"
-                })
-            }
-
-            is InstallMethod.DirectInstall -> {
-                selectedOption = option
-                onSelected(option)
-            }
-
-            is InstallMethod.DirectInstallToInactiveSlot -> {
-                confirmDialog.showConfirm(dialogTitle, dialogContent)
-            }
+            is InstallMethod.SelectFile -> onSelectBootImage()
+            is InstallMethod.DirectInstall -> onSelected(option)
+            is InstallMethod.DirectInstallToInactiveSlot -> confirmDialog.showConfirm(dialogTitle, dialogContent)
         }
     }
 
     Column {
-        radioOptions.forEach { option ->
+        state.installMethodOptions.forEach { option ->
             val interactionSource = remember { MutableInteractionSource() }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .toggleable(
-                        value = option.javaClass == selectedOption?.javaClass,
-                        onValueChange = {
-                            onClick(option)
-                        },
+                        value = option.javaClass == state.installMethod?.javaClass,
+                        onValueChange = { onClick(option) },
                         role = Role.RadioButton,
                         indication = LocalIndication.current,
                         interactionSource = interactionSource
@@ -436,10 +257,8 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
                 SuperCheckbox(
                     title = stringResource(id = option.label),
                     summary = option.summary,
-                    checked = option.javaClass == selectedOption?.javaClass,
-                    onCheckedChange = {
-                        onClick(option)
-                    },
+                    checked = option.javaClass == state.installMethod?.javaClass,
+                    onCheckedChange = { onClick(option) },
                 )
             }
         }

@@ -34,8 +34,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -78,7 +76,6 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.Search
 import top.yukonga.miuix.kmp.icon.basic.SearchCleanup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 // Search Box Composable
 @Composable
@@ -165,7 +162,7 @@ fun SearchStatus.SearchPager(
         SearchBar(searchStatus, onStatusChange, padding)
     },
     searchBarTopPadding: Dp = 12.dp,
-    result: LazyListScope.() -> Unit
+    result: @Composable () -> Unit
 ) {
     val searchStatus = this
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
@@ -269,13 +266,7 @@ fun SearchStatus.SearchPager(
                 SearchStatus.ResultStatus.DEFAULT -> defaultResult()
                 SearchStatus.ResultStatus.EMPTY -> {}
                 SearchStatus.ResultStatus.LOAD -> {}
-                SearchStatus.ResultStatus.SHOW -> LazyColumn(
-                    Modifier
-                        .fillMaxSize()
-                        .overScrollVertical(),
-                ) {
-                    result()
-                }
+                SearchStatus.ResultStatus.SHOW -> result()
             }
         }
     }

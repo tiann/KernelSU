@@ -13,6 +13,7 @@ import me.weishu.kernelsu.data.repository.TemplateRepository
 import me.weishu.kernelsu.data.repository.TemplateRepositoryImpl
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.ui.screen.template.TemplateUiState
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import org.json.JSONArray
 import org.json.JSONObject

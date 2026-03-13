@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.colorpalette
 
 import android.annotation.SuppressLint
 import android.os.Build
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -70,7 +69,6 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -88,44 +86,29 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.dropUnlessResumed
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
-import me.weishu.kernelsu.KernelSUApplication.Companion.setEnableOnBackInvokedCallback
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.theme.keyColorOptions
-import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ColorPaletteScreenMaterial() {
-    val navigator = LocalNavigator.current
-    val context = LocalContext.current
-    val activity = LocalActivity.current
-    val viewModel = viewModel<SettingsViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
+fun ColorPaletteScreenMaterial(
+    state: ColorPaletteUiState,
+    actions: ColorPaletteScreenActions,
+) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
-    val currentColorMode = ColorMode.fromValue(uiState.themeMode)
+    val uiState = state.uiState
+    val currentColorMode = state.currentColorMode
     val currentKeyColor = uiState.keyColor
-    val colorStyle = try {
-        PaletteStyle.valueOf(uiState.colorStyle)
-    } catch (_: Exception) {
-        PaletteStyle.TonalSpot
-    }
-    val colorSpec = try {
-        ColorSpec.SpecVersion.valueOf(uiState.colorSpec)
-    } catch (_: Exception) {
-        ColorSpec.SpecVersion.Default
-    }
+    val colorStyle = state.currentPaletteStyle
+    val colorSpec = state.currentColorSpec
 
     LaunchedEffect(Unit) {
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
@@ -136,9 +119,7 @@ fun ColorPaletteScreenMaterial() {
             LargeFlexibleTopAppBar(
                 navigationIcon = {
                     IconButton(
-                        onClick = dropUnlessResumed {
-                            navigator.pop()
-                        }
+                        onClick = actions.onBack
                     ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
                 },
                 title = { Text(stringResource(R.string.settings_theme)) },
@@ -185,7 +166,7 @@ fun ColorPaletteScreenMaterial() {
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            viewModel.setKeyColor(0)
+                            actions.onSetKeyColor(0)
                         }
                     )
                 }
@@ -198,7 +179,7 @@ fun ColorPaletteScreenMaterial() {
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            viewModel.setKeyColor(color)
+                            actions.onSetKeyColor(color)
                         }
                     )
                 }
@@ -227,7 +208,7 @@ fun ColorPaletteScreenMaterial() {
                                 checked = currentColorMode in modes,
                                 onCheckedChange = {
                                     if (it) {
-                                        viewModel.setColorMode(modes.first())
+                                        actions.onSetColorMode(modes.first())
                                     }
                                 },
                                 modifier = Modifier
@@ -265,7 +246,7 @@ fun ColorPaletteScreenMaterial() {
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOf(colorStyle),
                                 onItemSelected = { index ->
-                                    viewModel.setColorStyle(styles[index].name)
+                                    actions.onSetColorStyle(styles[index].name)
                                 }
                             )
                         },
@@ -277,7 +258,7 @@ fun ColorPaletteScreenMaterial() {
                                 items = specs.map { it.name },
                                 selectedIndex = specs.indexOf(colorSpec).coerceAtLeast(0),
                                 onItemSelected = { index ->
-                                    viewModel.setColorSpec(specs[index].name)
+                                    actions.onSetColorSpec(specs[index].name)
                                 }
                             )
                         }
@@ -294,11 +275,7 @@ fun ColorPaletteScreenMaterial() {
                                     title = stringResource(id = R.string.settings_enable_predictive_back),
                                     summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
                                     checked = uiState.enablePredictiveBack,
-                                    onCheckedChange = {
-                                        viewModel.setEnablePredictiveBack(it)
-                                        setEnableOnBackInvokedCallback(context.applicationInfo, it)
-                                        activity?.recreate()
-                                    }
+                                    onCheckedChange = actions.onSetEnablePredictiveBack
                                 )
                             }
                         )
@@ -306,8 +283,6 @@ fun ColorPaletteScreenMaterial() {
                 }
 
                 TonalCard(modifier = Modifier.padding(top = 4.dp)) {
-                    val settingsViewModel = viewModel<SettingsViewModel>()
-                    val uiState by settingsViewModel.uiState.collectAsState()
                     var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
 
                     Column(
@@ -348,7 +323,7 @@ fun ColorPaletteScreenMaterial() {
                         Slider(
                             value = sliderValue,
                             onValueChange = { sliderValue = it },
-                            onValueChangeFinished = { settingsViewModel.setPageScale(sliderValue) },
+                            onValueChangeFinished = { actions.onSetPageScale(sliderValue) },
                             valueRange = 0.8f..1.1f,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -398,6 +373,7 @@ private fun ThemePreviewCard(
             style = paletteStyle,
             specVersion = colorSpec,
         )
+
     }
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {

@@ -1,8 +1,6 @@
 package me.weishu.kernelsu.ui.screen.template
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
@@ -41,12 +39,10 @@ import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,33 +53,21 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.compose.dropUnlessResumed
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.model.TemplateInfo
 import me.weishu.kernelsu.ui.component.miuix.DropdownItem
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Navigator
-import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
-import me.weishu.kernelsu.ui.util.isNetworkAvailable
-import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
@@ -117,28 +101,11 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  */
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
-fun AppProfileTemplateScreenMiuix() {
-    val navigator = LocalNavigator.current
-    val viewModel = viewModel<TemplateViewModel>()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
+fun AppProfileTemplateScreenMiuix(
+    state: TemplateUiState,
+    actions: TemplateActions,
+) {
     val scrollBehavior = MiuixScrollBehavior()
-
-    LaunchedEffect(Unit) {
-        if (uiState.templateList.isEmpty()) {
-            scope.launch { viewModel.fetchTemplates() }
-        }
-    }
-
-    val requestKey = "template_edit"
-    LaunchedEffect(Unit) {
-        navigator.observeResult<Boolean>(requestKey).collect { success ->
-            if (success) {
-                navigator.clearResult(requestKey)
-                scope.launch { viewModel.fetchTemplates() }
-            }
-        }
-    }
 
     val listState = rememberLazyListState()
     var fabVisible by remember { mutableStateOf(true) }
@@ -180,51 +147,12 @@ fun AppProfileTemplateScreenMiuix() {
         HazeStyle.Unspecified
     }
 
-    val importEmptyText = stringResource(R.string.app_profile_template_import_empty)
-    val importSuccessText = stringResource(R.string.app_profile_template_import_success)
-    val exportEmptyText = stringResource(R.string.app_profile_template_export_empty)
-
     Scaffold(
         topBar = {
-            val clipboard = LocalClipboard.current
-            val context = LocalContext.current
-            val showToast = fun(msg: String) {
-                scope.launch(Dispatchers.Main) {
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                }
-            }
             TopBar(
-                onBack = dropUnlessResumed { navigator.pop() },
-                onImport = {
-                    scope.launch {
-                        clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
-                            if (it.isEmpty()) {
-                                showToast(importEmptyText)
-                                return@let
-                            }
-                            viewModel.importTemplates(
-                                it,
-                                {
-                                    showToast(importSuccessText)
-                                    viewModel.fetchTemplates(false)
-                                },
-                                showToast
-                            )
-                        }
-                    }
-                },
-                onExport = {
-                    scope.launch {
-                        viewModel.exportTemplates(
-                            {
-                                showToast(exportEmptyText)
-                            },
-                            {
-                                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("template", it)))
-                            }
-                        )
-                    }
-                },
+                onBack = actions.onBack,
+                onImport = actions.onImport,
+                onExport = actions.onExport,
                 scrollBehavior = scrollBehavior,
                 hazeState = hazeState,
                 hazeStyle = hazeStyle,
@@ -235,9 +163,7 @@ fun AppProfileTemplateScreenMiuix() {
             FloatingActionButton(
                 containerColor = colorScheme.primary,
                 shadowElevation = 0.dp,
-                onClick = {
-                    navigator.navigateForResult(Route.TemplateEditor(TemplateViewModel.TemplateInfo(), false), requestKey)
-                },
+                onClick = actions.onCreateTemplate,
                 modifier = Modifier
                     .offset(y = offsetHeight)
                     .padding(
@@ -259,9 +185,7 @@ fun AppProfileTemplateScreenMiuix() {
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val context = LocalContext.current
-        val offline = !isNetworkAvailable(context)
-        if (uiState.templateList.isEmpty() && !uiState.isRefreshing) {
+        if (state.templateList.isEmpty() && !state.isRefreshing) {
             val layoutDirection = LocalLayoutDirection.current
             Box(
                 modifier = Modifier
@@ -273,7 +197,7 @@ fun AppProfileTemplateScreenMiuix() {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (offline) {
+                if (state.offline) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = stringResource(R.string.network_offline), color = colorScheme.onSurfaceVariantSummary, fontSize = 16.sp)
                         Spacer(Modifier.height(12.dp))
@@ -282,9 +206,7 @@ fun AppProfileTemplateScreenMiuix() {
                                 .padding(horizontal = 24.dp)
                                 .fillMaxWidth(),
                             text = stringResource(R.string.network_retry),
-                            onClick = {
-                                scope.launch { viewModel.fetchTemplates() }
-                            },
+                            onClick = { actions.onRefresh(false) },
                         )
                     }
                 } else {
@@ -301,9 +223,9 @@ fun AppProfileTemplateScreenMiuix() {
         )
         val layoutDirection = LocalLayoutDirection.current
         PullToRefresh(
-            isRefreshing = uiState.isRefreshing,
+            isRefreshing = state.isRefreshing,
             pullToRefreshState = pullToRefreshState,
-            onRefresh = { scope.launch { viewModel.fetchTemplates(true) } },
+            onRefresh = { actions.onRefresh(true) },
             refreshTexts = refreshTexts,
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 12.dp,
@@ -326,8 +248,11 @@ fun AppProfileTemplateScreenMiuix() {
                 item {
                     Spacer(Modifier.height(12.dp))
                 }
-                items(uiState.templateList, key = { it.id }) { app ->
-                    TemplateItem(navigator, app)
+                items(state.templateList, key = { it.id }) { app ->
+                    TemplateItem(
+                        template = app,
+                        onClick = { actions.onOpenTemplate(app) },
+                    )
                 }
                 item {
                     Spacer(
@@ -344,14 +269,12 @@ fun AppProfileTemplateScreenMiuix() {
 
 @Composable
 private fun TemplateItem(
-    navigator: Navigator,
-    template: TemplateViewModel.TemplateInfo
+    template: TemplateInfo,
+    onClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier.padding(bottom = 12.dp),
-        onClick = {
-            navigator.navigateForResult(Route.TemplateEditor(template, !template.local), "template_edit")
-        },
+        onClick = onClick,
         showIndication = true,
         pressFeedbackType = PressFeedbackType.Sink
     ) {

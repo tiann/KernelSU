@@ -44,11 +44,9 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -60,9 +58,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.dropUnlessResumed
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
@@ -73,17 +68,9 @@ import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.navigation3.LocalNavigator
-import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
-import me.weishu.kernelsu.ui.util.forceStopApp
-import me.weishu.kernelsu.ui.util.getSepolicy
-import me.weishu.kernelsu.ui.util.launchApp
 import me.weishu.kernelsu.ui.util.ownerNameForUid
-import me.weishu.kernelsu.ui.util.restartApp
-import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
-import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
 
 /**
  * @author weishu
@@ -92,44 +79,11 @@ import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppProfileScreenMaterial(
-    uid: Int,
-    packageName: String,
+    state: AppProfileUiState,
+    actions: AppProfileActions,
 ) {
-    val viewModel: SuperUserViewModel = viewModel()
-    val navigator = LocalNavigator.current
-    val snackBarHost = LocalSnackbarHost.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val scope = rememberCoroutineScope()
-    val appInfoState = remember(uid, packageName) {
-        derivedStateOf { SuperUserViewModel.apps.find { it.uid == uid && it.packageName == packageName } }
-    }
-    val appInfo = appInfoState.value
-    if (appInfo == null) {
-        LaunchedEffect(Unit) {
-            navigator.pop()
-        }
-        return
-    }
-    val failToUpdateAppProfile = stringResource(R.string.failed_to_update_app_profile).format(appInfo.label)
-    val failToUpdateSepolicy = stringResource(R.string.failed_to_update_sepolicy).format(appInfo.label)
-    val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
-    val sameUidApps = remember(uid) {
-        SuperUserViewModel.apps.filter { it.uid == uid }
-    }
-    val isUidGroup = sameUidApps.size > 1
-    // The package name from the SuperUser is the primary package, so no need to recalculate.
-    val sharedUserId = remember(sameUidApps, appInfo) {
-        appInfo.packageInfo.sharedUserId
-            ?: sameUidApps.firstOrNull { it.packageInfo.sharedUserId != null }?.packageInfo?.sharedUserId
-            ?: ""
-    }
-    val initialProfile = Natives.getAppProfile(packageName, uid)
-    if (initialProfile.allowSu) {
-        initialProfile.rules = getSepolicy(packageName)
-    }
-    var profile by rememberSaveable {
-        mutableStateOf(initialProfile)
-    }
+    val snackBarHost = LocalSnackbarHost.current
 
     LaunchedEffect(Unit) {
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
@@ -138,10 +92,14 @@ fun AppProfileScreenMaterial(
     Scaffold(
         topBar = {
             TopBar(
-                onBack = dropUnlessResumed { navigator.pop() },
+                onBack = actions.onBack,
                 scrollBehavior = scrollBehavior,
-                isUidGroup = isUidGroup,
-                packageName = appInfo.packageName
+                isUidGroup = state.isUidGroup,
+                packageName = state.packageName,
+                userId = state.uid / 100000,
+                onLaunchApp = actions.onLaunchApp,
+                onForceStopApp = actions.onForceStopApp,
+                onRestartApp = actions.onRestartApp,
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHost) },
@@ -154,53 +112,27 @@ fun AppProfileScreenMaterial(
                 .imePadding()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState()),
-            packageName = if (isUidGroup) "" else appInfo.packageName,
-            appLabel = if (isUidGroup) ownerNameForUid(appInfo.uid) else appInfo.label,
+            packageName = if (state.isUidGroup) "" else state.appGroup.primary.packageName,
+            appLabel = if (state.isUidGroup) ownerNameForUid(state.appGroup.primary.uid) else state.appGroup.primary.label,
             appIcon = {
                 AppIconImage(
-                    packageInfo = appInfo.packageInfo,
-                    label = appInfo.label,
+                    packageInfo = state.appGroup.primary.packageInfo,
+                    label = state.appGroup.primary.label,
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .size(48.dp)
                 )
             },
-            appUid = uid,
-            sharedUserId = if (isUidGroup) sharedUserId else "",
-            appVersionName = if (isUidGroup) "" else (appInfo.packageInfo.versionName ?: ""),
-            appVersionCode = if (isUidGroup) 0L else appInfo.packageInfo.longVersionCode,
-            profile = profile,
-            isUidGroup = isUidGroup,
-            affectedApps = sameUidApps,
-            onViewTemplate = {
-                getTemplateInfoById(it)?.let { info ->
-                    navigator.push(Route.TemplateEditor(info, true))
-                }
-            },
-            onManageTemplate = {
-                navigator.push(Route.AppProfileTemplate)
-            },
-            onProfileChange = {
-                scope.launch {
-                    if (it.allowSu) {
-                        // sync with allowlist.c - forbid_system_uid
-                        if (uid < 2000 && uid != 1000) {
-                            snackBarHost.showSnackbar(suNotAllowed)
-                            return@launch
-                        }
-                        if (!it.rootUseDefault && it.rules.isNotEmpty() && !setSepolicy(profile.name, it.rules)) {
-                            snackBarHost.showSnackbar(failToUpdateSepolicy)
-                            return@launch
-                        }
-                    }
-                    if (!Natives.setAppProfile(it)) {
-                        snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
-                    } else {
-                        profile = it
-                        viewModel.loadAppList()
-                    }
-                }
-            },
+            appUid = state.uid,
+            sharedUserId = if (state.isUidGroup) state.sharedUserId else "",
+            appVersionName = if (state.isUidGroup) "" else (state.appGroup.primary.packageInfo.versionName ?: ""),
+            appVersionCode = if (state.isUidGroup) 0L else state.appGroup.primary.packageInfo.longVersionCode,
+            profile = state.profile,
+            isUidGroup = state.isUidGroup,
+            affectedApps = state.appGroup.apps,
+            onViewTemplate = actions.onViewTemplate,
+            onManageTemplate = actions.onManageTemplate,
+            onProfileChange = actions.onProfileChange,
         )
     }
 }
@@ -266,7 +198,7 @@ private fun AppProfileInner(
                         },
                         leadingContent = appIcon,
                         trailingContent = {
-                            Column {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 if (userId != 0) {
                                     StatusTag(
                                         label = "USER $userId",
@@ -399,6 +331,10 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isUidGroup: Boolean = false,
     packageName: String = "",
+    userId: Int = 0,
+    onLaunchApp: (String, Int) -> Unit,
+    onForceStopApp: (String, Int) -> Unit,
+    onRestartApp: (String, Int) -> Unit,
 ) {
     LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.profile)) },
@@ -426,21 +362,21 @@ private fun TopBar(
                             text = { Text(stringResource(id = R.string.launch_app)) },
                             onClick = {
                                 showDropdown = false
-                                launchApp(packageName)
+                                onLaunchApp(packageName, userId)
                             },
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.force_stop_app)) },
                             onClick = {
                                 showDropdown = false
-                                forceStopApp(packageName)
+                                onForceStopApp(packageName, userId)
                             },
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.restart_app)) },
                             onClick = {
                                 showDropdown = false
-                                restartApp(packageName)
+                                onRestartApp(packageName, userId)
                             },
                         )
                     }

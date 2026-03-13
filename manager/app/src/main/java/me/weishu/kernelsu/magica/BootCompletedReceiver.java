@@ -1,14 +1,10 @@
 package me.weishu.kernelsu.magica;
 
-import static android.content.Context.BIND_AUTO_CREATE;
 import static me.weishu.kernelsu.magica.AppZygotePreload.TAG;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 import android.util.Log;
 
 public class BootCompletedReceiver extends BroadcastReceiver {

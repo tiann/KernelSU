@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.module
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -40,7 +39,6 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -57,13 +55,10 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -74,8 +69,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -94,45 +87,24 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.edit
-import androidx.core.net.toUri
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousRoundedRectangle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.data.model.Module
+import me.weishu.kernelsu.data.model.ModuleUpdateInfo
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
-import me.weishu.kernelsu.ui.component.dialog.ConfirmResult
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
-import me.weishu.kernelsu.ui.navigation3.Navigator
-import me.weishu.kernelsu.ui.navigation3.Route
-import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
-import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.getFileName
-import me.weishu.kernelsu.ui.util.hasMagisk
-import me.weishu.kernelsu.ui.util.module.Shortcut
-import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
-import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
-import me.weishu.kernelsu.ui.util.toggleModule
-import me.weishu.kernelsu.ui.util.undoUninstallModule
-import me.weishu.kernelsu.ui.util.uninstallModule
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
-import me.weishu.kernelsu.ui.webui.WebUIActivity
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -167,58 +139,35 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
 fun ModulePagerMiuix(
-    navigator: Navigator,
-    bottomInnerPadding: Dp
+    uiState: ModuleUiState,
+    confirmDialogState: ModuleConfirmDialogState?,
+    effect: ModuleEffect?,
+    actions: ModuleActions,
+    bottomInnerPadding: Dp,
 ) {
-    val viewModel = viewModel<ModuleViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
     val modules = uiState.moduleList
-    val scope = rememberCoroutineScope()
     val searchStatus = uiState.searchStatus
 
     val context = LocalContext.current
-    var isInitialized by rememberSaveable { mutableStateOf(false) }
-    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val enableBlur = LocalEnableBlur.current
 
-    LaunchedEffect(Unit) {
-        when {
-            !isInitialized || modules.isEmpty() -> {
-                viewModel.setCheckModuleUpdate(prefs.getBoolean("module_check_update", true))
-                viewModel.setSortEnabledFirst(prefs.getBoolean("module_sort_enabled_first", false))
-                viewModel.setSortActionFirst(prefs.getBoolean("module_sort_action_first", false))
-                viewModel.fetchModuleList(checkUpdate = true)
-                isInitialized = true
+    val installPromptWithName = stringResource(R.string.module_install_prompt_with_name, "%s")
+    val confirmDialog = rememberConfirmDialog(
+        onConfirm = {
+            when (val request = confirmDialogState?.request) {
+                is ModuleConfirmRequest.Uninstall -> {
+                    actions.onUninstallModule(request.module)
+                }
+
+                is ModuleConfirmRequest.Update -> {
+                    actions.onConfirmUpdate(request)
+                }
+
+                null -> Unit
             }
-
-            viewModel.isNeedRefresh -> {
-                viewModel.fetchModuleList(checkUpdate = true)
-            }
-        }
-    }
-
-    LaunchedEffect(searchStatus.searchText) {
-        viewModel.updateSearchText(searchStatus.searchText)
-    }
-
-    LaunchedEffect(modules) {
-        if (searchStatus.searchText.isNotEmpty()) {
-            viewModel.updateSearchText(searchStatus.searchText)
-        }
-    }
-
-    val webUILauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList() }
-
-    val loadingDialog = rememberLoadingDialog()
-    val confirmDialog = rememberConfirmDialog()
-
-    val isSafeMode = Natives.isSafeMode
-    val magiskInstalled by produceState(initialValue = false) {
-        value = withContext(Dispatchers.IO) { hasMagisk() }
-    }
-    val hideInstallButton = isSafeMode || magiskInstalled
+        },
+        onDismiss = actions.onDismissConfirmRequest,
+    )
 
     val scrollBehavior = MiuixScrollBehavior()
     var fabVisible by remember { mutableStateOf(true) }
@@ -227,252 +176,60 @@ fun ModulePagerMiuix(
         derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
 
-    val failedEnable = stringResource(R.string.module_failed_to_enable)
-    val failedDisable = stringResource(R.string.module_failed_to_disable)
-    val failedUndoUninstall = stringResource(R.string.module_undo_uninstall_failed)
-    val successUndoUninstall = stringResource(R.string.module_undo_uninstall_success)
-    val failedUninstall = stringResource(R.string.module_uninstall_failed)
-    val successUninstall = stringResource(R.string.module_uninstall_success)
-    val rebootToApply = stringResource(R.string.reboot_to_apply)
-    val moduleStr = stringResource(R.string.module)
-    val uninstall = stringResource(R.string.uninstall)
-    val cancel = stringResource(android.R.string.cancel)
-    val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
-    val metaModuleUninstallConfirm = stringResource(R.string.metamodule_uninstall_confirm)
-    val updateText = stringResource(R.string.module_update)
-    val changelogText = stringResource(R.string.module_changelog)
-    val downloadingText = stringResource(R.string.module_downloading)
-    val startDownloadingText = stringResource(R.string.module_start_downloading)
-
-    var shortcutModuleId by rememberSaveable { mutableStateOf<String?>(null) }
-    var shortcutName by rememberSaveable { mutableStateOf("") }
-    var shortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var defaultShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var defaultActionShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var defaultWebUiShortcutIconUri by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedShortcutType by rememberSaveable { mutableStateOf<ShortcutType?>(null) }
+    val shortcutState = rememberModuleShortcutState(context)
     val showShortcutDialog = remember { mutableStateOf(false) }
     val showShortcutTypeDialog = remember { mutableStateOf(false) }
-
-    fun openShortcutDialogForType(type: ShortcutType) {
-        selectedShortcutType = type
-        val defaultIcon = when (type) {
-            ShortcutType.Action -> defaultActionShortcutIconUri ?: defaultWebUiShortcutIconUri
-            ShortcutType.WebUI -> defaultWebUiShortcutIconUri ?: defaultActionShortcutIconUri
-        }
-        defaultShortcutIconUri = defaultIcon
-        shortcutIconUri = defaultIcon
-        showShortcutDialog.value = true
-    }
 
     val pickShortcutIconLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        shortcutIconUri = uri?.toString()
+        shortcutState.updateIconUri(uri?.toString())
     }
 
-    val shortcutPreviewIcon = remember { mutableStateOf<ImageBitmap?>(null) }
-    LaunchedEffect(shortcutIconUri) {
-        val uriStr = shortcutIconUri
-        if (uriStr.isNullOrBlank()) {
-            shortcutPreviewIcon.value = null
-            return@LaunchedEffect
-        }
-        val bitmap = withContext(Dispatchers.IO) {
-            Shortcut.loadShortcutBitmap(context, uriStr)
-        }
-        shortcutPreviewIcon.value = bitmap?.asImageBitmap()
-    }
-
-    var hasExistingShortcut by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(shortcutModuleId, selectedShortcutType, showShortcutDialog.value) {
-        val moduleId = shortcutModuleId
-        val type = selectedShortcutType
-        if (!showShortcutDialog.value || moduleId.isNullOrBlank() || type == null) {
-            hasExistingShortcut = false
-            return@LaunchedEffect
-        }
-        val exists = withContext(Dispatchers.IO) {
-            hasModuleShortcut(context, moduleId, type)
-        }
-        hasExistingShortcut = exists
-    }
-
-    suspend fun onModuleUpdate(
-        module: ModuleViewModel.ModuleInfo,
-        changelogUrl: String,
-        downloadUrl: String,
-        fileName: String,
-        context: Context,
-        onInstallModule: (Uri) -> Unit
-    ) {
-        val changelogResult = if (changelogUrl.isBlank()) {
-            Result.success("")
-        } else {
-            loadingDialog.withLoading {
-                withContext(Dispatchers.IO) {
-                    runCatching {
-                        ksuApp.okhttpClient.newCall(
-                            okhttp3.Request.Builder().url(changelogUrl).build()
-                        ).execute().body.string()
-                    }
-                }
-            }
-        }
-
-        val showToast: suspend (String) -> Unit = { msg ->
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    context,
-                    msg,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-        val changelog = changelogResult.getOrElse { "" }
-        var htmlLog = ""
-        if (changelog.isBlank()) {
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    val detail = fetchModuleDetail(module.id)
-                    val latestTag = detail?.latestTag ?: ""
-                    val html = if (latestTag.isNotBlank()) fetchReleaseDescriptionHtml(module.id, latestTag) else null
-                    if (html != null) htmlLog = html
-                }
-            }
-        }
-
-        val confirmResult = confirmDialog.awaitConfirm(
-            if (changelog.isNotEmpty() || htmlLog.isNotEmpty()) changelogText else updateText,
-            content = when {
-                changelog.isNotEmpty() -> changelog
-                htmlLog.isNotEmpty() -> htmlLog
-                else -> startDownloadingText.format(module.name)
-            },
-            markdown = changelog.isNotEmpty(),
-            html = htmlLog.isNotEmpty(),
-            confirm = updateText,
-        )
-
-        if (confirmResult != ConfirmResult.Confirmed) {
-            return
-        }
-
-        showToast(startDownloadingText.format(module.name))
-
-        val downloading = downloadingText.format(module.name)
-        withContext(Dispatchers.IO) {
-            download(
-                url = downloadUrl,
-                fileName = fileName,
-                onDownloaded = onInstallModule,
-                onDownloading = {
-                    scope.launch(Dispatchers.Main) {
-                        Toast.makeText(context, downloading, Toast.LENGTH_SHORT).show()
-                    }
-                }
+    LaunchedEffect(confirmDialogState) {
+        confirmDialogState?.let {
+            confirmDialog.showConfirm(
+                title = it.title,
+                content = it.content,
+                markdown = it.markdown,
+                html = it.html,
+                confirm = it.confirm,
+                dismiss = it.dismiss,
             )
         }
     }
 
-    suspend fun onModuleUndoUninstall(module: ModuleViewModel.ModuleInfo) {
-
-        val success = loadingDialog.withLoading {
-            withContext(Dispatchers.IO) {
-                undoUninstallModule(module.id)
+    LaunchedEffect(effect) {
+        when (effect) {
+            is ModuleEffect.Toast -> {
+                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                actions.onConsumeEffect()
             }
-        }
 
-        if (success) {
-            viewModel.fetchModuleList()
-        }
-        val message = if (success) {
-            successUndoUninstall.format(module.name)
-        } else {
-            failedUndoUninstall.format(module.name)
-        }
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
-    suspend fun onModuleUninstall(module: ModuleViewModel.ModuleInfo) {
-        val formatter = if (module.metamodule) metaModuleUninstallConfirm else moduleUninstallConfirm
-        val confirmResult = confirmDialog.awaitConfirm(
-            moduleStr,
-            content = formatter.format(module.name),
-            confirm = uninstall,
-            dismiss = cancel
-        )
-        if (confirmResult != ConfirmResult.Confirmed) {
-            return
-        }
-
-        val success = loadingDialog.withLoading {
-            withContext(Dispatchers.IO) {
-                uninstallModule(module.id)
+            is ModuleEffect.SnackBar -> {
+                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                actions.onConsumeEffect()
             }
-        }
 
-        if (success) {
-            viewModel.fetchModuleList()
-        }
-        val message = if (success) {
-            successUninstall.format(module.name)
-        } else {
-            failedUninstall.format(module.name)
-        }
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
-    suspend fun onModuleToggle(module: ModuleViewModel.ModuleInfo) {
-        val success = loadingDialog.withLoading {
-            withContext(Dispatchers.IO) {
-                toggleModule(module.id, !module.enabled)
-            }
-        }
-        if (success) {
-            viewModel.fetchModuleList()
-            Toast.makeText(context, rebootToApply, Toast.LENGTH_SHORT).show()
-        } else {
-            val message = if (module.enabled) failedDisable else failedEnable
-            Toast.makeText(context, message.format(module.name), Toast.LENGTH_SHORT).show()
+            null -> Unit
         }
     }
 
-    fun onModuleClick(id: String, name: String, hasWebUi: Boolean) {
-        if (hasWebUi) {
-            webUILauncher.launch(
-                Intent(context, WebUIActivity::class.java)
-                    .setData("kernelsu://webui/$id".toUri())
-                    .putExtra("id", id)
-                    .putExtra("name", name)
-            )
-        }
-    }
-
-    fun onModuleAddShortcut(module: ModuleViewModel.ModuleInfo) {
-        shortcutModuleId = module.id
-        shortcutName = module.name
-        shortcutIconUri = null
-        defaultShortcutIconUri = null
-        defaultActionShortcutIconUri = module.actionIconPath
-            ?.takeIf { it.isNotBlank() }
-            ?.let { "su:$it" }
-        defaultWebUiShortcutIconUri = module.webUiIconPath
-            ?.takeIf { it.isNotBlank() }
-            ?.let { "su:$it" }
-        if (module.hasActionScript && module.hasWebUi) {
-            selectedShortcutType = null
+    fun onModuleAddShortcut(module: Module) {
+        shortcutState.bindModule(module)
+        if (shortcutState.availableTypes.size > 1) {
             showShortcutTypeDialog.value = true
-        } else if (module.hasActionScript) {
-            openShortcutDialogForType(ShortcutType.Action)
-        } else if (module.hasWebUi) {
-            openShortcutDialogForType(ShortcutType.WebUI)
+        } else if (shortcutState.supportsActionShortcut) {
+            shortcutState.selectType(ShortcutType.Action)
+            showShortcutDialog.value = true
+        } else if (shortcutState.supportsWebUiShortcut) {
+            shortcutState.selectType(ShortcutType.WebUI)
+            showShortcutDialog.value = true
         }
     }
 
     val listState = rememberLazyListState()
-    val nestedScrollConnection = remember {
+    val nestedScrollConnection = remember(uiState.installButtonVisible) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val isScrolledToEnd =
@@ -543,14 +300,7 @@ fun ModulePagerMiuix(
                                         optionSize = 2,
                                         isSelected = uiState.sortActionFirst,
                                         onSelectedIndexChange = {
-                                            val newValue = !uiState.sortActionFirst
-                                            viewModel.setSortActionFirst(newValue)
-                                            prefs.edit {
-                                                putBoolean("module_sort_action_first", newValue)
-                                            }
-                                            scope.launch {
-                                                viewModel.fetchModuleList()
-                                            }
+                                            actions.onToggleSortActionFirst()
                                             showTopPopup.value = false
                                         },
                                         index = 0
@@ -560,14 +310,7 @@ fun ModulePagerMiuix(
                                         optionSize = 2,
                                         isSelected = uiState.sortEnabledFirst,
                                         onSelectedIndexChange = {
-                                            val newValue = !uiState.sortEnabledFirst
-                                            viewModel.setSortEnabledFirst(newValue)
-                                            prefs.edit {
-                                                putBoolean("module_sort_enabled_first", newValue)
-                                            }
-                                            scope.launch {
-                                                viewModel.fetchModuleList()
-                                            }
+                                            actions.onToggleSortEnabledFirst()
                                             showTopPopup.value = false
                                         },
                                         index = 1
@@ -583,7 +326,7 @@ fun ModulePagerMiuix(
                     navigationIcon = {
                         IconButton(
                             modifier = Modifier.padding(start = 16.dp),
-                            onClick = { navigator.push(Route.ModuleRepo) },
+                            onClick = actions.onOpenRepo,
                         ) {
                             Icon(
                                 imageVector = MiuixIcons.Download,
@@ -597,14 +340,13 @@ fun ModulePagerMiuix(
             }
         },
         floatingActionButton = {
-            if (!hideInstallButton) {
+            if (uiState.installButtonVisible) {
                 val moduleInstall = stringResource(id = R.string.module_install)
                 val confirmTitle = stringResource(R.string.module)
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(
                     onConfirm = {
-                        navigator.push(Route.Flash(FlashIt.FlashModules(zipUris)))
-                        viewModel.markNeedRefresh()
+                        actions.onOpenFlash(zipUris)
                     }
                 )
                 val selectZipLauncher = rememberLauncherForActivityResult(
@@ -626,13 +368,12 @@ fun ModulePagerMiuix(
                     }
 
                     if (uris.size == 1) {
-                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uris.first()))))
-                        viewModel.markNeedRefresh()
+                        actions.onOpenFlash(listOf(uris.first()))
                     } else if (uris.size > 1) {
                         // multiple files selected
                         zipUris = uris
                         val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
-                        val confirmContent = context.getString(R.string.module_install_prompt_with_name, moduleNames)
+                        val confirmContent = installPromptWithName.format(moduleNames)
                         confirmDialog.showConfirm(
                             title = confirmTitle,
                             content = confirmContent
@@ -666,141 +407,97 @@ fun ModulePagerMiuix(
         },
         popupHost = {
             searchStatus.SearchPager(
-                onSearchStatusChange = viewModel::updateSearchStatus,
+                onSearchStatusChange = actions.onSearchStatusChange,
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
-                item {
-                    Spacer(Modifier.height(6.dp))
-                }
-                items(
-                    uiState.searchResults,
-                    key = { it.id },
-                    contentType = { "module" }
-                ) { module ->
-                    AnimatedVisibility(
-                        visible = uiState.searchResults.isNotEmpty(),
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
-                        val itemScope = rememberCoroutineScope()
-                        val updateInfoMap = uiState.updateInfo
-                        val currentModuleState = rememberUpdatedState(module)
-                        val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
-
-                        val onUninstallClick = remember(module.id, itemScope, ::onModuleUninstall) {
-                            {
-                                itemScope.launch {
-                                    onModuleUninstall(currentModuleState.value)
-                                }
-                                Unit
-                            }
-                        }
-                        val onUndoUninstallClick = remember(module.id, itemScope, ::onModuleUndoUninstall) {
-                            {
-                                itemScope.launch {
-                                    onModuleUndoUninstall(currentModuleState.value)
-                                }
-                                Unit
-                            }
-                        }
-                        val onToggleClick = remember(module.id, itemScope, ::onModuleToggle) {
-                            { _: Boolean ->
-                                itemScope.launch {
-                                    onModuleToggle(currentModuleState.value)
-                                }
-                                Unit
-                            }
-                        }
-                        val onUpdateClick = remember(module.id, moduleUpdateInfo, itemScope, ::onModuleUpdate, context, navigator) {
-                            {
-                                itemScope.launch {
-                                    onModuleUpdate(
-                                        currentModuleState.value,
-                                        moduleUpdateInfo.changelog,
-                                        moduleUpdateInfo.downloadUrl,
-                                        "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
-                                        context
-                                    ) { uri ->
-                                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
-                                        viewModel.markNeedRefresh()
-                                    }
-                                }
-                                Unit
-                            }
-                        }
-                        val onExecuteActionClick = remember(module.id, navigator, viewModel) {
-                            {
-                                navigator.push(Route.ExecuteModuleAction(currentModuleState.value.id))
-                                viewModel.markNeedRefresh()
-                            }
-                        }
-                        val onAddShortcutClick = remember(module.id) {
-                            {
-                                onModuleAddShortcut(currentModuleState.value)
-                            }
-                        }
-                        val onOpenWebUiClick = remember(module.id) {
-                            {
-                                onModuleClick(
-                                    currentModuleState.value.id,
-                                    currentModuleState.value.name,
-                                    currentModuleState.value.hasWebUi
-                                )
-                            }
-                        }
-                        ModuleItem(
-                            module = module,
-                            updateUrl = moduleUpdateInfo.downloadUrl,
-                            onUndoUninstall = onUndoUninstallClick,
-                            onUninstall = onUninstallClick,
-                            onCheckChanged = onToggleClick,
-                            onUpdate = onUpdateClick,
-                            onExecuteAction = onExecuteActionClick,
-                            onAddActionShortcut = onAddShortcutClick,
-                            onOpenWebUi = onOpenWebUiClick
-                        )
-                    }
-                }
-                item {
-                    val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
-                    Spacer(Modifier.height(maxOf(bottomInnerPadding, imeBottomPadding)))
-                }
+                val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+                ModuleList(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .overScrollVertical(),
+                    modules = uiState.searchResults,
+                    updateInfoMap = uiState.updateInfo,
+                    actions = actions,
+                    onModuleAddShortcut = ::onModuleAddShortcut,
+                    contentPadding = PaddingValues(
+                        top = 6.dp,
+                        start = 0.dp,
+                        end = 0.dp,
+                        bottom = maxOf(bottomInnerPadding, imeBottomPadding),
+                    ),
+                    animateItems = true,
+                )
             }
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        when {
-            magiskInstalled -> {
+        if (uiState.magiskInstalled) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    stringResource(R.string.module_magisk_conflict),
+                    textAlign = TextAlign.Center,
+                )
+            }
+            return@Scaffold
+        }
+        val layoutDirection = LocalLayoutDirection.current
+        val pullToRefreshState = rememberPullToRefreshState()
+        val refreshTexts = listOf(
+            stringResource(R.string.refresh_pulling),
+            stringResource(R.string.refresh_release),
+            stringResource(R.string.refresh_refresh),
+            stringResource(R.string.refresh_complete),
+        )
+        searchStatus.SearchBox(
+            onSearchStatusChange = actions.onSearchStatusChange,
+            searchBarTopPadding = dynamicTopPadding,
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            ),
+            hazeState = hazeState,
+            hazeStyle = hazeStyle
+        ) { boxHeight ->
+            if (modules.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(12.dp),
+                        .padding(
+                            top = innerPadding.calculateTopPadding(),
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection),
+                            bottom = bottomInnerPadding
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        stringResource(R.string.module_magisk_conflict),
+                        stringResource(R.string.module_empty),
                         textAlign = TextAlign.Center,
+                        color = Color.Gray,
                     )
                 }
-            }
-
-            else -> {
-                val layoutDirection = LocalLayoutDirection.current
-                searchStatus.SearchBox(
-                    onSearchStatusChange = viewModel::updateSearchStatus,
-                    searchBarTopPadding = dynamicTopPadding,
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding(),
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection)
-                    ),
-                    hazeState = hazeState,
-                    hazeStyle = hazeStyle
-                ) { boxHeight ->
+            } else {
+                val contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection),
+                    bottom = bottomInnerPadding,
+                )
+                PullToRefresh(
+                    isRefreshing = uiState.isRefreshing,
+                    pullToRefreshState = pullToRefreshState,
+                    onRefresh = actions.onRefresh,
+                    refreshTexts = refreshTexts,
+                    contentPadding = contentPadding,
+                ) {
                     ModuleList(
-                        navigator = navigator,
-                        viewModel = viewModel,
                         modifier = Modifier
                             .fillMaxHeight()
                             .scrollEndHaptic()
@@ -808,190 +505,181 @@ fun ModulePagerMiuix(
                             .nestedScroll(scrollBehavior.nestedScrollConnection)
                             .nestedScroll(nestedScrollConnection)
                             .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
-                        scope = scope,
                         modules = modules,
-                        onClickModule = { id, name, hasWebUi ->
-                            onModuleClick(id, name, hasWebUi)
-                        },
-                        onModuleUninstall = { module ->
-                            onModuleUninstall(module)
-                        },
-                        onModuleUndoUninstall = { module ->
-                            onModuleUndoUninstall(module)
-                        },
-                        onModuleToggle = { module ->
-                            onModuleToggle(module)
-                        },
-                        onModuleUpdate = { module, changelogUrl, downloadUrl, fileName ->
-                            onModuleUpdate(
-                                module,
-                                changelogUrl,
-                                downloadUrl,
-                                fileName,
-                                context
-                            ) { uri ->
-                                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
-                                viewModel.markNeedRefresh()
-                            }
-                        },
+                        updateInfoMap = uiState.updateInfo,
+                        actions = actions,
                         onModuleAddShortcut = { module ->
                             onModuleAddShortcut(module)
                         },
-                        context = context,
-                        innerPadding = innerPadding,
-                        bottomInnerPadding = bottomInnerPadding,
-                        boxHeight = boxHeight
+                        contentPadding = contentPadding,
                     )
                 }
             }
         }
     }
-    if (showShortcutTypeDialog.value) {
-        SuperDialog(
-            show = showShortcutTypeDialog,
-            title = stringResource(R.string.module_shortcut_type_title),
-            onDismissRequest = {
-                showShortcutTypeDialog.value = false
-            }
+    ModuleShortcutTypeDialog(
+        show = showShortcutTypeDialog,
+        onSelectType = { type ->
+            shortcutState.selectType(type)
+            showShortcutDialog.value = true
+        },
+    )
+    ModuleShortcutDialog(
+        show = showShortcutDialog,
+        shortcutState = shortcutState,
+        onPickShortcutIcon = { pickShortcutIconLauncher.launch("image/*") },
+        onDeleteShortcut = {
+            shortcutState.deleteShortcut(context)
+            showShortcutDialog.value = false
+        },
+        onConfirmShortcut = {
+            shortcutState.createShortcut(context)
+            showShortcutDialog.value = false
+        },
+    )
+}
+
+@Composable
+private fun ModuleShortcutTypeDialog(
+    show: androidx.compose.runtime.MutableState<Boolean>,
+    onSelectType: (ShortcutType) -> Unit,
+) {
+    if (!show.value) return
+
+    SuperDialog(
+        show = show,
+        title = stringResource(R.string.module_shortcut_type_title),
+        onDismissRequest = {
+            show.value = false
+        }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TextButton(
-                    text = "Action",
-                    onClick = {
-                        showShortcutTypeDialog.value = false
-                        openShortcutDialogForType(ShortcutType.Action)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextButton(
-                    text = "WebUI",
-                    onClick = {
-                        showShortcutTypeDialog.value = false
-                        openShortcutDialogForType(ShortcutType.WebUI)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            TextButton(
+                text = "Action",
+                onClick = {
+                    show.value = false
+                    onSelectType(ShortcutType.Action)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextButton(
+                text = "WebUI",
+                onClick = {
+                    show.value = false
+                    onSelectType(ShortcutType.WebUI)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
-    if (showShortcutDialog.value) {
-        SuperDialog(
-            show = showShortcutDialog,
-            title = stringResource(R.string.module_shortcut_title),
-            onDismissRequest = {
-                showShortcutDialog.value = false
-            }
+}
+
+@Composable
+private fun ModuleShortcutDialog(
+    show: androidx.compose.runtime.MutableState<Boolean>,
+    shortcutState: ModuleShortcutState,
+    onPickShortcutIcon: () -> Unit,
+    onDeleteShortcut: () -> Unit,
+    onConfirmShortcut: () -> Unit,
+) {
+    if (!show.value) return
+
+    SuperDialog(
+        show = show,
+        title = stringResource(R.string.module_shortcut_title),
+        onDismissRequest = {
+            show.value = false
+        }
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .size(100.dp)
+                    .clip(ContinuousRoundedRectangle(25.dp))
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .size(100.dp)
-                        .clip(ContinuousRoundedRectangle(25.dp))
+                val preview = shortcutState.previewIcon
+                if (preview != null) {
+                    Image(
+                        bitmap = preview,
+                        modifier = Modifier.size(100.dp),
+                        contentDescription = null,
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .background(Color.White)
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        contentScale = FixedScale(1.5f)
+                    )
+                }
+            }
+            Row {
+                TextButton(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(id = R.string.module_shortcut_icon_pick),
+                    onClick = onPickShortcutIcon,
+                )
+                AnimatedVisibility(
+                    visible = shortcutState.iconUri != shortcutState.defaultShortcutIconUri,
+                    enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
+                    exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
+                    modifier = Modifier.align(Alignment.CenterVertically),
                 ) {
-                    val preview = shortcutPreviewIcon.value
-                    if (preview != null) {
-                        Image(
-                            bitmap = preview,
-                            modifier = Modifier.size(100.dp),
-                            contentDescription = null,
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .background(Color.White)
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            contentScale = FixedScale(1.5f)
-                        )
-                    }
-                }
-                Row {
-                    TextButton(
-                        modifier = Modifier.weight(1f),
-                        text = stringResource(id = R.string.module_shortcut_icon_pick),
-                        onClick = { pickShortcutIconLauncher.launch("image/*") },
-                    )
-                    AnimatedVisibility(
-                        visible = shortcutIconUri != defaultShortcutIconUri,
-                        enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
-                        exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
-                        modifier = Modifier.align(Alignment.CenterVertically),
+                    IconButton(
+                        onClick = shortcutState::resetIconToDefault,
+                        modifier = Modifier.padding(start = 12.dp)
                     ) {
-                        IconButton(
-                            onClick = { shortcutIconUri = defaultShortcutIconUri },
-                            modifier = Modifier.padding(start = 12.dp)
-                        ) {
-                            Icon(
-                                imageVector = MiuixIcons.Undo,
-                                contentDescription = null,
-                                tint = colorScheme.onSurface,
-                                modifier = Modifier.size(28.dp),
-                            )
-                        }
+                        Icon(
+                            imageVector = MiuixIcons.Undo,
+                            contentDescription = null,
+                            tint = colorScheme.onSurface,
+                            modifier = Modifier.size(28.dp),
+                        )
                     }
                 }
-                TextField(
-                    value = shortcutName,
-                    onValueChange = { shortcutName = it },
-                    label = stringResource(id = R.string.module_shortcut_name_label)
+            }
+            TextField(
+                value = shortcutState.name,
+                onValueChange = shortcutState::updateName,
+                label = stringResource(id = R.string.module_shortcut_name_label)
+            )
+            if (shortcutState.hasExistingShortcut) {
+                TextButton(
+                    text = stringResource(id = R.string.module_shortcut_delete),
+                    onClick = onDeleteShortcut,
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                if (hasExistingShortcut) {
-                    TextButton(
-                        text = stringResource(id = R.string.module_shortcut_delete),
-                        onClick = {
-                            val moduleId = shortcutModuleId
-                            val type = selectedShortcutType
-                            if (!moduleId.isNullOrBlank() && type != null) {
-                                deleteModuleShortcut(context, moduleId, type)
-                            }
-                            showShortcutDialog.value = false
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    TextButton(
-                        text = stringResource(id = android.R.string.cancel),
-                        onClick = { showShortcutDialog.value = false },
-                        modifier = Modifier.weight(1f),
-                    )
-                    TextButton(
-                        text = if (hasExistingShortcut) {
-                            stringResource(id = R.string.module_update)
-                        } else {
-                            stringResource(id = android.R.string.ok)
-                        },
-                        onClick = {
-                            val moduleId = shortcutModuleId
-                            val type = selectedShortcutType
-                            if (!moduleId.isNullOrBlank() && shortcutName.isNotBlank() && type != null) {
-                                createModuleShortcut(
-                                    context = context,
-                                    moduleId = moduleId,
-                                    name = shortcutName,
-                                    iconUri = shortcutIconUri,
-                                    type = type
-                                )
-                            }
-                            showShortcutDialog.value = false
-                        },
-                        colors = ButtonDefaults.textButtonColorsPrimary(),
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TextButton(
+                    text = stringResource(id = android.R.string.cancel),
+                    onClick = { show.value = false },
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    text = if (shortcutState.hasExistingShortcut) {
+                        stringResource(id = R.string.module_update)
+                    } else {
+                        stringResource(id = android.R.string.ok)
+                    },
+                    onClick = onConfirmShortcut,
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }
@@ -999,169 +687,78 @@ fun ModulePagerMiuix(
 
 @Composable
 private fun ModuleList(
-    navigator: Navigator,
-    viewModel: ModuleViewModel,
     modifier: Modifier = Modifier,
-    scope: CoroutineScope,
-    modules: List<ModuleViewModel.ModuleInfo>,
-    onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
-    onModuleUninstall: suspend (ModuleViewModel.ModuleInfo) -> Unit,
-    onModuleUndoUninstall: suspend (ModuleViewModel.ModuleInfo) -> Unit,
-    onModuleToggle: suspend (ModuleViewModel.ModuleInfo) -> Unit,
-    onModuleUpdate: suspend (ModuleViewModel.ModuleInfo, String, String, String) -> Unit,
-    onModuleAddShortcut: (ModuleViewModel.ModuleInfo) -> Unit,
-    context: Context,
-    innerPadding: PaddingValues,
-    bottomInnerPadding: Dp,
-    boxHeight: MutableState<Dp>
+    modules: List<Module>,
+    updateInfoMap: Map<String, ModuleUpdateInfo>,
+    actions: ModuleActions,
+    onModuleAddShortcut: (Module) -> Unit,
+    contentPadding: PaddingValues,
+    animateItems: Boolean = false,
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val layoutDirection = LocalLayoutDirection.current
-    val updateInfoMap = uiState.updateInfo
-
-    var isRefreshing by rememberSaveable { mutableStateOf(false) }
-    val pullToRefreshState = rememberPullToRefreshState()
-    val refreshTexts = remember {
-        listOf(
-            context.getString(R.string.refresh_pulling),
-            context.getString(R.string.refresh_release),
-            context.getString(R.string.refresh_refresh),
-            context.getString(R.string.refresh_complete),
-        )
-    }
-    LaunchedEffect(isRefreshing) {
-        if (isRefreshing) {
-            delay(150)
-            viewModel.fetchModuleList()
-            isRefreshing = false
-        }
-    }
-
-    when {
-        modules.isEmpty() -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = innerPadding.calculateTopPadding(),
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection),
-                        bottom = bottomInnerPadding
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.module_empty),
-                    textAlign = TextAlign.Center,
-                    color = Color.Gray,
+    val loadingDialog = rememberLoadingDialog()
+    val scope = rememberCoroutineScope()
+    LazyColumn(
+        modifier = modifier.fillMaxHeight(),
+        contentPadding = contentPadding,
+        overscrollEffect = null,
+    ) {
+        items(
+            items = modules,
+            key = { it.id },
+            contentType = { "module" }
+        ) { module ->
+            val currentModuleState = rememberUpdatedState(module)
+            val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleUpdateInfo.Empty
+            val content: @Composable () -> Unit = {
+                ModuleItem(
+                    module = module,
+                    updateUrl = moduleUpdateInfo.downloadUrl,
+                    onUninstall = {
+                        actions.onRequestUninstallConfirmation(currentModuleState.value)
+                    },
+                    onUndoUninstall = {
+                        scope.launch {
+                            loadingDialog.withLoading { actions.onUndoUninstallModule(module) }
+                        }
+                    },
+                    onCheckChanged = { _: Boolean ->
+                        scope.launch {
+                            loadingDialog.withLoading {
+                                actions.onToggleModule(module)
+                            }
+                        }
+                    },
+                    onUpdate = {
+                        scope.launch {
+                            loadingDialog.withLoading {
+                                actions.onRequestUpdateConfirmation(currentModuleState.value, moduleUpdateInfo)
+                            }
+                        }
+                    },
+                    onExecuteAction = {
+                        actions.onExecuteModuleAction(currentModuleState.value)
+                    },
+                    onAddActionShortcut = {
+                        onModuleAddShortcut(currentModuleState.value)
+                    },
+                    onOpenWebUi = {
+                        if (module.hasWebUi) {
+                            actions.onOpenWebUi(module)
+                        }
+                    }
                 )
             }
-        }
 
-        else -> {
-            PullToRefresh(
-                isRefreshing = uiState.isRefreshing,
-                pullToRefreshState = pullToRefreshState,
-                onRefresh = { viewModel.fetchModuleList() },
-                refreshTexts = refreshTexts,
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                    start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateEndPadding(layoutDirection),
-                ),
-            ) {
-                LazyColumn(
-                    modifier = modifier
-                        .fillMaxHeight(),
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection),
-                    ),
-                    overscrollEffect = null,
+            if (animateItems) {
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
                 ) {
-                    items(
-                        items = modules,
-                        key = { it.id },
-                        contentType = { "module" }
-                    ) { module ->
-                        val currentModuleState = rememberUpdatedState(module)
-                        val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleViewModel.ModuleUpdateInfo.Empty
-
-                        val onUndoUninstallClick = remember(module.id, scope, onModuleUndoUninstall) {
-                            {
-                                scope.launch {
-                                    onModuleUndoUninstall(currentModuleState.value)
-                                }
-                                Unit
-                            }
-                        }
-                        val onUninstallClick = remember(module.id, scope, onModuleUninstall) {
-                            {
-                                scope.launch {
-                                    onModuleUninstall(currentModuleState.value)
-                                }
-                                Unit
-                            }
-                        }
-                        val onToggleClick = remember(module.id, scope, onModuleToggle) {
-                            { _: Boolean ->
-                                scope.launch {
-                                    onModuleToggle(currentModuleState.value)
-                                }
-                                Unit
-                            }
-                        }
-                        val onUpdateClick = remember(module.id, moduleUpdateInfo, scope, onModuleUpdate) {
-                            {
-                                scope.launch {
-                                    onModuleUpdate(
-                                        currentModuleState.value,
-                                        moduleUpdateInfo.changelog,
-                                        moduleUpdateInfo.downloadUrl,
-                                        "${currentModuleState.value.name}-${moduleUpdateInfo.version}.zip",
-                                    )
-                                }
-                                Unit
-                            }
-                        }
-                        val onExecuteActionClick = remember(module.id, navigator, viewModel) {
-                            {
-                                navigator.push(Route.ExecuteModuleAction(currentModuleState.value.id))
-                                viewModel.markNeedRefresh()
-                            }
-                        }
-                        val onAddShortcutClick = remember(module.id) {
-                            {
-                                onModuleAddShortcut(currentModuleState.value)
-                            }
-                        }
-                        val onOpenWebUiClick = remember(module.id, onClickModule) {
-                            {
-                                onClickModule(
-                                    currentModuleState.value.id,
-                                    currentModuleState.value.name,
-                                    currentModuleState.value.hasWebUi
-                                )
-                            }
-                        }
-
-                        ModuleItem(
-                            module = module,
-                            updateUrl = moduleUpdateInfo.downloadUrl,
-                            onUninstall = onUninstallClick,
-                            onUndoUninstall = onUndoUninstallClick,
-                            onCheckChanged = onToggleClick,
-                            onUpdate = onUpdateClick,
-                            onExecuteAction = onExecuteActionClick,
-                            onAddActionShortcut = onAddShortcutClick,
-                            onOpenWebUi = onOpenWebUiClick
-                        )
-                    }
-                    item {
-                        Spacer(Modifier.height(bottomInnerPadding))
-                    }
+                    content()
                 }
+            } else {
+                content()
             }
         }
     }
@@ -1169,7 +766,7 @@ private fun ModuleList(
 
 @Composable
 fun ModuleItem(
-    module: ModuleViewModel.ModuleInfo,
+    module: Module,
     updateUrl: String,
     onUndoUninstall: () -> Unit,
     onUninstall: () -> Unit,
