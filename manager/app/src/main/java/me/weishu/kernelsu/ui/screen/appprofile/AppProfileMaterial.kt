@@ -194,7 +194,7 @@ private fun AppProfileInner(
                         },
                         leadingContent = appIcon,
                         trailingContent = {
-                            Column {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 if (userId != 0) {
                                     StatusTag(
                                         label = "USER $userId",
