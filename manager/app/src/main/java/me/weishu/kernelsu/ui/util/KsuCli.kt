@@ -349,7 +349,7 @@ fun installBoot(
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "soft_reboot") {
-        ShellUtils.fastCmd(shell, "setprop ctl.restart zygote")
+        execKsud("soft-reboot", true)
         return
     }
     if (reason == "recovery") {
