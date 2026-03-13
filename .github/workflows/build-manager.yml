@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-manager.yml'
       - '.github/workflows/build-lkm.yml'
+      - '.github/workflows/ddk-lkm.yml'
       - '.github/workflows/ksud.yml'
       - 'manager/**'
       - 'kernel/**'
@@ -15,6 +16,7 @@ on:
     paths:
       - '.github/workflows/build-manager.yml'
       - '.github/workflows/build-lkm.yml'
+      - '.github/workflows/ddk-lkm.yml'
       - '.github/workflows/ksud.yml'
       - 'manager/**'
       - 'kernel/**'

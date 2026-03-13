@@ -10,7 +10,7 @@ on:
       ddk_release:
         description: 'DDK release version'
         required: false
-        default: '20251104'
+        default: '20260313'
         type: string
       expected_size2:
         description: 'Second expected signature size (for PR builds)'
@@ -28,7 +28,7 @@ jobs:
     name: Build kernelsu.ko for ${{ inputs.kmi }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ylarod/ddk:${{ inputs.kmi }}-${{ inputs.ddk_release }}
+      image: ghcr.io/ylarod/ddk-min:${{ inputs.kmi }}-${{ inputs.ddk_release }}
       options: --privileged
 
     steps:
