@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,7 @@ class SuperUserViewModel(
 
     private val _uiState = MutableStateFlow(SuperUserUiState())
     val uiState: StateFlow<SuperUserUiState> = _uiState.asStateFlow()
+    private val prefs = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     private val refreshMutex = Mutex()
     private val searchQuery = MutableStateFlow("")
@@ -76,8 +78,21 @@ class SuperUserViewModel(
         isNeedRefresh = true
     }
 
-    fun setShowSystemApps(show: Boolean): Job {
-        _uiState.update { it.copy(showSystemApps = show) }
+    fun initializePreferences() {
+        val showSystemApps = prefs.getBoolean("show_system_apps", false)
+        val showOnlyPrimaryUserApps = prefs.getBoolean("show_only_primary_user_apps", false)
+        _uiState.update {
+            it.copy(
+                showSystemApps = showSystemApps,
+                showOnlyPrimaryUserApps = showOnlyPrimaryUserApps,
+            )
+        }
+    }
+
+    fun toggleShowSystemApps(): Job {
+        val newValue = !_uiState.value.showSystemApps
+        prefs.edit { putBoolean("show_system_apps", newValue) }
+        _uiState.update { it.copy(showSystemApps = newValue) }
         return viewModelScope.launch {
             // Re-filter when setting changes
             val grouped = withContext(Dispatchers.IO) {
@@ -87,8 +102,10 @@ class SuperUserViewModel(
         }
     }
 
-    fun setShowOnlyPrimaryUserApps(show: Boolean): Job {
-        _uiState.update { it.copy(showOnlyPrimaryUserApps = show) }
+    fun toggleShowOnlyPrimaryUserApps(): Job {
+        val newValue = !_uiState.value.showOnlyPrimaryUserApps
+        prefs.edit { putBoolean("show_only_primary_user_apps", newValue) }
+        _uiState.update { it.copy(showOnlyPrimaryUserApps = newValue) }
         return viewModelScope.launch {
             // Re-filter when setting changes
             val grouped = withContext(Dispatchers.IO) {
