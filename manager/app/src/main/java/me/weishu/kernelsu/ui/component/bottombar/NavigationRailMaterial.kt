@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
@@ -51,6 +52,7 @@ fun NavigationRailMaterial(
             WindowInsetsSides.Start + WindowInsetsSides.Vertical
         )
     ) {
+        Spacer(Modifier.weight(1f))
         items.forEachIndexed { index, (label, selectedIcon, unselectedIcon) ->
             val selected = mainPagerState.selectedPage == index
             NavigationRailItem(
@@ -69,5 +71,6 @@ fun NavigationRailMaterial(
                 label = { Text(stringResource(label)) }
             )
         }
+        Spacer(Modifier.weight(1f))
     }
 }
