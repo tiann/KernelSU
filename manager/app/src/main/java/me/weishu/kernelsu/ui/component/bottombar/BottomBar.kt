@@ -102,11 +102,10 @@ fun BottomBar(
 fun SideRail(
     hazeState: HazeState,
     hazeStyle: HazeStyle,
-    backdrop: Backdrop,
     modifier: Modifier = Modifier,
 ) {
     when (LocalUiMode.current) {
-        UiMode.Miuix -> NavigationRailMiuix(hazeState, hazeStyle, backdrop, modifier)
+        UiMode.Miuix -> NavigationRailMiuix(hazeState, hazeStyle, modifier)
         UiMode.Material -> NavigationRailMaterial(modifier)
     }
 }

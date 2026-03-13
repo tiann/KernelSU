@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,7 +22,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun NavigationRailMiuix(
     hazeState: HazeState,
     hazeStyle: HazeStyle,
-    backdrop: Backdrop,
     modifier: Modifier = Modifier,
 ) {
     val isManager = Natives.isManager
@@ -37,6 +37,7 @@ fun NavigationRailMiuix(
 
     NavigationRail(
         modifier = modifier
+            .fillMaxHeight()
             .then(
                 if (enableBlur) {
                     Modifier.hazeEffect(hazeState) {

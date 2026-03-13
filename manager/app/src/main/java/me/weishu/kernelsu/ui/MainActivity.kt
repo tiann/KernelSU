@@ -325,7 +325,6 @@ fun MainScreen() {
                         SideRail(
                             hazeState = hazeState,
                             hazeStyle = hazeStyle,
-                            backdrop = backdrop,
                         )
                         Box(
                             modifier = Modifier
@@ -342,7 +341,6 @@ fun MainScreen() {
                         SideRail(
                             hazeState = hazeState,
                             hazeStyle = hazeStyle,
-                            backdrop = backdrop,
                         )
                         Box(
                             modifier = Modifier

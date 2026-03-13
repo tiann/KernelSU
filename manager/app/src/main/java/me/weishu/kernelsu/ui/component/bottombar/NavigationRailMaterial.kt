@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.component.bottombar
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
@@ -45,7 +46,7 @@ fun NavigationRailMaterial(
     )
 
     NavigationRail(
-        modifier = modifier,
+        modifier = modifier.fillMaxHeight(),
         windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
             WindowInsetsSides.Start + WindowInsetsSides.Vertical
         )
