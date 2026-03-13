@@ -284,7 +284,6 @@ fun MainScreen() {
 
             when (uiMode) {
                 UiMode.Material -> androidx.compose.material3.Scaffold {
-                    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
                     Row {
                         SideRail(
                             hazeState = hazeState,
