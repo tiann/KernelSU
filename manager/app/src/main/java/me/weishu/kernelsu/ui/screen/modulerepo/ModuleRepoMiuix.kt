@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -555,8 +556,13 @@ private fun ReadmePage(
                     InfiniteProgressIndicator()
                 }
             }
+            var isReady by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                repeat(60) { withFrameNanos { } }
+                isReady = true
+            }
             AnimatedVisibility(
-                visible = readmeLoaded && readmeHtml != null,
+                visible = isReady && readmeLoaded && readmeHtml != null,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
@@ -565,9 +571,7 @@ private fun ReadmePage(
                     Card(
                         modifier = Modifier.padding(horizontal = 12.dp),
                     ) {
-                        Column {
-                            GithubMarkdown(content = readmeHtml!!, isLoading)
-                        }
+                        GithubMarkdown(content = readmeHtml!!, isLoading)
                     }
                 }
             }
@@ -1051,7 +1055,6 @@ fun ModuleRepoDetailScreenMiuix(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 2,
             ) { page ->
                 run {
                     val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
