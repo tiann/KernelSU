@@ -107,6 +107,7 @@ fun SuperUserPagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                 viewModel.setShowOnlyPrimaryUserApps(prefs.getBoolean("show_only_primary_user_apps", false))
                 viewModel.loadAppList()
             }
+
             viewModel.isNeedRefresh -> {
                 viewModel.loadAppList(resort = false)
             }
@@ -417,7 +418,8 @@ private fun GroupItem(
                         )
                     }
                     if (applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
+                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                    ) {
                         StatusTag(
                             label = "SYSTEM",
                             modifier = Modifier.padding(top = 4.dp),

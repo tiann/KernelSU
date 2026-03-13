@@ -492,6 +492,7 @@ fun ModuleRepoDetailScreenMaterial(
                         innerPadding = paddedInnerPadding,
                         scrollBehavior = scrollBehavior
                     )
+
                     1 -> ReleasesPage(
                         detailReleases = detailReleases,
                         innerPadding = paddedInnerPadding,
@@ -503,6 +504,7 @@ fun ModuleRepoDetailScreenMaterial(
                         context = context,
                         setPendingDownload = { pendingDownload = it }
                     )
+
                     2 -> InfoPage(
                         module = module,
                         innerPadding = paddedInnerPadding,

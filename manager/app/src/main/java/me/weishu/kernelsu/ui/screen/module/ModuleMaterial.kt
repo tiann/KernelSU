@@ -616,7 +616,7 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         onClick = { showShortcutDialog.value = false },
                         modifier = Modifier.weight(1f),
                     ) {
-                         Text(stringResource(id = android.R.string.cancel))
+                        Text(stringResource(id = android.R.string.cancel))
                     }
                     Button(
                         onClick = {
@@ -635,11 +635,13 @@ fun ModulePagerMaterial(navigator: Navigator, bottomInnerPadding: Dp) {
                         },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text(if (hasExistingShortcut) {
-                            stringResource(id = R.string.module_update)
-                        } else {
-                            stringResource(id = android.R.string.ok)
-                        })
+                        Text(
+                            if (hasExistingShortcut) {
+                                stringResource(id = R.string.module_update)
+                            } else {
+                                stringResource(id = android.R.string.ok)
+                            }
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
@@ -1157,7 +1159,9 @@ private fun ModuleItem(
                         )
                     } else {
                         Icon(
-                            modifier = Modifier.size(20.dp).rotate(180f),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .rotate(180f),
                             imageVector = Icons.Outlined.Refresh,
                             contentDescription = null,
                         )

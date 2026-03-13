@@ -432,7 +432,9 @@ private fun ThemePreviewCard(
                 }
 
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentAlignment = Alignment.TopStart
                 ) {
                     Column(
@@ -441,7 +443,9 @@ private fun ThemePreviewCard(
                     ) {
                         TonalCard(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.fillMaxWidth().height(40.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp),
                             shape = RoundedCornerShape(12.dp),
                             content = { }
                         )
@@ -450,18 +454,24 @@ private fun ThemePreviewCard(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             TonalCard(
-                                modifier = Modifier.weight(1f).height(32.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(32.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 content = { }
                             )
                             TonalCard(
-                                modifier = Modifier.weight(1f).height(32.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(32.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 content = { }
                             )
                         }
                         TonalCard(
-                            modifier = Modifier.fillMaxWidth().height(96.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(96.dp),
                             shape = RoundedCornerShape(12.dp),
                             content = { }
                         )

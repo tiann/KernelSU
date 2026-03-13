@@ -241,7 +241,9 @@ private fun AppProfileInner(
 
     Column(modifier = modifier) {
         SegmentedColumn(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             content = listOf(
                 {
                     SegmentedListItem(
@@ -462,7 +464,9 @@ private fun ProfileBox(
     onModeChange: (Mode) -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
     ) {
         val options = listOf(

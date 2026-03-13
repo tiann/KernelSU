@@ -309,7 +309,9 @@ fun SegmentedDropdownItem(
     }
 
     SegmentedListItem(
-        onClick = if (enabled) { { expanded = true } } else null,
+        onClick = if (enabled) {
+            { expanded = true }
+        } else null,
         enabled = enabled,
         colors = colors,
         leadingContent = icon?.let { { Icon(it, title) } },

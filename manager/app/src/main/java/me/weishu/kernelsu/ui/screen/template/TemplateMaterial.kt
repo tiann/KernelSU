@@ -227,7 +227,7 @@ fun AppProfileTemplateScreenMaterial() {
                 text = { Text(stringResource(id = R.string.app_profile_template_create)) },
                 modifier = Modifier.padding(
                     bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                             WindowInsets.captionBar.asPaddingValues().calculateBottomPadding(),
+                            WindowInsets.captionBar.asPaddingValues().calculateBottomPadding(),
                 ),
             )
         },
@@ -280,10 +280,12 @@ fun AppProfileTemplateScreenMaterial() {
                     }
                 )
                 Box(
-                    modifier = Modifier.align(Alignment.TopCenter).graphicsLayer {
-                        scaleX = scaleFraction()
-                        scaleY = scaleFraction()
-                    }
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .graphicsLayer {
+                            scaleX = scaleFraction()
+                            scaleY = scaleFraction()
+                        }
                 ) {
                     PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = uiState.isRefreshing)
                 }
@@ -312,13 +314,33 @@ private fun TemplateItem(
                 )
                 Text(template.description, color = MaterialTheme.colorScheme.outline)
                 FlowRow(modifier = Modifier.padding(top = 4.dp)) {
-                    StatusTag(label = "UID: ${template.uid}", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
-                    StatusTag(label = "GID: ${template.gid}", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
-                    StatusTag(label = template.context, contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                    StatusTag(
+                        label = "UID: ${template.uid}",
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
+                    )
+                    StatusTag(
+                        label = "GID: ${template.gid}",
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
+                    )
+                    StatusTag(
+                        label = template.context,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
+                    )
                     if (template.local) {
-                        StatusTag(label = "local", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                        StatusTag(
+                            label = "local",
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            backgroundColor = MaterialTheme.colorScheme.primary
+                        )
                     } else {
-                        StatusTag(label = "remote", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                        StatusTag(
+                            label = "remote",
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            backgroundColor = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
