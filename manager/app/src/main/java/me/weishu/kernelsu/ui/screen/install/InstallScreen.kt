@@ -45,7 +45,7 @@ fun InstallScreen() {
     val showChooseKmiDialog = rememberSaveable { mutableStateOf(false) }
 
     val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
-    val partitions by produceState(initialValue = emptyList<String>()) { value = getAvailablePartitions() }
+    val partitions by produceState(initialValue = emptyList()) { value = getAvailablePartitions() }
     val defaultPartition by produceState(initialValue = "") { value = getDefaultPartition() }
     val rootAvailable by produceState(initialValue = false) { value = rootAvailable() }
     val isAbDevice by produceState(initialValue = false) { value = isAbDevice() }

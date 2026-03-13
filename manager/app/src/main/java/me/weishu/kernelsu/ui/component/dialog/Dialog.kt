@@ -47,7 +47,7 @@ private data class ConfirmDialogVisualsImpl(
     override val dismiss: String?,
 ) : ConfirmDialogVisuals {
     companion object {
-        val Empty: ConfirmDialogVisuals = ConfirmDialogVisualsImpl("", "", false, false, null, null)
+        val Empty: ConfirmDialogVisuals = ConfirmDialogVisualsImpl("", "", isMarkdown = false, isHtml = false, confirm = null, dismiss = null)
     }
 }
 
