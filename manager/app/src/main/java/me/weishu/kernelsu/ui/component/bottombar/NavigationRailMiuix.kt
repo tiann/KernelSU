@@ -1,6 +1,8 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +50,7 @@ fun NavigationRailMiuix(
             ),
         color = if (enableBlur) Color.Transparent else MiuixTheme.colorScheme.surface,
     ) {
+        Spacer(modifier = Modifier.weight(1f))
         items.forEachIndexed { index, (label, icon) ->
             NavigationRailItem(
                 icon = icon,
@@ -55,8 +58,10 @@ fun NavigationRailMiuix(
                 selected = mainState.selectedPage == index,
                 onClick = {
                     mainState.animateToPage(index)
-                }
+                },
+                modifier = Modifier.padding(vertical = 4.dp)
             )
         }
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
