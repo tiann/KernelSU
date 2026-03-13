@@ -318,12 +318,12 @@ fun ModulePagerMaterial(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                searchContent = { closeSearch ->
+                searchContent = { bottomPadding, closeSearch ->
                     LaunchedEffect(uiState.searchStatus.searchText) {
                         searchListState.scrollToItem(0)
                     }
                     ModuleList(
-                        bottomInnerPadding = bottomInnerPadding,
+                        bottomInnerPadding = bottomPadding,
                         modifier = Modifier.fillMaxSize(),
                         listState = searchListState,
                         displayModules = uiState.searchResults,

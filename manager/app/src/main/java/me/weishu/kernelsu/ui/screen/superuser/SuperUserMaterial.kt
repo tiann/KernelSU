@@ -145,7 +145,7 @@ fun SuperUserPagerMaterial(
                     }
                 },
                 scrollBehavior = scrollBehavior,
-                searchContent = { closeSearch ->
+                searchContent = { bottomPadding, closeSearch ->
                     LaunchedEffect(localSearchText) {
                         searchListState.scrollToItem(0)
                     }
@@ -158,7 +158,7 @@ fun SuperUserPagerMaterial(
                             start = 16.dp,
                             end = 16.dp,
                             top = 8.dp,
-                            bottom = 16.dp + bottomInnerPadding
+                            bottom = 16.dp + bottomPadding
                         ),
                         key = { it.uid },
                         items = uiState.searchResults,

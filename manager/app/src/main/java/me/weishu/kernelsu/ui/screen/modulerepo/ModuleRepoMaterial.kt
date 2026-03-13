@@ -153,7 +153,7 @@ fun ModuleRepoScreenMaterial(
                         }
                     }
                 },
-                searchContent = { closeSearch ->
+                searchContent = { bottomPadding, closeSearch ->
                     LaunchedEffect(state.searchStatus.searchText) {
                         searchListState.scrollToItem(0)
                     }
@@ -226,10 +226,9 @@ private fun RepoModuleList(
     modules: List<RepoModule>,
     listState: LazyListState,
     modifier: Modifier = Modifier,
+    bottomPadding: Dp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
     onModuleClick: (RepoModule) -> Unit,
 ) {
-    val navBars = WindowInsets.navigationBars.asPaddingValues()
-
     LazyColumn(
         modifier = modifier,
         state = listState,
@@ -238,7 +237,7 @@ private fun RepoModuleList(
             start = 16.dp,
             top = 8.dp,
             end = 16.dp,
-            bottom = 16.dp + navBars.calculateBottomPadding()
+            bottom = 16.dp + bottomPadding
         ),
     ) {
         items(modules, key = { it.moduleId }, contentType = { "module" }) { module ->
