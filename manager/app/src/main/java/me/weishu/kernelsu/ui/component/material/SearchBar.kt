@@ -2,11 +2,15 @@ package me.weishu.kernelsu.ui.component.material
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -26,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -40,12 +45,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -57,7 +64,7 @@ fun SearchAppBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    searchContent: @Composable ColumnScope.(closeSearch: () -> Unit) -> Unit = { }
+    searchContent: @Composable BoxScope.(closeSearch: () -> Unit) -> Unit = { }
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -199,8 +206,19 @@ fun SearchAppBar(
             )
         ),
         content = {
-            if (currentQuery.isNotEmpty()) {
-                searchContent(collapseAndClear)
+            val snackBarHostState = LocalSnackbarHost.current
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (currentQuery.isNotEmpty()) {
+                    searchContent(collapseAndClear)
+                }
+                SnackbarHost(
+                    hostState = snackBarHostState,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                        .imePadding()
+                        .padding(bottom = 16.dp)
+                )
             }
         }
     )
