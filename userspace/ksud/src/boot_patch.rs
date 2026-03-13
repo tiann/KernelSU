@@ -684,8 +684,13 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         ensure!(status.success(), "magiskboot repack failed");
         let new_boot = workdir.join("new-boot.img");
 
-        if patch_file {
-            // if image is specified, write to output file
+        #[cfg(target_os = "android")]
+        let should_write_output = patch_file || !flash;
+        #[cfg(not(target_os = "android"))]
+        let should_write_output = patch_file;
+
+        if should_write_output {
+            // write patched image to output file when output is requested
             let output_dir = out.unwrap_or(std::env::current_dir()?);
             let name = out_name.unwrap_or_else(|| {
                 let now = chrono::Utc::now();
@@ -856,8 +861,13 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     #[cfg(not(target_os = "android"))]
     let new_boot = remove_ksu()?;
 
-    if image.is_some() {
-        // if image is specified, write to output file
+    #[cfg(target_os = "android")]
+    let should_write_output = image.is_some() || !flash;
+    #[cfg(not(target_os = "android"))]
+    let should_write_output = image.is_some();
+
+    if should_write_output {
+        // write restored image to output file when output is requested
         let output_dir = std::env::current_dir()?;
         let name = out_name.unwrap_or_else(|| {
             let now = chrono::Utc::now();
