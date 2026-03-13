@@ -15,7 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -86,7 +86,7 @@ fun SendLogBottomSheet(onDismiss: () -> Unit) {
                     .align(Alignment.CenterHorizontally)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    FilledIconButton(
+                    FilledTonalIconButton(
                         modifier = Modifier.size(64.dp),
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -112,7 +112,7 @@ fun SendLogBottomSheet(onDismiss: () -> Unit) {
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    FilledIconButton(
+                    FilledTonalIconButton(
                         modifier = Modifier.size(64.dp),
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
