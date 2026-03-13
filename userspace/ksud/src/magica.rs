@@ -79,6 +79,8 @@ pub fn disable_adb_root() -> Result<()> {
     let resetprop_path = "/dev/resetprop";
 
     let commands: &[(&str, &[&str])] = &[
+        (resetprop_path, &["-n", "ro.boot.selinux", "enforcing"]),
+        ("setenforce", &["1"]),
         (resetprop_path, &["-n", "ro.debuggable", "0"]),
         (resetprop_path, &["-n", "ro.adb.secure", "1"]),
         (resetprop_path, &["--delete", "service.adb.root"]),
