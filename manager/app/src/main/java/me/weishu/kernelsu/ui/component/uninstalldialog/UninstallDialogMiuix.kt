@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,7 +32,10 @@ import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
-fun UninstallDialogMiuix(showDialog: MutableState<Boolean>) {
+fun UninstallDialogMiuix(
+    show: Boolean,
+    onDismissRequest: () -> Unit
+) {
     val context = LocalContext.current
     val navigator = LocalNavigator.current
     val options = listOf(
@@ -44,8 +46,8 @@ fun UninstallDialogMiuix(showDialog: MutableState<Boolean>) {
     val showTodo = {
         Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
     }
-    val showConfirmDialog = remember(showDialog.value) { mutableStateOf(false) }
-    val runType = remember(showDialog.value) { mutableStateOf<UninstallType?>(null) }
+    val showConfirmDialog = remember(show) { mutableStateOf(false) }
+    val runType = remember(show) { mutableStateOf<UninstallType?>(null) }
 
     val run = { type: UninstallType ->
         when (type) {
@@ -59,10 +61,8 @@ fun UninstallDialogMiuix(showDialog: MutableState<Boolean>) {
     }
 
     SuperDialog(
-        show = showDialog.value,
-        onDismissRequest = {
-            showDialog.value = false
-        },
+        show = show,
+        onDismissRequest = onDismissRequest,
         insideMargin = DpSize(0.dp, 0.dp),
         content = {
             Text(
@@ -95,9 +95,7 @@ fun UninstallDialogMiuix(showDialog: MutableState<Boolean>) {
             }
             TextButton(
                 text = stringResource(id = android.R.string.cancel),
-                onClick = {
-                    showDialog.value = false
-                },
+                onClick = onDismissRequest,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp, bottom = 24.dp)
@@ -108,7 +106,7 @@ fun UninstallDialogMiuix(showDialog: MutableState<Boolean>) {
     val confirmDialog = rememberConfirmDialog(
         onConfirm = {
             showConfirmDialog.value = false
-            showDialog.value = false
+            onDismissRequest()
             runType.value?.let { type ->
                 run(type)
             }

@@ -189,7 +189,6 @@
     <string name="module_shortcut_created">Ярлык создан на рабочем столе.</string>
     <string name="module_shortcut_updated">Ярлык обновлен.</string>
     <string name="module_shortcut_delete">Удалить ярлык</string>
-    <string name="module_shortcut_type_title">Выберите тип</string>
     <string name="module_shortcut_permission_tip_xiaomi">Пожалуйста, включите разрешение «Ярлыки на рабочем столе» для этого приложения в настройках Xiaomi.</string>
     <string name="module_shortcut_permission_tip_oppo">Пожалуйста, включите разрешение «Ярлыки на рабочем столе» для этого приложения в настройках OPPO.</string>
     <string name="module_shortcut_permission_tip_default">Если создание ярлыка не удалось, пожалуйста, включите разрешение на создание ярлыков на рабочем столе для этого приложения в системных настройках.</string>

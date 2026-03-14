@@ -5,7 +5,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,7 +21,10 @@ import me.weishu.kernelsu.ui.screen.flash.UninstallType.PERMANENT
 import me.weishu.kernelsu.ui.screen.flash.UninstallType.RESTORE_STOCK_IMAGE
 
 @Composable
-fun UninstallDialogMaterial(showDialog: MutableState<Boolean>) {
+fun UninstallDialogMaterial(
+    show: Boolean,
+    onDismissRequest: () -> Unit
+) {
     val navigator = LocalNavigator.current
     val options = listOf(
         // TEMPORARY,
@@ -40,9 +42,9 @@ fun UninstallDialogMaterial(showDialog: MutableState<Boolean>) {
         }
     }
 
-    if (showDialog.value) {
+    if (show) {
         AlertDialog(
-            onDismissRequest = { showDialog.value = false },
+            onDismissRequest = onDismissRequest,
             title = { Text(stringResource(R.string.settings_uninstall)) },
             text = {
                 SegmentedColumn(
@@ -68,7 +70,7 @@ fun UninstallDialogMaterial(showDialog: MutableState<Boolean>) {
                 )
             },
             confirmButton = {
-                TextButton(onClick = { showDialog.value = false }) {
+                TextButton(onClick = onDismissRequest) {
                     Text(stringResource(android.R.string.cancel))
                 }
             }
@@ -78,7 +80,7 @@ fun UninstallDialogMaterial(showDialog: MutableState<Boolean>) {
     val confirmDialog = rememberConfirmDialog(
         onConfirm = {
             showConfirmDialog.value = false
-            showDialog.value = false
+            onDismissRequest()
             runType.value?.let { type ->
                 run(type)
             }

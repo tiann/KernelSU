@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +40,8 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun SendLogDialog(
-    showDialog: MutableState<Boolean>,
+    show: Boolean,
+    onDismissRequest: () -> Unit,
     loadingDialog: LoadingDialogHandle,
 ) {
     val context = LocalContext.current
@@ -66,10 +66,8 @@ fun SendLogDialog(
         }
     }
     SuperDialog(
-        show = showDialog.value,
-        onDismissRequest = {
-            showDialog.value = false
-        },
+        show = show,
+        onDismissRequest = onDismissRequest,
         insideMargin = DpSize(0.dp, 0.dp),
         content = {
             Text(
@@ -96,7 +94,7 @@ fun SendLogDialog(
                     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
                     val current = LocalDateTime.now().format(formatter)
                     exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 insideMargin = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
             )
@@ -112,7 +110,7 @@ fun SendLogDialog(
                 },
                 onClick = {
                     scope.launch {
-                        showDialog.value = false
+                        onDismissRequest()
                         val bugreport = loadingDialog.withLoading {
                             withContext(Dispatchers.IO) {
                                 getBugreportFile(context)
@@ -145,7 +143,7 @@ fun SendLogDialog(
             TextButton(
                 text = stringResource(id = android.R.string.cancel),
                 onClick = {
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

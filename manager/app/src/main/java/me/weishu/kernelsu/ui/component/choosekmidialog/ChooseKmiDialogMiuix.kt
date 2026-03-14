@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -32,7 +31,8 @@ import top.yukonga.miuix.kmp.extra.SuperDialog
 
 @Composable
 fun ChooseKmiDialogMiuix(
-    showDialog: MutableState<Boolean>,
+    show: Boolean,
+    onDismissRequest: () -> Unit,
     onSelected: (String?) -> Unit
 ) {
     val supportedKMIs by produceState(initialValue = emptyList()) {
@@ -43,11 +43,11 @@ fun ChooseKmiDialogMiuix(
     }
     val currentSelection = rememberSaveable(currentKmi) { mutableStateOf(currentKmi) }
     SuperDialog(
-        show = showDialog.value,
+        show = show,
         title = stringResource(R.string.select_kmi),
         summary = stringResource(R.string.current_kmi, currentKmi.let { it.ifBlank { "Unknown" } }),
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
             currentSelection.value = currentKmi
         },
         insideMargin = DpSize(0.dp, 24.dp),
@@ -75,7 +75,7 @@ fun ChooseKmiDialogMiuix(
                 ) {
                     TextButton(
                         onClick = {
-                            showDialog.value = false
+                            onDismissRequest()
                             currentSelection.value = currentKmi
                         },
                         text = stringResource(android.R.string.cancel),
@@ -86,7 +86,7 @@ fun ChooseKmiDialogMiuix(
                         enabled = supportedKMIs.contains(currentSelection.value),
                         onClick = {
                             onSelected(currentSelection.value)
-                            showDialog.value = false
+                            onDismissRequest()
                         },
                         text = stringResource(R.string.confirm),
                         modifier = Modifier.weight(1f),

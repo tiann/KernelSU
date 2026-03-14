@@ -74,7 +74,10 @@ fun SettingPagerMaterial(
     val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
     var showBottomsheet by remember { mutableStateOf(false) }
 
-    UninstallDialog(showUninstallDialog)
+    UninstallDialog(
+        show = showUninstallDialog.value,
+        onDismissRequest = { showUninstallDialog.value = false }
+    )
 
     Scaffold(
         topBar = {

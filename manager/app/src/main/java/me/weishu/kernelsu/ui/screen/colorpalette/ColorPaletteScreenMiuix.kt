@@ -410,7 +410,8 @@ fun ColorPaletteScreenMiuix(
                         },
                     )
                     ScaleDialog(
-                        showScaleDialog,
+                        show = showScaleDialog.value,
+                        onDismissRequest = { showScaleDialog.value = false },
                         volumeState = { uiState.pageScale },
                         onVolumeChange = {
                             actions.onSetPageScale(it)

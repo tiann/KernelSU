@@ -182,7 +182,6 @@ fun ModulePagerMiuix(
 
     val shortcutState = rememberModuleShortcutState(context)
     val showShortcutDialog = remember { mutableStateOf(false) }
-    val showShortcutTypeDialog = remember { mutableStateOf(false) }
 
     val pickShortcutIconLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -219,20 +218,10 @@ fun ModulePagerMiuix(
         }
     }
 
-    fun onModuleAddShortcut(module: Module, type: ShortcutType? = null) {
+    fun onModuleAddShortcut(module: Module, type: ShortcutType) {
         shortcutState.bindModule(module)
-        if (type != null) {
-            shortcutState.selectType(type)
-            showShortcutDialog.value = true
-        } else if (shortcutState.availableTypes.size > 1) {
-            showShortcutTypeDialog.value = true
-        } else if (shortcutState.supportsActionShortcut) {
-            shortcutState.selectType(ShortcutType.Action)
-            showShortcutDialog.value = true
-        } else if (shortcutState.supportsWebUiShortcut) {
-            shortcutState.selectType(ShortcutType.WebUI)
-            showShortcutDialog.value = true
-        }
+        shortcutState.selectType(type)
+        showShortcutDialog.value = true
     }
 
     val listState = rememberLazyListState()
@@ -527,15 +516,9 @@ fun ModulePagerMiuix(
             }
         }
     }
-    ModuleShortcutTypeDialog(
-        show = showShortcutTypeDialog,
-        onSelectType = { type ->
-            shortcutState.selectType(type)
-            showShortcutDialog.value = true
-        },
-    )
     ModuleShortcutDialog(
-        show = showShortcutDialog,
+        show = showShortcutDialog.value,
+        onDismissRequest = { showShortcutDialog.value = false },
         shortcutState = shortcutState,
         onPickShortcutIcon = { pickShortcutIconLauncher.launch("image/*") },
         onDeleteShortcut = {
@@ -550,60 +533,18 @@ fun ModulePagerMiuix(
 }
 
 @Composable
-private fun ModuleShortcutTypeDialog(
-    show: androidx.compose.runtime.MutableState<Boolean>,
-    onSelectType: (ShortcutType) -> Unit,
-) {
-    if (!show.value) return
-
-    SuperDialog(
-        show = show.value,
-        title = stringResource(R.string.module_shortcut_type_title),
-        onDismissRequest = {
-            show.value = false
-        },
-        content = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TextButton(
-                    text = "Action",
-                    onClick = {
-                        show.value = false
-                        onSelectType(ShortcutType.Action)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextButton(
-                    text = "WebUI",
-                    onClick = {
-                        show.value = false
-                        onSelectType(ShortcutType.WebUI)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    )
-}
-
-@Composable
 private fun ModuleShortcutDialog(
-    show: androidx.compose.runtime.MutableState<Boolean>,
+    show: Boolean,
+    onDismissRequest: () -> Unit,
     shortcutState: ModuleShortcutState,
     onPickShortcutIcon: () -> Unit,
     onDeleteShortcut: () -> Unit,
     onConfirmShortcut: () -> Unit,
 ) {
-    if (!show.value) return
-
     SuperDialog(
-        show = show.value,
+        show = show,
         title = stringResource(R.string.module_shortcut_title),
-        onDismissRequest = {
-            show.value = false
-        },
+        onDismissRequest = onDismissRequest,
         content = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -678,7 +619,7 @@ private fun ModuleShortcutDialog(
                 ) {
                     TextButton(
                         text = stringResource(id = android.R.string.cancel),
-                        onClick = { show.value = false },
+                        onClick = onDismissRequest,
                         modifier = Modifier.weight(1f),
                     )
                     TextButton(
@@ -703,7 +644,7 @@ private fun ModuleList(
     modules: List<Module>,
     updateInfoMap: Map<String, ModuleUpdateInfo>,
     actions: ModuleActions,
-    onModuleAddShortcut: (Module, ShortcutType?) -> Unit,
+    onModuleAddShortcut: (Module, ShortcutType) -> Unit,
     contentPadding: PaddingValues,
     animateItems: Boolean = false,
 ) {
@@ -750,7 +691,7 @@ private fun ModuleList(
                     onExecuteAction = {
                         actions.onExecuteModuleAction(currentModuleState.value)
                     },
-                    onAddActionShortcut = { type: ShortcutType? ->
+                    onAddActionShortcut = { type: ShortcutType ->
                         onModuleAddShortcut(currentModuleState.value, type)
                     },
                     onOpenWebUi = {

@@ -6,7 +6,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -23,10 +22,11 @@ import me.weishu.kernelsu.ui.util.getSupportedKmis
 
 @Composable
 fun ChooseKmiDialogMaterial(
-    showDialog: MutableState<Boolean>,
+    show: Boolean,
+    onDismissRequest: () -> Unit,
     onSelected: (String?) -> Unit
 ) {
-    if (!showDialog.value) return
+    if (!show) return
 
     val supportedKMIs by produceState(initialValue = emptyList()) {
         value = getSupportedKmis()
@@ -40,14 +40,14 @@ fun ChooseKmiDialogMaterial(
 
     AlertDialog(
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
             selectedKmi.value = currentKmi
         },
         confirmButton = {
             TextButton(
                 onClick = {
                     onSelected(selectedKmi.value)
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 enabled = supportedKMIs.contains(selectedKmi.value)
             ) {
@@ -56,7 +56,7 @@ fun ChooseKmiDialogMaterial(
         },
         dismissButton = {
             TextButton(onClick = {
-                showDialog.value = false
+                onDismissRequest()
                 selectedKmi.value = currentKmi
             }) {
                 Text(stringResource(id = android.R.string.cancel))

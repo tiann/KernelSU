@@ -326,7 +326,10 @@ fun SettingPagerMiuix(
                             },
                             onClick = { showUninstallDialog.value = true }
                         )
-                        UninstallDialog(showUninstallDialog)
+                        UninstallDialog(
+                            show = showUninstallDialog.value,
+                            onDismissRequest = { showUninstallDialog.value = false }
+                        )
                     }
                 }
 
@@ -347,7 +350,11 @@ fun SettingPagerMiuix(
                         },
                         onClick = { showSendLogDialog.value = true },
                     )
-                    SendLogDialog(showSendLogDialog, loadingDialog)
+                    SendLogDialog(
+                        show = showSendLogDialog.value,
+                        onDismissRequest = { showSendLogDialog.value = false },
+                        loadingDialog = loadingDialog
+                    )
                     val about = stringResource(id = R.string.about)
                     SuperArrow(
                         title = about,

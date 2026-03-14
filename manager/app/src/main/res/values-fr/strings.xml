@@ -183,7 +183,6 @@
     <string name="module_shortcut_created">Raccourci créé sur le bureau.</string>
     <string name="module_shortcut_updated">Raccourci mis à jour.</string>
     <string name="module_shortcut_delete">Supprimer le raccourci</string>
-    <string name="module_shortcut_type_title">Sélectionner un type</string>
     <string name="module_shortcut_permission_tip_xiaomi">Activez pour cette application l\'autorisation \"Créer des raccourcis de bureau\" dans les paramètres Xiaomi.</string>
     <string name="module_shortcut_permission_tip_oppo">Activez pour cette application l\'autorisation \"Raccourci de bureau\" dans les paramètres OPPO.</string>
     <string name="module_shortcut_permission_tip_default">Si la création du raccourci échoue, veuillez activer pour cette application l\'autorisation relative aux raccourcis de bureau dans les paramètres du système.</string>

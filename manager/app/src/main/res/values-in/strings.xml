@@ -184,7 +184,6 @@
     <string name="module_shortcut_created">Pintasan dibuat di layar utama.</string>
     <string name="module_shortcut_updated">Pintasan diperbarui.</string>
     <string name="module_shortcut_delete">Hapus pintasan</string>
-    <string name="module_shortcut_type_title">Pilih tipe</string>
     <string name="module_shortcut_permission_tip_xiaomi">Harap aktifkan izin \"Buat pintasan layar utama\" untuk aplikasi ini di pengaturan Xiaomi.</string>
     <string name="module_shortcut_permission_tip_oppo">Harap aktifkan izin \"Pintasan layar utama\" untuk aplikasi ini di pengaturan OPPO.</string>
     <string name="module_shortcut_permission_tip_default">Jika pembuatan pintasan gagal, harap aktifkan izin pintasan layar utama untuk aplikasi ini di pengaturan sistem.</string>

@@ -97,12 +97,16 @@ fun InstallScreen() {
         }
     }
 
-    ChooseKmiDialog(showChooseKmiDialog) { kmi ->
-        kmi?.let {
-            lkmSelection = LkmSelection.KmiString(it)
-            onInstall()
+    ChooseKmiDialog(
+        show = showChooseKmiDialog.value,
+        onDismissRequest = { showChooseKmiDialog.value = false },
+        onSelected = { kmi ->
+            kmi?.let {
+                lkmSelection = LkmSelection.KmiString(it)
+                onInstall()
+            }
         }
-    }
+    )
 
     val selectLkmLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()

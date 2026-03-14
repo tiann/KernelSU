@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,17 +23,18 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 @Composable
 fun ScaleDialog(
-    showDialog: MutableState<Boolean>,
+    show: Boolean,
+    onDismissRequest: () -> Unit,
     volumeState: () -> Float,
     onVolumeChange: (Float) -> Unit,
 ) {
     SuperDialog(
-        show = showDialog.value,
+        show = show,
         title = stringResource(R.string.settings_page_scale),
         summary = "80% - 110%",
-        onDismissRequest = { showDialog.value = false },
+        onDismissRequest = onDismissRequest,
         content = {
-            var text by remember(showDialog.value) {
+            var text by remember(show) {
                 mutableStateOf((volumeState() * 100).toInt().toString())
             }
             TextField(
@@ -62,7 +62,7 @@ fun ScaleDialog(
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(
                     text = stringResource(android.R.string.cancel),
-                    onClick = { showDialog.value = false },
+                    onClick = onDismissRequest,
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(Modifier.width(20.dp))
@@ -72,7 +72,7 @@ fun ScaleDialog(
                         val parsed = text.toIntOrNull()
                         val clamped = parsed?.coerceIn(80, 110) ?: (volumeState() * 100).toInt()
                         onVolumeChange(clamped / 100f)
-                        showDialog.value = false
+                        onDismissRequest()
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary(),

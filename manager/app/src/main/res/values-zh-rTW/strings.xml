@@ -151,7 +151,6 @@
     <string name="module_shortcut_created">已在桌面建立捷徑。</string>
     <string name="module_shortcut_updated">捷徑已更新。</string>
     <string name="module_shortcut_delete">刪除捷徑</string>
-    <string name="module_shortcut_type_title">選擇類型</string>
     <string name="module_shortcut_permission_tip_xiaomi">請在 Xiaomi 設定中為此應用啟用「建立桌面捷徑」權限。</string>
     <string name="module_shortcut_permission_tip_oppo">請在 OPPO 設定中為此應用啟用「桌面捷徑」權限。</string>
     <string name="module_shortcut_permission_tip_default">若建立捷徑失敗，請在系統設定中為此應用啟用桌面捷徑權限。</string>

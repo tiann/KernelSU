@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,20 +56,23 @@ fun SuperEditArrow(
     )
 
     EditDialog(
-        title,
-        showDialog,
+        title = title,
+        show = showDialog.value,
+        onDismissRequest = { showDialog.value = false },
         dialogTextFieldValue = dialogTextFieldValue.intValue,
-    ) {
-        dialogTextFieldValue.intValue = it
-        onValueChange?.invoke(dialogTextFieldValue.intValue)
-    }
+        onValueChange = {
+            dialogTextFieldValue.intValue = it
+            onValueChange?.invoke(dialogTextFieldValue.intValue)
+        }
+    )
 
 }
 
 @Composable
 private fun EditDialog(
     title: String,
-    showDialog: MutableState<Boolean>,
+    show: Boolean,
+    onDismissRequest: () -> Unit,
     dialogTextFieldValue: Int,
     onValueChange: (Int) -> Unit,
 ) {
@@ -78,10 +80,10 @@ private fun EditDialog(
     val filter = remember(key1 = inputTextFieldValue.intValue) { FilterNumber(dialogTextFieldValue) }
 
     SuperDialog(
-        show = showDialog.value,
+        show = show,
         title = title,
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
             filter.setInputValue(dialogTextFieldValue.toString())
         },
         content = {
@@ -100,7 +102,7 @@ private fun EditDialog(
                 TextButton(
                     text = stringResource(android.R.string.cancel),
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                         filter.setInputValue(dialogTextFieldValue.toString())
                     },
                     modifier = Modifier.weight(1f)
@@ -109,7 +111,7 @@ private fun EditDialog(
                 TextButton(
                     text = stringResource(R.string.confirm),
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                         with(filter.getInputValue().text) {
                             if (isEmpty()) {
                                 onValueChange(0)
