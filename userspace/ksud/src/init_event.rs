@@ -1,6 +1,4 @@
-use crate::module::{
-    exec_common_scripts, exec_stage_script, handle_updated_modules, prune_modules,
-};
+use crate::module::{handle_updated_modules, prune_modules};
 use crate::utils::{is_safe_mode, switch_cgroups, switch_mnt_ns};
 use crate::{
     assets, defs, ksucalls, metamodule, restorecon,
@@ -235,15 +233,19 @@ pub fn soft_reboot() -> Result<()> {
     }
 
     info!("emulating soft_reboot!");
-    info!("exec soft_reboot scripts");
-    exec_common_scripts("soft-reboot.d", true)?;
-    exec_stage_script("soft-reboot", true)?;
+    run_stage("soft-reboot", true);
     info!("stop");
-    Command::new("stop").status().context("stop failed")?;
+    let status = Command::new("stop").status().context("stop failed")?;
+    if !status.success() {
+        warn!("stop exited with status: {status}");
+    }
     info!("post-fs-data");
     on_post_data_fs()?;
     info!("start");
-    Command::new("start").status().context("start failed")?;
+    let status = Command::new("start").status().context("start failed")?;
+    if !status.success() {
+        warn!("start exited with status: {status}");
+    }
     info!("services");
     on_services();
 
