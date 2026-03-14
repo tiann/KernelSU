@@ -221,6 +221,7 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
         boot: None,
         flash: true,
         magiskboot: magiskboot_path,
+        out: None,
         out_name: None,
     })?;
     println!("- Uninstall KernelSU manager..");

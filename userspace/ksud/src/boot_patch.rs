@@ -467,7 +467,15 @@ pub struct BootPatchArgs {
     #[arg(short, long, default_value = "false")]
     pub flash: bool,
 
-    /// output path, if not specified, will use current directory
+    /// Output path. If not specified, will use current directory.
+    /// If specified, the boot image will be wriitten to the directory
+    /// even if --flash is specified.
+    #[cfg(target_os = "android")]
+    #[arg(short, long, default_value = None)]
+    pub out: Option<PathBuf>,
+
+    /// Output path. If not specified, will use current directory.
+    #[cfg(not(target_os = "android"))]
     #[arg(short, long, default_value = None)]
     pub out: Option<PathBuf>,
 
@@ -484,7 +492,14 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = None)]
     pub partition: Option<String>,
 
+    /// File name of the output. If specified, the boot image will be
+    /// wriitten to the output directory even if --flash is specified.
+    #[cfg(target_os = "android")]
+    #[arg(long, default_value = None)]
+    pub out_name: Option<String>,
+
     /// File name of the output.
+    #[cfg(not(target_os = "android"))]
     #[arg(long, default_value = None)]
     pub out_name: Option<String>,
 
@@ -685,7 +700,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         let new_boot = workdir.join("new-boot.img");
 
         #[cfg(target_os = "android")]
-        let should_write_output = patch_file || !flash;
+        let should_write_output = patch_file || !flash || out_name.is_some() || out.is_some();
         #[cfg(not(target_os = "android"))]
         let should_write_output = patch_file;
 
@@ -740,7 +755,26 @@ pub struct BootRestoreArgs {
     #[arg(long, default_value = None)]
     pub magiskboot: Option<PathBuf>,
 
+    /// Output path. If not specified, will use current directory.
+    /// If specified, the boot image will be wriitten to the directory
+    /// even if --flash is specified.
+    #[cfg(target_os = "android")]
+    #[arg(short, long, default_value = None)]
+    pub out: Option<PathBuf>,
+
+    /// Output path. If not specified, will use current directory.
+    #[cfg(not(target_os = "android"))]
+    #[arg(short, long, default_value = None)]
+    pub out: Option<PathBuf>,
+
+    /// File name of the output. If specified, the boot image will be
+    /// wriitten to the output directory even if --flash is specified.
+    #[cfg(target_os = "android")]
+    #[arg(long, default_value = None)]
+    pub out_name: Option<String>,
+
     /// File name of the output.
+    #[cfg(not(target_os = "android"))]
     #[arg(long, default_value = None)]
     pub out_name: Option<String>,
 }
@@ -750,6 +784,7 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
         boot: image,
         magiskboot: magiskboot_path,
         out_name,
+        out,
         ..
     } = args;
     #[cfg(target_os = "android")]
@@ -862,13 +897,13 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     let new_boot = remove_ksu()?;
 
     #[cfg(target_os = "android")]
-    let should_write_output = image.is_some() || !flash;
+    let should_write_output = image.is_some() || !flash || out_name.is_some() || out.is_some();
     #[cfg(not(target_os = "android"))]
     let should_write_output = image.is_some();
 
     if should_write_output {
         // write restored image to output file when output is requested
-        let output_dir = std::env::current_dir()?;
+        let output_dir = out.unwrap_or(std::env::current_dir()?);
         let name = out_name.unwrap_or_else(|| {
             let now = chrono::Utc::now();
             format!("kernelsu_restore_{}.img", now.format("%Y%m%d_%H%M%S"))
