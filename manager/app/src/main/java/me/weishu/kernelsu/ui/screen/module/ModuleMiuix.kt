@@ -20,9 +20,11 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +41,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -85,6 +88,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.capsule.ContinuousRoundedRectangle
@@ -134,7 +138,6 @@ import top.yukonga.miuix.kmp.icon.extended.UploadCloud
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-
 
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
@@ -215,9 +218,12 @@ fun ModulePagerMiuix(
         }
     }
 
-    fun onModuleAddShortcut(module: Module) {
+    fun onModuleAddShortcut(module: Module, type: ShortcutType? = null) {
         shortcutState.bindModule(module)
-        if (shortcutState.availableTypes.size > 1) {
+        if (type != null) {
+            shortcutState.selectType(type)
+            showShortcutDialog.value = true
+        } else if (shortcutState.availableTypes.size > 1) {
             showShortcutTypeDialog.value = true
         } else if (shortcutState.supportsActionShortcut) {
             shortcutState.selectType(ShortcutType.Action)
@@ -383,7 +389,9 @@ fun ModulePagerMiuix(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .offset(y = offsetHeight)
+                        .offset {
+                            IntOffset(x = 0, y = offsetHeight.roundToPx())
+                        }
                         .padding(bottom = bottomInnerPadding + 20.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                     shadowElevation = 0.dp,
@@ -509,8 +517,8 @@ fun ModulePagerMiuix(
                         modules = modules,
                         updateInfoMap = uiState.updateInfo,
                         actions = actions,
-                        onModuleAddShortcut = { module ->
-                            onModuleAddShortcut(module)
+                        onModuleAddShortcut = { module, type ->
+                            onModuleAddShortcut(module, type)
                         },
                         contentPadding = contentPadding,
                     )
@@ -694,7 +702,7 @@ private fun ModuleList(
     modules: List<Module>,
     updateInfoMap: Map<String, ModuleUpdateInfo>,
     actions: ModuleActions,
-    onModuleAddShortcut: (Module) -> Unit,
+    onModuleAddShortcut: (Module, ShortcutType?) -> Unit,
     contentPadding: PaddingValues,
     animateItems: Boolean = false,
 ) {
@@ -741,8 +749,8 @@ private fun ModuleList(
                     onExecuteAction = {
                         actions.onExecuteModuleAction(currentModuleState.value)
                     },
-                    onAddActionShortcut = {
-                        onModuleAddShortcut(currentModuleState.value)
+                    onAddActionShortcut = { type: ShortcutType? ->
+                        onModuleAddShortcut(currentModuleState.value, type)
                     },
                     onOpenWebUi = {
                         if (module.hasWebUi) {
@@ -767,6 +775,7 @@ private fun ModuleList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ModuleItem(
     module: Module,
@@ -776,7 +785,7 @@ fun ModuleItem(
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: () -> Unit,
     onExecuteAction: () -> Unit,
-    onAddActionShortcut: () -> Unit,
+    onAddActionShortcut: (ShortcutType) -> Unit,
     onOpenWebUi: () -> Unit
 ) {
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
@@ -920,48 +929,65 @@ fun ModuleItem(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (module.hasActionScript) {
-                        IconButton(
-                            backgroundColor = secondaryContainer,
-                            minHeight = 35.dp,
-                            minWidth = 35.dp,
-                            onClick = onExecuteAction,
+                        Row(
+                            modifier = Modifier
+                                .heightIn(min = 35.dp)
+                                .clip(CircleShape)
+                                .background(secondaryContainer)
+                                .combinedClickable(
+                                    onClick = onExecuteAction,
+                                    onLongClick = { onAddActionShortcut(ShortcutType.Action) }
+                                )
+                                .padding(start = 6.dp, end = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(24.dp),
                                 imageVector = Icons.Rounded.PlayArrow,
                                 tint = actionIconTint,
                                 contentDescription = stringResource(R.string.action)
                             )
+                            if (!module.hasWebUi && !hasUpdate) {
+                                Text(
+                                    modifier = Modifier.padding(start = 3.dp, end = 4.dp),
+                                    text = stringResource(R.string.action),
+                                    color = actionIconTint,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                )
+                            }
                         }
                     }
                     if (module.hasWebUi) {
-                        IconButton(
-                            backgroundColor = secondaryContainer,
-                            minHeight = 35.dp,
-                            minWidth = 35.dp,
-                            onClick = onOpenWebUi,
+                        Row(
+                            modifier = Modifier
+                                .heightIn(min = 35.dp)
+                                .clip(CircleShape)
+                                .background(secondaryContainer)
+                                .combinedClickable(
+                                    onClick = onOpenWebUi,
+                                    onLongClick = { onAddActionShortcut(ShortcutType.WebUI) }
+                                )
+                                .padding(horizontal = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(22.dp),
                                 imageVector = Icons.Rounded.Code,
                                 tint = actionIconTint,
                                 contentDescription = stringResource(R.string.open)
                             )
-                        }
-                    }
-                    if (module.hasActionScript || module.hasWebUi) {
-                        IconButton(
-                            backgroundColor = secondaryContainer,
-                            minHeight = 35.dp,
-                            minWidth = 35.dp,
-                            onClick = onAddActionShortcut,
-                        ) {
-                            Icon(
-                                modifier = Modifier.size(20.dp),
-                                imageVector = Icons.Rounded.Add,
-                                tint = actionIconTint,
-                                contentDescription = stringResource(R.string.module_shortcut_add)
-                            )
+                            if (!module.hasActionScript && !hasUpdate) {
+                                Text(
+                                    modifier = Modifier.padding(start = 4.dp, end = 2.dp),
+                                    text = stringResource(R.string.open),
+                                    color = actionIconTint,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                )
+                            }
                         }
                     }
                 }
@@ -994,7 +1020,7 @@ fun ModuleItem(
                             contentDescription = stringResource(R.string.module_update),
                         )
                         Text(
-                            modifier = Modifier.padding(start = 4.dp, end = 2.dp),
+                            modifier = Modifier.padding(start = 4.dp, end = 3.dp),
                             text = stringResource(R.string.module_update),
                             color = updateTint,
                             fontWeight = FontWeight.Medium,

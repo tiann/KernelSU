@@ -179,7 +179,6 @@
     <string name="module_shortcut_title">Créer un raccourci</string>
     <string name="module_shortcut_name_label">Nom du raccourci</string>
     <string name="module_shortcut_icon_pick">Choisir une icône personnalisée</string>
-    <string name="module_shortcut_add">Ajouter le raccourci</string>
     <string name="module_shortcut_not_supported">Le lanceur d\'application ne prend pas en charge les raccourcis.</string>
     <string name="module_shortcut_created">Raccourci créé sur le bureau.</string>
     <string name="module_shortcut_updated">Raccourci mis à jour.</string>

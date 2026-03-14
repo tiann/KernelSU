@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
@@ -68,7 +68,7 @@ data class SearchStatus(
             )
             Box(
                 modifier = Modifier
-                    .alpha(topAppBarAlpha.value)
+                    .graphicsLayer { alpha = topAppBarAlpha.value }
             ) { content() }
         }
     }

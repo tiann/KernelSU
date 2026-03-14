@@ -205,7 +205,6 @@
     <string name="module_shortcut_title">Create shortcut</string>
     <string name="module_shortcut_name_label">Shortcut name</string>
     <string name="module_shortcut_icon_pick">Choose custom icon</string>
-    <string name="module_shortcut_add">Add shortcut</string>
     <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts.</string>
     <string name="module_shortcut_created">Shortcut created on desktop.</string>
     <string name="module_shortcut_updated">Shortcut updated.</string>

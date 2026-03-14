@@ -180,7 +180,6 @@
     <string name="module_shortcut_title">ショートカットを作成</string>
     <string name="module_shortcut_name_label">ショートカット名</string>
     <string name="module_shortcut_icon_pick">カスタムアイコンを選択</string>
-    <string name="module_shortcut_add">ショートカットを追加</string>
     <string name="module_shortcut_not_supported">ランチャーはホーム画面ショートカットをサポートしていません。</string>
     <string name="module_shortcut_created">ホーム画面にショートカットを作成しました。</string>
     <string name="module_shortcut_updated">ショートカットが更新されました。</string>
