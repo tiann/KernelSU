@@ -48,6 +48,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -932,13 +933,17 @@ fun ModuleItem(
                         Row(
                             modifier = Modifier
                                 .heightIn(min = 35.dp)
+                                .widthIn(min = 35.dp)
                                 .clip(CircleShape)
                                 .background(secondaryContainer)
                                 .combinedClickable(
                                     onClick = onExecuteAction,
                                     onLongClick = { onAddActionShortcut(ShortcutType.Action) }
                                 )
-                                .padding(start = 6.dp, end = 8.dp),
+                                .padding(
+                                    start = if (!module.hasWebUi && !hasUpdate) 6.dp else 0.dp,
+                                    end = if (!module.hasWebUi && !hasUpdate) 8.dp else 0.dp,
+                                ),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
@@ -963,13 +968,14 @@ fun ModuleItem(
                         Row(
                             modifier = Modifier
                                 .heightIn(min = 35.dp)
+                                .widthIn(min = 35.dp)
                                 .clip(CircleShape)
                                 .background(secondaryContainer)
                                 .combinedClickable(
                                     onClick = onOpenWebUi,
                                     onLongClick = { onAddActionShortcut(ShortcutType.WebUI) }
                                 )
-                                .padding(horizontal = 10.dp),
+                                .padding(horizontal = if (!module.hasActionScript && !hasUpdate) 10.dp else 0.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
