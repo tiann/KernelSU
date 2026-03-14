@@ -135,6 +135,9 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+
 
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
@@ -215,9 +218,12 @@ fun ModulePagerMiuix(
         }
     }
 
-    fun onModuleAddShortcut(module: Module) {
+    fun onModuleAddShortcut(module: Module, type: ShortcutType? = null) {
         shortcutState.bindModule(module)
-        if (shortcutState.availableTypes.size > 1) {
+        if (type != null) {
+            shortcutState.selectType(type)
+            showShortcutDialog.value = true
+        } else if (shortcutState.availableTypes.size > 1) {
             showShortcutTypeDialog.value = true
         } else if (shortcutState.supportsActionShortcut) {
             shortcutState.selectType(ShortcutType.Action)
@@ -509,8 +515,8 @@ fun ModulePagerMiuix(
                         modules = modules,
                         updateInfoMap = uiState.updateInfo,
                         actions = actions,
-                        onModuleAddShortcut = { module ->
-                            onModuleAddShortcut(module)
+                        onModuleAddShortcut = { module, type ->
+                            onModuleAddShortcut(module, type)
                         },
                         contentPadding = contentPadding,
                     )
@@ -694,7 +700,7 @@ private fun ModuleList(
     modules: List<Module>,
     updateInfoMap: Map<String, ModuleUpdateInfo>,
     actions: ModuleActions,
-    onModuleAddShortcut: (Module) -> Unit,
+    onModuleAddShortcut: (Module, ShortcutType?) -> Unit,
     contentPadding: PaddingValues,
     animateItems: Boolean = false,
 ) {
@@ -741,8 +747,8 @@ private fun ModuleList(
                     onExecuteAction = {
                         actions.onExecuteModuleAction(currentModuleState.value)
                     },
-                    onAddActionShortcut = {
-                        onModuleAddShortcut(currentModuleState.value)
+                    onAddActionShortcut = { type: ShortcutType? ->
+                        onModuleAddShortcut(currentModuleState.value, type)
                     },
                     onOpenWebUi = {
                         if (module.hasWebUi) {
@@ -767,6 +773,7 @@ private fun ModuleList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ModuleItem(
     module: Module,
@@ -776,7 +783,7 @@ fun ModuleItem(
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: () -> Unit,
     onExecuteAction: () -> Unit,
-    onAddActionShortcut: () -> Unit,
+    onAddActionShortcut: (ShortcutType) -> Unit,
     onOpenWebUi: () -> Unit
 ) {
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
@@ -920,11 +927,16 @@ fun ModuleItem(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (module.hasActionScript) {
-                        IconButton(
-                            backgroundColor = secondaryContainer,
-                            minHeight = 35.dp,
-                            minWidth = 35.dp,
-                            onClick = onExecuteAction,
+                        Box(
+                            modifier = Modifier
+                                .size(35.dp)
+                                .clip(CircleShape)
+                                .background(secondaryContainer)
+                                .combinedClickable(
+                                    onClick = onExecuteAction,
+                                    onLongClick = { onAddActionShortcut(ShortcutType.Action) }
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 modifier = Modifier.size(20.dp),
@@ -935,32 +947,22 @@ fun ModuleItem(
                         }
                     }
                     if (module.hasWebUi) {
-                        IconButton(
-                            backgroundColor = secondaryContainer,
-                            minHeight = 35.dp,
-                            minWidth = 35.dp,
-                            onClick = onOpenWebUi,
+                        Box(
+                            modifier = Modifier
+                                .size(35.dp)
+                                .clip(CircleShape)
+                                .background(secondaryContainer)
+                                .combinedClickable(
+                                    onClick = onOpenWebUi,
+                                    onLongClick = { onAddActionShortcut(ShortcutType.WebUI) }
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 modifier = Modifier.size(20.dp),
                                 imageVector = Icons.Rounded.Code,
                                 tint = actionIconTint,
                                 contentDescription = stringResource(R.string.open)
-                            )
-                        }
-                    }
-                    if (module.hasActionScript || module.hasWebUi) {
-                        IconButton(
-                            backgroundColor = secondaryContainer,
-                            minHeight = 35.dp,
-                            minWidth = 35.dp,
-                            onClick = onAddActionShortcut,
-                        ) {
-                            Icon(
-                                modifier = Modifier.size(20.dp),
-                                imageVector = Icons.Rounded.Add,
-                                tint = actionIconTint,
-                                contentDescription = stringResource(R.string.module_shortcut_add)
                             )
                         }
                     }
