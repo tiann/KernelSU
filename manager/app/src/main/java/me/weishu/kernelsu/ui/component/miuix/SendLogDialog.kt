@@ -66,11 +66,11 @@ fun SendLogDialog(
         }
     }
     SuperDialog(
-        show = showDialog,
-        insideMargin = DpSize(0.dp, 0.dp),
+        show = showDialog.value,
         onDismissRequest = {
             showDialog.value = false
         },
+        insideMargin = DpSize(0.dp, 0.dp),
         content = {
             Text(
                 modifier = Modifier

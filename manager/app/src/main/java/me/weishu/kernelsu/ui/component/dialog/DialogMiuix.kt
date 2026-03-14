@@ -33,8 +33,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 fun LoadingDialogMiuix(showDialog: MutableState<Boolean>) {
     SuperDialog(
-        show = showDialog,
-        onDismissRequest = {},
+        show = showDialog.value,
         content = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -66,8 +65,8 @@ fun ConfirmDialogMiuix(
     showDialog: MutableState<Boolean>
 ) {
     SuperDialog(
+        show = showDialog.value,
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
-        show = showDialog,
         title = visuals.title,
         onDismissRequest = {
             dismiss()

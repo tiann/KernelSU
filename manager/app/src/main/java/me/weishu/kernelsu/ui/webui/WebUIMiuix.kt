@@ -34,100 +34,102 @@ fun HandleWebUIEventMiuix(
         is WebUIEvent.ShowAlert -> {
             val showDialog = remember(event) { mutableStateOf(true) }
             WindowDialog(
-                onDismissRequest = { },
-                show = showDialog,
-            ) {
-                Column {
-                    Text(event.message)
-                    Spacer(Modifier.height(12.dp))
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            webUIState.onAlertResult()
-                            showDialog.value = false
-                        },
-                        text = stringResource(R.string.confirm),
-                        colors = ButtonDefaults.textButtonColorsPrimary()
-                    )
+                show = showDialog.value,
+                content = {
+                    Column {
+                        Text(event.message)
+                        Spacer(Modifier.height(12.dp))
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                webUIState.onAlertResult()
+                                showDialog.value = false
+                            },
+                            text = stringResource(R.string.confirm),
+                            colors = ButtonDefaults.textButtonColorsPrimary()
+                        )
+                    }
                 }
-            }
+            )
         }
 
         is WebUIEvent.ShowConfirm -> {
             val showDialog = remember(event) { mutableStateOf(true) }
             WindowDialog(
+                show = showDialog.value,
                 onDismissRequest = { webUIState.onConfirmResult(false) },
-                show = showDialog,
-            ) {
-                Column {
-                    Text(event.message)
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TextButton(
-                            onClick = {
-                                webUIState.onConfirmResult(false)
-                                showDialog.value = false
-                            },
-                            text = stringResource(android.R.string.cancel),
-                            modifier = Modifier.weight(1f),
-                        )
-                        Spacer(modifier = Modifier.width(20.dp))
-                        TextButton(
-                            onClick = {
-                                webUIState.onConfirmResult(true)
-                                showDialog.value = false
-                            },
-                            text = stringResource(R.string.confirm),
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.textButtonColorsPrimary()
-                        )
+                content = {
+                    Column {
+                        Text(event.message)
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    webUIState.onConfirmResult(false)
+                                    showDialog.value = false
+                                },
+                                text = stringResource(android.R.string.cancel),
+                                modifier = Modifier.weight(1f),
+                            )
+                            Spacer(modifier = Modifier.width(20.dp))
+                            TextButton(
+                                onClick = {
+                                    webUIState.onConfirmResult(true)
+                                    showDialog.value = false
+                                },
+                                text = stringResource(R.string.confirm),
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.textButtonColorsPrimary()
+                            )
+                        }
                     }
                 }
-            }
+            )
         }
 
         is WebUIEvent.ShowPrompt -> {
             val showDialog = remember(event) { mutableStateOf(true) }
             val state = rememberTextFieldState(event.defaultValue)
             WindowDialog(
+                show = showDialog.value,
                 onDismissRequest = { webUIState.onPromptResult(null) },
-                show = showDialog,
-            ) {
-                Column {
-                    Text(event.message)
-                    Spacer(Modifier.height(12.dp))
-                    TextField(
-                        modifier = Modifier.padding(bottom = 16.dp),
-                        state = state
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TextButton(
-                            onClick = {
-                                webUIState.onPromptResult(null)
-                                showDialog.value = false
-                            },
-                            text = stringResource(android.R.string.cancel),
-                            modifier = Modifier.weight(1f),
+                content = {
+                    Column {
+                        Text(event.message)
+                        Spacer(Modifier.height(12.dp))
+                        TextField(
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            state = state
                         )
-                        Spacer(modifier = Modifier.width(20.dp))
-                        TextButton(
-                            onClick = {
-                                webUIState.onPromptResult(state.text.toString())
-                                showDialog.value = false
-                            },
-                            text = stringResource(R.string.confirm),
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.textButtonColorsPrimary()
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    webUIState.onPromptResult(null)
+                                    showDialog.value = false
+                                },
+                                text = stringResource(android.R.string.cancel),
+                                modifier = Modifier.weight(1f),
+                            )
+                            Spacer(modifier = Modifier.width(20.dp))
+                            TextButton(
+                                onClick = {
+                                    webUIState.onPromptResult(state.text.toString())
+                                    showDialog.value = false
+                                },
+                                text = stringResource(R.string.confirm),
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.textButtonColorsPrimary()
+                            )
+                        }
                     }
                 }
-            }
+            )
         }
 
         is WebUIEvent.ShowFileChooser -> {

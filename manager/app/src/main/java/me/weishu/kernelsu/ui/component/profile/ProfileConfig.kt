@@ -52,7 +52,6 @@ fun RootProfileConfig(
 
         UiMode.Material -> RootProfileConfigMaterial(
             modifier = modifier,
-            fixedName = fixedName,
             enabled = enabled,
             profile = profile,
             onProfileChange = onProfileChange

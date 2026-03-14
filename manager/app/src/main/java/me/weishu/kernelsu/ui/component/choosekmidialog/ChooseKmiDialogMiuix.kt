@@ -43,56 +43,57 @@ fun ChooseKmiDialogMiuix(
     }
     val currentSelection = rememberSaveable(currentKmi) { mutableStateOf(currentKmi) }
     SuperDialog(
-        show = showDialog,
+        show = showDialog.value,
         title = stringResource(R.string.select_kmi),
         summary = stringResource(R.string.current_kmi, currentKmi.let { it.ifBlank { "Unknown" } }),
-        insideMargin = DpSize(0.dp, 24.dp),
         onDismissRequest = {
             showDialog.value = false
             currentSelection.value = currentKmi
         },
-    ) {
-        Column(modifier = Modifier.heightIn(max = 500.dp)) {
-            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                items(supportedKMIs) { kmi ->
-                    SuperCheckbox(
-                        title = kmi,
-                        summary = if (kmi == currentKmi) stringResource(R.string.current_device_kmi) else null,
-                        insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
-                        checkboxLocation = CheckboxLocation.End,
-                        checked = currentSelection.value == kmi,
-                        holdDownState = currentSelection.value == kmi,
-                        onCheckedChange = { _ ->
-                            currentSelection.value = kmi
-                        }
+        insideMargin = DpSize(0.dp, 24.dp),
+        content = {
+            Column(modifier = Modifier.heightIn(max = 500.dp)) {
+                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                    items(supportedKMIs) { kmi ->
+                        SuperCheckbox(
+                            title = kmi,
+                            summary = if (kmi == currentKmi) stringResource(R.string.current_device_kmi) else null,
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.End,
+                            checked = currentSelection.value == kmi,
+                            holdDownState = currentSelection.value == kmi,
+                            onCheckedChange = { _ ->
+                                currentSelection.value = kmi
+                            }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                            currentSelection.value = currentKmi
+                        },
+                        text = stringResource(android.R.string.cancel),
+                        modifier = Modifier.weight(1f),
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    TextButton(
+                        enabled = supportedKMIs.contains(currentSelection.value),
+                        onClick = {
+                            onSelected(currentSelection.value)
+                            showDialog.value = false
+                        },
+                        text = stringResource(R.string.confirm),
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
                     )
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextButton(
-                    onClick = {
-                        showDialog.value = false
-                        currentSelection.value = currentKmi
-                    },
-                    text = stringResource(android.R.string.cancel),
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(20.dp))
-                TextButton(
-                    enabled = supportedKMIs.contains(currentSelection.value),
-                    onClick = {
-                        onSelected(currentSelection.value)
-                        showDialog.value = false
-                    },
-                    text = stringResource(R.string.confirm),
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.textButtonColorsPrimary()
-                )
-            }
         }
-    }
+    )
 }

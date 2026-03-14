@@ -153,7 +153,7 @@ fun ModuleRepoScreenMaterial(
                         }
                     }
                 },
-                searchContent = { bottomPadding, closeSearch ->
+                searchContent = { _, closeSearch ->
                     LaunchedEffect(state.searchStatus.searchText) {
                         searchListState.scrollToItem(0)
                     }

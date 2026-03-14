@@ -29,54 +29,55 @@ fun ScaleDialog(
     onVolumeChange: (Float) -> Unit,
 ) {
     SuperDialog(
+        show = showDialog.value,
         title = stringResource(R.string.settings_page_scale),
         summary = "80% - 110%",
-        show = showDialog,
         onDismissRequest = { showDialog.value = false },
-    ) {
-        var text by remember(showDialog.value) {
-            mutableStateOf((volumeState() * 100).toInt().toString())
-        }
-        TextField(
-            modifier = Modifier.padding(bottom = 16.dp),
-            value = text,
-            maxLines = 1,
-            trailingIcon = {
-                Text(
-                    text = "%",
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = colorScheme.onSurfaceVariantActions,
-                )
-            },
-            onValueChange = { newValue ->
-                if (newValue.isEmpty()) {
-                    text = ""
-                } else {
-                    val valid = newValue.all { it.isDigit() }
-                    if (valid) {
-                        text = newValue
-                    }
-                }
-            },
-        )
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-            TextButton(
-                text = stringResource(android.R.string.cancel),
-                onClick = { showDialog.value = false },
-                modifier = Modifier.weight(1f),
-            )
-            Spacer(Modifier.width(20.dp))
-            TextButton(
-                text = stringResource(android.R.string.ok),
-                onClick = {
-                    val parsed = text.toIntOrNull()
-                    val clamped = parsed?.coerceIn(80, 110) ?: (volumeState() * 100).toInt()
-                    onVolumeChange(clamped / 100f)
-                    showDialog.value = false
+        content = {
+            var text by remember(showDialog.value) {
+                mutableStateOf((volumeState() * 100).toInt().toString())
+            }
+            TextField(
+                modifier = Modifier.padding(bottom = 16.dp),
+                value = text,
+                maxLines = 1,
+                trailingIcon = {
+                    Text(
+                        text = "%",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = colorScheme.onSurfaceVariantActions,
+                    )
                 },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.textButtonColorsPrimary(),
+                onValueChange = { newValue ->
+                    if (newValue.isEmpty()) {
+                        text = ""
+                    } else {
+                        val valid = newValue.all { it.isDigit() }
+                        if (valid) {
+                            text = newValue
+                        }
+                    }
+                },
             )
+            Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(
+                    text = stringResource(android.R.string.cancel),
+                    onClick = { showDialog.value = false },
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(20.dp))
+                TextButton(
+                    text = stringResource(android.R.string.ok),
+                    onClick = {
+                        val parsed = text.toIntOrNull()
+                        val clamped = parsed?.coerceIn(80, 110) ?: (volumeState() * 100).toInt()
+                        onVolumeChange(clamped / 100f)
+                        showDialog.value = false
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                )
+            }
         }
-    }
+    )
 }

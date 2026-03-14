@@ -50,7 +50,7 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 
-@SuppressLint("ClickableViewAccessibility", "JavascriptInterface", "SetJavaScriptEnabled")
+@SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
 fun GithubMarkdown(
     content: String,

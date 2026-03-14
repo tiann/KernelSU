@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.executemoduleaction
 
-import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,7 +51,6 @@ import top.yukonga.miuix.kmp.icon.extended.Download
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ExecuteModuleActionScreenMiuix(
     state: ExecuteModuleActionUiState,

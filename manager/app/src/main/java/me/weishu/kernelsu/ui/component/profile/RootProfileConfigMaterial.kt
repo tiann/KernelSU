@@ -35,7 +35,6 @@ import me.weishu.kernelsu.ui.util.isSepolicyValid
 @Composable
 fun RootProfileConfigMaterial(
     modifier: Modifier = Modifier,
-    fixedName: Boolean,
     enabled: Boolean = true,
     profile: Natives.Profile,
     onProfileChange: (Natives.Profile) -> Unit

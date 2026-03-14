@@ -164,60 +164,61 @@ private fun GroupsPanel(
     val currentSelection = remember { mutableStateOf(selected.toSet()) }
 
     SuperDialog(
-        show = showDialog,
+        show = showDialog.value,
         title = stringResource(R.string.profile_groups),
         summary = "${currentSelection.value.size} / 32",
+        onDismissRequest = { showDialog.value = false },
         insideMargin = DpSize(0.dp, 24.dp),
-        onDismissRequest = { showDialog.value = false }
-    ) {
-        Column(modifier = Modifier.heightIn(max = 500.dp)) {
-            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                items(groups) { group ->
-                    SuperCheckbox(
-                        title = group.display,
-                        summary = group.desc,
-                        insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
-                        checkboxLocation = CheckboxLocation.End,
-                        checked = currentSelection.value.contains(group),
-                        holdDownState = currentSelection.value.contains(group),
-                        onCheckedChange = { isChecked ->
-                            val newSelection = currentSelection.value.toMutableSet()
-                            if (isChecked) {
-                                if (newSelection.size < 32) newSelection.add(group)
-                            } else {
-                                newSelection.remove(group)
+        content = {
+            Column(modifier = Modifier.heightIn(max = 500.dp)) {
+                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                    items(groups) { group ->
+                        SuperCheckbox(
+                            title = group.display,
+                            summary = group.desc,
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.End,
+                            checked = currentSelection.value.contains(group),
+                            holdDownState = currentSelection.value.contains(group),
+                            onCheckedChange = { isChecked ->
+                                val newSelection = currentSelection.value.toMutableSet()
+                                if (isChecked) {
+                                    if (newSelection.size < 32) newSelection.add(group)
+                                } else {
+                                    newSelection.remove(group)
+                                }
+                                currentSelection.value = newSelection
                             }
-                            currentSelection.value = newSelection
-                        }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            currentSelection.value = selected.toSet()
+                            showDialog.value = false
+                        },
+                        text = stringResource(android.R.string.cancel),
+                        modifier = Modifier.weight(1f),
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    TextButton(
+                        onClick = {
+                            closeSelection(currentSelection.value)
+                            showDialog.value = false
+                        },
+                        text = stringResource(R.string.confirm),
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
                     )
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextButton(
-                    onClick = {
-                        currentSelection.value = selected.toSet()
-                        showDialog.value = false
-                    },
-                    text = stringResource(android.R.string.cancel),
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(20.dp))
-                TextButton(
-                    onClick = {
-                        closeSelection(currentSelection.value)
-                        showDialog.value = false
-                    },
-                    text = stringResource(R.string.confirm),
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.textButtonColorsPrimary()
-                )
-            }
         }
-    }
+    )
 
     val tag = if (selected.isEmpty()) {
         "None"
@@ -270,10 +271,10 @@ private fun CapsPanel(
     val currentSelection = remember { mutableStateOf(selected.toSet()) }
 
     SuperDialog(
-        show = showDialog,
+        show = showDialog.value,
         title = stringResource(R.string.profile_capabilities),
-        insideMargin = DpSize(0.dp, 24.dp),
         onDismissRequest = { showDialog.value = false },
+        insideMargin = DpSize(0.dp, 24.dp),
         content = {
             Column(modifier = Modifier.heightIn(max = 500.dp)) {
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
@@ -359,71 +360,72 @@ private fun SELinuxPanel(
     val isRulesValid = remember(rules) { isSepolicyValid(rules) }
 
     SuperDialog(
-        show = showDialog,
+        show = showDialog.value,
         title = stringResource(R.string.profile_selinux_context),
-        onDismissRequest = { showDialog.value = false }
-    ) {
-        Column(modifier = Modifier.heightIn(max = 500.dp)) {
-            Column(modifier = Modifier.weight(1f, fill = false)) {
-                TextField(
-                    value = domain,
-                    onValueChange = { domain = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    label = stringResource(id = R.string.profile_selinux_domain),
-                    borderColor = if (isDomainValid) {
-                        colorScheme.primary
-                    } else {
-                        Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Ascii,
-                        imeAction = ImeAction.Next
-                    ),
-                    singleLine = true
-                )
-                TextField(
-                    value = rules,
-                    onValueChange = { rules = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    label = stringResource(id = R.string.profile_selinux_rules),
-                    borderColor = if (isRulesValid) {
-                        colorScheme.primary
-                    } else {
-                        Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Ascii,
-                    ),
-                    singleLine = false
-                )
-            }
-            Spacer(Modifier.height(12.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextButton(
-                    onClick = { showDialog.value = false },
-                    text = stringResource(android.R.string.cancel),
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(20.dp))
-                TextButton(
-                    onClick = {
-                        onSELinuxChange(domain, rules)
-                        showDialog.value = false
-                    },
-                    text = stringResource(R.string.confirm),
-                    enabled = isDomainValid && isRulesValid,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.textButtonColorsPrimary()
-                )
+        onDismissRequest = { showDialog.value = false },
+        content = {
+            Column(modifier = Modifier.heightIn(max = 500.dp)) {
+                Column(modifier = Modifier.weight(1f, fill = false)) {
+                    TextField(
+                        value = domain,
+                        onValueChange = { domain = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        label = stringResource(id = R.string.profile_selinux_domain),
+                        borderColor = if (isDomainValid) {
+                            colorScheme.primary
+                        } else {
+                            Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Ascii,
+                            imeAction = ImeAction.Next
+                        ),
+                        singleLine = true
+                    )
+                    TextField(
+                        value = rules,
+                        onValueChange = { rules = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        label = stringResource(id = R.string.profile_selinux_rules),
+                        borderColor = if (isRulesValid) {
+                            colorScheme.primary
+                        } else {
+                            Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Ascii,
+                        ),
+                        singleLine = false
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = { showDialog.value = false },
+                        text = stringResource(android.R.string.cancel),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    TextButton(
+                        onClick = {
+                            onSELinuxChange(domain, rules)
+                            showDialog.value = false
+                        },
+                        text = stringResource(R.string.confirm),
+                        enabled = isDomainValid && isRulesValid,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
+                }
             }
         }
-    }
+    )
 
     SuperArrow(
         enabled = enabled,

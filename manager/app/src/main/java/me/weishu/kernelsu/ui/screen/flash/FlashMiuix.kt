@@ -64,7 +64,6 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 
 // Lets you flash modules sequentially when mutiple zipUris are selected
-
 @Composable
 fun FlashScreenMiuix(
     state: FlashUiState,

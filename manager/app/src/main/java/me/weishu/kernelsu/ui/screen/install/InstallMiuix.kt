@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.install
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -72,7 +71,6 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
  * @author weishu
  * @date 2024/3/12.
  */
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 internal fun InstallScreenMiuix(
     uiState: InstallUiState,

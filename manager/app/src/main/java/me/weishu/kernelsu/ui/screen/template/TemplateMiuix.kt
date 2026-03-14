@@ -412,35 +412,36 @@ private fun TopBar(
         actions = {
             val showTopPopup = remember { mutableStateOf(false) }
             SuperListPopup(
-                show = showTopPopup,
+                show = showTopPopup.value,
                 popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                 alignment = PopupPositionProvider.Align.TopEnd,
                 onDismissRequest = {
                     showTopPopup.value = false
-                }
-            ) {
-                ListPopupColumn {
-                    val items = listOf(
-                        stringResource(id = R.string.app_profile_import_from_clipboard),
-                        stringResource(id = R.string.app_profile_export_to_clipboard)
-                    )
-                    items.forEachIndexed { index, text ->
-                        DropdownItem(
-                            text = text,
-                            optionSize = items.size,
-                            index = index,
-                            onSelectedIndexChange = { selectedIndex ->
-                                if (selectedIndex == 0) {
-                                    onImport()
-                                } else {
-                                    onExport()
-                                }
-                                showTopPopup.value = false
-                            }
+                },
+                content = {
+                    ListPopupColumn {
+                        val items = listOf(
+                            stringResource(id = R.string.app_profile_import_from_clipboard),
+                            stringResource(id = R.string.app_profile_export_to_clipboard)
                         )
+                        items.forEachIndexed { index, text ->
+                            DropdownItem(
+                                text = text,
+                                optionSize = items.size,
+                                index = index,
+                                onSelectedIndexChange = { selectedIndex ->
+                                    if (selectedIndex == 0) {
+                                        onImport()
+                                    } else {
+                                        onExport()
+                                    }
+                                    showTopPopup.value = false
+                                }
+                            )
+                        }
                     }
                 }
-            }
+            )
             IconButton(
                 modifier = Modifier.padding(end = 16.dp),
                 onClick = { showTopPopup.value = true },

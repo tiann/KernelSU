@@ -29,8 +29,6 @@ class ModuleRepoViewModel(
         private const val TAG = "ModuleRepoViewModel"
     }
 
-    typealias Author = me.weishu.kernelsu.data.model.Author
-    typealias ReleaseAsset = me.weishu.kernelsu.data.model.ReleaseAsset
     typealias RepoModule = me.weishu.kernelsu.data.model.RepoModule
 
     private val _uiState = MutableStateFlow(ModuleRepoUiState())

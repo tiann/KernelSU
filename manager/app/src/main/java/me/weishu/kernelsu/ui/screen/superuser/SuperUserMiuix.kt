@@ -126,40 +126,41 @@ fun SuperUserPagerMiuix(
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
                         SuperListPopup(
-                            show = showTopPopup,
+                            show = showTopPopup.value,
                             popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                             alignment = PopupPositionProvider.Align.TopEnd,
                             onDismissRequest = {
                                 showTopPopup.value = false
-                            }
-                        ) {
-                            val isMultiUser = uiState.userIds.size > 1
-                            val size = if (isMultiUser) 2 else 1
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = stringResource(R.string.show_system_apps),
-                                    isSelected = uiState.showSystemApps,
-                                    optionSize = size,
-                                    onSelectedIndexChange = {
-                                        actions.onToggleShowSystemApps()
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                                if (isMultiUser) {
+                            },
+                            content = {
+                                val isMultiUser = uiState.userIds.size > 1
+                                val size = if (isMultiUser) 2 else 1
+                                ListPopupColumn {
                                     DropdownImpl(
-                                        text = stringResource(R.string.show_only_primary_user_apps),
-                                        isSelected = uiState.showOnlyPrimaryUserApps,
+                                        text = stringResource(R.string.show_system_apps),
+                                        isSelected = uiState.showSystemApps,
                                         optionSize = size,
                                         onSelectedIndexChange = {
-                                            actions.onToggleShowOnlyPrimaryUserApps()
+                                            actions.onToggleShowSystemApps()
                                             showTopPopup.value = false
                                         },
-                                        index = 1
+                                        index = 0
                                     )
+                                    if (isMultiUser) {
+                                        DropdownImpl(
+                                            text = stringResource(R.string.show_only_primary_user_apps),
+                                            isSelected = uiState.showOnlyPrimaryUserApps,
+                                            optionSize = size,
+                                            onSelectedIndexChange = {
+                                                actions.onToggleShowOnlyPrimaryUserApps()
+                                                showTopPopup.value = false
+                                            },
+                                            index = 1
+                                        )
+                                    }
                                 }
                             }
-                        }
+                        )
                         IconButton(
                             modifier = Modifier.padding(end = 16.dp),
                             onClick = {

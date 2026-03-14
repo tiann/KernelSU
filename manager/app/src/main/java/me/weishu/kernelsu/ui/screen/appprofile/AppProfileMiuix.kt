@@ -528,35 +528,36 @@ private fun TopBar(
                     )
                 }
                 SuperListPopup(
-                    show = showTopPopup,
-                    onDismissRequest = { showTopPopup.value = false },
+                    show = showTopPopup.value,
                     popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                     alignment = PopupPositionProvider.Align.TopEnd,
-                ) {
-                    ListPopupColumn {
-                        val items = listOf(
-                            stringResource(id = R.string.launch_app),
-                            stringResource(id = R.string.force_stop_app),
-                            stringResource(id = R.string.restart_app)
-                        )
-
-                        items.forEachIndexed { index, text ->
-                            DropdownItem(
-                                text = text,
-                                optionSize = items.size,
-                                index = index,
-                                onSelectedIndexChange = { selectedIndex ->
-                                    when (selectedIndex) {
-                                        0 -> onLaunchApp(packageName, userId)
-                                        1 -> onForceStopApp(packageName, userId)
-                                        2 -> onRestartApp(packageName, userId)
-                                    }
-                                    showTopPopup.value = false
-                                }
+                    onDismissRequest = { showTopPopup.value = false },
+                    content = {
+                        ListPopupColumn {
+                            val items = listOf(
+                                stringResource(id = R.string.launch_app),
+                                stringResource(id = R.string.force_stop_app),
+                                stringResource(id = R.string.restart_app)
                             )
+
+                            items.forEachIndexed { index, text ->
+                                DropdownItem(
+                                    text = text,
+                                    optionSize = items.size,
+                                    index = index,
+                                    onSelectedIndexChange = { selectedIndex ->
+                                        when (selectedIndex) {
+                                            0 -> onLaunchApp(packageName, userId)
+                                            1 -> onForceStopApp(packageName, userId)
+                                            2 -> onRestartApp(packageName, userId)
+                                        }
+                                        showTopPopup.value = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }
+                )
             }
         },
         scrollBehavior = scrollBehavior

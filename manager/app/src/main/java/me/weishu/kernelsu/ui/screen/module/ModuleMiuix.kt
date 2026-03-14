@@ -287,36 +287,37 @@ fun ModulePagerMiuix(
                                 )
                             }
                             SuperListPopup(
-                                show = showTopPopup,
+                                show = showTopPopup.value,
                                 popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
                                 alignment = PopupPositionProvider.Align.TopEnd,
                                 onDismissRequest = {
                                     showTopPopup.value = false
+                                },
+                                content = {
+                                    ListPopupColumn {
+                                        DropdownImpl(
+                                            text = stringResource(R.string.module_sort_action_first),
+                                            optionSize = 2,
+                                            isSelected = uiState.sortActionFirst,
+                                            onSelectedIndexChange = {
+                                                actions.onToggleSortActionFirst()
+                                                showTopPopup.value = false
+                                            },
+                                            index = 0
+                                        )
+                                        DropdownImpl(
+                                            text = stringResource(R.string.module_sort_enabled_first),
+                                            optionSize = 2,
+                                            isSelected = uiState.sortEnabledFirst,
+                                            onSelectedIndexChange = {
+                                                actions.onToggleSortEnabledFirst()
+                                                showTopPopup.value = false
+                                            },
+                                            index = 1
+                                        )
+                                    }
                                 }
-                            ) {
-                                ListPopupColumn {
-                                    DropdownImpl(
-                                        text = stringResource(R.string.module_sort_action_first),
-                                        optionSize = 2,
-                                        isSelected = uiState.sortActionFirst,
-                                        onSelectedIndexChange = {
-                                            actions.onToggleSortActionFirst()
-                                            showTopPopup.value = false
-                                        },
-                                        index = 0
-                                    )
-                                    DropdownImpl(
-                                        text = stringResource(R.string.module_sort_enabled_first),
-                                        optionSize = 2,
-                                        isSelected = uiState.sortEnabledFirst,
-                                        onSelectedIndexChange = {
-                                            actions.onToggleSortEnabledFirst()
-                                            showTopPopup.value = false
-                                        },
-                                        index = 1
-                                    )
-                                }
-                            }
+                            )
                         }
                         RebootListPopupMiuix(
                             modifier = Modifier.padding(end = 16.dp),
@@ -547,34 +548,35 @@ private fun ModuleShortcutTypeDialog(
     if (!show.value) return
 
     SuperDialog(
-        show = show,
+        show = show.value,
         title = stringResource(R.string.module_shortcut_type_title),
         onDismissRequest = {
             show.value = false
+        },
+        content = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TextButton(
+                    text = "Action",
+                    onClick = {
+                        show.value = false
+                        onSelectType(ShortcutType.Action)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                TextButton(
+                    text = "WebUI",
+                    onClick = {
+                        show.value = false
+                        onSelectType(ShortcutType.WebUI)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            TextButton(
-                text = "Action",
-                onClick = {
-                    show.value = false
-                    onSelectType(ShortcutType.Action)
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            TextButton(
-                text = "WebUI",
-                onClick = {
-                    show.value = false
-                    onSelectType(ShortcutType.WebUI)
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
+    )
 }
 
 @Composable
@@ -588,101 +590,102 @@ private fun ModuleShortcutDialog(
     if (!show.value) return
 
     SuperDialog(
-        show = show,
+        show = show.value,
         title = stringResource(R.string.module_shortcut_title),
         onDismissRequest = {
             show.value = false
-        }
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .size(100.dp)
-                    .clip(ContinuousRoundedRectangle(25.dp))
+        },
+        content = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val preview = shortcutState.previewIcon
-                if (preview != null) {
-                    Image(
-                        bitmap = preview,
-                        modifier = Modifier.size(100.dp),
-                        contentDescription = null,
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(Color.White)
-                    )
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = null,
-                        contentScale = FixedScale(1.5f)
-                    )
-                }
-            }
-            Row {
-                TextButton(
-                    modifier = Modifier.weight(1f),
-                    text = stringResource(id = R.string.module_shortcut_icon_pick),
-                    onClick = onPickShortcutIcon,
-                )
-                AnimatedVisibility(
-                    visible = shortcutState.iconUri != shortcutState.defaultShortcutIconUri,
-                    enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
-                    exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .size(100.dp)
+                        .clip(ContinuousRoundedRectangle(25.dp))
                 ) {
-                    IconButton(
-                        onClick = shortcutState::resetIconToDefault,
-                        modifier = Modifier.padding(start = 12.dp)
-                    ) {
-                        Icon(
-                            imageVector = MiuixIcons.Undo,
+                    val preview = shortcutState.previewIcon
+                    if (preview != null) {
+                        Image(
+                            bitmap = preview,
+                            modifier = Modifier.size(100.dp),
                             contentDescription = null,
-                            tint = colorScheme.onSurface,
-                            modifier = Modifier.size(28.dp),
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .background(Color.White)
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            contentScale = FixedScale(1.5f)
                         )
                     }
                 }
-            }
-            TextField(
-                value = shortcutState.name,
-                onValueChange = shortcutState::updateName,
-                label = stringResource(id = R.string.module_shortcut_name_label)
-            )
-            if (shortcutState.hasExistingShortcut) {
-                TextButton(
-                    text = stringResource(id = R.string.module_shortcut_delete),
-                    onClick = onDeleteShortcut,
-                    modifier = Modifier.fillMaxWidth(),
+                Row {
+                    TextButton(
+                        modifier = Modifier.weight(1f),
+                        text = stringResource(id = R.string.module_shortcut_icon_pick),
+                        onClick = onPickShortcutIcon,
+                    )
+                    AnimatedVisibility(
+                        visible = shortcutState.iconUri != shortcutState.defaultShortcutIconUri,
+                        enter = expandHorizontally() + slideInHorizontally(initialOffsetX = { it }),
+                        exit = shrinkHorizontally() + slideOutHorizontally(targetOffsetX = { it }),
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                    ) {
+                        IconButton(
+                            onClick = shortcutState::resetIconToDefault,
+                            modifier = Modifier.padding(start = 12.dp)
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Undo,
+                                contentDescription = null,
+                                tint = colorScheme.onSurface,
+                                modifier = Modifier.size(28.dp),
+                            )
+                        }
+                    }
+                }
+                TextField(
+                    value = shortcutState.name,
+                    onValueChange = shortcutState::updateName,
+                    label = stringResource(id = R.string.module_shortcut_name_label)
                 )
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TextButton(
-                    text = stringResource(id = android.R.string.cancel),
-                    onClick = { show.value = false },
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(
-                    text = if (shortcutState.hasExistingShortcut) {
-                        stringResource(id = R.string.module_update)
-                    } else {
-                        stringResource(id = android.R.string.ok)
-                    },
-                    onClick = onConfirmShortcut,
-                    colors = ButtonDefaults.textButtonColorsPrimary(),
-                    modifier = Modifier.weight(1f),
-                )
+                if (shortcutState.hasExistingShortcut) {
+                    TextButton(
+                        text = stringResource(id = R.string.module_shortcut_delete),
+                        onClick = onDeleteShortcut,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    TextButton(
+                        text = stringResource(id = android.R.string.cancel),
+                        onClick = { show.value = false },
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(
+                        text = if (shortcutState.hasExistingShortcut) {
+                            stringResource(id = R.string.module_update)
+                        } else {
+                            stringResource(id = android.R.string.ok)
+                        },
+                        onClick = onConfirmShortcut,
+                        colors = ButtonDefaults.textButtonColorsPrimary(),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
-    }
+    )
 }
 
 @Composable

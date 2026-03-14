@@ -41,41 +41,42 @@ fun RebootListPopupMiuix(
             )
         }
         SuperListPopup(
-            show = showTopPopup,
+            show = showTopPopup.value,
             popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
             alignment = alignment,
             onDismissRequest = {
                 showTopPopup.value = false
-            }
-        ) {
-            val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+            },
+            content = {
+                val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
 
-            @Suppress("DEPRECATION")
-            val isRebootingUserspaceSupported = pm?.isRebootingUserspaceSupported == true
+                @Suppress("DEPRECATION")
+                val isRebootingUserspaceSupported = pm?.isRebootingUserspaceSupported == true
 
-            ListPopupColumn {
-                val rebootOptions = mutableListOf(
-                    Pair(R.string.reboot, ""),
-                    Pair(R.string.reboot_soft, "soft_reboot"),
-                    Pair(R.string.reboot_recovery, "recovery"),
-                    Pair(R.string.reboot_bootloader, "bootloader"),
-                    Pair(R.string.reboot_download, "download"),
-                    Pair(R.string.reboot_edl, "edl")
-                )
-                if (isRebootingUserspaceSupported) {
-                    rebootOptions.add(1, Pair(R.string.reboot_userspace, "userspace"))
-                }
-                rebootOptions.forEachIndexed { idx, (id, reason) ->
-                    RebootDropdownItem(
-                        id = id,
-                        reason = reason,
-                        showTopPopup = showTopPopup,
-                        optionSize = rebootOptions.size,
-                        index = idx
+                ListPopupColumn {
+                    val rebootOptions = mutableListOf(
+                        Pair(R.string.reboot, ""),
+                        Pair(R.string.reboot_soft, "soft_reboot"),
+                        Pair(R.string.reboot_recovery, "recovery"),
+                        Pair(R.string.reboot_bootloader, "bootloader"),
+                        Pair(R.string.reboot_download, "download"),
+                        Pair(R.string.reboot_edl, "edl")
                     )
+                    if (isRebootingUserspaceSupported) {
+                        rebootOptions.add(1, Pair(R.string.reboot_userspace, "userspace"))
+                    }
+                    rebootOptions.forEachIndexed { idx, (id, reason) ->
+                        RebootDropdownItem(
+                            id = id,
+                            reason = reason,
+                            showTopPopup = showTopPopup,
+                            optionSize = rebootOptions.size,
+                            index = idx
+                        )
+                    }
                 }
             }
-        }
+        )
     }
 }
 

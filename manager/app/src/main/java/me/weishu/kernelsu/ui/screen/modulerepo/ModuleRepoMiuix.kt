@@ -164,24 +164,24 @@ fun ModuleRepoScreenMiuix(
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
                         SuperListPopup(
-                            show = showTopPopup,
+                            show = showTopPopup.value,
                             popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                             alignment = PopupPositionProvider.Align.TopEnd,
-                            onDismissRequest = { showTopPopup.value = false }
-                        ) {
-                            ListPopupColumn {
-                                DropdownImpl(
-                                    text = stringResource(R.string.module_repos_sort_name),
-                                    optionSize = 1,
-                                    isSelected = state.sortByName,
-                                    onSelectedIndexChange = {
-                                        actions.onToggleSortByName()
-                                        showTopPopup.value = false
-                                    },
-                                    index = 0
-                                )
-                            }
-                        }
+                            onDismissRequest = { showTopPopup.value = false },
+                            content = {
+                                ListPopupColumn {
+                                    DropdownImpl(
+                                        text = stringResource(R.string.module_repos_sort_name),
+                                        optionSize = 1,
+                                        isSelected = state.sortByName,
+                                        onSelectedIndexChange = {
+                                            actions.onToggleSortByName()
+                                            showTopPopup.value = false
+                                        },
+                                        index = 0
+                                    )
+                                }
+                            })
                         IconButton(
                             modifier = Modifier.padding(end = 16.dp),
                             onClick = { showTopPopup.value = true },

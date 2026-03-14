@@ -78,51 +78,52 @@ private fun EditDialog(
     val filter = remember(key1 = inputTextFieldValue.intValue) { FilterNumber(dialogTextFieldValue) }
 
     SuperDialog(
+        show = showDialog.value,
         title = title,
-        show = showDialog,
         onDismissRequest = {
             showDialog.value = false
             filter.setInputValue(dialogTextFieldValue.toString())
-        }
-    ) {
-        TextField(
-            modifier = Modifier.padding(bottom = 16.dp),
-            value = filter.getInputValue(),
-            maxLines = 1,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-            ),
-            onValueChange = filter.onValueChange()
-        )
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            TextButton(
-                text = stringResource(android.R.string.cancel),
-                onClick = {
-                    showDialog.value = false
-                    filter.setInputValue(dialogTextFieldValue.toString())
-                },
-                modifier = Modifier.weight(1f)
+        },
+        content = {
+            TextField(
+                modifier = Modifier.padding(bottom = 16.dp),
+                value = filter.getInputValue(),
+                maxLines = 1,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                ),
+                onValueChange = filter.onValueChange()
             )
-            Spacer(Modifier.width(20.dp))
-            TextButton(
-                text = stringResource(R.string.confirm),
-                onClick = {
-                    showDialog.value = false
-                    with(filter.getInputValue().text) {
-                        if (isEmpty()) {
-                            onValueChange(0)
-                            filter.setInputValue("0")
-                        } else {
-                            onValueChange(this@with.toInt())
-                        }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(
+                    text = stringResource(android.R.string.cancel),
+                    onClick = {
+                        showDialog.value = false
+                        filter.setInputValue(dialogTextFieldValue.toString())
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(20.dp))
+                TextButton(
+                    text = stringResource(R.string.confirm),
+                    onClick = {
+                        showDialog.value = false
+                        with(filter.getInputValue().text) {
+                            if (isEmpty()) {
+                                onValueChange(0)
+                                filter.setInputValue("0")
+                            } else {
+                                onValueChange(this@with.toInt())
+                            }
 
-                    }
-                },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.textButtonColorsPrimary()
-            )
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary()
+                )
+            }
         }
-    }
+    )
 }
