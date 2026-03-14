@@ -56,6 +56,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -165,7 +166,9 @@ fun AppProfileTemplateScreenMiuix(
                 shadowElevation = 0.dp,
                 onClick = actions.onCreateTemplate,
                 modifier = Modifier
-                    .offset(y = offsetHeight)
+                    .offset {
+                        IntOffset(x = 0, y = offsetHeight.roundToPx())
+                    }
                     .padding(
                         bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
                                 WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() + 20.dp,

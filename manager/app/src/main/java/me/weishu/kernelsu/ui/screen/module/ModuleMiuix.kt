@@ -20,9 +20,11 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +41,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -85,6 +88,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.capsule.ContinuousRoundedRectangle
@@ -134,10 +138,6 @@ import top.yukonga.miuix.kmp.icon.extended.UploadCloud
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
-
 
 @SuppressLint("StringFormatInvalid", "LocalContextGetResourceValueCall")
 @Composable
@@ -389,7 +389,9 @@ fun ModulePagerMiuix(
                 }
                 FloatingActionButton(
                     modifier = Modifier
-                        .offset(y = offsetHeight)
+                        .offset {
+                            IntOffset(x = 0, y = offsetHeight.roundToPx())
+                        }
                         .padding(bottom = bottomInnerPadding + 20.dp, end = 20.dp)
                         .border(0.05.dp, colorScheme.outline.copy(alpha = 0.5f), CircleShape),
                     shadowElevation = 0.dp,
@@ -927,43 +929,65 @@ fun ModuleItem(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (module.hasActionScript) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .size(35.dp)
+                                .heightIn(min = 35.dp)
                                 .clip(CircleShape)
                                 .background(secondaryContainer)
                                 .combinedClickable(
                                     onClick = onExecuteAction,
                                     onLongClick = { onAddActionShortcut(ShortcutType.Action) }
-                                ),
-                            contentAlignment = Alignment.Center
+                                )
+                                .padding(start = 6.dp, end = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(24.dp),
                                 imageVector = Icons.Rounded.PlayArrow,
                                 tint = actionIconTint,
                                 contentDescription = stringResource(R.string.action)
                             )
+                            if (!module.hasWebUi && !hasUpdate) {
+                                Text(
+                                    modifier = Modifier.padding(start = 3.dp, end = 4.dp),
+                                    text = stringResource(R.string.action),
+                                    color = actionIconTint,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                )
+                            }
                         }
                     }
                     if (module.hasWebUi) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .size(35.dp)
+                                .heightIn(min = 35.dp)
                                 .clip(CircleShape)
                                 .background(secondaryContainer)
                                 .combinedClickable(
                                     onClick = onOpenWebUi,
                                     onLongClick = { onAddActionShortcut(ShortcutType.WebUI) }
-                                ),
-                            contentAlignment = Alignment.Center
+                                )
+                                .padding(horizontal = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(22.dp),
                                 imageVector = Icons.Rounded.Code,
                                 tint = actionIconTint,
                                 contentDescription = stringResource(R.string.open)
                             )
+                            if (!module.hasActionScript && !hasUpdate) {
+                                Text(
+                                    modifier = Modifier.padding(start = 4.dp, end = 2.dp),
+                                    text = stringResource(R.string.open),
+                                    color = actionIconTint,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                )
+                            }
                         }
                     }
                 }
@@ -996,7 +1020,7 @@ fun ModuleItem(
                             contentDescription = stringResource(R.string.module_update),
                         )
                         Text(
-                            modifier = Modifier.padding(start = 4.dp, end = 2.dp),
+                            modifier = Modifier.padding(start = 4.dp, end = 3.dp),
                             text = stringResource(R.string.module_update),
                             color = updateTint,
                             fontWeight = FontWeight.Medium,

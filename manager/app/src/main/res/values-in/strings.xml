@@ -180,7 +180,6 @@
     <string name="module_shortcut_title">Buat pintasan</string>
     <string name="module_shortcut_name_label">Nama pintasan</string>
     <string name="module_shortcut_icon_pick">Pilih ikon khusus</string>
-    <string name="module_shortcut_add">Tambahkan pintasan</string>
     <string name="module_shortcut_not_supported">Launcher tidak mendukung pintasan layar utama.</string>
     <string name="module_shortcut_created">Pintasan dibuat di layar utama.</string>
     <string name="module_shortcut_updated">Pintasan diperbarui.</string>
