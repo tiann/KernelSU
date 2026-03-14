@@ -120,7 +120,6 @@ void escape_with_root_profile(void)
     if (cred->euid.val == 0) {
         pr_warn("Already root, don't escape!\n");
         goto out_abort_creds;
-        return;
     }
 
     ksu_get_root_profile(cred->uid.val, &profile);
