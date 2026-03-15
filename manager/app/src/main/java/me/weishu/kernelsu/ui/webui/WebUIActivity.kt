@@ -85,7 +85,7 @@ private fun MainContent(activity: ComponentActivity, onFinish: () -> Unit) {
     }
 
     DisposableEffect(Unit) {
-        onDispose { webUIState.dispose() }
+        onDispose { webUIState.dispose(activity) }
     }
 
     when (val event = webUIState.uiEvent) {

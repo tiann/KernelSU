@@ -1,7 +1,10 @@
 package me.weishu.kernelsu.ui.webui
 
+import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.WebView
@@ -9,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.topjohnwu.superuser.Shell
+import me.weishu.kernelsu.R
 
 sealed class WebUIEvent {
     data object Loading : WebUIEvent()
@@ -68,7 +72,16 @@ class WebUIState {
         uiEvent = WebUIEvent.Close
     }
 
-    fun dispose() {
+    fun dispose(activity: Activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            @Suppress("DEPRECATION")
+            activity.setTaskDescription(ActivityManager.TaskDescription(activity.getString(R.string.app_name)))
+        } else {
+            val taskDescription = ActivityManager.TaskDescription.Builder()
+                .setLabel(activity.getString(R.string.app_name))
+                .build()
+            activity.setTaskDescription(taskDescription)
+        }
         webView?.let { view ->
             (view.parent as? android.view.ViewGroup)?.removeView(view)
             view.destroy()
