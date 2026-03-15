@@ -90,10 +90,7 @@ fun HomePagerMaterial(
                 WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
             }
             if (state.showGkiWarning) {
-                WarningCard(
-                    stringResource(id = R.string.home_gki_warning),
-                    MaterialTheme.colorScheme.tertiaryContainer
-                )
+                WarningCard(stringResource(id = R.string.home_gki_warning))
             }
             if (state.showRequireKernelWarning) {
                 WarningCard(
