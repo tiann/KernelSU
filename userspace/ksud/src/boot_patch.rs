@@ -399,6 +399,7 @@ fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<P
     Ok(magiskboot)
 }
 
+#[cfg_attr(not(target_os = "android"), allow(unused_variables))]
 fn find_boot_image(
     image: &Option<PathBuf>,
     kmi: &str,
@@ -408,10 +409,11 @@ fn find_boot_image(
     partition: &Option<String>,
 ) -> Result<(PathBuf, Option<String>)> {
     let bootimage;
-    let mut bootdevice = None;
+    let bootdevice;
     if let Some(ref image) = *image {
         ensure!(image.exists(), "boot image not found");
         bootimage = std::fs::canonicalize(image)?;
+        bootdevice = None;
     } else {
         #[cfg(not(target_os = "android"))]
         {
