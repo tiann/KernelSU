@@ -52,7 +52,7 @@ nom = "8"
 derive-new = "0.7"
 getopts = "0.2"
 ksuinit = { path = "../ksuinit" }
-adb_client = { git = "https://github.com/5ec1cff/adb_client" }
+adb_client = { git = "https://github.com/Kernel-SU/adb_client" }
 
 [profile.release]
 strip = true
