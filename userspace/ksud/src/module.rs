@@ -95,6 +95,7 @@ fn exec_install_script(module_file: &str, is_metamodule: bool) -> Result<()> {
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
         .status()?;
+
     ensure!(result.success(), "Failed to install module script");
     Ok(())
 }
