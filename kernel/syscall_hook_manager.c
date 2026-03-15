@@ -113,7 +113,7 @@ int ksu_get_task_mark(pid_t pid)
     int marked = -ESRCH;
 
     rcu_read_lock();
-    task = find_task_by_vpid(pid);
+    task = pid_task(find_vpid(pid), PIDTYPE_PID);
     if (task) {
         get_task_struct(task);
         rcu_read_unlock();
@@ -138,7 +138,7 @@ int ksu_set_task_mark(pid_t pid, bool mark)
     int ret = -ESRCH;
 
     rcu_read_lock();
-    task = find_task_by_vpid(pid);
+    task = pid_task(find_vpid(pid), PIDTYPE_PID);
     if (task) {
         get_task_struct(task);
         rcu_read_unlock();
