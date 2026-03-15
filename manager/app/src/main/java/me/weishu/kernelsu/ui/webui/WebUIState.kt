@@ -1,10 +1,8 @@
 package me.weishu.kernelsu.ui.webui
 
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.WebView
@@ -73,15 +71,7 @@ class WebUIState {
     }
 
     fun dispose(activity: Activity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            @Suppress("DEPRECATION")
-            activity.setTaskDescription(ActivityManager.TaskDescription(activity.getString(R.string.app_name)))
-        } else {
-            val taskDescription = ActivityManager.TaskDescription.Builder()
-                .setLabel(activity.getString(R.string.app_name))
-                .build()
-            activity.setTaskDescription(taskDescription)
-        }
+        activity.setTaskDescription(activity.getString(R.string.app_name))
         webView?.let { view ->
             (view.parent as? android.view.ViewGroup)?.removeView(view)
             view.destroy()
