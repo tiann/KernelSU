@@ -16,6 +16,8 @@ bool ksu_is_safe_mode(void);
 
 int nuke_ext4_sysfs(const char *mnt);
 
+long __strncpy_from_user_nofault(char *d, const void __user *a, long c);
+
 extern u32 ksu_file_sid;
 extern bool ksu_module_mounted;
 extern bool ksu_boot_completed;

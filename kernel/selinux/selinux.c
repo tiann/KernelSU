@@ -6,6 +6,10 @@
 #include "../klog.h" // IWYU pragma: keep
 #include "../ksu.h"
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
+#define cred_security_struct task_security_struct
+#endif
+
 /*
  * Cached SID values for frequently checked contexts.
  * These are resolved once at init and used for fast u32 comparison
@@ -27,11 +31,7 @@ static int transive_to_domain(const char *domain, struct cred *cred)
 {
     u32 sid;
     int error;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-    struct task_security_struct *tsec;
-#else
     struct cred_security_struct *tsec;
-#endif
     tsec = selinux_cred(cred);
     if (!tsec) {
         pr_err("tsec == NULL!\n");
@@ -163,11 +163,7 @@ static bool is_sid_match(const struct cred *cred, u32 cached_sid,
     if (!cred) {
         return false;
     }
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-    const struct task_security_struct *tsec = selinux_cred(cred);
-#else
     const struct cred_security_struct *tsec = selinux_cred(cred);
-#endif
     if (!tsec) {
         return false;
     }

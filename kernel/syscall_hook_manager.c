@@ -113,7 +113,7 @@ int ksu_get_task_mark(pid_t pid)
     int marked = -ESRCH;
 
     rcu_read_lock();
-    task = find_task_by_vpid(pid);
+    task = pid_task(find_vpid(pid), PIDTYPE_PID);
     if (task) {
         get_task_struct(task);
         rcu_read_unlock();
@@ -138,7 +138,7 @@ int ksu_set_task_mark(pid_t pid, bool mark)
     int ret = -ESRCH;
 
     rcu_read_lock();
-    task = find_task_by_vpid(pid);
+    task = pid_task(find_vpid(pid), PIDTYPE_PID);
     if (task) {
         get_task_struct(task);
         rcu_read_unlock();
@@ -260,9 +260,9 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
     fn = (const char __user *)addr;
 
     memset(path, 0, sizeof(path));
-    ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+    ret = __strncpy_from_user_nofault(path, fn, sizeof(path));
     if (ret < 0 && try_set_access_flag(addr)) {
-        ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+        ret = __strncpy_from_user_nofault(path, fn, sizeof(path));
         pr_info("ksu_handle_init_mark_tracker: %ld\n", ret);
     }
 

@@ -63,6 +63,28 @@ static struct work_struct stop_init_rc_hook_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
 
+long __strncpy_from_user_nofault(char *dst, const void __user *unsafe_addr,
+    long count)
+{
+long ret;
+
+if (unlikely(count <= 0))
+return 0;
+
+pagefault_disable();
+ret = strncpy_from_user(dst, unsafe_addr, count);
+pagefault_enable();
+
+if (ret >= count) {
+ret = count;
+dst[ret - 1] = '\0';
+} else if (ret > 0) {
+ret++;
+}
+
+return ret;
+}
+
 void on_post_fs_data(void)
 {
     static bool done = false;
@@ -205,7 +227,7 @@ static bool check_argv(struct user_arg_ptr argv, int index,
     if (!p || IS_ERR(p))
         goto fail;
 
-    if (strncpy_from_user_nofault(buf, p, buf_len) <= 0)
+    if (__strncpy_from_user_nofault(buf, p, buf_len) <= 0)
         goto fail;
 
     buf[buf_len - 1] = '\0';
@@ -515,9 +537,9 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
     fn = (const char __user *)addr;
 
     memset(path, 0, sizeof(path));
-    ret = strncpy_from_user_nofault(path, fn, 32);
+    ret = __strncpy_from_user_nofault(path, fn, 32);
     if (ret < 0 && try_set_access_flag(addr)) {
-        ret = strncpy_from_user_nofault(path, fn, 32);
+        ret = __strncpy_from_user_nofault(path, fn, 32);
     }
     if (ret < 0) {
         pr_err("Access filename failed for execve_handler_pre\n");
