@@ -4,7 +4,6 @@ use adb_client::tcp::ADBTcpDevice;
 use anyhow::{Context, Result, bail};
 use log::{error, info};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path::Path;
 use std::process::Command;
 
 fn enable_adb_root(port: u16) -> Result<()> {
@@ -109,10 +108,7 @@ fn connect_to_device(port: u16) -> Result<ADBTcpDevice> {
 
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
         info!("Connecting to ADB device at {addr}");
-        unsafe { std::env::set_var("HOME", "/dev") };
-        match ADBTcpDevice::new_with_custom_private_key(addr, Path::new("/dev/adbkey"))
-            .context("Failed to create ADBTcpDevice")
-        {
+        match ADBTcpDevice::new(addr).context("Failed to create ADBTcpDevice") {
             Ok(device) => return Ok(device),
             Err(e) => {
                 error!("Failed to connect to ADB device: {e:?}, retry after 1s");
