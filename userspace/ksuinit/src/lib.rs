@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use goblin::elf::{Elf, section_header, sym::Sym};
+use rustix::{cstr, system::init_module};
 use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
 use std::fs;
@@ -85,8 +86,13 @@ pub fn load_module(data: &[u8]) -> Result<()> {
     for ele in modifications {
         buffer.pwrite_with(ele.0, ele.1, ctx)?;
     }
-
-    rustix::system::init_module(&buffer, c"").context("init_module failed")?;
+    let param = if fs::exists("/ksu_allow_shell").unwrap_or(false) {
+        log::warn!("ksu allow shell at init!");
+        cstr!("allow_shell=1")
+    } else {
+        cstr!("")
+    };
+    init_module(&buffer, param).context("init_module failed.")?;
     Ok(())
 }
 

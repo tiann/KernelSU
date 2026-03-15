@@ -224,4 +224,8 @@
     <string name="show_only_primary_user_apps">只显示主用户应用</string>
     <string name="settings_auto_jailbreak">自动越狱</string>
     <string name="settings_auto_jailbreak_summary">开机检测到 Permissive SELinux 时自动使用 Magica 提权。需要授予本应用自启动权限。</string>
+    <string name="allow_shell">总是给 shell 授予 root 权限</string>
+    <string name="allow_shell_summary">用于救砖</string>
+    <string name="enable_adb">启动时强制启用 ADB 调试</string>
+    <string name="enable_adb_summary">用于救砖</string>
 </resources>
