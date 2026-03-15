@@ -92,7 +92,9 @@ fun InstallScreen() {
                         boot = if (method is InstallMethod.SelectFile) method.uri else null,
                         lkm = lkmSelection,
                         ota = method is InstallMethod.DirectInstallToInactiveSlot,
-                        partition = partitions.getOrNull(partitionSelectionIndex)
+                        partition = partitions.getOrNull(partitionSelectionIndex),
+                        allowShell = allowShell,
+                        enableAdb = enableAdb,
                     )
                 )
             )
