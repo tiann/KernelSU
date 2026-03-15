@@ -188,13 +188,13 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Download arm64 ksud
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ksud-aarch64-linux-android
           path: .
 
       - name: Download x86_64 ksud
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ksud-x86_64-linux-android
           path: .
@@ -216,13 +216,13 @@ jobs:
 
       - name: Upload build artifact
         if: ${{ github.event_name == 'pull_request' || (github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) || github.ref_type == 'tag' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: manager
           path: manager/app/build/outputs/apk/release/*.apk
 
       - name: Upload mappings
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: ${{ ( github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' )) || github.ref_type == 'tag' }}
         with:
           name: "mappings"
