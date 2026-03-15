@@ -77,5 +77,5 @@ sealed interface Route : NavKey, Parcelable {
 
     @Parcelize
     @Serializable
-    data class ExecuteModuleAction(val moduleId: String) : Route
+    data class ExecuteModuleAction(val moduleId: String, val fromShortcut: Boolean = false) : Route
 }

@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.webui
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.webkit.JsPromptResult
@@ -9,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.topjohnwu.superuser.Shell
+import me.weishu.kernelsu.R
 
 sealed class WebUIEvent {
     data object Loading : WebUIEvent()
@@ -68,7 +70,8 @@ class WebUIState {
         uiEvent = WebUIEvent.Close
     }
 
-    fun dispose() {
+    fun dispose(activity: Activity) {
+        activity.setTaskDescription(activity.getString(R.string.app_name))
         webView?.let { view ->
             (view.parent as? android.view.ViewGroup)?.removeView(view)
             view.destroy()

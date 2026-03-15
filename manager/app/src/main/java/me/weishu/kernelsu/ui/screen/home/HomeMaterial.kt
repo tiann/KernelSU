@@ -90,10 +90,7 @@ fun HomePagerMaterial(
                 WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
             }
             if (state.showGkiWarning) {
-                WarningCard(
-                    stringResource(id = R.string.home_gki_warning),
-                    MaterialTheme.colorScheme.tertiaryContainer
-                )
+                WarningCard(stringResource(id = R.string.home_gki_warning))
             }
             if (state.showRequireKernelWarning) {
                 WarningCard(
@@ -295,7 +292,8 @@ private fun StatusCard(
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.superuser), style = MaterialTheme.typography.bodyLarge,
+                            text = stringResource(R.string.superuser),
+                            style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -315,7 +313,8 @@ private fun StatusCard(
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.module), style = MaterialTheme.typography.bodyLarge,
+                            text = stringResource(R.string.module),
+                            style = MaterialTheme.typography.bodyLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )

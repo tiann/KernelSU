@@ -63,7 +63,6 @@ object Shortcut {
             action = Intent.ACTION_VIEW
             data = "kernelsu://webui/$moduleId".toUri()
             putExtra("id", moduleId)
-            putExtra("name", name)
             putExtra("from_webui_shortcut", true)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
