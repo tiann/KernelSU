@@ -29,6 +29,9 @@ fn get_git_version() -> Result<(u32, String), std::io::Error> {
 }
 
 fn main() {
+    if env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "android" {
+        println!("cargo:rustc-link-arg=-Wl,-z,max-page-size=16384");
+    }
     let (code, name) = match get_git_version() {
         Ok((code, name)) => (code, name),
         Err(_) => {
