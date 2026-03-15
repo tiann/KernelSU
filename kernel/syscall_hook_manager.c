@@ -260,9 +260,9 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
     fn = (const char __user *)addr;
 
     memset(path, 0, sizeof(path));
-    ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+    ret = __strncpy_from_user_nofault(path, fn, sizeof(path));
     if (ret < 0 && try_set_access_flag(addr)) {
-        ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+        ret = __strncpy_from_user_nofault(path, fn, sizeof(path));
         pr_info("ksu_handle_init_mark_tracker: %ld\n", ret);
     }
 
