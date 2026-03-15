@@ -398,7 +398,8 @@ fun ModuleRepoDetailScreenMaterial(
                     top = innerPadding.calculateTopPadding() + 56.dp + 8.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),
                     end = innerPadding.calculateEndPadding(layoutDirection),
-                    bottom = innerPadding.calculateBottomPadding() + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() + 16.dp
+                    bottom = innerPadding.calculateBottomPadding()
+                            + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() + 16.dp
                 )
                 when (page) {
                     0 -> ReadmePage(

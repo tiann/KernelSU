@@ -47,9 +47,9 @@ import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.KernelVersion
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
@@ -198,11 +198,7 @@ private fun TopBar(
 ) {
     TopAppBar(
         modifier = if (enableBlur) {
-            Modifier.hazeEffect(hazeState) {
-                style = hazeStyle
-                blurRadius = 30.dp
-                noiseFactor = 0f
-            }
+            Modifier.defaultHazeEffect(hazeState, hazeStyle)
         } else {
             Modifier
         },

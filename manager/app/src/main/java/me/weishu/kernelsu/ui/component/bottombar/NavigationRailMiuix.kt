@@ -10,8 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -41,11 +41,7 @@ fun NavigationRailMiuix(
             .fillMaxHeight()
             .then(
                 if (enableBlur) {
-                    Modifier.hazeEffect(hazeState) {
-                        style = hazeStyle
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                    }
+                    Modifier.defaultHazeEffect(hazeState, hazeStyle)
                 } else Modifier
             ),
         color = if (enableBlur) Color.Transparent else MiuixTheme.colorScheme.surface,

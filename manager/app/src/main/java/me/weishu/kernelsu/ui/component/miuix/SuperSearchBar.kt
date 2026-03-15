@@ -67,8 +67,8 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import me.weishu.kernelsu.ui.component.SearchStatus
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
@@ -121,11 +121,7 @@ fun SearchStatus.SearchBox(
             }
             .then(
                 if (hazeState != null && hazeStyle != null) {
-                    Modifier.hazeEffect(hazeState) {
-                        style = hazeStyle
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                    }
+                    Modifier.defaultHazeEffect(hazeState, hazeStyle)
                 } else {
                     Modifier.background(colorScheme.surface)
                 }
@@ -324,7 +320,7 @@ fun SearchBar(
             .padding(horizontal = 12.dp)
             .padding(top = searchBarTopPadding, bottom = 6.dp)
             .focusRequester(focusRequester),
-        onSearch = { it },
+        onSearch = { },
         expanded = searchStatus.shouldExpand(),
         onExpandedChange = {
             onSearchStatusChange(

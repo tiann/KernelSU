@@ -112,7 +112,10 @@ fun AppProfileScreen(uid: Int) {
                         showMessage(suNotAllowed)
                         return@launch
                     }
-                    if (!updatedProfile.rootUseDefault && updatedProfile.rules.isNotEmpty() && !setSepolicy(profile.name, updatedProfile.rules)) {
+                    if (!updatedProfile.rootUseDefault
+                        && updatedProfile.rules.isNotEmpty()
+                        && !setSepolicy(profile.name, updatedProfile.rules)
+                    ) {
                         showMessage(failToUpdateSepolicy)
                         return@launch
                     }

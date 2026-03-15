@@ -55,7 +55,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.UriHandler
@@ -67,20 +66,17 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import com.kyant.capsule.ContinuousRoundedRectangle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
@@ -957,12 +953,10 @@ fun ModuleRepoDetailScreenMiuix(
         topBar = {
             TopAppBar(
                 modifier = if (enableBlur) {
-                    Modifier.hazeEffect(hazeState) {
-                        style = hazeStyle
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                    }
-                } else Modifier,
+                    Modifier.defaultHazeEffect(hazeState, hazeStyle)
+                } else {
+                    Modifier
+                },
                 color = if (enableBlur) Color.Transparent else colorScheme.surface,
                 title = module.moduleName,
                 scrollBehavior = scrollBehavior,
@@ -1006,7 +1000,6 @@ fun ModuleRepoDetailScreenMiuix(
             stringResource(R.string.tab_info)
         )
         val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-        LocalDensity.current
         val tabRowHeight by remember { mutableStateOf(40.dp) }
         var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
         LaunchedEffect(scrollBehavior.state.collapsedFraction) {
@@ -1022,11 +1015,7 @@ fun ModuleRepoDetailScreenMiuix(
                 modifier = Modifier
                     .then(
                         if (enableBlur) {
-                            Modifier.hazeEffect(hazeState) {
-                                style = hazeStyle
-                                blurRadius = 30.dp
-                                noiseFactor = 0f
-                            }
+                            Modifier.defaultHazeEffect(hazeState, hazeStyle)
                         } else Modifier.background(colorScheme.surface),
                     )
                     .zIndex(1f)
@@ -1056,16 +1045,6 @@ fun ModuleRepoDetailScreenMiuix(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
             ) { page ->
-                run {
-                    val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
-                    NavigationBackHandler(
-                        state = navEventState,
-                        isBackEnabled = pagerState.currentPage != 0,
-                        onBackCompleted = {
-                            scope.launch { pagerState.animateScrollToPage(0) }
-                        }
-                    )
-                }
                 val innerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + tabRowHeight + dynamicTopPadding + 6.dp,
                     start = innerPadding.calculateStartPadding(layoutDirection),

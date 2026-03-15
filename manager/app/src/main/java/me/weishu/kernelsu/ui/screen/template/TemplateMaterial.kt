@@ -237,11 +237,23 @@ private fun TemplateItem(
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                         backgroundColor = MaterialTheme.colorScheme.primary
                     )
-                    StatusTag(label = template.context, contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                    StatusTag(
+                        label = template.context,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        backgroundColor = MaterialTheme.colorScheme.primary
+                    )
                     if (template.local) {
-                        StatusTag(label = "local", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                        StatusTag(
+                            label = "local",
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            backgroundColor = MaterialTheme.colorScheme.primary
+                        )
                     } else {
-                        StatusTag(label = "remote", contentColor = MaterialTheme.colorScheme.onPrimary, backgroundColor = MaterialTheme.colorScheme.primary)
+                        StatusTag(
+                            label = "remote",
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            backgroundColor = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }

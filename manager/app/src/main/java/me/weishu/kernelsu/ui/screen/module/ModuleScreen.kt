@@ -169,7 +169,9 @@ fun ModulePager(
                             navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
                             viewModel.markNeedRefresh()
                         },
-                        onDownloading = { effect = ModuleEffect.Toast(resource.getString(R.string.module_downloading).format(request.module.name)) },
+                        onDownloading = {
+                            effect = ModuleEffect.Toast(resource.getString(R.string.module_downloading).format(request.module.name))
+                        },
                     )
                 }
                 confirmDialogState = null

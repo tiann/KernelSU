@@ -58,7 +58,7 @@ class SettingsRepositoryImpl : SettingsRepository {
         set(value) = prefs.edit { putBoolean("enable_predictive_back", value) }
 
     override var enableBlur: Boolean
-        get() = prefs.getBoolean("enable_blur", true)
+        get() = prefs.getBoolean("enable_blur", false)
         set(value) = prefs.edit { putBoolean("enable_blur", value) }
 
     override var enableFloatingBottomBar: Boolean

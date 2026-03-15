@@ -108,6 +108,7 @@ fun GithubMarkdown(
             val frameLayout = FrameLayout(context)
             val webView = WebView(context).apply {
                 try {
+                    setLayerType(View.LAYER_TYPE_HARDWARE, null)
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
                     isHorizontalScrollBarEnabled = false
@@ -250,6 +251,7 @@ fun GithubMarkdown(
                         private var initialDownX = 0f
                         private var initialDownY = 0f
 
+                        @SuppressLint("ClickableViewAccessibility")
                         override fun onTouch(v: View, event: MotionEvent): Boolean {
                             when (event.action) {
                                 MotionEvent.ACTION_DOWN -> {
