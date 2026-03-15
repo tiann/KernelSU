@@ -219,8 +219,8 @@ private fun StatusCard(
                                     Spacer(Modifier.width(8.dp))
                                     StatusTag(
                                         label = stringResource(id = R.string.jailbreak_mode),
-                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                                        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                                        backgroundColor = MaterialTheme.colorScheme.errorContainer
                                     )
                                 }
                             }
