@@ -1,13 +1,17 @@
-use anyhow::{Context, Result};
-use log::{info, warn};
-use std::path::Path;
-
 use crate::module::{handle_updated_modules, prune_modules};
-use crate::utils::is_safe_mode;
+use crate::utils::{is_safe_mode, switch_cgroups, switch_mnt_ns};
 use crate::{
     assets, defs, ksucalls, metamodule, restorecon,
     utils::{self},
 };
+use anyhow::{Context, Result, bail};
+use libc::{_exit, waitpid};
+use log::{info, warn};
+use rustix::fs::{Mode, OFlags, open};
+use rustix::process::{chdir, setpgid};
+use rustix::stdio::{dup2_stderr, dup2_stdin, dup2_stdout};
+use std::path::Path;
+use std::process::Command;
 
 pub fn on_post_data_fs() -> Result<()> {
     ksucalls::report_post_fs_data();
@@ -187,4 +191,65 @@ fn catch_bootlog(logname: &str, command: &[&str]) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn soft_reboot() -> Result<()> {
+    unsafe {
+        let pid = libc::fork();
+        if pid < 0 {
+            bail!("fork error {}", std::io::Error::last_os_error());
+        } else if pid > 0 {
+            loop {
+                if waitpid(pid, std::ptr::null_mut(), 0) < 0 {
+                    if *libc::__errno() != libc::EINTR {
+                        _exit(1);
+                    }
+                } else {
+                    break;
+                }
+            }
+            _exit(0);
+        }
+    }
+
+    setpgid(None, None)?;
+    switch_cgroups();
+    switch_mnt_ns(1)?;
+    chdir("/")?;
+    {
+        let null_fd = open("/dev/null", OFlags::RDWR, Mode::empty())?;
+        dup2_stdin(&null_fd)?;
+        dup2_stdout(&null_fd)?;
+        dup2_stderr(&null_fd)?;
+    }
+
+    unsafe {
+        let pid = libc::fork();
+        if pid < 0 {
+            bail!("fork error {}", std::io::Error::last_os_error());
+        } else if pid > 0 {
+            _exit(0);
+        }
+    }
+
+    info!("emulating soft_reboot!");
+    run_stage("soft-reboot", true);
+    info!("stop");
+    let status = Command::new("stop").status().context("stop failed")?;
+    if !status.success() {
+        warn!("stop exited with status: {status}");
+    }
+    info!("post-fs-data");
+    on_post_data_fs()?;
+    info!("start");
+    let status = Command::new("start").status().context("start failed")?;
+    if !status.success() {
+        warn!("start exited with status: {status}");
+    }
+    info!("services");
+    on_services();
+
+    unsafe {
+        _exit(0);
+    }
 }
