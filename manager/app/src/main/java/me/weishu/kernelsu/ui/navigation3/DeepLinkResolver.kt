@@ -23,7 +23,7 @@ object DeepLinkResolver {
         return when (shortcutType) {
             "module_action" -> {
                 val moduleId = intent.getStringExtra("module_id") ?: return emptyList()
-                listOf(Route.Main, Route.ExecuteModuleAction(moduleId))
+                listOf(Route.Main, Route.ExecuteModuleAction(moduleId, fromShortcut = true))
             }
 
             else -> emptyList()
@@ -55,6 +55,8 @@ fun HandleDeepLink(
             val initialStack = DeepLinkResolver.resolve(intent)
             if (initialStack.isNotEmpty()) {
                 navigator.replaceAll(initialStack)
+                intent?.removeExtra("shortcut_type")
+                intent?.removeExtra("module_id")
             }
             lastHandledIntentId = currentIntentId
         }
