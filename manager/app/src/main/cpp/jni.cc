@@ -340,16 +340,27 @@ Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid)
     return nullptr;
 }
 
-int fork_dont_care() {
+int fork_dont_care_and_exec_ksud(const char *path) {
     int pid = fork();
     if (pid < 0) {
         PLOGE("fork");
         return pid;
     } else if (pid > 0) {
-        TEMP_FAILURE_RETRY(waitpid(pid, nullptr, 0));
+        int status = 0;
+        if (TEMP_FAILURE_RETRY(waitpid(pid, &status, 0)) < 0) {
+            PLOGE("waitpid");
+            return -1;
+        }
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            LOGE("magica bootstrap child failed, status=%d", status);
+        }
         return pid;
     }
-    // child
+
+    if (setuid(0) != 0) {
+        PLOGE("setuid");
+        _exit(1);
+    }
 
     pid = fork();
     if (pid < 0) {
@@ -359,8 +370,9 @@ int fork_dont_care() {
         _exit(0);
     }
 
-    // grandchild
-    return 0;
+    execl(path, "ksud", "late-load", "--magica", "5555", nullptr);
+    PLOGE("exec magica");
+    _exit(1);
 }
 
 extern "C"
@@ -369,10 +381,6 @@ Java_me_weishu_kernelsu_magica_AppZygotePreload_forkDontCareAndExecKsud(JNIEnv *
                                                                         jstring ksud_path) {
     auto path = env->GetStringUTFChars(ksud_path, nullptr);
     LOGD("executing magica %s", path);
-    if (fork_dont_care() == 0) {
-        execl(path, "ksud", "late-load", "--magica", "5555", nullptr);
-        PLOGE("exec magica");
-        _exit(1);
-    }
+    fork_dont_care_and_exec_ksud(path);
     env->ReleaseStringUTFChars(ksud_path, path);
 }
