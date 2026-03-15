@@ -269,7 +269,7 @@ bool __ksu_is_allow_uid(uid_t uid)
         return true;
     }
 
-    if (unlikely(allow_shell) && uid == 2000) {
+    if (unlikely(allow_shell) && uid == SHELL_UID) {
         return true;
     }
 

@@ -721,7 +721,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 &magiskboot,
                 workdir,
                 ramdisk,
-                "add 0755 ksu_allow_shell ksu_allow_shell",
+                "add 0644 ksu_allow_shell ksu_allow_shell",
             )?;
         } else if do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists ksu_allow_shell").is_ok() {
             println!("- Removing allow shell config");
@@ -738,7 +738,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 &magiskboot,
                 workdir,
                 ramdisk,
-                "add 0755 force_debuggable force_debuggable",
+                "add 0644 force_debuggable force_debuggable",
             )?;
 
             {
@@ -760,7 +760,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 &magiskboot,
                 workdir,
                 ramdisk,
-                "add 0755 adb_debug.prop adb_debug.prop",
+                "add 0644 adb_debug.prop adb_debug.prop",
             )?;
         } else {
             if do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists force_debuggable").is_ok() {

@@ -60,9 +60,9 @@ struct cred *ksu_cred;
 bool ksu_late_loaded;
 
 #ifdef CONFIG_KSU_DEBUG
-bool allow_shell = false;
-#else
 bool allow_shell = true;
+#else
+bool allow_shell = false;
 #endif
 module_param(allow_shell, bool, 0);
 
