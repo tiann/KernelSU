@@ -89,7 +89,6 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.MoreCircle
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -421,7 +420,6 @@ private fun GroupItem(
             .padding(bottom = 12.dp),
         onClick = onClickPrimary,
         onLongPress = if (group.apps.size > 1) onToggleExpand else null,
-        pressFeedbackType = PressFeedbackType.Sink,
         showIndication = true,
         insideMargin = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
     ) {

@@ -472,8 +472,8 @@ private fun ReadmePage(
         ),
     ) {
         item {
-            val isLoading = remember { mutableStateOf(true) }
-            if (isLoading.value) {
+            var isLoading by remember { mutableStateOf(true) }
+            if (isLoading) {
                 Box(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
@@ -485,7 +485,7 @@ private fun ReadmePage(
                 Box(modifier = Modifier.fillMaxSize()) {
                     GithubMarkdown(
                         content = readmeHtml,
-                        isLoading = isLoading,
+                        onLoadingChange = { isLoading = it },
                         containerColor = MaterialTheme.colorScheme.surface,
                     )
                 }

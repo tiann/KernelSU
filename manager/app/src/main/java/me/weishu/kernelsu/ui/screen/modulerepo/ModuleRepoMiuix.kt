@@ -76,7 +76,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.component.GithubMarkdown
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
@@ -84,6 +83,7 @@ import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.util.download
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
@@ -408,7 +408,6 @@ fun ModuleRepoScreenMiuix(
                                     .padding(bottom = 12.dp),
                                 insideMargin = PaddingValues(16.dp),
                                 showIndication = true,
-                                pressFeedbackType = PressFeedbackType.Sink,
                                 onClick = { actions.onOpenRepoDetail(module) }
                             ) {
                                 Column {
@@ -536,8 +535,8 @@ private fun ReadmePage(
         overscrollEffect = null,
     ) {
         item {
-            val isLoading = remember { mutableStateOf(true) }
-            if (isLoading.value) {
+            var isLoading by remember { mutableStateOf(true) }
+            if (isLoading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -567,7 +566,7 @@ private fun ReadmePage(
                     Card(
                         modifier = Modifier.padding(horizontal = 12.dp),
                     ) {
-                        GithubMarkdown(content = readmeHtml!!, isLoading)
+                        GithubMarkdown(content = readmeHtml!!, onLoadingChange = { isLoading = it })
                     }
                 }
             }
