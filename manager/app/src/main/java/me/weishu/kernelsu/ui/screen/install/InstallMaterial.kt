@@ -1,5 +1,10 @@
 package me.weishu.kernelsu.ui.screen.install
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -16,6 +21,8 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -39,6 +46,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.material.SegmentedCheckboxItem
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn1
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SegmentedRadioItem
@@ -81,6 +89,7 @@ internal fun InstallScreenMaterial(
                 onSelected = actions.onSelectMethod,
                 onSelectBootImage = actions.onSelectBootImage,
             )
+
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
@@ -96,17 +105,30 @@ internal fun InstallScreenMaterial(
                     }
                     add {
                         SegmentedListItem(
-                            leadingContent = { Icon(Icons.AutoMirrored.Filled.DriveFileMove, null) },
+                            leadingContent = {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.DriveFileMove,
+                                    null
+                                )
+                            },
                             headlineContent = { Text(stringResource(R.string.install_upload_lkm_file)) },
                             supportingContent = {
                                 (state.lkmSelection as? LkmSelection.LkmUri)?.let {
-                                    Text(stringResource(R.string.selected_lkm, it.uri.lastPathSegment ?: "(file)"))
+                                    Text(
+                                        stringResource(
+                                            R.string.selected_lkm,
+                                            it.uri.lastPathSegment ?: "(file)"
+                                        )
+                                    )
                                 }
                             },
                             trailingContent = {
                                 if (state.lkmSelection is LkmSelection.LkmUri) {
                                     IconButton(onClick = actions.onClearLkm) {
-                                        Icon(Icons.Filled.Close, contentDescription = stringResource(android.R.string.cancel))
+                                        Icon(
+                                            Icons.Filled.Close,
+                                            contentDescription = stringResource(android.R.string.cancel)
+                                        )
                                     }
                                 } else {
                                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
@@ -115,21 +137,52 @@ internal fun InstallScreenMaterial(
                             onClick = actions.onUploadLkm
                         )
                     }
+                }
+            )
+
+            SegmentedColumn1(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                onlyFirstVisible = !state.advancedOptionsShown,
+                content = buildList {
                     add {
-                        SegmentedCheckboxItem(
-                            title = stringResource(id = R.string.allow_shell),
-                            summary = stringResource(id = R.string.allow_shell_summary),
-                            checked = state.allowShell,
-                            onCheckedChange = actions.onSelectAllowShell,
+                        SegmentedListItem(
+                            headlineContent ={ Text(stringResource(R.string.advanced_options)) },
+                            trailingContent = {
+                                Icon(
+                                    if (state.advancedOptionsShown) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                                    contentDescription = stringResource(R.string.expand)
+                                )
+                            },
+                            onClick = actions.onAdvancedOptionsClicked
                         )
                     }
                     add {
-                        SegmentedCheckboxItem(
-                            title = stringResource(id = R.string.enable_adb),
-                            summary = stringResource(id = R.string.enable_adb_summary),
-                            checked = state.enableAdb,
-                            onCheckedChange = actions.onSelectEnableAdb,
-                        )
+                        AnimatedVisibility(
+                            state.advancedOptionsShown,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            SegmentedCheckboxItem(
+                                title = stringResource(id = R.string.allow_shell),
+                                summary = stringResource(id = R.string.allow_shell_summary),
+                                checked = state.allowShell,
+                                onCheckedChange = actions.onSelectAllowShell,
+                            )
+                        }
+                    }
+                    add {
+                        AnimatedVisibility(
+                            state.advancedOptionsShown,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            SegmentedCheckboxItem(
+                                title = stringResource(id = R.string.enable_adb),
+                                summary = stringResource(id = R.string.enable_adb_summary),
+                                checked = state.enableAdb,
+                                onCheckedChange = actions.onSelectEnableAdb,
+                            )
+                        }
                     }
                 }
             )

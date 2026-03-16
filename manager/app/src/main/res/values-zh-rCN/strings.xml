@@ -228,4 +228,6 @@
     <string name="allow_shell_summary">总是允许 adb shell 调用 su ，非必要请勿开启。</string>
     <string name="enable_adb">启动时强制启用 ADB 调试</string>
     <string name="enable_adb_summary">强制允许 USB 调试并取消 adb 认证，非必要请勿开启。</string>
+    <string name="advanced_options">高级选项</string>
+    <string name="expand">展开</string>
 </resources>

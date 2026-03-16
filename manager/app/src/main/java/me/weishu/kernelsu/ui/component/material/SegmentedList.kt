@@ -111,6 +111,41 @@ fun SegmentedColumn(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
+fun SegmentedColumn1(
+    modifier: Modifier = Modifier,
+    title: String = "",
+    content: List<@Composable () -> Unit>,
+    onlyFirstVisible: Boolean,
+) {
+    if (content.isEmpty()) return
+
+    Column(modifier = modifier) {
+        if (title.isNotEmpty()) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            )
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            content.forEachIndexed { index, itemContent ->
+                CompositionLocalProvider(
+                    LocalListItemShapes provides
+                            if (onlyFirstVisible)
+                                defaultSingleSegmentedShape(0, 1)
+                            else
+                                defaultSingleSegmentedShape(index, content.size),
+                ) {
+                    itemContent()
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
 fun <T> SegmentedLazyColumn(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),

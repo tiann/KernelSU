@@ -13,6 +13,7 @@ internal data class InstallUiState(
     val slotSuffix: String,
     val installMethodOptions: List<InstallMethod>,
     val canSelectPartition: Boolean,
+    val advancedOptionsShown: Boolean,
     val allowShell: Boolean,
     val enableAdb: Boolean,
 )
@@ -26,6 +27,7 @@ internal data class InstallScreenActions(
     val onClearLkm: () -> Unit,
     val onSelectPartition: (Int) -> Unit,
     val onNext: () -> Unit,
+    val onAdvancedOptionsClicked: () -> Unit,
     val onSelectAllowShell: (Boolean) -> Unit,
     val onSelectEnableAdb: (Boolean) -> Unit,
 )
