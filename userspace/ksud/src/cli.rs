@@ -435,8 +435,8 @@ pub fn run() -> Result<()> {
     }
 
     if arg0.ends_with("resetprop") {
-        let argv: Vec<String> = std::env::args().collect();
-        return crate::resetprop::run_from_args(&argv);
+        let all_args: Vec<String> = std::env::args().collect();
+        return crate::resetprop::run_from_args(&all_args);
     }
 
     let cli = Args::parse();

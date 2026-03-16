@@ -7,7 +7,7 @@ use prop_rs_android::sys_prop;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::process::Command;
 
-fn resetprop() -> ResetProp {
+const fn resetprop() -> ResetProp {
     ResetProp {
         skip_svc: true,
         persistent: false,
@@ -101,8 +101,7 @@ pub fn disable_adb_root() -> Result<()> {
     rp.set("ro.adb.secure", "1")
         .context("Failed to set ro.adb.secure")?;
 
-    const DELETE_PROPS: &[&str] = &["service.adb.root", "service.adb.tcp.port"];
-    for prop in DELETE_PROPS {
+    for prop in &["service.adb.root", "service.adb.tcp.port"] {
         info!("Restoring: resetprop --delete {prop}");
         let _ = rp.delete(prop);
         if let Ok(ctx) = sys_prop::get_context(prop) {
