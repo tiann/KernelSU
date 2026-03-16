@@ -5,10 +5,15 @@
 #include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/fs.h>
+#include <linux/mount.h>
+#include <linux/namei.h>
+#include <linux/pagemap.h>
 #include <linux/slab.h>
 #include <linux/kprobes.h>
+#include <linux/stat.h>
 #include <linux/syscalls.h>
 #include <linux/task_work.h>
+#include <linux/time.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
@@ -625,6 +630,92 @@ static int add_try_umount(void __user *arg)
     return 0;
 }
 
+static int do_utimensat3(void __user *arg)
+{
+    struct ksu_utimensat3_cmd cmd;
+    struct timespec64 ts[3];
+    struct path path;
+    struct inode *inode;
+    struct timespec64 now;
+    int lookup_flags = 0;
+    int err;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd)))
+        return -EFAULT;
+
+    ts[0].tv_sec = cmd.times[0].tv_sec;
+    ts[0].tv_nsec = cmd.times[0].tv_nsec;
+    ts[1].tv_sec = cmd.times[1].tv_sec;
+    ts[1].tv_nsec = cmd.times[1].tv_nsec;
+    ts[2].tv_sec = cmd.times[2].tv_sec;
+    ts[2].tv_nsec = cmd.times[2].tv_nsec;
+
+    if (!(cmd.flags & AT_SYMLINK_NOFOLLOW))
+        lookup_flags |= LOOKUP_FOLLOW;
+
+    err = user_path_at(cmd.dirfd, (const char __user *)cmd.pathname,
+                       lookup_flags, &path);
+    if (err)
+        return err;
+
+    inode = d_inode(path.dentry);
+
+    err = mnt_want_write(path.mnt);
+    if (err)
+        goto out_path;
+
+    inode_lock(inode);
+    now = current_time(inode);
+
+    /* atime */
+    if (ts[0].tv_nsec == UTIME_NOW)
+        ts[0] = now;
+    else if (ts[0].tv_nsec == UTIME_OMIT)
+        goto skip_atime;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    inode_set_atime_to_ts(inode, timestamp_truncate(ts[0], inode));
+#else
+    inode->i_atime = timestamp_truncate(ts[0], inode);
+#endif
+skip_atime:
+
+    /* mtime */
+    if (ts[1].tv_nsec == UTIME_NOW)
+        ts[1] = now;
+    else if (ts[1].tv_nsec == UTIME_OMIT)
+        goto skip_mtime;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    inode_set_mtime_to_ts(inode, timestamp_truncate(ts[1], inode));
+#else
+    inode->i_mtime = timestamp_truncate(ts[1], inode);
+#endif
+skip_mtime:
+
+    /* ctime */
+    if (ts[2].tv_nsec == UTIME_NOW)
+        ts[2] = now;
+    else if (ts[2].tv_nsec == UTIME_OMIT)
+        goto skip_ctime;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    inode_set_ctime_to_ts(inode, timestamp_truncate(ts[2], inode));
+#else
+    inode->i_ctime = timestamp_truncate(ts[2], inode);
+#endif
+skip_ctime:
+
+    mark_inode_dirty(inode);
+    inode_unlock(inode);
+
+    /* Flush to disk immediately */
+    filemap_write_and_wait(inode->i_mapping);
+    sync_inode_metadata(inode, 1);
+
+    mnt_drop_write(path.mnt);
+out_path:
+    path_put(&path);
+    return err;
+}
+
 // IOCTL handlers mapping table
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = KSU_IOCTL_GRANT_ROOT,
@@ -707,6 +798,10 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
       .name = "ADD_TRY_UMOUNT",
       .handler = add_try_umount,
       .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_UTIMENSAT3,
+      .name = "UTIMENSAT3",
+      .handler = do_utimensat3,
+      .perm_check = only_root },
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 

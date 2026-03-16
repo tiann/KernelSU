@@ -123,6 +123,20 @@ struct ksu_add_try_umount_cmd {
     __u8 mode; // denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry
 };
 
+struct ksu_utimensat3_timespec {
+    __s64 tv_sec;
+    __s64 tv_nsec;
+};
+
+struct ksu_utimensat3_cmd {
+    __s32 dirfd; // Input: directory fd, AT_FDCWD for cwd
+    __s32 flags; // Input: AT_SYMLINK_NOFOLLOW, etc.
+    __aligned_u64 pathname; // Input: pointer to user-space path string
+    struct ksu_utimensat3_timespec
+        times[3]; // Input: times[0]=atime, times[1]=mtime, times[2]=ctime
+    // Supports UTIME_OMIT (skip) and UTIME_NOW (current time)
+};
+
 #define KSU_UMOUNT_WIPE 0 // ignore everything and wipe list
 #define KSU_UMOUNT_ADD 1 // add entry (path + flags)
 #define KSU_UMOUNT_DEL 2 // delete entry, strcmp
@@ -152,6 +166,7 @@ struct ksu_add_try_umount_cmd {
 #define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ | _IOC_WRITE, 'K', 16, 0)
 #define KSU_IOCTL_NUKE_EXT4_SYSFS _IOC(_IOC_WRITE, 'K', 17, 0)
 #define KSU_IOCTL_ADD_TRY_UMOUNT _IOC(_IOC_WRITE, 'K', 18, 0)
+#define KSU_IOCTL_UTIMENSAT3 _IOC(_IOC_WRITE, 'K', 19, 0)
 
 // IOCTL handler types
 typedef int (*ksu_ioctl_handler_t)(void __user *arg);
