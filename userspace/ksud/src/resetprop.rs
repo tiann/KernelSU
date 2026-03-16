@@ -16,6 +16,7 @@ use std::time::Duration;
     about = "Magisk-compatible system property tool",
     disable_help_subcommand = true
 )]
+#[allow(clippy::struct_excessive_bools)]
 struct Args {
     /// Skip property_service (force direct mmap operation).
     #[arg(short = 'n', long = "skip-svc")]
@@ -82,7 +83,7 @@ pub fn run_from_args(args: &[String]) -> Result<()> {
 
     // Validate: at most one special mode
     let special_modes =
-        cli.wait as u8 + cli.delete as u8 + cli.compact as u8 + cli.file.is_some() as u8;
+        u8::from(cli.wait) + u8::from(cli.delete) + u8::from(cli.compact) + u8::from(cli.file.is_some());
     if special_modes > 1 {
         bail!("multiple operation modes detected");
     }
