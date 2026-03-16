@@ -60,7 +60,7 @@ import me.weishu.kernelsu.ui.util.LkmSelection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun InstallScreenMaterial(
-    state: InstallUiState,
+    uiState: InstallUiState,
     actions: InstallScreenActions,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -86,7 +86,7 @@ internal fun InstallScreenMaterial(
                 .verticalScroll(rememberScrollState())
         ) {
             SelectInstallMethod(
-                state = state,
+                state = uiState,
                 onSelected = actions.onSelectMethod,
                 onSelectBootImage = actions.onSelectBootImage,
             )
@@ -94,12 +94,12 @@ internal fun InstallScreenMaterial(
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
-                    if (state.displayPartitions.isNotEmpty()) add {
+                    if (uiState.displayPartitions.isNotEmpty()) add {
                         SegmentedDropdownItem(
-                            enabled = state.canSelectPartition,
-                            items = state.displayPartitions,
-                            selectedIndex = state.partitionSelectionIndex,
-                            title = "${stringResource(R.string.install_select_partition)} (${state.slotSuffix})",
+                            enabled = uiState.canSelectPartition,
+                            items = uiState.displayPartitions,
+                            selectedIndex = uiState.partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})",
                             onItemSelected = actions.onSelectPartition,
                             icon = Icons.Filled.Edit
                         )
@@ -114,7 +114,7 @@ internal fun InstallScreenMaterial(
                             },
                             headlineContent = { Text(stringResource(R.string.install_upload_lkm_file)) },
                             supportingContent = {
-                                (state.lkmSelection as? LkmSelection.LkmUri)?.let {
+                                (uiState.lkmSelection as? LkmSelection.LkmUri)?.let {
                                     Text(
                                         stringResource(
                                             R.string.selected_lkm,
@@ -124,7 +124,7 @@ internal fun InstallScreenMaterial(
                                 }
                             },
                             trailingContent = {
-                                if (state.lkmSelection is LkmSelection.LkmUri) {
+                                if (uiState.lkmSelection is LkmSelection.LkmUri) {
                                     IconButton(onClick = actions.onClearLkm) {
                                         Icon(
                                             Icons.Filled.Close,
@@ -143,10 +143,10 @@ internal fun InstallScreenMaterial(
 
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                visibleLen = if (state.advancedOptionsShown) 0 else 1,
+                visibleLen = if (uiState.advancedOptionsShown) 0 else 1,
                 content = buildList {
                     val rotationState by animateFloatAsState(
-                        targetValue = if (state.advancedOptionsShown) 180f else 0f,
+                        targetValue = if (uiState.advancedOptionsShown) 180f else 0f,
                         label = "RotationAnimation"
                     )
                     add {
@@ -164,28 +164,28 @@ internal fun InstallScreenMaterial(
                     }
                     add {
                         AnimatedVisibility(
-                            state.advancedOptionsShown,
+                            uiState.advancedOptionsShown,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             SegmentedCheckboxItem(
                                 title = stringResource(id = R.string.allow_shell),
                                 summary = stringResource(id = R.string.allow_shell_summary),
-                                checked = state.allowShell,
+                                checked = uiState.allowShell,
                                 onCheckedChange = actions.onSelectAllowShell,
                             )
                         }
                     }
                     add {
                         AnimatedVisibility(
-                            state.advancedOptionsShown,
+                            uiState.advancedOptionsShown,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             SegmentedCheckboxItem(
                                 title = stringResource(id = R.string.enable_adb),
                                 summary = stringResource(id = R.string.enable_adb_summary),
-                                checked = state.enableAdb,
+                                checked = uiState.enableAdb,
                                 onCheckedChange = actions.onSelectEnableAdb,
                             )
                         }
@@ -196,7 +196,7 @@ internal fun InstallScreenMaterial(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                enabled = state.installMethod != null,
+                enabled = uiState.installMethod != null,
                 onClick = actions.onNext
             ) { Text(stringResource(R.string.install_next)) }
         }
