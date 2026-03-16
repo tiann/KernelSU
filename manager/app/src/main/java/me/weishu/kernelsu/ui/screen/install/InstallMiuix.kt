@@ -2,6 +2,8 @@ package me.weishu.kernelsu.ui.screen.install
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -62,6 +64,8 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Close
 import top.yukonga.miuix.kmp.icon.extended.ConvertFile
+import top.yukonga.miuix.kmp.icon.extended.ExpandLess
+import top.yukonga.miuix.kmp.icon.extended.ExpandMore
 import top.yukonga.miuix.kmp.icon.extended.MoveFile
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -194,6 +198,44 @@ internal fun InstallScreenMiuix(
                             }
                         }
                     )
+                }
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                ) {
+                    BasicComponent(
+                        title = stringResource(id = R.string.advanced_options),
+                        onClick = actions.onAdvancedOptionsClicked,
+                        endActions = {
+                            Icon(
+                                if (uiState.advancedOptionsShown) MiuixIcons.ExpandLess else MiuixIcons.ExpandMore,
+                                modifier = Modifier.size(16.dp),
+                                tint = colorScheme.onSurfaceVariantActions,
+                                contentDescription = stringResource(R.string.expand),
+                            )
+                        }
+                    )
+                    AnimatedVisibility(
+                        visible = uiState.advancedOptionsShown,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        Column {
+                            SuperCheckbox(
+                                title = stringResource(id = R.string.allow_shell),
+                                checked = uiState.allowShell,
+                                summary = stringResource(id = R.string.allow_shell_summary),
+                                onCheckedChange = actions.onSelectAllowShell
+                            )
+                            SuperCheckbox(
+                                title = stringResource(id = R.string.enable_adb),
+                                checked = uiState.enableAdb,
+                                summary = stringResource(id = R.string.enable_adb_summary),
+                                onCheckedChange = actions.onSelectEnableAdb
+                            )
+                        }
+                    }
                 }
                 TextButton(
                     modifier = Modifier

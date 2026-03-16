@@ -1,5 +1,11 @@
 package me.weishu.kernelsu.ui.screen.install
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -16,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -30,13 +37,16 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.material.SegmentedCheckboxItem
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
@@ -50,7 +60,7 @@ import me.weishu.kernelsu.ui.util.LkmSelection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun InstallScreenMaterial(
-    state: InstallUiState,
+    uiState: InstallUiState,
     actions: InstallScreenActions,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -76,36 +86,50 @@ internal fun InstallScreenMaterial(
                 .verticalScroll(rememberScrollState())
         ) {
             SelectInstallMethod(
-                state = state,
+                state = uiState,
                 onSelected = actions.onSelectMethod,
                 onSelectBootImage = actions.onSelectBootImage,
             )
+
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 content = buildList {
-                    if (state.displayPartitions.isNotEmpty()) add {
+                    if (uiState.displayPartitions.isNotEmpty()) add {
                         SegmentedDropdownItem(
-                            enabled = state.canSelectPartition,
-                            items = state.displayPartitions,
-                            selectedIndex = state.partitionSelectionIndex,
-                            title = "${stringResource(R.string.install_select_partition)} (${state.slotSuffix})",
+                            enabled = uiState.canSelectPartition,
+                            items = uiState.displayPartitions,
+                            selectedIndex = uiState.partitionSelectionIndex,
+                            title = "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})",
                             onItemSelected = actions.onSelectPartition,
                             icon = Icons.Filled.Edit
                         )
                     }
                     add {
                         SegmentedListItem(
-                            leadingContent = { Icon(Icons.AutoMirrored.Filled.DriveFileMove, null) },
+                            leadingContent = {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.DriveFileMove,
+                                    null
+                                )
+                            },
                             headlineContent = { Text(stringResource(R.string.install_upload_lkm_file)) },
                             supportingContent = {
-                                (state.lkmSelection as? LkmSelection.LkmUri)?.let {
-                                    Text(stringResource(R.string.selected_lkm, it.uri.lastPathSegment ?: "(file)"))
+                                (uiState.lkmSelection as? LkmSelection.LkmUri)?.let {
+                                    Text(
+                                        stringResource(
+                                            R.string.selected_lkm,
+                                            it.uri.lastPathSegment ?: "(file)"
+                                        )
+                                    )
                                 }
                             },
                             trailingContent = {
-                                if (state.lkmSelection is LkmSelection.LkmUri) {
+                                if (uiState.lkmSelection is LkmSelection.LkmUri) {
                                     IconButton(onClick = actions.onClearLkm) {
-                                        Icon(Icons.Filled.Close, contentDescription = stringResource(android.R.string.cancel))
+                                        Icon(
+                                            Icons.Filled.Close,
+                                            contentDescription = stringResource(android.R.string.cancel)
+                                        )
                                     }
                                 } else {
                                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
@@ -116,11 +140,63 @@ internal fun InstallScreenMaterial(
                     }
                 }
             )
+
+            SegmentedColumn(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                visibleLen = if (uiState.advancedOptionsShown) 0 else 1,
+                content = buildList {
+                    val rotationState by animateFloatAsState(
+                        targetValue = if (uiState.advancedOptionsShown) 180f else 0f,
+                        label = "RotationAnimation"
+                    )
+                    add {
+                        SegmentedListItem(
+                            headlineContent ={ Text(stringResource(R.string.advanced_options)) },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ExpandMore,
+                                    contentDescription = stringResource(R.string.expand),
+                                    modifier = Modifier.graphicsLayer { rotationZ = rotationState }
+                                )
+                            },
+                            onClick = actions.onAdvancedOptionsClicked
+                        )
+                    }
+                    add {
+                        AnimatedVisibility(
+                            uiState.advancedOptionsShown,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            SegmentedCheckboxItem(
+                                title = stringResource(id = R.string.allow_shell),
+                                summary = stringResource(id = R.string.allow_shell_summary),
+                                checked = uiState.allowShell,
+                                onCheckedChange = actions.onSelectAllowShell,
+                            )
+                        }
+                    }
+                    add {
+                        AnimatedVisibility(
+                            uiState.advancedOptionsShown,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            SegmentedCheckboxItem(
+                                title = stringResource(id = R.string.enable_adb),
+                                summary = stringResource(id = R.string.enable_adb_summary),
+                                checked = uiState.enableAdb,
+                                onCheckedChange = actions.onSelectEnableAdb,
+                            )
+                        }
+                    }
+                }
+            )
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                enabled = state.installMethod != null,
+                enabled = uiState.installMethod != null,
                 onClick = actions.onNext
             ) { Text(stringResource(R.string.install_next)) }
         }

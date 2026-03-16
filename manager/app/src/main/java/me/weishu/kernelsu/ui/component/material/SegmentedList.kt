@@ -84,6 +84,7 @@ private fun defaultSingleSegmentedShape(index: Int, count: Int): ListItemShapes 
 fun SegmentedColumn(
     modifier: Modifier = Modifier,
     title: String = "",
+    visibleLen: Int = 0,
     content: List<@Composable () -> Unit>,
 ) {
     if (content.isEmpty()) return
@@ -100,7 +101,10 @@ fun SegmentedColumn(
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             content.forEachIndexed { index, itemContent ->
                 CompositionLocalProvider(
-                    LocalListItemShapes provides defaultSingleSegmentedShape(index, content.size),
+                    LocalListItemShapes provides defaultSingleSegmentedShape(
+                        index = index,
+                        count = if (visibleLen > 0) visibleLen else content.size
+                    ),
                 ) {
                     itemContent()
                 }
