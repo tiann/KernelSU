@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.install
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,8 +37,10 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -143,13 +145,18 @@ internal fun InstallScreenMaterial(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 visibleLen = if (state.advancedOptionsShown) 0 else 1,
                 content = buildList {
+                    val rotationState by animateFloatAsState(
+                        targetValue = if (state.advancedOptionsShown) 180f else 0f,
+                        label = "RotationAnimation"
+                    )
                     add {
                         SegmentedListItem(
                             headlineContent ={ Text(stringResource(R.string.advanced_options)) },
                             trailingContent = {
                                 Icon(
-                                    if (state.advancedOptionsShown) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                                    contentDescription = stringResource(R.string.expand)
+                                    imageVector = Icons.Filled.ExpandMore,
+                                    contentDescription = stringResource(R.string.expand),
+                                    modifier = Modifier.graphicsLayer { rotationZ = rotationState }
                                 )
                             },
                             onClick = actions.onAdvancedOptionsClicked
