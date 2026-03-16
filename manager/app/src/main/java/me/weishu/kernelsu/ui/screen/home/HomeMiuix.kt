@@ -252,8 +252,12 @@ private fun StatusCard(
                                 else -> Color(0xFFDFFAE4)
                             }
                         ),
-                        onClick = { actions.onInstallClick() },
-                        showIndication = true,
+                        onClick = {
+                            if (!state.isLateLoadMode) {
+                                actions.onInstallClick()
+                            }
+                        },
+                        showIndication = !state.isLateLoadMode,
                         pressFeedbackType = PressFeedbackType.Tilt
                     ) {
                         Box(modifier = Modifier.fillMaxSize()) {
@@ -361,8 +365,12 @@ private fun StatusCard(
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Card(
                         modifier = Modifier.weight(1f),
-                        onClick = { actions.onInstallClick() },
-                        showIndication = true,
+                        onClick = {
+                            if (!state.isLateLoadMode) {
+                                actions.onInstallClick()
+                            }
+                        },
+                        showIndication = !state.isLateLoadMode,
                         pressFeedbackType = PressFeedbackType.Sink
                     ) {
                         BasicComponent(
@@ -393,8 +401,12 @@ private fun StatusCard(
 
             else -> {
                 Card(
-                    onClick = { actions.onInstallClick() },
-                    showIndication = true,
+                    onClick = {
+                        if (!state.isLateLoadMode) {
+                            actions.onInstallClick()
+                        }
+                    },
+                    showIndication = !state.isLateLoadMode,
                     pressFeedbackType = PressFeedbackType.Sink
                 ) {
                     BasicComponent(

@@ -253,6 +253,7 @@ fun SettingPagerMaterial(
                             val uninstall = stringResource(id = R.string.settings_uninstall)
                             SegmentedListItem(
                                 onClick = { showUninstallDialog.value = true },
+                                enabled = !uiState.isLateLoadMode,
                                 headlineContent = { Text(uninstall) },
                                 leadingContent = { Icon(Icons.Filled.Delete, uninstall) }
                             )

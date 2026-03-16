@@ -180,7 +180,7 @@ private fun StatusCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { actions.onInstallClick() }
+                    .clickable(enabled = !state.isLateLoadMode) { actions.onInstallClick() }
                     .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
