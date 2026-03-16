@@ -51,6 +51,7 @@ struct Args {
     file: Option<String>,
 
     /// Compact property area memory (reclaim holes left by deleted properties).
+    /// Optionally pass a SELinux context name to compact only that area.
     #[arg(short = 'c', long = "compact")]
     compact: bool,
 
@@ -105,8 +106,10 @@ pub fn run_from_args(args: &[String]) -> Result<()> {
     }
 
     // -c: compact property area memory
+    // When a positional argument is given, treat it as a SELinux context name.
     if cli.compact {
-        let compacted = sys_prop::compact().context("compact failed")?;
+        let context = cli.name.as_deref();
+        let compacted = sys_prop::compact(context).context("compact failed")?;
         if !compacted {
             bail!("nothing to compact");
         }
