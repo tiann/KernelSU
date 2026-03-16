@@ -83,8 +83,10 @@ pub fn run_from_args(args: &[String]) -> Result<()> {
     };
 
     // Validate: at most one special mode
-    let special_modes =
-        u8::from(cli.wait) + u8::from(cli.delete) + u8::from(cli.compact) + u8::from(cli.file.is_some());
+    let special_modes = u8::from(cli.wait)
+        + u8::from(cli.delete)
+        + u8::from(cli.compact)
+        + u8::from(cli.file.is_some());
     if special_modes > 1 {
         bail!("multiple operation modes detected");
     }
