@@ -211,6 +211,7 @@ internal fun InstallScreenMiuix(
                             Icon(
                                 if (uiState.advancedOptionsShown) MiuixIcons.ExpandLess else MiuixIcons.ExpandMore,
                                 modifier = Modifier.size(16.dp),
+                                tint = colorScheme.onSurfaceVariantActions,
                                 contentDescription = stringResource(R.string.expand),
                             )
                         }
