@@ -84,6 +84,7 @@ private fun defaultSingleSegmentedShape(index: Int, count: Int): ListItemShapes 
 fun SegmentedColumn(
     modifier: Modifier = Modifier,
     title: String = "",
+    visibleLen: Int = 0,
     content: List<@Composable () -> Unit>,
 ) {
     if (content.isEmpty()) return
@@ -100,42 +101,10 @@ fun SegmentedColumn(
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             content.forEachIndexed { index, itemContent ->
                 CompositionLocalProvider(
-                    LocalListItemShapes provides defaultSingleSegmentedShape(index, content.size),
-                ) {
-                    itemContent()
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-fun SegmentedColumn1(
-    modifier: Modifier = Modifier,
-    title: String = "",
-    content: List<@Composable () -> Unit>,
-    onlyFirstVisible: Boolean,
-) {
-    if (content.isEmpty()) return
-
-    Column(modifier = modifier) {
-        if (title.isNotEmpty()) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-            )
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            content.forEachIndexed { index, itemContent ->
-                CompositionLocalProvider(
-                    LocalListItemShapes provides
-                            if (onlyFirstVisible)
-                                defaultSingleSegmentedShape(0, 1)
-                            else
-                                defaultSingleSegmentedShape(index, content.size),
+                    LocalListItemShapes provides defaultSingleSegmentedShape(
+                        index = index,
+                        count = if (visibleLen > 0) visibleLen else content.size
+                    ),
                 ) {
                     itemContent()
                 }

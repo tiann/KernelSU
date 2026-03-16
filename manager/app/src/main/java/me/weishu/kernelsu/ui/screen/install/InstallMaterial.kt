@@ -46,7 +46,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.material.SegmentedCheckboxItem
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
-import me.weishu.kernelsu.ui.component.material.SegmentedColumn1
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SegmentedRadioItem
@@ -140,9 +139,9 @@ internal fun InstallScreenMaterial(
                 }
             )
 
-            SegmentedColumn1(
+            SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                onlyFirstVisible = !state.advancedOptionsShown,
+                visibleLen = if (state.advancedOptionsShown) 0 else 1,
                 content = buildList {
                     add {
                         SegmentedListItem(
