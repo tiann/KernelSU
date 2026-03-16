@@ -227,7 +227,7 @@
     <string name="settings_auto_jailbreak">Auto jailbreak</string>
     <string name="settings_auto_jailbreak_summary">Automatically use Magica to escalate privileges when Permissive SELinux is detected at boot. Requires granting autostart permission to this app.</string>
     <string name="allow_shell">Always grant root to Shell</string>
-    <string name="allow_shell_summary">For rescue from bootloop.</string>
+    <string name="allow_shell_summary">Always allow adb shell to call su; do not enable this unless absolutely necessary.</string>
     <string name="enable_adb">Force enable adb on boot</string>
-    <string name="enable_adb_summary">For rescue from bootloop.</string>
+    <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
 </resources>
