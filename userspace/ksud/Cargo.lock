@@ -1204,7 +1204,7 @@ dependencies = [
 [[package]]
 name = "prop-rs"
 version = "0.1.0"
-source = "git+https://github.com/Kernel-SU/ksu_props#3be864bbca0650e81ec28fbf68628fe466c15cb4"
+source = "git+https://github.com/Kernel-SU/ksu_props#a8e53ec81f8314e407d8e120e6d7d6f1b4684510"
 dependencies = [
  "prost",
 ]
@@ -1212,7 +1212,7 @@ dependencies = [
 [[package]]
 name = "prop-rs-android"
 version = "0.1.0"
-source = "git+https://github.com/Kernel-SU/ksu_props#3be864bbca0650e81ec28fbf68628fe466c15cb4"
+source = "git+https://github.com/Kernel-SU/ksu_props#a8e53ec81f8314e407d8e120e6d7d6f1b4684510"
 dependencies = [
  "libc",
  "memmap2",
