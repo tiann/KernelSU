@@ -151,7 +151,7 @@ internal fun InstallScreenMaterial(
                     )
                     add {
                         SegmentedListItem(
-                            headlineContent ={ Text(stringResource(R.string.advanced_options)) },
+                            headlineContent = { Text(stringResource(R.string.advanced_options)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ExpandMore,
