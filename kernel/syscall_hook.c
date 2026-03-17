@@ -7,6 +7,8 @@ syscall_fn_t *ksu_syscall_table = NULL;
 
 void ksu_replace_syscall_table(int nr, syscall_fn_t fn, syscall_fn_t *old)
 {
+    if (ksu_syscall_table == NULL)
+        return;
     if (nr < 0 || nr >= __NR_syscalls) {
         pr_info("invalid nr: %d\n", nr);
         return;
@@ -33,4 +35,5 @@ void ksu_replace_syscall_table(int nr, syscall_fn_t fn, syscall_fn_t *old)
 void ksu_syscall_hook_init()
 {
     ksu_syscall_table = kallsyms_lookup_name("sys_call_table");
+    pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
 }

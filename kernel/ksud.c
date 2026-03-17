@@ -484,7 +484,7 @@ static long ksu_sys_read(const struct pt_regs *regs)
 {
     unsigned int fd = PT_REGS_PARM1(regs);
     char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(regs);
-    size_t count_ptr = (size_t *)&PT_REGS_PARM3(regs);
+    size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
 
     ksu_handle_sys_read(fd, buf_ptr, count_ptr);
     return orig_sys_read(regs);
