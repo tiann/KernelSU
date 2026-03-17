@@ -176,7 +176,8 @@ module_init(kernelsu_init_early);
 #else
 module_init(kernelsu_init);
 #endif
-module_exit(kernelsu_exit);
+// TODO: exit safely
+// module_exit(kernelsu_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("weishu");
