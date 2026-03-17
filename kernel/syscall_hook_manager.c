@@ -331,12 +331,16 @@ static long ksu_syscall_setresuid(const struct pt_regs *regs)
 {
     CHECK_SYSCALL
 
-    uid_t ruid = (uid_t)PT_REGS_PARM1(regs);
-    uid_t euid = (uid_t)PT_REGS_PARM2(regs);
-    uid_t suid = (uid_t)PT_REGS_PARM3(regs);
-    ksu_handle_setresuid(ruid, euid, suid);
+    uid_t old_uid = current_uid().val;
 
-    return ksu_syscall_table[__NR_setresuid](regs);
+    long ret = ksu_syscall_table[__NR_setresuid](regs);
+
+    if (ret < 0)
+        return ret;
+
+    ksu_handle_setresuid(old_uid, current_uid().val);
+
+    return ret;
 }
 
 static int nr_for_setresuid = -1;
