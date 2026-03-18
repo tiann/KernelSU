@@ -8,7 +8,9 @@
 #include "linux/types.h" // IWYU pragma: keep
 #include "linux/version.h"
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
+#include "asm/text-patching.h" // IWYU pragma: keep
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
 #include "asm/patching.h" // IWYU pragma: keep
 #else
 #include "asm/insn.h" // IWYU pragma: keep
