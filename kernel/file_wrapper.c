@@ -260,30 +260,19 @@ void ksu_wrapper_splice_eof(struct file *fp)
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-static int ksu_wrapper_setlease(struct file *fp, int arg1,
-                                struct file_lease **fl, void **p)
-{
-    struct ksu_file_wrapper *data = fp->private_data;
-    struct file *orig = data->orig;
-    if (orig->f_op->setlease) {
-        return orig->f_op->setlease(orig, arg1, fl, p);
-    }
-    return -EINVAL;
-}
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-static int ksu_wrapper_setlease(struct file *fp, int arg1,
-                                struct file_lock **fl, void **p)
-{
-    struct ksu_file_wrapper *data = fp->private_data;
-    struct file *orig = data->orig;
-    if (orig->f_op->setlease) {
-        return orig->f_op->setlease(orig, arg1, fl, p);
-    }
-    return -EINVAL;
-}
+#define __ksu_sl_file_lock file_lease
 #else
-static int ksu_wrapper_setlease(struct file *fp, long arg1,
-                                struct file_lock **fl, void **p)
+#define __ksu_sl_file_lock file_lock
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#define __ksu_sl_arg1 int
+#else
+#define __ksu_sl_arg1 long
+#endif
+
+static int ksu_wrapper_setlease(struct file *fp, __ksu_sl_arg1 arg1,
+                                struct __ksu_sl_file_lock **fl, void **p)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
@@ -292,7 +281,6 @@ static int ksu_wrapper_setlease(struct file *fp, long arg1,
     }
     return -EINVAL;
 }
-#endif
 
 static long ksu_wrapper_fallocate(struct file *fp, int mode, loff_t offset,
                                   loff_t len)
