@@ -650,6 +650,19 @@ static int do_utimensat3(void __user *arg)
     ts[2].tv_sec = cmd.times[2].tv_sec;
     ts[2].tv_nsec = cmd.times[2].tv_nsec;
 
+    for (int i = 0; i < 3; i++) {
+        long nsec = ts[i].tv_nsec;
+        if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
+            continue;
+        if (nsec < 0 || nsec > 999999999)
+            return -EINVAL;
+    }
+
+    if (ts[0].tv_nsec == UTIME_OMIT &&
+        ts[1].tv_nsec == UTIME_OMIT &&
+        ts[2].tv_nsec == UTIME_OMIT)
+        return 0;
+
     if (!(cmd.flags & AT_SYMLINK_NOFOLLOW))
         lookup_flags |= LOOKUP_FOLLOW;
 
