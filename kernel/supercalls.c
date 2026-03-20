@@ -658,8 +658,7 @@ static int do_utimensat3(void __user *arg)
             return -EINVAL;
     }
 
-    if (ts[0].tv_nsec == UTIME_OMIT &&
-        ts[1].tv_nsec == UTIME_OMIT &&
+    if (ts[0].tv_nsec == UTIME_OMIT && ts[1].tv_nsec == UTIME_OMIT &&
         ts[2].tv_nsec == UTIME_OMIT)
         return 0;
 
