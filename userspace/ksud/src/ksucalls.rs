@@ -350,8 +350,6 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub const UTIME_OMIT: i64 = (1i64 << 30) - 2;
-
 /// Set atime/mtime/ctime on a file via kernel ioctl.
 /// Each time is (tv_sec, tv_nsec). Pass tv_nsec = UTIME_OMIT to skip.
 pub fn utimensat3(

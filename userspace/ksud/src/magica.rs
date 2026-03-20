@@ -53,9 +53,9 @@ fn enable_adb_root(port: u16) -> Result<()> {
         .map(|path| {
             rustix::fs::stat(*path).map(|st| {
                 (
-                    (st.st_atime as i64, st.st_atime_nsec as i64),
-                    (st.st_mtime as i64, st.st_mtime_nsec as i64),
-                    (st.st_ctime as i64, st.st_ctime_nsec as i64),
+                    (st.st_atime, st.st_atime_nsec),
+                    (st.st_mtime, st.st_mtime_nsec),
+                    (st.st_ctime, st.st_ctime_nsec),
                 )
             })
         })
