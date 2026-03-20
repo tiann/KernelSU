@@ -1,8 +1,9 @@
 use crate::assets;
+use crate::ksucalls;
 use adb_client::ADBDeviceExt;
 use adb_client::tcp::ADBTcpDevice;
 use anyhow::{Context, Result, bail};
-use log::{error, info};
+use log::{error, info, warn};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::process::Command;
 
@@ -45,6 +46,21 @@ fn enable_adb_root(port: u16) -> Result<()> {
     let adb_secure_context = format!("/dev/__properties__/{adb_secure_context}");
     let port_str = port.to_string();
 
+    // Save timestamps (atime, mtime, ctime) before chmod
+    let chmod_files: &[&str] = &[props_serial, &debuggable_context, &adb_secure_context];
+    let saved_times: Vec<_> = chmod_files
+        .iter()
+        .map(|path| {
+            rustix::fs::stat(*path).map(|st| {
+                (
+                    (st.st_atime as i64, st.st_atime_nsec as i64),
+                    (st.st_mtime as i64, st.st_mtime_nsec as i64),
+                    (st.st_ctime as i64, st.st_ctime_nsec as i64),
+                )
+            })
+        })
+        .collect();
+
     let commands: &[(&str, &[&str])] = &[
         ("chmod", &["0644", props_serial]),
         ("chmod", &["0644", &debuggable_context]),
@@ -67,6 +83,16 @@ fn enable_adb_root(port: u16) -> Result<()> {
             .with_context(|| format!("Failed to execute {cmd}"))?;
         if !status.success() {
             bail!("{cmd} {} exited with {status}", args.join(" "));
+        }
+    }
+
+    // Restore timestamps after chmod
+    for (i, path) in chmod_files.iter().enumerate() {
+        if let Ok(times) = &saved_times[i] {
+            let (atime, mtime, ctime) = times;
+            if let Err(e) = ksucalls::utimensat3(path, *atime, *mtime, *ctime) {
+                warn!("Failed to restore timestamps for {path}: {e}");
+            }
         }
     }
 

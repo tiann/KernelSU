@@ -21,6 +21,7 @@ const KSU_IOCTL_GET_WRAPPER_FD: i32 = _IOW::<()>(K, 15);
 const KSU_IOCTL_MANAGE_MARK: i32 = _IOWR::<()>(K, 16);
 const KSU_IOCTL_NUKE_EXT4_SYSFS: i32 = _IOW::<()>(K, 17);
 const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
+const KSU_IOCTL_UTIMENSAT3: i32 = _IOW::<()>(K, 19);
 
 // Keep in sync with kernel/supercalls.h.
 const KSU_GET_INFO_FLAG_LATE_LOAD: u32 = 1 << 2;
@@ -93,6 +94,22 @@ struct AddTryUmountCmd {
     arg: u64,   // char ptr, this is the mountpoint
     flags: u32, // this is the flag we use for it
     mode: u8,   // denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct Utimensat3Timespec {
+    tv_sec: i64,
+    tv_nsec: i64,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+struct Utimensat3Cmd {
+    dirfd: i32,
+    flags: i32,
+    pathname: u64,
+    times: [Utimensat3Timespec; 3],
 }
 
 // Mark operation constants
@@ -330,5 +347,39 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
         mode: KSU_UMOUNT_DEL,
     };
     ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
+    Ok(())
+}
+
+pub const UTIME_OMIT: i64 = (1i64 << 30) - 2;
+
+/// Set atime/mtime/ctime on a file via kernel ioctl.
+/// Each time is (tv_sec, tv_nsec). Pass tv_nsec = UTIME_OMIT to skip.
+pub fn utimensat3(
+    path: &str,
+    atime: (i64, i64),
+    mtime: (i64, i64),
+    ctime: (i64, i64),
+) -> anyhow::Result<()> {
+    let c_path = std::ffi::CString::new(path)?;
+    let mut cmd = Utimensat3Cmd {
+        dirfd: libc::AT_FDCWD,
+        flags: 0,
+        pathname: c_path.as_ptr() as u64,
+        times: [
+            Utimensat3Timespec {
+                tv_sec: atime.0,
+                tv_nsec: atime.1,
+            },
+            Utimensat3Timespec {
+                tv_sec: mtime.0,
+                tv_nsec: mtime.1,
+            },
+            Utimensat3Timespec {
+                tv_sec: ctime.0,
+                tv_nsec: ctime.1,
+            },
+        ],
+    };
+    ksuctl(KSU_IOCTL_UTIMENSAT3, &raw mut cmd)?;
     Ok(())
 }
