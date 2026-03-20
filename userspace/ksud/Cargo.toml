@@ -53,6 +53,7 @@ derive-new = "0.7"
 getopts = "0.2"
 ksuinit = { path = "../ksuinit" }
 adb_client = { git = "https://github.com/Kernel-SU/adb_client" }
+prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props" }
 
 [profile.release]
 strip = true

@@ -23,6 +23,12 @@ mod android {
                 Asset::get(&file).ok_or_else(|| anyhow::anyhow!("asset not found: {file}"))?;
             ensure_binary(format!("{BINARY_DIR}{file}"), &asset.data, ignore_if_exist)?;
         }
+
+        // Create resetprop -> ksud symlink (resetprop is now built into ksud)
+        let resetprop_link = RESETPROP_PATH;
+        let _ = std::fs::remove_file(resetprop_link);
+        std::os::unix::fs::symlink("/data/adb/ksud", resetprop_link)?;
+
         Ok(())
     }
 }
