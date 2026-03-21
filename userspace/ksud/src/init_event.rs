@@ -20,9 +20,9 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     #[cfg(unix)]
-    let _ = catch_bootlog("logcat", &["logcat", "-b", "all"]);
+    let _ = start_bootlog("logcat", &["logcat", "-b", "all"]);
     #[cfg(unix)]
-    let _ = catch_bootlog("dmesg", &["dmesg", "-w", "-r"]);
+    let _ = start_bootlog("dmesg", &["dmesg", "-w", "-r"]);
 
     if utils::has_magisk() {
         warn!("Magisk detected, skip post-fs-data!");
@@ -149,10 +149,14 @@ pub fn on_boot_completed() {
     info!("on_boot_completed triggered!");
 
     run_stage("boot-completed", false);
+    
+    #[cfg(unix)]
+    stop_bootlog("logcat");
+    stop_bootlog("dmesg");
 }
 
 #[cfg(unix)]
-fn catch_bootlog(logname: &str, command: &[&str]) -> Result<()> {
+fn start_bootlog(logname: &str, command: &[&str]) -> Result<()> {
     use std::os::unix::process::CommandExt;
     use std::process::Stdio;
 
@@ -160,31 +164,54 @@ fn catch_bootlog(logname: &str, command: &[&str]) -> Result<()> {
     utils::ensure_dir_exists(logdir)?;
     let bootlog = logdir.join(format!("{logname}.log"));
     let oldbootlog = logdir.join(format!("{logname}.old.log"));
+    let pidfile = logdir.join(format!("{logname}.pid"));
 
     if bootlog.exists() {
-        std::fs::rename(&bootlog, oldbootlog)?;
+        std::fs::rename(&bootlog, oldbootlog);
     }
 
-    let bootlog = std::fs::File::create(bootlog)?;
+    let bootlog_file = std::fs::File::create(&bootlog)?;
 
-    let mut args = vec!["-s", "9", "30s"];
-    args.extend_from_slice(command);
-    // timeout -s 9 30s logcat > boot.log
-    let result = unsafe {
-        std::process::Command::new("timeout")
+    let child = unsafe {
+        std::process::Command::new(command[0])
             .process_group(0)
             .pre_exec(|| {
                 utils::switch_cgroups();
                 Ok(())
             })
-            .args(args)
-            .stdout(Stdio::from(bootlog))
+            .args(&command[1..])
+            .stdout(Stdio::from(bootlog_file))
+            .stderr(Stdio::null())
             .spawn()
+            .with_context(|| format!("Failed to start bootlog process for {logname}"))?
     };
 
-    if let Err(e) = result {
-        warn!("Failed to start logcat: {e:#}");
+    std::fs::write(&pidfile, format!("{}", child.id()))
+        .with_context(|| format!("Failed to write pidfile for {logname}"))?;
+
+    Ok(())
+}
+
+#[cfg(unix)]
+fn stop_bootlog(logname: &str) -> Result<()> {
+    let logdir = Path::new(defs::LOG_DIR);
+    let pidfile = logdir.join(format!("{logname}.pid"));
+
+    if !pidfile.exists() {
+        return Ok(());
     }
 
+    let pid_str = std::fs::read_to_string(&pidfile)
+        .with_context(|| format!("Failed to read pidfile for {logname}"))?;
+    let pid: i32 = pid_str
+        .trim()
+        .parse()
+        .with_context(|| format!("Invalid pid in pidfile for {logname}: {pid_str:?}"))?;
+
+    unsafe {
+        libc::kill(pid, libc::SIGTERM);
+    }
+
+    std::fs::remove_file(&pidfile);
     Ok(())
 }
