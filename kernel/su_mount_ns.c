@@ -24,11 +24,7 @@ extern int path_mount(const char *dev_name, struct path *path,
                       const char *type_page, unsigned long flags,
                       void *data_page);
 
-#if defined(__aarch64__)
 extern long __arm64_sys_setns(const struct pt_regs *regs);
-#elif defined(__x86_64__)
-extern long __x64_sys_setns(const struct pt_regs *regs);
-#endif
 
 static long ksu_sys_setns(int fd, int flags)
 {
@@ -38,13 +34,7 @@ static long ksu_sys_setns(int fd, int flags)
     PT_REGS_PARM1(&regs) = fd;
     PT_REGS_PARM2(&regs) = flags;
 
-#if defined(__aarch64__)
     return __arm64_sys_setns(&regs);
-#elif defined(__x86_64__)
-    return __x64_sys_setns(&regs);
-#else
-#error "Unsupported arch"
-#endif
 }
 
 // global mode , need CAP_SYS_ADMIN and CAP_SYS_CHROOT to perform setns

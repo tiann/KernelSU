@@ -21,9 +21,9 @@ Rozwiązanie root oparte na jądrze dla urządzeń z systemem Android.
 
 KernelSU oficjalnie obsługuje urządzenia z Androidem GKI 2.0 (z jądrem 5.10+), starsze jądra (4.14+) są również kompatybilne, ale musisz sam skompilować jądro.
 
-WSA i Android oparty na kontenerach również powinny działać ze zintegrowanym KernelSU.
+ChromeOS i Android oparty na kontenerach również powinny działać ze zintegrowanym KernelSU.
 
-Aktualnie obsługiwane ABI to : `arm64-v8a` i `x86_64`.
+Aktualnie obsługiwane ABI to : `arm64-v8a`.
 
 ## Użycie
 

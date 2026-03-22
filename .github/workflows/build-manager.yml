@@ -97,8 +97,6 @@ jobs:
         include:
           - target: aarch64-linux-android
             os: ubuntu-latest
-          - target: x86_64-linux-android
-            os: ubuntu-latest
     uses: ./.github/workflows/ksud.yml
     with:
       target: ${{ matrix.target }}
@@ -193,18 +191,10 @@ jobs:
           name: ksud-aarch64-linux-android
           path: .
 
-      - name: Download x86_64 ksud
-        uses: actions/download-artifact@v7
-        with:
-          name: ksud-x86_64-linux-android
-          path: .
-
       - name: Copy ksud to app jniLibs
         run: |
           mkdir -p app/src/main/jniLibs/arm64-v8a
-          mkdir -p app/src/main/jniLibs/x86_64
           cp -f ../aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud.so
-          cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
 
       - name: Build with Gradle
         run: |

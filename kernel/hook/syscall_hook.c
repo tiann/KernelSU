@@ -1,3 +1,5 @@
+#ifdef __aarch64__
+
 #include "syscall_hook.h"
 
 #include <linux/kallsyms.h>
@@ -122,15 +124,9 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     if (!ksu_syscall_table || max_slots <= 0)
         return 0;
 
-#if defined(__aarch64__)
     ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall.cfi_jt");
     if (!ni_syscall)
         ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall");
-#elif defined(__x86_64__)
-    ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall");
-#else
-    ni_syscall = 0;
-#endif
 
     pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
@@ -147,7 +143,7 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     return count;
 }
 
-// Unified dispatcher: reads original NR from x8/orig_ax, dispatches to handler.
+// Unified dispatcher: reads original NR from x8, dispatches to handler.
 // Validates that syscallno matches our dispatcher slot (i.e. we redirected it),
 // otherwise it's a spurious call — return -ENOSYS.
 static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
@@ -262,3 +258,5 @@ clear_state:
 
     pr_info("all syscall hooks restored\n");
 }
+
+#endif /* __aarch64__ */
