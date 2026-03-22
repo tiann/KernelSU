@@ -1,5 +1,3 @@
-#ifdef __aarch64__
-
 #include "syscall_hook.h"
 
 #include <linux/kallsyms.h>
@@ -258,5 +256,3 @@ clear_state:
 
     pr_info("all syscall hooks restored\n");
 }
-
-#endif /* __aarch64__ */
