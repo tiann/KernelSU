@@ -4,7 +4,7 @@ use std::ffi::CStr;
 use std::fs;
 use std::process::Command;
 
-use crate::{ksucalls, utils};
+use crate::utils;
 
 /// Find PIDs of processes running in the KernelSU su domain (u:r:su:s0).
 /// Returns a list of PIDs excluding our own.
@@ -84,6 +84,28 @@ fn kill_pids(pids: &[i32], signal: i32) {
     }
 }
 
+/// Close all ksu_driver and ksu_fdwrapper fds held by the current process.
+fn close_ksu_fds() {
+    let Ok(entries) = fs::read_dir("/proc/self/fd") else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let Ok(fd) = entry.file_name().to_string_lossy().parse::<i32>() else {
+            continue;
+        };
+        if let Ok(target) = fs::read_link(entry.path()) {
+            let target_str = target.to_string_lossy();
+            if target_str.contains("[ksu_driver]") || target_str.contains("[ksu_fdwrapper]") {
+                info!("unload: closing fd {fd} -> {target_str}");
+                unsafe {
+                    libc::close(fd);
+                }
+            }
+        }
+    }
+}
+
 pub fn unload() -> Result<()> {
     info!("unload: starting KernelSU unload sequence");
 
@@ -115,9 +137,9 @@ pub fn unload() -> Result<()> {
         kill_pids(&fd_pids, libc::SIGKILL);
     }
 
-    // 3. Close our own ioctl fd
-    info!("unload: closing ksud ioctl fd...");
-    ksucalls::close_driver_fd();
+    // 3. Close all our own ksu_driver and ksu_fdwrapper fds
+    info!("unload: closing all ksu fds...");
+    close_ksu_fds();
 
     // 4. delete_module("kernelsu")
     info!("unload: removing kernelsu module...");
