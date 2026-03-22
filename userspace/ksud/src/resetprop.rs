@@ -1,5 +1,6 @@
 use anyhow::{Context, Result, bail};
 use clap::Parser;
+use clap::error::ErrorKind;
 use log::info;
 use prop_rs_android::resetprop::ResetProp;
 use prop_rs_android::sys_prop;
@@ -103,7 +104,19 @@ pub fn resetprop_main(args: &[String]) -> ! {
 ///
 /// `args` should include argv[0] (the program name).
 fn run_from_args(args: &[String]) -> Result<()> {
-    let parser = ResetPropParser::try_parse_from(args).map_err(|e| anyhow::anyhow!("{e}"))?;
+    let parser = match ResetPropParser::try_parse_from(args) {
+        Ok(cli) => cli,
+        Err(err) => {
+            if matches!(
+                err.kind(),
+                ErrorKind::DisplayHelp | ErrorKind::DisplayVersion
+            ) {
+                err.print()?;
+                return Ok(());
+            }
+            return Err(anyhow::anyhow!("{err}"));
+        }
+    };
 
     execute(parser.arg)
 }
