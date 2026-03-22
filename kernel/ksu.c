@@ -2,6 +2,7 @@
 #include <linux/fs.h>
 #include <linux/kobject.h>
 #include <linux/module.h>
+#include <linux/rcupdate.h>
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 #include <linux/moduleparam.h>
@@ -151,18 +152,23 @@ int __init kernelsu_init(void)
 extern void ksu_observer_exit(void);
 void kernelsu_exit(void)
 {
-    ksu_allowlist_exit();
+    // Phase 1: Stop all hooks first to prevent new callbacks
+    ksu_syscall_hook_manager_exit();
 
-    ksu_throne_tracker_exit();
-
-    ksu_observer_exit();
+    ksu_supercalls_exit();
 
     if (!ksu_late_loaded)
         ksu_ksud_exit();
 
-    ksu_syscall_hook_manager_exit();
+    // Wait for any in-flight RCU readers (e.g. handler traversing allow_list)
+    synchronize_rcu();
 
-    ksu_supercalls_exit();
+    // Phase 2: Now safe to release data structures
+    ksu_observer_exit();
+
+    ksu_throne_tracker_exit();
+
+    ksu_allowlist_exit();
 
     ksu_feature_exit();
 
