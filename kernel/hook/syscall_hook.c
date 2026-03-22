@@ -76,8 +76,9 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
             hooked_entries[hooked_count].orig = orig;
             hooked_count++;
         } else {
-            pr_warn("hooked_entries full, cannot track syscall %d for restoration\n",
-                    nr);
+            pr_warn(
+                "hooked_entries full, cannot track syscall %d for restoration\n",
+                nr);
         }
     }
 
