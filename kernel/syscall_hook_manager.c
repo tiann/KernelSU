@@ -163,7 +163,10 @@ static long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 
     const char __user **filename_user =
         (const char __user **)&PT_REGS_PARM1(regs);
-    if (current->pid != 1 && is_init(get_current_cred())) {
+    const struct cred *cred = get_current_cred();
+    bool current_is_init = is_init(cred);
+    put_cred(cred);
+    if (current->pid != 1 && current_is_init) {
         ksu_handle_init_mark_tracker(filename_user);
     } else if (ksu_su_compat_enabled) {
         ret = ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
