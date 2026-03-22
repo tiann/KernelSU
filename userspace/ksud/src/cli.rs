@@ -670,17 +670,14 @@ pub fn run() -> Result<()> {
             }
         },
         Commands::BootRestore(boot_restore) => crate::boot_patch::restore(boot_restore),
-        Commands::Resetprop(args) => match crate::resetprop::execute(args) {
-            Ok(v) => Ok(v),
-            Err(e) => {
-                if e.downcast_ref::<crate::resetprop::WaitTimeoutError>()
-                    .is_some()
-                {
-                    std::process::exit(2);
-                }
-                Err(e)
+        Commands::Resetprop(args) => crate::resetprop::execute(args).map_err(|e| {
+            if e.downcast_ref::<crate::resetprop::WaitTimeoutError>()
+                .is_some()
+            {
+                std::process::exit(2);
             }
-        },
+            e
+        }),
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),
             Kernel::Umount { command } => match command {
