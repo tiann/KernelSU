@@ -11,7 +11,7 @@ use std::path::Path;
 use std::time::Duration;
 
 #[derive(Debug)]
-struct WaitTimeoutError {
+pub struct WaitTimeoutError {
     name: String,
 }
 
