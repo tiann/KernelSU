@@ -2,6 +2,7 @@
 #include <linux/fs.h>
 #include <linux/kobject.h>
 #include <linux/module.h>
+#include <linux/rcupdate.h>
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 #include <linux/moduleparam.h>
@@ -158,6 +159,9 @@ void kernelsu_exit(void)
 
     if (!ksu_late_loaded)
         ksu_ksud_exit();
+
+    // Wait for any in-flight RCU readers (e.g. handler traversing allow_list)
+    synchronize_rcu();
 
     // Phase 2: Now safe to release data structures
     ksu_observer_exit();
