@@ -80,7 +80,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 
     char path[sizeof(su) + 1];
     memset(path, 0, sizeof(path));
-    strncpy_from_user_nofault(path, *filename_user, sizeof(path));
+    __strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
     if (unlikely(!memcmp(path, su, sizeof(su)))) {
         pr_info("faccessat su->sh!\n");
@@ -105,7 +105,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 
     char path[sizeof(su) + 1];
     memset(path, 0, sizeof(path));
-    strncpy_from_user_nofault(path, *filename_user, sizeof(path));
+    __strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
     if (unlikely(!memcmp(path, su, sizeof(su)))) {
         pr_info("newfstatat su->sh!\n");
@@ -134,10 +134,10 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
     addr = untagged_addr((unsigned long)*filename_user);
     fn = (const char __user *)addr;
     memset(path, 0, sizeof(path));
-    ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+    ret = __strncpy_from_user_nofault(path, fn, sizeof(path));
 
     if (ret < 0 && try_set_access_flag(addr)) {
-        ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+        ret = __strncpy_from_user_nofault(path, fn, sizeof(path));
     }
 
     if (ret < 0 && preempt_count()) {
