@@ -1,6 +1,5 @@
 use anyhow::Result;
 use log::{info, warn};
-use std::ffi::CStr;
 use std::fs;
 use std::process::Command;
 
@@ -143,10 +142,7 @@ pub fn unload() -> Result<()> {
 
     // 4. delete_module("kernelsu")
     info!("unload: removing kernelsu module...");
-    if let Err(e) = rustix::system::delete_module(
-        CStr::from_bytes_with_nul(b"kernelsu\0").unwrap(),
-        0,
-    ) {
+    if let Err(e) = rustix::system::delete_module(c"kernelsu", 0) {
         warn!("unload: delete_module kernelsu failed: {e}");
     }
 
