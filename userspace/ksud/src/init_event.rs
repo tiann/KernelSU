@@ -1,5 +1,5 @@
 use crate::module::{handle_updated_modules, prune_modules};
-use crate::utils::{is_safe_mode, switch_cgroups, switch_mnt_ns};
+use crate::utils::{is_safe_mode, switch_cgroups, switch_mnt_ns, set_next_pid};
 use crate::{
     assets, defs, ksucalls, metamodule, restorecon,
     utils::{self},
@@ -14,6 +14,7 @@ use rustix::process::{chdir, setpgid};
 use rustix::stdio::{dup2_stderr, dup2_stdin, dup2_stdout};
 use std::path::Path;
 use std::process::Command;
+use rand::RngExt;
 
 pub fn on_post_data_fs() -> Result<()> {
     ksucalls::report_post_fs_data();
@@ -275,6 +276,8 @@ pub fn soft_reboot() -> Result<()> {
     }
     info!("post-fs-data");
     on_post_data_fs()?;
+    info!("set zygote pid");
+    set_next_pid(rand::rng().random_range(1720..=1780));
     info!("start");
     let status = Command::new("start").status().context("start failed")?;
     if !status.success() {

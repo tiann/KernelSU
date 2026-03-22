@@ -923,6 +923,7 @@ dependencies = [
  "log",
  "nom",
  "prop-rs-android",
+ "rand",
  "regex-lite",
  "rust-embed",
  "rustix 1.1.4",

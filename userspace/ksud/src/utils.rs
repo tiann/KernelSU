@@ -233,3 +233,38 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     Command::new("reboot").spawn()?;
     Ok(())
 }
+
+pub fn get_latest_pid() -> i32 {
+    let handle = std::thread::spawn(|| unsafe {
+        libc::syscall(libc::SYS_gettid) as i32
+    });
+    
+    handle.join().unwrap_or_else(|_| unsafe { 
+        libc::syscall(libc::SYS_gettid) as i32 
+    })
+}
+
+pub fn set_next_pid(target_pid: i32) {
+    let mut last_pid = get_latest_pid();
+    let mut wrapped = target_pid > last_pid;
+    loop {
+        let handle = std::thread::spawn(|| unsafe {
+            libc::syscall(libc::SYS_gettid) as i32
+        });
+        match handle.join() {
+            Result::Ok(current_pid) => {
+                if current_pid < last_pid {
+                    wrapped = true;
+                }
+
+                if wrapped && current_pid >= target_pid - 1 {
+                    break;
+                }
+                last_pid = current_pid;
+            }
+            Result::Err(_) => {
+                std::thread::sleep(std::time::Duration::from_micros(500));
+            }
+        }
+    }
+}
