@@ -21,6 +21,7 @@
 #include "ksud.h"
 #include "hook/syscall_hook.h"
 
+
 #ifdef CONFIG_KRETPROBES
 
 static struct kretprobe *init_kretprobe(const char *name,
@@ -108,6 +109,11 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
 
     memset(path, 0, sizeof(path));
     long ret = strncpy_from_user(path, fn, sizeof(path));
+
+    if (ret < 0) {
+        // unreadable path; keep mark to avoid wrongly unmarking zygote
+        return 0;
+    }
 
     if (ret < 0) {
         // unreadable path; keep mark to avoid wrongly unmarking zygote
