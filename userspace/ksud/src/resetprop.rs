@@ -53,7 +53,7 @@ struct Args {
     #[arg(short = 'v', long = "verbose")]
     verbose: bool,
 
-    /// Wait for a property to exist or match a value.
+    /// Wait for a property to exist or change from a given value to another value.
     #[arg(short = 'w', long = "wait")]
     wait: bool,
 
