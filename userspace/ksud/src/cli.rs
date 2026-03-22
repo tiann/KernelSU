@@ -98,11 +98,7 @@ enum Commands {
     },
 
     /// Resetprop - Magisk-compatible system property tool
-    Resetprop {
-        /// Arguments passed to resetprop
-        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
-        args: Vec<String>,
-    },
+    Resetprop(crate::resetprop::Args),
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -674,12 +670,7 @@ pub fn run() -> Result<()> {
             }
         },
         Commands::BootRestore(boot_restore) => crate::boot_patch::restore(boot_restore),
-        Commands::Resetprop { args } => {
-            let mut full_args = vec!["resetprop".to_string()];
-            full_args.extend(args);
-            crate::resetprop::resetprop_main(&full_args)
-        }
-
+        Commands::Resetprop(args) => crate::resetprop::execute(args),
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),
             Kernel::Umount { command } => match command {

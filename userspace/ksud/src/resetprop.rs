@@ -1,6 +1,5 @@
 use anyhow::{Context, Result, bail};
 use clap::Parser;
-use clap::error::ErrorKind;
 use log::info;
 use prop_rs_android::resetprop::ResetProp;
 use prop_rs_android::sys_prop;
@@ -24,15 +23,9 @@ impl fmt::Display for WaitTimeoutError {
 impl std::error::Error for WaitTimeoutError {}
 
 /// Magisk-compatible Android system property tool.
-#[derive(Parser)]
-#[command(
-    name = "resetprop",
-    version,
-    about = "Magisk-compatible system property tool",
-    disable_help_subcommand = true
-)]
+#[derive(Debug, clap::Args)]
 #[allow(clippy::struct_excessive_bools)]
-struct Args {
+pub struct Args {
     /// Skip property_service (force direct mmap operation).
     #[arg(short = 'n', long = "skip-svc")]
     skip_svc: bool,
@@ -81,6 +74,18 @@ struct Args {
     value: Option<String>,
 }
 
+#[derive(Parser)]
+#[command(
+    name = "resetprop",
+    version,
+    about = "Magisk-compatible system property tool",
+    disable_help_subcommand = true
+)]
+struct ResetPropParser {
+    #[command(flatten)]
+    arg: Args,
+}
+
 pub fn resetprop_main(args: &[String]) -> ! {
     if let Err(err) = run_from_args(args) {
         let code = if err.downcast_ref::<WaitTimeoutError>().is_some() {
@@ -98,20 +103,13 @@ pub fn resetprop_main(args: &[String]) -> ! {
 ///
 /// `args` should include argv[0] (the program name).
 fn run_from_args(args: &[String]) -> Result<()> {
-    let cli = match Args::try_parse_from(args) {
-        Ok(cli) => cli,
-        Err(err) => {
-            if matches!(
-                err.kind(),
-                ErrorKind::DisplayHelp | ErrorKind::DisplayVersion
-            ) {
-                err.print()?;
-                return Ok(());
-            }
-            return Err(anyhow::anyhow!("{err}"));
-        }
-    };
+    let parser = ResetPropParser::try_parse_from(args).map_err(|e| anyhow::anyhow!("{e}"))?;
 
+    execute(parser.arg)
+}
+
+/// Execute resetprop logic
+pub fn execute(cli: Args) -> Result<()> {
     sys_prop::init().context("Failed to initialize system property API")?;
 
     let rp = ResetProp {
