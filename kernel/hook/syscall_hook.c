@@ -76,8 +76,9 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
             hooked_entries[hooked_count].orig = orig;
             hooked_count++;
         } else {
-            pr_warn("hooked_entries full, cannot track syscall %d for restoration\n",
-                    nr);
+            pr_warn(
+                "hooked_entries full, cannot track syscall %d for restoration\n",
+                nr);
         }
     }
 
@@ -121,15 +122,9 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     if (!ksu_syscall_table || max_slots <= 0)
         return 0;
 
-#if defined(__aarch64__)
     ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall.cfi_jt");
     if (!ni_syscall)
         ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall");
-#elif defined(__x86_64__)
-    ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall");
-#else
-    ni_syscall = 0;
-#endif
 
     pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
@@ -146,7 +141,7 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     return count;
 }
 
-// Unified dispatcher: reads original NR from x8/orig_ax, dispatches to handler.
+// Unified dispatcher: reads original NR from x8, dispatches to handler.
 // Validates that syscallno matches our dispatcher slot (i.e. we redirected it),
 // otherwise it's a spurious call — return -ENOSYS.
 static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
