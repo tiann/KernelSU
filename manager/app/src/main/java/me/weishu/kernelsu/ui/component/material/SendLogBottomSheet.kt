@@ -1,9 +1,13 @@
 package me.weishu.kernelsu.ui.component.material
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,10 +48,19 @@ import me.weishu.kernelsu.ui.util.getBugreportFile
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+private tailrec fun Context.findComponentActivity(): ComponentActivity? {
+    return when (this) {
+        is ComponentActivity -> this
+        is ContextWrapper -> baseContext.findComponentActivity()
+        else -> null
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendLogBottomSheet(onDismiss: () -> Unit) {
     val context = LocalContext.current
+    val activity = context.findComponentActivity()
     val logSaved = stringResource(R.string.log_saved)
     val sendLog = stringResource(R.string.send_log)
     val snackBarHost = LocalSnackbarHost.current
@@ -63,15 +76,25 @@ fun SendLogBottomSheet(onDismiss: () -> Unit) {
     val exportBugreportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/gzip")
     ) { uri: Uri? ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch(Dispatchers.IO) {
+        if (uri == null) {
+            dismiss()
+            return@rememberLauncherForActivityResult
+        }
+        val lifecycleScope = activity?.lifecycleScope ?: scope
+        lifecycleScope.launch {
             loadingDialog.show()
-            context.contentResolver.openOutputStream(uri)?.use { output ->
-                getBugreportFile(context).inputStream().use {
-                    it.copyTo(output)
+            try {
+                withContext(Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri)?.use { output ->
+                        getBugreportFile(context).inputStream().use {
+                            it.copyTo(output)
+                        }
+                    }
                 }
+            } finally {
+                loadingDialog.hide()
             }
-            loadingDialog.hide()
+            dismiss()
             snackBarHost.currentSnackbarData?.dismiss()
             snackBarHost.showSnackbar(logSaved)
         }
@@ -93,7 +116,6 @@ fun SendLogBottomSheet(onDismiss: () -> Unit) {
                             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
                             val current = LocalDateTime.now().format(formatter)
                             exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
-                            dismiss()
                         }) {
                         Icon(
                             Icons.Filled.Save,
