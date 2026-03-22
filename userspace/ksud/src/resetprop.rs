@@ -100,7 +100,7 @@ pub fn resetprop_main(args: &[String]) -> ! {
     std::process::exit(0);
 }
 
-/// Entry point for resetprop multicall and subcommand.
+/// Entry point for resetprop multicall.
 ///
 /// `args` should include argv[0] (the program name).
 fn run_from_args(args: &[String]) -> Result<()> {
@@ -122,6 +122,7 @@ fn run_from_args(args: &[String]) -> Result<()> {
 }
 
 /// Execute resetprop logic
+/// Subcommand will direct call that, skip run_from_args
 pub fn execute(cli: Args) -> Result<()> {
     sys_prop::init().context("Failed to initialize system property API")?;
 
