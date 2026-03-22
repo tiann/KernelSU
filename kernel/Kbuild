@@ -4,6 +4,7 @@ kernelsu-objs += app_profile.o
 kernelsu-objs += apk_sign.o
 kernelsu-objs += sucompat.o
 kernelsu-objs += syscall_hook_manager.o
+kernelsu-objs += tp_marker.o
 kernelsu-objs += throne_tracker.o
 kernelsu-objs += pkg_observer.o
 kernelsu-objs += setuid_hook.o
@@ -14,7 +15,8 @@ kernelsu-objs += feature.o
 kernelsu-objs += ksud.o
 kernelsu-objs += seccomp_cache.o
 kernelsu-objs += file_wrapper.o
-kernelsu-objs += util.o
+kernelsu-objs += hook/patch_memory.o
+kernelsu-objs += hook/syscall_hook.o
 
 kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/sepolicy.o
@@ -60,6 +62,10 @@ $(warning "KSU_GIT_VERSION not defined! It is better to make KernelSU a git repo
 ccflags-y += -DKSU_VERSION=16
 endif
 
+KSU_NEW_DCACHE_FLUSH := $(shell grep -q __flush_dcache_area $(srctree)/arch/arm64/include/asm/cacheflush.h ; echo $$?)
+$(info -- KSU_NEW_DCACHE_FLUSH: $(KSU_NEW_DCACHE_FLUSH))
+
+
 ifndef KSU_EXPECTED_SIZE
 KSU_EXPECTED_SIZE := 0x033b
 endif
@@ -88,6 +94,8 @@ ccflags-y += -DEXPECTED_HASH2=\"$(KSU_EXPECTED_HASH2)\"
 $(info -- KernelSU Manager signature size2: $(KSU_EXPECTED_SIZE2))
 $(info -- KernelSU Manager signature hash2: $(KSU_EXPECTED_HASH2))
 endif
+
+ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
 
 ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function
