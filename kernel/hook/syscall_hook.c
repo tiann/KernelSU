@@ -90,10 +90,22 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
 	return count;
 }
 
-// Unified dispatcher: reads original NR from x8/orig_ax, dispatches to handler
+// Unified dispatcher: reads original NR from x8/orig_ax, dispatches to handler.
+// Validates that syscallno matches our dispatcher slot (i.e. we redirected it),
+// otherwise it's a spurious call — return -ENOSYS.
 static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
 {
+	if (regs->syscallno != ksu_dispatcher_nr)
+		return -ENOSYS;
+
 	int orig_nr = (int)PT_REGS_ORIG_SYSCALL(regs);
+    
+    if (regs->syscallno == orig_nr)
+		return -ENOSYS;
+
+	// Restore registers to original state before dispatching
+	((struct pt_regs *)regs)->syscallno = orig_nr;
+	PT_REGS_ORIG_SYSCALL((struct pt_regs *)regs) = orig_nr;
 
 	if (likely(orig_nr >= 0 && orig_nr < __NR_syscalls)) {
 		ksu_syscall_hook_fn fn = syscall_hooks[orig_nr];
