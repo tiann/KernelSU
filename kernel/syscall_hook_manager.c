@@ -1,6 +1,5 @@
 #include "linux/compiler.h"
 #include "linux/cred.h"
-#include "linux/kallsyms.h"
 #include "linux/printk.h"
 #include "selinux/selinux.h"
 #include <linux/spinlock.h>
@@ -18,6 +17,7 @@
 #include "sucompat.h"
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
+#include "app_profile.h"
 #include "ksud.h"
 #include "hook/syscall_hook.h"
 
@@ -93,19 +93,6 @@ static struct kretprobe *syscall_regfunc_rp = NULL;
 static struct kretprobe *syscall_unregfunc_rp = NULL;
 #endif
 
-static inline bool check_syscall_fastpath(int nr)
-{
-    switch (nr) {
-    case __NR_newfstatat:
-    case __NR_faccessat:
-    case __NR_execve:
-    case __NR_setresuid:
-        return true;
-    default:
-        return false;
-    }
-}
-
 // Unmark init's child that are not zygote, adbd or ksud
 int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
@@ -135,16 +122,11 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
     return 0;
 }
 
-#define MAGIC_VALUE 0xdeadbeef
-
-#define CHECK_SYSCALL                                                          \
-    if (regs->unused2 != MAGIC_VALUE)                                          \
-        return -ENOSYS;                                                        \
-    ((struct pt_regs *)regs)->unused2 = 0;
-
-static long ksu_syscall_newfstatat(const struct pt_regs *regs)
+// Syscall hook handlers using the dispatcher signature
+static long __nocfi ksu_hook_newfstatat(int orig_nr, const struct pt_regs *regs)
 {
-    CHECK_SYSCALL
+    if (!ksu_su_compat_enabled)
+        return ksu_syscall_table[orig_nr](regs);
 
     int *dfd = (int *)&PT_REGS_PARM1(regs);
     const char __user **filename_user =
@@ -152,12 +134,13 @@ static long ksu_syscall_newfstatat(const struct pt_regs *regs)
     int *flags = (int *)&PT_REGS_SYSCALL_PARM4(regs);
     ksu_handle_stat(dfd, filename_user, flags);
 
-    return ksu_syscall_table[__NR_newfstatat](regs);
+    return ksu_syscall_table[orig_nr](regs);
 }
 
-static long ksu_syscall_faccessat(const struct pt_regs *regs)
+static long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs)
 {
-    CHECK_SYSCALL
+    if (!ksu_su_compat_enabled)
+        return ksu_syscall_table[orig_nr](regs);
 
     int *dfd = (int *)&PT_REGS_PARM1(regs);
     const char __user **filename_user =
@@ -165,35 +148,32 @@ static long ksu_syscall_faccessat(const struct pt_regs *regs)
     int *mode = (int *)&PT_REGS_PARM3(regs);
     ksu_handle_faccessat(dfd, filename_user, mode, NULL);
 
-    return ksu_syscall_table[__NR_faccessat](regs);
+    return ksu_syscall_table[orig_nr](regs);
 }
 
-static long ksu_syscall_execve(const struct pt_regs *regs)
+static long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 {
     int ret;
-    CHECK_SYSCALL
 
     const char __user **filename_user =
         (const char __user **)&PT_REGS_PARM1(regs);
     if (current->pid != 1 && is_init(get_current_cred())) {
         ksu_handle_init_mark_tracker(filename_user);
-    } else {
+    } else if (ksu_su_compat_enabled) {
         ret = ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
         if (ret < 0) {
             return ret;
         }
     }
 
-    return ksu_syscall_table[__NR_execve](regs);
+    return ksu_syscall_table[orig_nr](regs);
 }
 
-static long ksu_syscall_setresuid(const struct pt_regs *regs)
+static long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs)
 {
-    CHECK_SYSCALL
-
     uid_t old_uid = current_uid().val;
 
-    long ret = ksu_syscall_table[__NR_setresuid](regs);
+    long ret = ksu_syscall_table[orig_nr](regs);
 
     if (ret < 0)
         return ret;
@@ -203,92 +183,41 @@ static long ksu_syscall_setresuid(const struct pt_regs *regs)
     return ret;
 }
 
-static int nr_for_setresuid = -1;
-static int nr_for_execve = -1;
-static int nr_for_newfstatat = -1;
-static int nr_for_faccessat = -1;
-
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
-// Generic sys_enter handler that dispatches to specific handlers
+// sys_enter handler: redirect hooked syscalls to the dispatcher
 static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 {
-    if (unlikely(is_compat_task())) {
+    if (unlikely(is_compat_task()))
         return;
-    }
-    struct pt_regs *current_regs = task_pt_regs(current);
-    if (unlikely(check_syscall_fastpath(id))) {
-        if (ksu_su_compat_enabled) {
-            // Handle newfstatat
-            if (id == __NR_newfstatat) {
-                if (nr_for_newfstatat < 0)
-                    return;
-                current_regs->syscallno = nr_for_newfstatat;
-                current_regs->unused2 = MAGIC_VALUE;
-                return;
-            }
 
-            // Handle faccessat
-            if (id == __NR_faccessat) {
-                if (nr_for_faccessat < 0)
-                    return;
-                current_regs->syscallno = nr_for_faccessat;
-                current_regs->unused2 = MAGIC_VALUE;
-                return;
-            }
+    if (ksu_dispatcher_nr < 0)
+        return;
 
-            // Handle execve
-            if (id == __NR_execve) {
-                if (nr_for_execve < 0)
-                    return;
-                current_regs->syscallno = nr_for_execve;
-                current_regs->unused2 = MAGIC_VALUE;
-                return;
-            }
-        }
-
-        // Handle setresuid
-        if (id == __NR_setresuid) {
-            if (nr_for_setresuid < 0)
-                return;
-            current_regs->syscallno = nr_for_setresuid;
-            current_regs->unused2 = MAGIC_VALUE;
-            return;
-        }
+    if (ksu_has_syscall_hook(id)) {
+        struct pt_regs *current_regs = task_pt_regs(current);
+        PT_REGS_ORIG_SYSCALL(current_regs) = id;
+        current_regs->syscallno = ksu_dispatcher_nr;
     }
 }
 #endif
 
-#define KSU_MAX_NI_SYSCALL_SLOTS 4
-
 void ksu_syscall_hook_manager_init(void)
 {
-    int ret, nr_count;
-    int slots[KSU_MAX_NI_SYSCALL_SLOTS];
+    int ret;
     pr_info("hook_manager: ksu_hook_manager_init called\n");
 
 #ifdef CONFIG_KRETPROBES
-    // Register kretprobe for syscall_regfunc
     syscall_regfunc_rp =
         init_kretprobe("syscall_regfunc", syscall_regfunc_handler);
-    // Register kretprobe for syscall_unregfunc
     syscall_unregfunc_rp =
         init_kretprobe("syscall_unregfunc", syscall_unregfunc_handler);
 #endif
 
-    nr_count = ksu_find_ni_syscall_slots(slots, KSU_MAX_NI_SYSCALL_SLOTS);
-    if (nr_count != KSU_MAX_NI_SYSCALL_SLOTS) {
-        pr_err("not enough ni_syscall: %d !!!\n", nr_count);
-    }
-
-    nr_for_setresuid = (nr_count > 0) ? slots[0] : -1;
-    nr_for_execve = (nr_count > 1) ? slots[1] : -1;
-    nr_for_newfstatat = (nr_count > 2) ? slots[2] : -1;
-    nr_for_faccessat = (nr_count > 3) ? slots[3] : -1;
-
-    ksu_replace_syscall_table(nr_for_setresuid, ksu_syscall_setresuid, NULL);
-    ksu_replace_syscall_table(nr_for_execve, ksu_syscall_execve, NULL);
-    ksu_replace_syscall_table(nr_for_newfstatat, ksu_syscall_newfstatat, NULL);
-    ksu_replace_syscall_table(nr_for_faccessat, ksu_syscall_faccessat, NULL);
+    // Register syscall hooks via dispatcher
+    ksu_register_syscall_hook(__NR_setresuid, ksu_hook_setresuid);
+    ksu_register_syscall_hook(__NR_execve, ksu_hook_execve);
+    ksu_register_syscall_hook(__NR_newfstatat, ksu_hook_newfstatat);
+    ksu_register_syscall_hook(__NR_faccessat, ksu_hook_faccessat);
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
     ret = register_trace_sys_enter(ksu_sys_enter_handler, NULL);
@@ -320,6 +249,11 @@ void ksu_syscall_hook_manager_exit(void)
     destroy_kretprobe(&syscall_regfunc_rp);
     destroy_kretprobe(&syscall_unregfunc_rp);
 #endif
+
+    ksu_unregister_syscall_hook(__NR_setresuid);
+    ksu_unregister_syscall_hook(__NR_execve);
+    ksu_unregister_syscall_hook(__NR_newfstatat);
+    ksu_unregister_syscall_hook(__NR_faccessat);
 
     ksu_syscall_hook_exit();
 

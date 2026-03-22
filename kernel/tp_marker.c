@@ -3,6 +3,8 @@
 #include "linux/cred.h"
 #include <linux/spinlock.h>
 #include <linux/version.h>
+#include <linux/sched/signal.h>
+#include <linux/sched/task.h>
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
