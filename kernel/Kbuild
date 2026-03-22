@@ -14,9 +14,8 @@ kernelsu-objs += feature.o
 kernelsu-objs += ksud.o
 kernelsu-objs += seccomp_cache.o
 kernelsu-objs += file_wrapper.o
-kernelsu-objs += pte.o
-kernelsu-objs += patch_text.o
-kernelsu-objs += syscall_hook.o
+kernelsu-objs += hook/patch_memory.o
+kernelsu-objs += hook/syscall_hook.o
 
 kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/sepolicy.o

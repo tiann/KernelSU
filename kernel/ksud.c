@@ -25,7 +25,7 @@
 #include "ksud.h"
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
-#include "syscall_hook.h"
+#include "hook/syscall_hook.h"
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;

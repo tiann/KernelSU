@@ -18,7 +18,7 @@
 #include "ksu.h"
 #include "file_wrapper.h"
 #include "selinux/selinux.h"
-#include "syscall_hook.h"
+#include "hook/syscall_hook.h"
 
 // workaround for A12-5.10 kernel
 // Some third-party kernel (e.g. linegaeOS) uses wrong toolchain, which supports

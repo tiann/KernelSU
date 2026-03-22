@@ -19,7 +19,7 @@
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
 #include "ksud.h"
-#include "syscall_hook.h"
+#include "hook/syscall_hook.h"
 
 // Tracepoint registration count management
 // == 1: just us
@@ -398,12 +398,12 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 }
 #endif
 
+#define KSU_MAX_NI_SYSCALL_SLOTS 4
+
 void ksu_syscall_hook_manager_init(void)
 {
-    int ret, i, nr_count = 0;
-    unsigned long arm64_sys_ni_syscall;
-    int *nrps[4] = { &nr_for_setresuid, &nr_for_execve, &nr_for_newfstatat,
-                     &nr_for_faccessat };
+    int ret, nr_count;
+    int slots[KSU_MAX_NI_SYSCALL_SLOTS];
     pr_info("hook_manager: ksu_hook_manager_init called\n");
 
 #ifdef CONFIG_KRETPROBES
@@ -415,27 +415,15 @@ void ksu_syscall_hook_manager_init(void)
         init_kretprobe("syscall_unregfunc", syscall_unregfunc_handler);
 #endif
 
-    arm64_sys_ni_syscall =
-        kallsyms_lookup_name("__arm64_sys_ni_syscall.cfi_jt");
-    if (!arm64_sys_ni_syscall) {
-        arm64_sys_ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall");
-    }
-    pr_info("__arm64_sys_ni_syscall: 0x%lx\n",
-            (unsigned long)arm64_sys_ni_syscall);
-
-    for (i = 0; i < __NR_syscalls; i++) {
-        if ((unsigned long)ksu_syscall_table[i] == arm64_sys_ni_syscall) {
-            *nrps[nr_count++] = i;
-            pr_info("ni_syscall %d: %d\n", nr_count, i);
-            if (nr_count == ARRAY_SIZE(nrps)) {
-                break;
-            }
-        }
-    }
-
-    if (nr_count != ARRAY_SIZE(nrps)) {
+    nr_count = ksu_find_ni_syscall_slots(slots, KSU_MAX_NI_SYSCALL_SLOTS);
+    if (nr_count != KSU_MAX_NI_SYSCALL_SLOTS) {
         pr_err("not enough ni_syscall: %d !!!\n", nr_count);
     }
+
+    nr_for_setresuid = (nr_count > 0) ? slots[0] : -1;
+    nr_for_execve = (nr_count > 1) ? slots[1] : -1;
+    nr_for_newfstatat = (nr_count > 2) ? slots[2] : -1;
+    nr_for_faccessat = (nr_count > 3) ? slots[3] : -1;
 
     ksu_replace_syscall_table(nr_for_setresuid, ksu_syscall_setresuid, NULL);
     ksu_replace_syscall_table(nr_for_execve, ksu_syscall_execve, NULL);
@@ -473,7 +461,7 @@ void ksu_syscall_hook_manager_exit(void)
     destroy_kretprobe(&syscall_unregfunc_rp);
 #endif
 
-    // TODO: cleanup syscall hook
+    ksu_syscall_hook_exit();
 
     ksu_sucompat_exit();
     ksu_setuid_hook_exit();

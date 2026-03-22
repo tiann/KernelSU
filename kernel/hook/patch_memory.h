@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* 
+/*
  * Copyright (C) 2023 bmax121. All Rights Reserved.
  */
 
-#ifndef __KSU_H_HOOK_
-#define __KSU_H_HOOK_
-#include "linux/types.h" // IWYU pragma: keep
+#ifndef __KSU_PATCH_MEMORY_H
+#define __KSU_PATCH_MEMORY_H
+
+#include <linux/mm.h>
+#include <linux/types.h>
 #include "linux/version.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
@@ -17,6 +19,7 @@
 #define KSU_PATCH_TEXT_FLUSH_DCACHE 1
 #define KSU_PATCH_TEXT_FLUSH_ICACHE 2
 
+unsigned long phys_from_virt(unsigned long addr);
 int ksu_patch_text(void *dst, void *src, size_t len, int flags);
 
 #endif
