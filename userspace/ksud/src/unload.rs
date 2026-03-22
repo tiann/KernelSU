@@ -1,5 +1,6 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use log::{info, warn};
+use std::ffi::CStr;
 use std::fs;
 use std::process::Command;
 
@@ -118,14 +119,13 @@ pub fn unload() -> Result<()> {
     info!("unload: closing ksud ioctl fd...");
     ksucalls::close_driver_fd();
 
-    // 4. rmmod kernelsu
+    // 4. delete_module("kernelsu")
     info!("unload: removing kernelsu module...");
-    let status = Command::new("rmmod")
-        .arg("kernelsu")
-        .status()
-        .context("failed to execute rmmod")?;
-    if !status.success() {
-        warn!("unload: rmmod kernelsu exited with status: {status}");
+    if let Err(e) = rustix::system::delete_module(
+        CStr::from_bytes_with_nul(b"kernelsu\0").unwrap(),
+        0,
+    ) {
+        warn!("unload: delete_module kernelsu failed: {e}");
     }
 
     // 5. start (Android init start command - restarts all services)
