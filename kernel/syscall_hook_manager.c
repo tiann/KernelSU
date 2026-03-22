@@ -21,7 +21,6 @@
 #include "ksud.h"
 #include "hook/syscall_hook.h"
 
-
 #ifdef CONFIG_KRETPROBES
 
 static struct kretprobe *init_kretprobe(const char *name,

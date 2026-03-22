@@ -15,63 +15,63 @@
 
 unsigned long phys_from_virt(unsigned long addr)
 {
-	struct mm_struct *mm = &init_mm;
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
+    struct mm_struct *mm = &init_mm;
+    pgd_t *pgd;
+    p4d_t *p4d;
+    pud_t *pud;
+    pmd_t *pmd;
+    pte_t *pte;
 
-	pgd = pgd_offset(mm, addr);
-	if (pgd_none(*pgd) || pgd_bad(*pgd))
-		return NULL;
-	pr_info("pgd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pgd,
-		(uintptr_t)pgd_val(*pgd));
+    pgd = pgd_offset(mm, addr);
+    if (pgd_none(*pgd) || pgd_bad(*pgd))
+        return NULL;
+    pr_info("pgd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pgd,
+            (uintptr_t)pgd_val(*pgd));
 
-	p4d = p4d_offset(pgd, addr);
-	if (p4d_none(*p4d) || p4d_bad(*p4d))
-		return NULL;
-	pr_info("p4d of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)p4d,
-		(uintptr_t)p4d_val(*p4d));
+    p4d = p4d_offset(pgd, addr);
+    if (p4d_none(*p4d) || p4d_bad(*p4d))
+        return NULL;
+    pr_info("p4d of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)p4d,
+            (uintptr_t)p4d_val(*p4d));
 #if defined(p4d_leaf)
-	if (p4d_leaf(*p4d)) {
-		pr_info("Address 0x%lx maps to a P4D-level huge page\n", addr);
-		return __p4d_to_phys(*p4d) + ((addr & ~P4D_MASK));
-	}
+    if (p4d_leaf(*p4d)) {
+        pr_info("Address 0x%lx maps to a P4D-level huge page\n", addr);
+        return __p4d_to_phys(*p4d) + ((addr & ~P4D_MASK));
+    }
 #endif
 
-	pud = pud_offset(p4d, addr);
-	if (pud_none(*pud) || pud_bad(*pud))
-		return NULL;
-	pr_info("pud of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pud,
-		(uintptr_t)pud_val(*pud));
+    pud = pud_offset(p4d, addr);
+    if (pud_none(*pud) || pud_bad(*pud))
+        return NULL;
+    pr_info("pud of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pud,
+            (uintptr_t)pud_val(*pud));
 #if defined(pud_leaf)
-	if (pud_leaf(*pud)) {
-		pr_info("Address 0x%lx maps to a PUD-level huge page\n", addr);
-		return __pud_to_phys(*pud) + ((addr & ~PUD_MASK));
-	}
+    if (pud_leaf(*pud)) {
+        pr_info("Address 0x%lx maps to a PUD-level huge page\n", addr);
+        return __pud_to_phys(*pud) + ((addr & ~PUD_MASK));
+    }
 #endif
 
-	pmd = pmd_offset(pud, addr);
-	pr_info("pmd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pmd,
-		(uintptr_t)pmd_val(*pmd));
+    pmd = pmd_offset(pud, addr);
+    pr_info("pmd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pmd,
+            (uintptr_t)pmd_val(*pmd));
 #if defined(pmd_leaf)
-	if (pmd_leaf(*pmd)) {
-		pr_info("Address 0x%lx maps to a PMD-level huge page\n", addr);
-		return __pmd_to_phys(*pmd) + ((addr & ~PMD_MASK));
-	}
+    if (pmd_leaf(*pmd)) {
+        pr_info("Address 0x%lx maps to a PMD-level huge page\n", addr);
+        return __pmd_to_phys(*pmd) + ((addr & ~PMD_MASK));
+    }
 #endif
 
-	if (pmd_none(*pmd) || pmd_bad(*pmd))
-		return 0;
+    if (pmd_none(*pmd) || pmd_bad(*pmd))
+        return 0;
 
-	pte = pte_offset_kernel(pmd, addr);
-	if (!pte)
-		return 0;
-	if (!pte_present(*pte))
-		return 0;
+    pte = pte_offset_kernel(pmd, addr);
+    if (!pte)
+        return 0;
+    if (!pte_present(*pte))
+        return 0;
 
-	return __pte_to_phys(*pte) + ((addr & ~PAGE_MASK));
+    return __pte_to_phys(*pte) + ((addr & ~PAGE_MASK));
 }
 
 // This function appears in 5.14:
@@ -82,11 +82,11 @@ unsigned long phys_from_virt(unsigned long addr)
 // So we need to grep kernel source code to detect which one to use.
 #if KSU_NEW_DCACHE_FLUSH
 #define ksu_flush_dcache(start, sz)                                            \
-	({                                                                     \
-		unsigned long __start = (start);                               \
-		unsigned long __end = __start + (sz);                          \
-		dcache_clean_inval_poc(__start, __end);                        \
-	})
+    ({                                                                         \
+        unsigned long __start = (start);                                       \
+        unsigned long __end = __start + (sz);                                  \
+        dcache_clean_inval_poc(__start, __end);                                \
+    })
 #define ksu_flush_icache(start, end) caches_clean_inval_pou
 #else
 #define ksu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
@@ -94,11 +94,11 @@ unsigned long phys_from_virt(unsigned long addr)
 #endif
 
 struct patch_text_info {
-	void *dst;
-	void *src;
-	size_t len;
-	atomic_t cpu_count;
-	int flags;
+    void *dst;
+    void *src;
+    size_t len;
+    atomic_t cpu_count;
+    int flags;
 };
 
 // Implementation of arbitrary kernel address modification.
@@ -121,73 +121,71 @@ struct patch_text_info {
 // ^2: https://github.com/torvalds/linux/commit/c0eb315ad9719e41ce44708455cc69df7ac9f3f8
 static int ksu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 {
-	pr_info("patch dst=0x%lx src=0x%lx len=%ld\n", (unsigned long)dst,
-		(unsigned long)src, len);
+    pr_info("patch dst=0x%lx src=0x%lx len=%ld\n", (unsigned long)dst,
+            (unsigned long)src, len);
 
-	unsigned long p = (unsigned long)dst;
-	int ret;
+    unsigned long p = (unsigned long)dst;
+    int ret;
 
-	unsigned long phy = phys_from_virt(p);
-	if (!phy) {
-		ret = -ENOENT;
-		pr_err("failed to found phy addr for patch dst addr 0x%lx\n",
-		       p);
-		goto err;
-	}
-	pr_info("phy addr for patch 0x%lx: 0x%lx\n", p, phy);
+    unsigned long phy = phys_from_virt(p);
+    if (!phy) {
+        ret = -ENOENT;
+        pr_err("failed to found phy addr for patch dst addr 0x%lx\n", p);
+        goto err;
+    }
+    pr_info("phy addr for patch 0x%lx: 0x%lx\n", p, phy);
 
-	void *map = set_fixmap_offset(FIX_TEXT_POKE0, phy);
-	pr_info("fixmap addr for patch 0x%lx: 0x%lx\n", p, (unsigned long)map);
+    void *map = set_fixmap_offset(FIX_TEXT_POKE0, phy);
+    pr_info("fixmap addr for patch 0x%lx: 0x%lx\n", p, (unsigned long)map);
 
-	ret = (int)copy_to_kernel_nofault(map, src, len);
+    ret = (int)copy_to_kernel_nofault(map, src, len);
 
-	clear_fixmap(FIX_TEXT_POKE0);
+    clear_fixmap(FIX_TEXT_POKE0);
 
-	if (!ret) {
-		if (flags & KSU_PATCH_TEXT_FLUSH_ICACHE)
-			ksu_flush_icache((uintptr_t)dst,
-					 (uintptr_t)dst + len);
-		if (flags & KSU_PATCH_TEXT_FLUSH_DCACHE)
-			ksu_flush_dcache(dst, len);
-	}
+    if (!ret) {
+        if (flags & KSU_PATCH_TEXT_FLUSH_ICACHE)
+            ksu_flush_icache((uintptr_t)dst, (uintptr_t)dst + len);
+        if (flags & KSU_PATCH_TEXT_FLUSH_DCACHE)
+            ksu_flush_dcache(dst, len);
+    }
 
 err:
-	pr_info("patch result=%d\n", ret);
-	return ret;
+    pr_info("patch result=%d\n", ret);
+    return ret;
 }
 
 static int ksu_patch_text_cb(void *arg)
 {
-	struct patch_text_info *pp = arg;
-	void *dst = pp->dst, *src = pp->src;
-	size_t len = pp->len;
-	int flags = pp->flags;
+    struct patch_text_info *pp = arg;
+    void *dst = pp->dst, *src = pp->src;
+    size_t len = pp->len;
+    int flags = pp->flags;
 
-	int ret = 0;
+    int ret = 0;
 
-	/* The last CPU becomes master */
-	if (atomic_inc_return(&pp->cpu_count) == num_online_cpus()) {
-		ret = ksu_patch_text_nosync(dst, src, len, flags);
-		/* Notify other processors with an additional increment. */
-		atomic_inc(&pp->cpu_count);
-	} else {
-		while (atomic_read(&pp->cpu_count) <= num_online_cpus())
-			cpu_relax();
-		isb();
-	}
+    /* The last CPU becomes master */
+    if (atomic_inc_return(&pp->cpu_count) == num_online_cpus()) {
+        ret = ksu_patch_text_nosync(dst, src, len, flags);
+        /* Notify other processors with an additional increment. */
+        atomic_inc(&pp->cpu_count);
+    } else {
+        while (atomic_read(&pp->cpu_count) <= num_online_cpus())
+            cpu_relax();
+        isb();
+    }
 
-	return ret;
+    return ret;
 }
 
 int ksu_patch_text(void *dst, void *src, size_t len, int flags)
 {
-	struct patch_text_info info = {
-		.dst = dst,
-		.src = src,
-		.len = len,
-		.cpu_count = ATOMIC_INIT(0),
-		.flags = flags,
-	};
+    struct patch_text_info info = {
+        .dst = dst,
+        .src = src,
+        .len = len,
+        .cpu_count = ATOMIC_INIT(0),
+        .flags = flags,
+    };
 
-	return stop_machine(ksu_patch_text_cb, &info, cpu_online_mask);
+    return stop_machine(ksu_patch_text_cb, &info, cpu_online_mask);
 }
