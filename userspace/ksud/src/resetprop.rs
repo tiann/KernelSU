@@ -118,12 +118,12 @@ fn run_from_args(args: &[String]) -> Result<()> {
         }
     };
 
-    execute(parser.arg)
+    execute(&parser.arg)
 }
 
 /// Execute resetprop logic
 /// Subcommand will direct call that, skip run_from_args
-pub fn execute(cli: Args) -> Result<()> {
+pub fn execute(cli: &Args) -> Result<()> {
     sys_prop::init().context("Failed to initialize system property API")?;
 
     let rp = ResetProp {
