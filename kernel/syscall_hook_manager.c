@@ -107,7 +107,12 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
     fn = (const char __user *)addr;
 
     memset(path, 0, sizeof(path));
-    strncpy_from_user(path, fn, sizeof(path));
+    long ret = strncpy_from_user(path, fn, sizeof(path));
+
+    if (ret < 0) {
+        // unreadable path; keep mark to avoid wrongly unmarking zygote
+        return 0;
+    }
 
     if (unlikely(strcmp(path, KSUD_PATH) == 0)) {
         pr_info("hook_manager: escape to root for init executing ksud: %d\n",

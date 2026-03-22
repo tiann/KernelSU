@@ -82,7 +82,8 @@ void ksu_mark_running_process_locked(void)
     struct task_struct *p, *t;
     read_lock(&tasklist_lock);
     for_each_process_thread (p, t) {
-        if (!t->mm) { // only user processes
+        if (t->pid != 1 && !t->mm) {
+            // skip kernel threads, but always allow pid 1
             continue;
         }
         int uid = task_uid(t).val;
