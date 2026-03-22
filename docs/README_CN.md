@@ -22,9 +22,9 @@
 
 KernelSU 官方支持 GKI 2.0 的设备（内核版本5.10以上）；旧内核也是兼容的（最低4.14+），不过需要自己编译内核。
 
-WSA, ChromeOS 和运行在容器上的 Android 也可以与 KernelSU 一起工作。
+ChromeOS 和运行在容器上的 Android 也可以与 KernelSU 一起工作。
 
-目前支持架构 : `arm64-v8a` 和 `x86_64`。
+目前支持架构 : `arm64-v8a`。
 
 ## 使用方法
 

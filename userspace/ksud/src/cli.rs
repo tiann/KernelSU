@@ -44,11 +44,17 @@ enum Commands {
         post_magica: bool,
     },
 
+    /// Emulate system reboot
+    SoftReboot,
+
     /// Install KernelSU userspace component to system
     Install {
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
     },
+
+    /// Unload KernelSU kernel module (LKM Only)
+    Unload,
 
     /// Uninstall KernelSU modules and itself(LKM Only)
     Uninstall {
@@ -446,6 +452,8 @@ pub fn run() -> Result<()> {
             Ok(())
         }
 
+        Commands::SoftReboot => init_event::soft_reboot(),
+
         Commands::Module { command } => {
             utils::switch_mnt_ns(1)?;
             match command {
@@ -544,6 +552,7 @@ pub fn run() -> Result<()> {
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Unload => crate::unload::unload(),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
@@ -570,6 +579,10 @@ pub fn run() -> Result<()> {
             result
         }
         Commands::Services => {
+            if ksucalls::get_version() <= 0 {
+                info!("KernelSU not available, exiting services");
+                std::process::exit(0);
+            }
             init_event::on_services();
             Ok(())
         }

@@ -12,7 +12,7 @@ compile_commands.json
 *.mod.c
 *.symvers*
 *.order
-.*.ko.cmd
+.*.cmd
 .tmp_versions/
 libs/
 obj/

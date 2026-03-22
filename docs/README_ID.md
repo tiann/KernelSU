@@ -22,9 +22,9 @@ Solusi root berbasis Kernel untuk perangkat Android.
 
 KernelSU secara resmi mendukung perangkat Android GKI 2.0 (dengan kernel 5.10+), kernel lama (4.14+) juga kompatibel, tetapi Anda perlu membuat kernel sendiri.
 
-WSA, ChromeOS, dan Android berbasis wadah juga dapat bekerja dengan KernelSU terintegrasi.
+ChromeOS dan Android berbasis wadah juga dapat bekerja dengan KernelSU terintegrasi.
 
-Dan ABI yang didukung saat ini adalah: `arm64-v8a` dan `x86_64`
+Dan ABI yang didukung saat ini adalah: `arm64-v8a`
 
 ## Penggunaan
 

@@ -23,7 +23,7 @@
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "file_wrapper.h"
-#include "syscall_hook_manager.h"
+#include "tp_marker.h"
 
 // Permission check functions
 bool only_manager(void)
@@ -788,7 +788,17 @@ void ksu_supercalls_init(void)
 
 void ksu_supercalls_exit(void)
 {
+    struct mount_entry *entry, *tmp;
+
     unregister_kprobe(&reboot_kp);
+
+    down_write(&mount_list_lock);
+    list_for_each_entry_safe (entry, tmp, &mount_list, list) {
+        list_del(&entry->list);
+        kfree(entry->umountable);
+        kfree(entry);
+    }
+    up_write(&mount_list_lock);
 }
 
 // IOCTL dispatcher
