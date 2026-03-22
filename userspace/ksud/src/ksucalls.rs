@@ -289,6 +289,17 @@ pub fn mark_refresh() -> std::io::Result<()> {
     Ok(())
 }
 
+/// Close the cached driver fd so the kernel module can be safely unloaded.
+pub fn close_driver_fd() {
+    if let Some(&fd) = DRIVER_FD.get() {
+        if fd >= 0 {
+            unsafe {
+                libc::close(fd);
+            }
+        }
+    }
+}
+
 pub fn nuke_ext4_sysfs(mnt: &str) -> anyhow::Result<()> {
     let c_mnt = std::ffi::CString::new(mnt)?;
     let mut ioctl_cmd = NukeExt4SysfsCmd {
