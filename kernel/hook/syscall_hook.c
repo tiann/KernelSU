@@ -1,6 +1,7 @@
 #include "syscall_hook.h"
 
 #include <linux/kallsyms.h>
+#include <linux/mutex.h>
 #include <asm/cacheflush.h>
 #include "patch_memory.h"
 #include "../arch.h"
@@ -9,15 +10,18 @@
 syscall_fn_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;
 
-// Hook registration table
+// Hook registration table — read with READ_ONCE from tracepoint/dispatcher
+// context, written with WRITE_ONCE from init/exit context.
 static ksu_syscall_hook_fn syscall_hooks[__NR_syscalls];
 
-// Track all hooked syscall entries for restoration
+// Track all hooked syscall entries for restoration.
+// Protected by hooked_entries_lock.
 struct syscall_hook_entry {
     int nr;
     syscall_fn_t orig;
 };
 
+static DEFINE_MUTEX(hooked_entries_lock);
 static struct syscall_hook_entry hooked_entries[16];
 static int hooked_count = 0;
 
@@ -51,6 +55,8 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
         return;
     }
 
+    mutex_lock(&hooked_entries_lock);
+
     syscall_fn_t orig = READ_ONCE(ksu_syscall_table[nr]);
     if (old)
         *old = orig;
@@ -71,6 +77,8 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
     }
 
     patch_syscall_table(nr, fn);
+
+    mutex_unlock(&hooked_entries_lock);
 }
 
 // Restore syscall_table[nr] to its original value and remove from tracking list.
@@ -83,16 +91,20 @@ void ksu_syscall_table_unhook(int nr)
     if (nr < 0 || nr >= __NR_syscalls)
         return;
 
+    mutex_lock(&hooked_entries_lock);
+
     for (i = 0; i < hooked_count; i++) {
         if (hooked_entries[i].nr == nr) {
             patch_syscall_table(nr, hooked_entries[i].orig);
             // Remove entry by swapping with last
             hooked_entries[i] = hooked_entries[--hooked_count];
+            mutex_unlock(&hooked_entries_lock);
             pr_info("unhooked syscall %d\n", nr);
             return;
         }
     }
 
+    mutex_unlock(&hooked_entries_lock);
     pr_warn("syscall %d not found in hooked entries\n", nr);
 }
 
@@ -104,11 +116,17 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     if (!ksu_syscall_table || max_slots <= 0)
         return 0;
 
+#if defined(__aarch64__)
     ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall.cfi_jt");
     if (!ni_syscall)
         ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall");
+#elif defined(__x86_64__)
+    ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall");
+#else
+    ni_syscall = 0;
+#endif
 
-    pr_info("__arm64_sys_ni_syscall: 0x%lx\n", ni_syscall);
+    pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
     if (!ni_syscall)
         return 0;
@@ -141,7 +159,7 @@ static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
     PT_REGS_ORIG_SYSCALL((struct pt_regs *)regs) = orig_nr;
 
     if (likely(orig_nr >= 0 && orig_nr < __NR_syscalls)) {
-        ksu_syscall_hook_fn fn = syscall_hooks[orig_nr];
+        ksu_syscall_hook_fn fn = READ_ONCE(syscall_hooks[orig_nr]);
         if (likely(fn))
             return fn(orig_nr, regs);
     }
@@ -155,11 +173,11 @@ int ksu_register_syscall_hook(int nr, ksu_syscall_hook_fn fn)
 {
     if (nr < 0 || nr >= __NR_syscalls)
         return -EINVAL;
-    if (syscall_hooks[nr]) {
+    if (READ_ONCE(syscall_hooks[nr])) {
         pr_warn("syscall hook for nr=%d already registered, skip\n", nr);
         return -EEXIST;
     }
-    syscall_hooks[nr] = fn;
+    WRITE_ONCE(syscall_hooks[nr], fn);
     pr_info("registered syscall hook for nr=%d\n", nr);
     return 0;
 }
@@ -170,7 +188,7 @@ void ksu_unregister_syscall_hook(int nr)
 {
     if (nr < 0 || nr >= __NR_syscalls)
         return;
-    syscall_hooks[nr] = NULL;
+    WRITE_ONCE(syscall_hooks[nr], NULL);
     pr_info("unregistered syscall hook for nr=%d\n", nr);
 }
 
@@ -178,7 +196,7 @@ bool ksu_has_syscall_hook(int nr)
 {
     if (nr < 0 || nr >= __NR_syscalls)
         return false;
-    return syscall_hooks[nr] != NULL;
+    return READ_ONCE(syscall_hooks[nr]) != NULL;
 }
 
 void ksu_syscall_hook_init(void)
@@ -209,13 +227,12 @@ void ksu_syscall_hook_exit(void)
 {
     int i;
 
-    // Clear all registered hooks
-    memset(syscall_hooks, 0, sizeof(syscall_hooks));
-    ksu_dispatcher_nr = -1;
-
     if (!ksu_syscall_table)
-        return;
+        goto clear_state;
 
+    // First, restore all patched syscall table entries while the dispatcher
+    // and hook table are still intact, so in-flight syscalls see valid state.
+    mutex_lock(&hooked_entries_lock);
     for (i = 0; i < hooked_count; i++) {
         int nr = hooked_entries[i].nr;
         syscall_fn_t orig = hooked_entries[i].orig;
@@ -226,7 +243,16 @@ void ksu_syscall_hook_exit(void)
             pr_err("restore syscall %d failed\n", nr);
         }
     }
-
     hooked_count = 0;
+    mutex_unlock(&hooked_entries_lock);
+
+clear_state:
+    // Now that the syscall table is restored, clear internal state.
+    // At this point the tracepoint is already unregistered and synchronized
+    // (done by ksu_syscall_hook_manager_exit before calling us), so no new
+    // dispatches will occur.
+    memset(syscall_hooks, 0, sizeof(syscall_hooks));
+    ksu_dispatcher_nr = -1;
+
     pr_info("all syscall hooks restored\n");
 }

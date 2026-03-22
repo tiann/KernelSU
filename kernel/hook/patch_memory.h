@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (C) 2023 bmax121. All Rights Reserved.
  */
@@ -6,7 +6,6 @@
 #ifndef __KSU_PATCH_MEMORY_H
 #define __KSU_PATCH_MEMORY_H
 
-#include <linux/mm.h>
 #include <linux/types.h>
 #include "linux/version.h"
 
@@ -19,7 +18,7 @@
 #define KSU_PATCH_TEXT_FLUSH_DCACHE 1
 #define KSU_PATCH_TEXT_FLUSH_ICACHE 2
 
-unsigned long phys_from_virt(unsigned long addr);
+unsigned long phys_from_virt(unsigned long addr, int *err);
 int ksu_patch_text(void *dst, void *src, size_t len, int flags);
 
 #endif
