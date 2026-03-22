@@ -72,29 +72,8 @@ struct umount_tw {
     struct callback_head cb;
 };
 
-static void umount_tw_func(struct callback_head *cb)
-{
-    struct umount_tw *tw = container_of(cb, struct umount_tw, cb);
-    const struct cred *saved = override_creds(ksu_cred);
-
-    struct mount_entry *entry;
-    down_read(&mount_list_lock);
-    list_for_each_entry (entry, &mount_list, list) {
-        pr_info("%s: unmounting: %s flags 0x%x\n", __func__, entry->umountable,
-                entry->flags);
-        try_umount(entry->umountable, entry->flags);
-    }
-    up_read(&mount_list_lock);
-
-    revert_creds(saved);
-
-    kfree(tw);
-}
-
 int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 {
-    struct umount_tw *tw;
-
     // if there isn't any module mounted, just ignore it!
     if (!ksu_module_mounted) {
         return 0;
@@ -134,17 +113,18 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
     // umount the target mnt
     pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
 
-    tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-    if (!tw)
-        return 0;
+    const struct cred *saved = override_creds(ksu_cred);
 
-    tw->cb.func = umount_tw_func;
-
-    int err = task_work_add(current, &tw->cb, TWA_RESUME);
-    if (err) {
-        kfree(tw);
-        pr_warn("unmount add task_work failed\n");
+    struct mount_entry *entry;
+    down_read(&mount_list_lock);
+    list_for_each_entry (entry, &mount_list, list) {
+        pr_info("%s: unmounting: %s flags 0x%x\n", __func__, entry->umountable,
+                entry->flags);
+        try_umount(entry->umountable, entry->flags);
     }
+    up_read(&mount_list_lock);
+
+    revert_creds(saved);
 
     return 0;
 }
