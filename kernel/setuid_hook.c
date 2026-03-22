@@ -18,7 +18,7 @@
 #include "manager.h"
 #include "seccomp_cache.h"
 #include "supercalls.h"
-#include "syscall_hook_manager.h"
+#include "tp_marker.h"
 #include "kernel_umount.h"
 
 int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)

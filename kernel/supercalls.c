@@ -23,7 +23,7 @@
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "file_wrapper.h"
-#include "syscall_hook_manager.h"
+#include "tp_marker.h"
 
 // Permission check functions
 bool only_manager(void)
