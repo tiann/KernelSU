@@ -550,14 +550,14 @@ static void do_stop_input_hook(struct work_struct *work)
 
 static void stop_init_rc_hook()
 {
-    ksu_replace_syscall_table(__NR_read, orig_sys_read, NULL);
-    ksu_replace_syscall_table(__NR_fstat, orig_sys_fstat, NULL);
+    ksu_syscall_table_unhook(__NR_read);
+    ksu_syscall_table_unhook(__NR_fstat);
     pr_info("unregister init_rc syscall hook\n");
 }
 
 static void stop_execve_hook()
 {
-    ksu_replace_syscall_table(__NR_execve, orig_sys_execve, NULL);
+    ksu_syscall_table_unhook(__NR_execve);
     pr_info("unhook sys_execve\n");
 }
 
@@ -577,9 +577,9 @@ void ksu_ksud_init()
 {
     int ret;
 
-    ksu_replace_syscall_table(__NR_execve, ksu_sys_execve, &orig_sys_execve);
-    ksu_replace_syscall_table(__NR_read, ksu_sys_read, &orig_sys_read);
-    ksu_replace_syscall_table(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
+    ksu_syscall_table_hook(__NR_execve, ksu_sys_execve, &orig_sys_execve);
+    ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
+    ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
 
     ret = register_kprobe(&input_event_kp);
     pr_info("ksud: input_event_kp: %d\n", ret);
