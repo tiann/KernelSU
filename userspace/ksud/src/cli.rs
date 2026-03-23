@@ -103,6 +103,12 @@ enum Commands {
         command: Kernel,
     },
 
+    /// Collect bugreport for debugging
+    Bugreport {
+        #[command(subcommand)]
+        command: Bugreport,
+    },
+
     /// Resetprop - Magisk-compatible system property tool
     Resetprop {
         /// Arguments passed to resetprop
@@ -427,6 +433,19 @@ enum UmountOp {
     Wipe,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum Bugreport {
+    /// Collect system diagnostic information into a tar.gz
+    Collect {
+        /// Output file path (.tar.gz)
+        #[arg(short, long)]
+        output: PathBuf,
+        /// Manager version string (optional, included in basic.txt)
+        #[arg(long)]
+        manager_version: Option<String>,
+    },
+}
+
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
@@ -704,6 +723,13 @@ pub fn run() -> Result<()> {
                 ksucalls::report_module_mounted();
                 Ok(())
             }
+        },
+
+        Commands::Bugreport { command } => match command {
+            Bugreport::Collect {
+                output,
+                manager_version,
+            } => crate::bugreport::collect_bugreport(&output, manager_version.as_deref()),
         },
     };
 

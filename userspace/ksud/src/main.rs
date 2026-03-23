@@ -14,6 +14,8 @@ mod apk_sign;
 mod assets;
 mod boot_patch;
 #[cfg(target_os = "android")]
+mod bugreport;
+#[cfg(target_os = "android")]
 mod cli;
 #[cfg(not(target_os = "android"))]
 mod cli_non_android;

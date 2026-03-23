@@ -710,7 +710,7 @@ fn resolve_module_icon_path(
     }
 }
 
-fn list_module(path: &str) -> Vec<HashMap<String, String>> {
+pub fn list_module_info(path: &str) -> Vec<HashMap<String, String>> {
     // Load all module configs once to minimize I/O overhead
     let all_configs = match crate::module_config::get_all_module_configs() {
         Ok(configs) => configs,
@@ -807,7 +807,7 @@ fn list_module(path: &str) -> Vec<HashMap<String, String>> {
 }
 
 pub fn list_modules() -> Result<()> {
-    let modules = list_module(defs::MODULE_DIR);
+    let modules = list_module_info(defs::MODULE_DIR);
     println!("{}", serde_json::to_string_pretty(&modules)?);
     Ok(())
 }
