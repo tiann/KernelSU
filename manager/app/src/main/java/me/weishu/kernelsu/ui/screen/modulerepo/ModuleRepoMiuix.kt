@@ -748,7 +748,15 @@ fun ReleasesPage(
                                                 backgroundColor = secondaryContainer,
                                                 minHeight = 35.dp,
                                                 minWidth = 35.dp,
-                                                onClick = { downloadedUri?.let { onInstallModule(it) } },
+                                                onClick = {
+                                                    val uri = downloadedUri ?: return@IconButton
+                                                    val file = uri.path?.let { java.io.File(it) }
+                                                    if (file != null && file.exists()) {
+                                                        onInstallModule(uri)
+                                                    } else {
+                                                        downloadedUri = null
+                                                    }
+                                                },
                                             ) {
                                                 Row(
                                                     modifier = Modifier.padding(horizontal = 10.dp),

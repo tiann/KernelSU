@@ -646,7 +646,15 @@ fun ReleasesPage(
                                         }
                                         if (isDownloaded) {
                                             FilledTonalButton(
-                                                onClick = { downloadedUri?.let { onInstallModule(it) } },
+                                                onClick = {
+                                                    val uri = downloadedUri ?: return@FilledTonalButton
+                                                    val file = uri.path?.let { java.io.File(it) }
+                                                    if (file != null && file.exists()) {
+                                                        onInstallModule(uri)
+                                                    } else {
+                                                        downloadedUri = null
+                                                    }
+                                                },
                                                 contentPadding = ButtonDefaults.TextButtonContentPadding
                                             ) {
                                                 Icon(
