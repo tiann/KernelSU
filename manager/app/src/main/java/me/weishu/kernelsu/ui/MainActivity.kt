@@ -31,7 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val viewModel = viewModel<MainActivityViewModel>()
-            val uiState by viewModel.uiState.collectAsState()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val appSettings = uiState.appSettings
             val uiMode = uiState.uiMode
             val darkMode = appSettings.colorMode.isDark || (appSettings.colorMode.isSystem && isSystemInDarkTheme())
@@ -153,7 +153,7 @@ class MainActivity : ComponentActivity() {
                 LocalSnackbarHost provides snackBarHostState
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
-                    HandleDeepLink(intentState = intentState.collectAsState())
+                    HandleDeepLink(intentState = intentState.collectAsStateWithLifecycle())
                     ZipFileIntentHandler(intentState = intentState, isManager = isManager)
                     ShortcutIntentHandler(intentState = intentState)
 
@@ -260,20 +260,22 @@ fun MainScreen() {
     CompositionLocalProvider(
         LocalMainPagerState provides mainPagerState
     ) {
+        val contentReady = me.weishu.kernelsu.ui.util.rememberContentReady()
         val pagerContent = @Composable { bottomInnerPadding: Dp ->
             HorizontalPager(
                 modifier = Modifier
                     .then(if (enableBlur) Modifier.hazeSource(state = hazeState) else Modifier)
                     .then(if (enableFloatingBottomBar && enableFloatingBottomBarBlur) Modifier.layerBackdrop(backdrop) else Modifier),
                 state = mainPagerState.pagerState,
-                beyondViewportPageCount = 3,
+                beyondViewportPageCount = if (contentReady) 3 else 0,
                 userScrollEnabled = userScrollEnabled,
-            ) {
-                when (it) {
-                    0 -> HomePager(navController, bottomInnerPadding)
-                    1 -> SuperUserPager(navController, bottomInnerPadding)
-                    2 -> ModulePager(bottomInnerPadding)
-                    3 -> SettingPager(navController, bottomInnerPadding)
+            ) { page ->
+                val isCurrentPage = page == mainPagerState.pagerState.currentPage
+                when (page) {
+                    0 -> if (isCurrentPage || contentReady) HomePager(navController, bottomInnerPadding)
+                    1 -> if (isCurrentPage || contentReady) SuperUserPager(navController, bottomInnerPadding)
+                    2 -> if (isCurrentPage || contentReady) ModulePager(bottomInnerPadding)
+                    3 -> if (isCurrentPage || contentReady) SettingPager(navController, bottomInnerPadding)
                 }
             }
         }
@@ -396,7 +398,7 @@ private fun ZipFileIntentHandler(
         return uri.getFileName(context) ?: uri.lastPathSegment ?: "Unknown"
     }
 
-    val intentStateValue by intentState.collectAsState()
+    val intentStateValue by intentState.collectAsStateWithLifecycle()
     LaunchedEffect(intentStateValue) {
         val currentIntent = activity.intent
         val uri = currentIntent?.data ?: return@LaunchedEffect
@@ -429,7 +431,7 @@ private fun ShortcutIntentHandler(
 ) {
     val activity = LocalActivity.current ?: return
     val context = LocalContext.current
-    val intentStateValue by intentState.collectAsState()
+    val intentStateValue by intentState.collectAsStateWithLifecycle()
     val navigator = LocalNavigator.current
     LaunchedEffect(intentStateValue) {
         val intent = activity.intent

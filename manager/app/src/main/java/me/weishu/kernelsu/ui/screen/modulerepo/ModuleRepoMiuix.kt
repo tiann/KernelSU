@@ -47,7 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -217,6 +216,10 @@ fun ModuleRepoScreenMiuix(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
+                val displaySearch = remember(state.searchResults, state.sortByName) {
+                    val collator = Collator.getInstance(platformLocale)
+                    if (!state.sortByName) state.searchResults else state.searchResults.sortedWith(compareBy(collator) { it.moduleName })
+                }
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -225,13 +228,7 @@ fun ModuleRepoScreenMiuix(
                     item {
                         Spacer(Modifier.height(6.dp))
                     }
-                    val displaySearch = run {
-                        val base = state.searchResults
-                        val sortByName = state.sortByName
-                        val collator = Collator.getInstance(platformLocale)
-                        if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
-                    }
-                    items(displaySearch, key = { it.moduleId }) { module ->
+                    items(displaySearch, key = { it.moduleId }, contentType = { "module" }) { module ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -320,42 +317,50 @@ fun ModuleRepoScreenMiuix(
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
         val isLoading = state.modules.isEmpty()
+        val hadDataOnEntry = remember { state.modules.isNotEmpty() }
+        val contentReady = hadDataOnEntry || me.weishu.kernelsu.ui.util.rememberContentReady()
         val offline = state.offline
 
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (offline) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = stringResource(R.string.network_offline), color = colorScheme.onSurfaceVariantSummary, fontSize = 16.sp)
-                        Spacer(Modifier.height(12.dp))
-                        TextButton(
-                            modifier = Modifier
-                                .padding(horizontal = 24.dp)
-                                .fillMaxWidth(),
-                            text = stringResource(R.string.network_retry),
-                            onClick = actions.onRefresh,
-                        )
+        searchStatus.SearchBox(
+            onSearchStatusChange = actions.onSearchStatusChange,
+            searchBarTopPadding = dynamicTopPadding,
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            ),
+            hazeState = hazeState,
+            hazeStyle = hazeStyle
+        ) { boxHeight ->
+            if (!contentReady || isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = innerPadding.calculateTopPadding() + boxHeight.value,
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection),
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (offline) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = stringResource(R.string.network_offline), color = colorScheme.onSurfaceVariantSummary, fontSize = 16.sp)
+                            Spacer(Modifier.height(12.dp))
+                            TextButton(
+                                modifier = Modifier
+                                    .padding(horizontal = 24.dp)
+                                    .fillMaxWidth(),
+                                text = stringResource(R.string.network_retry),
+                                onClick = actions.onRefresh,
+                            )
+                        }
+                    } else {
+                        InfiniteProgressIndicator()
                     }
-                } else {
-                    InfiniteProgressIndicator()
                 }
             }
-        } else {
-            searchStatus.SearchBox(
-                onSearchStatusChange = actions.onSearchStatusChange,
-                searchBarTopPadding = dynamicTopPadding,
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateEndPadding(layoutDirection)
-                ),
-                hazeState = hazeState,
-                hazeStyle = hazeStyle
-            ) { boxHeight ->
+            if (!isLoading && contentReady) {
                 val pullToRefreshState = rememberPullToRefreshState()
                 val refreshTexts = listOf(
                     stringResource(R.string.refresh_pulling),
@@ -374,11 +379,9 @@ fun ModuleRepoScreenMiuix(
                         end = innerPadding.calculateEndPadding(layoutDirection)
                     ),
                 ) {
-                    val displayModules = run {
-                        val base = state.modules
-                        val sortByName = state.sortByName
+                    val displayModules = remember(state.modules, state.sortByName) {
                         val collator = Collator.getInstance(platformLocale)
-                        if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
+                        if (!state.sortByName) state.modules else state.modules.sortedWith(compareBy(collator) { it.moduleName })
                     }
                     LazyColumn(
                         modifier = Modifier
@@ -535,6 +538,7 @@ private fun ReadmePage(
         overscrollEffect = null,
     ) {
         item {
+            val contentReady = me.weishu.kernelsu.ui.util.rememberContentReady()
             var isLoading by remember { mutableStateOf(true) }
             if (isLoading) {
                 Box(
@@ -551,13 +555,8 @@ private fun ReadmePage(
                     InfiniteProgressIndicator()
                 }
             }
-            var isReady by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) {
-                repeat(60) { withFrameNanos { } }
-                isReady = true
-            }
             AnimatedVisibility(
-                visible = isReady && readmeLoaded && readmeHtml != null,
+                visible = contentReady && readmeLoaded && readmeHtml != null,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
@@ -1075,18 +1074,23 @@ fun ModuleRepoDetailScreenMiuix(
                         setPendingDownload = { pendingDownload = it }
                     )
 
-                    2 -> InfoPage(
-                        module = module,
-                        innerPadding = innerPadding,
-                        scrollBehavior = scrollBehavior,
-                        hazeState = hazeState,
-                        actionIconTint = actionIconTint,
-                        secondaryContainer = secondaryContainer,
-                        uriHandler = object : UriHandler {
-                            override fun openUri(uri: String) = actions.onOpenUrl(uri)
-                        },
-                        sourceUrl = state.sourceUrl,
-                    )
+                    2 -> {
+                        val uriHandler = remember(actions) {
+                            object : UriHandler {
+                                override fun openUri(uri: String) = actions.onOpenUrl(uri)
+                            }
+                        }
+                        InfoPage(
+                            module = module,
+                            innerPadding = innerPadding,
+                            scrollBehavior = scrollBehavior,
+                            hazeState = hazeState,
+                            actionIconTint = actionIconTint,
+                            secondaryContainer = secondaryContainer,
+                            uriHandler = uriHandler,
+                            sourceUrl = state.sourceUrl,
+                        )
+                    }
                 }
             }
         }

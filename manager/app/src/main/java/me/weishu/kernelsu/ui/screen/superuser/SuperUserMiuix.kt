@@ -200,7 +200,7 @@ fun SuperUserPagerMiuix(
                     item {
                         Spacer(Modifier.height(6.dp))
                     }
-                    items(uiState.searchResults, key = { it.uid }) { group ->
+                    items(uiState.searchResults, key = { it.uid }, contentType = { "group" }) { group ->
                         val expanded = expandedSearchUids.value.contains(group.uid)
                         AnimatedVisibility(
                             visible = uiState.searchResults.isNotEmpty(),
@@ -305,36 +305,30 @@ fun SuperUserPagerMiuix(
                         ),
                         overscrollEffect = null,
                     ) {
-                        items(uiState.groupedApps, key = { it.uid }) { group ->
+                        items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
                             val expanded = expandedUids.value.contains(group.uid)
-                            AnimatedVisibility(
-                                visible = true,
-                                enter = expandVertically() + fadeIn(),
-                                exit = shrinkVertically() + fadeOut()
-                            ) {
-                                Column {
-                                    GroupItem(
-                                        group = group,
-                                        onToggleExpand = {
-                                            if (group.apps.size > 1) {
-                                                expandedUids.value =
-                                                    if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
-                                            }
+                            Column {
+                                GroupItem(
+                                    group = group,
+                                    onToggleExpand = {
+                                        if (group.apps.size > 1) {
+                                            expandedUids.value =
+                                                if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
                                         }
-                                    ) {
-                                        actions.onOpenProfile(group)
                                     }
-                                    AnimatedVisibility(
-                                        visible = expanded && group.apps.size > 1,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        Column {
-                                            group.apps.forEach { app ->
-                                                SimpleAppItem(app = app)
-                                            }
-                                            Spacer(Modifier.height(6.dp))
+                                ) {
+                                    actions.onOpenProfile(group)
+                                }
+                                AnimatedVisibility(
+                                    visible = expanded && group.apps.size > 1,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    Column {
+                                        group.apps.forEach { app ->
+                                            SimpleAppItem(app = app)
                                         }
+                                        Spacer(Modifier.height(6.dp))
                                     }
                                 }
                             }
@@ -406,13 +400,15 @@ private fun GroupItem(
     val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
     val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
             || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-    val tags = buildList {
-        if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
-        if (group.shouldUmount) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
-        if (group.anyCustom) add(StatusMeta("CUSTOM", bg, fg))
-        if (userId != 0) add(StatusMeta("USER $userId", bg, fg))
-        if (isSystemApp) add(StatusMeta("SYSTEM", bg, fg))
-        if (hasSharedUserId) add(StatusMeta("SHARED UID", bg, fg))
+    val tags = remember(group.anyAllowSu, group.shouldUmount, group.anyCustom, userId, isSystemApp, hasSharedUserId) {
+        buildList {
+            if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
+            if (group.shouldUmount) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
+            if (group.anyCustom) add(StatusMeta("CUSTOM", bg, fg))
+            if (userId != 0) add(StatusMeta("USER $userId", bg, fg))
+            if (isSystemApp) add(StatusMeta("SYSTEM", bg, fg))
+            if (hasSharedUserId) add(StatusMeta("SHARED UID", bg, fg))
+        }
     }
     Card(
         modifier = Modifier

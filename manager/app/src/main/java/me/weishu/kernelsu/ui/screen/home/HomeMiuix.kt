@@ -55,6 +55,7 @@ import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -128,9 +129,9 @@ fun HomePagerMiuix(
                     }
                     if (state.showVersionMismatchWarning) {
                         WarningCard(
-                            stringResource(id = R.string.home_version_mismatch).format(
+                            stringResource(id = R.string.home_version_mismatch,
                                 state.currentManagerVersionCode,
-                                state.ksuVersion
+                                state.ksuVersion ?: 0
                             )
                         )
                     }
@@ -139,8 +140,8 @@ fun HomePagerMiuix(
                     }
                     if (state.showRequireKernelWarning) {
                         WarningCard(
-                            stringResource(id = R.string.require_kernel_version)
-                                .format(state.ksuVersion, me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL),
+                            stringResource(id = R.string.require_kernel_version,
+                                state.ksuVersion ?: 0, me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL),
                         )
                     }
                     if (state.showRootWarning) {
@@ -150,7 +151,6 @@ fun HomePagerMiuix(
                         state = state,
                         actions = actions,
                     )
-
                     if (state.checkUpdateEnabled) {
                         UpdateCard(state = state, actions = actions)
                     }
@@ -180,7 +180,7 @@ private fun UpdateCard(
     ) {
         val updateDialog = rememberConfirmDialog(onConfirm = { actions.onOpenUrl(newVersion.downloadUrl) })
         WarningCard(
-            message = stringResource(id = R.string.new_version_available).format(newVersion.versionCode),
+            message = stringResource(id = R.string.new_version_available, newVersion.versionCode),
             colorScheme.outline
         ) {
             if (newVersion.changelog.isEmpty()) {
@@ -396,7 +396,6 @@ private fun StatusCard(
                                 if (state.isSELinuxPermissive) {
                                     TextButton(
                                         text = stringResource(R.string.home_jailbreak),
-                                        insideMargin = PaddingValues(12.dp),
                                         onClick = actions.onJailbreakClick,
                                         colors = ButtonDefaults.textButtonColorsPrimary()
                                     )
@@ -538,9 +537,15 @@ private fun InfoCard(systemInfo: SystemInfo) {
             InfoText(title = stringResource(R.string.home_kernel), content = systemInfo.kernelVersion)
             InfoText(title = stringResource(R.string.home_manager_version), content = systemInfo.managerVersion)
             InfoText(title = stringResource(R.string.home_fingerprint), content = systemInfo.fingerprint)
+            val selinuxDisplay = when (systemInfo.selinuxStatus) {
+                "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
+                "Permissive" -> stringResource(R.string.selinux_status_permissive)
+                "Disabled" -> stringResource(R.string.selinux_status_disabled)
+                else -> stringResource(R.string.selinux_status_unknown)
+            }
             InfoText(
                 title = stringResource(R.string.home_selinux_status),
-                content = systemInfo.selinuxStatus,
+                content = selinuxDisplay,
                 bottomPadding = 0.dp
             )
         }
@@ -566,7 +571,7 @@ private fun StatusCardNotActivatedPreview() {
 @Composable
 private fun StatusCardPermissivePreview() {
     StatusCard(
-        state = previewHomeScreenState(ksuVersion = null, lkmMode = null, isSELinuxPermissive = true),
+        state = previewHomeScreenState(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive"),
         actions = HomeActions({}, {}, {}, {})
     )
 }
@@ -597,7 +602,6 @@ private fun HomeScreenPreviewContent(
     lkmMode: Boolean?,
     isSafeMode: Boolean = false,
     isLateLoadMode: Boolean = false,
-    isSELinuxPermissive: Boolean = false,
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
@@ -615,7 +619,6 @@ private fun HomeScreenPreviewContent(
                     lkmMode = lkmMode,
                     isSafeMode = isSafeMode,
                     isLateLoadMode = isLateLoadMode,
-                    isSELinuxPermissive = isSELinuxPermissive,
                     superuserCount = superuserCount,
                     moduleCount = moduleCount,
                     selinuxStatus = selinuxStatus,
@@ -644,7 +647,7 @@ private fun HomeScreenNotActivatedPreview() {
 @Preview(name = "Home Permissive", showBackground = true)
 @Composable
 private fun HomeScreenPermissivePreview() {
-    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, isSELinuxPermissive = true, selinuxStatus = "Permissive")
+    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive")
 }
 
 @Preview(name = "Home Jailbreak", showBackground = true)
@@ -658,7 +661,6 @@ private fun previewHomeScreenState(
     lkmMode: Boolean?,
     isSafeMode: Boolean = false,
     isLateLoadMode: Boolean = false,
-    isSELinuxPermissive: Boolean = false,
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
@@ -673,9 +675,8 @@ private fun previewHomeScreenState(
     isRootAvailable = ksuVersion != null,
     isSafeMode = isSafeMode,
     isLateLoadMode = isLateLoadMode,
-    isSELinuxPermissive = isSELinuxPermissive,
     checkUpdateEnabled = false,
-    latestVersionInfo = me.weishu.kernelsu.ui.util.module.LatestVersionInfo(),
+    latestVersionInfo = LatestVersionInfo(),
     currentManagerVersionCode = 10000,
     superuserCount = superuserCount,
     moduleCount = moduleCount,

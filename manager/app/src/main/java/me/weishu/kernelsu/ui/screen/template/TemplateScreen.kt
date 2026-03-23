@@ -4,7 +4,7 @@ import android.content.ClipData
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ClipEntry
@@ -28,7 +28,7 @@ fun AppProfileTemplateScreen() {
     val uiMode = LocalUiMode.current
     val navigator = LocalNavigator.current
     val viewModel = viewModel<TemplateViewModel>()
-    val screenState by viewModel.uiState.collectAsState()
+    val screenState by viewModel.uiState.collectAsStateWithLifecycle()
     val clipboard = LocalClipboard.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

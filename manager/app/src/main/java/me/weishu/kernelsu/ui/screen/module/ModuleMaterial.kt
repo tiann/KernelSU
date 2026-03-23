@@ -482,7 +482,7 @@ private fun ModuleList(
             bottom = 16.dp + bottomInnerPadding + 56.dp + 16.dp
         ),
     ) {
-        items(displayModules, key = { it.id }) { module ->
+        items(displayModules, key = { it.id }, contentType = { "module" }) { module ->
             val scope = rememberCoroutineScope()
             val moduleUpdateInfo = updateInfoMap[module.id] ?: ModuleUpdateInfo.Empty
 
@@ -779,7 +779,7 @@ private fun ModuleItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }
+                val hasUpdate = updateUrl.isNotEmpty()
                 val actionButtonsEnabled = !module.remove && module.enabled
 
                 AnimatedVisibility(

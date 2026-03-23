@@ -425,7 +425,6 @@ fun ModulePagerMiuix(
                         end = 0.dp,
                         bottom = maxOf(bottomInnerPadding, imeBottomPadding),
                     ),
-                    animateItems = true,
                 )
             }
         },
@@ -646,7 +645,6 @@ private fun ModuleList(
     actions: ModuleActions,
     onModuleAddShortcut: (Module, ShortcutType) -> Unit,
     contentPadding: PaddingValues,
-    animateItems: Boolean = false,
 ) {
     val loadingDialog = rememberLoadingDialog()
     val scope = rememberCoroutineScope()
@@ -702,17 +700,7 @@ private fun ModuleList(
                 )
             }
 
-            if (animateItems) {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    content()
-                }
-            } else {
-                content()
-            }
+            content()
         }
     }
 }
@@ -734,13 +722,9 @@ fun ModuleItem(
     val actionIconTint = colorScheme.onSurface.copy(alpha = if (isInDarkTheme()) 0.7f else 0.9f)
     val updateBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     val updateTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
-    val hasUpdate by remember(updateUrl) { derivedStateOf { updateUrl.isNotEmpty() } }
-    val textDecoration by remember(module.remove) {
-        mutableStateOf(if (module.remove) TextDecoration.LineThrough else null)
-    }
-    val hasDescription by remember(module.description) {
-        derivedStateOf { module.description.isNotBlank() }
-    }
+    val hasUpdate = updateUrl.isNotEmpty()
+    val textDecoration = if (module.remove) TextDecoration.LineThrough else null
+    val hasDescription = module.description.isNotBlank()
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
 
     Card(

@@ -91,9 +91,9 @@ fun HomePagerMaterial(
             }
             if (state.showVersionMismatchWarning) {
                 WarningCard(
-                    stringResource(id = R.string.home_version_mismatch).format(
+                    stringResource(id = R.string.home_version_mismatch,
                         state.currentManagerVersionCode,
-                        state.ksuVersion
+                        state.ksuVersion ?: 0
                     )
                 )
             }
@@ -102,8 +102,8 @@ fun HomePagerMaterial(
             }
             if (state.showRequireKernelWarning) {
                 WarningCard(
-                    stringResource(id = R.string.require_kernel_version).format(
-                        state.ksuVersion,
+                    stringResource(id = R.string.require_kernel_version,
+                        state.ksuVersion ?: 0,
                         me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL
                     )
                 )
@@ -138,7 +138,7 @@ private fun UpdateCard(
     ) {
         val updateDialog = rememberConfirmDialog(onConfirm = { actions.onOpenUrl(newVersion.downloadUrl) })
         WarningCard(
-            message = stringResource(id = R.string.new_version_available).format(newVersion.versionCode),
+            message = stringResource(id = R.string.new_version_available, newVersion.versionCode),
             MaterialTheme.colorScheme.outlineVariant
         ) {
             if (newVersion.changelog.isEmpty()) {
@@ -444,7 +444,13 @@ private fun InfoCard(systemInfo: SystemInfo) {
             Spacer(Modifier.height(16.dp))
             InfoCardItem(stringResource(R.string.home_fingerprint), systemInfo.fingerprint)
             Spacer(Modifier.height(16.dp))
-            InfoCardItem(stringResource(R.string.home_selinux_status), systemInfo.selinuxStatus)
+            val selinuxDisplay = when (systemInfo.selinuxStatus) {
+                "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
+                "Permissive" -> stringResource(R.string.selinux_status_permissive)
+                "Disabled" -> stringResource(R.string.selinux_status_disabled)
+                else -> stringResource(R.string.selinux_status_unknown)
+            }
+            InfoCardItem(stringResource(R.string.home_selinux_status), selinuxDisplay)
         }
     }
 }
@@ -468,7 +474,7 @@ private fun StatusCardNotActivatedPreview() {
 @Composable
 private fun StatusCardPermissivePreview() {
     StatusCard(
-        state = previewHomeScreenState(ksuVersion = null, lkmMode = null, isSELinuxPermissive = true),
+        state = previewHomeScreenState(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive"),
         actions = HomeActions({}, {}, {}, {})
     )
 }
@@ -499,7 +505,6 @@ private fun HomeScreenPreviewContent(
     lkmMode: Boolean?,
     isSafeMode: Boolean = false,
     isLateLoadMode: Boolean = false,
-    isSELinuxPermissive: Boolean = false,
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
@@ -516,7 +521,6 @@ private fun HomeScreenPreviewContent(
                     lkmMode = lkmMode,
                     isSafeMode = isSafeMode,
                     isLateLoadMode = isLateLoadMode,
-                    isSELinuxPermissive = isSELinuxPermissive,
                     superuserCount = superuserCount,
                     moduleCount = moduleCount,
                     selinuxStatus = selinuxStatus,
@@ -545,7 +549,7 @@ private fun HomeScreenNotActivatedPreview() {
 @Preview(name = "Home Permissive", showBackground = true)
 @Composable
 private fun HomeScreenPermissivePreview() {
-    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, isSELinuxPermissive = true, selinuxStatus = "Permissive")
+    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive")
 }
 
 @Preview(name = "Home Jailbreak", showBackground = true)
@@ -559,7 +563,6 @@ private fun previewHomeScreenState(
     lkmMode: Boolean?,
     isSafeMode: Boolean = false,
     isLateLoadMode: Boolean = false,
-    isSELinuxPermissive: Boolean = false,
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
@@ -574,7 +577,6 @@ private fun previewHomeScreenState(
     isRootAvailable = ksuVersion != null,
     isSafeMode = isSafeMode,
     isLateLoadMode = isLateLoadMode,
-    isSELinuxPermissive = isSELinuxPermissive,
     checkUpdateEnabled = false,
     latestVersionInfo = me.weishu.kernelsu.ui.util.module.LatestVersionInfo(),
     currentManagerVersionCode = 10000,
