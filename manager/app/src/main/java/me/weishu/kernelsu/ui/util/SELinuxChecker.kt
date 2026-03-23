@@ -14,8 +14,11 @@ fun isSELinuxPermissive(): Boolean {
     return result.isSuccess && stdoutList.joinToString("").trim() == "Permissive"
 }
 
-@Composable
-fun getSELinuxStatus(): String {
+/**
+ * Returns the raw SELinux status string ("Enforcing", "Permissive", "Disabled", or "Unknown").
+ * Safe to call from any thread (IO recommended).
+ */
+fun getSELinuxStatusRaw(): String {
     val shell = Shell.Builder.create().build("sh")
 
     val stdoutList = ArrayList<String>()
@@ -28,16 +31,14 @@ fun getSELinuxStatus(): String {
 
     if (result.isSuccess) {
         return when (stdout) {
-            "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
-            "Permissive" -> stringResource(R.string.selinux_status_permissive)
-            "Disabled" -> stringResource(R.string.selinux_status_disabled)
-            else -> stringResource(R.string.selinux_status_unknown)
+            "Enforcing", "Permissive", "Disabled" -> stdout
+            else -> "Unknown"
         }
     }
 
     return if (stderr.endsWith("Permission denied")) {
-        stringResource(R.string.selinux_status_enforcing)
+        "Enforcing"
     } else {
-        stringResource(R.string.selinux_status_unknown)
+        "Unknown"
     }
 }

@@ -2,7 +2,7 @@ package me.weishu.kernelsu.ui.screen.superuser
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,7 +18,7 @@ fun SuperUserPager(
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<SuperUserViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         if (uiState.groupedApps.isEmpty()) {

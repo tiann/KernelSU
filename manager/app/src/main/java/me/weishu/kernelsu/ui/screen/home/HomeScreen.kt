@@ -4,7 +4,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
@@ -31,17 +31,15 @@ fun HomePager(
     bottomInnerPadding: Dp
 ) {
     val viewModel = viewModel<HomeViewModel>()
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val mainState = LocalMainPagerState.current
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
     val loadingDialog = rememberLoadingDialog()
     val scope = rememberCoroutineScope()
-    val systemInfo = getSystemInfo()
 
     LaunchedEffect(Unit) {
         viewModel.refresh()
-        viewModel.updateSystemInfo(systemInfo)
     }
 
     val actions = HomeActions(

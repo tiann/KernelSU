@@ -179,8 +179,10 @@ fun ModuleRepoScreenMaterial(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val isLoading = state.modules.isEmpty()
+        val hadDataOnEntry = remember { state.modules.isNotEmpty() }
+        val contentReady = hadDataOnEntry || me.weishu.kernelsu.ui.util.rememberContentReady()
 
-        if (isLoading) {
+        if (!contentReady || isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -201,12 +203,12 @@ fun ModuleRepoScreenMaterial(
                     LoadingIndicator()
                 }
             }
-        } else {
-            val displayModules = run {
-                val base = state.modules
-                val sortByName = state.sortByName
-                val collator = Collator.getInstance(LocalLocale.current.platformLocale)
-                if (!sortByName) base else base.sortedWith(compareBy(collator) { it.moduleName })
+        }
+        if (!isLoading && contentReady) {
+            val platformLocale = LocalLocale.current.platformLocale
+            val displayModules = remember(state.modules, state.sortByName) {
+                val collator = Collator.getInstance(platformLocale)
+                if (!state.sortByName) state.modules else state.modules.sortedWith(compareBy(collator) { it.moduleName })
             }
             RepoModuleList(
                 modules = displayModules,
@@ -472,6 +474,7 @@ private fun ReadmePage(
         ),
     ) {
         item {
+            val contentReady = me.weishu.kernelsu.ui.util.rememberContentReady()
             var isLoading by remember { mutableStateOf(true) }
             if (isLoading) {
                 Box(
@@ -481,7 +484,7 @@ private fun ReadmePage(
                     LoadingIndicator()
                 }
             }
-            if (readmeLoaded && readmeHtml != null) {
+            if (contentReady && readmeLoaded && readmeHtml != null) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     GithubMarkdown(
                         content = readmeHtml,

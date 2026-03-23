@@ -300,7 +300,7 @@ fun SettingPagerMiuix(
                                     Icons.Rounded.ElectricalServices,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_auto_jailbreak),
-                                    tint = colorScheme.onBackground
+                                    tint = if (uiState.isLateLoadMode) colorScheme.onSurfaceVariantSummary else colorScheme.disabledOnSecondaryVariant
                                 )
                             },
                             enabled = uiState.isLateLoadMode,

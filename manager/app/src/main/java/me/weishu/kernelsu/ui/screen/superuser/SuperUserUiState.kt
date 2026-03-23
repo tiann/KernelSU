@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.superuser
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.SearchStatus
 
@@ -16,6 +17,7 @@ data class GroupedApps(
     val matchedPackageNames: Set<String> = emptySet(),
 )
 
+@Stable
 data class SuperUserUiState(
     val isRefreshing: Boolean = false,
     val groupedApps: List<GroupedApps> = emptyList(),

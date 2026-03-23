@@ -21,8 +21,8 @@ import me.weishu.kernelsu.ui.screen.home.SystemInfo
 import me.weishu.kernelsu.ui.screen.home.getManagerVersion
 import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
+import me.weishu.kernelsu.ui.util.getSELinuxStatusRaw
 import me.weishu.kernelsu.ui.util.getSuperuserCount
-import me.weishu.kernelsu.ui.util.isSELinuxPermissive
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import me.weishu.kernelsu.ui.util.rootAvailable
 
@@ -34,17 +34,13 @@ class HomeViewModel : ViewModel() {
     fun refresh() {
         viewModelScope.launch {
             val baseState = withContext(Dispatchers.IO) { buildState() }
-            _uiState.update { current ->
-                baseState.copy(systemInfo = current.systemInfo)
-            }
+            _uiState.update { baseState }
             if (baseState.checkUpdateEnabled) {
                 val latestVersionInfo = withContext(Dispatchers.IO) { checkNewVersion() }
                 _uiState.update { it.copy(latestVersionInfo = latestVersionInfo) }
             }
         }
     }
-
-    fun updateSystemInfo(info: SystemInfo) = _uiState.update { it.copy(systemInfo = info) }
 
     private fun buildState(): HomeUiState {
         val kernelVersion = getKernelVersion()
@@ -65,7 +61,6 @@ class HomeViewModel : ViewModel() {
             isRootAvailable = isRootAvailable,
             isSafeMode = Natives.isSafeMode,
             isLateLoadMode = Natives.isLateLoadMode,
-            isSELinuxPermissive = isSELinuxPermissive(),
             checkUpdateEnabled = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
                 .getBoolean("check_update", true),
             latestVersionInfo = LatestVersionInfo(),
@@ -76,7 +71,7 @@ class HomeViewModel : ViewModel() {
                 kernelVersion = Os.uname().release,
                 managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode})",
                 fingerprint = Build.FINGERPRINT,
-                selinuxStatus = "Unknown",
+                selinuxStatus = getSELinuxStatusRaw(),
             ),
         )
     }

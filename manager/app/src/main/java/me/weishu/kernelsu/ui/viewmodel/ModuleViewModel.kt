@@ -6,6 +6,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -18,16 +19,26 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.Module
 import me.weishu.kernelsu.data.model.ModuleUpdateInfo
 import me.weishu.kernelsu.data.repository.ModuleRepository
 import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
+import me.weishu.kernelsu.ui.screen.module.ModuleConfirmDialogState
+import me.weishu.kernelsu.ui.screen.module.ModuleConfirmRequest
+import me.weishu.kernelsu.ui.screen.module.ModuleEffect
 import me.weishu.kernelsu.ui.screen.module.ModuleUiState
 import me.weishu.kernelsu.ui.util.hasMagisk
+import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
+import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
+import okhttp3.Request
 import java.text.Collator
 import java.util.Locale
+import me.weishu.kernelsu.ui.util.toggleModule as toggleModuleUtil
+import me.weishu.kernelsu.ui.util.undoUninstallModule as undoUninstallModuleUtil
+import me.weishu.kernelsu.ui.util.uninstallModule as uninstallModuleUtil
 
 class ModuleViewModel(
     private val repo: ModuleRepository = ModuleRepositoryImpl()
@@ -57,6 +68,8 @@ class ModuleViewModel(
     private var updateInfoCache: MutableMap<String, ModuleUpdateCache> = mutableMapOf()
     private val updateInfoInFlight = mutableSetOf<String>()
     private val searchQuery = MutableStateFlow("")
+
+    private var fetchJob: Job? = null
 
     var isNeedRefresh = false
         private set
@@ -227,18 +240,20 @@ class ModuleViewModel(
     }
 
     fun fetchModuleList(checkUpdate: Boolean = false) {
-        viewModelScope.launch {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
+            try {
+                val start = SystemClock.elapsedRealtime()
 
-            val start = SystemClock.elapsedRealtime()
+                loadModuleList()
 
-            loadModuleList()
+                if (checkUpdate) syncModuleUpdateInfo(_uiState.value.modules)
 
-            if (checkUpdate) syncModuleUpdateInfo(_uiState.value.modules)
-
-            _uiState.update { it.copy(isRefreshing = false) }
-
-            Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: ${_uiState.value.modules}")
+                Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: ${_uiState.value.modules}")
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
+            }
         }
     }
 
@@ -309,6 +324,161 @@ class ModuleViewModel(
                 state.copy(updateInfo = newMap)
             }
         }
+    }
+
+    fun requestUpdateConfirmation(module: Module, updateInfo: ModuleUpdateInfo) {
+        viewModelScope.launch {
+            val dialogState = buildUpdateConfirmDialogState(module, updateInfo)
+            _uiState.update { it.copy(confirmDialogState = dialogState) }
+        }
+    }
+
+    fun requestUninstallConfirmation(module: Module) {
+        val res = ksuApp.resources
+        _uiState.update {
+            it.copy(
+                confirmDialogState = ModuleConfirmDialogState(
+                    request = ModuleConfirmRequest.Uninstall(module),
+                    title = res.getString(R.string.module),
+                    content = (if (module.metamodule) res.getString(R.string.metamodule_uninstall_confirm) else res.getString(R.string.module_uninstall_confirm)).format(
+                        module.name
+                    ),
+                    confirm = res.getString(R.string.uninstall),
+                    dismiss = res.getString(android.R.string.cancel),
+                )
+            )
+        }
+    }
+
+    fun dismissConfirmRequest() {
+        _uiState.update { it.copy(confirmDialogState = null) }
+    }
+
+    fun consumeEffect() {
+        _uiState.update { it.copy(effect = null) }
+    }
+
+    fun emitEffect(effect: ModuleEffect) {
+        _uiState.update { it.copy(effect = effect) }
+    }
+
+    fun toggleModule(module: Module) {
+        viewModelScope.launch {
+            val res = ksuApp.resources
+            val success = withContext(Dispatchers.IO) {
+                toggleModuleUtil(module.id, !module.enabled)
+            }
+            if (success) {
+                fetchModuleList(checkUpdate = true)
+                _uiState.update { it.copy(effect = ModuleEffect.SnackBar(res.getString(R.string.reboot_to_apply))) }
+            } else {
+                val message = if (module.enabled) R.string.module_failed_to_disable else R.string.module_failed_to_enable
+                _uiState.update { it.copy(effect = ModuleEffect.SnackBar(res.getString(message).format(module.name))) }
+            }
+        }
+    }
+
+    fun uninstallModule(module: Module) {
+        viewModelScope.launch {
+            val res = ksuApp.resources
+            val success = withContext(Dispatchers.IO) {
+                uninstallModuleUtil(module.id)
+            }
+            if (success) {
+                fetchModuleList(checkUpdate = true)
+            }
+            _uiState.update {
+                it.copy(
+                    confirmDialogState = null,
+                    effect = ModuleEffect.SnackBar(
+                        res.getString(
+                            if (success) R.string.module_uninstall_success else R.string.module_uninstall_failed
+                        ).format(module.name)
+                    )
+                )
+            }
+        }
+    }
+
+    fun undoUninstallModule(module: Module) {
+        viewModelScope.launch {
+            val res = ksuApp.resources
+            val success = withContext(Dispatchers.IO) {
+                undoUninstallModuleUtil(module.id)
+            }
+            if (success) {
+                fetchModuleList(checkUpdate = true)
+            }
+            _uiState.update {
+                it.copy(
+                    effect = ModuleEffect.SnackBar(
+                        res.getString(
+                            if (success) R.string.module_undo_uninstall_success else R.string.module_undo_uninstall_failed
+                        ).format(module.name)
+                    )
+                )
+            }
+        }
+    }
+
+    private suspend fun buildUpdateConfirmDialogState(
+        module: Module,
+        updateInfo: ModuleUpdateInfo,
+    ): ModuleConfirmDialogState {
+        val res = ksuApp.resources
+        val changelogUrl = updateInfo.changelog
+
+        var changelog = ""
+        var html = false
+
+        if (changelogUrl.isNotBlank()) {
+            withContext(Dispatchers.IO) {
+                if (changelogUrl.startsWith("#") && changelogUrl.contains('@')) {
+                    val parts = changelogUrl.substring(1).split('@', limit = 2)
+                    if (parts.size == 2) {
+                        fetchReleaseDescriptionHtml(parts[0], parts[1])?.let {
+                            changelog = it
+                            html = true
+                        }
+                    }
+                }
+
+                if (changelog.isBlank()) {
+                    changelog = runCatching {
+                        ksuApp.okhttpClient.newCall(
+                            Request.Builder().url(changelogUrl).build()
+                        ).execute().body.string()
+                    }.getOrDefault("")
+                }
+            }
+        }
+
+        if (changelog.isBlank()) {
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val latestTag = fetchModuleDetail(module.id)?.latestTag.orEmpty()
+                    if (latestTag.isNotBlank()) {
+                        fetchReleaseDescriptionHtml(module.id, latestTag)?.let {
+                            changelog = it
+                            html = true
+                        }
+                    }
+                }
+            }
+        }
+
+        return ModuleConfirmDialogState(
+            request = ModuleConfirmRequest.Update(
+                module = module,
+                downloadUrl = updateInfo.downloadUrl,
+                fileName = "${module.name}-${updateInfo.version}.zip",
+            ),
+            title = if (changelog.isNotBlank()) res.getString(R.string.module_changelog) else res.getString(R.string.module_update),
+            content = changelog.ifBlank { res.getString(R.string.module_start_downloading).format(module.name) },
+            markdown = changelog.isNotBlank() && !html,
+            html = html,
+            confirm = res.getString(R.string.module_update),
+        )
     }
 
     private suspend fun checkUpdate(m: Module): ModuleUpdateInfo {
