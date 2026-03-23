@@ -6,6 +6,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -32,12 +33,12 @@ import me.weishu.kernelsu.ui.screen.module.ModuleUiState
 import me.weishu.kernelsu.ui.util.hasMagisk
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
 import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
-import me.weishu.kernelsu.ui.util.toggleModule as toggleModuleUtil
-import me.weishu.kernelsu.ui.util.uninstallModule as uninstallModuleUtil
-import me.weishu.kernelsu.ui.util.undoUninstallModule as undoUninstallModuleUtil
 import okhttp3.Request
 import java.text.Collator
 import java.util.Locale
+import me.weishu.kernelsu.ui.util.toggleModule as toggleModuleUtil
+import me.weishu.kernelsu.ui.util.undoUninstallModule as undoUninstallModuleUtil
+import me.weishu.kernelsu.ui.util.uninstallModule as uninstallModuleUtil
 
 class ModuleViewModel(
     private val repo: ModuleRepository = ModuleRepositoryImpl()
@@ -67,6 +68,8 @@ class ModuleViewModel(
     private var updateInfoCache: MutableMap<String, ModuleUpdateCache> = mutableMapOf()
     private val updateInfoInFlight = mutableSetOf<String>()
     private val searchQuery = MutableStateFlow("")
+
+    private var fetchJob: Job? = null
 
     var isNeedRefresh = false
         private set
@@ -237,18 +240,20 @@ class ModuleViewModel(
     }
 
     fun fetchModuleList(checkUpdate: Boolean = false) {
-        viewModelScope.launch {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
+            try {
+                val start = SystemClock.elapsedRealtime()
 
-            val start = SystemClock.elapsedRealtime()
+                loadModuleList()
 
-            loadModuleList()
+                if (checkUpdate) syncModuleUpdateInfo(_uiState.value.modules)
 
-            if (checkUpdate) syncModuleUpdateInfo(_uiState.value.modules)
-
-            _uiState.update { it.copy(isRefreshing = false) }
-
-            Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: ${_uiState.value.modules}")
+                Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: ${_uiState.value.modules}")
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
+            }
         }
     }
 

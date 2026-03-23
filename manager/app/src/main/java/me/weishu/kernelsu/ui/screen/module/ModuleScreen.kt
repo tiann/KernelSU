@@ -5,13 +5,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.Dp
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,10 +46,11 @@ fun ModulePager(
     LaunchedEffect(Unit) {
         viewModel.refreshEnvironmentState()
         viewModel.initializePreferences()
+    }
 
-        if (rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh) {
-            viewModel.fetchModuleList(checkUpdate = true)
-        }
+    LifecycleResumeEffect(Unit) {
+        viewModel.fetchModuleList(checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh)
+        onPauseOrDispose {}
     }
 
     val actions = ModuleActions(
@@ -87,7 +89,11 @@ fun ModulePager(
                             viewModel.markNeedRefresh()
                         },
                         onDownloading = {
-                            viewModel.emitEffect(ModuleEffect.Toast(resource.getString(R.string.module_downloading).format(request.module.name)))
+                            viewModel.emitEffect(
+                                ModuleEffect.Toast(
+                                    resource.getString(R.string.module_downloading).format(request.module.name)
+                                )
+                            )
                         },
                     )
                 }

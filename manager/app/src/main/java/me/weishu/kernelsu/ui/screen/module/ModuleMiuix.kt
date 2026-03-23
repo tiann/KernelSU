@@ -13,11 +13,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -463,38 +461,38 @@ fun ModulePagerMiuix(
             hazeState = hazeState,
             hazeStyle = hazeStyle
         ) { boxHeight ->
-            if (modules.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
-                            bottom = bottomInnerPadding
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        stringResource(R.string.module_empty),
-                        textAlign = TextAlign.Center,
-                        color = Color.Gray,
-                    )
-                }
-            } else {
-                val contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
-                    start = innerPadding.calculateStartPadding(layoutDirection),
-                    end = innerPadding.calculateEndPadding(layoutDirection),
-                    bottom = bottomInnerPadding,
-                )
-                PullToRefresh(
-                    isRefreshing = uiState.isRefreshing,
-                    pullToRefreshState = pullToRefreshState,
-                    onRefresh = actions.onRefresh,
-                    refreshTexts = refreshTexts,
-                    contentPadding = contentPadding,
-                ) {
+            val contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + boxHeight.value + 6.dp,
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection),
+                bottom = bottomInnerPadding,
+            )
+            PullToRefresh(
+                isRefreshing = uiState.isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = actions.onRefresh,
+                refreshTexts = refreshTexts,
+                contentPadding = contentPadding,
+            ) {
+                if (modules.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = innerPadding.calculateTopPadding(),
+                                start = innerPadding.calculateStartPadding(layoutDirection),
+                                end = innerPadding.calculateEndPadding(layoutDirection),
+                                bottom = bottomInnerPadding
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            stringResource(R.string.module_empty),
+                            textAlign = TextAlign.Center,
+                            color = Color.Gray,
+                        )
+                    }
+                } else {
                     ModuleList(
                         modifier = Modifier
                             .fillMaxHeight()
