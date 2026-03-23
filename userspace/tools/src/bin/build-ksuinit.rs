@@ -8,7 +8,7 @@ fn host_tag() -> &'static str {
     match env::consts::OS {
         "windows" => "windows",
         "linux" => "linux",
-        "macos" => "macos",
+        "macos" => "darwin",
         other => {
             eprintln!("Unsupported host OS: {other}");
             std::process::exit(2);
