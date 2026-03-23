@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.Module
@@ -241,8 +242,8 @@ class ModuleViewModel(
 
     fun fetchModuleList(checkUpdate: Boolean = false) {
         fetchJob?.cancel()
+        _uiState.update { it.copy(isRefreshing = true) }
         fetchJob = viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true) }
             try {
                 val start = SystemClock.elapsedRealtime()
 
@@ -292,8 +293,11 @@ class ModuleViewModel(
 
         val fetchedEntries = coroutineScope {
             modulesToFetch.map { (id, module, signature) ->
-                async(Dispatchers.IO) {
-                    id to ModuleUpdateCache(signature, checkUpdate(module))
+                async {
+                    val info = withTimeoutOrNull(5_000L) {
+                        withContext(Dispatchers.IO) { checkUpdate(module) }
+                    } ?: ModuleUpdateInfo.Empty
+                    id to ModuleUpdateCache(signature, info)
                 }
             }.awaitAll()
         }
