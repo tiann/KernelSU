@@ -334,7 +334,7 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Set current process's pgrp to init (0)
+/// Set current process's process group to init_group (pgid = 0)
 pub fn set_init_pgrp() -> std::io::Result<()> {
     ksuctl(KSU_IOCTL_SET_INIT_PGRP, std::ptr::null_mut::<u8>())?;
     Ok(())
