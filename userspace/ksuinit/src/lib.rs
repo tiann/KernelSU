@@ -5,6 +5,8 @@ use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
 use std::fs;
 
+pub mod module_loader;
+
 struct Kptr {
     value: String,
 }
