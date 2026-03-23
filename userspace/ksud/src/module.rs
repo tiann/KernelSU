@@ -212,7 +212,7 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     #[cfg(unix)]
     {
         command = unsafe {
-            command.pre_exec(move || {
+            command.pre_exec(|| {
                 if let Err(e) = ksucalls::set_init_pgrp() {
                     log::error!("failed to set init group: {e:?}");
                     libc::setpgid(0, 0);
