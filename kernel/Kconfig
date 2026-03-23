@@ -1,8 +1,15 @@
 menu "KernelSU"
 
+if !ARM64
+comment "-------------------------------------------------------"
+comment "Please note:                                           "
+comment "KernelSU only supports ARM64 architecture now.         "
+comment "-------------------------------------------------------"
+endif
+
 config KSU
 	tristate "KernelSU function support"
-	depends on KPROBES && EXT4_FS
+	depends on KPROBES && EXT4_FS && ARM64
 	default y
 	help
 	  Enable kernel-level root privileges on Android System.
