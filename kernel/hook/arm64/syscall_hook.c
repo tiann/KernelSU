@@ -1,13 +1,13 @@
 #ifdef __aarch64__
 
-#include "syscall_hook.h"
+#include "../syscall_hook.h"
 
 #include <linux/kallsyms.h>
 #include <linux/mutex.h>
 #include <asm/cacheflush.h>
-#include "patch_memory.h"
-#include "../arch.h"
-#include "../klog.h" // IWYU pragma: keep
+#include "../patch_memory.h"
+#include "../../arch.h"
+#include "../../klog.h" // IWYU pragma: keep
 
 syscall_fn_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;

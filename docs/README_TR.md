@@ -22,9 +22,12 @@ Android cihazlar için kernel tabanlı root çözümü.
 
 KernelSU resmi olarak Android GKI 2.0 cihazlarını (5.10+ kernelli) destekler, eski kernellerle de (4.14+) uyumludur, ancak kerneli kendinizin derlemeniz gerekir.
 
-Bununla birlikte; ChromeOS ve konteyner tabanlı Android desteklenmektedir.
+Bununla birlikte; WSA, ChromeOS ve konteyner tabanlı Android'in tamamı desteklenmektedir.
 
-Şimdilik sadece `arm64-v8a` desteklenmektedir.
+Şu anda `arm64-v8a` ve `x86_64` mimarileri desteklenmektedir.
+
+> [!CAUTION]
+> Yeni çekirdek sürümleri, KernelSU'nun çökmesine ve `x86_64` üzerinde kernel panic tetiklemesine neden olabilecek uyumsuz bir değişiklik uyguladı! Daha fazla bilgi için web sitesini kontrol edin!
 
 ## Kullanım
 

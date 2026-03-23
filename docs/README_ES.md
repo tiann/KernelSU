@@ -21,9 +21,12 @@ Una solución root basada en el kernel para dispositivos Android.
 
 **KernelSU** soporta de forma oficial dispositivos Android con **GKI 2.0** (a partir de la versión **5.10** del kernel). Los kernels antiguos (a partir de la versión **4.14**) también son compatibles, pero necesitas compilarlos por tu cuenta.
 
-Con esto, ChromeOS y Android basado en contenedores son compatibles.
+Con esto, WSA, ChromeOS y Android basado en contenedores están todos compatibles.
 
-Actualmente, solo se admite la arquitectura `arm64-v8a`.
+Actualmente, se soportan las arquitecturas `arm64-v8a` y `x86_64`.
+
+> [!CAUTION]
+> ¡Las versiones recientes del kernel han implementado un cambio que rompe la compatibilidad, causando que KernelSU falle y potencialmente provoque un kernel panic en `x86_64`! ¡Consulta el sitio web para más información!
 
 ## Uso
 

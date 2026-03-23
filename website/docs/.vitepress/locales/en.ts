@@ -56,6 +56,7 @@ function sidebarGuide() {
           { text: 'Module Configuration', link: '/guide/module-config.md' },
           { text: 'App Profile', link: '/guide/app-profile.md' },
           { text: 'Rescue from bootloop', link: '/guide/rescue-from-bootloop.md' },
+          { text: 'x86_64 support', link: '/guide/x86_64-support' },
           { text: 'FAQ', link: '/guide/faq' },
           { text: 'Hidden features', link: '/guide/hidden-features' },
         ]

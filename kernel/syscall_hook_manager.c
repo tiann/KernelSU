@@ -196,7 +196,11 @@ static long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs)
 // sys_enter handler: redirect hooked syscalls to the dispatcher
 static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 {
+#if defined(__x86_64__)
+    if (unlikely(in_compat_syscall()))
+#elif defined(__aarch64__)
     if (unlikely(is_compat_task()))
+#endif
         return;
 
     if (ksu_dispatcher_nr < 0)
@@ -204,8 +208,16 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 
     if (ksu_has_syscall_hook(id)) {
         struct pt_regs *current_regs = task_pt_regs(current);
+        
+#if defined(__x86_64__)
+        // Stash the original syscall number in ax. 
+        // We use ax because it currently just holds -ENOSYS and is safe to overwrite.
+        current_regs->ax = id;
+        current_regs->orig_ax = ksu_dispatcher_nr;
+#elif defined(__aarch64__)
         PT_REGS_ORIG_SYSCALL(current_regs) = id;
         current_regs->syscallno = ksu_dispatcher_nr;
+#endif
     }
 }
 #endif

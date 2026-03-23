@@ -21,6 +21,14 @@
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
 
+#if defined(__x86_64__)
+#include <asm/cpufeature.h>
+#include <linux/version.h>
+#ifndef X86_FEATURE_INDIRECT_SAFE
+#error "FATAL: Your kernel is missing the indirect syscall bypass patches!"
+#endif
+#endif
+
 // workaround for A12-5.10 kernel
 // Some third-party kernel (e.g. linegaeOS) uses wrong toolchain, which supports
 // CC_HAVE_STACKPROTECTOR_SYSREG while gki's toolchain doesn't.
@@ -70,6 +78,22 @@ module_param(allow_shell, bool, 0);
 
 int __init kernelsu_init(void)
 {
+#if defined(__x86_64__)
+    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set 
+    if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
+        pr_alert("*************************************************************");
+        pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+        pr_alert("**                                                         **");
+        pr_alert("**        X86_FEATURE_INDIRECT_SAFE is not enabled!        **");
+        pr_alert("**      KernelSU will abort initialization to prevent      **");
+        pr_alert("**                     kernel panic.                       **");
+        pr_alert("**                                                         **");
+        pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+        pr_alert("*************************************************************");
+        return -ENOSYS;
+    }
+#endif
+
 #ifdef MODULE
     ksu_late_loaded = (current->pid != 1);
 #else
