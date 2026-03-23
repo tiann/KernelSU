@@ -1,0 +1,2 @@
+[alias]
+ksuinit-build = "run -p tools --bin ksuinit-build --"

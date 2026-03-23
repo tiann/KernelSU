@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "ksud",
+    "ksuinit",
+    "tools",
+]
+resolver = "2"

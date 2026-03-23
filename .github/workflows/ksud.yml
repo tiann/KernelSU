@@ -63,4 +63,4 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: ksud-${{ inputs.target }}
-        path: userspace/ksud/target/**/release/ksud*
+        path: userspace/target/**/release/ksud*
