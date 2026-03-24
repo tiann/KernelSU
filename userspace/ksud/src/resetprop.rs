@@ -29,7 +29,8 @@ impl std::error::Error for WaitTimeoutError {}
     name = "resetprop",
     version,
     about = "Magisk-compatible system property tool",
-    disable_help_subcommand = true
+    disable_help_subcommand = true,
+    after_help = "Arguments:\n  NAME   Property name.\n  VALUE  Property value (for set or wait-for-value)."
 )]
 #[allow(clippy::struct_excessive_bools)]
 struct Args {
@@ -93,19 +94,6 @@ impl Args {
     }
 }
 
-#[derive(Parser)]
-#[command(
-    name = "resetprop",
-    version,
-    about = "Magisk-compatible system property tool",
-    after_help = "Arguments:\n  NAME   Property name.\n  VALUE  Property value (for set or wait-for-value).",
-    disable_help_subcommand = true
-)]
-struct ResetPropParser {
-    #[command(flatten)]
-    arg: Args,
-}
-
 pub fn resetprop_main(args: &[String]) -> ! {
     if let Err(err) = run_from_args(args) {
         let code = if err.downcast_ref::<WaitTimeoutError>().is_some() {
@@ -123,8 +111,8 @@ pub fn resetprop_main(args: &[String]) -> ! {
 ///
 /// `args` should include argv[0] (the program name).
 fn run_from_args(args: &[String]) -> Result<()> {
-    let cli = match ResetPropParser::try_parse_from(args) {
-        Ok(cli) => cli.arg,
+    let cli = match Args::try_parse_from(args) {
+        Ok(cli) => cli,
         Err(err) => {
             if matches!(
                 err.kind(),
