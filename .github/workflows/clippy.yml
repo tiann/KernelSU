@@ -35,4 +35,6 @@ jobs:
       - name: Run clippy
         run: |
           cross clippy --manifest-path userspace/ksud/Cargo.toml --target aarch64-linux-android --release
+          cross clippy --manifest-path userspace/ksud/Cargo.toml --target x86_64-linux-android --release
           cross clippy --manifest-path userspace/ksuinit/Cargo.toml --target aarch64-linux-android --release
+          cross clippy --manifest-path userspace/ksuinit/Cargo.toml --target x86_64-linux-android --release

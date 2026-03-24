@@ -22,9 +22,12 @@ Giải pháp root thông qua thay đổi trên Kernel hệ điều hành cho cá
 
 KernelSU chính thức hỗ trợ các thiết bị Android với kernel GKI 2.0 (phiên bản kernel 5.10+), các phiên bản kernel cũ hơn (4.14+) cũng tương thích, nhưng bạn cần phải tự biên dịch.
 
-ChromeOS và Android dựa trên container(container-based) cũng được hỗ trợ bởi KernelSU.
+WSA, ChromeOS và Android dựa trên container(container-based) cũng được hỗ trợ bởi KernelSU.
 
-Hiên tại Giao diện nhị phân của ứng dụng (ABI) được hỗ trợ là `arm64-v8a`.
+Hiện tại, các kiến trúc `arm64-v8a` và `x86_64` được hỗ trợ.
+
+> [!CAUTION]
+> Các phiên bản kernel gần đây đã áp dụng một thay đổi lớn có thể khiến KernelSU gặp lỗi và có khả năng gây ra kernel panic trên `x86_64`! Hãy kiểm tra trang web để biết thêm thông tin!
 
 ## Sử dụng
 

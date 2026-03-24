@@ -2,6 +2,10 @@
 #define __KSU_H_KSU_SYSCALL_HOOK
 #include <asm/syscall.h>
 
+#if defined(__x86_64__)
+typedef sys_call_ptr_t syscall_fn_t;
+#endif
+
 extern syscall_fn_t *ksu_syscall_table;
 
 // Dispatcher slot number in syscall table
