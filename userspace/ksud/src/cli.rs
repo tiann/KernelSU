@@ -104,9 +104,10 @@ enum Commands {
     },
 
     /// Resetprop - Magisk-compatible system property tool
+    #[command(disable_help_flag = true)]
     Resetprop {
         /// Arguments passed to resetprop
-        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
         args: Vec<String>,
     },
 }
