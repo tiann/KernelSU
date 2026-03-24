@@ -1,5 +1,6 @@
 #include "linux/compiler.h"
 #include "linux/cred.h"
+#include "linux/jump_label.h"
 #include "linux/printk.h"
 #include "selinux/selinux.h"
 #include <linux/spinlock.h>
@@ -9,6 +10,7 @@
 #include <linux/ptrace.h>
 #include <linux/slab.h>
 #include <trace/events/syscalls.h>
+#include <linux/static_key.h>
 
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -150,12 +152,21 @@ static long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs)
     return ksu_syscall_table[orig_nr](regs);
 }
 
+DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
+
+void ksu_stop_ksud_execve_hook()
+{
+    static_branch_disable(&ksud_execve_key);
+}
+
 static long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 {
     int ret = 0;
 
     const char __user **filename_user = (const char __user **)&PT_REGS_PARM1(regs);
     bool current_is_init = is_init(current_cred());
+    if (static_branch_unlikely(&ksud_execve_key))
+        ksu_execve_hook_ksud(regs);
     if (current->pid != 1 && current_is_init) {
         ksu_handle_init_mark_tracker(filename_user);
     } else if (ksu_su_compat_enabled) {
