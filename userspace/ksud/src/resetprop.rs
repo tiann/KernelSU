@@ -123,8 +123,8 @@ pub fn resetprop_main(args: &[String]) -> ! {
 ///
 /// `args` should include argv[0] (the program name).
 fn run_from_args(args: &[String]) -> Result<()> {
-    let cli = match Args::try_parse_from(args) {
-        Ok(cli) => cli,
+    let cli = match ResetPropParser::try_parse_from(args) {
+        Ok(cli) => cli.arg,
         Err(err) => {
             if matches!(
                 err.kind(),
