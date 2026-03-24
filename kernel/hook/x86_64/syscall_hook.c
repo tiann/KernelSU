@@ -208,7 +208,8 @@ void ksu_syscall_hook_init(void)
 
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
-    ksu_syscall_table = (sys_call_ptr_t *)kallsyms_lookup_name("sys_call_table");
+    ksu_syscall_table =
+        (sys_call_ptr_t *)kallsyms_lookup_name("sys_call_table");
     pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
 
     if (!ksu_syscall_table)

@@ -208,9 +208,9 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 
     if (ksu_has_syscall_hook(id)) {
         struct pt_regs *current_regs = task_pt_regs(current);
-        
+
 #if defined(__x86_64__)
-        // Stash the original syscall number in ax. 
+        // Stash the original syscall number in ax.
         // We use ax because it currently just holds -ENOSYS and is safe to overwrite.
         current_regs->ax = id;
         current_regs->orig_ax = ksu_dispatcher_nr;

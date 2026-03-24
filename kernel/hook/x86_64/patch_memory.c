@@ -5,7 +5,7 @@
 
 #ifdef __x86_64__
 
-#include <linux/cache.h> 
+#include <linux/cache.h>
 #include "../patch_memory.h"
 #include "../../klog.h" // IWYU pragma: keep
 #include <linux/cpumask.h>
@@ -107,8 +107,12 @@ fail:
 }
 
 // --- Architecture-specific Cache Flushing & Barriers ---
-#define ksu_flush_dcache(start, sz) do {} while (0)
-#define ksu_flush_icache(start, end) do {} while (0)
+#define ksu_flush_dcache(start, sz)                                            \
+    do {                                                                       \
+    } while (0)
+#define ksu_flush_icache(start, end)                                           \
+    do {                                                                       \
+    } while (0)
 #define ksu_isb() smp_mb()
 
 struct patch_text_info {
