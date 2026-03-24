@@ -79,17 +79,26 @@ module_param(allow_shell, bool, 0);
 int __init kernelsu_init(void)
 {
 #if defined(__x86_64__)
-    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set 
+    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
-        pr_alert("*************************************************************");
-        pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-        pr_alert("**                                                         **");
-        pr_alert("**        X86_FEATURE_INDIRECT_SAFE is not enabled!        **");
-        pr_alert("**      KernelSU will abort initialization to prevent      **");
-        pr_alert("**                     kernel panic.                       **");
-        pr_alert("**                                                         **");
-        pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-        pr_alert("*************************************************************");
+        pr_alert(
+            "*************************************************************");
+        pr_alert(
+            "**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+        pr_alert(
+            "**                                                         **");
+        pr_alert(
+            "**        X86_FEATURE_INDIRECT_SAFE is not enabled!        **");
+        pr_alert(
+            "**      KernelSU will abort initialization to prevent      **");
+        pr_alert(
+            "**                     kernel panic.                       **");
+        pr_alert(
+            "**                                                         **");
+        pr_alert(
+            "**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+        pr_alert(
+            "*************************************************************");
         return -ENOSYS;
     }
 #endif
