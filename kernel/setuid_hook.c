@@ -27,8 +27,7 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 
     pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
 
-    if (likely(ksu_is_manager_appid_valid()) &&
-        unlikely(ksu_get_manager_appid() == new_uid % PER_USER_RANGE)) {
+    if (likely(ksu_is_manager_appid_valid()) && unlikely(ksu_get_manager_appid() == new_uid % PER_USER_RANGE)) {
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
         ksu_set_task_tracepoint_flag(current);
@@ -40,8 +39,7 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
     }
 
     if (ksu_is_allow_uid_for_current(new_uid)) {
-        if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
-            current->seccomp.filter) {
+        if (current->seccomp.mode == SECCOMP_MODE_FILTER && current->seccomp.filter) {
             spin_lock_irq(&current->sighand->siglock);
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
             spin_unlock_irq(&current->sighand->siglock);

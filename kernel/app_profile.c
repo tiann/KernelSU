@@ -77,8 +77,7 @@ static void disable_seccomp(void)
     // When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
     spin_lock_irq(&current->sighand->siglock);
     // disable seccomp
-#if defined(CONFIG_GENERIC_ENTRY) &&                                           \
-    LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if defined(CONFIG_GENERIC_ENTRY) && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
     clear_syscall_work(SECCOMP);
 #else
     clear_thread_flag(TIF_SECCOMP);
@@ -136,8 +135,7 @@ int escape_with_root_profile(void)
     cred->egid.val = profile.gid;
     cred->securebits = 0;
 
-    BUILD_BUG_ON(sizeof(profile.capabilities.effective) !=
-                 sizeof(kernel_cap_t));
+    BUILD_BUG_ON(sizeof(profile.capabilities.effective) != sizeof(kernel_cap_t));
 
     /*
      * Mirror the kernel set*uid path: update cred->user first, then
@@ -173,10 +171,8 @@ int escape_with_root_profile(void)
     // we add it here but don't add it to cap_inhertiable, it would be dropped automaticly after exec!
     u64 cap_for_ksud = profile.capabilities.effective | CAP_DAC_READ_SEARCH;
     memcpy(&cred->cap_effective, &cap_for_ksud, sizeof(cred->cap_effective));
-    memcpy(&cred->cap_permitted, &profile.capabilities.effective,
-           sizeof(cred->cap_permitted));
-    memcpy(&cred->cap_bset, &profile.capabilities.effective,
-           sizeof(cred->cap_bset));
+    memcpy(&cred->cap_permitted, &profile.capabilities.effective, sizeof(cred->cap_permitted));
+    memcpy(&cred->cap_bset, &profile.capabilities.effective, sizeof(cred->cap_bset));
 
     setup_groups(&profile, cred);
     setup_selinux(profile.selinux_domain, cred);

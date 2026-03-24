@@ -35,13 +35,11 @@
 // Therefore, ksu lkm, which uses gki toolchain, requires this __stack_chk_guard,
 // while those third-party kernel can't provide.
 // Thus, we manually provide it instead of using kernel's
-#if defined(CONFIG_STACKPROTECTOR) &&                                          \
-    (defined(CONFIG_ARM64) && defined(MODULE) &&                               \
-     !defined(CONFIG_STACKPROTECTOR_PER_TASK))
+#if defined(CONFIG_STACKPROTECTOR) &&                                                                                  \
+    (defined(CONFIG_ARM64) && defined(MODULE) && !defined(CONFIG_STACKPROTECTOR_PER_TASK))
 #include <linux/stackprotector.h>
 #include <linux/random.h>
-unsigned long __stack_chk_guard __ro_after_init
-    __attribute__((visibility("hidden")));
+unsigned long __stack_chk_guard __ro_after_init __attribute__((visibility("hidden")));
 
 __attribute__((no_stack_protector)) void ksu_setup_stack_chk_guard()
 {
@@ -79,7 +77,7 @@ module_param(allow_shell, bool, 0);
 int __init kernelsu_init(void)
 {
 #if defined(__x86_64__)
-    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set 
+    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
         pr_alert("*************************************************************");
         pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");

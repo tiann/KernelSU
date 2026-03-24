@@ -36,8 +36,7 @@ static struct sdesc *init_sdesc(struct crypto_shash *alg)
     return sdesc;
 }
 
-static int calc_hash(struct crypto_shash *alg, const unsigned char *data,
-                     unsigned int datalen, unsigned char *digest)
+static int calc_hash(struct crypto_shash *alg, const unsigned char *data, unsigned int datalen, unsigned char *digest)
 {
     struct sdesc *sdesc;
     int ret;
@@ -53,8 +52,7 @@ static int calc_hash(struct crypto_shash *alg, const unsigned char *data,
     return ret;
 }
 
-static int ksu_sha256(const unsigned char *data, unsigned int datalen,
-                      unsigned char *digest)
+static int ksu_sha256(const unsigned char *data, unsigned int datalen, unsigned char *digest)
 {
     struct crypto_shash *alg;
     char *hash_alg_name = "sha256";
@@ -70,8 +68,8 @@ static int ksu_sha256(const unsigned char *data, unsigned int datalen,
     return ret;
 }
 
-static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
-                        unsigned expected_size, const char *expected_sha256)
+static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset, unsigned expected_size,
+                        const char *expected_sha256)
 {
     kernel_read(fp, size4, 0x4, pos); // signer-sequence length
     kernel_read(fp, size4, 0x4, pos); // signer length
@@ -138,8 +136,7 @@ static bool has_v1_signature_file(struct file *fp)
 
     loff_t pos = 0;
 
-    while (kernel_read(fp, &header, sizeof(struct zip_entry_header), &pos) ==
-           sizeof(struct zip_entry_header)) {
+    while (kernel_read(fp, &header, sizeof(struct zip_entry_header), &pos) == sizeof(struct zip_entry_header)) {
         if (header.signature != 0x04034b50) {
             // ZIP magic: 'PK'
             return false;
@@ -166,9 +163,7 @@ static bool has_v1_signature_file(struct file *fp)
     return false;
 }
 
-static __always_inline bool check_v2_signature(char *path,
-                                               unsigned expected_size,
-                                               const char *expected_sha256)
+static __always_inline bool check_v2_signature(char *path, unsigned expected_size, const char *expected_sha256)
 {
     unsigned char buffer[0x11] = { 0 };
     u32 size4;
@@ -239,8 +234,7 @@ static __always_inline bool check_v2_signature(char *path,
         offset = 4;
         if (id == 0x7109871au) {
             v2_signing_blocks++;
-            v2_signing_valid = check_block(fp, &size4, &pos, &offset,
-                                           expected_size, expected_sha256);
+            v2_signing_valid = check_block(fp, &size4, &pos, &offset, expected_size, expected_sha256);
         } else if (id == 0xf05368c0u) {
             // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
             v3_signing_exist = true;
@@ -302,8 +296,7 @@ static struct kernel_param_ops expected_size_ops = {
     .get = param_get_uint,
 };
 
-module_param_cb(ksu_debug_manager_appid, &expected_size_ops,
-                &ksu_debug_manager_appid, S_IRUSR | S_IWUSR);
+module_param_cb(ksu_debug_manager_appid, &expected_size_ops, &ksu_debug_manager_appid, S_IRUSR | S_IWUSR);
 
 #endif
 

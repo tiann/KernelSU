@@ -68,8 +68,7 @@ static char __user *ksud_user_path(void)
     return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
-                         int *__unused_flags)
+int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode, int *__unused_flags)
 {
     const char su[] = SU_PATH;
 
@@ -114,8 +113,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
     return 0;
 }
 
-int ksu_handle_execve_sucompat(const char __user **filename_user,
-                               void *__never_use_argv, void *__never_use_envp,
+int ksu_handle_execve_sucompat(const char __user **filename_user, void *__never_use_argv, void *__never_use_envp,
                                int *__never_use_flags)
 {
     const char su[] = SU_PATH;

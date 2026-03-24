@@ -5,7 +5,7 @@
 
 #ifdef __x86_64__
 
-#include <linux/cache.h> 
+#include <linux/cache.h>
 #include "../patch_memory.h"
 #include "../../klog.h" // IWYU pragma: keep
 #include <linux/cpumask.h>
@@ -41,14 +41,12 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
     pgd = pgd_offset(mm, addr);
     if (pgd_none(*pgd) || pgd_bad(*pgd))
         goto fail;
-    pr_debug("pgd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pgd,
-             (uintptr_t)pgd_val(*pgd));
+    pr_debug("pgd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pgd, (uintptr_t)pgd_val(*pgd));
 
     p4d = p4d_offset(pgd, addr);
     if (p4d_none(*p4d) || p4d_bad(*p4d))
         goto fail;
-    pr_debug("p4d of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)p4d,
-             (uintptr_t)p4d_val(*p4d));
+    pr_debug("p4d of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)p4d, (uintptr_t)p4d_val(*p4d));
 #if defined(p4d_leaf)
     if (p4d_leaf(*p4d)) {
         pr_debug("Address 0x%lx maps to a P4D-level huge page\n", addr);
@@ -63,8 +61,7 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
     pud = pud_offset(p4d, addr);
     if (pud_none(*pud) || pud_bad(*pud))
         goto fail;
-    pr_debug("pud of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pud,
-             (uintptr_t)pud_val(*pud));
+    pr_debug("pud of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pud, (uintptr_t)pud_val(*pud));
 #if defined(pud_leaf)
     if (pud_leaf(*pud)) {
         pr_debug("Address 0x%lx maps to a PUD-level huge page\n", addr);
@@ -77,8 +74,7 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
 #endif
 
     pmd = pmd_offset(pud, addr);
-    pr_debug("pmd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pmd,
-             (uintptr_t)pmd_val(*pmd));
+    pr_debug("pmd of 0x%lx p=0x%lx v=0x%lx", addr, (uintptr_t)pmd, (uintptr_t)pmd_val(*pmd));
 #if defined(pmd_leaf)
     if (pmd_leaf(*pmd)) {
         pr_debug("Address 0x%lx maps to a PMD-level huge page\n", addr);
@@ -107,8 +103,12 @@ fail:
 }
 
 // --- Architecture-specific Cache Flushing & Barriers ---
-#define ksu_flush_dcache(start, sz) do {} while (0)
-#define ksu_flush_icache(start, end) do {} while (0)
+#define ksu_flush_dcache(start, sz)                                                                                    \
+    do {                                                                                                               \
+    } while (0)
+#define ksu_flush_icache(start, end)                                                                                   \
+    do {                                                                                                               \
+    } while (0)
 #define ksu_isb() smp_mb()
 
 struct patch_text_info {
@@ -121,8 +121,7 @@ struct patch_text_info {
 
 static int ksu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 {
-    pr_debug("patch dst=0x%lx src=0x%lx len=%ld\n", (unsigned long)dst,
-             (unsigned long)src, len);
+    pr_debug("patch dst=0x%lx src=0x%lx len=%ld\n", (unsigned long)dst, (unsigned long)src, len);
 
     unsigned long p = (unsigned long)dst;
     int ret;

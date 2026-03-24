@@ -137,10 +137,8 @@ struct ksu_add_try_umount_cmd {
 #define KSU_IOCTL_GET_ALLOW_LIST _IOC(_IOC_READ | _IOC_WRITE, 'K', 6, 0)
 // deprecated
 #define KSU_IOCTL_GET_DENY_LIST _IOC(_IOC_READ | _IOC_WRITE, 'K', 7, 0)
-#define KSU_IOCTL_NEW_GET_ALLOW_LIST                                           \
-    _IOWR('K', 6, struct ksu_new_get_allow_list_cmd)
-#define KSU_IOCTL_NEW_GET_DENY_LIST                                            \
-    _IOWR('K', 7, struct ksu_new_get_allow_list_cmd)
+#define KSU_IOCTL_NEW_GET_ALLOW_LIST _IOWR('K', 6, struct ksu_new_get_allow_list_cmd)
+#define KSU_IOCTL_NEW_GET_DENY_LIST _IOWR('K', 7, struct ksu_new_get_allow_list_cmd)
 #define KSU_IOCTL_UID_GRANTED_ROOT _IOC(_IOC_READ | _IOC_WRITE, 'K', 8, 0)
 #define KSU_IOCTL_UID_SHOULD_UMOUNT _IOC(_IOC_READ | _IOC_WRITE, 'K', 9, 0)
 #define KSU_IOCTL_GET_MANAGER_APPID _IOC(_IOC_READ, 'K', 10, 0)

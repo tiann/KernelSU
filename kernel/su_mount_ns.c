@@ -20,8 +20,7 @@
 #include "ksu.h"
 #include "su_mount_ns.h"
 
-extern int path_mount(const char *dev_name, struct path *path,
-                      const char *type_page, unsigned long flags,
+extern int path_mount(const char *dev_name, struct path *path, const char *type_page, unsigned long flags,
                       void *data_page);
 
 #if defined(__aarch64__)
@@ -65,8 +64,7 @@ static void ksu_mnt_ns_global(void)
 
     if (IS_ERR(pwd_path)) {
         if (PTR_ERR(pwd_path) == -ENAMETOOLONG) {
-            pr_warn("absolute pwd longer than: %d, skip restore pwd!!\n",
-                    PATH_MAX);
+            pr_warn("absolute pwd longer than: %d, skip restore pwd!!\n", PATH_MAX);
         } else {
             pr_warn("get absolute pwd failed: %ld\n", PTR_ERR(pwd_path));
         }
@@ -102,8 +100,7 @@ try_setns:
 
     path_put(&ns_path);
     if (IS_ERR(ns_file)) {
-        pr_warn("failed open file for init mount namespace: %ld\n",
-                PTR_ERR(ns_file));
+        pr_warn("failed open file for init mount namespace: %ld\n", PTR_ERR(ns_file));
         goto out;
     }
 
@@ -171,8 +168,7 @@ void setup_mount_ns(int32_t ns_mode)
     }
 
     if (ns_mode != KSU_NS_GLOBAL && ns_mode != KSU_NS_INDIVIDUAL) {
-        pr_warn("pid: %d ,unknown mount namespace mode: %d\n", current->pid,
-                ns_mode);
+        pr_warn("pid: %d ,unknown mount namespace mode: %d\n", current->pid, ns_mode);
         return;
     }
 

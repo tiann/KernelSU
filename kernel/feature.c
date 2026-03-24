@@ -20,22 +20,20 @@ int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
     }
 
     if (!handler->get_handler && !handler->set_handler) {
-        pr_err("feature: no handler provided for feature %u\n",
-               handler->feature_id);
+        pr_err("feature: no handler provided for feature %u\n", handler->feature_id);
         return -EINVAL;
     }
 
     mutex_lock(&feature_mutex);
 
     if (feature_handlers[handler->feature_id]) {
-        pr_warn("feature: handler for %u already registered, overwriting\n",
-                handler->feature_id);
+        pr_warn("feature: handler for %u already registered, overwriting\n", handler->feature_id);
     }
 
     feature_handlers[handler->feature_id] = handler;
 
-    pr_info("feature: registered handler for %s (id=%u)\n",
-            handler->name ? handler->name : "unknown", handler->feature_id);
+    pr_info("feature: registered handler for %s (id=%u)\n", handler->name ? handler->name : "unknown",
+            handler->feature_id);
 
     mutex_unlock(&feature_mutex);
     return 0;

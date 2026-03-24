@@ -93,15 +93,12 @@ void ksu_mark_running_process_locked(void)
         bool is_shell = uid == 2000;
         // before boot completed, we shall mark init for marking zygote
         bool is_init = t->pid == 1;
-        if (ksu_root_process || is_zygote_process || is_shell || is_init ||
-            ksu_is_allow_uid(uid)) {
+        if (ksu_root_process || is_zygote_process || is_shell || is_init || ksu_is_allow_uid(uid)) {
             ksu_set_task_tracepoint_flag(t);
-            pr_info("tp_marker: mark process: pid:%d, uid: %d, comm:%s\n",
-                    t->pid, uid, t->comm);
+            pr_info("tp_marker: mark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
         } else {
             ksu_clear_task_tracepoint_flag(t);
-            pr_info("tp_marker: unmark process: pid:%d, uid: %d, comm:%s\n",
-                    t->pid, uid, t->comm);
+            pr_info("tp_marker: unmark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
         }
         put_cred(cred);
     }
@@ -115,8 +112,7 @@ void ksu_mark_running_process(void)
     if (tracepoint_reg_count <= 1) {
         ksu_mark_running_process_locked();
     } else {
-        pr_info(
-            "tp_marker: not mark running process since syscall tracepoint is in use\n");
+        pr_info("tp_marker: not mark running process since syscall tracepoint is in use\n");
     }
     spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 }
@@ -163,8 +159,7 @@ int ksu_set_task_mark(pid_t pid, bool mark)
             pr_info("tp_marker: marked task pid=%d comm=%s\n", pid, task->comm);
         } else {
             ksu_clear_task_tracepoint_flag(task);
-            pr_info("tp_marker: unmarked task pid=%d comm=%s\n", pid,
-                    task->comm);
+            pr_info("tp_marker: unmarked task pid=%d comm=%s\n", pid, task->comm);
         }
         put_task_struct(task);
         ret = 0;
