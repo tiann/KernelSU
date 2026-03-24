@@ -158,12 +158,10 @@ fn run_from_args(args: &[String]) -> Result<()> {
 
     // -w: wait mode
     if cli.wait {
-        let name = cli
-            .name()
-            .context("--wait requires a property name")?;
+        let name = cli.name().context("--wait requires a property name")?;
         let timeout = cli.timeout.map(Duration::from_secs_f64);
         let ok = rp
-            .wait(name, cli.value().map(|x| x.as_str()), timeout)
+            .wait(name, cli.value().map(std::string::String::as_str), timeout)
             .context("wait failed")?;
         if !ok {
             return Err(WaitTimeoutError {
@@ -177,7 +175,7 @@ fn run_from_args(args: &[String]) -> Result<()> {
     // -c: compact property area memory
     // When a positional argument is given, treat it as a SELinux context name.
     if cli.compact {
-        let context = cli.name().map(|x| x.as_str());
+        let context = cli.name().map(std::string::String::as_str);
         let compacted = sys_prop::compact(context).context("compact failed")?;
         if !compacted {
             bail!("nothing to compact");
@@ -196,9 +194,7 @@ fn run_from_args(args: &[String]) -> Result<()> {
 
     // -d: delete
     if cli.delete {
-        let name = cli
-            .name()
-            .context("--delete requires a property name")?;
+        let name = cli.name().context("--delete requires a property name")?;
         let deleted = rp.delete(name).context("delete failed")?;
         if !deleted {
             bail!("{name} not found");
