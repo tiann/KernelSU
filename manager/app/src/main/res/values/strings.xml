@@ -233,4 +233,14 @@
     <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
     <string name="advanced_options">Advanced Options</string>
     <string name="expand">Expand</string>
+
+    <string name="download_channel_name">Module Downloads</string>
+    <string name="download_progress_title">Downloading %s</string>
+    <string name="download_complete_title">Download complete</string>
+    <string name="download_complete_content">%s downloaded successfully</string>
+    <string name="download_failed_title">Download failed</string>
+    <string name="download_failed_content">Failed to download %s</string>
+    <string name="download">Download</string>
+    <string name="download_cancel">Cancel</string>
+    <string name="download_install">Install</string>
 </resources>

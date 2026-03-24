@@ -43,6 +43,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.InstallMobile
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
@@ -602,6 +603,8 @@ fun ReleasesPage(
                                         remember(sizeText, asset.downloadCount) { "$sizeText · ${asset.downloadCount} downloads" }
                                     var isDownloading by remember(fileName, asset.downloadUrl) { mutableStateOf(false) }
                                     var progress by remember(fileName, asset.downloadUrl) { mutableIntStateOf(0) }
+                                    var downloadedUri by remember(fileName, asset.downloadUrl) { mutableStateOf<Uri?>(null) }
+                                    val isDownloaded = downloadedUri != null
                                     val onClickDownload = remember(fileName, asset.downloadUrl) {
                                         {
                                             val startText = context.getString(R.string.module_start_downloading, fileName)
@@ -611,7 +614,10 @@ fun ReleasesPage(
                                                     download(
                                                         asset.downloadUrl,
                                                         fileName,
-                                                        onDownloaded = onInstallModule,
+                                                        onDownloaded = { uri ->
+                                                            isDownloading = false
+                                                            downloadedUri = uri
+                                                        },
                                                         onDownloading = { isDownloading = true },
                                                         onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
                                                     )
@@ -638,19 +644,22 @@ fun ReleasesPage(
                                                 modifier = Modifier.padding(top = 2.dp)
                                             )
                                         }
-                                        FilledTonalButton(
-                                            onClick = onClickDownload,
-                                            contentPadding = ButtonDefaults.TextButtonContentPadding
-                                        ) {
-                                            if (isDownloading) {
-                                                CircularWavyProgressIndicator(
-                                                    progress = { progress / 100f },
-                                                    modifier = Modifier.size(20.dp),
-                                                )
-                                            } else {
+                                        if (isDownloaded) {
+                                            FilledTonalButton(
+                                                onClick = {
+                                                    val uri = downloadedUri ?: return@FilledTonalButton
+                                                    val file = uri.path?.let { java.io.File(it) }
+                                                    if (file != null && file.exists()) {
+                                                        onInstallModule(uri)
+                                                    } else {
+                                                        downloadedUri = null
+                                                    }
+                                                },
+                                                contentPadding = ButtonDefaults.TextButtonContentPadding
+                                            ) {
                                                 Icon(
                                                     modifier = Modifier.size(20.dp),
-                                                    imageVector = Icons.Outlined.Download,
+                                                    imageVector = Icons.Outlined.InstallMobile,
                                                     contentDescription = stringResource(R.string.install)
                                                 )
                                                 Text(
@@ -658,6 +667,30 @@ fun ReleasesPage(
                                                     text = stringResource(R.string.install),
                                                     style = MaterialTheme.typography.labelMedium,
                                                 )
+                                            }
+                                        } else {
+                                            FilledTonalButton(
+                                                onClick = onClickDownload,
+                                                enabled = !isDownloading,
+                                                contentPadding = ButtonDefaults.TextButtonContentPadding
+                                            ) {
+                                                if (isDownloading) {
+                                                    CircularWavyProgressIndicator(
+                                                        progress = { progress / 100f },
+                                                        modifier = Modifier.size(20.dp),
+                                                    )
+                                                } else {
+                                                    Icon(
+                                                        modifier = Modifier.size(20.dp),
+                                                        imageVector = Icons.Outlined.Download,
+                                                        contentDescription = stringResource(R.string.download)
+                                                    )
+                                                    Text(
+                                                        modifier = Modifier.padding(start = 7.dp),
+                                                        text = stringResource(R.string.download),
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                    )
+                                                }
                                             }
                                         }
                                     }

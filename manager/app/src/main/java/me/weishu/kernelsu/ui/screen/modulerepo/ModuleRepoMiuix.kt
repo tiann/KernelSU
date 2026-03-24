@@ -696,6 +696,8 @@ fun ReleasesPage(
                                         remember(sizeText, asset.downloadCount) { "$sizeText · ${asset.downloadCount} downloads" }
                                     var isDownloading by remember(fileName, asset.downloadUrl) { mutableStateOf(false) }
                                     var progress by remember(fileName, asset.downloadUrl) { mutableIntStateOf(0) }
+                                    var downloadedUri by remember(fileName, asset.downloadUrl) { mutableStateOf<Uri?>(null) }
+                                    val isDownloaded = downloadedUri != null
                                     val onClickDownload = remember(fileName, asset.downloadUrl) {
                                         {
                                             val startText = context.getString(R.string.module_start_downloading, fileName)
@@ -705,7 +707,10 @@ fun ReleasesPage(
                                                     download(
                                                         asset.downloadUrl,
                                                         fileName,
-                                                        onDownloaded = onInstallModule,
+                                                        onDownloaded = { uri ->
+                                                            isDownloading = false
+                                                            downloadedUri = uri
+                                                        },
                                                         onDownloading = { isDownloading = true },
                                                         onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
                                                     )
@@ -737,21 +742,22 @@ fun ReleasesPage(
                                                 modifier = Modifier.padding(top = 2.dp)
                                             )
                                         }
-                                        IconButton(
-                                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = bottomPadding),
-                                            backgroundColor = secondaryContainer,
-                                            minHeight = 35.dp,
-                                            minWidth = 35.dp,
-                                            enabled = !isDownloading,
-                                            onClick = onClickDownload,
-                                        ) {
-                                            if (isDownloading) {
-                                                CircularProgressIndicator(
-                                                    progress = progress / 100f,
-                                                    size = 20.dp,
-                                                    strokeWidth = 2.dp
-                                                )
-                                            } else {
+                                        if (isDownloaded) {
+                                            IconButton(
+                                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = bottomPadding),
+                                                backgroundColor = secondaryContainer,
+                                                minHeight = 35.dp,
+                                                minWidth = 35.dp,
+                                                onClick = {
+                                                    val uri = downloadedUri ?: return@IconButton
+                                                    val file = uri.path?.let { java.io.File(it) }
+                                                    if (file != null && file.exists()) {
+                                                        onInstallModule(uri)
+                                                    } else {
+                                                        downloadedUri = null
+                                                    }
+                                                },
+                                            ) {
                                                 Row(
                                                     modifier = Modifier.padding(horizontal = 10.dp),
                                                     verticalAlignment = Alignment.CenterVertically,
@@ -769,6 +775,42 @@ fun ReleasesPage(
                                                         fontWeight = FontWeight.Medium,
                                                         fontSize = 15.sp
                                                     )
+                                                }
+                                            }
+                                        } else {
+                                            IconButton(
+                                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = bottomPadding),
+                                                backgroundColor = secondaryContainer,
+                                                minHeight = 35.dp,
+                                                minWidth = 35.dp,
+                                                enabled = !isDownloading,
+                                                onClick = onClickDownload,
+                                            ) {
+                                                if (isDownloading) {
+                                                    CircularProgressIndicator(
+                                                        progress = progress / 100f,
+                                                        size = 20.dp,
+                                                        strokeWidth = 2.dp
+                                                    )
+                                                } else {
+                                                    Row(
+                                                        modifier = Modifier.padding(horizontal = 10.dp),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                    ) {
+                                                        Icon(
+                                                            modifier = Modifier.size(20.dp),
+                                                            imageVector = MiuixIcons.FileDownloads,
+                                                            tint = actionIconTint,
+                                                            contentDescription = stringResource(R.string.download)
+                                                        )
+                                                        Text(
+                                                            modifier = Modifier.padding(start = 4.dp, end = 2.dp),
+                                                            text = stringResource(R.string.download),
+                                                            color = actionIconTint,
+                                                            fontWeight = FontWeight.Medium,
+                                                            fontSize = 15.sp
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
