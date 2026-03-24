@@ -629,6 +629,10 @@ static int add_try_umount(void __user *arg)
 static int do_set_init_pgrp(void __user *arg)
 {
     int err;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+    struct pid *pids[PIDTYPE_MAX] = { 0 };
+#endif
+
     write_lock_irq(&tasklist_lock);
     struct task_struct *p = current->group_leader;
     struct pid *init_group = task_pgrp(&init_task);
@@ -638,11 +642,20 @@ static int do_set_init_pgrp(void __user *arg)
         goto out;
 
     err = 0;
-    if (task_pgrp(p) != init_group)
+    if (task_pgrp(p) != init_group) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+        change_pid(pids, p, PIDTYPE_PGID, init_group);
+#else
         change_pid(p, PIDTYPE_PGID, init_group);
+#endif
+    }
 
 out:
     write_unlock_irq(&tasklist_lock);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+    free_pids(pids);
+#endif
+
     return err;
 }
 
