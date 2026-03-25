@@ -3,6 +3,7 @@ package me.weishu.kernelsu
 import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.os.Build
+import android.os.UserManager
 import android.system.Os
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
@@ -32,9 +33,16 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
     lateinit var okhttpClient: OkHttpClient
     private val appViewModelStore by lazy { ViewModelStore() }
 
+    private fun isUserUnlocked(): Boolean =
+        getSystemService(UserManager::class.java)?.isUserUnlocked == true
+
     override fun onCreate() {
         super.onCreate()
         ksuApp = this
+
+        if (!isUserUnlocked()) {
+            return
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             val prefs = this.getSharedPreferences("settings", MODE_PRIVATE)
