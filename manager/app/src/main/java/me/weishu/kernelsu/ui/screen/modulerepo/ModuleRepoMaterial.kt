@@ -77,8 +77,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.UriHandler
@@ -110,6 +112,7 @@ fun ModuleRepoScreenMaterial(
     state: ModuleRepoUiState,
     actions: ModuleRepoActions,
 ) {
+    val haptic = LocalHapticFeedback.current
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
 
@@ -147,6 +150,7 @@ fun ModuleRepoScreenMaterial(
                                 text = { Text(stringResource(R.string.module_repos_sort_name)) },
                                 trailingIcon = { Checkbox(state.sortByName, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleSortByName()
                                 }
                             )

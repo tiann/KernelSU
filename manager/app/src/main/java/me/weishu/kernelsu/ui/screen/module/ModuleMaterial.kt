@@ -310,6 +310,7 @@ fun ModulePagerMaterial(
                                 text = { Text(stringResource(R.string.module_sort_action_first)) },
                                 trailingIcon = { Checkbox(uiState.sortActionFirst, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleSortActionFirst()
                                 }
                             )
@@ -317,6 +318,7 @@ fun ModulePagerMaterial(
                                 text = { Text(stringResource(R.string.module_sort_enabled_first)) },
                                 trailingIcon = { Checkbox(uiState.sortEnabledFirst, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleSortEnabledFirst()
                                 }
                             )

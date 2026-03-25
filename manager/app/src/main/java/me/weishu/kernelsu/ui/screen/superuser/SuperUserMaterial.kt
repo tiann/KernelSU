@@ -134,6 +134,7 @@ fun SuperUserPagerMaterial(
                                 text = { Text(stringResource(R.string.show_system_apps)) },
                                 trailingIcon = { Checkbox(uiState.showSystemApps, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleShowSystemApps()
                                     showDropdown = false
                                 }
@@ -143,6 +144,7 @@ fun SuperUserPagerMaterial(
                                     text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
                                     trailingIcon = { Checkbox(uiState.showOnlyPrimaryUserApps, null) },
                                     onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                         actions.onToggleShowOnlyPrimaryUserApps()
                                         showDropdown = false
                                     }

@@ -339,6 +339,7 @@ private fun TopBar(
     onForceStopApp: (String, Int) -> Unit,
     onRestartApp: (String, Int) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.profile)) },
         navigationIcon = {
@@ -364,6 +365,7 @@ private fun TopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.launch_app)) },
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                 showDropdown = false
                                 onLaunchApp(packageName, userId)
                             },
@@ -371,6 +373,7 @@ private fun TopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.force_stop_app)) },
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                 showDropdown = false
                                 onForceStopApp(packageName, userId)
                             },
@@ -378,6 +381,7 @@ private fun TopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.restart_app)) },
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                 showDropdown = false
                                 onRestartApp(packageName, userId)
                             },
