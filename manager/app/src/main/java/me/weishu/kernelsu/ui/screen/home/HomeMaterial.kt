@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,8 +25,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -38,13 +35,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -56,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
@@ -183,12 +179,13 @@ private fun StatusCard(
                 MaterialTheme.colorScheme.secondaryContainer
             } else {
                 MaterialTheme.colorScheme.errorContainer
-            }
+            },
+            enabled = !state.isLateLoadMode,
+            onClick = actions.onInstallClick
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = !state.isLateLoadMode) { actions.onInstallClick() }
                     .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -292,11 +289,13 @@ private fun StatusCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                TonalCard(modifier = Modifier.weight(1f)) {
+                TonalCard(
+                    modifier = Modifier.weight(1f),
+                    onClick = actions.onSuperuserClick
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { actions.onSuperuserClick() }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
@@ -313,11 +312,13 @@ private fun StatusCard(
                         )
                     }
                 }
-                TonalCard(modifier = Modifier.weight(1f)) {
+                TonalCard(
+                    modifier = Modifier.weight(1f),
+                    onClick = actions.onModuleClick
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { actions.onModuleClick() }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
@@ -345,42 +346,29 @@ private fun WarningCard(
     color: Color = MaterialTheme.colorScheme.error,
     onClick: (() -> Unit)? = null
 ) {
-    TonalCard(containerColor = color) {
+    val content = @Composable {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(onClick?.let { Modifier.clickable { it() } } ?: Modifier)
                 .padding(24.dp)
         ) {
             Text(text = message, style = MaterialTheme.typography.bodyMedium)
         }
     }
-}
-
-@Composable
-fun TonalCard(
-    modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-    shape: Shape = MaterialTheme.shapes.large,
-    content: @Composable () -> Unit
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        shape = shape
-    ) {
-        content()
+    if (onClick != null) {
+        TonalCard(containerColor = color, onClick = onClick, content = content)
+    } else {
+        TonalCard(containerColor = color, content = content)
     }
 }
 
 @Composable
 private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
     val url = stringResource(R.string.home_learn_kernelsu_url)
-    TonalCard {
+    TonalCard(onClick = { onOpenUrl(url) }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onOpenUrl(url) }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -399,11 +387,10 @@ private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
 
 @Composable
 private fun DonateCard(onOpenUrl: (String) -> Unit) {
-    TonalCard {
+    TonalCard(onClick = { onOpenUrl("https://patreon.com/weishu") }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onOpenUrl("https://patreon.com/weishu") }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

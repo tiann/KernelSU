@@ -78,9 +78,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -93,7 +95,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
-import me.weishu.kernelsu.ui.screen.home.TonalCard
+import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.theme.keyColorOptions
 
@@ -109,6 +111,7 @@ fun ColorPaletteScreenMaterial(
     val currentKeyColor = uiState.keyColor
     val colorStyle = state.currentPaletteStyle
     val colorSpec = state.currentColorSpec
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(Unit) {
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
@@ -208,6 +211,7 @@ fun ColorPaletteScreenMaterial(
                                 checked = currentColorMode in modes,
                                 onCheckedChange = {
                                     if (it) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                         actions.onSetColorMode(modes.first())
                                     }
                                 },
@@ -486,6 +490,7 @@ private fun ColorButtonMaterial(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val colorScheme = if (color == Color.Unspecified) {
         val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         rememberDynamicColorScheme(
@@ -510,7 +515,10 @@ private fun ColorButtonMaterial(
     }
 
     Surface(
-        onClick = onClick,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
         shape = RoundedCornerShape(20.dp),
         color = colorScheme.surfaceContainer,
         modifier = Modifier.size(72.dp)

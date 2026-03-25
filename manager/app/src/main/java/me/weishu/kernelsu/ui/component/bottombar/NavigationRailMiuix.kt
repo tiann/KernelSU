@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import me.weishu.kernelsu.Natives
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationRail
 import top.yukonga.miuix.kmp.basic.NavigationRailItem

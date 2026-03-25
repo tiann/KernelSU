@@ -53,8 +53,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
@@ -269,6 +271,7 @@ private fun TopBar(
     onExport: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    val haptic = LocalHapticFeedback.current
     LargeFlexibleTopAppBar(
         title = {
             Text(stringResource(R.string.settings_profile_template))
@@ -296,6 +299,7 @@ private fun TopBar(
                     DropdownMenuItem(
                         text = { Text(stringResource(id = R.string.app_profile_import_from_clipboard)) },
                         onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                             onImport()
                             showDropdown = false
                         }
@@ -303,6 +307,7 @@ private fun TopBar(
                     DropdownMenuItem(
                         text = { Text(stringResource(id = R.string.app_profile_export_to_clipboard)) },
                         onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                             onExport()
                             showDropdown = false
                         }

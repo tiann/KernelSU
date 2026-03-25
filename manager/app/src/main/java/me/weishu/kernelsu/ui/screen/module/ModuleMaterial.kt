@@ -106,10 +106,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -130,9 +132,9 @@ import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.material.ExpressiveSwitch
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
+import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.screen.home.TonalCard
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.reboot
 
@@ -147,6 +149,7 @@ fun ModulePagerMaterial(
     bottomInnerPadding: Dp,
 ) {
     val snackBarHost = LocalSnackbarHost.current
+    val haptic = LocalHapticFeedback.current
 
     val context = LocalContext.current
     val resource = LocalResources.current
@@ -267,7 +270,10 @@ fun ModulePagerMaterial(
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = { actions.onRefresh() },
+                onRefresh = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    actions.onRefresh()
+                },
             ),
         topBar = {
             SearchAppBar(
@@ -277,7 +283,7 @@ fun ModulePagerMaterial(
                 onClearClick = actions.onClearSearch,
                 navigationIcon = {
                     IconButton(
-                        onClick = actions.onOpenRepo
+                        onClick = { actions.onOpenRepo() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Cloud,
@@ -304,6 +310,7 @@ fun ModulePagerMaterial(
                                 text = { Text(stringResource(R.string.module_sort_action_first)) },
                                 trailingIcon = { Checkbox(uiState.sortActionFirst, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleSortActionFirst()
                                 }
                             )
@@ -311,6 +318,7 @@ fun ModulePagerMaterial(
                                 text = { Text(stringResource(R.string.module_sort_enabled_first)) },
                                 trailingIcon = { Checkbox(uiState.sortEnabledFirst, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleSortEnabledFirst()
                                 }
                             )
@@ -653,6 +661,7 @@ private fun ModuleItem(
     TonalCard(
         modifier = Modifier.fillMaxWidth()
     ) {
+        val haptic = LocalHapticFeedback.current
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
@@ -719,7 +728,10 @@ private fun ModuleItem(
                     ExpressiveSwitch(
                         enabled = !module.update,
                         checked = module.enabled,
-                        onCheckedChange = onCheckChanged,
+                        onCheckedChange = {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onCheckChanged(it)
+                        },
                         interactionSource = if (!module.hasWebUi) interactionSource else remember { MutableInteractionSource() }
                     )
                 }

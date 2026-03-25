@@ -26,7 +26,6 @@ import com.kyant.backdrop.Backdrop
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import me.weishu.kernelsu.Natives
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.component.FloatingBottomBar
@@ -34,6 +33,7 @@ import me.weishu.kernelsu.ui.component.FloatingBottomBarItem
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar

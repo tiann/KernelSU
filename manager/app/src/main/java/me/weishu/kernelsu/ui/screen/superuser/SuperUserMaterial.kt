@@ -51,7 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -89,13 +91,18 @@ fun SuperUserPagerMaterial(
         localSearchText = uiState.searchStatus.searchText
     }
 
+    val haptic = LocalHapticFeedback.current
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = actions.onRefresh,
+                onRefresh = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    actions.onRefresh()
+                },
             ),
         topBar = {
             SearchAppBar(
@@ -127,6 +134,7 @@ fun SuperUserPagerMaterial(
                                 text = { Text(stringResource(R.string.show_system_apps)) },
                                 trailingIcon = { Checkbox(uiState.showSystemApps, null) },
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onToggleShowSystemApps()
                                     showDropdown = false
                                 }
@@ -136,6 +144,7 @@ fun SuperUserPagerMaterial(
                                     text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
                                     trailingIcon = { Checkbox(uiState.showOnlyPrimaryUserApps, null) },
                                     onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                         actions.onToggleShowOnlyPrimaryUserApps()
                                         showDropdown = false
                                     }

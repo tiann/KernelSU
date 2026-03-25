@@ -68,8 +68,8 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import me.weishu.kernelsu.ui.component.SearchStatus
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
+import me.weishu.kernelsu.ui.util.defaultHazeEffect
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.Text

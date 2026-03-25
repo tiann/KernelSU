@@ -50,6 +50,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -271,10 +273,14 @@ fun SegmentedSwitchItem(
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
 
     SegmentedListItem(
-        onClick = { onCheckedChange(!checked) },
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onCheckedChange(!checked)
+        },
         enabled = enabled,
         interactionSource = interactionSource,
         colors = colors,
@@ -300,9 +306,11 @@ fun SegmentedDropdownItem(
     items: List<String>,
     colors: ListItemColors = defaultSegmentedColors(),
     enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     var expanded by remember { mutableStateOf(false) }
 
     val hasItems = items.isNotEmpty()
@@ -314,7 +322,11 @@ fun SegmentedDropdownItem(
 
     SegmentedListItem(
         onClick = if (enabled) {
-            { expanded = true }
+            {
+                onClick?.invoke()
+                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                expanded = true
+            }
         } else null,
         enabled = enabled,
         colors = colors,
@@ -338,6 +350,7 @@ fun SegmentedDropdownItem(
                             text = { Text(text) },
                             onClick = {
                                 if (index in items.indices) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     onItemSelected(index)
                                 }
                                 expanded = false
@@ -359,9 +372,14 @@ fun SegmentedRadioItem(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     SegmentedListItem(
         selected = selected,
-        onClick = onClick,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
         enabled = enabled,
         colors = colors,
         headlineContent = { Text(title) },
@@ -385,11 +403,15 @@ fun SegmentedCheckboxItem(
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
 
     SegmentedListItem(
         checked = checked,
-        onCheckedChange = onCheckedChange,
+        onCheckedChange = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onCheckedChange(it)
+        },
         enabled = enabled,
         colors = colors,
         interactionSource = interactionSource,
