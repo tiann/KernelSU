@@ -1,9 +1,9 @@
 package me.weishu.kernelsu.ui.screen.settings
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode

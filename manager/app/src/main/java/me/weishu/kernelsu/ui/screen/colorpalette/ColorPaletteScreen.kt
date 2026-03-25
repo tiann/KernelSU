@@ -2,9 +2,9 @@ package me.weishu.kernelsu.ui.screen.colorpalette
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
