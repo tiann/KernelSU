@@ -16,7 +16,6 @@ on:
 
 env:
   RUSTFLAGS: '-Dwarnings'
-  CROSS_NO_WARNINGS: '0'
 
 jobs:
   clippy:
@@ -36,6 +35,8 @@ jobs:
           ndk-version: r29
 
       - name: Run clippy
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           rustup target add aarch64-linux-android
           rustup target add x86_64-linux-android

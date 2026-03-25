@@ -13,10 +13,6 @@ on:
         required: false
         type: boolean
         default: false
-      use_cache:
-        required: false
-        type: boolean
-        default: true
 jobs:
   build:
     runs-on: ubuntu-latest
