@@ -50,7 +50,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -154,6 +156,7 @@ private fun AppProfileInner(
     onManageTemplate: () -> Unit = {},
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     val isRootGranted = profile.allowSu
     val userId = appUid / 100000
     val appId = appUid % 100000
@@ -226,7 +229,10 @@ private fun AppProfileInner(
                         icon = Icons.Filled.Security,
                         title = stringResource(id = R.string.superuser),
                         checked = isRootGranted,
-                        onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
+                        onCheckedChange = {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onProfileChange(profile.copy(allowSu = it))
+                        },
                     )
                 },
                 {
@@ -399,6 +405,7 @@ private fun ProfileBox(
     hasTemplate: Boolean,
     onModeChange: (Mode) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -414,8 +421,11 @@ private fun ProfileBox(
         options.forEachIndexed { index, (m, label) ->
             ToggleButton(
                 checked = mode == m,
-                onCheckedChange = {
-                    if (m != Mode.Template || hasTemplate) onModeChange(m)
+                onCheckedChange = { checked ->
+                    if (checked && (m != Mode.Template || hasTemplate)) {
+                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        onModeChange(m)
+                    }
                 },
                 enabled = if (m == Mode.Template) hasTemplate else true,
                 modifier = Modifier

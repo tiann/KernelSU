@@ -300,6 +300,7 @@ fun SegmentedDropdownItem(
     items: List<String>,
     colors: ListItemColors = defaultSegmentedColors(),
     enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
 ) {
@@ -314,7 +315,10 @@ fun SegmentedDropdownItem(
 
     SegmentedListItem(
         onClick = if (enabled) {
-            { expanded = true }
+            {
+                onClick?.invoke()
+                expanded = true
+            }
         } else null,
         enabled = enabled,
         colors = colors,

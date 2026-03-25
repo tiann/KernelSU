@@ -106,10 +106,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -147,6 +149,7 @@ fun ModulePagerMaterial(
     bottomInnerPadding: Dp,
 ) {
     val snackBarHost = LocalSnackbarHost.current
+    val haptic = LocalHapticFeedback.current
 
     val context = LocalContext.current
     val resource = LocalResources.current
@@ -267,7 +270,10 @@ fun ModulePagerMaterial(
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = { actions.onRefresh() },
+                onRefresh = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    actions.onRefresh()
+                },
             ),
         topBar = {
             SearchAppBar(
@@ -277,7 +283,10 @@ fun ModulePagerMaterial(
                 onClearClick = actions.onClearSearch,
                 navigationIcon = {
                     IconButton(
-                        onClick = actions.onOpenRepo
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            actions.onOpenRepo()
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Cloud,
@@ -653,6 +662,7 @@ private fun ModuleItem(
     TonalCard(
         modifier = Modifier.fillMaxWidth()
     ) {
+        val haptic = LocalHapticFeedback.current
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
@@ -669,7 +679,10 @@ private fun ModuleItem(
                             interactionSource = interactionSource,
                             role = Role.Button,
                             indication = indication,
-                            onValueChange = { onClick() }
+                            onValueChange = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                onClick()
+                            }
                         )
                     } else {
                         this
@@ -719,7 +732,10 @@ private fun ModuleItem(
                     ExpressiveSwitch(
                         enabled = !module.update,
                         checked = module.enabled,
-                        onCheckedChange = onCheckChanged,
+                        onCheckedChange = {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onCheckChanged(it)
+                        },
                         interactionSource = if (!module.hasWebUi) interactionSource else remember { MutableInteractionSource() }
                     )
                 }
@@ -863,7 +879,10 @@ private fun ModuleItem(
                         Button(
                             modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                             enabled = !module.remove,
-                            onClick = onUpdate,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                onUpdate()
+                            },
                             shape = ButtonDefaults.textShape,
                             contentPadding = ButtonDefaults.TextButtonContentPadding
                         ) {
@@ -888,7 +907,10 @@ private fun ModuleItem(
 
                 FilledTonalButton(
                     modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                    onClick = onUninstallClicked,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        onUninstallClicked()
+                    },
                     contentPadding = ButtonDefaults.TextButtonContentPadding
                 ) {
                     if (!module.remove) {
@@ -934,6 +956,7 @@ fun CombinedClickableButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val haptic = LocalHapticFeedback.current
 
     Surface(
         modifier = modifier
@@ -943,8 +966,14 @@ fun CombinedClickableButton(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current,
                 enabled = enabled,
-                onClick = onClick,
-                onLongClick = onLongClick
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    onClick()
+                },
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    onLongClick()
+                }
             ),
         shape = shape,
         color = if (enabled) colors.containerColor else colors.disabledContainerColor,

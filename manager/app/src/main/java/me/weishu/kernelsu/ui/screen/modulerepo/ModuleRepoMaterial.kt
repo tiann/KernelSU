@@ -78,8 +78,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.UriHandler
@@ -246,12 +248,16 @@ private fun RepoModuleList(
         items(modules, key = { it.moduleId }, contentType = { "module" }) { module ->
             val latestReleaseTime = remember(module.latestReleaseTime) { module.latestReleaseTime }
             val moduleAuthor = stringResource(id = R.string.module_author)
+            val haptic = LocalHapticFeedback.current
 
             TonalCard(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onModuleClick(module) }
+                        .clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onModuleClick(module)
+                        }
                         .padding(22.dp, 18.dp, 22.dp, 12.dp)
                 ) {
                     if (module.moduleName.isNotEmpty()) {

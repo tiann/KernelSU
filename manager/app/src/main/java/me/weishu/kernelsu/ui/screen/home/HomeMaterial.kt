@@ -45,7 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
@@ -177,6 +179,7 @@ private fun StatusCard(
     state: HomeUiState,
     actions: HomeActions,
 ) {
+    val haptic = LocalHapticFeedback.current
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TonalCard(
             containerColor = if (state.ksuVersion != null) {
@@ -188,7 +191,10 @@ private fun StatusCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = !state.isLateLoadMode) { actions.onInstallClick() }
+                    .clickable(enabled = !state.isLateLoadMode) {
+                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        actions.onInstallClick()
+                    }
                     .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -296,7 +302,10 @@ private fun StatusCard(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { actions.onSuperuserClick() }
+                            .clickable {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                actions.onSuperuserClick()
+                            }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
@@ -317,7 +326,10 @@ private fun StatusCard(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { actions.onModuleClick() }
+                            .clickable {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                actions.onModuleClick()
+                            }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
@@ -375,12 +387,16 @@ fun TonalCard(
 
 @Composable
 private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
+    val haptic = LocalHapticFeedback.current
     val url = stringResource(R.string.home_learn_kernelsu_url)
     TonalCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onOpenUrl(url) }
+                .clickable {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    onOpenUrl(url)
+                }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -399,11 +415,15 @@ private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
 
 @Composable
 private fun DonateCard(onOpenUrl: (String) -> Unit) {
+    val haptic = LocalHapticFeedback.current
     TonalCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onOpenUrl("https://patreon.com/weishu") }
+                .clickable {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    onOpenUrl("https://patreon.com/weishu")
+                }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

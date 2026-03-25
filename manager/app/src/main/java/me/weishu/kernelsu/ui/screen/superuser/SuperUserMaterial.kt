@@ -51,7 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -89,13 +91,18 @@ fun SuperUserPagerMaterial(
         localSearchText = uiState.searchStatus.searchText
     }
 
+    val haptic = LocalHapticFeedback.current
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isRefreshing,
-                onRefresh = actions.onRefresh,
+                onRefresh = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    actions.onRefresh()
+                },
             ),
         topBar = {
             SearchAppBar(
@@ -270,8 +277,12 @@ private fun SimpleAppItem(
     matched: Boolean = false,
     onNavigate: () -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     ListItem(
-        onClick = onNavigate,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onNavigate()
+        },
         modifier = Modifier.padding(horizontal = 4.dp),
         shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
         colors = ListItemDefaults.colors(
@@ -314,10 +325,19 @@ private fun GroupItem(
     } else {
         group.primary.packageName
     }
+    val haptic = LocalHapticFeedback.current
     SegmentedListItem(
         selected = selected,
-        onClick = onClickPrimary,
-        onLongClick = if (group.apps.size > 1) onToggleExpand else null,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClickPrimary()
+        },
+        onLongClick = if (group.apps.size > 1) {
+            {
+                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                onToggleExpand()
+            }
+        } else null,
         headlineContent = {
             Text(
                 text = if (group.apps.size > 1) ownerNameForUid(group.uid) else group.primary.label,
