@@ -169,7 +169,6 @@ fun ColorPaletteScreenMaterial(
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                             actions.onSetKeyColor(0)
                         }
                     )
@@ -183,7 +182,6 @@ fun ColorPaletteScreenMaterial(
                         paletteStyle = colorStyle,
                         colorSpec = colorSpec,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                             actions.onSetKeyColor(color)
                         }
                     )
@@ -251,11 +249,7 @@ fun ColorPaletteScreenMaterial(
                                 title = stringResource(R.string.settings_color_style),
                                 items = styles.map { it.name },
                                 selectedIndex = styles.indexOf(colorStyle),
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                },
                                 onItemSelected = { index ->
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onSetColorStyle(styles[index].name)
                                 }
                             )
@@ -267,11 +261,7 @@ fun ColorPaletteScreenMaterial(
                                 title = stringResource(R.string.settings_color_spec),
                                 items = specs.map { it.name },
                                 selectedIndex = specs.indexOf(colorSpec).coerceAtLeast(0),
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                },
                                 onItemSelected = { index ->
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                     actions.onSetColorSpec(specs[index].name)
                                 }
                             )
@@ -289,10 +279,7 @@ fun ColorPaletteScreenMaterial(
                                     title = stringResource(id = R.string.settings_enable_predictive_back),
                                     summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
                                     checked = uiState.enablePredictiveBack,
-                                    onCheckedChange = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        actions.onSetEnablePredictiveBack(it)
-                                    }
+                                    onCheckedChange = actions.onSetEnablePredictiveBack
                                 )
                             }
                         )
@@ -340,10 +327,7 @@ fun ColorPaletteScreenMaterial(
                         Slider(
                             value = sliderValue,
                             onValueChange = { sliderValue = it },
-                            onValueChangeFinished = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                actions.onSetPageScale(sliderValue)
-                            },
+                            onValueChangeFinished = { actions.onSetPageScale(sliderValue) },
                             valueRange = 0.8f..1.1f,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -506,6 +490,7 @@ private fun ColorButtonMaterial(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val colorScheme = if (color == Color.Unspecified) {
         val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         rememberDynamicColorScheme(
@@ -530,7 +515,10 @@ private fun ColorButtonMaterial(
     }
 
     Surface(
-        onClick = onClick,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
         shape = RoundedCornerShape(20.dp),
         color = colorScheme.surfaceContainer,
         modifier = Modifier.size(72.dp)

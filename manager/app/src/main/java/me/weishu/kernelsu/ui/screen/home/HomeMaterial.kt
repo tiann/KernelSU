@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -179,22 +178,19 @@ private fun StatusCard(
     state: HomeUiState,
     actions: HomeActions,
 ) {
-    val haptic = LocalHapticFeedback.current
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TonalCard(
             containerColor = if (state.ksuVersion != null) {
                 MaterialTheme.colorScheme.secondaryContainer
             } else {
                 MaterialTheme.colorScheme.errorContainer
-            }
+            },
+            enabled = !state.isLateLoadMode,
+            onClick = actions.onInstallClick
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = !state.isLateLoadMode) {
-                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        actions.onInstallClick()
-                    }
                     .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -298,14 +294,13 @@ private fun StatusCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                TonalCard(modifier = Modifier.weight(1f)) {
+                TonalCard(
+                    modifier = Modifier.weight(1f),
+                    onClick = actions.onSuperuserClick
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                actions.onSuperuserClick()
-                            }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
@@ -322,14 +317,13 @@ private fun StatusCard(
                         )
                     }
                 }
-                TonalCard(modifier = Modifier.weight(1f)) {
+                TonalCard(
+                    modifier = Modifier.weight(1f),
+                    onClick = actions.onModuleClick
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                actions.onModuleClick()
-                            }
                             .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
@@ -357,11 +351,10 @@ private fun WarningCard(
     color: Color = MaterialTheme.colorScheme.error,
     onClick: (() -> Unit)? = null
 ) {
-    TonalCard(containerColor = color) {
+    TonalCard(containerColor = color, onClick = onClick) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(onClick?.let { Modifier.clickable { it() } } ?: Modifier)
                 .padding(24.dp)
         ) {
             Text(text = message, style = MaterialTheme.typography.bodyMedium)
@@ -374,29 +367,43 @@ fun TonalCard(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
     shape: Shape = MaterialTheme.shapes.large,
+    enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        shape = shape
-    ) {
-        content()
+    val haptic = LocalHapticFeedback.current
+
+    if (onClick != null) {
+        Card(
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                onClick()
+            },
+            modifier = modifier,
+            enabled = enabled,
+            colors = CardDefaults.cardColors(containerColor = containerColor),
+            shape = shape
+        ) {
+            content()
+        }
+    } else {
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = containerColor),
+            shape = shape
+        ) {
+            content()
+        }
     }
 }
 
 @Composable
 private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
-    val haptic = LocalHapticFeedback.current
     val url = stringResource(R.string.home_learn_kernelsu_url)
-    TonalCard {
+    TonalCard(onClick = { onOpenUrl(url) }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
-                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                    onOpenUrl(url)
-                }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -415,15 +422,10 @@ private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
 
 @Composable
 private fun DonateCard(onOpenUrl: (String) -> Unit) {
-    val haptic = LocalHapticFeedback.current
-    TonalCard {
+    TonalCard(onClick = { onOpenUrl("https://patreon.com/weishu") }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
-                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                    onOpenUrl("https://patreon.com/weishu")
-                }
                 .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

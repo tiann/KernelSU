@@ -229,10 +229,7 @@ private fun AppProfileInner(
                         icon = Icons.Filled.Security,
                         title = stringResource(id = R.string.superuser),
                         checked = isRootGranted,
-                        onCheckedChange = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            onProfileChange(profile.copy(allowSu = it))
-                        },
+                        onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
                     )
                 },
                 {

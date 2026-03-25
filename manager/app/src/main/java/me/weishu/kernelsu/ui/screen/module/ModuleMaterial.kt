@@ -283,10 +283,7 @@ fun ModulePagerMaterial(
                 onClearClick = actions.onClearSearch,
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            actions.onOpenRepo()
-                        }
+                        onClick = { actions.onOpenRepo() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Cloud,
@@ -679,10 +676,7 @@ private fun ModuleItem(
                             interactionSource = interactionSource,
                             role = Role.Button,
                             indication = indication,
-                            onValueChange = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                onClick()
-                            }
+                            onValueChange = { onClick() }
                         )
                     } else {
                         this
@@ -879,10 +873,7 @@ private fun ModuleItem(
                         Button(
                             modifier = Modifier.defaultMinSize(52.dp, 32.dp),
                             enabled = !module.remove,
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                onUpdate()
-                            },
+                            onClick = onUpdate,
                             shape = ButtonDefaults.textShape,
                             contentPadding = ButtonDefaults.TextButtonContentPadding
                         ) {
@@ -907,10 +898,7 @@ private fun ModuleItem(
 
                 FilledTonalButton(
                     modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        onUninstallClicked()
-                    },
+                    onClick = onUninstallClicked,
                     contentPadding = ButtonDefaults.TextButtonContentPadding
                 ) {
                     if (!module.remove) {
@@ -956,7 +944,6 @@ fun CombinedClickableButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
-    val haptic = LocalHapticFeedback.current
 
     Surface(
         modifier = modifier
@@ -966,14 +953,8 @@ fun CombinedClickableButton(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current,
                 enabled = enabled,
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                    onClick()
-                },
-                onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                    onLongClick()
-                }
+                onClick = onClick,
+                onLongClick = onLongClick
             ),
         shape = shape,
         color = if (enabled) colors.containerColor else colors.disabledContainerColor,

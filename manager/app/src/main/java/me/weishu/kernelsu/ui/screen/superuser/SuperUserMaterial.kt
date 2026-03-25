@@ -277,12 +277,8 @@ private fun SimpleAppItem(
     matched: Boolean = false,
     onNavigate: () -> Unit,
 ) {
-    val haptic = LocalHapticFeedback.current
     ListItem(
-        onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-            onNavigate()
-        },
+        onClick = onNavigate,
         modifier = Modifier.padding(horizontal = 4.dp),
         shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
         colors = ListItemDefaults.colors(
@@ -325,19 +321,10 @@ private fun GroupItem(
     } else {
         group.primary.packageName
     }
-    val haptic = LocalHapticFeedback.current
     SegmentedListItem(
         selected = selected,
-        onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-            onClickPrimary()
-        },
-        onLongClick = if (group.apps.size > 1) {
-            {
-                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                onToggleExpand()
-            }
-        } else null,
+        onClick = onClickPrimary,
+        onLongClick = if (group.apps.size > 1) onToggleExpand else null,
         headlineContent = {
             Text(
                 text = if (group.apps.size > 1) ownerNameForUid(group.uid) else group.primary.label,
