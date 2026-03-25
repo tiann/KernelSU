@@ -25,8 +25,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -37,16 +35,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
@@ -57,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.KernelVersion
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
@@ -351,7 +346,7 @@ private fun WarningCard(
     color: Color = MaterialTheme.colorScheme.error,
     onClick: (() -> Unit)? = null
 ) {
-    TonalCard(containerColor = color, onClick = onClick) {
+    val content = @Composable {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -360,40 +355,10 @@ private fun WarningCard(
             Text(text = message, style = MaterialTheme.typography.bodyMedium)
         }
     }
-}
-
-@Composable
-fun TonalCard(
-    modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-    shape: Shape = MaterialTheme.shapes.large,
-    enabled: Boolean = true,
-    onClick: (() -> Unit)? = null,
-    content: @Composable () -> Unit
-) {
-    val haptic = LocalHapticFeedback.current
-
     if (onClick != null) {
-        Card(
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                onClick()
-            },
-            modifier = modifier,
-            enabled = enabled,
-            colors = CardDefaults.cardColors(containerColor = containerColor),
-            shape = shape
-        ) {
-            content()
-        }
+        TonalCard(containerColor = color, onClick = onClick, content = content)
     } else {
-        Card(
-            modifier = modifier,
-            colors = CardDefaults.cardColors(containerColor = containerColor),
-            shape = shape
-        ) {
-            content()
-        }
+        TonalCard(containerColor = color, content = content)
     }
 }
 
