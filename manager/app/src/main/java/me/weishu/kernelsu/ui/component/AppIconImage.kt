@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.ui.util.AppIconCache
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
+
+private data class IconKey(val uid: Int,val packageName: String)
+
 @Composable
 fun AppIconImage(
     modifier: Modifier = Modifier,
@@ -34,13 +37,16 @@ fun AppIconImage(
     val context = LocalContext.current
     val targetSizePx = with(density) { 48.dp.roundToPx() }
 
-    val cachedBitmap = remember(applicationInfo) { AppIconCache.getFromCache(applicationInfo) }
+    val iconKey = IconKey(applicationInfo.uid, applicationInfo.packageName)
+    val cachedBitmap = remember(iconKey) {
+        AppIconCache.getFromCache(applicationInfo)
+    }
 
     Box(modifier = modifier) {
-        var appBitmap by remember(applicationInfo) { mutableStateOf(cachedBitmap) }
+        var appBitmap by remember(iconKey) { mutableStateOf(cachedBitmap) }
 
         if (cachedBitmap == null) {
-            LaunchedEffect(applicationInfo) {
+            LaunchedEffect(iconKey) {
                 appBitmap = AppIconCache.loadIcon(context, applicationInfo, targetSizePx)
             }
         }
