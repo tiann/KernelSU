@@ -1,10 +1,14 @@
 kernelsu-objs := core/init.o
 kernelsu-objs += policy/allowlist.o
 kernelsu-objs += policy/app_profile.o
+ifndef CONFIG_KSU_DISABLE_MANAGER
 kernelsu-objs += manager/apk_sign.o
+endif
 kernelsu-objs += feature/sucompat.o
+ifndef CONFIG_KSU_DISABLE_MANAGER
 kernelsu-objs += manager/throne_tracker.o
 kernelsu-objs += manager/pkg_observer.o
+endif
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += uapi/supercall.o
 kernelsu-objs += uapi/supercall_dispatch.o
