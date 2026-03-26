@@ -17,11 +17,11 @@
 
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "ksud.h"
+#include "runtime/ksud_boot.h"
 #include "selinux/selinux.h"
-#include "allowlist.h"
-#include "manager.h"
-#include "su_mount_ns.h"
+#include "policy/allowlist.h"
+#include "manager/manager_identity.h"
+#include "infra/su_mount_ns.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 3 // u32

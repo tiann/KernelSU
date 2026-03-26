@@ -12,14 +12,14 @@
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
 
-#include "allowlist.h"
-#include "setuid_hook.h"
+#include "policy/allowlist.h"
+#include "hook/setuid_hook.h"
 #include "klog.h" // IWYU pragma: keep
-#include "manager.h"
-#include "seccomp_cache.h"
-#include "supercalls.h"
-#include "tp_marker.h"
-#include "kernel_umount.h"
+#include "manager/manager_identity.h"
+#include "infra/seccomp_cache.h"
+#include "uapi/supercalls.h"
+#include "hook/tp_marker.h"
+#include "feature/kernel_umount.h"
 
 int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 {

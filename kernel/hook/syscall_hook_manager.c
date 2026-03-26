@@ -1,8 +1,4 @@
-#include "linux/compiler.h"
-#include "linux/cred.h"
-#include "linux/jump_label.h"
 #include "linux/printk.h"
-#include "selinux/selinux.h"
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/tracepoint.h>
@@ -10,18 +6,15 @@
 #include <linux/ptrace.h>
 #include <linux/slab.h>
 #include <trace/events/syscalls.h>
-#include <linux/static_key.h>
 
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
-#include "syscall_hook_manager.h"
-#include "tp_marker.h"
-#include "sucompat.h"
-#include "setuid_hook.h"
-#include "selinux/selinux.h"
-#include "app_profile.h"
-#include "ksud.h"
+#include "hook/syscall_hook_manager.h"
+#include "hook/tp_marker.h"
+#include "feature/sucompat.h"
+#include "hook/setuid_hook.h"
 #include "hook/syscall_hook.h"
+#include "hook/syscall_event_bridge.h"
 
 #ifdef CONFIG_KRETPROBES
 
@@ -91,107 +84,6 @@ static int syscall_unregfunc_handler(struct kretprobe_instance *ri, struct pt_re
 static struct kretprobe *syscall_regfunc_rp = NULL;
 static struct kretprobe *syscall_unregfunc_rp = NULL;
 #endif
-
-// Unmark init's child that are not zygote, adbd or ksud
-int ksu_handle_init_mark_tracker(const char __user **filename_user)
-{
-    char path[64];
-    unsigned long addr;
-    const char __user *fn;
-
-    if (unlikely(!filename_user))
-        return 0;
-
-    addr = untagged_addr((unsigned long)*filename_user);
-    fn = (const char __user *)addr;
-
-    long ret = strncpy_from_user(path, fn, sizeof(path));
-
-    if (ret < 0) {
-        // unreadable path; keep mark to avoid wrongly unmarking zygote
-        return 0;
-    }
-    // Ensure NUL-termination when the string was truncated
-    path[sizeof(path) - 1] = '\0';
-
-    if (unlikely(strcmp(path, KSUD_PATH) == 0)) {
-        pr_info("hook_manager: escape to root for init executing ksud: %d\n", current->pid);
-        escape_to_root_for_init();
-    } else if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
-        pr_info("hook_manager: unmark %d exec %s\n", current->pid, path);
-        ksu_clear_task_tracepoint_flag_if_needed(current);
-    }
-
-    return 0;
-}
-
-// Syscall hook handlers using the dispatcher signature
-static long __nocfi ksu_hook_newfstatat(int orig_nr, const struct pt_regs *regs)
-{
-    if (!ksu_su_compat_enabled)
-        return ksu_syscall_table[orig_nr](regs);
-
-    int *dfd = (int *)&PT_REGS_PARM1(regs);
-    const char __user **filename_user = (const char __user **)&PT_REGS_PARM2(regs);
-    int *flags = (int *)&PT_REGS_SYSCALL_PARM4(regs);
-    ksu_handle_stat(dfd, filename_user, flags);
-
-    return ksu_syscall_table[orig_nr](regs);
-}
-
-static long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs)
-{
-    if (!ksu_su_compat_enabled)
-        return ksu_syscall_table[orig_nr](regs);
-
-    int *dfd = (int *)&PT_REGS_PARM1(regs);
-    const char __user **filename_user = (const char __user **)&PT_REGS_PARM2(regs);
-    int *mode = (int *)&PT_REGS_PARM3(regs);
-    ksu_handle_faccessat(dfd, filename_user, mode, NULL);
-
-    return ksu_syscall_table[orig_nr](regs);
-}
-
-DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
-
-void ksu_stop_ksud_execve_hook()
-{
-    static_branch_disable(&ksud_execve_key);
-}
-
-static long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
-{
-    int ret = 0;
-
-    const char __user **filename_user = (const char __user **)&PT_REGS_PARM1(regs);
-    bool current_is_init = is_init(current_cred());
-    if (static_branch_unlikely(&ksud_execve_key))
-        ksu_execve_hook_ksud(regs);
-    if (current->pid != 1 && current_is_init) {
-        ksu_handle_init_mark_tracker(filename_user);
-    } else if (ksu_su_compat_enabled) {
-        ret = ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
-        if (ret < 0) {
-            return ret;
-        }
-    }
-
-    return ksu_syscall_table[orig_nr](regs);
-}
-
-static long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs)
-{
-    uid_t old_uid = current_uid().val;
-
-    long ret = ksu_syscall_table[orig_nr](regs);
-
-    if (ret < 0)
-        return ret;
-
-    ksu_handle_setresuid(old_uid, current_uid().val);
-
-    return ret;
-}
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 // sys_enter handler: redirect hooked syscalls to the dispatcher

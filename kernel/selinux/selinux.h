@@ -36,4 +36,6 @@ int handle_sepolicy(void __user *user_data, u64 data_len);
 
 void setup_ksu_cred();
 
+extern u32 ksu_file_sid;
+
 #endif

@@ -17,9 +17,9 @@
 
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
-#include "ksud.h"
+#include "runtime/ksud_boot.h"
 
-#include "file_wrapper.h"
+#include "infra/file_wrapper.h"
 
 struct ksu_file_wrapper {
     struct file *orig;

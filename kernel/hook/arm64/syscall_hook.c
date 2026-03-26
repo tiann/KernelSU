@@ -6,8 +6,8 @@
 #include <linux/mutex.h>
 #include <asm/cacheflush.h>
 #include "../patch_memory.h"
-#include "../../arch.h"
-#include "../../klog.h" // IWYU pragma: keep
+#include "arch.h"
+#include "klog.h" // IWYU pragma: keep
 
 syscall_fn_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;

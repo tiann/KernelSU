@@ -1,57 +1,22 @@
-#include <linux/anon_inodes.h>
 #include <linux/capability.h>
 #include <linux/cred.h>
-#include <linux/err.h>
-#include <linux/fdtable.h>
-#include <linux/file.h>
-#include <linux/fs.h>
 #include <linux/slab.h>
-#include <linux/kprobes.h>
-#include <linux/syscalls.h>
-#include <linux/task_work.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-#include <linux/pid.h>
 
-#include "supercalls.h"
+#include "uapi/supercalls.h"
+#include "uapi/supercall_internal.h"
 #include "arch.h"
-#include "allowlist.h"
-#include "feature.h"
+#include "policy/allowlist.h"
+#include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "ksud.h"
-#include "kernel_umount.h"
-#include "manager.h"
+#include "runtime/ksud_boot.h"
+#include "feature/kernel_umount.h"
+#include "manager/manager_identity.h"
 #include "selinux/selinux.h"
-#include "file_wrapper.h"
-#include "tp_marker.h"
-
-// Permission check functions
-bool only_manager(void)
-{
-    return is_manager();
-}
-
-bool only_root(void)
-{
-    return current_uid().val == 0;
-}
-
-bool manager_or_root(void)
-{
-    return current_uid().val == 0 || is_manager();
-}
-
-bool always_allow(void)
-{
-    return true; // No permission check
-}
-
-bool allowed_for_su(void)
-{
-    bool is_allowed = is_manager() || ksu_is_allow_uid_for_current(current_uid().val);
-    return is_allowed;
-}
+#include "infra/file_wrapper.h"
+#include "hook/tp_marker.h"
 
 static int do_grant_root(void __user *arg)
 {
@@ -497,12 +462,12 @@ static int do_nuke_ext4_sysfs(void __user *arg)
 
     ret = strncpy_from_user(mnt, cmd.arg, sizeof(mnt));
     if (ret < 0) {
-        pr_err("nuke ext4 copy mnt failed: %ld\\n", ret);
-        return -EFAULT; // 或者 return ret;
+        pr_err("nuke ext4 copy mnt failed: %ld\n", ret);
+        return -EFAULT;
     }
 
     if (ret == sizeof(mnt)) {
-        pr_err("nuke ext4 mnt path too long\\n");
+        pr_err("nuke ext4 mnt path too long\n");
         return -ENAMETOOLONG;
     }
 
@@ -714,99 +679,8 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
-struct ksu_install_fd_tw {
-    struct callback_head cb;
-    int __user *outp;
-};
-
-static void ksu_install_fd_tw_func(struct callback_head *cb)
+long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 {
-    struct ksu_install_fd_tw *tw = container_of(cb, struct ksu_install_fd_tw, cb);
-    int fd = ksu_install_fd();
-    pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
-
-    if (copy_to_user(tw->outp, &fd, sizeof(fd))) {
-        pr_err("install ksu fd reply err\n");
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-        close_fd(fd);
-#else
-        ksys_close(fd);
-#endif
-    }
-
-    kfree(tw);
-}
-
-static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-    struct pt_regs *real_regs = PT_REAL_REGS(regs);
-    int magic1 = (int)PT_REGS_PARM1(real_regs);
-    int magic2 = (int)PT_REGS_PARM2(real_regs);
-    unsigned long arg4;
-
-    // Check if this is a request to install KSU fd
-    if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
-        struct ksu_install_fd_tw *tw;
-
-        arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
-
-        tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-        if (!tw)
-            return 0;
-
-        tw->outp = (int __user *)arg4;
-        tw->cb.func = ksu_install_fd_tw_func;
-
-        if (task_work_add(current, &tw->cb, TWA_RESUME)) {
-            kfree(tw);
-            pr_warn("install fd add task_work failed\n");
-        }
-    }
-
-    return 0;
-}
-
-static struct kprobe reboot_kp = {
-    .symbol_name = REBOOT_SYMBOL,
-    .pre_handler = reboot_handler_pre,
-};
-
-void ksu_supercalls_init(void)
-{
-    int i;
-
-    pr_info("KernelSU IOCTL Commands:\n");
-    for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
-        pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
-    }
-
-    int rc = register_kprobe(&reboot_kp);
-    if (rc) {
-        pr_err("reboot kprobe failed: %d\n", rc);
-    } else {
-        pr_info("reboot kprobe registered successfully\n");
-    }
-}
-
-void ksu_supercalls_exit(void)
-{
-    struct mount_entry *entry, *tmp;
-
-    unregister_kprobe(&reboot_kp);
-
-    down_write(&mount_list_lock);
-    list_for_each_entry_safe (entry, tmp, &mount_list, list) {
-        list_del(&entry->list);
-        kfree(entry->umountable);
-        kfree(entry);
-    }
-    up_write(&mount_list_lock);
-}
-
-// IOCTL dispatcher
-static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-{
-    void __user *argp = (void __user *)arg;
     int i;
 
 #ifdef CONFIG_KSU_DEBUG
@@ -829,46 +703,25 @@ static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long ar
     return -ENOTTY;
 }
 
-// File release handler
-static int anon_ksu_release(struct inode *inode, struct file *filp)
+void ksu_supercall_dump_commands(void)
 {
-    pr_info("ksu fd released\n");
-    return 0;
+    int i;
+
+    pr_info("KernelSU IOCTL Commands:\n");
+    for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
+        pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
+    }
 }
 
-// File operations structure
-static const struct file_operations anon_ksu_fops = {
-    .owner = THIS_MODULE,
-    .unlocked_ioctl = anon_ksu_ioctl,
-    .compat_ioctl = anon_ksu_ioctl,
-    .release = anon_ksu_release,
-};
-
-// Install KSU fd to current process
-int ksu_install_fd(void)
+void ksu_supercall_cleanup_state(void)
 {
-    struct file *filp;
-    int fd;
+    struct mount_entry *entry, *tmp;
 
-    // Get unused fd
-    fd = get_unused_fd_flags(O_CLOEXEC);
-    if (fd < 0) {
-        pr_err("ksu_install_fd: failed to get unused fd\n");
-        return fd;
+    down_write(&mount_list_lock);
+    list_for_each_entry_safe (entry, tmp, &mount_list, list) {
+        list_del(&entry->list);
+        kfree(entry->umountable);
+        kfree(entry);
     }
-
-    // Create anonymous inode file
-    filp = anon_inode_getfile("[ksu_driver]", &anon_ksu_fops, NULL, O_RDWR | O_CLOEXEC);
-    if (IS_ERR(filp)) {
-        pr_err("ksu_install_fd: failed to create anon inode file\n");
-        put_unused_fd(fd);
-        return PTR_ERR(filp);
-    }
-
-    // Install fd
-    fd_install(fd, filp);
-
-    pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
-
-    return fd;
+    up_write(&mount_list_lock);
 }

@@ -7,17 +7,18 @@
 #include <linux/workqueue.h>
 #include <linux/moduleparam.h>
 
-#include "allowlist.h"
-#include "app_profile.h"
-#include "feature.h"
+#include "policy/allowlist.h"
+#include "policy/app_profile.h"
+#include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
-#include "manager.h"
-#include "throne_tracker.h"
-#include "syscall_hook_manager.h"
-#include "ksud.h"
-#include "supercalls.h"
+#include "manager/manager_observer.h"
+#include "manager/throne_tracker.h"
+#include "hook/syscall_hook_manager.h"
+#include "runtime/ksud.h"
+#include "runtime/ksud_boot.h"
+#include "uapi/supercalls.h"
 #include "ksu.h"
-#include "file_wrapper.h"
+#include "infra/file_wrapper.h"
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
 
