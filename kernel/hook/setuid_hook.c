@@ -27,7 +27,7 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 
     pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
 
-    if (likely(ksu_is_manager_appid_valid()) && unlikely(ksu_get_manager_appid() == new_uid % PER_USER_RANGE)) {
+    if (unlikely(is_uid_manager(new_uid))) {
         spin_lock_irq(&current->sighand->siglock);
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
         ksu_set_task_tracepoint_flag(current);
