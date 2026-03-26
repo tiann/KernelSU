@@ -17,98 +17,39 @@
 #include <linux/workqueue.h>
 #include <linux/uio.h>
 
-#include "manager.h"
-#include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "ksud.h"
+#include "runtime/ksud.h"
+#include "runtime/ksud_boot.h"
 #include "selinux/selinux.h"
-#include "throne_tracker.h"
 #include "hook/syscall_hook.h"
+#include "hook/syscall_event_bridge.h"
 
-bool ksu_module_mounted __read_mostly = false;
-bool ksu_boot_completed __read_mostly = false;
-
-static const char KERNEL_SU_RC[] = "\n"
-
-                                   "on post-fs-data\n"
-                                   "    start logd\n"
-                                   // We should wait for the post-fs-data finish
-                                   "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " post-fs-data\n"
-                                   "\n"
-
-                                   "on nonencrypted\n"
-                                   "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
-                                   "\n"
-
-                                   "on property:vold.decrypt=trigger_restart_framework\n"
-                                   "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
-                                   "\n"
-
-                                   "on property:sys.boot_completed=1\n"
-                                   "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " boot-completed\n"
-                                   "\n"
-
-                                   "\n";
+// clang-format off
+static const char KERNEL_SU_RC[] =
+    "\n"
+    "on post-fs-data\n"
+    "    start logd\n"
+    // We should wait for the post-fs-data finish
+    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " post-fs-data\n"
+    "\n"
+    "on nonencrypted\n"
+    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
+    "\n"
+    "on property:vold.decrypt=trigger_restart_framework\n"
+    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
+    "\n"
+    "on property:sys.boot_completed=1\n"
+    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " boot-completed\n"
+    "\n"
+    "\n";
+// clang-format on
 
 static void stop_init_rc_hook();
 static void stop_execve_hook();
-static void stop_input_hook();
 
 static struct work_struct stop_input_hook_work;
-
-void on_post_fs_data(void)
-{
-    static bool done = false;
-    if (done) {
-        pr_info("on_post_fs_data already done\n");
-        return;
-    }
-    done = true;
-    pr_info("on_post_fs_data!\n");
-
-    ksu_load_allow_list();
-    ksu_observer_init();
-    // sanity check, this may influence the performance
-    stop_input_hook();
-}
-
-extern void ext4_unregister_sysfs(struct super_block *sb);
-int nuke_ext4_sysfs(const char *mnt)
-{
-    struct path path;
-    int err = kern_path(mnt, 0, &path);
-    if (err) {
-        pr_err("nuke path err: %d\n", err);
-        return err;
-    }
-
-    struct super_block *sb = path.dentry->d_inode->i_sb;
-    const char *name = sb->s_type->name;
-    if (strcmp(name, "ext4") != 0) {
-        pr_info("nuke but module aren't mounted\n");
-        path_put(&path);
-        return -EINVAL;
-    }
-
-    ext4_unregister_sysfs(sb);
-    path_put(&path);
-    return 0;
-}
-
-void on_module_mounted(void)
-{
-    pr_info("on_module_mounted!\n");
-    ksu_module_mounted = true;
-}
-
-void on_boot_completed(void)
-{
-    ksu_boot_completed = true;
-    pr_info("on_boot_completed!\n");
-    track_throne(true);
-}
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 struct user_arg_ptr {
@@ -401,7 +342,7 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *v
             // key pressed, count it
             volumedown_pressed_count += 1;
             if (is_volumedown_enough(volumedown_pressed_count)) {
-                stop_input_hook();
+                ksu_stop_input_hook_runtime();
             }
         }
     }
@@ -422,7 +363,7 @@ bool ksu_is_safe_mode()
     }
 
     // stop hook first!
-    stop_input_hook();
+    ksu_stop_input_hook_runtime();
 
     pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
     if (is_volumedown_enough(volumedown_pressed_count)) {
@@ -535,7 +476,7 @@ static void stop_init_rc_hook()
     pr_info("unregister init_rc syscall hook\n");
 }
 
-static void stop_input_hook()
+void ksu_stop_input_hook_runtime(void)
 {
     static bool input_hook_stopped = false;
     if (input_hook_stopped) {

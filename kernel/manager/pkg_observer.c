@@ -7,7 +7,7 @@
 #include <linux/rculist.h>
 #include <linux/version.h>
 #include "klog.h" // IWYU pragma: keep
-#include "throne_tracker.h"
+#include "manager/throne_tracker.h"
 
 #define MASK_SYSTEM (FS_CREATE | FS_MOVE | FS_EVENT_ON_CHILD)
 

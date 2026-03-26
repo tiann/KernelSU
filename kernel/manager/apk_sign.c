@@ -14,8 +14,8 @@
 #include <crypto/sha.h>
 #endif
 
-#include "apk_sign.h"
-#include "app_profile.h"
+#include "manager/apk_sign.h"
+#include "uapi/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 
 struct sdesc {
@@ -281,7 +281,7 @@ clean:
 
 int ksu_debug_manager_appid = -1;
 
-#include "manager.h"
+#include "manager/manager_identity.h"
 
 static int set_expected_size(const char *val, const struct kernel_param *kp)
 {

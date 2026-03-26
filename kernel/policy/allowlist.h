@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 #include <linux/uidgid.h>
-#include "app_profile.h"
+#include "uapi/app_profile.h"
 
 #define PER_USER_RANGE 100000
 #define FIRST_APPLICATION_UID 10000
@@ -50,5 +50,3 @@ static inline bool is_isolated_process(uid_t uid)
     return appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID;
 }
 #endif
-
-extern bool allow_shell;

@@ -7,7 +7,7 @@
 
 #include <linux/cache.h>
 #include "../patch_memory.h"
-#include "../../klog.h" // IWYU pragma: keep
+#include "klog.h" // IWYU pragma: keep
 #include <linux/cpumask.h>
 #include <linux/gfp.h> // IWYU pragma: keep
 #include <linux/uaccess.h>

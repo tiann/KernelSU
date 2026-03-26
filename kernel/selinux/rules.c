@@ -7,7 +7,7 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 
-#include "../klog.h" // IWYU pragma: keep
+#include "klog.h" // IWYU pragma: keep
 #include "selinux.h"
 #include "sepolicy.h"
 #include "ss/services.h"
