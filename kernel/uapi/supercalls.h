@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 #include <linux/ioctl.h>
-#include "app_profile.h"
+#include "policy/app_profile.h"
 
 // Magic numbers for reboot hook to install fd
 #define KSU_INSTALL_MAGIC1 0xDEADBEEF
@@ -14,6 +14,10 @@
 struct ksu_become_daemon_cmd {
     __u8 token[65]; // Input: daemon token (null-terminated)
 };
+
+#define EVENT_POST_FS_DATA 1
+#define EVENT_BOOT_COMPLETED 2
+#define EVENT_MODULE_MOUNTED 3
 
 #define KSU_GET_INFO_FLAG_LKM (1U << 0)
 #define KSU_GET_INFO_FLAG_MANAGER (1U << 1)

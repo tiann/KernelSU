@@ -9,12 +9,12 @@
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
-#include "allowlist.h"
-#include "app_profile.h"
+#include "policy/allowlist.h"
+#include "policy/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
-#include "su_mount_ns.h"
-#include "tp_marker.h"
+#include "infra/su_mount_ns.h"
+#include "hook/tp_marker.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
 static struct group_info root_groups = { .usage = REFCOUNT_INIT(2) };

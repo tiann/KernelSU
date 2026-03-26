@@ -3,8 +3,8 @@
 #include "linux/sched.h"
 #include "objsec.h"
 #include "linux/version.h"
-#include "../klog.h" // IWYU pragma: keep
-#include "../ksu.h"
+#include "klog.h" // IWYU pragma: keep
+#include "ksu.h"
 
 /*
  * Cached SID values for frequently checked contexts.
