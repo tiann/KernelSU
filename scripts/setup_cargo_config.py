@@ -98,9 +98,12 @@ def render_config(ndk_root: Path, host_tag: str, api_level: int) -> str:
     for path in (aarch64_clang, aarch64_clangxx, x86_64_clang, x86_64_clangxx, llvm_ar):
         if not path.is_file():
             raise FileNotFoundError(f"Required NDK tool not found: {path}")
+    
+    # sysroot should use slash, not backslash
+    sysroot_with_slashes = str(sysroot).replace('\\', '/')
 
-    aarch64_bindgen = f"--sysroot={sysroot} -I{sysroot / 'usr' / 'include' / 'aarch64-linux-android'}"
-    x86_64_bindgen = f"--sysroot={sysroot} -I{sysroot / 'usr' / 'include' / 'x86_64-linux-android'}"
+    aarch64_bindgen = f"--sysroot={sysroot_with_slashes} -I{sysroot / 'usr' / 'include' / 'aarch64-linux-android'}"
+    x86_64_bindgen = f"--sysroot={sysroot_with_slashes} -I{sysroot / 'usr' / 'include' / 'x86_64-linux-android'}"
 
     return "\n".join(
         [
