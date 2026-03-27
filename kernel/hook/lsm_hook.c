@@ -290,8 +290,7 @@ void ksu_lsm_unhook(struct ksu_lsm_hook *hook)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     if (ksu_lsm_hook_update_scall(hook->scall, hook->original)) {
         if (ksu_lsm_hook_patch_slot(slot, hook->replacement))
-            pr_err("lsm_hook: failed to reapply %s after static call restore failure\n",
-                   hook->head_name ?: "unknown");
+            pr_err("lsm_hook: failed to reapply %s after static call restore failure\n", hook->head_name ?: "unknown");
         mutex_unlock(&ksu_lsm_hook_lock);
         return;
     }

@@ -16,8 +16,7 @@ void *ksu_lookup_symbol(const char *symbol_name)
 
     symbol_len = strlen(symbol_name);
 
-    if ((symbol_len < cfi_suffix_len ||
-         strcmp(symbol_name + symbol_len - cfi_suffix_len, cfi_suffix) != 0) &&
+    if ((symbol_len < cfi_suffix_len || strcmp(symbol_name + symbol_len - cfi_suffix_len, cfi_suffix) != 0) &&
         strscpy(cfi_name, symbol_name, sizeof(cfi_name)) > 0 &&
         strlen(cfi_name) + strlen(".cfi_jt") + 1 <= sizeof(cfi_name)) {
         strlcat(cfi_name, ".cfi_jt", sizeof(cfi_name));
