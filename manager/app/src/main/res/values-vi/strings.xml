@@ -199,4 +199,6 @@
     <string name="color_amber">Hổ phách</string>
     <string name="color_blue_grey">Xám xanh</string>
     <string name="color_sakura">Hoa anh đào</string>
+    <string name="home_version_mismatch">Phiên bản Trình quản lý (%1$d) và phiên bản driver của KernelSU (%2$d) không khớp.</string>
+    <string name="reboot_soft">Khởi động lại mềm</string>
 </resources>
