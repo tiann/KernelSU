@@ -88,7 +88,6 @@ void ksu_stop_ksud_execve_hook()
 
 long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 {
-    int ret = 0;
     const char __user **filename_user = (const char __user **)&PT_REGS_PARM1(regs);
     bool current_is_init = is_init(current_cred());
 
@@ -98,9 +97,7 @@ long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
     if (current->pid != 1 && current_is_init) {
         ksu_handle_init_mark_tracker(filename_user);
     } else if (ksu_su_compat_enabled) {
-        ret = ksu_handle_execve_sucompat(filename_user, NULL, NULL, NULL);
-        if (ret < 0)
-            return ret;
+        return ksu_handle_execve_sucompat(filename_user, orig_nr, regs);
     }
 
     return ksu_syscall_table[orig_nr](regs);
