@@ -23,7 +23,7 @@ object Natives {
     // 32377: add set_init_pgrp ioctl
     const val MINIMAL_SUPPORTED_KERNEL = 32377
 
-    const val KERNEL_SU_DOMAIN = "u:r:su:s0"
+    const val KERNEL_SU_DOMAIN = "u:r:ksu:s0"
 
     const val ROOT_UID = 0
     const val ROOT_GID = 0

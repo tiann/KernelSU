@@ -15,7 +15,7 @@
         "CAP_SYS_BOOT",
         "CAP_DAC_OVERRIDE"
     ],
-    "context":"u:r:su:s0",
+    "context":"u:r:ksu:s0",
     "namespace":"INHERITED",
     "locales": {
         "bn": {

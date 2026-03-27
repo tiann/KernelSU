@@ -76,7 +76,7 @@ Việc giải thích khái niệm đầy đủ về SELinux rất phức tạp v
 
 Root Profile của KernelSU cho phép tùy chỉnh ngữ cảnh SELinux của tiến trình gốc sau khi thực thi `su`. Các quy tắc kiểm soát truy cập cụ thể có thể được đặt cho bối cảnh này để cho phép kiểm soát chi tiết hơn các quyền .
 
-Trong các trường hợp điển hình, khi một ứng dụng thực thi `su`, nó sẽ chuyển quy trình sang miền SELinux với **quyền truy cập không hạn chế**, chẳng hạn như `u:r:su:s0`. Thông qua Root Profile, miền này có thể được chuyển sang miền tùy chỉnh, chẳng hạn như `u:r:app1:s0` và một loạt quy tắc có thể được xác định cho miền này:
+Trong các trường hợp điển hình, khi một ứng dụng thực thi `su`, nó sẽ chuyển quy trình sang miền SELinux với **quyền truy cập không hạn chế**, chẳng hạn như `u:r:ksu:s0`. Thông qua Root Profile, miền này có thể được chuyển sang miền tùy chỉnh, chẳng hạn như `u:r:app1:s0` và một loạt quy tắc có thể được xác định cho miền này:
 
 ```sh
 type app1

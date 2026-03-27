@@ -76,7 +76,7 @@ Explaining the full concept of SELinux is complex and beyond the scope of this d
 
 KernelSU's Root Profile allows customization of the SELinux context of the root process after executing `su`. Specific access control rules can be set for this context, enabling fine-grained control over root permissions.
 
-In typical scenarios, when an app executes `su`, it switches the process to a SELinux domain with **unrestricted access**, such as `u:r:su:s0`. Through the Root Profile, this domain can be switched to a custom domain, such as `u:r:app1:s0`, and a series of rules can be defined for this domain:
+In typical scenarios, when an app executes `su`, it switches the process to a SELinux domain with **unrestricted access**, such as `u:r:ksu:s0`. Through the Root Profile, this domain can be switched to a custom domain, such as `u:r:app1:s0`, and a series of rules can be defined for this domain:
 
 ```sh
 type app1
