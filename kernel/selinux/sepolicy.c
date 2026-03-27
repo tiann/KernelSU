@@ -804,7 +804,8 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 
     len = old_pol->policydb.len;
     data = vmalloc(len);
-    if (data) {
+    if (!data) {
+        pr_err("alloc policy len %ld\n", len);
         ret = -ENOMEM;
         goto out_free_data;
     }
