@@ -173,6 +173,12 @@ enum Debug {
         path: PathBuf,
     },
 
+    /// Load a kernel module from disk
+    Insmod {
+        /// kernel module path
+        module: PathBuf,
+    },
+
     /// Process mark management
     Mark {
         #[command(subcommand)]
@@ -637,6 +643,7 @@ pub fn run() -> Result<()> {
                 let data = assets::get_asset_data(&name)?;
                 utils::ensure_binary(&path, &data, false)
             }
+            Debug::Insmod { module } => debug::insmod(&module),
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
                 MarkCommand::Mark { pid } => debug::mark_set(pid),
