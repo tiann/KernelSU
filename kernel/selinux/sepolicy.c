@@ -844,11 +844,15 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
     }
     memset(&new_pol->policydb, 0, sizeof(new_pol->policydb));
 
+    // rewind fp
+    fp.data = data;
+
     ret = policydb_read(&new_pol->policydb, &fp);
     if (ret) {
         pr_err("sepolicy: policydb_read: %d\n", ret);
         goto out_free_policydb;
     }
+    kvfree(data);
 
     return new_pol;
 
