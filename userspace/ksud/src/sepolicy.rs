@@ -26,7 +26,14 @@ fn parse_bracket_objs(input: &str) -> IResult<&str, SeObject<'_>> {
         tag("}"),
     )
         .parse(input)?;
-    Ok((input, words.split_whitespace().collect()))
+    let objs: SeObject<'_> = words.split_whitespace().collect();
+    if objs.is_empty() {
+        return Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Many1,
+        )));
+    }
+    Ok((input, objs))
 }
 
 fn parse_single_obj(input: &str) -> IResult<&str, SeObject<'_>> {
@@ -174,11 +181,11 @@ impl<'a> SeObjectParser<'a> for NormalPerm<'a> {
 
         let (input, _) = space1(input)?;
         let (input, source) = parse_seobj(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, target) = parse_seobj(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, class) = parse_seobj(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, perm) = parse_seobj(input)?;
         Ok((input, NormalPerm::new(op, source, target, class, perm)))
     }
@@ -193,15 +200,15 @@ impl<'a> SeObjectParser<'a> for XPerm<'a> {
         ))
         .parse(input)?;
 
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, source) = parse_seobj(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, target) = parse_seobj(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, class) = parse_seobj(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, operation) = parse_single_word(input)?;
-        let (input, _) = space0(input)?;
+        let (input, _) = space1(input)?;
         let (input, perm_set) = parse_seobj(input)?;
 
         Ok((
