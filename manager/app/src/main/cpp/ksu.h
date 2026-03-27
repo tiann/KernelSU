@@ -10,7 +10,7 @@
 #include <sys/prctl.h>
 #include <utility>
 
-#include "ksu_uapi.h"
+#include "uapi/supercall.h"
 
 uint32_t get_version();
 

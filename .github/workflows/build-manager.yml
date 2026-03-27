@@ -9,6 +9,7 @@ on:
       - '.github/workflows/ddk-lkm.yml'
       - '.github/workflows/ksud.yml'
       - '.github/workflows/ksud-extra.yml'
+      - '.github/scripts/setup-rust-build.sh'
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/**'
@@ -20,6 +21,7 @@ on:
       - '.github/workflows/ddk-lkm.yml'
       - '.github/workflows/ksud.yml'
       - '.github/workflows/ksud-extra.yml'
+      - '.github/scripts/setup-rust-build.sh'
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/**'
@@ -190,9 +192,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: Generate kernel UAPI header
-        run: make -C ../kernel uapi-header
-
       - name: Download arm64 ksud
         uses: actions/download-artifact@v8
         with:
@@ -213,8 +212,6 @@ jobs:
           cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
 
       - name: Build with Gradle
-        env:
-          KSU_UAPI_DIR: ${{ github.workspace }}/kernel
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             ./gradlew clean assembleRelease -PIS_PR_BUILD=true
