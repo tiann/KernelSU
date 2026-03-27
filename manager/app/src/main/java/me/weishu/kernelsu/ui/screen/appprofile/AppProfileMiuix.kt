@@ -456,13 +456,13 @@ private fun AppProfileInner(
                                 packageInfo = app.packageInfo,
                                 label = app.label,
                                 modifier = Modifier
-                                    .padding(end = 12.dp)
-                                    .size(40.dp)
+                                    .padding(end = 1.dp)
+                                    .size(48.dp)
                             )
                         },
                         title = app.label,
                         summary = app.packageName,
-                        insideMargin = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                        insideMargin = PaddingValues(start = 11.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
                     )
                 }
                 Spacer(Modifier.height(3.dp))

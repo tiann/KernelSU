@@ -115,6 +115,7 @@ import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
@@ -467,48 +468,64 @@ fun ModulePagerMiuix(
                 end = innerPadding.calculateEndPadding(layoutDirection),
                 bottom = bottomInnerPadding,
             )
-            PullToRefresh(
-                isRefreshing = uiState.isRefreshing,
-                pullToRefreshState = pullToRefreshState,
-                onRefresh = actions.onRefresh,
-                refreshTexts = refreshTexts,
-                contentPadding = contentPadding,
-            ) {
-                if (modules.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                top = innerPadding.calculateTopPadding(),
-                                start = innerPadding.calculateStartPadding(layoutDirection),
-                                end = innerPadding.calculateEndPadding(layoutDirection),
-                                bottom = bottomInnerPadding
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            stringResource(R.string.module_empty),
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray,
+            if (modules.isEmpty() && !uiState.hasLoaded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = innerPadding.calculateTopPadding(),
+                            start = innerPadding.calculateStartPadding(layoutDirection),
+                            end = innerPadding.calculateEndPadding(layoutDirection),
+                            bottom = bottomInnerPadding
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    InfiniteProgressIndicator()
+                }
+            } else {
+                PullToRefresh(
+                    isRefreshing = uiState.isRefreshing,
+                    pullToRefreshState = pullToRefreshState,
+                    onRefresh = actions.onRefresh,
+                    refreshTexts = refreshTexts,
+                    contentPadding = contentPadding,
+                ) {
+                    if (modules.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    top = innerPadding.calculateTopPadding(),
+                                    start = innerPadding.calculateStartPadding(layoutDirection),
+                                    end = innerPadding.calculateEndPadding(layoutDirection),
+                                    bottom = bottomInnerPadding
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                stringResource(R.string.module_empty),
+                                textAlign = TextAlign.Center,
+                                color = Color.Gray,
+                            )
+                        }
+                    } else {
+                        ModuleList(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .scrollEndHaptic()
+                                .overScrollVertical()
+                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                .nestedScroll(nestedScrollConnection)
+                                .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
+                            modules = modules,
+                            updateInfoMap = uiState.updateInfo,
+                            actions = actions,
+                            onModuleAddShortcut = { module, type ->
+                                onModuleAddShortcut(module, type)
+                            },
+                            contentPadding = contentPadding,
                         )
                     }
-                } else {
-                    ModuleList(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .scrollEndHaptic()
-                            .overScrollVertical()
-                            .nestedScroll(scrollBehavior.nestedScrollConnection)
-                            .nestedScroll(nestedScrollConnection)
-                            .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
-                        modules = modules,
-                        updateInfoMap = uiState.updateInfo,
-                        actions = actions,
-                        onModuleAddShortcut = { module, type ->
-                            onModuleAddShortcut(module, type)
-                        },
-                        contentPadding = contentPadding,
-                    )
                 }
             }
         }

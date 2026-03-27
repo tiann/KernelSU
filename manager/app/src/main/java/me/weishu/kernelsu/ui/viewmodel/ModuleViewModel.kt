@@ -253,7 +253,7 @@ class ModuleViewModel(
 
                 Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: ${_uiState.value.modules}")
             } finally {
-                _uiState.update { it.copy(isRefreshing = false) }
+                _uiState.update { it.copy(isRefreshing = false, hasLoaded = true) }
             }
         }
     }

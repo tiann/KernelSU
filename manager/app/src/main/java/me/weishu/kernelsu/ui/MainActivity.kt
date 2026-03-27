@@ -96,6 +96,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.install
+import me.weishu.kernelsu.ui.util.rememberContentReady
 import me.weishu.kernelsu.ui.util.rootAvailable
 import me.weishu.kernelsu.ui.viewmodel.MainActivityViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
@@ -260,7 +261,7 @@ fun MainScreen() {
     CompositionLocalProvider(
         LocalMainPagerState provides mainPagerState
     ) {
-        val contentReady = me.weishu.kernelsu.ui.util.rememberContentReady()
+        val contentReady = rememberContentReady()
         val pagerContent = @Composable { bottomInnerPadding: Dp ->
             HorizontalPager(
                 modifier = Modifier
@@ -270,11 +271,11 @@ fun MainScreen() {
                 beyondViewportPageCount = if (contentReady) 3 else 0,
                 userScrollEnabled = userScrollEnabled,
             ) { page ->
-                val isCurrentPage = page == mainPagerState.pagerState.currentPage
+                val isCurrentPage = page == mainPagerState.pagerState.settledPage
                 when (page) {
-                    0 -> if (isCurrentPage || contentReady) HomePager(navController, bottomInnerPadding)
-                    1 -> if (isCurrentPage || contentReady) SuperUserPager(navController, bottomInnerPadding)
-                    2 -> if (isCurrentPage || contentReady) ModulePager(bottomInnerPadding)
+                    0 -> if (isCurrentPage || contentReady) HomePager(navController, bottomInnerPadding, isCurrentPage)
+                    1 -> if (isCurrentPage || contentReady) SuperUserPager(navController, bottomInnerPadding, isCurrentPage)
+                    2 -> if (isCurrentPage || contentReady) ModulePager(bottomInnerPadding, isCurrentPage)
                     3 -> if (isCurrentPage || contentReady) SettingPager(navController, bottomInnerPadding)
                 }
             }

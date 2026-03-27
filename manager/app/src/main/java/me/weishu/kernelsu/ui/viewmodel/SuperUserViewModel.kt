@@ -287,12 +287,13 @@ class SuperUserViewModel(
                 synchronized(appsLock) { cachedApps = newApps }
                 updateCachedGroupedApps(cachedGroups)
                 updateVisibleApps(grouped)
-                _uiState.update { it.copy(userIds = ids, isRefreshing = false) }
+                _uiState.update { it.copy(userIds = ids, isRefreshing = false, hasLoaded = true) }
             }.onFailure { e ->
                 Log.e(TAG, "fetchAppList failed", e)
                 _uiState.update {
                     it.copy(
                         isRefreshing = false,
+                        hasLoaded = true,
                         error = e
                     )
                 }
