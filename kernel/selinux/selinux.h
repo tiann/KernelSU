@@ -5,8 +5,7 @@
 #include "linux/version.h"
 #include "linux/cred.h"
 
-// TODO: rename to "ksu"
-#define KERNEL_SU_DOMAIN "su"
+#define KERNEL_SU_DOMAIN "ksu"
 #define KERNEL_SU_FILE "ksu_file"
 
 #define KERNEL_SU_CONTEXT "u:r:" KERNEL_SU_DOMAIN ":s0"
@@ -35,5 +34,7 @@ void apply_kernelsu_rules();
 int handle_sepolicy(void __user *user_data, u64 data_len);
 
 void setup_ksu_cred();
+
+extern u32 ksu_file_sid;
 
 #endif

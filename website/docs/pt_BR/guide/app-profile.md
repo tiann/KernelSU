@@ -76,7 +76,7 @@ Explicar o conceito completo do SELinux é complexo e está além do objetivo de
 
 O Perfil root do KernelSU permite a personalização do contexto SELinux do processo root após a execução de `su`. Regras específicas de controle de acesso podem ser definidas para este contexto, possibilitando um controle refinado sobre os privilégios root.
 
-Em cenários típicos, quando um app executa `su`, ele alterna o processo para um domínio SELinux com **acesso irrestrito**, como `u:r:su:s0`. Através do Perfil root, esse domínio pode ser mudado para um domínio personalizado, como `u:r:app1:s0`, e uma série de regras podem ser definidas para esse domínio:
+Em cenários típicos, quando um app executa `su`, ele alterna o processo para um domínio SELinux com **acesso irrestrito**, como `u:r:ksu:s0`. Através do Perfil root, esse domínio pode ser mudado para um domínio personalizado, como `u:r:app1:s0`, e uma série de regras podem ser definidas para esse domínio:
 
 ```sh
 type app1

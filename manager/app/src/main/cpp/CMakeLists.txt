@@ -16,6 +16,8 @@ add_library(kernelsu
         ksu.cc
         )
 
+target_include_directories(kernelsu PRIVATE .)
+
 find_library(log-lib log)
 
 target_link_libraries(kernelsu ${log-lib})

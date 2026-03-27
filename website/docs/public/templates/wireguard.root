@@ -13,7 +13,7 @@
         "CAP_NET_ADMIN",
         "CAP_NET_RAW"
     ],
-    "context":"u:r:su:s0",
+    "context":"u:r:ksu:s0",
     "namespace":"INHERITED",
     "locales": {
         "pt_BR": {

@@ -7,7 +7,7 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 
-#include "../klog.h" // IWYU pragma: keep
+#include "klog.h" // IWYU pragma: keep
 #include "selinux.h"
 #include "sepolicy.h"
 #include "ss/services.h"
@@ -57,6 +57,7 @@ void apply_kernelsu_rules()
 
     db = &pol->policydb;
 
+    ksu_type(db, KERNEL_SU_DOMAIN, "domain");
     ksu_permissive(db, KERNEL_SU_DOMAIN);
     ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
     ksu_typeattribute(db, KERNEL_SU_DOMAIN, "netdomain");

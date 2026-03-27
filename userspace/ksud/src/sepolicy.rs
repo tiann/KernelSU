@@ -737,12 +737,7 @@ fn apply_rules_batch<'a>(statements: &'a [PolicyStatement<'a>], strict: bool) ->
 
     let payload = serialize_atomic_statements(&policies)?;
 
-    let cmd = crate::ksucalls::SetSepolicyCmd {
-        data_len: payload.len() as u64,
-        data: payload.as_ptr() as u64,
-    };
-
-    match crate::ksucalls::set_sepolicy(&cmd) {
+    match crate::ksucalls::set_sepolicy(payload.as_ptr(), payload.len() as u64) {
         Ok(applied_count) => {
             let applied_count = usize::try_from(applied_count)
                 .context("kernel returned negative sepolicy applied count")?;

@@ -77,7 +77,7 @@ SELinux 的完整概念比較複雜，我們這裡不打算講解它的具體運
 
 KernelSU 的 Root Profile 可以自訂執行 `su` 後 root 程式的 SELinux context，並且可以針對這個 context 設定特定的存取控制規則，從而更精細地控制 root 權限。
 
-通常情況下，應用程式執行 `su` 後，會將進程切換到一個**不受任何限制** 的 SELinux 域，例如`u:r:su:s0`，透過 Root Profile，我們可以將它切換到一個自訂的作用域，例如 `u:r:app1:s0`，然後為這個作用域制定一系列規則：
+通常情況下，應用程式執行 `su` 後，會將進程切換到一個**不受任何限制** 的 SELinux 域，例如`u:r:ksu:s0`，透過 Root Profile，我們可以將它切換到一個自訂的作用域，例如 `u:r:app1:s0`，然後為這個作用域制定一系列規則：
 
 ```sh
 type app1
