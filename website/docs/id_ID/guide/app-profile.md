@@ -76,7 +76,7 @@ Menjelaskan SELinux secara tuntas sangatlah kompleks dan berada di luar cakupan 
 
 Root Profile KernelSU memungkinkan kita menyesuaikan konteks SELinux dari proses root setelah menjalankan `su`. Kita bisa menetapkan aturan kontrol akses khusus untuk konteks ini sehingga hak root dapat diatur secara sangat granular.
 
-Dalam skenario umum, ketika sebuah aplikasi menjalankan `su`, prosesnya berpindah ke domain SELinux dengan **akses tidak terbatas**, seperti `u:r:su:s0`. Melalui Root Profile, domain ini bisa diganti menjadi domain kustom seperti `u:r:app1:s0`, lalu serangkaian aturan dapat ditetapkan untuk domain tersebut:
+Dalam skenario umum, ketika sebuah aplikasi menjalankan `su`, prosesnya berpindah ke domain SELinux dengan **akses tidak terbatas**, seperti `u:r:ksu:s0`. Melalui Root Profile, domain ini bisa diganti menjadi domain kustom seperti `u:r:app1:s0`, lalu serangkaian aturan dapat ditetapkan untuk domain tersebut:
 
 ```sh
 type app1

@@ -12,7 +12,7 @@
         "CAP_DAC_OVERRIDE",
         "CAP_CHOWN"
     ],
-    "context":"u:r:su:s0",
+    "context":"u:r:ksu:s0",
     "namespace":"INHERITED",
     "locales": {
         "zh_TW": {

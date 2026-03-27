@@ -32,7 +32,7 @@
         "CAP_SYSLOG",
         "CAP_AUDIT_WRITE"
     ],
-    "context": "u:r:su:s0",
+    "context": "u:r:ksu:s0",
     "locales": {
         "bn": {
             "name": "কালি নেটহানটার",

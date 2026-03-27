@@ -20,7 +20,7 @@
         "CAP_SETFCAP",
         "CAP_BLOCK_SUSPEND"
     ],
-    "context":"u:r:su:s0",
+    "context":"u:r:ksu:s0",
     "rules":"",
     "locales": {
         "zh_CN": {

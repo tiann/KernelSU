@@ -101,6 +101,6 @@ fun generateTemplates() {
 
     templateJson.put("groups", JSONArray().apply { put(Groups.INET.name) })
     templateJson.put("capabilities", JSONArray().apply { put(Capabilities.CAP_NET_RAW.name) })
-    templateJson.put("context", "u:r:su:s0")
+    templateJson.put("context", "u:r:ksu:s0")
     Log.i(TAG, "$templateJson")
 }
