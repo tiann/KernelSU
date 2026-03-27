@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.superuser
 
-import android.content.pm.ApplicationInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -12,7 +11,6 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +32,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -257,6 +256,12 @@ fun SuperUserPagerMiuix(
             hazeState = hazeState,
             hazeStyle = hazeStyle
         ) { boxHeight ->
+            val lazyListState = rememberLazyListState()
+            val prevRefreshing = remember { booleanArrayOf(false) }
+            if (prevRefreshing[0] && !uiState.isRefreshing) {
+                lazyListState.requestScrollToItem(0)
+            }
+            prevRefreshing[0] = uiState.isRefreshing
             val pullToRefreshState = rememberPullToRefreshState()
             val refreshTexts = listOf(
                 stringResource(R.string.refresh_pulling),
@@ -264,6 +269,7 @@ fun SuperUserPagerMiuix(
                 stringResource(R.string.refresh_refresh),
                 stringResource(R.string.refresh_complete),
             )
+
             if (uiState.groupedApps.isEmpty() && uiState.isRefreshing) {
                 Box(
                     modifier = Modifier
@@ -292,6 +298,7 @@ fun SuperUserPagerMiuix(
                     ),
                 ) {
                     LazyColumn(
+                        state = lazyListState,
                         modifier = Modifier
                             .fillMaxHeight()
                             .scrollEndHaptic()
@@ -370,7 +377,7 @@ private fun SimpleAppItem(
                         packageInfo = app.packageInfo,
                         label = app.label,
                         modifier = Modifier
-                            .padding(end = 9.dp)
+                            .padding(end = 2.dp)
                             .size(40.dp)
                     )
                 },
@@ -395,19 +402,12 @@ private fun GroupItem(
     val unmountFg = if (isInDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.8f)
 
     val userId = group.uid / 100000
-    val packageInfo = group.primary.packageInfo
-    val applicationInfo = packageInfo.applicationInfo
-    val hasSharedUserId = !packageInfo.sharedUserId.isNullOrEmpty()
-    val isSystemApp = applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-            || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-    val tags = remember(group.anyAllowSu, group.shouldUmount, group.anyCustom, userId, isSystemApp, hasSharedUserId) {
+    val tags = remember(group.anyAllowSu, group.shouldUmount, group.anyCustom, userId) {
         buildList {
             if (group.anyAllowSu) add(StatusMeta("ROOT", rootBg, rootFg))
             if (group.shouldUmount) add(StatusMeta("UMOUNT", unmountBg, unmountFg))
             if (group.anyCustom) add(StatusMeta("CUSTOM", bg, fg))
             if (userId != 0) add(StatusMeta("USER $userId", bg, fg))
-            if (isSystemApp) add(StatusMeta("SYSTEM", bg, fg))
-            if (hasSharedUserId) add(StatusMeta("SHARED UID", bg, fg))
         }
     }
     Card(
@@ -417,7 +417,7 @@ private fun GroupItem(
         onClick = onClickPrimary,
         onLongPress = if (group.apps.size > 1) onToggleExpand else null,
         showIndication = true,
-        insideMargin = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
+        insideMargin = PaddingValues(start = 10.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -426,7 +426,7 @@ private fun GroupItem(
                 packageInfo = group.primary.packageInfo,
                 label = group.primary.label,
                 modifier = Modifier
-                    .padding(end = 14.dp)
+                    .padding(end = 12.dp)
                     .size(48.dp)
             )
             Column(
@@ -455,9 +455,11 @@ private fun GroupItem(
                     maxLines = 1,
                     softWrap = false
                 )
-                FlowRow(
-                    modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+            }
+            if (tags.isNotEmpty()) {
+                Column(
+                    modifier = Modifier.padding(start = 16.dp),
+                    horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     tags.forEach { tag ->

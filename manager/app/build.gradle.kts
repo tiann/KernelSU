@@ -200,4 +200,6 @@ dependencies {
     implementation(libs.haze)
 
     implementation(libs.material.kolor)
+
+    implementation(libs.appiconloader)
 }
