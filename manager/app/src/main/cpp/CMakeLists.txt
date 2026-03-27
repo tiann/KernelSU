@@ -16,6 +16,13 @@ add_library(kernelsu
         ksu.cc
         )
 
+set(KSU_UAPI_DIR "$ENV{KSU_UAPI_DIR}")
+if(NOT KSU_UAPI_DIR)
+    set(KSU_UAPI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../kernel")
+endif()
+
+target_include_directories(kernelsu PRIVATE "${KSU_UAPI_DIR}")
+
 find_library(log-lib log)
 
 target_link_libraries(kernelsu ${log-lib})

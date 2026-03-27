@@ -2,13 +2,7 @@
 #define __KSU_H_FEATURE
 
 #include <linux/types.h>
-
-enum ksu_feature_id {
-    KSU_FEATURE_SU_COMPAT = 0,
-    KSU_FEATURE_KERNEL_UMOUNT = 1,
-
-    KSU_FEATURE_MAX
-};
+#include "uapi/feature.h" // IWYU pragma: keep
 
 typedef int (*ksu_feature_get_t)(u64 *value);
 typedef int (*ksu_feature_set_t)(u64 value);
