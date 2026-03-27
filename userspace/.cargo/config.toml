@@ -1,0 +1,2 @@
+[alias]
+build-ksuinit = "run --manifest-path tools/Cargo.toml --bin build-ksuinit --"

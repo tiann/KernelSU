@@ -1,0 +1,10 @@
+[package]
+name = "tools"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "build-ksuinit"
+path = "src/bin/build-ksuinit.rs"
+
+[dependencies]

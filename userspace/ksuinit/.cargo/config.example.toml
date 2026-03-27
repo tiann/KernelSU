@@ -1,0 +1,3 @@
+[build]
+# uncomment below if you need rust-analyzer
+# target = "aarch64-unknown-linux-musl"
