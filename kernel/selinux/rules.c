@@ -51,8 +51,8 @@ void apply_kernelsu_rules()
 
     mutex_lock(&selinux_state.policy_mutex);
     pol = ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
-    if (!pol) {
-        pr_err("failed to dup selinux_policy\n");
+    if (IS_ERR(pol)) {
+        pr_err("failed to dup selinux_policy: %ld\n", PTR_ERR(pol));
         goto out_unlock;
     }
 
@@ -433,8 +433,9 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
     old_pol = selinux_state.policy;
     pol = ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
-    if (!pol) {
-        ret = -ENOMEM;
+    if (IS_ERR(pol)) {
+        ret = PTR_ERR(pol);
+        pr_err("ksu_dup_sepolicy err: %d\n", ret);
         goto out_unlock;
     }
     db = &pol->policydb;
