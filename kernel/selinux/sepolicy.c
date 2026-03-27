@@ -847,6 +847,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 
     // rewind fp
     fp.data = data;
+    fp.len = len;
 
     ret = policydb_read(&new_pol->policydb, &fp);
     if (ret) {
