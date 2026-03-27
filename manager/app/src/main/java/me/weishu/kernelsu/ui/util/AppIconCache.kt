@@ -3,18 +3,12 @@ package me.weishu.kernelsu.ui.util
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.os.UserHandle
 import android.util.LruCache
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.drawable.toDrawable
-import androidx.core.graphics.scale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import me.zhanghai.android.appiconloader.AppIconLoader
 
 object AppIconCache {
     private val maxMemory = Runtime.getRuntime().maxMemory() / 1024
@@ -51,67 +45,15 @@ object AppIconCache {
             }
 
             withContext(Dispatchers.IO) {
-                val pm = context.packageManager
-                var presampledBitmap: Bitmap? = null
+                val loader = AppIconLoader(size, true, context)
+                val bitmap = loader.loadIcon(applicationInfo)
 
-                try {
-                    val appRes = pm.getResourcesForApplication(applicationInfo)
-                    val iconId = applicationInfo.icon
-
-                    if (iconId != 0) {
-                        val options = BitmapFactory.Options().apply {
-                            inJustDecodeBounds = true
-                        }
-                        BitmapFactory.decodeResource(appRes, iconId, options)
-
-                        if (options.outWidth > size * 6 || options.outHeight > size * 6) {
-                            options.inSampleSize = calculateInSampleSize(options, size, size)
-                            options.inJustDecodeBounds = false
-                            presampledBitmap = BitmapFactory.decodeResource(appRes, iconId, options)
-                        }
-                    }
-                } catch (_: Exception) {
-                    // Ignore
-                }
-
-                val drawable = presampledBitmap?.toDrawable(context.resources)
-                    ?: applicationInfo.loadUnbadgedIcon(pm)
-
-                // Add system badges
-                val handle = UserHandle.getUserHandleForUid(applicationInfo.uid)
-                val badgedDrawable = try {
-                    pm.getUserBadgedIcon(drawable, handle)
-                } catch (_: Exception) {
-                    drawable
-                }
-
-                // Convert to Bitmap for caching
-                val bitmap = if (badgedDrawable is BitmapDrawable) {
-                    badgedDrawable.bitmap
-                } else {
-                    val w = if (badgedDrawable.intrinsicWidth > 0) badgedDrawable.intrinsicWidth else size
-                    val h = if (badgedDrawable.intrinsicHeight > 0) badgedDrawable.intrinsicHeight else size
-                    createBitmap(w, h).also { bmp ->
-                        val canvas = Canvas(bmp)
-                        badgedDrawable.setBounds(0, 0, w, h)
-                        badgedDrawable.draw(canvas)
-                    }
-                }
-
-                // Resize to exact target size
-                val resultBitmap = if (bitmap.width > size || bitmap.height > size) {
-                    bitmap.scale(size, size)
-                } else {
-                    bitmap
-                }
-
-                // Convert to bitmap
                 val gpuBitmap = try {
-                    resultBitmap.copy(Bitmap.Config.HARDWARE, false)?.also {
-                        if (resultBitmap !== bitmap) resultBitmap.recycle()
-                    } ?: resultBitmap.also { it.prepareToDraw() }
+                    bitmap.copy(Bitmap.Config.HARDWARE, false)?.also {
+                        bitmap.recycle()
+                    } ?: bitmap.also { it.prepareToDraw() }
                 } catch (_: Exception) {
-                    resultBitmap.also { it.prepareToDraw() }
+                    bitmap.also { it.prepareToDraw() }
                 }
 
                 synchronized(lruCache) {
@@ -121,18 +63,5 @@ object AppIconCache {
                 gpuBitmap
             }
         }
-    }
-
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val height: Int = options.outHeight
-        val width: Int = options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            while ((height / (inSampleSize * 2)) >= reqHeight && (width / (inSampleSize * 2)) >= reqWidth) {
-                inSampleSize *= 2
-            }
-        }
-        return inSampleSize
     }
 }

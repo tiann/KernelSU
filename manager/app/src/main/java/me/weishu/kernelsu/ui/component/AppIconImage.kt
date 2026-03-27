@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -28,7 +29,7 @@ import me.weishu.kernelsu.ui.util.AppIconCache
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 
-private data class IconKey(val uid: Int,val packageName: String)
+private data class IconKey(val uid: Int, val packageName: String)
 
 @Composable
 fun AppIconImage(
@@ -105,6 +106,7 @@ private fun PlaceHolderBox(modifier: Modifier = Modifier) {
 
     Box(
         modifier = modifier
+            .padding(4.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(containerColor)
     )
