@@ -5,8 +5,6 @@
 #include <linux/types.h>
 
 #include "uapi/app_profile.h"
-#include "uapi/feature.h"
-#include "uapi/selinux.h"
 
 /* Magic numbers for reboot hook to install fd */
 static const __u32 KSU_INSTALL_MAGIC1 = 0xDEADBEEF;

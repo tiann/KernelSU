@@ -4,8 +4,6 @@
 #include <linux/types.h>
 #include <linux/uaccess.h>
 
-#include "supercall/supercall.h"
-
 bool only_manager(void);
 bool only_root(void);
 bool manager_or_root(void);

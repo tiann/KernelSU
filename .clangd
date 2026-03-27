@@ -1,0 +1,4 @@
+If:
+  PathMatch: ^kernel/.*\.(c|cc|cpp|cxx|h|hpp)$
+CompileFlags:
+  CompilationDatabase: kernel

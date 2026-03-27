@@ -9,17 +9,7 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: cargo
-    directory: userspace/ksud
-    schedule:
-      interval: weekly
-    allow:
-      - dependency-type: "all"
-    groups:
-      crates:
-        patterns:
-          - "*"
-  - package-ecosystem: cargo
-    directory: userspace/ksuinit
+    directory: /
     schedule:
       interval: weekly
     allow:

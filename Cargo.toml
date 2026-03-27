@@ -1,0 +1,26 @@
+[workspace]
+members = [
+    "userspace/ksud",
+    "userspace/ksuinit",
+]
+default-members = [
+    "userspace/ksud",
+    "userspace/ksuinit",
+]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+
+[workspace.dependencies]
+anyhow = "1"
+log = "0.4"
+
+[profile.release]
+strip = true
+lto = true
+opt-level = "z"
+panic = "abort"
+
+[profile.release.package.ksud]
+codegen-units = 1
