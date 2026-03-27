@@ -19,6 +19,7 @@ kernelsu-objs += runtime/boot_event.o
 kernelsu-objs += runtime/ksud_integration.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/file_wrapper.o
+kernelsu-objs += infra/symbol_resolver.o
 kernelsu-objs += hook/syscall_hook_manager.o
 kernelsu-objs += hook/lsm_hook.o
 kernelsu-objs += hook/tp_marker.o
