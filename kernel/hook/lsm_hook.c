@@ -5,8 +5,8 @@
 #include <linux/lsm_hooks.h>
 #include <linux/mutex.h>
 #include <linux/rcupdate.h>
-#include <linux/string.h>
 
+#include "infra/symbol_resolver.h"
 #include "hook/lsm_hook.h"
 #include "hook/patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
@@ -95,7 +95,7 @@ static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
         return -EINVAL;
 
     if (!update_scall) {
-        update_scall = (ksu_static_call_update_t)ksu_lsm_hook_resolve_symbol("__static_call_update");
+        update_scall = (ksu_static_call_update_t)ksu_lookup_symbol("__static_call_update");
         if (!update_scall) {
             pr_err("lsm_hook: failed to resolve __static_call_update\n");
             return -ENOENT;
@@ -107,25 +107,6 @@ static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
     return 0;
 }
 #endif
-
-void *ksu_lsm_hook_resolve_symbol(const char *symbol_name)
-{
-    char cfi_name[KSYM_NAME_LEN];
-    void *addr;
-
-    if (!symbol_name || !symbol_name[0])
-        return NULL;
-
-    if (strscpy(cfi_name, symbol_name, sizeof(cfi_name)) > 0 &&
-        strlen(cfi_name) + strlen(".cfi_jt") + 1 <= sizeof(cfi_name)) {
-        strlcat(cfi_name, ".cfi_jt", sizeof(cfi_name));
-        addr = (void *)kallsyms_lookup_name(cfi_name);
-        if (addr)
-            return addr;
-    }
-
-    return (void *)kallsyms_lookup_name(symbol_name);
-}
 
 int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 {
@@ -161,7 +142,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
     target = hook->original;
     if (!target)
-        target = ksu_lsm_hook_resolve_symbol(target_name);
+        target = ksu_lookup_symbol(target_name);
     if (!target) {
         pr_err("lsm_hook: failed to resolve target for %s\n", hook->head_name ?: "unknown");
         mutex_unlock(&ksu_lsm_hook_lock);
