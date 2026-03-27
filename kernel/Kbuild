@@ -10,9 +10,9 @@ kernelsu-objs += manager/throne_tracker.o
 kernelsu-objs += manager/pkg_observer.o
 endif
 kernelsu-objs += feature/kernel_umount.o
-kernelsu-objs += uapi/supercall.o
-kernelsu-objs += uapi/supercall_dispatch.o
-kernelsu-objs += uapi/supercall_perm.o
+kernelsu-objs += supercall/supercall.o
+kernelsu-objs += supercall/dispatch.o
+kernelsu-objs += supercall/perm.o
 kernelsu-objs += infra/su_mount_ns.o
 kernelsu-objs += policy/feature.o
 kernelsu-objs += runtime/boot_event.o

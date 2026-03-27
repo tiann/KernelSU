@@ -1,6 +1,6 @@
 #include <linux/types.h>
 
-#include "uapi/supercall_internal.h"
+#include "supercall/internal.h"
 #include "manager/manager_identity.h"
 #include "policy/allowlist.h"
 

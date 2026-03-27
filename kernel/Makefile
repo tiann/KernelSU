@@ -4,15 +4,22 @@ MDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 $(info -- KDIR: $(KDIR))
 $(info -- MDIR: $(MDIR))
 
-.PHONY: all compdb clean format check-format
+.PHONY: all compdb clean format check-format uapi-header
 
-all: check_symbol
+all: check_symbol uapi-header
 	make -C $(KDIR) M=$(MDIR) modules -j$(shell nproc)
 	./check_symbol kernelsu.ko $(KDIR)/vmlinux
+
+uapi-header: ksu_uapi.h
+
+ksu_uapi.h: tools/gen_ksu_uapi.py include/uapi/feature.h include/uapi/app_profile.h include/uapi/supercall.h
+	python3 tools/gen_ksu_uapi.py
+
 compdb:
 	python3 $(MDIR)/.vscode/generate_compdb.py -O $(KDIR) $(MDIR)
 clean:
 	make -C $(KDIR) M=$(MDIR) clean
+	rm -f ksu_uapi.h
 	rm check_symbol
 check_symbol: tools/check_symbol.c
 	$(CC) tools/check_symbol.c -o check_symbol
