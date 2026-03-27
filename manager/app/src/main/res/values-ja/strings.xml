@@ -158,11 +158,7 @@
     <string name="settings_theme_mode_system">システムに従う</string>
     <string name="settings_theme_mode_light">ライト</string>
     <string name="settings_theme_mode_dark">ダーク</string>
-    <string name="settings_theme_mode_monet_system">Monet (システムに従う)</string>
-    <string name="settings_theme_mode_monet_light">Monet (ライト)</string>
-    <string name="settings_theme_mode_monet_dark">Monet (ダーク)</string>
     <string name="settings_key_color">キーカラー</string>
-    <string name="settings_key_color_summary">Monet を使用するときのアクセントカラーをカスタマイズします。</string>
     <string name="settings_key_color_default">デフォルト</string>
     <string name="color_blue">ブルー</string>
     <string name="color_red">レッド</string>
@@ -184,12 +180,10 @@
     <string name="module_shortcut_title">ショートカットを作成</string>
     <string name="module_shortcut_name_label">ショートカット名</string>
     <string name="module_shortcut_icon_pick">カスタムアイコンを選択</string>
-    <string name="module_shortcut_add">ショートカットを追加</string>
     <string name="module_shortcut_not_supported">ランチャーはホーム画面ショートカットをサポートしていません。</string>
     <string name="module_shortcut_created">ホーム画面にショートカットを作成しました。</string>
     <string name="module_shortcut_updated">ショートカットが更新されました。</string>
     <string name="module_shortcut_delete">ショートカットを削除</string>
-    <string name="module_shortcut_type_title">タイプを選択</string>
     <string name="module_shortcut_permission_tip_xiaomi">Xiaomi の設定で、このアプリに対して「ホーム画面ショートカット」権限を有効にしてください。</string>
     <string name="module_shortcut_permission_tip_oppo">OPPO の設定で、このアプリに対して「ホーム画面ショートカット」権限を有効にしてください。</string>
     <string name="module_shortcut_permission_tip_default">ショートカットの作成に失敗した場合は、システム設定でこのアプリに対してホーム画面ショートカットの権限を有効にしてください。</string>

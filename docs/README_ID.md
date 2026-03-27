@@ -24,7 +24,10 @@ KernelSU secara resmi mendukung perangkat Android GKI 2.0 (dengan kernel 5.10+),
 
 WSA, ChromeOS, dan Android berbasis wadah juga dapat bekerja dengan KernelSU terintegrasi.
 
-Dan ABI yang didukung saat ini adalah: `arm64-v8a` dan `x86_64`
+Saat ini, arsitektur `arm64-v8a` dan `x86_64` didukung.
+
+> [!CAUTION]
+> Versi kernel terbaru telah menerapkan perubahan yang merusak yang menyebabkan KernelSU gagal dan berpotensi memicu kernel panic pada `x86_64`! Cek situs web untuk info lebih lanjut!
 
 ## Penggunaan
 

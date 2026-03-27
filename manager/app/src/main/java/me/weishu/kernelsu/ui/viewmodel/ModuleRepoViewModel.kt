@@ -1,210 +1,163 @@
 package me.weishu.kernelsu.ui.viewmodel
 
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.repository.ModuleRepoRepository
+import me.weishu.kernelsu.data.repository.ModuleRepoRepositoryImpl
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
-import me.weishu.kernelsu.ui.util.HanziToPinyin
+import me.weishu.kernelsu.ui.screen.modulerepo.ModuleRepoUiState
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
-import okhttp3.Request
-import org.json.JSONArray
-import org.json.JSONObject
 
-class ModuleRepoViewModel : ViewModel() {
+class ModuleRepoViewModel(
+    private val repo: ModuleRepoRepository = ModuleRepoRepositoryImpl()
+) : ViewModel() {
 
     companion object {
         private const val TAG = "ModuleRepoViewModel"
-        private const val MODULES_URL = "https://modules.kernelsu.org/modules.json"
     }
 
-    @Immutable
-    data class Author(
-        val name: String,
-        val link: String,
-    )
+    typealias RepoModule = me.weishu.kernelsu.data.model.RepoModule
 
-    @Immutable
-    data class ReleaseAsset(
-        val name: String,
-        val downloadUrl: String,
-        val size: Long
-    )
+    private val _uiState = MutableStateFlow(ModuleRepoUiState())
+    val uiState: StateFlow<ModuleRepoUiState> = _uiState.asStateFlow()
 
-    @Immutable
-    data class RepoModule(
-        val moduleId: String,
-        val moduleName: String,
-        val authors: String,
-        val authorList: List<Author>,
-        val summary: String,
-        val metamodule: Boolean,
-        val stargazerCount: Int,
-        val updatedAt: String,
-        val createdAt: String,
-        val latestRelease: String,
-        val latestReleaseTime: String,
-        val latestVersionCode: Int,
-        val latestAsset: ReleaseAsset?,
-    )
+    private val prefs = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    private val searchQuery = MutableStateFlow("")
 
-    private var _modules = mutableStateOf<List<RepoModule>>(emptyList())
-    val modules: State<List<RepoModule>> = _modules
+    init {
+        _uiState.update {
+            it.copy(
+                sortByName = prefs.getBoolean("module_repo_sort_name", false),
+                offline = !isNetworkAvailable(ksuApp)
+            )
+        }
 
-    var isRefreshing by mutableStateOf(false)
-        private set
+        viewModelScope.launchSearchQueryCollector(searchQuery, ::applySearchText)
+    }
 
-    private val _searchStatus = mutableStateOf(SearchStatus(""))
-    val searchStatus: State<SearchStatus> = _searchStatus
+    private fun filterModules(modules: List<RepoModule>, text: String): List<RepoModule> {
+        if (text.isEmpty()) return emptyList()
 
-    private val _searchResults = mutableStateOf<List<RepoModule>>(emptyList())
-    val searchResults: State<List<RepoModule>> = _searchResults
-
-    fun refresh() {
-        viewModelScope.launch {
-            val netAvailable = isNetworkAvailable(ksuApp)
-            withContext(Dispatchers.Main) { isRefreshing = true }
-            val parsed = withContext(Dispatchers.IO) { if (!netAvailable) null else fetchModulesInternal() }
-            withContext(Dispatchers.Main) {
-                if (parsed != null) {
-                    _modules.value = parsed
-                } else {
-                    Toast.makeText(
-                        ksuApp,
-                        ksuApp.getString(R.string.network_offline), Toast.LENGTH_SHORT
-                    ).show()
-                }
-                isRefreshing = false
-            }
+        return modules.filter {
+            it.moduleId.contains(text, true) ||
+                    it.moduleName.contains(text, true) ||
+                    it.authors.contains(text, true) ||
+                    it.summary.contains(text, true) ||
+                    me.weishu.kernelsu.ui.util.HanziToPinyin.getInstance().toPinyinString(it.moduleName)
+                        .contains(text, true)
         }
     }
 
-    suspend fun updateSearchText(text: String) {
-        _searchStatus.value.searchText = text
+    private suspend fun applySearchText(text: String) {
+        _uiState.update {
+            it.copy(
+                searchStatus = it.searchStatus.copy(
+                    resultStatus = searchLoadingStatusFor(text)
+                )
+            )
+        }
 
         if (text.isEmpty()) {
-            _searchStatus.value.resultStatus = SearchStatus.ResultStatus.DEFAULT
-            _searchResults.value = emptyList()
+            _uiState.update { state ->
+                state.copy(
+                    searchResults = emptyList(),
+                    searchStatus = state.searchStatus.copy(resultStatus = SearchStatus.ResultStatus.DEFAULT)
+                )
+            }
             return
         }
 
         val result = withContext(Dispatchers.IO) {
-            _searchStatus.value.resultStatus = SearchStatus.ResultStatus.LOAD
-            _modules.value.filter {
-                it.moduleId.contains(text, true)
-                        || it.moduleName.contains(text, true)
-                        || it.authors.contains(text, true)
-                        || it.summary.contains(text, true)
-                        || HanziToPinyin.getInstance().toPinyinString(it.moduleName).contains(text, true)
-            }
+            filterModules(_uiState.value.modules, text)
         }
 
-        _searchResults.value = result
-        _searchStatus.value.resultStatus = if (result.isEmpty()) {
-            SearchStatus.ResultStatus.EMPTY
-        } else {
-            SearchStatus.ResultStatus.SHOW
+        _uiState.update {
+            it.copy(
+                searchResults = result,
+                searchStatus = it.searchStatus.copy(resultStatus = searchResultStatusFor(text, result.isEmpty()))
+            )
         }
     }
 
-    private fun fetchModulesInternal(): List<RepoModule> {
-        return runCatching {
-            val request = Request.Builder().url(MODULES_URL).build()
-            ksuApp.okhttpClient.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) return emptyList()
-                val body = resp.body.string()
-                val json = JSONArray(body)
-                (0 until json.length()).mapNotNull { idx ->
-                    val item = json.optJSONObject(idx) ?: return@mapNotNull null
-                    parseRepoModule(item)
-                }
-            }
-        }.getOrElse {
-            Log.e(TAG, "fetch modules failed", it)
-            emptyList()
+    private fun refreshSearchResults() {
+        val state = _uiState.value
+        val text = state.searchStatus.searchText
+        val results = filterModules(state.modules, text)
+        _uiState.update {
+            it.copy(
+                searchResults = results,
+                searchStatus = it.searchStatus.copy(resultStatus = searchResultStatusFor(text, results.isEmpty()))
+            )
         }
     }
 
-    private fun parseRepoModule(item: JSONObject): RepoModule? {
-        val moduleId = item.optString("moduleId", "")
-        if (moduleId.isEmpty()) return null
-        val moduleName = item.optString("moduleName", "")
-        val authorsArray = item.optJSONArray("authors")
-        val authorList = if (authorsArray != null) {
-            (0 until authorsArray.length())
-                .mapNotNull { idx ->
-                    val authorObj = authorsArray.optJSONObject(idx) ?: return@mapNotNull null
-                    val name = authorObj.optString("name", "").trim()
-                    var link = authorObj.optString("link", "").trim()
-                    if (link.startsWith("`") && link.endsWith("`") && link.length >= 2) {
-                        link = link.substring(1, link.length - 1)
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isRefreshing = true,
+                    error = null,
+                    offline = !isNetworkAvailable(ksuApp)
+                )
+            }
+            val result = repo.fetchModules()
+
+            withContext(Dispatchers.Main) {
+                result.onSuccess { modules ->
+                    _uiState.update {
+                        it.copy(
+                            modules = modules,
+                            isRefreshing = false,
+                            offline = !isNetworkAvailable(ksuApp)
+                        )
                     }
-                    if (name.isEmpty()) null else Author(name = name, link = link)
+                    refreshSearchResults()
+                }.onFailure { e ->
+                    Log.e(TAG, "fetch modules failed", e)
+                    Toast.makeText(
+                        ksuApp,
+                        ksuApp.getString(R.string.network_offline), Toast.LENGTH_SHORT
+                    ).show()
+                    _uiState.update {
+                        it.copy(
+                            isRefreshing = false,
+                            error = e,
+                            offline = !isNetworkAvailable(ksuApp)
+                        )
+                    }
                 }
-        } else {
-            emptyList()
-        }
-        val authors = if (authorList.isNotEmpty()) authorList.joinToString(", ") { it.name } else item.optString("authors", "")
-        val summary = item.optString("summary", "")
-        val metamodule = item.optBoolean("metamodule", false)
-        val stargazerCount = item.optInt("stargazerCount", 0)
-        val updatedAt = item.optString("updatedAt", "")
-        val createdAt = item.optString("createdAt", "")
-
-        var latestRelease = ""
-        var latestReleaseTime = ""
-        var latestVersionCode = 0
-        var latestAsset: ReleaseAsset? = null
-        val lr = item.optJSONObject("latestRelease")
-        if (lr != null) {
-            val lrName = lr.optString("name", lr.optString("version", ""))
-            val lrTime = lr.optString("time", "")
-            var lrUrl = lr.optString("downloadUrl", "")
-            lrUrl = lrUrl.trim().let {
-                var s = it
-                if (s.startsWith("`") && s.endsWith("`") && s.length >= 2) {
-                    s = s.substring(1, s.length - 1)
-                }
-                s
-            }
-            val vcAny = lr.opt("versionCode")
-            latestVersionCode = when (vcAny) {
-                is Number -> vcAny.toInt()
-                is String -> vcAny.toIntOrNull() ?: 0
-                else -> 0
-            }
-            latestRelease = lrName
-            latestReleaseTime = lrTime
-            if (lrUrl.isNotEmpty()) {
-                val fileName = lrUrl.substringAfterLast('/')
-                latestAsset = ReleaseAsset(name = fileName, downloadUrl = lrUrl, size = 0L)
             }
         }
+    }
 
-        return RepoModule(
-            moduleId = moduleId,
-            moduleName = moduleName,
-            authors = authors,
-            authorList = authorList,
-            summary = summary,
-            metamodule = metamodule,
-            stargazerCount = stargazerCount,
-            updatedAt = updatedAt,
-            createdAt = createdAt,
-            latestRelease = latestRelease,
-            latestReleaseTime = latestReleaseTime,
-            latestVersionCode = latestVersionCode,
-            latestAsset = latestAsset,
-        )
+    fun toggleSortByName() {
+        val newValue = !_uiState.value.sortByName
+        prefs.edit { putBoolean("module_repo_sort_name", newValue) }
+        _uiState.update { it.copy(sortByName = newValue) }
+    }
+
+    fun updateSearchStatus(status: SearchStatus) {
+        val previous = _uiState.value.searchStatus
+        _uiState.update { it.copy(searchStatus = status) }
+        if (previous.searchText != status.searchText) {
+            searchQuery.value = status.searchText
+        }
+    }
+
+    fun updateSearchText(text: String) {
+        updateSearchStatus(_uiState.value.searchStatus.copy(searchText = text))
     }
 }

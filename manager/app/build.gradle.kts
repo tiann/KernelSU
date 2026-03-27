@@ -80,6 +80,9 @@ android {
     }
 
     packaging {
+        dex {
+            useLegacyPackaging = true
+        }
         jniLibs {
             useLegacyPackaging = true
         }
@@ -109,6 +112,9 @@ android {
         targetSdk = androidTargetSdkVersion
         versionCode = managerVersionCode
         versionName = managerVersionName
+
+        val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
+        buildConfigField("boolean", "IS_PR_BUILD", isPrBuild.toString())
 
         externalNativeBuild {
             cmake {
@@ -151,6 +157,7 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
@@ -179,6 +186,8 @@ dependencies {
 
     implementation(libs.lsposed.cxx)
 
+    implementation(libs.hiddenapibypass)
+
     implementation(libs.miuix)
     implementation(libs.miuix.icons)
     implementation(libs.miuix.navigation3.ui)
@@ -186,6 +195,9 @@ dependencies {
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
 
-    implementation(libs.haze)
+    implementation(libs.backdrop)
     implementation(libs.capsule)
+    implementation(libs.haze)
+
+    implementation(libs.material.kolor)
 }

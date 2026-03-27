@@ -28,14 +28,14 @@ rustix = { version = "1", features = [
 ] }
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 android_logger = { version = "0.15", default-features = false }
-zip = { version = "7",  features = [
+zip = { version = "8",  features = [
     "deflate",
     "deflate64",
     "time",
     "lzma",
     "xz",
 ], default-features = false }
-zip-extensions = { version = "0.13", features = [
+zip-extensions = { version = "0.14", features = [
     "deflate",
     "lzma",
     "xz",
@@ -51,6 +51,9 @@ is_executable = "1"
 nom = "8"
 derive-new = "0.7"
 getopts = "0.2"
+ksuinit = { path = "../ksuinit" }
+adb_client = { git = "https://github.com/Kernel-SU/adb_client" }
+prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props" }
 
 [profile.release]
 strip = true

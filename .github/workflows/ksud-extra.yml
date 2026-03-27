@@ -1,0 +1,63 @@
+name: Build ksud with cross
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: ubuntu-latest
+      pack_lkm:
+        required: false
+        type: boolean
+        default: false
+      pack_ksuinit:
+        required: false
+        type: boolean
+        default: false
+jobs:
+  build:
+    runs-on: ${{ inputs.os }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
+    
+    - name: Prepare LKM files
+      if: ${{ inputs.pack_lkm }}
+      run: |
+        cp android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
+    
+    - name: Prepare ksuinit
+      if: ${{ inputs.pack_ksuinit }}
+      run: |
+        mv ksuinit/*/release/ksuinit ./userspace/ksud/bin/aarch64/
+        
+    - name: Setup rustup
+      run: |
+        rustup update stable
+        if [[ ${{ inputs.target }} == *"-apple-darwin" ]]; then
+          rustup target add ${{ inputs.target }}
+        fi
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: userspace/ksud
+        cache-targets: false
+
+    - name: Install cross
+      run: |
+        RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
+
+    - name: Build ksud
+      run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+
+    - name: Upload ksud artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ksud-${{ inputs.target }}
+        path: userspace/ksud/target/**/release/ksud*

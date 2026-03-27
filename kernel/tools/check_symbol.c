@@ -55,8 +55,7 @@ int open_elf(const char *path, ElfFile *elf)
 
     elf->shdr = (Elf64_Shdr *)((char *)elf->data + elf->ehdr->e_shoff);
 
-    elf->shstrtab =
-        (char *)elf->data + elf->shdr[elf->ehdr->e_shstrndx].sh_offset;
+    elf->shstrtab = (char *)elf->data + elf->shdr[elf->ehdr->e_shstrndx].sh_offset;
 
     return 0;
 }
@@ -76,8 +75,18 @@ Elf64_Shdr *find_symtab(ElfFile *elf)
     return NULL;
 }
 
-Elf64_Sym *find_symbol(ElfFile *elf, const char *name, Elf64_Shdr *symtab,
-                       char *strtab)
+Elf64_Shdr *find_section(ElfFile *elf, const char *name)
+{
+    for (int i = 0; i < elf->ehdr->e_shnum; i++) {
+        const char *section_name = elf->shstrtab + elf->shdr[i].sh_name;
+        if (strcmp(section_name, name) == 0) {
+            return &elf->shdr[i];
+        }
+    }
+    return NULL;
+}
+
+Elf64_Sym *find_symbol(ElfFile *elf, const char *name, Elf64_Shdr *symtab, char *strtab)
 {
     Elf64_Sym *syms = (Elf64_Sym *)((char *)elf->data + symtab->sh_offset);
     int sym_count = symtab->sh_size / sizeof(Elf64_Sym);
@@ -114,6 +123,7 @@ int main(int argc, char *argv[])
 
     Elf64_Shdr *ko_symtab = find_symtab(&ko_elf);
     Elf64_Shdr *vmlinux_symtab = find_symtab(&vmlinux);
+    Elf64_Shdr *ko_version_sec = find_section(&ko_elf, "__versions");
 
     if (!ko_symtab) {
         fprintf(stderr, "Error: No symbol table found in %s\n", ko_path);
@@ -129,13 +139,25 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    char *ko_strtab =
-        (char *)ko_elf.data + ko_elf.shdr[ko_symtab->sh_link].sh_offset;
-    char *vmlinux_strtab =
-        (char *)vmlinux.data + vmlinux.shdr[vmlinux_symtab->sh_link].sh_offset;
+    if (!ko_version_sec) {
+        fprintf(stderr, "Error: No __versions section found in %s\n", ko_path);
+        close_elf(&ko_elf);
+        close_elf(&vmlinux);
+        return 1;
+    }
 
-    Elf64_Sym *ko_syms =
-        (Elf64_Sym *)((char *)ko_elf.data + ko_symtab->sh_offset);
+    if (ko_version_sec->sh_size != 0) {
+        fprintf(stderr, "Error: __versions section in %s must have size 0 (actual=%llu)\n", ko_path,
+                (unsigned long long)ko_version_sec->sh_size);
+        close_elf(&ko_elf);
+        close_elf(&vmlinux);
+        return 1;
+    }
+
+    char *ko_strtab = (char *)ko_elf.data + ko_elf.shdr[ko_symtab->sh_link].sh_offset;
+    char *vmlinux_strtab = (char *)vmlinux.data + vmlinux.shdr[vmlinux_symtab->sh_link].sh_offset;
+
+    Elf64_Sym *ko_syms = (Elf64_Sym *)((char *)ko_elf.data + ko_symtab->sh_offset);
     int ko_sym_count = ko_symtab->sh_size / sizeof(Elf64_Sym);
 
     int has_error = 0;
@@ -144,21 +166,16 @@ int main(int argc, char *argv[])
         if (ko_syms[i].st_shndx == SHN_UNDEF && ko_syms[i].st_name != 0) {
             const char *sym_name = ko_strtab + ko_syms[i].st_name;
 
-            Elf64_Sym *vmlinux_sym =
-                find_symbol(&vmlinux, sym_name, vmlinux_symtab, vmlinux_strtab);
+            Elf64_Sym *vmlinux_sym = find_symbol(&vmlinux, sym_name, vmlinux_symtab, vmlinux_strtab);
 
             if (!vmlinux_sym || vmlinux_sym->st_shndx == SHN_UNDEF) {
-                fprintf(stderr,
-                        "Error: Symbol '%s' not found or undefined in %s\n",
-                        sym_name, vmlinux_path);
+                fprintf(stderr, "Error: Symbol '%s' not found or undefined in %s\n", sym_name, vmlinux_path);
                 has_error = 1;
             } else {
                 int binding = ELF64_ST_BIND(vmlinux_sym->st_info);
                 if (binding != STB_GLOBAL && binding != STB_WEAK) {
-                    fprintf(
-                        stderr,
-                        "Warning: Symbol '%s' is defined in %s but not global (binding=%d)\n",
-                        sym_name, vmlinux_path, binding);
+                    fprintf(stderr, "Warning: Symbol '%s' is defined in %s but not global (binding=%d)\n", sym_name,
+                            vmlinux_path, binding);
                 }
             }
         }

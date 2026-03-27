@@ -23,7 +23,10 @@ Una solución root basada en el kernel para dispositivos Android.
 
 Con esto, WSA, ChromeOS y Android basado en contenedores están todos compatibles.
 
-Actualmente, solo se admiten las arquitecturas `arm64-v8a` y `x86_64`.
+Actualmente, se soportan las arquitecturas `arm64-v8a` y `x86_64`.
+
+> [!CAUTION]
+> ¡Las versiones recientes del kernel han implementado un cambio que rompe la compatibilidad, causando que KernelSU falle y potencialmente provoque un kernel panic en `x86_64`! ¡Consulta el sitio web para más información!
 
 ## Uso
 

@@ -20,11 +20,22 @@ import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.ui.util.createRootShell
-import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import java.io.File
 
+fun Activity.setTaskDescription(label: String) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        @Suppress("DEPRECATION")
+        setTaskDescription(ActivityManager.TaskDescription(label))
+    } else {
+        val taskDescription = ActivityManager.TaskDescription.Builder()
+            .setLabel(label)
+            .build()
+        setTaskDescription(taskDescription)
+    }
+}
 
 @SuppressLint("SetJavaScriptEnabled")
 internal suspend fun prepareWebView(
@@ -33,12 +44,9 @@ internal suspend fun prepareWebView(
     webUIState: WebUIState,
 ) {
     withContext(Dispatchers.IO) {
-        val viewModel = ModuleViewModel()
-        if (viewModel.moduleList.isEmpty()) {
-            viewModel.loadModuleList()
-        }
-
-        val moduleInfo = viewModel.moduleList.find { info -> info.id == moduleId }
+        val repo = ModuleRepositoryImpl()
+        val modules = repo.getModules().getOrDefault(emptyList())
+        val moduleInfo = modules.find { info -> info.id == moduleId }
 
         if (moduleInfo == null) {
             withContext(Dispatchers.Main) {
@@ -64,15 +72,7 @@ internal suspend fun prepareWebView(
         webUIState.rootShell = shell
 
         withContext(Dispatchers.Main) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                @Suppress("DEPRECATION")
-                activity.setTaskDescription(ActivityManager.TaskDescription("KernelSU - ${moduleInfo.name}"))
-            } else {
-                val taskDescription = ActivityManager.TaskDescription.Builder()
-                    .setLabel("KernelSU - ${moduleInfo.name}")
-                    .build()
-                activity.setTaskDescription(taskDescription)
-            }
+            activity.setTaskDescription(activity.getString(R.string.app_name) + " - ${moduleInfo.name}")
 
             val webView = WebView(activity)
             webView.setBackgroundColor(Color.TRANSPARENT)
@@ -91,7 +91,12 @@ internal suspend fun prepareWebView(
                 .setDomain("mui.kernelsu.org")
                 .addPathHandler(
                     "/",
-                    SuFilePathHandler(activity, webRoot, shell, { webUIState.currentInsets }, { enable -> webUIState.isInsetsEnabled = enable })
+                    SuFilePathHandler(
+                        activity,
+                        webRoot,
+                        shell,
+                        { webUIState.currentInsets },
+                        { enable -> webUIState.isInsetsEnabled = enable })
                 )
                 .build()
 
@@ -134,7 +139,13 @@ internal suspend fun prepareWebView(
                     return true
                 }
 
-                override fun onJsPrompt(view: WebView?, url: String?, message: String?, defaultValue: String?, result: JsPromptResult?): Boolean {
+                override fun onJsPrompt(
+                    view: WebView?,
+                    url: String?,
+                    message: String?,
+                    defaultValue: String?,
+                    result: JsPromptResult?
+                ): Boolean {
                     if (message == null || result == null || defaultValue == null) return false
                     webUIState.uiEvent = WebUIEvent.ShowPrompt(message, defaultValue, result)
                     return true

@@ -17,6 +17,7 @@
 #define __PT_RC_REG regs[0]
 #define __PT_SP_REG sp
 #define __PT_IP_REG pc
+#define __PT_ORIG_SYSCALL_REG regs[8]
 
 #define REBOOT_SYMBOL "__arm64_sys_reboot"
 #define SYS_READ_SYMBOL "__arm64_sys_read"
@@ -40,6 +41,7 @@
 #define __PT_RC_REG ax
 #define __PT_SP_REG sp
 #define __PT_IP_REG ip
+#define __PT_ORIG_SYSCALL_REG orig_ax
 #define REBOOT_SYMBOL "__x64_sys_reboot"
 #define SYS_READ_SYMBOL "__x64_sys_read"
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
@@ -66,6 +68,7 @@
 #define PT_REGS_RC(x) (__PT_REGS_CAST(x)->__PT_RC_REG)
 #define PT_REGS_SP(x) (__PT_REGS_CAST(x)->__PT_SP_REG)
 #define PT_REGS_IP(x) (__PT_REGS_CAST(x)->__PT_IP_REG)
+#define PT_REGS_ORIG_SYSCALL(x) (__PT_REGS_CAST(x)->__PT_ORIG_SYSCALL_REG)
 
 #define PT_REAL_REGS(regs) ((struct pt_regs *)PT_REGS_PARM1(regs))
 

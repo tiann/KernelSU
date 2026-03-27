@@ -1,51 +1,53 @@
 package me.weishu.kernelsu.ui.webui
 
 import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import me.weishu.kernelsu.R
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.WindowDialog
+import me.weishu.kernelsu.ui.LocalUiMode
+import me.weishu.kernelsu.ui.UiMode
 
+@Composable
+fun rememberFileLauncher(webUIState: WebUIState): ActivityResultLauncher<Intent> {
+    return rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uris: Array<Uri>? = if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.let { data ->
+                data.clipData?.let { clipData ->
+                    Array(clipData.itemCount) { i -> clipData.getItemAt(i).uri }
+                } ?: data.data?.let { arrayOf(it) }
+            }
+        } else null
+        webUIState.onFileChooserResult(uris)
+    }
+}
 
 @Composable
 fun WebUIScreen(webUIState: WebUIState) {
@@ -53,6 +55,7 @@ fun WebUIScreen(webUIState: WebUIState) {
     val layoutDirection = LocalLayoutDirection.current
     val windowInsets = WindowInsets.safeDrawing
     val innerPadding = if (webUIState.isInsetsEnabled) PaddingValues(0.dp) else windowInsets.asPaddingValues()
+    val fileLauncher = rememberFileLauncher(webUIState)
 
     LaunchedEffect(density, layoutDirection, windowInsets, webUIState.isInsetsEnabled) {
         if (!webUIState.isInsetsEnabled) {
@@ -81,11 +84,11 @@ fun WebUIScreen(webUIState: WebUIState) {
             .fillMaxSize()
             .padding(innerPadding)
     ) {
-        if (webUIState.webView != null) {
+        webUIState.webView?.let { webView ->
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { _ ->
-                    webUIState.webView!!.apply {
+                    webView.apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
                         )
@@ -116,129 +119,13 @@ fun WebUIScreen(webUIState: WebUIState) {
         }
     }
 
-    HandleWebUIEvent(webUIState)
+    when (LocalUiMode.current) {
+        UiMode.Miuix -> HandleWebUIEventMiuix(webUIState, fileLauncher)
+        UiMode.Material -> HandleWebUIEventMaterial(webUIState, fileLauncher)
+    }
+
     HandleWebViewLifecycle(webUIState)
     HandleConfigurationChanges(webUIState)
-}
-
-@Composable
-private fun HandleWebUIEvent(webUIState: WebUIState) {
-
-    val fileLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val uris: Array<Uri>? = if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.let { data ->
-                if (data.clipData != null) {
-                    Array(data.clipData!!.itemCount) { i -> data.clipData!!.getItemAt(i).uri }
-                } else {
-                    data.data?.let { arrayOf(it) }
-                }
-            }
-        } else null
-        webUIState.onFileChooserResult(uris)
-    }
-
-    when (val event = webUIState.uiEvent) {
-        is WebUIEvent.ShowAlert -> {
-            val showDialog = remember(event) { mutableStateOf(true) }
-            WindowDialog(
-                onDismissRequest = { },
-                show = showDialog,
-            ) {
-                Column {
-                    Text(event.message)
-                    Spacer(Modifier.height(12.dp))
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth(), onClick = {
-                            webUIState.onAlertResult()
-                            showDialog.value = false
-                        }, text = stringResource(R.string.confirm), colors = ButtonDefaults.textButtonColorsPrimary()
-                    )
-                }
-            }
-        }
-
-        is WebUIEvent.ShowConfirm -> {
-            val showDialog = remember(event) { mutableStateOf(true) }
-            WindowDialog(
-                onDismissRequest = { webUIState.onConfirmResult(false) },
-                show = showDialog,
-            ) {
-                Column {
-                    Text(event.message)
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TextButton(
-                            onClick = {
-                                webUIState.onConfirmResult(false)
-                                showDialog.value = false
-                            },
-                            text = stringResource(android.R.string.cancel),
-                            modifier = Modifier.weight(1f),
-                        )
-                        Spacer(modifier = Modifier.width(20.dp))
-                        TextButton(
-                            onClick = {
-                                webUIState.onConfirmResult(true)
-                                showDialog.value = false
-                            }, text = stringResource(R.string.confirm), modifier = Modifier.weight(1f), colors = ButtonDefaults.textButtonColorsPrimary()
-                        )
-                    }
-                }
-            }
-        }
-
-        is WebUIEvent.ShowPrompt -> {
-            val showDialog = remember(event) { mutableStateOf(true) }
-            val state = rememberTextFieldState(event.defaultValue)
-            WindowDialog(
-                onDismissRequest = { webUIState.onPromptResult(null) },
-                show = showDialog,
-            ) {
-                Column {
-                    Text(event.message)
-                    Spacer(Modifier.height(12.dp))
-                    TextField(
-                        modifier = Modifier.padding(bottom = 16.dp), state = state
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TextButton(
-                            onClick = {
-                                webUIState.onPromptResult(null)
-                                showDialog.value = false
-                            },
-                            text = stringResource(android.R.string.cancel),
-                            modifier = Modifier.weight(1f),
-                        )
-                        Spacer(modifier = Modifier.width(20.dp))
-                        TextButton(
-                            onClick = {
-                                webUIState.onPromptResult(state.text.toString())
-                                showDialog.value = false
-                            }, text = stringResource(R.string.confirm), modifier = Modifier.weight(1f), colors = ButtonDefaults.textButtonColorsPrimary()
-                        )
-                    }
-                }
-            }
-        }
-
-        is WebUIEvent.ShowFileChooser -> {
-            LaunchedEffect(event) {
-                try {
-                    fileLauncher.launch(event.intent)
-                } catch (_: Exception) {
-                    webUIState.onFileChooserResult(null)
-                }
-            }
-        }
-
-        else -> {}
-    }
 }
 
 @Composable

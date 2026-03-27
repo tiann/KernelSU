@@ -3,7 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 use android_logger::Config;
-use log::LevelFilter;
+use log::{LevelFilter, error, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
@@ -33,11 +33,28 @@ enum Commands {
     /// Trigger `boot-complete` event
     BootCompleted,
 
+    /// Load kernelsu.ko and execute late-load stage scripts
+    LateLoad {
+        /// Use adb root to execute late-load for jailbreaking by Magica
+        #[arg(long, default_missing_value = "5555", num_args = 0..=1)]
+        magica: Option<u16>,
+
+        /// Restore adb properties after magica late-load
+        #[arg(long)]
+        post_magica: bool,
+    },
+
+    /// Emulate system reboot
+    SoftReboot,
+
     /// Install KernelSU userspace component to system
     Install {
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
     },
+
+    /// Unload KernelSU kernel module (LKM Only)
+    Unload,
 
     /// Uninstall KernelSU modules and itself(LKM Only)
     Uninstall {
@@ -84,6 +101,14 @@ enum Commands {
     Kernel {
         #[command(subcommand)]
         command: Kernel,
+    },
+
+    /// Resetprop - Magisk-compatible system property tool
+    #[command(disable_help_flag = true)]
+    Resetprop {
+        /// Arguments passed to resetprop
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
+        args: Vec<String>,
     },
 }
 
@@ -139,6 +164,14 @@ enum Debug {
 
     /// For testing
     Test,
+
+    /// Extract an embedded binary to a specified path
+    ExtractBinary {
+        /// binary name (e.g. busybox, resetprop, bootctl)
+        name: String,
+        /// destination file path
+        path: PathBuf,
+    },
 
     /// Process mark management
     Mark {
@@ -408,6 +441,11 @@ pub fn run() -> Result<()> {
         return crate::su::root_shell();
     }
 
+    if arg0.ends_with("resetprop") {
+        let all_args: Vec<String> = std::env::args().collect();
+        crate::resetprop::resetprop_main(&all_args)
+    }
+
     let cli = Args::parse();
 
     log::info!("command: {:?}", cli.command);
@@ -418,6 +456,8 @@ pub fn run() -> Result<()> {
             init_event::on_boot_completed();
             Ok(())
         }
+
+        Commands::SoftReboot => init_event::soft_reboot(),
 
         Commands::Module { command } => {
             utils::switch_mnt_ns(1)?;
@@ -517,13 +557,37 @@ pub fn run() -> Result<()> {
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Unload => crate::unload::unload(),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
+        Commands::LateLoad {
+            magica,
+            post_magica,
+        } => {
+            if let Some(port) = magica {
+                return crate::magica::run(port).map_err(|e| {
+                    error!("Error running magica: {e}");
+                    e
+                });
+            }
+            let result = crate::late_load::run();
+            if post_magica {
+                info!("Restoring adb properties (post-magica cleanup)...");
+                if let Err(e) = crate::magica::disable_adb_root() {
+                    error!("disable adb root failed: {e}");
+                }
+            }
+            result
+        }
         Commands::Services => {
+            if ksucalls::get_version() <= 0 {
+                info!("KernelSU not available, exiting services");
+                std::process::exit(0);
+            }
             init_event::on_services();
             Ok(())
         }
@@ -569,6 +633,10 @@ pub fn run() -> Result<()> {
             }
             Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
             Debug::Test => assets::ensure_binaries(false),
+            Debug::ExtractBinary { name, path } => {
+                let data = assets::get_asset_data(&name)?;
+                utils::ensure_binary(&path, &data, false)
+            }
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
                 MarkCommand::Mark { pid } => debug::mark_set(pid),
@@ -620,6 +688,12 @@ pub fn run() -> Result<()> {
             }
         },
         Commands::BootRestore(boot_restore) => crate::boot_patch::restore(boot_restore),
+        Commands::Resetprop { args } => {
+            let mut full_args = vec!["resetprop".to_string()];
+            full_args.extend(args);
+            crate::resetprop::resetprop_main(&full_args)
+        }
+
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),
             Kernel::Umount { command } => match command {

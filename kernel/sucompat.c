@@ -18,7 +18,6 @@
 #include "ksud.h"
 #include "sucompat.h"
 #include "app_profile.h"
-#include "util.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -69,8 +68,7 @@ static char __user *ksud_user_path(void)
     return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
-                         int *__unused_flags)
+int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode, int *__unused_flags)
 {
     const char su[] = SU_PATH;
 
@@ -115,8 +113,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
     return 0;
 }
 
-int ksu_handle_execve_sucompat(const char __user **filename_user,
-                               void *__never_use_argv, void *__never_use_envp,
+int ksu_handle_execve_sucompat(const char __user **filename_user, void *__never_use_argv, void *__never_use_envp,
                                int *__never_use_flags)
 {
     const char su[] = SU_PATH;
@@ -134,20 +131,7 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
     addr = untagged_addr((unsigned long)*filename_user);
     fn = (const char __user *)addr;
     memset(path, 0, sizeof(path));
-    ret = strncpy_from_user_nofault(path, fn, sizeof(path));
-
-    if (ret < 0 && try_set_access_flag(addr)) {
-        ret = strncpy_from_user_nofault(path, fn, sizeof(path));
-    }
-
-    if (ret < 0 && preempt_count()) {
-        /* This is crazy, but we know what we are doing:
-         * Temporarily exit atomic context to handle page faults, then restore it */
-        pr_info("Access filename failed, try rescue..\n");
-        preempt_enable_no_resched_notrace();
-        ret = strncpy_from_user(path, fn, sizeof(path));
-        preempt_disable_notrace();
-    }
+    ret = strncpy_from_user(path, fn, sizeof(path));
 
     if (ret < 0) {
         pr_warn("Access filename when execve failed: %ld", ret);
@@ -160,9 +144,7 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
     pr_info("sys_execve su found\n");
     *filename_user = ksud_user_path();
 
-    escape_with_root_profile();
-
-    return 0;
+    return escape_with_root_profile();
 }
 
 // sucompat: permitted process can execute 'su' to gain root access.

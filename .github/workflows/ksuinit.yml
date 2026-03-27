@@ -33,7 +33,7 @@ jobs:
         cargo build --target=aarch64-unknown-linux-musl --release
 
     - name: Upload ksuinit artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ksuinit
         path: userspace/ksuinit/target/**/release/ksuinit*

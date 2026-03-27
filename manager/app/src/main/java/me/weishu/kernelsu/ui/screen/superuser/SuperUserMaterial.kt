@@ -1,0 +1,410 @@
+package me.weishu.kernelsu.ui.screen.superuser
+
+import android.content.pm.ApplicationInfo
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.model.AppInfo
+import me.weishu.kernelsu.ui.component.AppIconImage
+import me.weishu.kernelsu.ui.component.material.SearchAppBar
+import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.statustag.StatusTag
+import me.weishu.kernelsu.ui.util.ownerNameForUid
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun SuperUserPagerMaterial(
+    uiState: SuperUserUiState,
+    actions: SuperUserActions,
+    bottomInnerPadding: Dp,
+) {
+    val scope = rememberCoroutineScope()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val listState = rememberLazyListState()
+    val searchListState = rememberLazyListState()
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    val scaleFraction = {
+        if (uiState.isRefreshing) 1f
+        else LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
+    }
+
+    var localSearchText by remember { mutableStateOf(uiState.searchStatus.searchText) }
+    LaunchedEffect(uiState.searchStatus.searchText) {
+        localSearchText = uiState.searchStatus.searchText
+    }
+
+    val haptic = LocalHapticFeedback.current
+
+    Scaffold(
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .pullToRefresh(
+                state = pullToRefreshState,
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    actions.onRefresh()
+                },
+            ),
+        topBar = {
+            SearchAppBar(
+                title = { Text(stringResource(R.string.superuser)) },
+                searchText = localSearchText,
+                onSearchTextChange = {
+                    localSearchText = it
+                    actions.onSearchTextChange(it)
+                    scope.launch { listState.scrollToItem(0) }
+                },
+                onClearClick = {
+                    localSearchText = ""
+                    actions.onClearSearch()
+                },
+                actions = {
+                    var showDropdown by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { showDropdown = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(id = R.string.settings)
+                        )
+
+                        DropdownMenu(
+                            expanded = showDropdown,
+                            onDismissRequest = { showDropdown = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.show_system_apps)) },
+                                trailingIcon = { Checkbox(uiState.showSystemApps, null) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    actions.onToggleShowSystemApps()
+                                    showDropdown = false
+                                }
+                            )
+                            if (uiState.userIds.size > 1) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
+                                    trailingIcon = { Checkbox(uiState.showOnlyPrimaryUserApps, null) },
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onToggleShowOnlyPrimaryUserApps()
+                                        showDropdown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                searchContent = { bottomPadding, closeSearch ->
+                    LaunchedEffect(localSearchText) {
+                        searchListState.scrollToItem(0)
+                    }
+                    SegmentedLazyColumn(
+                        state = searchListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 16.dp + bottomPadding
+                        ),
+                        key = { it.uid },
+                        items = uiState.searchResults,
+                    ) { group ->
+                        Column {
+                            GroupItem(
+                                group = group,
+                                selected = false,
+                                onToggleExpand = {},
+                            ) {
+                                closeSearch()
+                                actions.onOpenProfile(group)
+                            }
+                            AnimatedVisibility(
+                                visible = group.apps.size > 1,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column {
+                                    group.apps.forEach { app ->
+                                        SimpleAppItem(
+                                            app = app,
+                                            matched = group.matchedPackageNames.contains(app.packageName),
+                                        ) {
+                                            closeSearch()
+                                            actions.onOpenProfile(group)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
+
+            SegmentedLazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = 16.dp + bottomInnerPadding
+                ),
+                key = { it.uid },
+                items = uiState.groupedApps,
+            ) { group ->
+                val expanded = expandedSearchUids.value.contains(group.uid)
+                val onToggleExpand = {
+                    if (group.apps.size > 1) {
+                        expandedSearchUids.value = if (expandedSearchUids.value.contains(group.uid)) {
+                            expandedSearchUids.value - group.uid
+                        } else {
+                            expandedSearchUids.value + group.uid
+                        }
+                    }
+                }
+                Column {
+                    GroupItem(
+                        group = group,
+                        selected = expanded,
+                        onToggleExpand = onToggleExpand,
+                    ) {
+                        actions.onOpenProfile(group)
+                    }
+                    AnimatedVisibility(
+                        visible = expanded && group.apps.size > 1,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        Column {
+                            group.apps.forEach { app ->
+                                SimpleAppItem(app = app) {
+                                    actions.onOpenProfile(group)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        scaleX = scaleFraction()
+                        scaleY = scaleFraction()
+                    }
+            ) {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isRefreshing
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun SimpleAppItem(
+    app: AppInfo,
+    matched: Boolean = false,
+    onNavigate: () -> Unit,
+) {
+    ListItem(
+        onClick = onNavigate,
+        modifier = Modifier.padding(horizontal = 4.dp),
+        shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
+        colors = ListItemDefaults.colors(
+            containerColor = if (matched) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+            }
+        ),
+        content = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+        supportingContent = { Text(app.packageName, overflow = TextOverflow.Ellipsis, maxLines = 1) },
+        leadingContent = {
+            AppIconImage(
+                packageInfo = app.packageInfo,
+                label = app.label,
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(start = 4.dp)
+            )
+        },
+        trailingContent = {
+            Icon(
+                Icons.Filled.Remove,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 4.dp)
+            )
+        }
+    )
+}
+
+@Composable
+private fun GroupItem(
+    group: GroupedApps,
+    selected: Boolean,
+    onToggleExpand: () -> Unit,
+    onClickPrimary: () -> Unit,
+) {
+    val summaryText = if (group.apps.size > 1) {
+        stringResource(R.string.group_contains_apps, group.apps.size)
+    } else {
+        group.primary.packageName
+    }
+    SegmentedListItem(
+        selected = selected,
+        onClick = onClickPrimary,
+        onLongClick = if (group.apps.size > 1) onToggleExpand else null,
+        headlineContent = {
+            Text(
+                text = if (group.apps.size > 1) ownerNameForUid(group.uid) else group.primary.label,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
+        },
+        supportingContent = {
+            Column {
+                Text(
+                    text = summaryText,
+                    color = MaterialTheme.colorScheme.outline,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
+                FlowRow {
+                    val userId = group.uid / 100000
+                    val packageInfo = group.primary.packageInfo
+                    val applicationInfo = packageInfo.applicationInfo
+
+                    if (group.anyAllowSu) {
+                        StatusTag(
+                            label = "ROOT",
+                            modifier = Modifier.padding(top = 4.dp),
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            backgroundColor = MaterialTheme.colorScheme.primary
+                        )
+                    } else if (group.shouldUmount) {
+                        StatusTag(
+                            label = "UMOUNT",
+                            modifier = Modifier.padding(top = 4.dp),
+                            contentColor = MaterialTheme.colorScheme.onSecondary,
+                            backgroundColor = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    if (group.anyCustom) {
+                        StatusTag(
+                            label = "CUSTOM",
+                            modifier = Modifier.padding(top = 4.dp),
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    }
+                    if (userId != 0) {
+                        StatusTag(
+                            label = "USER $userId",
+                            modifier = Modifier.padding(top = 4.dp),
+                            contentColor = MaterialTheme.colorScheme.onTertiary,
+                            backgroundColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    if (applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
+                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                    ) {
+                        StatusTag(
+                            label = "SYSTEM",
+                            modifier = Modifier.padding(top = 4.dp),
+                            contentColor = MaterialTheme.colorScheme.onTertiary,
+                            backgroundColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    if (!packageInfo.sharedUserId.isNullOrEmpty()) {
+                        StatusTag(
+                            label = "SHARED UID",
+                            modifier = Modifier.padding(top = 4.dp),
+                            contentColor = MaterialTheme.colorScheme.onTertiary,
+                            backgroundColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                }
+            }
+        },
+        leadingContent = {
+            AppIconImage(
+                packageInfo = group.primary.packageInfo,
+                label = group.primary.label,
+                modifier = Modifier.size(48.dp)
+            )
+        },
+    )
+}

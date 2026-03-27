@@ -88,8 +88,8 @@ uint32_t get_version() {
     return info.version;
 }
 
-bool get_allow_list(struct ksu_get_allow_list_cmd *cmd) {
-    return ksuctl(KSU_IOCTL_GET_ALLOW_LIST, cmd) == 0;
+bool get_allow_list(struct ksu_new_get_allow_list_cmd *cmd) {
+    return ksuctl(KSU_IOCTL_NEW_GET_ALLOW_LIST, cmd) == 0;
 }
 
 bool is_safe_mode() {
@@ -101,17 +101,33 @@ bool is_safe_mode() {
 bool is_lkm_mode() {
     auto info = get_info();
     if (info.version > 0) {
-        return (info.flags & 0x1) != 0;
+        return (info.flags & KSU_GET_INFO_FLAG_LKM) != 0;
     }
-    return (legacy_get_info().second & 0x1) != 0;
+    return (legacy_get_info().second & KSU_GET_INFO_FLAG_LKM) != 0;
+}
+
+bool is_late_load_mode() {
+    auto info = get_info();
+    if (info.version > 0) {
+        return (info.flags & KSU_GET_INFO_FLAG_LATE_LOAD) != 0;
+    }
+    return false;
 }
 
 bool is_manager() {
     auto info = get_info();
     if (info.version > 0) {
-        return (info.flags & 0x2) != 0;
+        return (info.flags & KSU_GET_INFO_FLAG_MANAGER) != 0;
     }
     return legacy_get_info().first > 0;
+}
+
+bool is_pr_build() {
+    auto info = get_info();
+    if (info.version > 0) {
+        return (info.flags & KSU_GET_INFO_FLAG_PR_BUILD) != 0;
+    }
+    return false;
 }
 
 bool uid_should_umount(int uid) {

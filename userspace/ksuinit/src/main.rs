@@ -1,7 +1,6 @@
 #![no_main]
 
 mod init;
-mod loader;
 
 use rustix::{cstr, runtime::execve};
 /// # Safety

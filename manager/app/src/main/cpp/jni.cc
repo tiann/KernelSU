@@ -3,18 +3,14 @@
 #include <sys/prctl.h>
 #include <linux/capability.h>
 #include <pwd.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #include <android/log.h>
 #include <cstring>
 
 #include "ksu.h"
-
-#define LOG_TAG "KernelSU"
-#ifdef NDEBUG
-#define LOGD(...) (void)0
-#else
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#endif
+#include "logging.h"
 
 extern "C"
 JNIEXPORT jint JNICALL
@@ -28,16 +24,13 @@ Java_me_weishu_kernelsu_Natives_getVersion(JNIEnv *env, jobject) {
 }
 
 extern "C"
-JNIEXPORT jintArray JNICALL
-Java_me_weishu_kernelsu_Natives_getAllowList(JNIEnv *env, jobject) {
-    struct ksu_get_allow_list_cmd cmd = {};
+JNIEXPORT jint JNICALL
+Java_me_weishu_kernelsu_Natives_getSuperuserCount(JNIEnv *env, jobject) {
+    struct ksu_new_get_allow_list_cmd cmd = {
+        .count = 0
+    };
     bool result = get_allow_list(&cmd);
-    if (result) {
-        auto array = env->NewIntArray(cmd.count);
-        env->SetIntArrayRegion(array, 0, cmd.count, reinterpret_cast<const jint *>(cmd.uids));
-        return array;
-    }
-    return env->NewIntArray(0);
+    return result ? cmd.total_count : 0;
 }
 
 extern "C"
@@ -54,8 +47,20 @@ Java_me_weishu_kernelsu_Natives_isLkmMode(JNIEnv *env, jclass clazz) {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isLateLoadMode(JNIEnv *env, jclass clazz) {
+    return is_late_load_mode();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_isManager(JNIEnv *env, jclass clazz) {
     return is_manager();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isPrBuild(JNIEnv *env, jclass clazz) {
+    return is_pr_build();
 }
 
 static void fillIntArray(JNIEnv *env, jobject list, int *data, int count) {
@@ -333,4 +338,49 @@ Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid)
         return env->NewStringUTF(pw->pw_name);
     }
     return nullptr;
+}
+
+int fork_dont_care_and_exec_ksud(const char *path) {
+    int pid = fork();
+    if (pid < 0) {
+        PLOGE("fork");
+        return pid;
+    } else if (pid > 0) {
+        int status = 0;
+        if (TEMP_FAILURE_RETRY(waitpid(pid, &status, 0)) < 0) {
+            PLOGE("waitpid");
+            return -1;
+        }
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            LOGE("magica bootstrap child failed, status=%d", status);
+        }
+        return pid;
+    }
+
+    if (setuid(0) != 0) {
+        PLOGE("setuid");
+        _exit(1);
+    }
+
+    pid = fork();
+    if (pid < 0) {
+        PLOGE("fork 2");
+        _exit(1);
+    } else if (pid > 0) {
+        _exit(0);
+    }
+
+    execl(path, "ksud", "late-load", "--magica", "5555", nullptr);
+    PLOGE("exec magica");
+    _exit(1);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_weishu_kernelsu_magica_AppZygotePreload_forkDontCareAndExecKsud(JNIEnv *env, jclass clazz,
+                                                                        jstring ksud_path) {
+    auto path = env->GetStringUTFChars(ksud_path, nullptr);
+    LOGD("executing magica %s", path);
+    fork_dont_care_and_exec_ksud(path);
+    env->ReleaseStringUTFChars(ksud_path, path);
 }

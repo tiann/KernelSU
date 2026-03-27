@@ -24,7 +24,10 @@ KernelSU officially supports Android GKI 2.0 devices (kernel 5.10+). Older kerne
 
 With this, WSA, ChromeOS, and container-based Android are all supported.
 
-Currently, only the `arm64-v8a` and `x86_64` architectures are supported.
+Currently, the `arm64-v8a` and `x86_64` architectures are supported.
+
+> [!CAUTION]
+> Recent kernel versions have implemented a breaking change causing KernelSU to fail and potentially trigger a kernel panic on `x86_64`! Check the website for more info!
 
 ## Usage
 

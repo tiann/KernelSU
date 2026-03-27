@@ -343,3 +343,71 @@ iniciar apps de usuário (início automático)
 ```
 
 Se você estiver interessado na linguagem de inicialização do Android, é recomendável ler sua [documentação](https://android.googlesource.com/platform/system/core/+/master/init/README.md).
+
+## Modo late-load {#late-load-mode}
+
+Além do fluxo de inicialização padrão descrito acima, o KernelSU suporta um **modo late-load** para cenários de LKM (Loadable Kernel Module). Neste modo, o módulo do kernel KernelSU é carregado **após o sistema ter sido totalmente iniciado**, em vez de durante o processo init.
+
+### Quando o late-load acontece?
+
+O late-load é acionado executando o comando `ksud late-load`. Este comando:
+
+1. Detecta a versão KMI atual e carrega o `kernelsu.ko` correspondente dos recursos incorporados.
+2. Realiza a inicialização do módulo (regras SELinux, lista de permissões, features, etc.) que normalmente aconteceria durante a inicialização.
+
+Como o sistema já está totalmente em execução, certos mecanismos de tempo de inicialização estão indisponíveis ou são desnecessários.
+
+### Diferenças em relação à inicialização padrão
+
+| Comportamento | Inicialização padrão | Modo late-load |
+|---------------|:---:|:---:|
+| Módulo do kernel carregado pelo init (PID 1) | Sim | Não (carregado após inicialização) |
+| Hooks kprobe do ksud (execve/read/fstat/input) | Sim | Ignorado |
+| Detecção de modo seguro (tecla de volume) | Sim | Sempre desativado |
+| Captura de log de inicialização (logcat/dmesg) | Sim | Ignorado |
+| Verificação de coexistência com Magisk | Sim | Ignorado |
+| Evento `post-fs-data` reportado ao kernel | Sim | Ignorado |
+| Evento `boot-completed` reportado ao kernel | Sim | Definido diretamente durante init |
+| Scripts `post-fs-data.sh` / `post-fs-data.d/` | Sim | Substituído pelo estágio `late-load` |
+| Carregamento de `system.prop` | Sim | Sim |
+| Montagem OverlayFS (metamodule) | Sim | Sim |
+| Scripts `post-mount.sh` / `post-mount.d/` | Sim | Sim |
+| Scripts `service.sh` / `service.d/` | Sim | Sim |
+| Scripts `boot-completed.sh` / `boot-completed.d/` | Sim | Sim |
+| Variável de ambiente `KSU_LATE_LOAD` | Não definida | Definida como `1` |
+| Flag de info do kernel `0x4` | Não definida | Definida |
+
+### Ordem de execução dos scripts
+
+No modo late-load, a ordem de execução dos scripts é:
+
+```txt
+ksud late-load:
+  1. Carregar kernelsu.ko (se ainda não carregado)
+  2. Extrair binários, processar atualizações de módulos, carregar regras SELinux, inicializar features
+  3. Executar scripts late-load.d/ e scripts late-load dos módulos (bloqueante)
+  4. Carregar system.prop (resetprop -n)
+  5. Executar script de montagem do metamodule (OverlayFS)
+  6. Executar scripts post-mount.d/ e post-mount.sh dos módulos (bloqueante)
+  7. Executar scripts service.d/ e service.sh dos módulos (não bloqueante)
+  8. Executar scripts boot-completed.d/ e boot-completed.sh dos módulos (não bloqueante)
+```
+
+### Scripts específicos do late-load
+
+Módulos podem fornecer um script `late-load.sh` que é executado **apenas** no modo late-load, como substituto do `post-fs-data.sh`. Este script é executado antes da montagem do OverlayFS, similar ao `post-fs-data.sh` no fluxo padrão.
+
+Além disso, scripts gerais podem ser colocados em `/data/adb/late-load.d/` para serem executados neste estágio.
+
+### Detectando o modo late-load nos scripts
+
+Módulos podem detectar o modo late-load verificando a variável de ambiente `KSU_LATE_LOAD`:
+
+```sh
+if [ "$KSU_LATE_LOAD" = "1" ]; then
+    # Executando no modo late-load
+    echo "Late-load mode detected"
+fi
+```
+
+Isso permite que os módulos ajustem seu comportamento de acordo, por exemplo, pulando operações que só são necessárias durante a inicialização antecipada.

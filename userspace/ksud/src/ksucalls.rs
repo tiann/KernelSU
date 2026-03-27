@@ -21,12 +21,17 @@ const KSU_IOCTL_GET_WRAPPER_FD: i32 = _IOW::<()>(K, 15);
 const KSU_IOCTL_MANAGE_MARK: i32 = _IOWR::<()>(K, 16);
 const KSU_IOCTL_NUKE_EXT4_SYSFS: i32 = _IOW::<()>(K, 17);
 const KSU_IOCTL_ADD_TRY_UMOUNT: i32 = _IOW::<()>(K, 18);
+const KSU_IOCTL_SET_INIT_PGRP: i32 = _IO(K, 19);
+
+// Keep in sync with kernel/supercalls.h.
+const KSU_GET_INFO_FLAG_LATE_LOAD: u32 = 1 << 2;
 
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 struct GetInfoCmd {
     version: u32,
     flags: u32,
+    features: u32,
 }
 
 #[repr(C)]
@@ -37,8 +42,8 @@ struct ReportEventCmd {
 #[repr(C)]
 #[derive(Clone, Copy, Default)]
 pub struct SetSepolicyCmd {
-    pub cmd: u64,
-    pub arg: u64,
+    pub data_len: u64,
+    pub data: u64,
 }
 
 #[repr(C)]
@@ -168,6 +173,7 @@ fn get_info() -> GetInfoCmd {
         let mut cmd = GetInfoCmd {
             version: 0,
             flags: 0,
+            features: 0,
         };
         let _ = ksuctl(KSU_IOCTL_GET_INFO, &raw mut cmd);
         cmd
@@ -176,6 +182,10 @@ fn get_info() -> GetInfoCmd {
 
 pub fn get_version() -> i32 {
     get_info().version as i32
+}
+
+pub fn is_late_load() -> bool {
+    get_info().flags & KSU_GET_INFO_FLAG_LATE_LOAD != 0
 }
 
 pub fn grant_root() -> std::io::Result<()> {
@@ -206,10 +216,9 @@ pub fn check_kernel_safemode() -> bool {
     cmd.in_safe_mode != 0
 }
 
-pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<()> {
+pub fn set_sepolicy(cmd: &SetSepolicyCmd) -> std::io::Result<i32> {
     let mut ioctl_cmd = *cmd;
-    ksuctl(KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)?;
-    Ok(())
+    ksuctl(KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)
 }
 
 /// Get feature value and support status from kernel
@@ -322,5 +331,11 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
         mode: KSU_UMOUNT_DEL,
     };
     ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &raw mut cmd)?;
+    Ok(())
+}
+
+/// Set current process's process group to init_group (pgid = 0)
+pub fn set_init_pgrp() -> std::io::Result<()> {
+    ksuctl(KSU_IOCTL_SET_INIT_PGRP, std::ptr::null_mut::<u8>())?;
     Ok(())
 }

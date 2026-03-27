@@ -350,3 +350,71 @@ start user apps (autostart)
 ```
 
 如果你对 Android 的 init 语言感兴趣，推荐阅读[文档](https://android.googlesource.com/platform/system/core/+/master/init/README.md)。
+
+## Late-load 模式 {#late-load-mode}
+
+除了上述标准启动流程外，KernelSU 还支持 **late-load 模式**，用于 LKM（可加载内核模块）场景。在该模式下，KernelSU 内核模块在**系统完全启动后**加载，而非在 init 过程中加载。
+
+### 什么时候触发 late-load？
+
+通过运行 `ksud late-load` 命令触发。该命令会：
+
+1. 检测当前 KMI 版本，从内嵌资源中加载对应的 `kernelsu.ko`。
+2. 执行模块初始化（SELinux 规则、白名单、feature 等），这些工作在标准启动中发生在 boot 阶段。
+
+由于系统已经完全运行，某些启动时的机制不可用或不需要。
+
+### 与标准启动的差异
+
+| 行为 | 标准启动 | Late-load 模式 |
+|------|:---:|:---:|
+| 内核模块由 init (PID 1) 加载 | 是 | 否（启动后加载） |
+| ksud 的 kprobe 钩子 (execve/read/fstat/input) | 是 | 跳过 |
+| 安全模式检测（音量键） | 是 | 始终禁用 |
+| 启动日志抓取 (logcat/dmesg) | 是 | 跳过 |
+| Magisk 共存检测 | 是 | 跳过 |
+| `post-fs-data` 事件通知内核 | 是 | 跳过 |
+| `boot-completed` 事件通知内核 | 是 | 初始化时直接设置 |
+| `post-fs-data.sh` / `post-fs-data.d/` 脚本 | 是 | 由 `late-load` 阶段替代 |
+| `system.prop` 加载 | 是 | 是 |
+| OverlayFS 挂载（metamodule） | 是 | 是 |
+| `post-mount.sh` / `post-mount.d/` 脚本 | 是 | 是 |
+| `service.sh` / `service.d/` 脚本 | 是 | 是 |
+| `boot-completed.sh` / `boot-completed.d/` 脚本 | 是 | 是 |
+| `KSU_LATE_LOAD` 环境变量 | 未设置 | 设置为 `1` |
+| 内核 info 标志位 `0x4` | 未设置 | 已设置 |
+
+### 脚本执行顺序
+
+在 late-load 模式下，脚本执行顺序如下：
+
+```txt
+ksud late-load:
+  1. 加载 kernelsu.ko（如果尚未加载）
+  2. 释放二进制文件、处理模块更新、加载 SELinux 规则、初始化 feature
+  3. 执行 late-load.d/ 通用脚本和模块的 late-load 脚本（阻塞）
+  4. 加载 system.prop (resetprop -n)
+  5. 执行 metamodule mount 脚本（OverlayFS 挂载）
+  6. 执行 post-mount.d/ 通用脚本和模块的 post-mount.sh（阻塞）
+  7. 执行 service.d/ 通用脚本和模块的 service.sh（非阻塞）
+  8. 执行 boot-completed.d/ 通用脚本和模块的 boot-completed.sh（非阻塞）
+```
+
+### Late-load 专用脚本
+
+模块可以提供 `late-load.sh` 脚本，该脚本**仅在 late-load 模式下运行**，作为 `post-fs-data.sh` 的替代。该脚本在 OverlayFS 挂载之前运行，与标准流程中的 `post-fs-data.sh` 时机类似。
+
+此外，通用脚本可以放置在 `/data/adb/late-load.d/` 目录下，在该阶段执行。
+
+### 在脚本中检测 late-load 模式
+
+模块可以通过 `KSU_LATE_LOAD` 环境变量检测当前是否处于 late-load 模式：
+
+```sh
+if [ "$KSU_LATE_LOAD" = "1" ]; then
+    # 当前处于 late-load 模式
+    echo "Late-load mode detected"
+fi
+```
+
+这使得模块可以据此调整自身行为，例如跳过仅在早期启动时才需要的操作。

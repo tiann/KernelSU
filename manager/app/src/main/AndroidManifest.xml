@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".KernelSUApplication"
@@ -16,7 +19,8 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.KernelSU"
-        tools:targetApi="29">
+        android:directBootAware="true"
+        android:zygotePreloadName="me.weishu.kernelsu.magica.AppZygotePreload">
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
@@ -41,12 +45,11 @@
         <activity
             android:name=".ui.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
+            android:configChanges="density|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|locale|layoutDirection|fontScale|keyboard|keyboardHidden"
             android:documentLaunchMode="intoExisting"
             android:exported="false"
             android:taskAffinity="${applicationId}.webui"
-            android:theme="@style/Theme.KernelSU.WebUI"
-            android:configChanges="density|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|locale|layoutDirection|fontScale|keyboard|keyboardHidden"
-            />
+            android:theme="@style/Theme.KernelSU.WebUI" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -57,6 +60,32 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
+
+        <service
+            android:name=".magica.MagicaService"
+            android:directBootAware="true"
+            android:exported="false"
+            android:isolatedProcess="true"
+            android:useAppZygote="true" />
+
+        <service
+            android:name=".ui.util.DownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <receiver
+            android:name=".magica.BootCompletedReceiver"
+            android:directBootAware="true"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="me.weishu.kernelsu.magica.LAUNCH" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

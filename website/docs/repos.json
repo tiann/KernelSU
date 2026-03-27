@@ -733,5 +733,12 @@
         "kernel_name": "android_kernel_samsung_sma155f",
         "kernel_link": "https://github.com/poqdavid/android_kernel_samsung_sma155f",
         "devices": "Samsung Galaxy A15 4G (sma155f) | MediaTek Helio G99"
+    },
+    {
+        "maintainer": "xixiaobei",
+        "maintainer_link": "https://github.com/xixiaobei-bei",
+        "kernel_name": "KernelSU_on_Huawei",
+        "kernel_link": "https://github.com/xixiaobei-bei/KernelSU_on_Huawei",
+        "devices": "All Huawei & Honor devices"
     }
 ]

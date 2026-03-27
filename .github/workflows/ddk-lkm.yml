@@ -10,7 +10,17 @@ on:
       ddk_release:
         description: 'DDK release version'
         required: false
-        default: '20251104'
+        default: '20260313'
+        type: string
+      expected_size2:
+        description: 'Second expected signature size (for PR builds)'
+        required: false
+        default: ''
+        type: string
+      expected_hash2:
+        description: 'Second expected signature hash (for PR builds)'
+        required: false
+        default: ''
         type: string
 
 jobs:
@@ -18,7 +28,7 @@ jobs:
     name: Build kernelsu.ko for ${{ inputs.kmi }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ylarod/ddk:${{ inputs.kmi }}-${{ inputs.ddk_release }}
+      image: ghcr.io/ylarod/ddk-min:${{ inputs.kmi }}-${{ inputs.ddk_release }}
       options: --privileged
 
     steps:
@@ -26,6 +36,9 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Build kernelsu.ko
+      env:
+        EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
+        EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
       run: |
         git config --global --add safe.directory /__w/KernelSU/KernelSU
 
@@ -33,7 +46,19 @@ jobs:
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        CONFIG_KSU=m CC=clang make
+        EXTRA_ARGS=""
+        if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
+          echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
+          exit 1
+        fi
+        if [ -z "$EXPECTED_SIZE2" ] && [ -n "$EXPECTED_HASH2" ]; then
+          echo "ERROR: expected_size2 must be provided when expected_hash2 is set."
+          exit 1
+        fi
+        if [ -n "$EXPECTED_SIZE2" ]; then
+          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+        fi
+        CONFIG_KSU=m CC=clang make $EXTRA_ARGS
         
         echo "=== Build completed ==="
 
@@ -51,7 +76,7 @@ jobs:
         echo "Size after stripping: $(du -h "/github/workspace/out/$OUTPUT_NAME" | cut -f1)"
 
     - name: Upload kernelsu.ko artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.kmi }}-lkm
         path: /github/workspace/out/${{ inputs.kmi }}_kernelsu.ko

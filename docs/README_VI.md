@@ -24,7 +24,10 @@ KernelSU chính thức hỗ trợ các thiết bị Android với kernel GKI 2.0
 
 WSA, ChromeOS và Android dựa trên container(container-based) cũng được hỗ trợ bởi KernelSU.
 
-Hiên tại Giao diện nhị phân của ứng dụng (ABI) được hỗ trợ bao gồm `arm64-v8a` và `x86_64`.
+Hiện tại, các kiến trúc `arm64-v8a` và `x86_64` được hỗ trợ.
+
+> [!CAUTION]
+> Các phiên bản kernel gần đây đã áp dụng một thay đổi lớn có thể khiến KernelSU gặp lỗi và có khả năng gây ra kernel panic trên `x86_64`! Hãy kiểm tra trang web để biết thêm thông tin!
 
 ## Sử dụng
 
