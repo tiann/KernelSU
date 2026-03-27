@@ -52,10 +52,8 @@ mod unload;
 mod utils;
 
 #[cfg(target_os = "android")]
-#[allow(clippy::all, nonstandard_style, unused, unsafe_op_in_unsafe_fn)]
-mod ksu_uapi {
-    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-}
+#[allow(nonstandard_style, unused, unsafe_op_in_unsafe_fn)]
+mod ksu_uapi;
 
 fn main() -> anyhow::Result<()> {
     #[cfg(target_os = "android")]
