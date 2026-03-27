@@ -4,8 +4,8 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
-#include "uapi/supercalls.h"
-#include "uapi/supercall_internal.h"
+#include "uapi/supercall.h"
+#include "supercall/internal.h"
 #include "arch.h"
 #include "policy/allowlist.h"
 #include "policy/feature.h"
@@ -17,6 +17,7 @@
 #include "selinux/selinux.h"
 #include "infra/file_wrapper.h"
 #include "hook/tp_marker.h"
+#include "policy/app_profile.h"
 
 static int do_grant_root(void __user *arg)
 {
@@ -623,69 +624,142 @@ out:
 }
 
 // IOCTL handlers mapping table
+// clang-format off
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
-    { .cmd = KSU_IOCTL_GRANT_ROOT, .name = "GRANT_ROOT", .handler = do_grant_root, .perm_check = allowed_for_su },
-    { .cmd = KSU_IOCTL_GET_INFO, .name = "GET_INFO", .handler = do_get_info, .perm_check = always_allow },
-    { .cmd = KSU_IOCTL_REPORT_EVENT, .name = "REPORT_EVENT", .handler = do_report_event, .perm_check = only_root },
-    { .cmd = KSU_IOCTL_SET_SEPOLICY, .name = "SET_SEPOLICY", .handler = do_set_sepolicy, .perm_check = only_root },
-    { .cmd = KSU_IOCTL_CHECK_SAFEMODE,
-      .name = "CHECK_SAFEMODE",
-      .handler = do_check_safemode,
-      .perm_check = always_allow },
-    { .cmd = KSU_IOCTL_GET_ALLOW_LIST,
-      .name = "GET_ALLOW_LIST",
-      .handler = do_get_allow_list,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_GET_DENY_LIST,
-      .name = "GET_DENY_LIST",
-      .handler = do_get_deny_list,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_NEW_GET_ALLOW_LIST,
-      .name = "NEW_GET_ALLOW_LIST",
-      .handler = do_new_get_allow_list,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_NEW_GET_DENY_LIST,
-      .name = "NEW_GET_DENY_LIST",
-      .handler = do_new_get_deny_list,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_UID_GRANTED_ROOT,
-      .name = "UID_GRANTED_ROOT",
-      .handler = do_uid_granted_root,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_UID_SHOULD_UMOUNT,
-      .name = "UID_SHOULD_UMOUNT",
-      .handler = do_uid_should_umount,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_GET_MANAGER_APPID,
-      .name = "GET_MANAGER_APPID",
-      .handler = do_get_manager_appid,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_GET_APP_PROFILE,
-      .name = "GET_APP_PROFILE",
-      .handler = do_get_app_profile,
-      .perm_check = only_manager },
-    { .cmd = KSU_IOCTL_SET_APP_PROFILE,
-      .name = "SET_APP_PROFILE",
-      .handler = do_set_app_profile,
-      .perm_check = only_manager },
-    { .cmd = KSU_IOCTL_GET_FEATURE, .name = "GET_FEATURE", .handler = do_get_feature, .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_SET_FEATURE, .name = "SET_FEATURE", .handler = do_set_feature, .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_GET_WRAPPER_FD,
-      .name = "GET_WRAPPER_FD",
-      .handler = do_get_wrapper_fd,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_MANAGE_MARK, .name = "MANAGE_MARK", .handler = do_manage_mark, .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_NUKE_EXT4_SYSFS,
-      .name = "NUKE_EXT4_SYSFS",
-      .handler = do_nuke_ext4_sysfs,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_ADD_TRY_UMOUNT,
-      .name = "ADD_TRY_UMOUNT",
-      .handler = add_try_umount,
-      .perm_check = manager_or_root },
-    { .cmd = KSU_IOCTL_SET_INIT_PGRP, .name = "SET_INIT_PGRP", .handler = do_set_init_pgrp, .perm_check = only_root },
-    { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
+    { 
+        .cmd = KSU_IOCTL_GRANT_ROOT,
+        .name = "GRANT_ROOT",
+        .handler = do_grant_root,
+        .perm_check = allowed_for_su 
+    },
+    {
+        .cmd = KSU_IOCTL_GET_INFO,
+        .name = "GET_INFO",
+        .handler = do_get_info,
+        .perm_check = always_allow
+    },
+    {
+        .cmd = KSU_IOCTL_REPORT_EVENT,
+        .name = "REPORT_EVENT",
+        .handler = do_report_event,
+        .perm_check = only_root
+    },
+    {
+        .cmd = KSU_IOCTL_SET_SEPOLICY,
+        .name = "SET_SEPOLICY",
+        .handler = do_set_sepolicy,
+        .perm_check = only_root
+    },
+    {
+        .cmd = KSU_IOCTL_CHECK_SAFEMODE,
+        .name = "CHECK_SAFEMODE",
+        .handler = do_check_safemode,
+        .perm_check = always_allow
+    },
+    {
+        .cmd = KSU_IOCTL_GET_ALLOW_LIST,
+        .name = "GET_ALLOW_LIST",
+        .handler = do_get_allow_list,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_GET_DENY_LIST,
+        .name = "GET_DENY_LIST",
+        .handler = do_get_deny_list,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_NEW_GET_ALLOW_LIST,
+        .name = "NEW_GET_ALLOW_LIST",
+        .handler = do_new_get_allow_list,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_NEW_GET_DENY_LIST,
+        .name = "NEW_GET_DENY_LIST",
+        .handler = do_new_get_deny_list,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_UID_GRANTED_ROOT,
+        .name = "UID_GRANTED_ROOT",
+        .handler = do_uid_granted_root,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_UID_SHOULD_UMOUNT,
+        .name = "UID_SHOULD_UMOUNT",
+        .handler = do_uid_should_umount,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_GET_MANAGER_APPID,
+        .name = "GET_MANAGER_APPID",
+        .handler = do_get_manager_appid,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_GET_APP_PROFILE,
+        .name = "GET_APP_PROFILE",
+        .handler = do_get_app_profile,
+        .perm_check = only_manager
+    },
+    {
+        .cmd = KSU_IOCTL_SET_APP_PROFILE,
+        .name = "SET_APP_PROFILE",
+        .handler = do_set_app_profile,
+        .perm_check = only_manager
+    },
+    {
+        .cmd = KSU_IOCTL_GET_FEATURE,
+        .name = "GET_FEATURE",
+        .handler = do_get_feature,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_SET_FEATURE,
+        .name = "SET_FEATURE",
+        .handler = do_set_feature,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_GET_WRAPPER_FD,
+        .name = "GET_WRAPPER_FD",
+        .handler = do_get_wrapper_fd,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_MANAGE_MARK,
+        .name = "MANAGE_MARK",
+        .handler = do_manage_mark,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_NUKE_EXT4_SYSFS,
+        .name = "NUKE_EXT4_SYSFS",
+        .handler = do_nuke_ext4_sysfs,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_ADD_TRY_UMOUNT,
+        .name = "ADD_TRY_UMOUNT",
+        .handler = add_try_umount,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_SET_INIT_PGRP,
+        .name = "SET_INIT_PGRP",
+        .handler = do_set_init_pgrp,
+        .perm_check = only_root
+    },
+    {
+        .cmd = 0,
+        .name = NULL,
+        .handler = NULL,
+        .perm_check = NULL
+    } // Sentinel
 };
+// clang-format on
 
 long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 {

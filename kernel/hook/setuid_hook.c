@@ -17,7 +17,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
 #include "infra/seccomp_cache.h"
-#include "uapi/supercalls.h"
+#include "supercall/supercall.h"
 #include "hook/tp_marker.h"
 #include "feature/kernel_umount.h"
 

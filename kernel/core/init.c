@@ -16,7 +16,7 @@
 #include "hook/syscall_hook_manager.h"
 #include "runtime/ksud.h"
 #include "runtime/ksud_boot.h"
-#include "uapi/supercalls.h"
+#include "supercall/supercall.h"
 #include "ksu.h"
 #include "infra/file_wrapper.h"
 #include "selinux/selinux.h"

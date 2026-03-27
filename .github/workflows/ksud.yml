@@ -53,7 +53,7 @@ jobs:
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
-        source .github/scripts/setup-ksu-build.sh ${{ inputs.target }} 26
+        source .github/scripts/setup-rust-build.sh ${{ inputs.target }} 26
         cargo build --target $TRIPLE --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact

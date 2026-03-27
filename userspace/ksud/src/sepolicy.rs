@@ -364,31 +364,6 @@ where
     Ok(statements)
 }
 
-const CMD_NORMAL_PERM: u32 = 1;
-const CMD_XPERM: u32 = 2;
-const CMD_TYPE_STATE: u32 = 3;
-const CMD_TYPE: u32 = 4;
-const CMD_TYPE_ATTR: u32 = 5;
-const CMD_ATTR: u32 = 6;
-const CMD_TYPE_TRANSITION: u32 = 7;
-const CMD_TYPE_CHANGE: u32 = 8;
-const CMD_GENFSCON: u32 = 9;
-
-const SUBCMD_NORMAL_PERM_ALLOW: u32 = 1;
-const SUBCMD_NORMAL_PERM_DENY: u32 = 2;
-const SUBCMD_NORMAL_PERM_AUDITALLOW: u32 = 3;
-const SUBCMD_NORMAL_PERM_DONTAUDIT: u32 = 4;
-
-const SUBCMD_XPERM_ALLOW: u32 = 1;
-const SUBCMD_XPERM_AUDITALLOW: u32 = 2;
-const SUBCMD_XPERM_DONTAUDIT: u32 = 3;
-
-const SUBCMD_TYPE_STATE_PERMISSIVE: u32 = 1;
-const SUBCMD_TYPE_STATE_ENFORCE: u32 = 2;
-
-const SUBCMD_TYPE_CHANGE_CHANGE: u32 = 1;
-const SUBCMD_TYPE_CHANGE_MEMBER: u32 = 2;
-
 #[derive(Debug, Default)]
 enum PolicyObject {
     All,
@@ -431,10 +406,10 @@ impl<'a> TryFrom<&'a NormalPerm<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a NormalPerm<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "allow" => SUBCMD_NORMAL_PERM_ALLOW,
-            "deny" => SUBCMD_NORMAL_PERM_DENY,
-            "auditallow" => SUBCMD_NORMAL_PERM_AUDITALLOW,
-            "dontaudit" => SUBCMD_NORMAL_PERM_DONTAUDIT,
+            "allow" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_NORMAL_PERM_ALLOW,
+            "deny" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_NORMAL_PERM_DENY,
+            "auditallow" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_NORMAL_PERM_AUDITALLOW,
+            "dontaudit" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_NORMAL_PERM_DONTAUDIT,
             _ => 0,
         };
         for &s in &perm.source {
@@ -442,7 +417,7 @@ impl<'a> TryFrom<&'a NormalPerm<'a>> for Vec<AtomicStatement> {
                 for &c in &perm.class {
                     for &p in &perm.perm {
                         result.push(AtomicStatement {
-                            cmd: CMD_NORMAL_PERM,
+                            cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_NORMAL_PERM,
                             subcmd,
                             sepol1: s.try_into()?,
                             sepol2: t.try_into()?,
@@ -465,16 +440,16 @@ impl<'a> TryFrom<&'a XPerm<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a XPerm<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "allowxperm" => SUBCMD_XPERM_ALLOW,
-            "auditallowxperm" => SUBCMD_XPERM_AUDITALLOW,
-            "dontauditxperm" => SUBCMD_XPERM_DONTAUDIT,
+            "allowxperm" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_XPERM_ALLOW,
+            "auditallowxperm" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_XPERM_AUDITALLOW,
+            "dontauditxperm" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_XPERM_DONTAUDIT,
             _ => 0,
         };
         for &s in &perm.source {
             for &t in &perm.target {
                 for &c in &perm.class {
                     result.push(AtomicStatement {
-                        cmd: CMD_XPERM,
+                        cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_XPERM,
                         subcmd,
                         sepol1: s.try_into()?,
                         sepol2: t.try_into()?,
@@ -496,13 +471,13 @@ impl<'a> TryFrom<&'a TypeState<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a TypeState<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "permissive" => SUBCMD_TYPE_STATE_PERMISSIVE,
-            "enforce" => SUBCMD_TYPE_STATE_ENFORCE,
+            "permissive" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_TYPE_STATE_PERMISSIVE,
+            "enforce" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_TYPE_STATE_ENFORCE,
             _ => 0,
         };
         for &t in &perm.stype {
             result.push(AtomicStatement {
-                cmd: CMD_TYPE_STATE,
+                cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_STATE,
                 subcmd,
                 sepol1: t.try_into()?,
                 sepol2: PolicyObject::None,
@@ -523,7 +498,7 @@ impl<'a> TryFrom<&'a Type<'a>> for Vec<AtomicStatement> {
         let mut result = vec![];
         for &attr in &perm.attrs {
             result.push(AtomicStatement {
-                cmd: CMD_TYPE,
+                cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE,
                 subcmd: 0,
                 sepol1: perm.name.try_into()?,
                 sepol2: attr.try_into()?,
@@ -545,7 +520,7 @@ impl<'a> TryFrom<&'a TypeAttr<'a>> for Vec<AtomicStatement> {
         for &t in &perm.stype {
             for &attr in &perm.sattr {
                 result.push(AtomicStatement {
-                    cmd: CMD_TYPE_ATTR,
+                    cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_ATTR,
                     subcmd: 0,
                     sepol1: t.try_into()?,
                     sepol2: attr.try_into()?,
@@ -565,7 +540,7 @@ impl<'a> TryFrom<&'a Attr<'a>> for Vec<AtomicStatement> {
     type Error = anyhow::Error;
     fn try_from(perm: &'a Attr<'a>) -> Result<Self> {
         let result = vec![AtomicStatement {
-            cmd: CMD_ATTR,
+            cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_ATTR,
             subcmd: 0,
             sepol1: perm.name.try_into()?,
             sepol2: PolicyObject::None,
@@ -588,7 +563,7 @@ impl<'a> TryFrom<&'a TypeTransition<'a>> for Vec<AtomicStatement> {
             None => PolicyObject::None,
         };
         result.push(AtomicStatement {
-            cmd: CMD_TYPE_TRANSITION,
+            cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_TRANSITION,
             subcmd: 0,
             sepol1: perm.source.try_into()?,
             sepol2: perm.target.try_into()?,
@@ -607,12 +582,12 @@ impl<'a> TryFrom<&'a TypeChange<'a>> for Vec<AtomicStatement> {
     fn try_from(perm: &'a TypeChange<'a>) -> Result<Self> {
         let mut result = vec![];
         let subcmd = match perm.op {
-            "type_change" => SUBCMD_TYPE_CHANGE_CHANGE,
-            "type_member" => SUBCMD_TYPE_CHANGE_MEMBER,
+            "type_change" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_TYPE_CHANGE_CHANGE,
+            "type_member" => crate::ksu_uapi::KSU_SEPOLICY_SUBCMD_TYPE_CHANGE_MEMBER,
             _ => 0,
         };
         result.push(AtomicStatement {
-            cmd: CMD_TYPE_CHANGE,
+            cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_CHANGE,
             subcmd,
             sepol1: perm.source.try_into()?,
             sepol2: perm.target.try_into()?,
@@ -630,7 +605,7 @@ impl<'a> TryFrom<&'a GenFsCon<'a>> for Vec<AtomicStatement> {
     type Error = anyhow::Error;
     fn try_from(perm: &'a GenFsCon<'a>) -> Result<Self> {
         let result = vec![AtomicStatement {
-            cmd: CMD_GENFSCON,
+            cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_GENFSCON,
             subcmd: 0,
             sepol1: perm.fs_name.try_into()?,
             sepol2: perm.partial_path.try_into()?,
@@ -663,11 +638,17 @@ impl<'a> TryFrom<&'a PolicyStatement<'a>> for Vec<AtomicStatement> {
 
 const fn cmd_expected_argc(cmd: u32) -> Option<usize> {
     match cmd {
-        CMD_NORMAL_PERM | CMD_TYPE_CHANGE => Some(4),
-        CMD_XPERM | CMD_TYPE_TRANSITION => Some(5),
-        CMD_TYPE_STATE | CMD_ATTR => Some(1),
-        CMD_TYPE | CMD_TYPE_ATTR => Some(2),
-        CMD_GENFSCON => Some(3),
+        crate::ksu_uapi::KSU_SEPOLICY_CMD_NORMAL_PERM
+        | crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_CHANGE => Some(4),
+        crate::ksu_uapi::KSU_SEPOLICY_CMD_XPERM
+        | crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_TRANSITION => Some(5),
+        crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_STATE | crate::ksu_uapi::KSU_SEPOLICY_CMD_ATTR => {
+            Some(1)
+        }
+        crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE | crate::ksu_uapi::KSU_SEPOLICY_CMD_TYPE_ATTR => {
+            Some(2)
+        }
+        crate::ksu_uapi::KSU_SEPOLICY_CMD_GENFSCON => Some(3),
         _ => None,
     }
 }
@@ -737,12 +718,7 @@ fn apply_rules_batch<'a>(statements: &'a [PolicyStatement<'a>], strict: bool) ->
 
     let payload = serialize_atomic_statements(&policies)?;
 
-    let cmd = crate::ksucalls::SetSepolicyCmd {
-        data_len: payload.len() as u64,
-        data: payload.as_ptr() as u64,
-    };
-
-    match crate::ksucalls::set_sepolicy(&cmd) {
+    match crate::ksucalls::set_sepolicy(payload.as_ptr(), payload.len() as u64) {
         Ok(applied_count) => {
             let applied_count = usize::try_from(applied_count)
                 .context("kernel returned negative sepolicy applied count")?;
