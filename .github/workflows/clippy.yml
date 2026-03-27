@@ -44,7 +44,5 @@ jobs:
           rustup target add x86_64-linux-android
           source .github/scripts/setup-rust-build.sh aarch64-linux-android 26
           source .github/scripts/setup-rust-build.sh x86_64-linux-android 26
-          cargo clippy --manifest-path userspace/ksud/Cargo.toml --target aarch64-linux-android --release
-          cargo clippy --manifest-path userspace/ksud/Cargo.toml --target x86_64-linux-android --release
-          cargo clippy --manifest-path userspace/ksuinit/Cargo.toml --target aarch64-linux-android --release
-          cargo clippy --manifest-path userspace/ksuinit/Cargo.toml --target x86_64-linux-android --release
+          cargo clippy --target aarch64-linux-android --release
+          cargo clippy --target x86_64-linux-android --release

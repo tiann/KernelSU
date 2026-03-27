@@ -1,6 +1,7 @@
 # This file contains required configuration to correctly build ksud across platforms.
 # Rename this file to `config.toml` to apply.
 # Replace all UPPERCASE variables (ANDROID_NDK_ROOT, CLANG_PATH, etc.) with real paths.
+# Or run `python3 scripts/setup_cargo_config.py` to generate `.cargo/config.toml` automatically.
 
 # Linux
 # AARCH64_CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang

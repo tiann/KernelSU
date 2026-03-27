@@ -1,9 +1,9 @@
 #ifndef __KSU_H_SELINUX
 #define __KSU_H_SELINUX
 
-#include "linux/types.h"
-#include "linux/version.h"
-#include "linux/cred.h"
+#include <linux/types.h>
+#include <linux/version.h>
+#include <linux/cred.h>
 
 #define KERNEL_SU_DOMAIN "ksu"
 #define KERNEL_SU_FILE "ksu_file"
