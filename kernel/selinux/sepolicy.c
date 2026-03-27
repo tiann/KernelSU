@@ -8,6 +8,7 @@
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/version.h>
+#include <linux/vmalloc.h>
 
 #include "sepolicy.h"
 #include "klog.h" // IWYU pragma: keep
