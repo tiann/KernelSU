@@ -7,8 +7,8 @@ cmake_minimum_required(VERSION 3.18.1)
 
 project("kernelsu")
 
-find_package(cxx REQUIRED CONFIG)
-link_libraries(cxx::cxx)
+#find_package(cxx REQUIRED CONFIG)
+#link_libraries(cxx::cxx)
 
 add_library(kernelsu
         SHARED
@@ -16,12 +16,7 @@ add_library(kernelsu
         ksu.cc
         )
 
-set(KSU_UAPI_DIR "$ENV{KSU_UAPI_DIR}")
-if(NOT KSU_UAPI_DIR)
-    set(KSU_UAPI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../kernel")
-endif()
-
-target_include_directories(kernelsu PRIVATE "${KSU_UAPI_DIR}")
+target_include_directories(kernelsu PRIVATE .)
 
 find_library(log-lib log)
 
