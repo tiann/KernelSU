@@ -1,5 +1,6 @@
 use anyhow::{Context, Ok, Result, bail, ensure};
 use std::{
+    fs,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -46,6 +47,20 @@ pub fn set_manager(pkg: &str) -> Result<()> {
     set_kernel_param(uid)?;
     // force-stop it
     let _ = Command::new("am").args(["force-stop", pkg]).status();
+    Ok(())
+}
+
+pub fn insmod(module: &Path) -> Result<()> {
+    let module = module
+        .canonicalize()
+        .with_context(|| format!("resolve module path failed: {}", module.display()))?;
+    let module_data =
+        fs::read(&module).with_context(|| format!("read module failed: {}", module.display()))?;
+
+    ksuinit::load_module(&module_data)
+        .with_context(|| format!("load module failed: {}", module.display()))?;
+
+    println!("Loaded kernel module: {}", module.display());
     Ok(())
 }
 
