@@ -103,6 +103,7 @@ import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.rememberContentReady
 import java.text.Collator
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -184,7 +185,7 @@ fun ModuleRepoScreenMaterial(
     ) { innerPadding ->
         val isLoading = state.modules.isEmpty()
         val hadDataOnEntry = remember { state.modules.isNotEmpty() }
-        val contentReady = hadDataOnEntry || me.weishu.kernelsu.ui.util.rememberContentReady()
+        val contentReady = hadDataOnEntry || rememberContentReady()
 
         if (!contentReady || isLoading) {
             Box(
@@ -480,7 +481,7 @@ private fun ReadmePage(
         ),
     ) {
         item {
-            val contentReady = me.weishu.kernelsu.ui.util.rememberContentReady()
+            val contentReady = rememberContentReady()
             var isLoading by remember { mutableStateOf(true) }
             if (isLoading) {
                 Box(

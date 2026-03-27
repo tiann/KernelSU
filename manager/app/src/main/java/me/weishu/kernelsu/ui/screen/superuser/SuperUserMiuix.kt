@@ -270,7 +270,7 @@ fun SuperUserPagerMiuix(
                 stringResource(R.string.refresh_complete),
             )
 
-            if (uiState.groupedApps.isEmpty() && uiState.isRefreshing) {
+            if (uiState.groupedApps.isEmpty() && !uiState.hasLoaded) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -426,7 +426,7 @@ private fun GroupItem(
                 packageInfo = group.primary.packageInfo,
                 label = group.primary.label,
                 modifier = Modifier
-                    .padding(end = 12.dp)
+                    .padding(end = 10.dp)
                     .size(48.dp)
             )
             Column(

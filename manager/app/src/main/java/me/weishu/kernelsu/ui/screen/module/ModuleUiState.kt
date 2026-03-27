@@ -42,6 +42,7 @@ sealed interface ModuleEffect {
 @Immutable
 data class ModuleUiState(
     val isRefreshing: Boolean = false,
+    val hasLoaded: Boolean = false,
     val modules: List<Module> = emptyList(),
     val moduleList: List<Module> = emptyList(),
     val updateInfo: Map<String, ModuleUpdateInfo> = emptyMap(),

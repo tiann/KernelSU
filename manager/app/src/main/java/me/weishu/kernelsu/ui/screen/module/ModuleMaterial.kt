@@ -407,32 +407,20 @@ fun ModulePagerMaterial(
             return@Scaffold
         }
         Box(modifier = Modifier.padding(innerPadding)) {
-            if (uiState.moduleList.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        stringResource(R.string.module_empty),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            } else {
-                ModuleList(
-                    bottomInnerPadding = bottomInnerPadding,
-                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                    listState = listState,
-                    displayModules = uiState.moduleList,
-                    updateInfoMap = uiState.updateInfo,
-                    actions = actions,
-                    onClickModule = { module ->
-                        if (module.hasWebUi) {
-                            actions.onOpenWebUi(module)
-                        }
-                    },
-                    onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
-                )
-            }
+            ModuleList(
+                bottomInnerPadding = bottomInnerPadding,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                listState = listState,
+                displayModules = uiState.moduleList,
+                updateInfoMap = uiState.updateInfo,
+                actions = actions,
+                onClickModule = { module ->
+                    if (module.hasWebUi) {
+                        actions.onOpenWebUi(module)
+                    }
+                },
+                onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
+            )
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)

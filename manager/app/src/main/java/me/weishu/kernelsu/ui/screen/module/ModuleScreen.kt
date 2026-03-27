@@ -8,6 +8,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.Dp
@@ -27,7 +30,8 @@ import me.weishu.kernelsu.ui.webui.WebUIActivity
 
 @Composable
 fun ModulePager(
-    bottomInnerPadding: Dp
+    bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true
 ) {
     val uiMode = LocalUiMode.current
     val navigator = LocalNavigator.current
@@ -45,17 +49,22 @@ fun ModulePager(
         contract = ActivityResultContracts.RequestPermission()
     ) { /* Download works regardless of result */ }
 
-    LaunchedEffect(Unit) {
-        viewModel.refreshEnvironmentState()
-        viewModel.initializePreferences()
-        if (Build.VERSION.SDK_INT >= 33) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
+    var hasActivated by remember { mutableStateOf(false) }
+    if (isCurrentPage) hasActivated = true
 
-    LifecycleResumeEffect(Unit) {
-        viewModel.fetchModuleList(checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh)
-        onPauseOrDispose {}
+    if (hasActivated) {
+        LaunchedEffect(Unit) {
+            viewModel.refreshEnvironmentState()
+            viewModel.initializePreferences()
+            if (Build.VERSION.SDK_INT >= 33) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        LifecycleResumeEffect(Unit) {
+            viewModel.fetchModuleList(checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh)
+            onPauseOrDispose {}
+        }
     }
 
     val actions = ModuleActions(
