@@ -44,18 +44,18 @@
     <string name="home_learn_kernelsu">Leer KernelSU</string>
     <string name="home_learn_kernelsu_url">https://kernelsu.org/guide/what-is-kernelsu.html</string>
     <string name="home_click_to_learn_kernelsu">Leer hoe KernelSU te installeren en modules te gebruiken.</string>
-    <string name="home_support_title">Ondersteun ons</string>
+    <string name="home_support_title">Ondersteun Ons</string>
     <string name="home_support_content">KernelSU is en blijft gratis en open source. U kunt ons echter laten zien dat u ons steunt door een donatie te doen.</string>
     <string name="about_source_code"><![CDATA[Bekijk source code op %1$s<br/>Vervoeg ons %2$s kanaal]]></string>
     <string name="profile" translatable="false">App profiel</string>
     <string name="profile_default">Standaard</string>
     <string name="profile_template">Sjabloon</string>
     <string name="profile_custom">Aangepast</string>
-    <string name="profile_name">Profiel naam</string>
-    <string name="profile_namespace">Koppel naamruimte</string>
-    <string name="profile_namespace_inherited">Overgenomen</string>
+    <string name="profile_name">Profielnaam</string>
+    <string name="profile_namespace">Koppel naamruimte aan</string>
+    <string name="profile_namespace_inherited">Overgeërfd</string>
     <string name="profile_namespace_global">Globaal</string>
-    <string name="profile_namespace_individual">Individuëel</string>
+    <string name="profile_namespace_individual">Individueel</string>
     <string name="profile_groups">Groepen</string>
     <string name="profile_capabilities">Mogelijkheden</string>
     <string name="profile_selinux_context">SELinux context</string>
