@@ -60,7 +60,8 @@ pub fn run(package_name: &String) -> Result<()> {
         dump_process_info("after load_module");
     }
 
-    // We need to reset stdin/stdout/stderr, since their creator has `u:r:su:s0` domain.`, which not accept by system server
+    // We need to reset stdin/stdout/stderr; otherwise, sending file descriptors via cmd transactions
+    // will be blocked by SELinux because its fsec->sid is still u:r:su:s0 instead of u:r:ksu:s0.
     utils::reset_std()?;
 
     utils::umask(0);
