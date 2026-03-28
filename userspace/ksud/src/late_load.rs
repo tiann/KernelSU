@@ -60,6 +60,10 @@ pub fn run(package_name: &String) -> Result<()> {
         dump_process_info("after load_module");
     }
 
+    // We need to reset stdin/stdout/stderr; otherwise, sending file descriptors via cmd transactions
+    // will be blocked by SELinux because its fsec->sid is still u:r:su:s0 instead of u:r:ksu:s0.
+    utils::reset_std()?;
+
     utils::umask(0);
 
     if let Err(e) = crate::module_config::clear_all_temp_configs() {
