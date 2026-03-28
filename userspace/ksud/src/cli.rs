@@ -42,6 +42,10 @@ enum Commands {
         /// Restore adb properties after magica late-load
         #[arg(long)]
         post_magica: bool,
+
+        /// manager package name
+        #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
+        package_name: String,
     },
 
     /// Emulate system reboot
@@ -61,6 +65,9 @@ enum Commands {
         /// magiskboot path, if not specified, will search from $PATH
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
+
+        #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
+        package_name: String,
     },
 
     /// SELinux policy Patch tool
@@ -564,7 +571,10 @@ pub fn run() -> Result<()> {
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Unload => crate::unload::unload(),
-        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
+        Commands::Uninstall {
+            magiskboot,
+            package_name,
+        } => utils::uninstall(magiskboot, &package_name),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
@@ -573,14 +583,15 @@ pub fn run() -> Result<()> {
         Commands::LateLoad {
             magica,
             post_magica,
+            package_name,
         } => {
             if let Some(port) = magica {
-                return crate::magica::run(port).map_err(|e| {
+                return crate::magica::run(port, &package_name).map_err(|e| {
                     error!("Error running magica: {e}");
                     e
                 });
             }
-            let result = crate::late_load::run();
+            let result = crate::late_load::run(&package_name);
             if post_magica {
                 info!("Restoring adb properties (post-magica cleanup)...");
                 if let Err(e) = crate::magica::disable_adb_root() {
