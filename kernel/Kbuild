@@ -44,7 +44,7 @@ kernelsu-objs += supercall/supercall.o
 
 ccflags-y += -I$(srctree)/security/selinux -I$(srctree)/security/selinux/include
 ccflags-y += -I$(objtree)/security/selinux -include $(srctree)/include/uapi/asm-generic/errno.h
-ccflags-y += -I$(src) -I$(src)/include
+ccflags-y += -I$(srctree)/$(src) -I$(srctree)/$(src)/include
 
 obj-$(CONFIG_KSU) += kernelsu.o
 
