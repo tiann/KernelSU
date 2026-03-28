@@ -60,6 +60,9 @@ pub fn run(package_name: &String) -> Result<()> {
         dump_process_info("after load_module");
     }
 
+    // We need to reset stdin/stdout/stderr, since their creator has `u:r:su:s0` domain.`, which not accept by system server
+    utils::reset_std()?;
+
     utils::umask(0);
 
     if let Err(e) = crate::module_config::clear_all_temp_configs() {
@@ -119,6 +122,9 @@ pub fn run(package_name: &String) -> Result<()> {
 
     // 14. Restart Manager so it gets a fresh ksu fd from the newly loaded kernel module
     info!("Restarting KernelSU Manager {package_name}...");
+    let _ = Command::new("am")
+        .args(["force-stop", package_name])
+        .status();
     let _ = Command::new("am")
         .args(["force-stop", package_name])
         .status();
