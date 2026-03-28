@@ -209,7 +209,7 @@ pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
+pub fn uninstall(magiskboot_path: Option<PathBuf>, package_name: &str) -> Result<()> {
     if Path::new(defs::MODULE_DIR).exists() {
         println!("- Uninstall modules..");
         module::uninstall_all_modules()?;
@@ -229,7 +229,7 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>) -> Result<()> {
     })?;
     println!("- Uninstall KernelSU manager..");
     Command::new("pm")
-        .args(["uninstall", "me.weishu.kernelsu"])
+        .args(["uninstall", package_name])
         .spawn()?;
     println!("- Rebooting in 5 seconds..");
     std::thread::sleep(std::time::Duration::from_secs(5));
