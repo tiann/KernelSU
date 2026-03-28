@@ -67,7 +67,7 @@ void apply_kernelsu_rules()
     // Create unconstrained file type
     ksu_type(db, KERNEL_SU_FILE, "file_type");
     ksu_typeattribute(db, KERNEL_SU_FILE, "mlstrustedobject");
-    ksu_allow(db, ALL, KERNEL_SU_FILE, ALL, ALL);
+    ksu_allow(db, "domain", KERNEL_SU_FILE, ALL, ALL);
 
     // allow all!
     ksu_allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
@@ -90,7 +90,7 @@ void apply_kernelsu_rules()
     ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "file", "open");
     ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "file", "read");
     ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "process", "getattr");
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "process", "sigchld");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "process", "sigchld");
 
     // allowLog
     ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "dir", "search");
@@ -98,12 +98,12 @@ void apply_kernelsu_rules()
     ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "file", "open");
     ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "file", "getattr");
 
-    // dumpsys
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fd", "use");
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "write");
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "read");
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "open");
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "getattr");
+    // dumpsys, send fd
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "fd", "use");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "fifo_file", "write");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "fifo_file", "read");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "fifo_file", "open");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "fifo_file", "getattr");
 
     // bootctl
     ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "dir", "search");
@@ -112,7 +112,7 @@ void apply_kernelsu_rules()
     ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "process", "getattr");
 
     // Allow all binder transactions
-    ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "binder", ALL);
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "binder", ALL);
 
     // Allow system server kill su process
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
