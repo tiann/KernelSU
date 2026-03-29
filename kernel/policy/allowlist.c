@@ -131,15 +131,16 @@ static bool profile_valid(struct app_profile *profile)
         return false;
     }
 
-    if (profile->version == 2) {
-        profile->version = 3;
-        if (profile->allow_su) {
-            if (strcmp("u:r:su:s0", profile->rp_config.profile.selinux_domain) == 0) {
-                memset(profile->rp_config.profile.selinux_domain, 0, sizeof(profile->rp_config.profile.selinux_domain));
-                strncpy(profile->rp_config.profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN,
-                        sizeof(profile->rp_config.profile.selinux_domain));
-            }
-        }
+    bool need_migrate_su_domain = false;
+
+    if (unlikely(profile->version == 2)) {
+        profile->version = KSU_APP_PROFILE_VER;
+        need_migrate_su_domain = true;
+    }
+
+    if (strnlen(profile->key, sizeof(profile->key)) >= sizeof(profile->key)) {
+        pr_err("invalid app_profile key\n");
+        return false;
     }
 
     if (profile->version < KSU_APP_PROFILE_VER) {
@@ -149,15 +150,23 @@ static bool profile_valid(struct app_profile *profile)
 
     if (profile->allow_su) {
 #ifndef CONFIG_KSU_DISABLE_POLICY
-        if (profile->rp_config.use_default) {
-            return true;
-        }
-
         if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
+            pr_err("invalid groups_count in app_profile: %s\n", profile->key);
             return false;
         }
 
-        if (strlen(profile->rp_config.profile.selinux_domain) == 0) {
+        char *domain = profile->rp_config.profile.selinux_domain;
+        static const size_t domain_len = sizeof(profile->rp_config.profile.selinux_domain);
+        if (unlikely(need_migrate_su_domain)) {
+            if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
+                strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
+                pr_info("migrated profile domain: %s\n", profile->key);
+            }
+        }
+        size_t len = strnlen(domain, domain_len);
+
+        if (len == 0 || len >= domain_len) {
+            pr_err("invalid selinux_domain in app_profile: %s\n", profile->key);
             return false;
         }
 #endif
