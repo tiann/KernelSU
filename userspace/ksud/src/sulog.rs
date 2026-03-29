@@ -362,22 +362,15 @@ fn parse_log_name(path: &Path) -> Option<(NaiveDate, u32)> {
     let (date_str, index) = if name.len() == "YYYY-MM-DD".len() {
         (name, 0)
     } else if let Some((date_str, index_str)) = name.rsplit_once('-') {
-        if date_str.len() == "YYYY-MM-DD".len() && index_str.chars().all(|ch| ch.is_ascii_digit())
-        {
+        if date_str.len() == "YYYY-MM-DD".len() && index_str.chars().all(|ch| ch.is_ascii_digit()) {
             (date_str, index_str.parse::<u32>().ok()?)
         } else {
             let (legacy_date_str, legacy_index_str) = name.rsplit_once('.')?;
-            (
-                legacy_date_str,
-                legacy_index_str.parse::<u32>().ok()?,
-            )
+            (legacy_date_str, legacy_index_str.parse::<u32>().ok()?)
         }
     } else {
         let (legacy_date_str, legacy_index_str) = name.rsplit_once('.')?;
-        (
-            legacy_date_str,
-            legacy_index_str.parse::<u32>().ok()?,
-        )
+        (legacy_date_str, legacy_index_str.parse::<u32>().ok()?)
     };
     Some((NaiveDate::parse_from_str(date_str, "%Y-%m-%d").ok()?, index))
 }
@@ -447,8 +440,8 @@ fn open_line_writer(path: &Path) -> Result<LineWriter<File>> {
 fn open_log_writer_for_day(day: &str, max_file_size: u64) -> Result<(u32, u64, LineWriter<File>)> {
     let mut highest_index = 0u32;
     let mut found = false;
-    for entry in fs::read_dir(defs::LOG_DIR)
-        .with_context(|| format!("failed to read {}", defs::LOG_DIR))?
+    for entry in
+        fs::read_dir(defs::LOG_DIR).with_context(|| format!("failed to read {}", defs::LOG_DIR))?
     {
         let entry = entry.with_context(|| format!("failed to read {}", defs::LOG_DIR))?;
         let path = entry.path();
@@ -689,7 +682,9 @@ fn write_log_line(writer: &mut DailyLogWriter, line: &str) -> io::Result<()> {
         .len()
         .checked_add(1)
         .ok_or_else(|| io::Error::other("sulog line length overflow"))?;
-    writer.rotate_if_needed(write_len).map_err(io::Error::other)?;
+    writer
+        .rotate_if_needed(write_len)
+        .map_err(io::Error::other)?;
     writer.writer.write_all(line.as_bytes())?;
     writer.writer.write_all(b"\n")?;
     writer.writer.flush()?;
