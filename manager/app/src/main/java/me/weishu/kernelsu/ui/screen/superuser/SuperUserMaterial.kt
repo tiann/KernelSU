@@ -1,15 +1,14 @@
 package me.weishu.kernelsu.ui.screen.superuser
 
-import android.content.pm.ApplicationInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -32,7 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -285,9 +284,9 @@ private fun SimpleAppItem(
         shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
         colors = ListItemDefaults.colors(
             containerColor = if (matched) {
-                MaterialTheme.colorScheme.secondaryContainer
+                colorScheme.secondaryContainer
             } else {
-                MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                colorScheme.surfaceColorAtElevation(3.dp)
             }
         ),
         content = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
@@ -318,6 +317,24 @@ private fun GroupItem(
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
+    val bg = colorScheme.primary
+    val fg = colorScheme.onPrimary
+    val umountBg = colorScheme.secondary
+    val umountFg = colorScheme.onSecondary
+    val customBg = colorScheme.secondaryContainer
+    val customFg = colorScheme.onSecondaryContainer
+    val otherBg = colorScheme.tertiary
+    val otherFg = colorScheme.onTertiary
+
+    val userId = group.uid / 100000
+    val tags = remember(group.anyAllowSu, group.shouldUmount, group.anyCustom, userId) {
+        buildList {
+            if (group.anyAllowSu) add(StatusMeta("ROOT", bg, fg))
+            if (group.shouldUmount) add(StatusMeta("UMOUNT", umountBg, umountFg))
+            if (group.anyCustom) add(StatusMeta("CUSTOM", customBg, customFg))
+            if (userId != 0) add(StatusMeta("USER $userId", otherBg, otherFg))
+        }
+    }
     val summaryText = if (group.apps.size > 1) {
         stringResource(R.string.group_contains_apps, group.apps.size)
     } else {
@@ -335,65 +352,24 @@ private fun GroupItem(
             )
         },
         supportingContent = {
-            Column {
-                Text(
-                    text = summaryText,
-                    color = MaterialTheme.colorScheme.outline,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                FlowRow {
-                    val userId = group.uid / 100000
-                    val packageInfo = group.primary.packageInfo
-                    val applicationInfo = packageInfo.applicationInfo
-
-                    if (group.anyAllowSu) {
+            Text(
+                text = summaryText,
+                color = colorScheme.outline,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
+        },
+        trailingContent = {
+            if (tags.isNotEmpty()) {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    tags.forEach { tag ->
                         StatusTag(
-                            label = "ROOT",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            backgroundColor = MaterialTheme.colorScheme.primary
-                        )
-                    } else if (group.shouldUmount) {
-                        StatusTag(
-                            label = "UMOUNT",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                            backgroundColor = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    if (group.anyCustom) {
-                        StatusTag(
-                            label = "CUSTOM",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    }
-                    if (userId != 0) {
-                        StatusTag(
-                            label = "USER $userId",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                    if (applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-                    ) {
-                        StatusTag(
-                            label = "SYSTEM",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                    if (!packageInfo.sharedUserId.isNullOrEmpty()) {
-                        StatusTag(
-                            label = "SHARED UID",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary
+                            label = tag.label,
+                            backgroundColor = tag.bg,
+                            contentColor = tag.fg
                         )
                     }
                 }
