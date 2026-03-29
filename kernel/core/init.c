@@ -174,7 +174,6 @@ int __init kernelsu_init(void)
     return 0;
 }
 
-extern void ksu_observer_exit(void);
 void kernelsu_exit(void)
 {
     // Phase 1: Stop all hooks first to prevent new callbacks

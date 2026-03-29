@@ -23,7 +23,7 @@ kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
 kernelsu-objs += infra/symbol_resolver.o
 
-ifndef CONFIG_KSU_DISABLE_MANAGER
+ifneq ($(CONFIG_KSU_DISABLE_MANAGER),y)
 kernelsu-objs += manager/apk_sign.o
 kernelsu-objs += manager/pkg_observer.o
 kernelsu-objs += manager/throne_tracker.o
@@ -46,6 +46,18 @@ kernelsu-objs += sulog/fd.o
 kernelsu-objs += supercall/dispatch.o
 kernelsu-objs += supercall/perm.o
 kernelsu-objs += supercall/supercall.o
+
+ifdef KBUILD_EXTMOD
+ifeq ($(CONFIG_KSU_DISABLE_MANAGER),y)
+ccflags-y += -DCONFIG_KSU_DISABLE_MANAGER=1
+endif
+ifeq ($(CONFIG_KSU_DISABLE_POLICY),y)
+ccflags-y += -DCONFIG_KSU_DISABLE_POLICY=1
+endif
+ifeq ($(CONFIG_KSU_DEBUG),y)
+ccflags-y += -DCONFIG_KSU_DEBUG=1
+endif
+endif
 
 ccflags-y += -I$(srctree)/security/selinux -I$(srctree)/security/selinux/include
 ccflags-y += -I$(objtree)/security/selinux -include $(srctree)/include/uapi/asm-generic/errno.h

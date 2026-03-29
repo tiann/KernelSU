@@ -335,15 +335,12 @@ bool ksu_uid_should_umount(uid_t uid)
 
 void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
 {
-#ifndef CONFIG_KSU_DISABLE_POLICY
-    struct perm_data *p = NULL;
-#endif
-
 #ifdef CONFIG_KSU_DISABLE_POLICY
     (void)uid;
     memcpy(profile, &default_root_profile, sizeof(*profile));
     return;
-#endif
+#else
+    struct perm_data *p = NULL;
 
     if (is_uid_manager(uid)) {
         goto use_default;
@@ -368,6 +365,7 @@ void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
 use_default:
     // use default profile
     memcpy(profile, &default_root_profile, sizeof(*profile));
+#endif
 }
 
 bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total, bool allow)
