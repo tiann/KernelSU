@@ -17,6 +17,7 @@ kernelsu-objs += hook/x86_64/syscall_hook.o
 endif
 
 kernelsu-objs += infra/file_wrapper.o
+kernelsu-objs += infra/event_queue.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
 kernelsu-objs += infra/symbol_resolver.o
