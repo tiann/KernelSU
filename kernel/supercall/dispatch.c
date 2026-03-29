@@ -18,16 +18,22 @@
 #include "infra/file_wrapper.h"
 #include "hook/tp_marker.h"
 #include "policy/app_profile.h"
+#include "sulog/event.h"
 #include "supercall/supercall.h"
 
 static int do_grant_root(void __user *arg)
 {
+    int ret;
+    __u32 audit_uid = current_uid().val;
+    __u32 audit_euid = current_euid().val;
+
     // we already check uid above on allowed_for_su()
 
-    pr_info("allow root for: %d\n", current_uid().val);
-    escape_with_root_profile();
+    pr_info("allow root for: %d\n", audit_uid);
+    ret = escape_with_root_profile();
+    ksu_sulog_emit_grant_root(ret, audit_uid, audit_euid, GFP_KERNEL);
 
-    return 0;
+    return ret;
 }
 
 static int do_get_info(void __user *arg)
