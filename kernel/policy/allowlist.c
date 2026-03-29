@@ -131,6 +131,17 @@ static bool profile_valid(struct app_profile *profile)
         return false;
     }
 
+    if (profile->version == 2) {
+        profile->version = 3;
+        if (profile->allow_su) {
+            if (strcmp("u:r:su:s0", profile->rp_config.profile.selinux_domain) == 0) {
+                memset(profile->rp_config.profile.selinux_domain, 0, sizeof(profile->rp_config.profile.selinux_domain));
+                strncpy(profile->rp_config.profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN,
+                        sizeof(profile->rp_config.profile.selinux_domain));
+            }
+        }
+    }
+
     if (profile->version < KSU_APP_PROFILE_VER) {
         pr_info("Unsupported profile version: %d\n", profile->version);
         return false;
