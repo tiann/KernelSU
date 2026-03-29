@@ -7,7 +7,7 @@
 #include "sulog/event.h"
 #include "sulog/fd.h"
 
-static bool ksu_sulog_enabled __read_mostly;
+static bool ksu_sulog_enabled __read_mostly = false;
 
 static int sulog_feature_get(u64 *value)
 {

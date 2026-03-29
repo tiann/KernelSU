@@ -6,7 +6,9 @@ use android_logger::Config;
 use log::{LevelFilter, error, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
+use crate::{
+    apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, sulog, utils,
+};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -29,6 +31,9 @@ enum Commands {
 
     /// Trigger `service` event
     Services,
+
+    /// Run sulog reader daemon
+    Sulogd,
 
     /// Trigger `boot-complete` event
     BootCompleted,
@@ -605,9 +610,13 @@ pub fn run() -> Result<()> {
                 info!("KernelSU not available, exiting services");
                 std::process::exit(0);
             }
+            if let Err(err) = sulog::sync_sulogd_with_kernel_feature() {
+                error!("failed to sync sulogd: {err:#}");
+            }
             init_event::on_services();
             Ok(())
         }
+        Commands::Sulogd => sulog::run_sulogd(),
         Commands::Profile { command } => match command {
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
