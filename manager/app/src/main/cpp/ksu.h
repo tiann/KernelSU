@@ -10,10 +10,7 @@
 #include <sys/prctl.h>
 #include <utility>
 
-#include "uapi/supercall.h"
-#include "uapi/app_profile.h"
-#include "uapi/feature.h"
-#include "uapi/selinux.h"
+#include "uapi/ksu.h"
 
 uint32_t get_version();
 
