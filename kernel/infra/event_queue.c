@@ -325,6 +325,7 @@ ssize_t ksu_event_queue_read(struct ksu_event_queue *queue, char __user *buf, si
 
     ret = ksu_event_queue_wait_ready(queue, file_flags);
     if (ret) {
+        copied = ret;
         goto out_unlock;
     }
 
