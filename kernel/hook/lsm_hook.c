@@ -10,7 +10,9 @@
 #include "hook/lsm_hook.h"
 #include "hook/patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#include "linux/static_call.h"
+#endif
 struct ksu_lsm_hook_entry {
     struct ksu_lsm_hook *hook;
 };
@@ -89,20 +91,8 @@ typedef void (*ksu_static_call_update_t)(struct static_call_key *key, void *tram
 
 static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
 {
-    static ksu_static_call_update_t update_scall;
-
-    if (!scall)
-        return -EINVAL;
-
-    if (!update_scall) {
-        update_scall = (ksu_static_call_update_t)ksu_lookup_symbol("__static_call_update");
-        if (!update_scall) {
-            pr_err("lsm_hook: failed to resolve __static_call_update\n");
-            return -ENOENT;
-        }
-    }
-
-    update_scall(scall->key, scall->trampoline, value);
+    
+    __static_call_update(scall->key, scall->trampoline, value);
     smp_wmb();
     return 0;
 }
@@ -157,8 +147,8 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         return -ENOENT;
     }
 
-    scalls = (struct lsm_static_call *)(scalls_addr + hook->head_offset);
-    for (i = 0; i < MAX_LSM_COUNT; i++) {
+    scalls = (struct lsm_static_call *)(scalls_addr);
+    for (i = 0; i < sizeof(struct lsm_static_calls_table) / sizeof(struct lsm_static_call); i++) {
         struct lsm_static_call *scall = &scalls[i];
         void **slot;
         void *current_hook;
@@ -174,6 +164,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
             mutex_unlock(&ksu_lsm_hook_lock);
             return -EALREADY;
         }
+        pr_debug("finding %d: 0x%lx [%pSb]\n", i, (unsigned long) current_hook, current_hook);
         if (current_hook != target)
             continue;
 
