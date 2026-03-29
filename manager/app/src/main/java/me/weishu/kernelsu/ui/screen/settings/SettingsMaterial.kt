@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.ContactPage
@@ -211,6 +212,21 @@ fun SettingPagerMaterial(
                                 enabled = uiState.kernelUmountStatus == "supported",
                                 checked = uiState.isKernelUmountEnabled,
                                 onCheckedChange = actions.onSetKernelUmountEnabled
+                            )
+                        },
+                        {
+                            val sulogSummary = when (uiState.sulogStatus) {
+                                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                                else -> stringResource(id = R.string.settings_sulog_summary)
+                            }
+                            SegmentedSwitchItem(
+                                icon = Icons.AutoMirrored.Filled.Article,
+                                title = stringResource(id = R.string.settings_sulog),
+                                summary = sulogSummary,
+                                enabled = uiState.sulogStatus == "supported",
+                                checked = uiState.isSulogEnabled,
+                                onCheckedChange = actions.onSetSulogEnabled
                             )
                         },
                         {

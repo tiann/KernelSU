@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Checkbox
@@ -117,6 +118,14 @@ fun SuperUserPagerMaterial(
                 onClearClick = {
                     localSearchText = ""
                     actions.onClearSearch()
+                },
+                navigationIcon = {
+                    IconButton(onClick = actions.onOpenSulog) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.Article,
+                            contentDescription = stringResource(R.string.settings_sulog)
+                        )
+                    }
                 },
                 actions = {
                     var showDropdown by remember { mutableStateOf(false) }

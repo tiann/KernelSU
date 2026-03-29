@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Article
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.ContactPage
 import androidx.compose.material.icons.rounded.Dashboard
@@ -261,6 +262,27 @@ fun SettingPagerMiuix(
                             enabled = uiState.kernelUmountStatus == "supported",
                             checked = uiState.isKernelUmountEnabled,
                             onCheckedChange = actions.onSetKernelUmountEnabled
+                        )
+
+                        val sulogSummary = when (uiState.sulogStatus) {
+                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                            else -> stringResource(id = R.string.settings_sulog_summary)
+                        }
+                        SuperSwitch(
+                            title = stringResource(id = R.string.settings_sulog),
+                            summary = sulogSummary,
+                            startAction = {
+                                Icon(
+                                    Icons.AutoMirrored.Rounded.Article,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_sulog),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            enabled = uiState.sulogStatus == "supported",
+                            checked = uiState.isSulogEnabled,
+                            onCheckedChange = actions.onSetSulogEnabled
                         )
 
                         SuperSwitch(

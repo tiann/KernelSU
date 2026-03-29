@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -120,6 +122,18 @@ fun SuperUserPagerMiuix(
                 TopAppBar(
                     color = if (enableBlur) Color.Transparent else colorScheme.surface,
                     title = stringResource(R.string.superuser),
+                    navigationIcon = {
+                        IconButton(
+                            modifier = Modifier.padding(start = 16.dp),
+                            onClick = actions.onOpenSulog,
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.Article,
+                                tint = colorScheme.onSurface,
+                                contentDescription = stringResource(R.string.settings_sulog)
+                            )
+                        }
+                    },
                     actions = {
                         val showTopPopup = remember { mutableStateOf(false) }
                         SuperListPopup(
