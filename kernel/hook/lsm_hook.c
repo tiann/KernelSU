@@ -5,12 +5,15 @@
 #include <linux/lsm_hooks.h>
 #include <linux/mutex.h>
 #include <linux/rcupdate.h>
+#include <linux/string.h>
 
 #include "infra/symbol_resolver.h"
 #include "hook/lsm_hook.h"
 #include "hook/patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#include "linux/static_call.h"
+#endif
 struct ksu_lsm_hook_entry {
     struct ksu_lsm_hook *hook;
 };
@@ -84,25 +87,49 @@ static int ksu_lsm_hook_patch_slot(void **slot, void *value)
     return ret;
 }
 
+static bool ksu_lsm_hook_is_bpf_target(struct ksu_lsm_hook *hook)
+{
+    return hook && !hook->target_name;
+}
+
+static bool ksu_lsm_hook_matches_entry(struct ksu_lsm_hook *hook, struct security_hook_list *entry, void *current_hook,
+                                       void *target)
+{
+    char sym[KSYM_NAME_LEN];
+
+    (void)hook;
+    (void)entry;
+
+    if (target)
+        return current_hook == target;
+
+    if (!hook || !hook->target_name || !current_hook)
+        return false;
+
+    if (!sprint_symbol_no_offset(sym, (unsigned long)current_hook))
+        return false;
+
+    return !strcmp(sym, hook->target_name);
+}
+
+static void ksu_lsm_hook_log_entry(struct ksu_lsm_hook *hook, struct security_hook_list *entry, void *current_hook)
+{
+    (void)entry;
+
+    pr_info("lsm_hook: candidate head=%s hook=%px [%pSb]\n", hook->head_name ?: "unknown", current_hook, current_hook);
+}
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 typedef void (*ksu_static_call_update_t)(struct static_call_key *key, void *tramp, void *func);
 
+static size_t ksu_lsm_hook_scall_count(void)
+{
+    return sizeof(struct lsm_static_calls_table) / sizeof(struct lsm_static_call);
+}
+
 static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
 {
-    static ksu_static_call_update_t update_scall;
-
-    if (!scall)
-        return -EINVAL;
-
-    if (!update_scall) {
-        update_scall = (ksu_static_call_update_t)ksu_lookup_symbol("__static_call_update");
-        if (!update_scall) {
-            pr_err("lsm_hook: failed to resolve __static_call_update\n");
-            return -ENOENT;
-        }
-    }
-
-    update_scall(scall->key, scall->trampoline, value);
+    __static_call_update(scall->key, scall->trampoline, value);
     smp_wmb();
     return 0;
 }
@@ -110,6 +137,7 @@ static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
 
 int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 {
+    int ret = 0;
     struct security_hook_list *entry;
     void *target;
     const char *target_name;
@@ -117,10 +145,21 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     unsigned long scalls_addr;
     struct lsm_static_call *scalls;
-    int i;
+    size_t scalls_count;
+    struct security_hook_list *selected_entry = NULL;
+    struct lsm_static_call *selected_scall = NULL;
+    void **selected_slot = NULL;
+    void *selected_hook = NULL;
+    size_t i;
 #else
     unsigned long heads_addr;
     struct hlist_head *head;
+    struct security_hook_list *selected_entry = NULL;
+    void **selected_slot = NULL;
+    void *selected_hook = NULL;
+    struct security_hook_list *last_entry = NULL;
+    void **last_slot = NULL;
+    void *last_hook = NULL;
 #endif
 
     if (!hook || !hook->replacement)
@@ -129,36 +168,49 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
     mutex_lock(&ksu_lsm_hook_lock);
 
     if (hook->entry) {
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return -EALREADY;
+        ret = -EALREADY;
+        goto out_unlock;
     }
 
     target_name = ksu_lsm_hook_target_name(hook, bpf_name, sizeof(bpf_name));
     if (!target_name) {
         pr_err("lsm_hook: failed to build target name for %s\n", hook->head_name ?: "unknown");
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return -EINVAL;
+        ret = -EINVAL;
+        goto out_unlock;
     }
 
     target = hook->original;
     if (!target)
         target = ksu_lookup_symbol(target_name);
-    if (!target) {
+    if (!target && !ksu_lsm_hook_is_bpf_target(hook)) {
         pr_err("lsm_hook: failed to resolve target for %s\n", hook->head_name ?: "unknown");
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return -ENOENT;
+        ret = -ENOENT;
+        goto out_unlock;
+    }
+    if (!target && ksu_lsm_hook_is_bpf_target(hook)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+        pr_info("lsm_hook: %s symbol missing for %s, registration will be rejected\n", target_name,
+                hook->head_name ?: "unknown");
+#elif IS_ENABLED(CONFIG_BPF_LSM)
+        pr_info("lsm_hook: %s symbol missing for %s, registration will be rejected\n", target_name,
+                hook->head_name ?: "unknown");
+#else
+        pr_info("lsm_hook: %s symbol missing for %s, best-effort fallback is enabled\n", target_name,
+                hook->head_name ?: "unknown");
+#endif
     }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     scalls_addr = kallsyms_lookup_name("static_calls_table");
     if (!scalls_addr) {
         pr_err("lsm_hook: failed to resolve static_calls_table\n");
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return -ENOENT;
+        ret = -ENOENT;
+        goto out_unlock;
     }
 
-    scalls = (struct lsm_static_call *)(scalls_addr + hook->head_offset);
-    for (i = 0; i < MAX_LSM_COUNT; i++) {
+    scalls = (struct lsm_static_call *)scalls_addr;
+    scalls_count = ksu_lsm_hook_scall_count();
+    for (i = 0; i < scalls_count; i++) {
         struct lsm_static_call *scall = &scalls[i];
         void **slot;
         void *current_hook;
@@ -171,51 +223,62 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         current_hook = READ_ONCE(*slot);
 
         if (current_hook == hook->replacement) {
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -EALREADY;
+            ret = -EALREADY;
+            goto out_unlock;
         }
-        if (current_hook != target)
+        if (!ksu_lsm_hook_is_bpf_target(hook)) {
+            pr_debug("finding %zu: 0x%lx [%pSb]\n", i, (unsigned long)current_hook, current_hook);
+        }
+        if (!ksu_lsm_hook_matches_entry(hook, entry, current_hook, target))
             continue;
 
-        if (ksu_lsm_hook_patch_slot(slot, hook->replacement)) {
-            pr_err("lsm_hook: failed to patch %s\n", hook->head_name ?: "unknown");
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -EFAULT;
-        }
+        if (ksu_lsm_hook_is_bpf_target(hook))
+            ksu_lsm_hook_log_entry(hook, entry, current_hook);
 
-        if (ksu_lsm_hook_update_scall(scall, hook->replacement)) {
-            if (ksu_lsm_hook_patch_slot(slot, target))
-                pr_err("lsm_hook: failed to roll back %s after static call update failure\n",
-                       hook->head_name ?: "unknown");
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -EFAULT;
-        }
-
-        hook->entry = entry;
-        hook->scall = scall;
-        hook->original = target;
-        if (ksu_lsm_hook_track(hook)) {
-            if (ksu_lsm_hook_update_scall(scall, target))
-                pr_err("lsm_hook: failed to roll back static call for %s after track failure\n",
-                       hook->head_name ?: "unknown");
-            if (ksu_lsm_hook_patch_slot(slot, target))
-                pr_err("lsm_hook: failed to roll back %s after track failure\n", hook->head_name ?: "unknown");
-            hook->entry = NULL;
-            hook->scall = NULL;
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -ENOSPC;
-        }
-        pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", slot, target,
-                hook->replacement);
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return 0;
+        selected_entry = entry;
+        selected_scall = scall;
+        selected_slot = slot;
+        selected_hook = current_hook;
+        break;
     }
+
+    if (!selected_entry) {
+        pr_err("lsm_hook: target %s not found in head %s\n", target_name, hook->head_name ?: "unknown");
+        ret = -ENOENT;
+        goto out_unlock;
+    }
+
+    ret = ksu_lsm_hook_track(hook);
+    if (ret) {
+        pr_err("lsm_hook: too many hooks to track: %d\n", ret);
+        goto out_unlock;
+    }
+
+    if (ksu_lsm_hook_patch_slot(selected_slot, hook->replacement)) {
+        pr_err("lsm_hook: failed to patch %s\n", hook->head_name ?: "unknown");
+        ret = -EFAULT;
+        goto out_untrack;
+    }
+
+    if (ksu_lsm_hook_update_scall(selected_scall, hook->replacement)) {
+        if (ksu_lsm_hook_patch_slot(selected_slot, selected_hook)) {
+            pr_err("lsm_hook: failed to roll back %s after static call update failure\n", hook->head_name ?: "unknown");
+        }
+        ret = -EFAULT;
+        goto out_untrack;
+    }
+
+    hook->entry = selected_entry;
+    hook->scall = selected_scall;
+    hook->original = selected_hook;
+    pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", selected_slot,
+            selected_hook, hook->replacement);
 #else
     heads_addr = kallsyms_lookup_name("security_hook_heads");
     if (!heads_addr) {
         pr_err("lsm_hook: failed to resolve security_hook_heads\n");
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return -ENOENT;
+        ret = -ENOENT;
+        goto out_unlock;
     }
 
     head = (struct hlist_head *)(heads_addr + hook->head_offset);
@@ -224,37 +287,64 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         void *current_hook = READ_ONCE(*slot);
 
         if (current_hook == hook->replacement) {
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -EALREADY;
+            ret = -EALREADY;
+            goto out_unlock;
         }
-        if (current_hook != target)
+        if (ksu_lsm_hook_is_bpf_target(hook)) {
+            ksu_lsm_hook_log_entry(hook, entry, current_hook);
+            last_entry = entry;
+            last_slot = slot;
+            last_hook = current_hook;
+        }
+        if (!ksu_lsm_hook_matches_entry(hook, entry, current_hook, target))
             continue;
 
-        if (ksu_lsm_hook_patch_slot(slot, hook->replacement)) {
-            pr_err("lsm_hook: failed to patch %s\n", hook->head_name ?: "unknown");
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -EFAULT;
-        }
+        selected_entry = entry;
+        selected_slot = slot;
+        selected_hook = current_hook;
+        break;
+    }
 
-        hook->entry = entry;
-        hook->original = target;
-        if (ksu_lsm_hook_track(hook)) {
-            if (ksu_lsm_hook_patch_slot(slot, hook->original))
-                pr_err("lsm_hook: failed to roll back %s after track failure\n", hook->head_name ?: "unknown");
-            hook->entry = NULL;
-            mutex_unlock(&ksu_lsm_hook_lock);
-            return -ENOSPC;
-        }
-        pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", slot, target,
-                hook->replacement);
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return 0;
+#if !IS_ENABLED(CONFIG_BPF_LSM)
+    if (!selected_entry && !target && ksu_lsm_hook_is_bpf_target(hook) && last_entry) {
+        selected_entry = last_entry;
+        selected_slot = last_slot;
+        selected_hook = last_hook;
+        pr_info("lsm_hook: %s unresolved and CONFIG_BPF_LSM is off, fallback to last candidate %px [%pSb]\n",
+                target_name, selected_hook, selected_hook);
     }
 #endif
 
-    pr_err("lsm_hook: target %s not found in head %s\n", target_name, hook->head_name ?: "unknown");
+    if (!selected_entry) {
+        pr_err("lsm_hook: target %s not found in head %s\n", target_name, hook->head_name ?: "unknown");
+        ret = -ENOENT;
+        goto out_unlock;
+    }
+
+    ret = ksu_lsm_hook_track(hook);
+    if (ret) {
+        pr_err("lsm_hook: too many hooks to track: %d\n", ret);
+        goto out_unlock;
+    }
+
+    if (ksu_lsm_hook_patch_slot(selected_slot, hook->replacement)) {
+        pr_err("lsm_hook: failed to patch %s\n", hook->head_name ?: "unknown");
+        ret = -EFAULT;
+        goto out_untrack;
+    }
+
+    hook->entry = selected_entry;
+    hook->original = selected_hook;
+    pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", selected_slot,
+            selected_hook, hook->replacement);
+#endif
+    goto out_unlock;
+out_untrack:
+    ksu_lsm_hook_untrack(hook);
+
+out_unlock:
     mutex_unlock(&ksu_lsm_hook_lock);
-    return -ENOENT;
+    return ret;
 }
 
 void ksu_lsm_unhook(struct ksu_lsm_hook *hook)
