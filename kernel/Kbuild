@@ -2,24 +2,26 @@ kernelsu-objs := core/init.o
 
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += feature/sucompat.o
-
-kernelsu-objs += hook/lsm_hook.o
 kernelsu-objs += hook/setuid_hook.o
 kernelsu-objs += hook/syscall_event_bridge.o
 kernelsu-objs += hook/syscall_hook_manager.o
 kernelsu-objs += hook/tp_marker.o
+
+ksu_hook_common := hook/lsm_hook.o
+ksu_hook_common += infra/symbol_resolver.o
 ifeq ($(CONFIG_ARM64),y)
-kernelsu-objs += hook/arm64/patch_memory.o
-kernelsu-objs += hook/arm64/syscall_hook.o
+ksu_hook_common += hook/arm64/patch_memory.o
+ksu_hook_common += hook/arm64/syscall_hook.o
 else ifeq ($(CONFIG_X86_64),y)
-kernelsu-objs += hook/x86_64/patch_memory.o
-kernelsu-objs += hook/x86_64/syscall_hook.o
+ksu_hook_common += hook/x86_64/patch_memory.o
+ksu_hook_common += hook/x86_64/syscall_hook.o
 endif
+
+kernelsu-objs += $(ksu_hook_common)
 
 kernelsu-objs += infra/file_wrapper.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
-kernelsu-objs += infra/symbol_resolver.o
 
 ifndef CONFIG_KSU_DISABLE_MANAGER
 kernelsu-objs += manager/apk_sign.o
@@ -46,7 +48,11 @@ ccflags-y += -I$(srctree)/security/selinux -I$(srctree)/security/selinux/include
 ccflags-y += -I$(objtree)/security/selinux -include $(srctree)/include/uapi/asm-generic/errno.h
 ccflags-y += -I$(src) -I$(src)/include
 
+ksu_lsm_hook_demo-objs += core/lsm_hook_demo.o
+ksu_lsm_hook_demo-objs += $(ksu_hook_common)
+
 obj-$(CONFIG_KSU) += kernelsu.o
+obj-$(CONFIG_KSU) += ksu_lsm_hook_demo.o
 
 MDIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 

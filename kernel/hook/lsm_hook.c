@@ -91,7 +91,6 @@ typedef void (*ksu_static_call_update_t)(struct static_call_key *key, void *tram
 
 static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
 {
-    
     __static_call_update(scall->key, scall->trampoline, value);
     smp_wmb();
     return 0;
@@ -164,7 +163,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
             mutex_unlock(&ksu_lsm_hook_lock);
             return -EALREADY;
         }
-        pr_debug("finding %d: 0x%lx [%pSb]\n", i, (unsigned long) current_hook, current_hook);
+        pr_debug("finding %d: 0x%lx [%pSb]\n", i, (unsigned long)current_hook, current_hook);
         if (current_hook != target)
             continue;
 
