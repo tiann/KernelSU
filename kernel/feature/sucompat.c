@@ -12,6 +12,7 @@
 #include <linux/sched/task_stack.h>
 #include <linux/ptrace.h>
 
+#include "arch.h"
 #include "policy/allowlist.h"
 #include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
@@ -19,6 +20,7 @@
 #include "feature/sucompat.h"
 #include "policy/app_profile.h"
 #include "hook/syscall_hook.h"
+#include "sulog/event.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -118,6 +120,8 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 {
     const char su[] = SU_PATH;
     const char __user *fn;
+    const char __user *const __user *argv_user = (const char __user *const __user *)PT_REGS_PARM2(regs);
+    struct ksu_sulog_pending_event *pending_sucompat = NULL;
     char path[sizeof(su) + 1];
     long ret;
     unsigned long addr;
@@ -143,19 +147,23 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
         goto do_orig_execve;
 
     pr_info("sys_execve su found\n");
+    pending_sucompat = ksu_sulog_capture_sucompat(*filename_user, argv_user, GFP_KERNEL);
     *filename_user = ksud_user_path();
 
     ret = escape_with_root_profile();
     if (ret) {
         pr_err("escape_with_root_profile failed: %ld\n", ret);
+        ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
         goto do_orig_execve;
     }
 
     ret = ksu_syscall_table[orig_nr](regs);
     if (ret < 0) {
         pr_err("failed to execve ksud as su: %ld, fallback to sh\n", ret);
+        ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
         *filename_user = sh_user_path();
     } else {
+        ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
         return ret;
     }
 

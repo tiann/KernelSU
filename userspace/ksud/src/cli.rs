@@ -6,7 +6,9 @@ use android_logger::Config;
 use log::{LevelFilter, error, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
+use crate::{
+    apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, sulog, utils,
+};
 
 /// KernelSU userspace cli
 #[derive(Parser, Debug)]
@@ -29,6 +31,9 @@ enum Commands {
 
     /// Trigger `service` event
     Services,
+
+    /// Run sulog reader daemon
+    Sulogd,
 
     /// Trigger `boot-complete` event
     BootCompleted,
@@ -284,6 +289,9 @@ enum Module {
 
     /// manage module configuration
     Config {
+        /// target internal module name (resolved as internal.<name>)
+        #[arg(long)]
+        internal: Option<String>,
         #[command(subcommand)]
         command: ModuleConfigCmd,
     },
@@ -482,11 +490,16 @@ pub fn run() -> Result<()> {
                 Module::Disable { id } => module::disable_module(&id),
                 Module::Action { id } => module::run_action(&id),
                 Module::List => module::list_modules(),
-                Module::Config { command } => {
-                    // Get module ID from environment variable
-                    let module_id = std::env::var("KSU_MODULE").map_err(|_| {
-                        anyhow::anyhow!("This command must be run in the context of a module")
-                    })?;
+                Module::Config { internal, command } => {
+                    let module_id = match internal {
+                        Some(internal_name) => format!("internal.{internal_name}"),
+                        None => std::env::var("KSU_MODULE").map_err(|_| {
+                            anyhow::anyhow!(
+                                "This command must be run in the context of a module or passed --internal <name>"
+                            )
+                        })?,
+                    };
+                    crate::module::validate_module_id(&module_id)?;
 
                     match command {
                         ModuleConfigCmd::Get { key } => {
@@ -605,9 +618,13 @@ pub fn run() -> Result<()> {
                 info!("KernelSU not available, exiting services");
                 std::process::exit(0);
             }
+            if let Err(err) = sulog::ensure_sulogd_running() {
+                error!("failed to ensure sulogd is running: {err:#}");
+            }
             init_event::on_services();
             Ok(())
         }
+        Commands::Sulogd => sulog::run_sulogd(),
         Commands::Profile { command } => match command {
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
