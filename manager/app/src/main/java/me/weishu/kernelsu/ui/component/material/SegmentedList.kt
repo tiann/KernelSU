@@ -4,16 +4,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
@@ -29,6 +23,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedListItem
@@ -65,9 +60,9 @@ val LocalListItemShapes = compositionLocalOf<ListItemShapes?> { null }
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun defaultSegmentedColors(): ListItemColors = ListItemDefaults.segmentedColors().copy(
-    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-    disabledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-    supportingContentColor = MaterialTheme.colorScheme.outline
+    containerColor = colorScheme.surfaceColorAtElevation(1.dp),
+    disabledContainerColor = colorScheme.surfaceColorAtElevation(1.dp),
+    supportingContentColor = colorScheme.outline
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -96,7 +91,7 @@ fun SegmentedColumn(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
+                color = colorScheme.primary,
                 modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
             )
         }
@@ -117,41 +112,15 @@ fun SegmentedColumn(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun <T> SegmentedLazyColumn(
-    modifier: Modifier = Modifier,
-    state: LazyListState = rememberLazyListState(),
-    contentPadding: PaddingValues = PaddingValues(all = 16.dp),
-    title: String = "",
-    key: ((T) -> Any)? = null,
-    items: List<T>,
-    itemContent: @Composable (T) -> Unit
+fun SegmentedItem(
+    index: Int,
+    count: Int,
+    content: @Composable () -> Unit,
 ) {
-    Column(modifier = modifier) {
-        if (title.isNotEmpty()) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-            )
-        }
-        LazyColumn(
-            state = state,
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            contentPadding = contentPadding
-        ) {
-            itemsIndexed(
-                items = items,
-                key = if (key != null) { _, item -> key(item) } else null
-            ) { index, item ->
-                CompositionLocalProvider(
-                    LocalListItemShapes provides defaultSingleSegmentedShape(index, items.size),
-                ) {
-                    itemContent(item)
-                }
-            }
-        }
+    CompositionLocalProvider(
+        LocalListItemShapes provides defaultSingleSegmentedShape(index, count),
+    ) {
+        content()
     }
 }
 
@@ -169,30 +138,22 @@ fun SegmentedListItem(
     supportingContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
-    bottomContent: @Composable (() -> Unit)? = null,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        SegmentedListItem(
-            onClick = onClick ?: {},
-            onLongClick = onLongClick,
-            enabled = enabled,
-            colors = colors,
-            interactionSource = interactionSource,
-            shapes = LocalListItemShapes.current ?: ListItemDefaults.segmentedShapes(0, 1),
-            modifier = modifier,
-            leadingContent = leadingContent,
-            trailingContent = trailingContent,
-            overlineContent = overlineContent,
-            supportingContent = {
-                Column {
-                    supportingContent?.invoke()
-                    bottomContent?.invoke()
-                }
-            },
-            verticalAlignment = Alignment.CenterVertically,
-            content = headlineContent
-        )
-    }
+    SegmentedListItem(
+        onClick = onClick ?: {},
+        onLongClick = onLongClick,
+        enabled = enabled,
+        colors = colors,
+        interactionSource = interactionSource,
+        shapes = LocalListItemShapes.current ?: ListItemDefaults.segmentedShapes(0, 1),
+        modifier = modifier,
+        leadingContent = leadingContent,
+        trailingContent = trailingContent,
+        overlineContent = overlineContent,
+        supportingContent = supportingContent,
+        verticalAlignment = Alignment.CenterVertically,
+        content = headlineContent
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -339,7 +300,7 @@ fun SegmentedDropdownItem(
                     text = if (hasItems && safeIndex >= 0) items[safeIndex] else "",
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(0.3f),
-                    color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (enabled) colorScheme.primary else colorScheme.onSurfaceVariant
                 )
                 DropdownMenu(
                     expanded = expanded,
@@ -347,7 +308,9 @@ fun SegmentedDropdownItem(
                 ) {
                     items.forEachIndexed { index, text ->
                         DropdownMenuItem(
-                            text = { Text(text) },
+                            text = {
+                                Text(text, color = if (index == safeIndex) colorScheme.primary else colorScheme.onSurface)
+                            },
                             onClick = {
                                 if (index in items.indices) {
                                     haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -447,7 +410,7 @@ fun SegmentedTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     onTextLayout: (TextLayoutResult) -> Unit = {},
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    cursorBrush: Brush = SolidColor(MaterialTheme.colorScheme.primary),
+    cursorBrush: Brush = SolidColor(colorScheme.primary),
     placeholder: @Composable (() -> Unit)? = { Text("-") },
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
@@ -470,7 +433,7 @@ fun SegmentedTextField(
         headlineContent = {
             Column {
                 if (label.isNotEmpty()) {
-                    Text(text = label, color = if (isError) MaterialTheme.colorScheme.error else colors.contentColor)
+                    Text(text = label, color = if (isError) colorScheme.error else colors.contentColor)
                 }
                 BasicTextField(
                     value = value,
