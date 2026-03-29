@@ -610,8 +610,8 @@ pub fn run() -> Result<()> {
                 info!("KernelSU not available, exiting services");
                 std::process::exit(0);
             }
-            if let Err(err) = sulog::sync_sulogd_with_kernel_feature() {
-                error!("failed to sync sulogd: {err:#}");
+            if let Err(err) = sulog::ensure_sulogd_running() {
+                error!("failed to ensure sulogd is running: {err:#}");
             }
             init_event::on_services();
             Ok(())

@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
 
-use crate::{defs, sulog};
+use crate::defs;
 
 const FEATURE_CONFIG_PATH: &str = concatcp!(defs::WORKING_DIR, ".feature_config");
 #[allow(clippy::unreadable_literal)]
@@ -64,18 +64,7 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
 
 fn set_kernel_feature(feature_id: FeatureId, value: u64) -> Result<()> {
     crate::ksucalls::set_feature(feature_id as u32, value)
-        .with_context(|| format!("Failed to set feature {} to {value}", feature_id.name()))?;
-
-    if feature_id == FeatureId::Sulog {
-        sulog::sync_sulogd(value != 0).with_context(|| {
-            format!(
-                "Failed to sync sulogd after setting feature {}",
-                feature_id.name()
-            )
-        })?;
-    }
-
-    Ok(())
+        .with_context(|| format!("Failed to set feature {} to {value}", feature_id.name()))
 }
 
 pub fn load_binary_config() -> Result<HashMap<u32, u64>> {

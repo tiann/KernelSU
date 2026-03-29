@@ -1,10 +1,11 @@
 use anyhow::{Context, Result, bail, ensure};
 use chrono::Local;
 use std::fmt::Write as FmtWrite;
-use std::fs::{self, File, OpenOptions};
-use std::io::{self, ErrorKind, LineWriter, Write};
+use std::fs::{self, DirBuilder, File, OpenOptions, Permissions};
+use std::io::{self, ErrorKind, LineWriter, Read, Seek, Write};
 use std::mem::size_of;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
+use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -17,6 +18,9 @@ const KSU_EVENT_QUEUE_TYPE_DROPPED: u16 = u16::MAX;
 const KSU_EVENT_RECORD_FLAG_INTERNAL: u16 = 1;
 const TASK_COMM_LEN: usize = 16;
 const READ_BUF_SIZE: usize = 8192;
+const SULOGD_RESTART_DELAY: Duration = Duration::from_secs(3);
+const SULOG_DIR_MODE: u32 = 0o700;
+const SULOG_FILE_MODE: u32 = 0o600;
 
 #[repr(C, packed)]
 #[derive(Clone, Copy, Debug)]
@@ -72,13 +76,26 @@ enum ReadState {
     Closed,
 }
 
+enum SessionExitReason {
+    FdClosed,
+    EpollHangup,
+}
+
 struct PidFileGuard {
-    pid: i32,
+    _lock_file: File,
+    state: PidFileState,
 }
 
 struct DailyLogWriter {
     current_day: String,
     writer: LineWriter<File>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct PidFileState {
+    pid: i32,
+    start_time_ticks: u64,
+    boot_id: String,
 }
 
 impl EventRecordHeader {
@@ -159,7 +176,7 @@ impl SulogEvent {
 
 impl Drop for PidFileGuard {
     fn drop(&mut self) {
-        if read_pid_file().ok().flatten() == Some(self.pid) {
+        if read_pid_file().ok().flatten() == Some(self.state.clone()) {
             let _ = fs::remove_file(defs::SULOGD_PID_PATH);
         }
     }
@@ -167,48 +184,36 @@ impl Drop for PidFileGuard {
 
 impl PidFileGuard {
     fn acquire() -> Result<Option<Self>> {
-        utils::ensure_dir_exists(Path::new(defs::WORKING_DIR))?;
-        let current_pid = i32::try_from(std::process::id()).context("invalid current pid")?;
+        ensure_private_dir_exists(Path::new(defs::WORKING_DIR))?;
+        let state = current_pid_file_state()?;
+        let mut file = open_pid_file(true)?;
 
-        for _ in 0..2 {
-            match OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(defs::SULOGD_PID_PATH)
-            {
-                Ok(mut file) => {
-                    write!(file, "{current_pid}")
-                        .with_context(|| format!("failed to write {}", defs::SULOGD_PID_PATH))?;
-                    file.sync_all()
-                        .with_context(|| format!("failed to sync {}", defs::SULOGD_PID_PATH))?;
-                    return Ok(Some(Self { pid: current_pid }));
-                }
-                Err(err) if err.kind() == ErrorKind::AlreadyExists => {
-                    if let Some(pid) = read_pid_file()? {
-                        if pid_is_alive(pid) {
-                            log::info!("sulogd already running with pid={pid}");
-                            return Ok(None);
-                        }
-                        log::warn!("removing stale sulog pid file for pid={pid}");
-                    } else {
-                        log::warn!("removing invalid sulog pid file");
-                    }
-                    remove_pid_file_if_exists()?;
-                }
-                Err(err) => {
-                    return Err(err)
-                        .with_context(|| format!("failed to open {}", defs::SULOGD_PID_PATH));
-                }
-            }
+        if try_lock_pid_file(&file)? {
+            write_pid_file_state(&mut file, &state)
+                .with_context(|| format!("failed to write {}", defs::SULOGD_PID_PATH))?;
+            file.sync_all()
+                .with_context(|| format!("failed to sync {}", defs::SULOGD_PID_PATH))?;
+            return Ok(Some(Self {
+                _lock_file: file,
+                state,
+            }));
         }
 
-        bail!("failed to acquire sulog pid file")
+        match read_pid_file_state_from_file(&mut file)? {
+            Some(existing) => {
+                log::info!("sulogd already running with pid={}", existing.pid);
+            }
+            None => {
+                log::warn!("sulogd lock is held but pid metadata is unavailable");
+            }
+        }
+        Ok(None)
     }
 }
 
 impl DailyLogWriter {
     fn open() -> Result<Self> {
-        utils::ensure_dir_exists(Path::new(defs::LOG_DIR))?;
+        ensure_private_dir_exists(Path::new(defs::LOG_DIR))?;
         let current_day = current_log_day();
         let path = daily_log_path(&current_day);
         let writer = open_line_writer(&path)?;
@@ -253,12 +258,32 @@ fn daily_log_path(day: &str) -> PathBuf {
     Path::new(defs::LOG_DIR).join(format!("sulog-{day}.log"))
 }
 
+fn ensure_private_dir_exists(path: &Path) -> Result<()> {
+    DirBuilder::new()
+        .recursive(true)
+        .mode(SULOG_DIR_MODE)
+        .create(path)
+        .with_context(|| format!("failed to create {}", path.display()))?;
+    fs::set_permissions(path, Permissions::from_mode(SULOG_DIR_MODE))
+        .with_context(|| format!("failed to chmod {} to {:o}", path.display(), SULOG_DIR_MODE))?;
+    Ok(())
+}
+
 fn open_line_writer(path: &Path) -> Result<LineWriter<File>> {
     let file = OpenOptions::new()
         .create(true)
         .append(true)
+        .mode(SULOG_FILE_MODE)
         .open(path)
         .with_context(|| format!("failed to open {}", path.display()))?;
+    file.set_permissions(Permissions::from_mode(SULOG_FILE_MODE))
+        .with_context(|| {
+            format!(
+                "failed to chmod {} to {:o}",
+                path.display(),
+                SULOG_FILE_MODE
+            )
+        })?;
     Ok(LineWriter::new(file))
 }
 
@@ -268,7 +293,7 @@ fn read_boot_id() -> Result<String> {
     Ok(boot_id.trim().to_string())
 }
 
-fn read_pid_file() -> Result<Option<i32>> {
+fn read_pid_file() -> Result<Option<PidFileState>> {
     let pid_text = match fs::read_to_string(defs::SULOGD_PID_PATH) {
         Ok(pid_text) => pid_text,
         Err(err) if err.kind() == ErrorKind::NotFound => return Ok(None),
@@ -277,19 +302,46 @@ fn read_pid_file() -> Result<Option<i32>> {
         }
     };
 
-    let pid = match pid_text.trim().parse::<i32>() {
-        Ok(pid) if pid > 0 => Some(pid),
-        _ => None,
-    };
-    Ok(pid)
+    Ok(parse_pid_file_state(&pid_text))
 }
 
-fn remove_pid_file_if_exists() -> Result<()> {
-    match fs::remove_file(defs::SULOGD_PID_PATH) {
-        Ok(()) => Ok(()),
-        Err(err) if err.kind() == ErrorKind::NotFound => Ok(()),
-        Err(err) => Err(err).with_context(|| format!("failed to remove {}", defs::SULOGD_PID_PATH)),
+fn open_pid_file(create: bool) -> Result<File> {
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(create)
+        .mode(SULOG_FILE_MODE)
+        .open(defs::SULOGD_PID_PATH)
+        .with_context(|| format!("failed to open {}", defs::SULOGD_PID_PATH))?;
+    file.set_permissions(Permissions::from_mode(SULOG_FILE_MODE))
+        .with_context(|| {
+            format!(
+                "failed to chmod {} to {:o}",
+                defs::SULOGD_PID_PATH,
+                SULOG_FILE_MODE
+            )
+        })?;
+    Ok(file)
+}
+
+fn try_lock_pid_file(file: &File) -> io::Result<bool> {
+    let ret = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) };
+    if ret == 0 {
+        return Ok(true);
     }
+
+    let err = io::Error::last_os_error();
+    if let Some(code) = err.raw_os_error()
+        && (code == libc::EWOULDBLOCK || code == libc::EAGAIN)
+    {
+        return Ok(false);
+    }
+
+    if err.kind() == ErrorKind::WouldBlock {
+        return Ok(false);
+    }
+
+    Err(err)
 }
 
 fn pid_is_alive(pid: i32) -> bool {
@@ -299,6 +351,92 @@ fn pid_is_alive(pid: i32) -> bool {
 
     let ret = unsafe { libc::kill(pid, 0) };
     ret == 0 || io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+}
+
+fn parse_pid_file_state(pid_text: &str) -> Option<PidFileState> {
+    let mut fields = pid_text.split_whitespace();
+    let pid = fields.next()?.parse::<i32>().ok()?;
+    let start_time_ticks = fields.next()?.parse::<u64>().ok()?;
+    let boot_id = fields.next()?.to_string();
+    if pid <= 0 || boot_id.is_empty() {
+        return None;
+    }
+    Some(PidFileState {
+        pid,
+        start_time_ticks,
+        boot_id,
+    })
+}
+
+fn write_pid_file_state(file: &mut File, state: &PidFileState) -> io::Result<()> {
+    file.set_len(0)?;
+    file.rewind()?;
+    write!(
+        file,
+        "{} {} {}",
+        state.pid, state.start_time_ticks, state.boot_id
+    )
+}
+
+fn read_pid_file_state_from_file(file: &mut File) -> Result<Option<PidFileState>> {
+    file.rewind()?;
+    let mut pid_text = String::new();
+    file.read_to_string(&mut pid_text)?;
+    Ok(parse_pid_file_state(&pid_text))
+}
+
+fn read_process_start_time_ticks(pid: i32) -> Result<Option<u64>> {
+    if pid <= 0 {
+        return Ok(None);
+    }
+
+    let stat_path = format!("/proc/{pid}/stat");
+    let stat_text = match fs::read_to_string(&stat_path) {
+        Ok(stat_text) => stat_text,
+        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(None),
+        Err(err) => return Err(err).with_context(|| format!("failed to read {stat_path}")),
+    };
+
+    let (_, rest) = stat_text
+        .rsplit_once(") ")
+        .context("failed to parse /proc stat comm field")?;
+    let fields: Vec<&str> = rest.split_whitespace().collect();
+    let start_time = fields
+        .get(19)
+        .context("failed to read start_time from /proc stat")?
+        .parse::<u64>()
+        .context("failed to parse start_time from /proc stat")?;
+    Ok(Some(start_time))
+}
+
+fn current_pid_file_state() -> Result<PidFileState> {
+    let pid = i32::try_from(std::process::id()).context("invalid current pid")?;
+    let start_time_ticks =
+        read_process_start_time_ticks(pid)?.context("failed to get current process start time")?;
+    let boot_id = read_boot_id()?;
+    Ok(PidFileState {
+        pid,
+        start_time_ticks,
+        boot_id,
+    })
+}
+
+fn pid_file_state_matches_live_process(state: &PidFileState) -> bool {
+    if !pid_is_alive(state.pid) {
+        return false;
+    }
+
+    let Ok(current_boot_id) = read_boot_id() else {
+        return false;
+    };
+    if current_boot_id != state.boot_id {
+        return false;
+    }
+
+    matches!(
+        read_process_start_time_ticks(state.pid),
+        Ok(Some(start_time_ticks)) if start_time_ticks == state.start_time_ticks
+    )
 }
 
 fn escape_field(value: &str) -> String {
@@ -367,26 +505,18 @@ fn write_log_line(writer: &mut DailyLogWriter, line: &str) -> io::Result<()> {
     Ok(())
 }
 
-fn parse_record(
-    header: EventRecordHeader,
-    payload: &[u8],
-    writer: &mut DailyLogWriter,
-) -> Result<()> {
+fn format_record_line(header: EventRecordHeader, payload: &[u8]) -> Result<String> {
     if header.record_type == KSU_EVENT_QUEUE_TYPE_DROPPED {
         ensure!(
             header.flags & KSU_EVENT_RECORD_FLAG_INTERNAL != 0,
             "dropped record missing internal flag"
         );
         let info = DroppedInfo::parse(payload)?;
-        write_log_line(writer, &format_dropped_line(&header, &info))
-            .context("failed to write dropped sulog line")?;
-        return Ok(());
+        return Ok(format_dropped_line(&header, &info));
     }
 
     let event = SulogEvent::parse(payload)?;
-    write_log_line(writer, &format_event_line(&header, &event))
-        .context("failed to write sulog line")?;
-    Ok(())
+    Ok(format_event_line(&header, &event))
 }
 
 fn handle_readable(fd: RawFd, writer: &mut DailyLogWriter) -> Result<ReadState> {
@@ -397,6 +527,9 @@ fn handle_readable(fd: RawFd, writer: &mut DailyLogWriter) -> Result<ReadState> 
             unsafe { libc::read(fd, buf.as_mut_ptr().cast::<libc::c_void>(), buf.len()) };
         if read_len < 0 {
             let err = io::Error::last_os_error();
+            if err.raw_os_error() == Some(libc::EINTR) {
+                continue;
+            }
             if matches!(err.kind(), ErrorKind::WouldBlock)
                 || err.raw_os_error() == Some(libc::EAGAIN)
             {
@@ -413,29 +546,49 @@ fn handle_readable(fd: RawFd, writer: &mut DailyLogWriter) -> Result<ReadState> 
         let mut offset = 0usize;
 
         while offset < read_len {
-            ensure!(
-                read_len - offset >= size_of::<EventRecordHeader>(),
-                "short sulog frame header: {} bytes remaining",
-                read_len - offset
-            );
+            let remaining = read_len - offset;
+            if remaining < size_of::<EventRecordHeader>() {
+                log::warn!("dropping truncated sulog frame header: {remaining} bytes remaining");
+                break;
+            }
+
             let header =
                 EventRecordHeader::parse(&buf[offset..offset + size_of::<EventRecordHeader>()])?;
-            let payload_len =
-                usize::try_from(header.payload_len).context("sulog payload length overflow")?;
-            let frame_len = size_of::<EventRecordHeader>()
-                .checked_add(payload_len)
-                .context("sulog frame length overflow")?;
-            ensure!(
-                read_len - offset >= frame_len,
-                "short sulog frame payload: need {frame_len}, got {}",
-                read_len - offset
-            );
+            let payload_len = match usize::try_from(header.payload_len) {
+                Ok(payload_len) => payload_len,
+                Err(err) => {
+                    let seq = header.seq;
+                    log::warn!(
+                        "dropping sulog frame with invalid payload length at seq={seq}: {err:#}"
+                    );
+                    break;
+                }
+            };
+            let Some(frame_len) = size_of::<EventRecordHeader>().checked_add(payload_len) else {
+                let seq = header.seq;
+                log::warn!("dropping sulog frame with overflowing length at seq={seq}");
+                break;
+            };
+            if remaining < frame_len {
+                log::warn!(
+                    "dropping truncated sulog frame payload: need {frame_len}, got {remaining}"
+                );
+                break;
+            }
 
-            parse_record(
-                header,
-                &buf[offset + size_of::<EventRecordHeader>()..offset + frame_len],
-                writer,
-            )?;
+            let payload = &buf[offset + size_of::<EventRecordHeader>()..offset + frame_len];
+            match format_record_line(header, payload) {
+                Ok(line) => {
+                    write_log_line(writer, &line).context("failed to write sulog line")?;
+                }
+                Err(err) => {
+                    let seq = header.seq;
+                    let record_type = header.record_type;
+                    log::warn!(
+                        "dropping malformed sulog record seq={seq} type={record_type}: {err:#}"
+                    );
+                }
+            }
             offset += frame_len;
         }
     }
@@ -459,10 +612,23 @@ pub fn open_sulog_fd() -> io::Result<OwnedFd> {
     Ok(unsafe { OwnedFd::from_raw_fd(fd) })
 }
 
-pub fn run_sulogd() -> Result<()> {
-    let Some(_pid_guard) = PidFileGuard::acquire()? else {
-        return Ok(());
+fn write_session_marker(
+    writer: &mut DailyLogWriter,
+    boot_id: &str,
+    restart_count: u64,
+) -> Result<()> {
+    let line = if restart_count == 0 {
+        format!("type=daemon_start boot_id=\"{}\"", escape_field(boot_id))
+    } else {
+        format!(
+            "type=daemon_restart boot_id=\"{}\" restart={restart_count}",
+            escape_field(boot_id)
+        )
     };
+    write_log_line(writer, &line).context("failed to write sulogd session marker")
+}
+
+fn run_sulog_session(restart_count: u64) -> Result<SessionExitReason> {
     let sulog_fd = open_sulog_fd().context("failed to open sulog fd")?;
     let mut writer = DailyLogWriter::open()?;
     let boot_id = read_boot_id()?;
@@ -493,12 +659,8 @@ pub fn run_sulogd() -> Result<()> {
         );
     }
 
-    log::info!("sulogd started, boot_id={boot_id}");
-    write_log_line(
-        &mut writer,
-        &format!("type=daemon_start boot_id=\"{}\"", escape_field(&boot_id)),
-    )
-    .context("failed to write sulogd start marker")?;
+    log::info!("sulogd session started, boot_id={boot_id}, restart={restart_count}");
+    write_session_marker(&mut writer, &boot_id, restart_count)?;
 
     let mut events = [libc::epoll_event { events: 0, u64: 0 }; 4];
     loop {
@@ -525,8 +687,8 @@ pub fn run_sulogd() -> Result<()> {
                 match handle_readable(sulog_fd.as_raw_fd(), &mut writer)? {
                     ReadState::Drained => {}
                     ReadState::Closed => {
-                        log::info!("sulog fd closed");
-                        return Ok(());
+                        log::warn!("sulog fd closed");
+                        return Ok(SessionExitReason::FdClosed);
                     }
                 }
             }
@@ -537,21 +699,56 @@ pub fn run_sulogd() -> Result<()> {
                 match handle_readable(sulog_fd.as_raw_fd(), &mut writer)? {
                     ReadState::Drained | ReadState::Closed => {}
                 }
-                log::info!("sulog epoll hangup");
-                return Ok(());
+                log::warn!("sulog epoll hangup");
+                return Ok(SessionExitReason::EpollHangup);
             }
         }
     }
 }
 
+pub fn run_sulogd() -> Result<()> {
+    let Some(_pid_guard) = PidFileGuard::acquire()? else {
+        return Ok(());
+    };
+
+    let mut restart_count = 0u64;
+    loop {
+        match run_sulog_session(restart_count) {
+            Ok(SessionExitReason::FdClosed) => {
+                log::warn!(
+                    "restarting sulogd session after fd close in {}s",
+                    SULOGD_RESTART_DELAY.as_secs()
+                );
+            }
+            Ok(SessionExitReason::EpollHangup) => {
+                log::warn!(
+                    "restarting sulogd session after hangup in {}s",
+                    SULOGD_RESTART_DELAY.as_secs()
+                );
+            }
+            Err(err) => {
+                log::warn!(
+                    "sulogd session failed: {err:#}; restarting in {}s",
+                    SULOGD_RESTART_DELAY.as_secs()
+                );
+            }
+        }
+
+        restart_count = restart_count.saturating_add(1);
+        thread::sleep(SULOGD_RESTART_DELAY);
+    }
+}
+
 pub fn spawn_sulogd() -> Result<()> {
-    if let Some(pid) = read_pid_file()?
-        && pid_is_alive(pid)
+    if let Some(existing) = read_pid_file()?
+        && pid_file_state_matches_live_process(&existing)
     {
-        log::info!("sulogd already running with pid={pid}, skipping spawn");
+        log::info!(
+            "sulogd already running with pid={}, skipping spawn",
+            existing.pid
+        );
         return Ok(());
     }
-    remove_pid_file_if_exists()?;
 
     let current_exe = std::env::current_exe().context("failed to resolve current ksud path")?;
     let mut command = Command::new(current_exe);
@@ -575,67 +772,6 @@ pub fn spawn_sulogd() -> Result<()> {
     Ok(())
 }
 
-pub fn stop_sulogd() -> Result<()> {
-    let Some(pid) = read_pid_file()? else {
-        return Ok(());
-    };
-
-    if !pid_is_alive(pid) {
-        remove_pid_file_if_exists()?;
-        return Ok(());
-    }
-
-    log::info!("stopping sulogd pid={pid}");
-    let term_ret = unsafe { libc::kill(pid, libc::SIGTERM) };
-    if term_ret < 0 {
-        let err = io::Error::last_os_error();
-        if err.raw_os_error() != Some(libc::ESRCH) {
-            return Err(err).context("failed to send SIGTERM to sulogd");
-        }
-    }
-
-    for _ in 0..20 {
-        if !pid_is_alive(pid) {
-            remove_pid_file_if_exists()?;
-            return Ok(());
-        }
-        thread::sleep(Duration::from_millis(100));
-    }
-
-    let kill_ret = unsafe { libc::kill(pid, libc::SIGKILL) };
-    if kill_ret < 0 {
-        let err = io::Error::last_os_error();
-        if err.raw_os_error() != Some(libc::ESRCH) {
-            return Err(err).context("failed to send SIGKILL to sulogd");
-        }
-    }
-
-    for _ in 0..10 {
-        if !pid_is_alive(pid) {
-            remove_pid_file_if_exists()?;
-            return Ok(());
-        }
-        thread::sleep(Duration::from_millis(100));
-    }
-
-    bail!("failed to stop sulogd pid={pid}")
-}
-
-pub fn sync_sulogd(enabled: bool) -> Result<()> {
-    if enabled {
-        spawn_sulogd()
-    } else {
-        stop_sulogd()
-    }
-}
-
-pub fn sync_sulogd_with_kernel_feature() -> Result<()> {
-    let feature_id = crate::feature::FeatureId::Sulog as u32;
-    let (value, supported) =
-        ksucalls::get_feature(feature_id).context("failed to read sulog feature state")?;
-    if !supported {
-        stop_sulogd()?;
-        return Ok(());
-    }
-    sync_sulogd(value != 0)
+pub fn ensure_sulogd_running() -> Result<()> {
+    spawn_sulogd()
 }
