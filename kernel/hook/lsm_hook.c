@@ -95,9 +95,21 @@ static bool ksu_lsm_hook_is_bpf_target(struct ksu_lsm_hook *hook)
 static bool ksu_lsm_hook_matches_entry(struct ksu_lsm_hook *hook, struct security_hook_list *entry, void *current_hook,
                                        void *target)
 {
+    char sym[KSYM_NAME_LEN];
+
     (void)hook;
     (void)entry;
-    return target && current_hook == target;
+
+    if (target)
+        return current_hook == target;
+
+    if (!hook || !hook->target_name || !current_hook)
+        return false;
+
+    if (!sprint_symbol_no_offset(sym, (unsigned long)current_hook))
+        return false;
+
+    return !strcmp(sym, hook->target_name);
 }
 
 static void ksu_lsm_hook_log_entry(struct ksu_lsm_hook *hook, struct security_hook_list *entry, void *current_hook)
@@ -109,6 +121,11 @@ static void ksu_lsm_hook_log_entry(struct ksu_lsm_hook *hook, struct security_ho
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 typedef void (*ksu_static_call_update_t)(struct static_call_key *key, void *tramp, void *func);
+
+static size_t ksu_lsm_hook_scall_count(void)
+{
+    return sizeof(struct lsm_static_calls_table) / sizeof(struct lsm_static_call);
+}
 
 static int ksu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
 {
@@ -128,15 +145,12 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     unsigned long scalls_addr;
     struct lsm_static_call *scalls;
+    size_t scalls_count;
     struct security_hook_list *selected_entry = NULL;
     struct lsm_static_call *selected_scall = NULL;
     void **selected_slot = NULL;
     void *selected_hook = NULL;
-    struct security_hook_list *last_entry = NULL;
-    struct lsm_static_call *last_scall = NULL;
-    void **last_slot = NULL;
-    void *last_hook = NULL;
-    int i;
+    size_t i;
 #else
     unsigned long heads_addr;
     struct hlist_head *head;
@@ -173,9 +187,18 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         ret = -ENOENT;
         goto out_unlock;
     }
-    if (!target && ksu_lsm_hook_is_bpf_target(hook))
-        pr_info("lsm_hook: %s symbol missing for %s, only logging candidates\n", target_name,
+    if (!target && ksu_lsm_hook_is_bpf_target(hook)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+        pr_info("lsm_hook: %s symbol missing for %s, registration will be rejected\n", target_name,
                 hook->head_name ?: "unknown");
+#elif IS_ENABLED(CONFIG_BPF_LSM)
+        pr_info("lsm_hook: %s symbol missing for %s, registration will be rejected\n", target_name,
+                hook->head_name ?: "unknown");
+#else
+        pr_info("lsm_hook: %s symbol missing for %s, best-effort fallback is enabled\n", target_name,
+                hook->head_name ?: "unknown");
+#endif
+    }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     scalls_addr = kallsyms_lookup_name("static_calls_table");
@@ -185,8 +208,9 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         goto out_unlock;
     }
 
-    scalls = (struct lsm_static_call *)(scalls_addr + hook->head_offset);
-    for (i = 0; i < MAX_LSM_COUNT; i++) {
+    scalls = (struct lsm_static_call *)scalls_addr;
+    scalls_count = ksu_lsm_hook_scall_count();
+    for (i = 0; i < scalls_count; i++) {
         struct lsm_static_call *scall = &scalls[i];
         void **slot;
         void *current_hook;
@@ -202,32 +226,20 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
             ret = -EALREADY;
             goto out_unlock;
         }
-        if (ksu_lsm_hook_is_bpf_target(hook)) {
-            ksu_lsm_hook_log_entry(hook, entry, current_hook);
-            last_entry = entry;
-            last_scall = scall;
-            last_slot = slot;
-            last_hook = current_hook;
-        } else {
-            pr_debug("finding %d: 0x%lx [%pSb]\n", i, (unsigned long)current_hook, current_hook);
+        if (!ksu_lsm_hook_is_bpf_target(hook)) {
+            pr_debug("finding %zu: 0x%lx [%pSb]\n", i, (unsigned long)current_hook, current_hook);
         }
         if (!ksu_lsm_hook_matches_entry(hook, entry, current_hook, target))
             continue;
+
+        if (ksu_lsm_hook_is_bpf_target(hook))
+            ksu_lsm_hook_log_entry(hook, entry, current_hook);
 
         selected_entry = entry;
         selected_scall = scall;
         selected_slot = slot;
         selected_hook = current_hook;
         break;
-    }
-
-    if (!selected_entry && !target && ksu_lsm_hook_is_bpf_target(hook) && last_entry) {
-        selected_entry = last_entry;
-        selected_scall = last_scall;
-        selected_slot = last_slot;
-        selected_hook = last_hook;
-        pr_info("lsm_hook: %s unresolved, fallback to last candidate %px [%pSb]\n", target_name, selected_hook,
-                selected_hook);
     }
 
     if (!selected_entry) {
@@ -293,13 +305,15 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         break;
     }
 
+#if !IS_ENABLED(CONFIG_BPF_LSM)
     if (!selected_entry && !target && ksu_lsm_hook_is_bpf_target(hook) && last_entry) {
         selected_entry = last_entry;
         selected_slot = last_slot;
         selected_hook = last_hook;
-        pr_info("lsm_hook: %s unresolved, fallback to last candidate %px [%pSb]\n", target_name, selected_hook,
-                selected_hook);
+        pr_info("lsm_hook: %s unresolved and CONFIG_BPF_LSM is off, fallback to last candidate %px [%pSb]\n",
+                target_name, selected_hook, selected_hook);
     }
+#endif
 
     if (!selected_entry) {
         pr_err("lsm_hook: target %s not found in head %s\n", target_name, hook->head_name ?: "unknown");
