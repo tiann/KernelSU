@@ -26,9 +26,11 @@ struct ksu_lsm_hook {
 
 #define KSU_LSM_HOOK_INIT(head_member, hook_member, target_symbol, replacement_fn)                                     \
     {                                                                                                                  \
-        .head_name = #head_member, .target_name = target_symbol,                                                       \
+        .head_name = #head_member,                                                                                     \
+        .target_name = target_symbol,                                                                                  \
         .head_offset = offsetof(KSU_LSM_HOOK_HEADS_TYPE, head_member),                                                 \
-        .hook_offset = offsetof(struct security_hook_list, hook.hook_member), .replacement = (void *)(replacement_fn), \
+        .hook_offset = offsetof(struct security_hook_list, hook.hook_member),                                          \
+        .replacement = (void *)(replacement_fn),                                                                       \
     }
 
 #define KSU_LSM_HOOK_BPF_INIT(head_member, hook_member, replacement_fn)                                                \
