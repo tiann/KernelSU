@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail, ensure};
-use chrono::Local;
+use chrono::{Days, Local, NaiveDate};
 use std::fmt::Write as FmtWrite;
 use std::fs::{self, DirBuilder, File, OpenOptions, Permissions};
 use std::io::{self, ErrorKind, LineWriter, Read, Seek, Write};
@@ -12,7 +12,7 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::Duration;
 
-use crate::{defs, ksucalls, utils};
+use crate::{defs, ksucalls, module_config, utils};
 
 const KSU_EVENT_QUEUE_TYPE_DROPPED: u16 = u16::MAX;
 const KSU_EVENT_RECORD_FLAG_INTERNAL: u16 = 1;
@@ -21,6 +21,11 @@ const READ_BUF_SIZE: usize = 8192;
 const SULOGD_RESTART_DELAY: Duration = Duration::from_secs(3);
 const SULOG_DIR_MODE: u32 = 0o700;
 const SULOG_FILE_MODE: u32 = 0o600;
+pub const SULOG_CONFIG_MODULE_ID: &str = "internal.ksud.sulogd";
+const SULOG_RETENTION_CONFIG_KEY: &str = "log.retention.days";
+const SULOG_MAX_FILE_SIZE_CONFIG_KEY: &str = "log.max_file_size";
+const DEFAULT_SULOG_RETENTION_DAYS: u64 = 3;
+const DEFAULT_SULOG_MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
 
 #[repr(C, packed)]
 #[derive(Clone, Copy, Debug)]
@@ -88,6 +93,9 @@ struct PidFileGuard {
 
 struct DailyLogWriter {
     current_day: String,
+    current_index: u32,
+    current_size: u64,
+    max_file_size: u64,
     writer: LineWriter<File>,
 }
 
@@ -214,24 +222,44 @@ impl PidFileGuard {
 impl DailyLogWriter {
     fn open() -> Result<Self> {
         ensure_private_dir_exists(Path::new(defs::LOG_DIR))?;
+        let config = ensure_sulog_config()?;
+        cleanup_expired_logs(config.retention_days)?;
         let current_day = current_log_day();
-        let path = daily_log_path(&current_day);
-        let writer = open_line_writer(&path)?;
+        let (current_index, current_size, writer) =
+            open_log_writer_for_day(&current_day, config.max_file_size)?;
         Ok(Self {
             current_day,
+            current_index,
+            current_size,
+            max_file_size: config.max_file_size,
             writer,
         })
     }
 
-    fn rotate_if_needed(&mut self) -> Result<()> {
+    fn rotate_if_needed(&mut self, next_write_len: usize) -> Result<()> {
         let current_day = current_log_day();
-        if current_day == self.current_day {
+        let next_write_len = u64::try_from(next_write_len).context("invalid log line length")?;
+        if current_day != self.current_day {
+            let config = ensure_sulog_config()?;
+            cleanup_expired_logs(config.retention_days)?;
+            let (current_index, current_size, writer) =
+                open_log_writer_for_day(&current_day, config.max_file_size)?;
+            self.writer = writer;
+            self.current_day = current_day;
+            self.current_index = current_index;
+            self.current_size = current_size;
+            self.max_file_size = config.max_file_size;
             return Ok(());
         }
 
-        let path = daily_log_path(&current_day);
-        self.writer = open_line_writer(&path)?;
-        self.current_day = current_day;
+        if self.current_size > 0
+            && self.current_size.saturating_add(next_write_len) > self.max_file_size
+        {
+            self.current_index = self.current_index.saturating_add(1);
+            let path = daily_log_path(&self.current_day, self.current_index);
+            self.writer = open_line_writer(&path)?;
+            self.current_size = 0;
+        }
         Ok(())
     }
 }
@@ -254,8 +282,137 @@ fn current_log_day() -> String {
     Local::now().format("%Y-%m-%d").to_string()
 }
 
-fn daily_log_path(day: &str) -> PathBuf {
-    Path::new(defs::LOG_DIR).join(format!("sulog-{day}.log"))
+fn daily_log_path(day: &str, index: u32) -> PathBuf {
+    let file_name = if index == 0 {
+        format!("sulog-{day}.log")
+    } else {
+        format!("sulog-{day}-{index}.log")
+    };
+    Path::new(defs::LOG_DIR).join(file_name)
+}
+
+fn parse_retention_days(value: &str) -> Result<u64> {
+    let days = value
+        .trim()
+        .parse::<u64>()
+        .with_context(|| format!("invalid {SULOG_RETENTION_CONFIG_KEY} value: '{value}'"))?;
+    ensure!(
+        days > 0,
+        "{SULOG_RETENTION_CONFIG_KEY} must be greater than 0"
+    );
+    Ok(days)
+}
+
+fn parse_max_file_size(value: &str) -> Result<u64> {
+    let size = value
+        .trim()
+        .parse::<u64>()
+        .with_context(|| format!("invalid {SULOG_MAX_FILE_SIZE_CONFIG_KEY} value: '{value}'"))?;
+    ensure!(
+        size > 0,
+        "{SULOG_MAX_FILE_SIZE_CONFIG_KEY} must be greater than 0"
+    );
+    Ok(size)
+}
+
+#[derive(Clone, Copy, Debug)]
+struct SulogConfig {
+    retention_days: u64,
+    max_file_size: u64,
+}
+
+fn ensure_config_value(key: &str, default_value: u64) -> Result<String> {
+    let config = module_config::merge_configs(SULOG_CONFIG_MODULE_ID)?;
+    if let Some(value) = config.get(key) {
+        return Ok(value.clone());
+    }
+
+    let default_value = default_value.to_string();
+    module_config::set_config_value(
+        SULOG_CONFIG_MODULE_ID,
+        key,
+        &default_value,
+        module_config::ConfigType::Persist,
+    )?;
+    Ok(default_value)
+}
+
+fn ensure_sulog_config() -> Result<SulogConfig> {
+    let retention_days = parse_retention_days(&ensure_config_value(
+        SULOG_RETENTION_CONFIG_KEY,
+        DEFAULT_SULOG_RETENTION_DAYS,
+    )?)?;
+    let max_file_size = parse_max_file_size(&ensure_config_value(
+        SULOG_MAX_FILE_SIZE_CONFIG_KEY,
+        DEFAULT_SULOG_MAX_FILE_SIZE,
+    )?)?;
+    Ok(SulogConfig {
+        retention_days,
+        max_file_size,
+    })
+}
+
+fn parse_log_date_from_path(path: &Path) -> Option<NaiveDate> {
+    parse_log_name(path).map(|(date, _)| date)
+}
+
+fn parse_log_name(path: &Path) -> Option<(NaiveDate, u32)> {
+    let file_name = path.file_name()?.to_str()?;
+    let name = file_name.strip_prefix("sulog-")?.strip_suffix(".log")?;
+    let (date_str, index) = if name.len() == "YYYY-MM-DD".len() {
+        (name, 0)
+    } else if let Some((date_str, index_str)) = name.rsplit_once('-') {
+        if date_str.len() == "YYYY-MM-DD".len() && index_str.chars().all(|ch| ch.is_ascii_digit())
+        {
+            (date_str, index_str.parse::<u32>().ok()?)
+        } else {
+            let (legacy_date_str, legacy_index_str) = name.rsplit_once('.')?;
+            (
+                legacy_date_str,
+                legacy_index_str.parse::<u32>().ok()?,
+            )
+        }
+    } else {
+        let (legacy_date_str, legacy_index_str) = name.rsplit_once('.')?;
+        (
+            legacy_date_str,
+            legacy_index_str.parse::<u32>().ok()?,
+        )
+    };
+    Some((NaiveDate::parse_from_str(date_str, "%Y-%m-%d").ok()?, index))
+}
+
+fn cleanup_expired_logs(retention_days: u64) -> Result<()> {
+    let log_dir = Path::new(defs::LOG_DIR);
+    if !log_dir.exists() {
+        return Ok(());
+    }
+
+    let today = Local::now().date_naive();
+    let cutoff = today
+        .checked_sub_days(Days::new(retention_days.saturating_sub(1)))
+        .context("failed to compute sulog retention cutoff")?;
+
+    for entry in
+        fs::read_dir(log_dir).with_context(|| format!("failed to read {}", log_dir.display()))?
+    {
+        let entry = entry.with_context(|| format!("failed to read {}", log_dir.display()))?;
+        let path = entry.path();
+        let Some(log_date) = parse_log_date_from_path(&path) else {
+            continue;
+        };
+
+        if log_date < cutoff {
+            fs::remove_file(&path)
+                .with_context(|| format!("failed to remove expired sulog {}", path.display()))?;
+            log::info!(
+                "removed expired sulog log {}, retention_days={retention_days}",
+                path.display()
+            );
+        }
+    }
+
+    Ok(())
 }
 
 fn ensure_private_dir_exists(path: &Path) -> Result<()> {
@@ -285,6 +442,36 @@ fn open_line_writer(path: &Path) -> Result<LineWriter<File>> {
             )
         })?;
     Ok(LineWriter::new(file))
+}
+
+fn open_log_writer_for_day(day: &str, max_file_size: u64) -> Result<(u32, u64, LineWriter<File>)> {
+    let mut highest_index = 0u32;
+    let mut found = false;
+    for entry in fs::read_dir(defs::LOG_DIR)
+        .with_context(|| format!("failed to read {}", defs::LOG_DIR))?
+    {
+        let entry = entry.with_context(|| format!("failed to read {}", defs::LOG_DIR))?;
+        let path = entry.path();
+        let Some((log_date, index)) = parse_log_name(&path) else {
+            continue;
+        };
+        if log_date == NaiveDate::parse_from_str(day, "%Y-%m-%d").context("invalid current day")? {
+            highest_index = highest_index.max(index);
+            found = true;
+        }
+    }
+
+    let mut index = if found { highest_index } else { 0 };
+    let mut path = daily_log_path(day, index);
+    let mut current_size = fs::metadata(&path).map(|meta| meta.len()).unwrap_or(0);
+    if current_size >= max_file_size && current_size > 0 {
+        index = index.saturating_add(1);
+        path = daily_log_path(day, index);
+        current_size = fs::metadata(&path).map(|meta| meta.len()).unwrap_or(0);
+    }
+
+    let writer = open_line_writer(&path)?;
+    Ok((index, current_size, writer))
 }
 
 fn read_boot_id() -> Result<String> {
@@ -498,10 +685,17 @@ fn format_dropped_line(header: &EventRecordHeader, info: &DroppedInfo) -> String
 }
 
 fn write_log_line(writer: &mut DailyLogWriter, line: &str) -> io::Result<()> {
-    writer.rotate_if_needed().map_err(io::Error::other)?;
+    let write_len = line
+        .len()
+        .checked_add(1)
+        .ok_or_else(|| io::Error::other("sulog line length overflow"))?;
+    writer.rotate_if_needed(write_len).map_err(io::Error::other)?;
     writer.writer.write_all(line.as_bytes())?;
     writer.writer.write_all(b"\n")?;
     writer.writer.flush()?;
+    writer.current_size = writer
+        .current_size
+        .saturating_add(u64::try_from(write_len).map_err(io::Error::other)?);
     Ok(())
 }
 
