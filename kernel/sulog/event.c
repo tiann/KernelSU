@@ -202,7 +202,6 @@ static struct ksu_sulog_pending_event *ksu_sulog_capture(__u16 event_type, const
     __u32 remaining;
     char *filename_buf;
     char *argv_buf;
-
     if (!ksu_sulog_is_enabled())
         return NULL;
 
