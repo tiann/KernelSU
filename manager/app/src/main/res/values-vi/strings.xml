@@ -218,11 +218,11 @@
     <string name="settings_color_spec">Thông số màu sắc</string>
     <string name="settings_color_style">Kiểu màu sắc</string>
     <string name="settings_enable_blur">Mờ</string>
-    <string name="settings_enable_blur_summary">Bật hiệu ứng làm mờ cho thanh tiêu đề và thanh điều hướng.</string>
+    <string name="settings_enable_blur_summary">Kích hoạt hiệu ứng làm mờ cho thanh tiêu đề và thanh điều hướng.</string>
     <string name="settings_floating_bottom_bar">Thanh điều hướng nổi</string>
     <string name="settings_floating_bottom_bar_summary">Sử dụng thanh điều hướng nổi kiểu Apple.</string>
     <string name="settings_enable_glass">Liquid Glass</string>
-    <string name="settings_enable_glass_summary">Bật hiệu ứng Liquid Glass cho thanh điều hướng nổi</string>
+    <string name="settings_enable_glass_summary">Kích hoạt hiệu ứng Liquid Glass cho thanh điều hướng nổi</string>
     <string name="show_only_primary_user_apps">Không hiển thị các ứng dụng nhân bản</string>
     <string name="settings_auto_jailbreak">Tự động Jailbreak</string>
     <string name="settings_auto_jailbreak_summary">Tự động sử dụng Magica để nâng cao quyền hạn khi phát hiện SELinux ở chế độ Permissive lúc khởi động. Yêu cầu cấp quyền tự khởi động cho ứng dụng này.</string>
