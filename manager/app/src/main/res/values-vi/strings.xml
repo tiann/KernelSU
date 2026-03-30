@@ -179,9 +179,9 @@
     <string name="module_shortcut_title">Tạo shortcut</string>
     <string name="module_shortcut_name_label">Tên shortcut</string>
     <string name="module_shortcut_icon_pick">Chọn icon tuỳ chỉnh</string>
-    <string name="module_shortcut_not_supported">Launcher không hỗ trợ shortcut.</string>
-    <string name="module_shortcut_created">Shortcut đã được tạo.</string>
-    <string name="module_shortcut_updated">Shortcut đã được cập nhật.</string>
+    <string name="module_shortcut_not_supported">Launcher không hỗ trợ shortcut</string>
+    <string name="module_shortcut_created">Shortcut đã được tạo</string>
+    <string name="module_shortcut_updated">Shortcut đã được cập nhật</string>
     <string name="module_shortcut_delete">Xoá shortcut</string>
     <string name="module_shortcut_permission_tip_xiaomi">Vui lòng bật quyền \"Shortcut trên màn hình\" cho ứng dụng này trong Cài đặt Xiaomi.</string>
     <string name="module_shortcut_permission_tip_oppo">Vui lòng bật quyền \"Shortcut trên màn hình\" cho ứng dụng này trong Cài đặt OPPO.</string>
@@ -222,12 +222,12 @@
     <string name="settings_floating_bottom_bar">Thanh điều hướng nổi</string>
     <string name="settings_floating_bottom_bar_summary">Sử dụng thanh điều hướng nổi kiểu Apple.</string>
     <string name="settings_enable_glass">Liquid Glass</string>
-    <string name="settings_enable_glass_summary">Kích hoạt hiệu ứng Liquid Glass cho thanh điều hướng nổi</string>
+    <string name="settings_enable_glass_summary">Kích hoạt hiệu ứng Liquid Glass cho thanh điều hướng nổi.</string>
     <string name="show_only_primary_user_apps">Không hiển thị các ứng dụng nhân bản</string>
     <string name="settings_auto_jailbreak">Tự động Jailbreak</string>
     <string name="settings_auto_jailbreak_summary">Tự động sử dụng Magica để nâng cao quyền hạn khi phát hiện SELinux ở chế độ Permissive lúc khởi động. Yêu cầu cấp quyền tự khởi động cho ứng dụng này.</string>
     <string name="allow_shell">Luôn cấp quyền root cho Shell</string>
-    <string name="allow_shell_summary">Luôn cho phép ADB Shell gọi lệnh SU. Không bật tùy chọn này trừ khi thực sự cần thiết.</string>
+    <string name="allow_shell_summary">Luôn cho phép ADB Shell gọi lệnh SU. Không nên bật tùy chọn này trừ khi thực sự cần thiết.</string>
     <string name="enable_adb">Buộc kích hoạt ADB khi khởi động</string>
     <string name="enable_adb_summary">Buộc kích hoạt chế độ gỡ lỗi USB và tắt xác thực ADB. Không nên bật tùy chọn này trừ khi thực sự cần thiết.</string>
     <string name="advanced_options">Tùy chọn Nâng cao</string>
