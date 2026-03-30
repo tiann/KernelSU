@@ -231,7 +231,6 @@
     <string name="enable_adb_summary">强制允许 USB 调试并取消 adb 认证，非必要请勿开启。</string>
     <string name="advanced_options">高级选项</string>
     <string name="expand">展开</string>
-
     <string name="download_channel_name">模块下载</string>
     <string name="download_progress_title">正在下载 %s</string>
     <string name="download_complete_title">下载完成</string>
