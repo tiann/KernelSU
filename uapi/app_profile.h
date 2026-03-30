@@ -13,7 +13,7 @@ struct root_profile {
     __s32 uid;
     __s32 gid;
 
-    __s32 groups_count;
+    __u32 groups_count;
     __s32 groups[KSU_MAX_GROUPS];
 
     /* kernel_cap_t is u32[2] for capabilities v3 */
