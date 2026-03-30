@@ -45,7 +45,7 @@ object AppIconCache {
             }
 
             withContext(Dispatchers.IO) {
-                val loader = AppIconLoader(size, true, context)
+                val loader = AppIconLoader(size, false, context)
                 val bitmap = loader.loadIcon(applicationInfo)
 
                 val gpuBitmap = try {
