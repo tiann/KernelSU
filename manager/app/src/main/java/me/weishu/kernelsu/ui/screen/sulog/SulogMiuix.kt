@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,9 +47,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,9 +83,9 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperListPopup
-import top.yukonga.miuix.kmp.extra.WindowDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -98,8 +102,8 @@ fun SulogScreenMiuix(
 ) {
     val enableBlur = LocalEnableBlur.current
     val scrollBehavior = MiuixScrollBehavior()
-    val dynamicTopPadding = remember(scrollBehavior.state.collapsedFraction) {
-        12.dp * (1f - scrollBehavior.state.collapsedFraction)
+    val dynamicTopPadding by remember {
+        derivedStateOf { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
     val hazeState = remember { HazeState() }
     val hazeStyle = if (enableBlur) {
@@ -135,12 +139,11 @@ fun SulogScreenMiuix(
         actions.onSearchTextChange(nextStatus.searchText)
     }
 
-    if (selectedEntry != null) {
-        SulogDetailDialog(
-            entry = selectedEntry!!,
-            onDismiss = { selectedEntry = null },
-        )
-    }
+    SulogDetailDialog(
+        show = selectedEntry != null,
+        entry = selectedEntry,
+        onDismiss = { selectedEntry = null },
+    )
 
     Scaffold(
         topBar = {
@@ -166,7 +169,7 @@ fun SulogScreenMiuix(
                     },
                     actions = {
                         IconButton(
-                            modifier = Modifier.padding(end = 16.dp),
+                            modifier = Modifier.padding(end = 8.dp),
                             onClick = actions.onCleanFile,
                         ) {
                             Icon(
@@ -224,13 +227,18 @@ fun SulogScreenMiuix(
                     modifier = Modifier
                         .fillMaxSize()
                         .overScrollVertical(),
-                    contentPadding = PaddingValues(top = 6.dp, bottom = imeBottomPadding),
                 ) {
+                    item {
+                        Spacer(Modifier.height(6.dp))
+                    }
                     sulogEntriesSection(
                         entries = state.visibleEntries,
                         errorMessage = state.errorMessage,
                         onEntryClick = { selectedEntry = it },
                     )
+                    item {
+                        Spacer(Modifier.height(imeBottomPadding))
+                    }
                 }
             }
         },
@@ -308,8 +316,7 @@ fun SulogScreenMiuix(
                         Spacer(
                             Modifier.height(
                                 WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                        WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() +
-                                        12.dp
+                                        WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
                             )
                         )
                     }
@@ -392,7 +399,7 @@ private fun SulogEntryCard(
             .padding(bottom = 12.dp),
         onClick = onClick,
         showIndication = true,
-        insideMargin = PaddingValues(start = 10.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+        insideMargin = PaddingValues(16.dp),
     ) {
         val layoutDirection = LocalLayoutDirection.current
         Row(
@@ -506,14 +513,15 @@ private fun WarningCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp),
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 12.dp),
         colors = CardDefaults.defaultColors(color = colorScheme.errorContainer),
+        insideMargin = PaddingValues(16.dp),
         showIndication = false,
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -531,38 +539,53 @@ private fun WarningCard(
 
 @Composable
 private fun SulogDetailDialog(
-    entry: SulogEntry,
+    show: Boolean,
+    entry: SulogEntry?,
     onDismiss: () -> Unit,
 ) {
-    WindowDialog(
-        show = true,
-        title = sulogEntryTitle(entry),
+    var lastEntry by remember { mutableStateOf(entry) }
+    if (entry != null) lastEntry = entry
+    val displayEntry = lastEntry ?: return
+    SuperDialog(
+        show = show,
+        title = sulogEntryTitle(displayEntry),
         onDismissRequest = onDismiss,
         content = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            ) {
-                SelectionContainer {
+            Column {
+                SelectionContainer(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState()),
+                ) {
                     Text(
-                        text = entry.detailText,
+                        text = formatDetailText(displayEntry.detailText),
                         fontSize = 14.sp,
                         fontFamily = FontFamily.Monospace,
                     )
                 }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(android.R.string.ok),
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.textButtonColorsPrimary(),
-                    )
-                }
+                Spacer(Modifier.height(12.dp))
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(android.R.string.ok),
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.textButtonColorsPrimary(),
+                )
             }
         },
     )
+}
+
+private fun formatDetailText(text: String) = buildAnnotatedString {
+    text.lineSequence().forEachIndexed { index, line ->
+        if (index > 0) append('\n')
+        val colonIndex = line.indexOf(": ")
+        if (colonIndex >= 0) {
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(line, 0, colonIndex + 2)
+            }
+            append(line, colonIndex + 2, line.length)
+        } else {
+            append(line)
+        }
+    }
 }

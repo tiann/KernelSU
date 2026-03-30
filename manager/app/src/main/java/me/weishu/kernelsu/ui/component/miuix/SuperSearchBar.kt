@@ -208,7 +208,7 @@ fun SearchStatus.SearchPager(
                     else Modifier
                 ),
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (!searchStatus.isCollapsed()) {
                 Box(
@@ -229,7 +229,7 @@ fun SearchStatus.SearchPager(
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary,
                     modifier = Modifier
-                        .padding(start = 4.dp, end = 16.dp, top = searchBarTopPadding)
+                        .padding(start = 4.dp, end = 16.dp, top = searchBarTopPadding, bottom = 6.dp)
                         .clickable(
                             interactionSource = null,
                             enabled = searchStatus.isExpand(),

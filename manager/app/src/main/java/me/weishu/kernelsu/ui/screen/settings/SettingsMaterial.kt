@@ -73,7 +73,7 @@ fun SettingPagerMaterial(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
     val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
-    var showBottomsheet by remember { mutableStateOf(false) }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     UninstallDialog(
         show = showUninstallDialog.value,
@@ -82,9 +82,7 @@ fun SettingPagerMaterial(
 
     Scaffold(
         topBar = {
-            TopBar(
-                scrollBehavior = scrollBehavior
-            )
+            TopBar(scrollBehavior = scrollBehavior)
         },
         snackbarHost = { SnackbarHost(snackBarHost) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
@@ -283,7 +281,7 @@ fun SettingPagerMaterial(
                 content = listOf(
                     {
                         SegmentedListItem(
-                            onClick = { showBottomsheet = true },
+                            onClick = { showBottomSheet = true },
                             headlineContent = { Text(stringResource(id = R.string.send_log)) },
                             leadingContent = {
                                 Icon(
@@ -309,8 +307,8 @@ fun SettingPagerMaterial(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (showBottomsheet) {
-                SendLogBottomSheet { showBottomsheet = false }
+            if (showBottomSheet) {
+                SendLogBottomSheet { showBottomSheet = false }
             }
             Spacer(modifier = Modifier.height(bottomInnerPadding))
         }

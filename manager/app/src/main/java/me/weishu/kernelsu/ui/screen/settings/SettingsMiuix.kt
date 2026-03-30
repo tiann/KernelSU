@@ -69,7 +69,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 fun SettingPagerMiuix(
     uiState: SettingsUiState,
     actions: SettingsScreenActions,
-    bottomInnerPadding: Dp
+    bottomInnerPadding: Dp,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlur = LocalEnableBlur.current
@@ -100,7 +100,7 @@ fun SettingPagerMiuix(
             )
         },
         popupHost = { },
-        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -277,7 +277,7 @@ fun SettingPagerMiuix(
                                     Icons.AutoMirrored.Rounded.Article,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_sulog),
-                                    tint = colorScheme.onBackground
+                                    tint = if (uiState.sulogStatus == "supported") colorScheme.onSurfaceVariantSummary else colorScheme.disabledOnSecondaryVariant
                                 )
                             },
                             enabled = uiState.sulogStatus == "supported",
@@ -350,7 +350,7 @@ fun SettingPagerMiuix(
                                     tint = colorScheme.onBackground,
                                 )
                             },
-                            onClick = { showUninstallDialog.value = true }
+                            onClick = { showUninstallDialog.value = true },
                         )
                         UninstallDialog(
                             show = showUninstallDialog.value,
@@ -392,7 +392,7 @@ fun SettingPagerMiuix(
                                 tint = colorScheme.onBackground
                             )
                         },
-                        onClick = actions.onOpenAbout
+                        onClick = actions.onOpenAbout,
                     )
                 }
                 Spacer(Modifier.height(bottomInnerPadding))
