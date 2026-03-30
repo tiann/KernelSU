@@ -25,7 +25,7 @@
     <string name="install">安裝</string>
     <string name="reboot">重新啟動</string>
     <string name="settings">設定</string>
-    <string name="reboot_userspace">用戶空間重啟</string>
+    <string name="reboot_userspace">使用者空間重啟</string>
     <string name="reboot_recovery">重啟至 Recovery</string>
     <string name="reboot_bootloader">重啟至 Bootloader</string>
     <string name="reboot_download">重啟至 Download</string>
@@ -52,7 +52,7 @@
     <string name="profile_template">模板</string>
     <string name="profile_namespace_inherited">繼承</string>
     <string name="profile_namespace_global">全域</string>
-    <string name="profile_capabilities">權限能力</string>
+    <string name="profile_capabilities">Capabilities</string>
     <string name="profile_umount_modules">卸載模組（Umount）</string>
     <string name="failed_to_update_app_profile">無法為 %s 更新 App Profile</string>
     <string name="profile_selinux_rules">Rules</string>
@@ -64,7 +64,7 @@
     <string name="profile_custom">自訂</string>
     <string name="profile_namespace">掛載命名空間</string>
     <string name="profile_namespace_individual">獨立</string>
-    <string name="profile_groups">群組</string>
+    <string name="profile_groups">Groups</string>
     <string name="profile_selinux_context">SELinux</string>
     <string name="settings_umount_modules_default">預設卸載模組</string>
     <string name="module_downloading">正在下載模組：%s</string>
@@ -146,7 +146,7 @@
     <string name="tab_info">資訊</string>
     <string name="no_such_module">模組 %s 不存在</string>
     <string name="module_unavailable">模組 %s 已停用、更新中或待移除</string>
-    <string name="select_file_tip_nogki">請選擇需要修補的 GKI 裝置映像檔</string>
+    <string name="select_file_tip_nogki">請選擇需要修補的 GKI 裝置映像檔！</string>
     <string name="settings_theme_summary">選擇主題模式。</string>
     <string name="settings_theme_mode_system">跟隨系統</string>
     <string name="settings_theme_mode_light">淺色模式</string>
@@ -219,7 +219,7 @@
     <string name="settings_floating_bottom_bar_summary">使用 Apple 風格懸浮底部欄</string>
     <string name="settings_enable_glass">液態玻璃</string>
     <string name="settings_enable_glass_summary">為懸浮底部欄啟用液態玻璃效果</string>
-    <string name="show_only_primary_user_apps">僅顯示主要用戶的 App</string>
+    <string name="show_only_primary_user_apps">僅顯示主要使用者 App</string>
     <string name="settings_auto_jailbreak_summary">開機時若偵測到寬容模式 SELinux，將自動使用 Magica 提升權限。需先向本程式授予「自動啟動」權限。</string>
     <string name="settings_auto_jailbreak">自動越獄</string>
     <string name="allow_shell">保持向 Shell 授予 Root 權限</string>
