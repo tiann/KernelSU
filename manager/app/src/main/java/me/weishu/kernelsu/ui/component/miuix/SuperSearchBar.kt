@@ -30,10 +30,14 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -41,7 +45,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +52,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -57,10 +61,14 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -277,63 +285,79 @@ fun SearchBar(
     searchBarTopPadding: Dp = 12.dp,
 ) {
     val focusRequester = remember { FocusRequester() }
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(searchStatus.searchText)) }
 
-    InputField(
-        query = searchStatus.searchText,
-        onQueryChange = { onSearchStatusChange(searchStatus.copy(searchText = it)) },
-        label = "",
-        leadingIcon = {
-            Icon(
-                imageVector = MiuixIcons.Basic.Search,
-                contentDescription = "back",
-                modifier = Modifier
-                    .size(44.dp)
-                    .padding(start = 16.dp, end = 8.dp),
-                tint = colorScheme.onSurfaceContainerHigh,
-            )
+    LaunchedEffect(searchStatus.searchText) {
+        if (textFieldValue.text != searchStatus.searchText) {
+            textFieldValue = TextFieldValue(searchStatus.searchText)
+        }
+    }
+
+    BasicTextField(
+        value = textFieldValue,
+        onValueChange = {
+            textFieldValue = it
+            onSearchStatusChange(searchStatus.copy(searchText = it.text))
         },
-        trailingIcon = {
-            AnimatedVisibility(
-                searchStatus.searchText.isNotEmpty(),
-                enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut(),
-            ) {
-                Icon(
-                    imageVector = MiuixIcons.Basic.SearchCleanup,
-                    tint = colorScheme.onSurface,
-                    contentDescription = "Clean",
-                    modifier = Modifier
-                        .size(44.dp)
-                        .padding(start = 8.dp, end = 16.dp)
-                        .clickable(
-                            interactionSource = null,
-                            indication = null
-                        ) {
-                            onSearchStatusChange(searchStatus.copy(searchText = ""))
-                        },
-                )
-            }
-        },
+        singleLine = true,
+        textStyle = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 17.sp,
+            color = colorScheme.onSurface
+        ),
+        cursorBrush = SolidColor(colorScheme.primary),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(top = searchBarTopPadding, bottom = 6.dp)
+            .heightIn(min = 45.dp)
+            .background(colorScheme.surfaceContainerHigh, CircleShape)
             .focusRequester(focusRequester),
-        onSearch = { },
-        expanded = searchStatus.shouldExpand(),
-        onExpandedChange = {
-            onSearchStatusChange(
-                searchStatus.copy(
-                    current = if (it) SearchStatus.Status.EXPANDED else SearchStatus.Status.COLLAPSED
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = MiuixIcons.Basic.Search,
+                    contentDescription = "search",
+                    modifier = Modifier
+                        .size(44.dp)
+                        .padding(start = 16.dp, end = 8.dp),
+                    tint = colorScheme.onSurfaceContainerHigh,
                 )
-            )
+                Box(modifier = Modifier.weight(1f)) {
+                    innerTextField()
+                }
+                AnimatedVisibility(
+                    searchStatus.searchText.isNotEmpty(),
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut(),
+                ) {
+                    Icon(
+                        imageVector = MiuixIcons.Basic.SearchCleanup,
+                        tint = colorScheme.onSurface,
+                        contentDescription = "Clean",
+                        modifier = Modifier
+                            .size(44.dp)
+                            .padding(start = 8.dp, end = 16.dp)
+                            .clickable(
+                                interactionSource = null,
+                                indication = null
+                            ) {
+                                textFieldValue = TextFieldValue("")
+                                onSearchStatusChange(searchStatus.copy(searchText = ""))
+                            },
+                    )
+                }
+            }
         }
     )
+
     LaunchedEffect(Unit) {
-        if (!expanded && searchStatus.shouldExpand()) {
+        if (searchStatus.isAnimatingExpand()) {
             focusRequester.requestFocus()
-            expanded = true
         }
     }
 }
