@@ -548,9 +548,11 @@ private fun InfoCard(systemInfo: SystemInfo) {
                 content = selinuxDisplay,
             )
             val seccompDisplay = when (systemInfo.seccompStatus) {
-                "Enabled" -> stringResource(R.string.seccomp_status_enabled)
-                "Disabled" -> stringResource(R.string.seccomp_status_disabled)
-                else -> stringResource(R.string.seccomp_status_not_supported)
+                -1 -> stringResource(R.string.seccomp_status_not_supported)
+                0 -> stringResource(R.string.seccomp_status_disabled)
+                1 -> stringResource(R.string.seccomp_status_strict)
+                2 -> stringResource(R.string.seccomp_status_filter)
+                else -> stringResource(R.string.seccomp_status_unknown)
             }
             InfoText(
                 title = stringResource(R.string.home_seccomp_status),
@@ -599,7 +601,7 @@ private val previewSystemInfo = SystemInfo(
     managerVersion = "1.0.0 (10000)",
     fingerprint = "google/raven/raven:14/AP1A.240305.019:user/release-keys",
     selinuxStatus = "Enforcing",
-    seccompStatus = "Enabled"
+    seccompStatus = 2
 )
 
 private val previewUriHandler = object : UriHandler {

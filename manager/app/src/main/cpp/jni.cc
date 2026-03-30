@@ -340,6 +340,12 @@ Java_me_weishu_kernelsu_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid)
     return nullptr;
 }
 
+extern "C"
+JNIEXPORT jint JNICALL
+Java_me_weishu_kernelsu_Natives_getSeccompStatus(JNIEnv *env, jobject thiz) {
+    return prctl(PR_GET_SECCOMP);
+}
+
 int fork_dont_care_and_exec_ksud(const char *path, const char *pkg) {
     int pid = fork();
     if (pid < 0) {

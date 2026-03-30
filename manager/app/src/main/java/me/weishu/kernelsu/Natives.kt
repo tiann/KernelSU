@@ -85,6 +85,12 @@ object Natives {
 
     external fun getSuperuserCount(): Int
 
+    /**
+     * Get seccomp status via prctl(PR_GET_SECCOMP).
+     * Returns 0 (disabled), 1 (strict), 2 (filter), or -1 (not supported).
+     */
+    external fun getSeccompStatus(): Int
+
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
     private const val NOBODY_UID = 9999
 
