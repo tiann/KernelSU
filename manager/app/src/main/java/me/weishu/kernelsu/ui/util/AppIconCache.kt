@@ -3,12 +3,26 @@ package me.weishu.kernelsu.ui.util
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
+import android.os.Process
 import android.util.LruCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import me.zhanghai.android.appiconloader.AppIconLoader
+
+/**
+ * Remap the uid to the current user to avoid SecurityException
+ * when loading icons for cross-user apps.
+ * See: https://github.com/zhanghai/AppIconLoader/issues/3
+ */
+fun ApplicationInfo.withCurrentUserUid(): ApplicationInfo {
+    val myUserId = Process.myUid() / 100000
+    val appId = uid % 100000
+    val targetUid = myUserId * 100000 + appId
+    if (uid == targetUid) return this
+    return ApplicationInfo(this).apply { uid = targetUid }
+}
 
 object AppIconCache {
     private val maxMemory = Runtime.getRuntime().maxMemory() / 1024
@@ -46,7 +60,7 @@ object AppIconCache {
 
             withContext(Dispatchers.IO) {
                 val loader = AppIconLoader(size, false, context)
-                val bitmap = loader.loadIcon(applicationInfo)
+                val bitmap = loader.loadIcon(applicationInfo.withCurrentUserUid())
 
                 val gpuBitmap = try {
                     bitmap.copy(Bitmap.Config.HARDWARE, false)?.also {
