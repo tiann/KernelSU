@@ -116,7 +116,7 @@
     <string name="refresh_complete">重新整理完成</string>
     <string name="settings_sucompat">傳統 SU 指令支援</string>
     <string name="settings_sucompat_summary">允許透過 /system/bin/su 獲取 Root 權限，僅限新的處理程序</string>
-    <string name="settings_kernel_umount">核心 Umount</string>
+    <string name="settings_kernel_umount">核心層級 Umount</string>
     <string name="settings_kernel_umount_summary">從核心層級（kernel-level）對選定的 App 移除模組修改</string>
     <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
@@ -210,7 +210,7 @@
     <string name="settings_ui_mode">介面風格</string>
     <string name="settings_ui_mode_summary">選擇介面顯示風格</string>
     <string name="settings_page_scale">介面縮放</string>
-    <string name="settings_page_scale_summary">調整顯示比例</string>
+    <string name="settings_page_scale_summary">調整介面顯示比例</string>
     <string name="settings_color_spec">色彩規範</string>
     <string name="settings_color_style">色彩風格</string>
     <string name="settings_enable_blur">模糊</string>
