@@ -206,9 +206,9 @@
     <string name="module_shortcut_title">Create shortcut</string>
     <string name="module_shortcut_name_label">Shortcut name</string>
     <string name="module_shortcut_icon_pick">Choose custom icon</string>
-    <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts.</string>
-    <string name="module_shortcut_created">Shortcut created on desktop.</string>
-    <string name="module_shortcut_updated">Shortcut updated.</string>
+    <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts</string>
+    <string name="module_shortcut_created">Shortcut created on desktop</string>
+    <string name="module_shortcut_updated">Shortcut updated</string>
     <string name="module_shortcut_delete">Delete shortcut</string>
     <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Home screen shortcuts\" permission for this app in Xiaomi settings.</string>
     <string name="module_shortcut_permission_tip_oppo">Please enable \"Create Home screen shortcuts\" permission for this app in OPPO settings.</string>
@@ -219,11 +219,11 @@
     <string name="current_kmi">KMI version of this device: %s</string>
     <string name="current_device_kmi">This device KMI</string>
     <string name="settings_enable_blur">Blur</string>
-    <string name="settings_enable_blur_summary">Enable blur effect for top and bottom bars</string>
+    <string name="settings_enable_blur_summary">Enable blur effect for top and bottom bars.</string>
     <string name="settings_floating_bottom_bar">Floating bottom bar</string>
-    <string name="settings_floating_bottom_bar_summary">Use Apple style floating bottom bar</string>
+    <string name="settings_floating_bottom_bar_summary">Use Apple style floating bottom bar.</string>
     <string name="settings_enable_glass">Liquid glass</string>
-    <string name="settings_enable_glass_summary">Enable liquid glass effect for floating bottom bar</string>
+    <string name="settings_enable_glass_summary">Enable liquid glass effect for floating bottom bar.</string>
     <string name="show_only_primary_user_apps">Show only primary user apps</string>
     <string name="settings_auto_jailbreak">Auto jailbreak</string>
     <string name="settings_auto_jailbreak_summary">Automatically use Magica to escalate privileges when Permissive SELinux is detected at boot. Requires granting autostart permission to this app.</string>
