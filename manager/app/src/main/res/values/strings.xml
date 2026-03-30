@@ -215,7 +215,7 @@
     <string name="module_shortcut_permission_tip_default">If shortcut creation fails, please enable desktop shortcut permission for this app in system settings.</string>
     <string name="no_such_module">Module %s does not exist</string>
     <string name="module_unavailable">Module %s is disabled, updating, or pending removal</string>
-    <string name="select_file_tip_nogki">Please select the GKI device image file you want to patch</string>
+    <string name="select_file_tip_nogki">Please select the GKI device image file you want to patch!</string>
     <string name="current_kmi">KMI version of this device: %s</string>
     <string name="current_device_kmi">This device KMI</string>
     <string name="settings_enable_blur">Blur</string>
