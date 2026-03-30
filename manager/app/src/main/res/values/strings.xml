@@ -153,7 +153,7 @@
     <string name="log_saved">Logs saved</string>
     <string name="settings_sucompat">Classic SU command</string>
     <string name="settings_sucompat_summary">Allow root access via /system/bin/su, in new processes.</string>
-    <string name="settings_kernel_umount">Umount modules (kernel-level)</string>
+    <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile.</string>
     <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
     <string name="feature_status_managed_summary">This feature is managed by a module</string>
@@ -233,7 +233,6 @@
     <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
     <string name="advanced_options">Advanced Options</string>
     <string name="expand">Expand</string>
-
     <string name="download_channel_name">Module Downloads</string>
     <string name="download_progress_title">Downloading %s</string>
     <string name="download_complete_title">Download complete</string>
