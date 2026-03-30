@@ -72,7 +72,7 @@
     <string name="profile_namespace_inherited">Thừa hưởng</string>
     <string name="profile_namespace_global">Toàn cục</string>
     <string name="profile_namespace_individual">Riêng biệt</string>
-    <string name="profile_selinux_context">Bối cảnh SELinux</string>
+    <string name="profile_selinux_context">Ngữ cảnh SELinux</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="require_kernel_version">Phiên bản KernelSU hiện tại %1$d quá thấp để Trình quản lý hoạt động bình thường. Vui lòng cập nhật lên phiên bản %2$d hoặc cao hơn!</string>
     <string name="app_profile_template_import_success">Đã nhập thành công</string>
@@ -163,7 +163,7 @@
     <string name="settings_key_color">Màu nhấn</string>
     <string name="feature_status_managed_summary">Tính năng này được quản lý bởi một module</string>
     <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này</string>
-    <string name="module_repos">Thư viện</string>
+    <string name="module_repos">Thư viện Module</string>
     <string name="module_repos_sort_name">Tên (A → Z)</string>
     <string name="module_repos_source_code">Mã nguồn</string>
     <string name="home_gki_warning">Bắt đầu từ v3.0.0, chế độ GKI sẽ chỉ được sử dụng trong môi trường thử nghiệm. Chúng tôi không khuyến nghị sử dụng chế độ này và các file image sẽ không còn được cung cấp nữa.</string>
@@ -188,7 +188,7 @@
     <string name="module_shortcut_permission_tip_default">Nếu việc tạo shortcut thất bại! Vui lòng bật quyền \"Shortcut trên màn hình\" cho ứng dụng này trong Cài đặt hệ thống.</string>
     <string name="no_such_module">Module %s không tồn tại</string>
     <string name="module_unavailable">Module %s đã bị Vô hiệu hoá, Chờ cập nhật hoặc Gỡ cài đặt</string>
-    <string name="select_file_tip_nogki">Vui lòng chọn file .img của thiết bị GKI mà bạn muốn patch</string>
+    <string name="select_file_tip_nogki">Vui lòng chọn file .img của thiết bị GKI mà bạn muốn patch!</string>
     <string name="current_kmi">Phiên bản KMI của thiết bị này: %s</string>
     <string name="current_device_kmi">KMI của thiết bị này</string>
     <string name="module_action_success">Khởi chạy module đã được thực thi.</string>
@@ -227,9 +227,9 @@
     <string name="settings_auto_jailbreak">Tự động Jailbreak</string>
     <string name="settings_auto_jailbreak_summary">Tự động sử dụng Magica để nâng cao quyền hạn khi phát hiện SELinux ở chế độ Permissive lúc khởi động. Yêu cầu cấp quyền tự khởi động cho ứng dụng này.</string>
     <string name="allow_shell">Luôn cấp quyền root cho Shell</string>
-    <string name="allow_shell_summary">Luôn cho phép lệnh SU của adb shell. Không bật tùy chọn này trừ khi thực sự cần thiết.</string>
-    <string name="enable_adb">Buộc bật ADB khi khởi động</string>
-    <string name="enable_adb_summary">Buộc bật chế độ gỡ lỗi USB và tắt xác thực adb. Không nên bật tùy chọn này trừ khi thực sự cần thiết.</string>
+    <string name="allow_shell_summary">Luôn cho phép ADB Shell gọi lệnh SU. Không bật tùy chọn này trừ khi thực sự cần thiết.</string>
+    <string name="enable_adb">Buộc kích hoạt ADB khi khởi động</string>
+    <string name="enable_adb_summary">Buộc kích hoạt chế độ gỡ lỗi USB và tắt xác thực ADB. Không nên bật tùy chọn này trừ khi thực sự cần thiết.</string>
     <string name="advanced_options">Tùy chọn Nâng cao</string>
     <string name="expand">Mở rộng</string>
     <string name="download_channel_name">Tải xuống Module</string>
