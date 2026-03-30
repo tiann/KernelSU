@@ -15,7 +15,8 @@ data class SystemInfo(
     val kernelVersion: String,
     val managerVersion: String,
     val fingerprint: String,
-    val selinuxStatus: String
+    val selinuxStatus: String,
+    val seccompStatus: String
 )
 
 fun getManagerVersion(context: Context): ManagerVersion {

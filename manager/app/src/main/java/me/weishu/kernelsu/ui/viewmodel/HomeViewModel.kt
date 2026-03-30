@@ -22,6 +22,7 @@ import me.weishu.kernelsu.ui.screen.home.getManagerVersion
 import me.weishu.kernelsu.ui.util.checkNewVersion
 import me.weishu.kernelsu.ui.util.getModuleCount
 import me.weishu.kernelsu.ui.util.getSELinuxStatusRaw
+import me.weishu.kernelsu.ui.util.getSeccompStatusRaw
 import me.weishu.kernelsu.ui.util.getSuperuserCount
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -72,6 +73,7 @@ class HomeViewModel : ViewModel() {
                 managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode})",
                 fingerprint = Build.FINGERPRINT,
                 selinuxStatus = getSELinuxStatusRaw(),
+                seccompStatus = getSeccompStatusRaw(),
             ),
         )
     }
