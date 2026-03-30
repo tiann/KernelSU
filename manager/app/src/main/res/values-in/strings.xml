@@ -37,7 +37,7 @@
     <string name="module_version">Versi</string>
     <string name="module_author">Oleh</string>
     <string name="show_system_apps">Tampilkan apl sistem</string>
-    <string name="send_log">Kirim Log</string>
+    <string name="send_log">Kirim log</string>
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Mulai ulang untuk menerapkan</string>
     <string name="module_magisk_conflict">Modul tidak tersedia karena konflik dengan Magisk!</string>
@@ -46,7 +46,7 @@
     <string name="home_click_to_learn_kernelsu">Pelajari cara memasang KernelSU dan menggunakan modul.</string>
     <string name="home_support_title">Dukung Kami</string>
     <string name="home_support_content">KernelSU akan selalu menjadi aplikasi gratis dan serta bersumber terbuka. Bagaimanapun juga, Anda dapat menunjukan kepedulian Anda kepada kami dengan memberikan sedikit donasi.</string>
-    <string name="about_source_code"><![CDATA[Lihat sumber kode di %1$s<br/>Gabung saluran %2$s kami]]></string>
+    <string name="about_source_code"><![CDATA[Lihat kode sumber di %1$s<br/>Gabung saluran %2$s kami]]></string>
     <string name="profile">Profil Apl</string>
     <string name="profile_default">Default</string>
     <string name="profile_template">Templat</string>
@@ -108,11 +108,11 @@
     <string name="open">Buka</string>
     <string name="settings_check_update">Periksa pembaruan</string>
     <string name="settings_check_update_summary">Memeriksa pembaruan secara otomatis saat membuka aplikasi.</string>
-    <string name="settings_uninstall_permanent_message">Menghapus KernelSU (root dan semua modul) secara menyeluruh dan permanen.</string>
+    <string name="settings_uninstall_permanent_message">Menghapus KernelSU (root dan semua modul) sepenuhnya dan secara permanen.</string>
     <string name="settings_uninstall_temporary">Hapus sementara</string>
-    <string name="settings_restore_stock_image">Pulihkan image bawaan</string>
+    <string name="settings_restore_stock_image">Pulihkan image asli</string>
     <string name="settings_uninstall">Hapus</string>
-    <string name="settings_uninstall_temporary_message">Hapus KernelSU untuk sementara, memulihkan ke kondisi asal setelah reboot berikutnya.</string>
+    <string name="settings_uninstall_temporary_message">Hapus sementara KernelSU, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
     <string name="settings_uninstall_permanent">Hapus permanen</string>
     <string name="settings_restore_stock_image_message">Pulihkan image asli (jika cadangan ada), biasanya digunakan sebelum OTA; jika Anda perlu menghapus KernelSU, silakan gunakan \"Hapus permanen\".</string>
     <string name="flash_success">Pemasangan berhasil</string>
@@ -180,7 +180,7 @@
     <string name="module_shortcut_title">Buat pintasan</string>
     <string name="module_shortcut_name_label">Nama pintasan</string>
     <string name="module_shortcut_icon_pick">Pilih ikon khusus</string>
-    <string name="module_shortcut_not_supported">Launcher tidak mendukung pintasan layar utama.</string>
+    <string name="module_shortcut_not_supported">Peluncur tidak mendukung pintasan layar utama.</string>
     <string name="module_shortcut_created">Pintasan dibuat di layar utama.</string>
     <string name="module_shortcut_updated">Pintasan diperbarui.</string>
     <string name="module_shortcut_delete">Hapus pintasan</string>
@@ -189,7 +189,7 @@
     <string name="module_shortcut_permission_tip_default">Jika pembuatan pintasan gagal, harap aktifkan izin pintasan layar utama untuk aplikasi ini di pengaturan sistem.</string>
     <string name="no_such_module">Modul %s tidak tersedia</string>
     <string name="module_unavailable">Modul %s dinonaktifkan, diperbarui, atau menunggu penghapusan</string>
-    <string name="select_file_tip_nogki">Silakan pilih berkas image perangkat GKI yang ingin Anda tambal.</string>
+    <string name="select_file_tip_nogki">Silakan pilih berkas image perangkat GKI yang ingin Anda tambal!</string>
     <string name="current_kmi">Versi KMI perangkat ini: %s</string>
     <string name="current_device_kmi">Ini perangkat KMI</string>
     <string name="color_deep_purple">Ungu gelap</string>
@@ -216,14 +216,14 @@
     <string name="settings_page_scale_summary">Sesuaikan skala tampilan.</string>
     <string name="settings_color_spec">Spesifikasi Warna</string>
     <string name="settings_color_style">Gaya Warna</string>
-    <string name="settings_enable_blur_summary">Aktifkan efek blur untuk bilah atas dan bawah</string>
+    <string name="settings_enable_blur_summary">Aktifkan efek blur untuk bilah atas dan bawah.</string>
     <string name="settings_floating_bottom_bar">Bilah bawah mengambang</string>
-    <string name="settings_floating_bottom_bar_summary">Gunakan bilah bawah mengambang ala Apple</string>
+    <string name="settings_floating_bottom_bar_summary">Gunakan bilah bawah mengambang ala Apple.</string>
     <string name="settings_enable_glass">Kaca cair</string>
-    <string name="settings_enable_glass_summary">Aktifkan efek kaca cair (liquid glass) untuk bilah bawah mengambang</string>
+    <string name="settings_enable_glass_summary">Aktifkan efek kaca cair (liquid glass) untuk bilah bawah mengambang.</string>
     <string name="show_only_primary_user_apps">Hanya tampilkan apl pengguna utama</string>
     <string name="settings_auto_jailbreak">Jailbreak otomatis</string>
-    <string name="settings_auto_jailbreak_summary">Secara otomatis menggunakan Magica untuk meningkatkan hak akses ketika SELinux Permisif terdeteksi saat boot. Membutuhkan pemberian izin mulai otomatis untuk aplikasi ini.</string>
+    <string name="settings_auto_jailbreak_summary">Secara otomatis menggunakan Magica untuk meningkatkan hak akses ketika SELinux Permissive terdeteksi saat boot. Membutuhkan pemberian izin mulai otomatis untuk aplikasi ini.</string>
     <string name="allow_shell">Selalu berikan izin akses root ke Shell.</string>
     <string name="allow_shell_summary">Selalu izinkan adb shell untuk memanggil su. Jangan aktifkan ini kecuali benar-benar diperlukan.</string>
     <string name="enable_adb">Paksa pengaktifan adb saat boot</string>
@@ -239,4 +239,6 @@
     <string name="download">Unduh</string>
     <string name="download_cancel">Batal</string>
     <string name="download_install">Pasang</string>
+    <string name="home_jailbreak">Jailbreak</string>
+    <string name="settings_enable_blur">Blur</string>
 </resources>
