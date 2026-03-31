@@ -1,15 +1,14 @@
 package me.weishu.kernelsu.ui.screen.superuser
 
-import android.content.pm.ApplicationInfo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -18,9 +17,12 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Checkbox
@@ -32,7 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -63,7 +65,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
-import me.weishu.kernelsu.ui.component.material.SegmentedLazyColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.ownerNameForUid
@@ -117,6 +119,14 @@ fun SuperUserPagerMaterial(
                     localSearchText = ""
                     actions.onClearSearch()
                 },
+                navigationIcon = {
+                    IconButton(onClick = actions.onOpenSulog) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.Article,
+                            contentDescription = stringResource(R.string.settings_sulog)
+                        )
+                    }
+                },
                 actions = {
                     var showDropdown by remember { mutableStateOf(false) }
 
@@ -158,42 +168,45 @@ fun SuperUserPagerMaterial(
                     LaunchedEffect(localSearchText) {
                         searchListState.scrollToItem(0)
                     }
-                    SegmentedLazyColumn(
+                    LazyColumn(
                         state = searchListState,
                         modifier = Modifier
                             .fillMaxSize()
                             .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                         contentPadding = PaddingValues(
                             start = 16.dp,
                             end = 16.dp,
                             top = 8.dp,
                             bottom = 16.dp + bottomPadding
                         ),
-                        key = { it.uid },
-                        items = uiState.searchResults,
-                    ) { group ->
-                        Column {
-                            GroupItem(
-                                group = group,
-                                selected = false,
-                                onToggleExpand = {},
-                            ) {
-                                closeSearch()
-                                actions.onOpenProfile(group)
-                            }
-                            AnimatedVisibility(
-                                visible = group.apps.size > 1,
-                                enter = expandVertically() + fadeIn(),
-                                exit = shrinkVertically() + fadeOut()
-                            ) {
+                    ) {
+                        itemsIndexed(uiState.searchResults, key = { _, item -> item.uid }) { index, group ->
+                            SegmentedItem(index = index, count = uiState.searchResults.size) {
                                 Column {
-                                    group.apps.forEach { app ->
-                                        SimpleAppItem(
-                                            app = app,
-                                            matched = group.matchedPackageNames.contains(app.packageName),
-                                        ) {
-                                            closeSearch()
-                                            actions.onOpenProfile(group)
+                                    GroupItem(
+                                        group = group,
+                                        selected = false,
+                                        onToggleExpand = {},
+                                    ) {
+                                        closeSearch()
+                                        actions.onOpenProfile(group)
+                                    }
+                                    AnimatedVisibility(
+                                        visible = group.apps.size > 1,
+                                        enter = expandVertically() + fadeIn(),
+                                        exit = shrinkVertically() + fadeOut()
+                                    ) {
+                                        Column {
+                                            group.apps.forEach { app ->
+                                                SimpleAppItem(
+                                                    app = app,
+                                                    matched = group.matchedPackageNames.contains(app.packageName),
+                                                ) {
+                                                    closeSearch()
+                                                    actions.onOpenProfile(group)
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -208,47 +221,50 @@ fun SuperUserPagerMaterial(
         Box(modifier = Modifier.padding(innerPadding)) {
             val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
 
-            SegmentedLazyColumn(
+            LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
                     top = 8.dp,
                     bottom = 16.dp + bottomInnerPadding
                 ),
-                key = { it.uid },
-                items = uiState.groupedApps,
-            ) { group ->
-                val expanded = expandedSearchUids.value.contains(group.uid)
-                val onToggleExpand = {
-                    if (group.apps.size > 1) {
-                        expandedSearchUids.value = if (expandedSearchUids.value.contains(group.uid)) {
-                            expandedSearchUids.value - group.uid
-                        } else {
-                            expandedSearchUids.value + group.uid
+            ) {
+                itemsIndexed(uiState.groupedApps, key = { _, item -> item.uid }) { index, group ->
+                    val expanded = expandedSearchUids.value.contains(group.uid)
+                    val onToggleExpand = {
+                        if (group.apps.size > 1) {
+                            expandedSearchUids.value = if (expandedSearchUids.value.contains(group.uid)) {
+                                expandedSearchUids.value - group.uid
+                            } else {
+                                expandedSearchUids.value + group.uid
+                            }
                         }
                     }
-                }
-                Column {
-                    GroupItem(
-                        group = group,
-                        selected = expanded,
-                        onToggleExpand = onToggleExpand,
-                    ) {
-                        actions.onOpenProfile(group)
-                    }
-                    AnimatedVisibility(
-                        visible = expanded && group.apps.size > 1,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
+                    SegmentedItem(index = index, count = uiState.groupedApps.size) {
                         Column {
-                            group.apps.forEach { app ->
-                                SimpleAppItem(app = app) {
-                                    actions.onOpenProfile(group)
+                            GroupItem(
+                                group = group,
+                                selected = expanded,
+                                onToggleExpand = onToggleExpand,
+                            ) {
+                                actions.onOpenProfile(group)
+                            }
+                            AnimatedVisibility(
+                                visible = expanded && group.apps.size > 1,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column {
+                                    group.apps.forEach { app ->
+                                        SimpleAppItem(app = app) {
+                                            actions.onOpenProfile(group)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -285,9 +301,9 @@ private fun SimpleAppItem(
         shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
         colors = ListItemDefaults.colors(
             containerColor = if (matched) {
-                MaterialTheme.colorScheme.secondaryContainer
+                colorScheme.secondaryContainer
             } else {
-                MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                colorScheme.surfaceColorAtElevation(3.dp)
             }
         ),
         content = { Text(app.label, overflow = TextOverflow.Ellipsis, maxLines = 1) },
@@ -318,6 +334,24 @@ private fun GroupItem(
     onToggleExpand: () -> Unit,
     onClickPrimary: () -> Unit,
 ) {
+    val bg = colorScheme.primary
+    val fg = colorScheme.onPrimary
+    val umountBg = colorScheme.secondary
+    val umountFg = colorScheme.onSecondary
+    val customBg = colorScheme.secondaryContainer
+    val customFg = colorScheme.onSecondaryContainer
+    val otherBg = colorScheme.tertiary
+    val otherFg = colorScheme.onTertiary
+
+    val userId = group.uid / 100000
+    val tags = remember(group.anyAllowSu, group.shouldUmount, group.anyCustom, userId) {
+        buildList {
+            if (group.anyAllowSu) add(StatusMeta("ROOT", bg, fg))
+            if (group.shouldUmount) add(StatusMeta("UMOUNT", umountBg, umountFg))
+            if (group.anyCustom) add(StatusMeta("CUSTOM", customBg, customFg))
+            if (userId != 0) add(StatusMeta("USER $userId", otherBg, otherFg))
+        }
+    }
     val summaryText = if (group.apps.size > 1) {
         stringResource(R.string.group_contains_apps, group.apps.size)
     } else {
@@ -335,65 +369,24 @@ private fun GroupItem(
             )
         },
         supportingContent = {
-            Column {
-                Text(
-                    text = summaryText,
-                    color = MaterialTheme.colorScheme.outline,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                FlowRow {
-                    val userId = group.uid / 100000
-                    val packageInfo = group.primary.packageInfo
-                    val applicationInfo = packageInfo.applicationInfo
-
-                    if (group.anyAllowSu) {
+            Text(
+                text = summaryText,
+                color = colorScheme.outline,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
+        },
+        trailingContent = {
+            if (tags.isNotEmpty()) {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    tags.forEach { tag ->
                         StatusTag(
-                            label = "ROOT",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            backgroundColor = MaterialTheme.colorScheme.primary
-                        )
-                    } else if (group.shouldUmount) {
-                        StatusTag(
-                            label = "UMOUNT",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                            backgroundColor = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    if (group.anyCustom) {
-                        StatusTag(
-                            label = "CUSTOM",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    }
-                    if (userId != 0) {
-                        StatusTag(
-                            label = "USER $userId",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                    if (applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) != 0
-                        || applicationInfo.flags.and(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-                    ) {
-                        StatusTag(
-                            label = "SYSTEM",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                    if (!packageInfo.sharedUserId.isNullOrEmpty()) {
-                        StatusTag(
-                            label = "SHARED UID",
-                            modifier = Modifier.padding(top = 4.dp),
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary
+                            label = tag.label,
+                            backgroundColor = tag.bg,
+                            contentColor = tag.fg
                         )
                     }
                 }
