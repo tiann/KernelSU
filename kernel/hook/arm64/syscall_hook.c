@@ -114,7 +114,7 @@ void ksu_syscall_table_unhook(int nr)
     pr_warn("syscall %d not found in hooked entries\n", nr);
 }
 
-static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
+static int __init ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
 {
     unsigned long ni_syscall;
     int i, count = 0;
@@ -220,7 +220,7 @@ void __init ksu_syscall_hook_init(void)
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
-void ksu_syscall_hook_exit(void)
+void __exit ksu_syscall_hook_exit(void)
 {
     int i;
 

@@ -54,7 +54,7 @@ static void remove_uid_from_arr(uid_t uid)
     }
 }
 
-static void init_default_profiles()
+static void __init init_default_profiles()
 {
     kernel_cap_t full_cap = CAP_FULL_SET;
 

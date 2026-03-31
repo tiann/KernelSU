@@ -39,7 +39,7 @@ int __init ksu_register_feature_handler(const struct ksu_feature_handler *handle
     return 0;
 }
 
-int __exit ksu_unregister_feature_handler(u32 feature_id)
+int ksu_unregister_feature_handler(u32 feature_id)
 {
     int ret = 0;
 

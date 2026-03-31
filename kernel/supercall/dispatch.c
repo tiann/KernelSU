@@ -816,7 +816,7 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
     return -ENOTTY;
 }
 
-void ksu_supercall_dump_commands(void)
+void __init ksu_supercall_dump_commands(void)
 {
     int i;
 
