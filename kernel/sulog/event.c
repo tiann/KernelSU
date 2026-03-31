@@ -264,13 +264,13 @@ static struct ksu_sulog_pending_event *ksu_sulog_capture_grant_root(const struct
     return pending;
 }
 
-int ksu_sulog_events_init(void)
+int __init ksu_sulog_events_init(void)
 {
     ksu_event_queue_init(&sulog_queue, KSU_SULOG_MAX_QUEUED, KSU_SULOG_MAX_PAYLOAD_LEN);
     return 0;
 }
 
-void ksu_sulog_events_exit(void)
+void __exit ksu_sulog_events_exit(void)
 {
     ksu_event_queue_destroy(&sulog_queue);
 }

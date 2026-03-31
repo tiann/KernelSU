@@ -247,8 +247,10 @@ pub fn reset_std() -> Result<()> {
 }
 
 pub fn daemonize_with<F: FnOnce() -> Result<()>>(use_init_pgrp: bool, configure: F) -> Result<()> {
-    create_daemon_impl(use_init_pgrp, configure)?;
-    unsafe { libc::_exit(0) }
+    if !create_daemon_impl(use_init_pgrp, configure)? {
+        unsafe { libc::_exit(0) }
+    }
+    Ok(())
 }
 
 pub fn daemonize(use_init_pgrp: bool) -> Result<()> {
@@ -292,17 +294,27 @@ fn create_daemon_impl<F: FnOnce() -> Result<()>>(
         }
     }
 
-    detach_process_group(use_init_pgrp);
-    switch_cgroups();
-    configure()?;
-    reset_std()?;
+    let do_configure = || -> Result<()> {
+        detach_process_group(use_init_pgrp);
+        switch_cgroups();
+        configure()?;
+        reset_std()?;
 
-    unsafe {
-        let pid = libc::fork();
-        if pid < 0 {
-            bail!("fork error {}", std::io::Error::last_os_error());
-        } else if pid > 0 {
-            libc::_exit(0);
+        unsafe {
+            let pid = libc::fork();
+            if pid < 0 {
+                bail!("fork error {}", std::io::Error::last_os_error());
+            } else if pid > 0 {
+                libc::_exit(0);
+            }
+        }
+        Ok(())
+    };
+
+    if let Err(e) = do_configure() {
+        log::error!("failed to configure daemon: {e:?}");
+        unsafe {
+            libc::_exit(1);
         }
     }
 
