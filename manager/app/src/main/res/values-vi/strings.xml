@@ -248,11 +248,11 @@
     <string name="sulog_enable_action">Bật</string>
     <string name="sulog_filter_title">Lọc theo loại</string>
     <string name="sulog_clean_title">Làm sạch nhật ký</string>
-    <string name="sulog_filter_sucompat">SU Cổ điển</string>
+    <string name="sulog_filter_sucompat">Lệnh SU cổ điển</string>
     <string name="sulog_filter_ioctl_grant_root">Cấp quyền root</string>
     <string name="sulog_filter_daemon_restart">Khởi động lại tiến trình nền</string>
     <string name="sulog_entry_unknown_event">Sự kiện không xác định</string>
-    <string name="sulog_entry_description_sucompat">Yêu cầu /system/bin/su bị chặn</string>
+    <string name="sulog_entry_description_sucompat">Yêu cầu /system/bin/su đã bị chặn</string>
     <string name="sulog_entry_title_root_grant_request">Yêu cầu cấp quyền root</string>
     <string name="sulog_entry_description_ioctl_grant_root">Đã cấp quyền truy cập root thông qua KernelSU ioctl</string>
     <string name="sulog_entry_title_daemon_restarted">Tiến trình nền đã khởi động lại</string>
