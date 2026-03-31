@@ -1,3 +1,4 @@
+use crate::sulog;
 use anyhow::{Context, Result, bail};
 use const_format::concatcp;
 use std::collections::HashMap;
@@ -162,6 +163,15 @@ pub fn apply_config(features: &HashMap<u32, u64>) {
                 Ok(()) => {
                     log::info!("Set feature {} to {value}", feature_id.name());
                     applied += 1;
+
+                    if feature_id == FeatureId::Sulog
+                        && value != 0
+                        && let Err(err) = sulog::ensure_sulogd_running()
+                    {
+                        log::warn!(
+                            "failed to ensure sulogd is running after feature init: {err:#}"
+                        );
+                    }
                 }
                 Err(e) => {
                     log::warn!("Failed to set feature {}: {e}", feature_id.name());

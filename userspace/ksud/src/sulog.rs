@@ -778,6 +778,7 @@ pub fn run_sulogd() -> Result<()> {
 }
 
 pub fn spawn_sulogd() -> Result<()> {
+    utils::daemonize(|| Ok(()))?;
     let current_exe = std::env::current_exe().context("failed to resolve current ksud path")?;
     let mut command = Command::new(current_exe);
     command
@@ -785,19 +786,9 @@ pub fn spawn_sulogd() -> Result<()> {
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        .current_dir("/")
-        .process_group(0);
+        .current_dir("/");
 
-    unsafe {
-        command.pre_exec(|| {
-            utils::switch_cgroups();
-            Ok(())
-        });
-    }
-
-    let child = command.spawn().context("failed to spawn sulogd")?;
-    log::info!("spawned sulogd pid={}", child.id());
-    Ok(())
+    Err(command.exec()).context("failed to exec sulogd")
 }
 
 pub fn ensure_sulogd_running() -> Result<()> {
