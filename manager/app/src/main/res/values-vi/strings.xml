@@ -241,4 +241,23 @@
     <string name="download">Tải xuống</string>
     <string name="download_cancel">Hủy bỏ</string>
     <string name="download_install">Cài đặt</string>
+    <string name="sulog_log_files">File nhật ký</string>
+    <string name="sulog_failed_to_load">Load nhật ký SU thất bại</string>
+    <string name="sulog_disabled_title">Nhật ký SU chưa được bật</string>
+    <string name="sulog_unsupported_title">Nhật ký SU không được hỗ trợ</string>
+    <string name="sulog_enable_action">Bật</string>
+    <string name="sulog_filter_title">Lọc theo loại</string>
+    <string name="sulog_clean_title">Làm sạch nhật ký</string>
+    <string name="sulog_filter_sucompat">SU Cổ điển</string>
+    <string name="sulog_filter_ioctl_grant_root">Cấp quyền root</string>
+    <string name="sulog_filter_daemon_restart">Khởi động lại tiến trình nền</string>
+    <string name="sulog_entry_unknown_event">Sự kiện không xác định</string>
+    <string name="sulog_entry_description_sucompat">Yêu cầu /system/bin/su bị chặn</string>
+    <string name="sulog_entry_title_root_grant_request">Yêu cầu cấp quyền root</string>
+    <string name="sulog_entry_description_ioctl_grant_root">Đã cấp quyền truy cập root thông qua KernelSU ioctl</string>
+    <string name="sulog_entry_title_daemon_restarted">Tiến trình nền đã khởi động lại</string>
+    <string name="sulog_entry_title_dropped_events">Sự kiện bị huỷ bỏ</string>
+    <string name="settings_sulog">Nhật ký SU</string>
+    <string name="settings_sulog_summary">Ghi lại các sự kiện liên quan đến quyền root vào các file nhật ký SU của KernelSU.</string>
+    <string name="sulog_filter_root_execve">Root execve</string>
 </resources>
