@@ -112,6 +112,12 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override fun setKernelUmountEnabled(enabled: Boolean): Boolean = Natives.setKernelUmountEnabled(enabled)
 
+    override suspend fun getSulogStatus(): String = getFeatureStatus("sulog")
+
+    override suspend fun getSulogPersistValue(): Long? = getFeaturePersistValue("sulog")
+
+    override fun setSulogEnabled(enabled: Boolean): Boolean = execKsud("feature set sulog ${if (enabled) 1 else 0}", true)
+
     override fun isDefaultUmountModules(): Boolean = Natives.isDefaultUmountModules()
 
     override fun setDefaultUmountModules(enabled: Boolean): Boolean = Natives.setDefaultUmountModules(enabled)

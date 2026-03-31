@@ -125,7 +125,6 @@
     <string name="module_shortcut_created">已在桌面建立捷徑。</string>
     <string name="module_shortcut_updated">捷徑已更新。</string>
     <string name="module_shortcut_delete">刪除捷徑</string>
-    <string name="module_shortcut_type_title">選擇類型</string>
     <string name="module_shortcut_permission_tip_xiaomi">請在 Xiaomi 設定中為本程式啟用「建立桌面捷徑」權限。</string>
     <string name="module_shortcut_permission_tip_oppo">請在 OPPO 設定中為本程式啟用「桌面捷徑」權限。</string>
     <string name="module_shortcut_permission_tip_default">如未能建立捷徑，請在系統設定中為本程式開啟桌面捷徑權限。</string>
@@ -153,7 +152,6 @@
     <string name="settings_theme_mode_light">淺色模式</string>
     <string name="settings_theme_mode_dark">深色模式</string>
     <string name="settings_key_color">主題色</string>
-    <string name="settings_key_color_summary">使用 Monet 時自訂強調色。</string>
     <string name="group_contains_apps">內含 %d 個 App</string>
     <string name="app_profile_affects_following_apps">受影響 App 如下</string>
     <string name="settings_module_check_update">檢查模組更新</string>

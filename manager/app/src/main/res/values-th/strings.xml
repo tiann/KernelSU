@@ -188,12 +188,10 @@
     <string name="module_shortcut_title">สร้างทางลัด</string>
     <string name="module_shortcut_name_label">ตั้งชื่อทางลัด</string>
     <string name="module_shortcut_icon_pick">เลือกไอคอนแบบกำหนดเอง</string>
-    <string name="module_shortcut_add">เพิ่มทางลัด</string>
     <string name="module_shortcut_not_supported">Launcher ไม่รองรับทางลัดบนเดสก์ท็อป</string>
     <string name="module_shortcut_created">สร้างทางลัดบนเดสก์ท็อปแล้ว</string>
     <string name="module_shortcut_updated">อัปเดตทางลัดแล้ว</string>
     <string name="module_shortcut_delete">ลบทางลัด</string>
-    <string name="module_shortcut_type_title">เลือกประเภท</string>
     <string name="module_shortcut_permission_tip_xiaomi">โปรดให้สิทธิ์ \"สร้างทางลัดบนเดสก์ท็อป\" สำหรับแอปนี้ในการตั้งค่าบนมือถือ Xiaomi</string>
     <string name="module_shortcut_permission_tip_oppo">โปรดให้สิทธิ์ \"ทางลัดบนเดสก์ท็อป\" สำหรับแอปนี้ในการตั้งค่าบนมือถือ OPPO</string>
     <string name="module_shortcut_permission_tip_default">หากการสร้างทางลัดล้มเหลว โปรดให้สิทธิ์อนุญาตให้สร้างทางลัดบนเดสก์ท็อปสำหรับแอปนี้ในการตั้งค่าระบบ</string>

@@ -28,6 +28,10 @@ interface SettingsRepository {
     fun isKernelUmountEnabled(): Boolean
     fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
+    suspend fun getSulogStatus(): String
+    suspend fun getSulogPersistValue(): Long?
+    fun setSulogEnabled(enabled: Boolean): Boolean
+
     fun isDefaultUmountModules(): Boolean
     fun setDefaultUmountModules(enabled: Boolean): Boolean
 
