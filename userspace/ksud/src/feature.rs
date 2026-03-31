@@ -65,7 +65,16 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
 
 fn set_kernel_feature(feature_id: FeatureId, value: u64) -> Result<()> {
     crate::ksucalls::set_feature(feature_id as u32, value)
-        .with_context(|| format!("Failed to set feature {} to {value}", feature_id.name()))
+        .with_context(|| format!("Failed to set feature {} to {value}", feature_id.name()))?;
+
+    if feature_id == FeatureId::Sulog
+        && value != 0
+        && let Err(err) = sulog::ensure_sulogd_running()
+    {
+        log::warn!("failed to ensure sulogd is running after feature init: {err:#}");
+    }
+
+    Ok(())
 }
 
 pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
@@ -163,15 +172,6 @@ pub fn apply_config(features: &HashMap<u32, u64>) {
                 Ok(()) => {
                     log::info!("Set feature {} to {value}", feature_id.name());
                     applied += 1;
-
-                    if feature_id == FeatureId::Sulog
-                        && value != 0
-                        && let Err(err) = sulog::ensure_sulogd_running()
-                    {
-                        log::warn!(
-                            "failed to ensure sulogd is running after feature init: {err:#}"
-                        );
-                    }
                 }
                 Err(e) => {
                     log::warn!("Failed to set feature {}: {e}", feature_id.name());
