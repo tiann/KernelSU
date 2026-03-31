@@ -223,7 +223,7 @@ fn catch_bootlog(logname: &str, command: &[&str]) -> Result<()> {
 }
 
 pub fn soft_reboot() -> Result<()> {
-    utils::daemonize(|| -> Result<()> {
+    utils::daemonize_with(true, || -> Result<()> {
         switch_mnt_ns(1)?;
         chdir("/")?;
         Ok(())

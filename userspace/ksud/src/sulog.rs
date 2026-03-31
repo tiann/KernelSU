@@ -778,17 +778,20 @@ pub fn run_sulogd() -> Result<()> {
 }
 
 pub fn spawn_sulogd() -> Result<()> {
-    utils::daemonize(|| Ok(()))?;
-    let current_exe = std::env::current_exe().context("failed to resolve current ksud path")?;
-    let mut command = Command::new(current_exe);
-    command
-        .arg("sulogd")
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .current_dir("/");
+    if utils::create_daemon(true)? {
+        let current_exe = std::env::current_exe().context("failed to resolve current ksud path")?;
+        let mut command = Command::new(current_exe);
+        command
+            .arg("sulogd")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .current_dir("/");
 
-    Err(command.exec()).context("failed to exec sulogd")
+        Err(command.exec()).context("failed to exec sulogd")
+    } else {
+        Ok(())
+    }
 }
 
 pub fn ensure_sulogd_running() -> Result<()> {

@@ -213,7 +213,7 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     {
         command = unsafe {
             command.pre_exec(|| {
-                detach_process_group();
+                detach_process_group(true);
                 // ignore the error?
                 switch_cgroups();
                 Ok(())
