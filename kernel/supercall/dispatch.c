@@ -13,6 +13,7 @@
 #include "ksu.h"
 #include "runtime/ksud_boot.h"
 #include "feature/kernel_umount.h"
+#include "feature/process_tag.h"
 #include "manager/manager_identity.h"
 #include "selinux/selinux.h"
 #include "infra/file_wrapper.h"
@@ -654,6 +655,67 @@ static int do_get_sulog_fd(void __user *arg)
     return ksu_install_sulog_fd();
 }
 
+static int do_set_process_tag(void __user *arg)
+{
+    struct ksu_set_process_tag_cmd cmd;
+    struct process_tag *current_tag;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("set_process_tag: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    if (cmd.pid != task_pid_nr(current)) {
+        return -EPERM;
+    }
+
+    if (cmd.type != PROCESS_TAG_MODULE) {
+        return -EINVAL;
+    }
+
+    current_tag = ksu_process_tag_get(task_pid_nr(current));
+    if (!current_tag) {
+        return -EPERM;
+    }
+
+    if (current_tag->type != PROCESS_TAG_KSUD && current_tag->type != PROCESS_TAG_MANAGER) {
+        ksu_process_tag_put(current_tag);
+        return -EPERM;
+    }
+    ksu_process_tag_put(current_tag);
+
+    return ksu_process_tag_set(cmd.pid, cmd.type, cmd.name);
+}
+
+static int do_get_process_tag(void __user *arg)
+{
+    struct ksu_get_process_tag_cmd cmd;
+    struct process_tag *tag;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("get_process_tag: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    tag = ksu_process_tag_get(cmd.pid);
+    if (tag) {
+        cmd.type = tag->type;
+        strncpy(cmd.name, tag->name, sizeof(cmd.name) - 1);
+        cmd.name[sizeof(cmd.name) - 1] = '\0';
+        ksu_process_tag_put(tag);
+    } else {
+        cmd.type = PROCESS_TAG_NONE;
+        cmd.name[0] = '\0';
+    }
+
+    if (copy_to_user(arg, &cmd, sizeof(cmd))) {
+        pr_err("get_process_tag: copy_to_user failed\n");
+        return -EFAULT;
+    }
+
+    return 0;
+}
+
 // IOCTL handlers mapping table
 // clang-format off
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
@@ -790,6 +852,18 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .perm_check = only_root
     },
     {
+        .cmd = KSU_IOCTL_SET_PROCESS_TAG,
+        .name = "SET_PROCESS_TAG",
+        .handler = do_set_process_tag,
+        .perm_check = manager_or_root
+    },
+    {
+        .cmd = KSU_IOCTL_GET_PROCESS_TAG,
+        .name = "GET_PROCESS_TAG",
+        .handler = do_get_process_tag,
+        .perm_check = manager_or_root
+    },
+    {
         .cmd = 0,
         .name = NULL,
         .handler = NULL,
@@ -813,6 +887,11 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
                 pr_warn("ksu ioctl: permission denied for cmd=0x%x uid=%d\n", cmd, current_uid().val);
                 return -EPERM;
             }
+
+            if (is_manager()) {
+                ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_MANAGER, "");
+            }
+
             // Execute handler
             return ksu_ioctl_handlers[i].handler(argp);
         }

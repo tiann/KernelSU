@@ -5,12 +5,14 @@
 #include <linux/sched/signal.h>
 #include <linux/seccomp.h>
 #include <linux/slab.h>
+#include <linux/kernel.h>
 #include <linux/thread_info.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
+#include "feature/process_tag.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 #include "infra/su_mount_ns.h"
@@ -105,6 +107,8 @@ static void disable_seccomp(void)
 int escape_with_root_profile(void)
 {
     int ret = 0;
+    char tag_name[64];
+    struct app_profile app;
     struct cred *cred;
     struct task_struct *p = current;
     struct task_struct *t;
@@ -185,6 +189,14 @@ int escape_with_root_profile(void)
         ksu_set_task_tracepoint_flag(t);
     }
 
+    if (ksu_get_app_profile(&app)) {
+        scnprintf(tag_name, sizeof(tag_name), "%s:%u", app.key, current_uid().val);
+        ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_APP, tag_name);
+    } else {
+        scnprintf(tag_name, sizeof(tag_name), "uid:%u", current_uid().val);
+        ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_APP, tag_name);
+    }
+
     setup_mount_ns(profile->namespaces);
     ksu_put_root_profile(profile);
     return 0;
@@ -206,4 +218,6 @@ void escape_to_root_for_init(void)
 
     setup_selinux(KERNEL_SU_CONTEXT, cred);
     commit_creds(cred);
+
+    ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_KSUD, "init");
 }
