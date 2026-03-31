@@ -3,11 +3,11 @@
     <string name="app_name" translatable="false">KernelSU</string>
     <string name="home">Strona główna</string>
     <string name="home_not_installed">Nie zainstalowano</string>
-    <string name="home_click_to_install">Kliknij, aby zainstalować</string>
+    <string name="home_click_to_install">Dotknij, aby zainstalować</string>
     <string name="home_working">Działa</string>
     <string name="home_working_version">Wersja: %d</string>
     <string name="home_unsupported">Nieobsługiwany</string>
-    <string name="home_unsupported_reason">KernelSU obsługuje obecnie tylko jądra GKI.</string>
+    <string name="home_unsupported_reason">KernelSU obsługuje obecnie tylko jądra GKI, ale można wgrywać obraz do urządzeń GKI.</string>
     <string name="home_kernel">Wersja jądra</string>
     <string name="home_manager_version">Wersja menedżera</string>
     <string name="home_fingerprint">Odcisk</string>
@@ -176,4 +176,10 @@
     <string name="tab_releases">Wydania</string>
     <string name="tab_info">Informacje</string>
     <string name="safe_mode_module_disabled">Instalacja modułów jest wyłączona w trybie awaryjnym</string>
+    <string name="home_version_mismatch">Wersja menedżera (%1$d) oraz wersja sterownika KernelSU (%2$d) nie są zgodne.</string>
+    <string name="sulog_log_files">Pliki logów</string>
+    <string name="sulog_failed_to_load">Nie udało się załadować pliku sulog</string>
+    <string name="sulog_disabled_title">Dziennik SU nie jest włączony</string>
+    <string name="sulog_unsupported_title">Dziennik SU nie jest obsługiwany</string>
+    <string name="sulog_enable_action">Włącz</string>
 </resources>
