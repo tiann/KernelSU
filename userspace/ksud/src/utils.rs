@@ -265,7 +265,7 @@ pub fn daemonize<F: FnOnce() -> Result<()>>(configure: F) -> Result<()> {
         }
     }
 
-    setpgid(None, None)?;
+    detach_process_group();
     switch_cgroups();
     configure()?;
     reset_std()?;
@@ -280,4 +280,13 @@ pub fn daemonize<F: FnOnce() -> Result<()>>(configure: F) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn detach_process_group() {
+    if let Err(e) = ksucalls::set_init_pgrp() {
+        log::error!("failed to switch to init group: {e:?}");
+        if let Err(e2) = setpgid(None, None) {
+            log::error!("failed to set process group: {e2:?}");
+        }
+    }
 }
