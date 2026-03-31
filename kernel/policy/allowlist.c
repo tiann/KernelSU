@@ -568,7 +568,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
     }
 }
 
-void ksu_allowlist_init(void)
+void __init ksu_allowlist_init(void)
 {
     int i;
 
@@ -583,7 +583,7 @@ void ksu_allowlist_init(void)
     init_default_profiles();
 }
 
-void ksu_allowlist_exit(void)
+void __exit ksu_allowlist_exit(void)
 {
     struct perm_data *np = NULL;
     struct perm_data *n = NULL;

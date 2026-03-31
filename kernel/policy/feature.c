@@ -145,7 +145,7 @@ out:
     return ret;
 }
 
-void ksu_feature_init(void)
+void __init ksu_feature_init(void)
 {
     int i;
 
@@ -156,7 +156,7 @@ void ksu_feature_init(void)
     pr_info("feature: feature management initialized\n");
 }
 
-void ksu_feature_exit(void)
+void __exit ksu_feature_exit(void)
 {
     int i;
 

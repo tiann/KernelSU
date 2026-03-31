@@ -99,7 +99,7 @@ static void unwatch_one_dir(struct watch_dir *wd)
 
 static struct watch_dir g_watch = { .path = "/data/system", .mask = MASK_SYSTEM };
 
-int ksu_observer_init(void)
+int __init ksu_observer_init(void)
 {
     int ret = 0;
 
@@ -116,7 +116,7 @@ int ksu_observer_init(void)
     return 0;
 }
 
-void ksu_observer_exit(void)
+void __exit ksu_observer_exit(void)
 {
     unwatch_one_dir(&g_watch);
     fsnotify_put_group(g);
