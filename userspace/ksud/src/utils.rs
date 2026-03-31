@@ -191,6 +191,7 @@ fn link_ksud_to_bin() -> Result<()> {
 
 pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
+    let _ = std::fs::remove_file(defs::DAEMON_PATH);
     std::fs::copy(
         std::env::current_exe().with_context(|| "Failed to get self exe path")?,
         defs::DAEMON_PATH,
