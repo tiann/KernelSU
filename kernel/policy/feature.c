@@ -7,7 +7,7 @@ static const struct ksu_feature_handler *feature_handlers[KSU_FEATURE_MAX];
 
 static DEFINE_MUTEX(feature_mutex);
 
-int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
+int __init ksu_register_feature_handler(const struct ksu_feature_handler *handler)
 {
     if (!handler) {
         pr_err("feature: register handler is NULL\n");
@@ -145,7 +145,7 @@ out:
     return ret;
 }
 
-void ksu_feature_init(void)
+void __init ksu_feature_init(void)
 {
     int i;
 
@@ -156,7 +156,7 @@ void ksu_feature_init(void)
     pr_info("feature: feature management initialized\n");
 }
 
-void ksu_feature_exit(void)
+void __exit ksu_feature_exit(void)
 {
     int i;
 

@@ -562,7 +562,7 @@ done:
     return ret;
 }
 
-void ksu_file_wrapper_init(void)
+void __init ksu_file_wrapper_init(void)
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
     static const struct file_operations tmp = { .owner = THIS_MODULE };

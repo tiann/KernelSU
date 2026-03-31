@@ -488,7 +488,7 @@ void ksu_stop_input_hook_runtime(void)
 }
 
 // ksud: module support
-void ksu_ksud_init()
+void __init ksu_ksud_init()
 {
     int ret;
 
@@ -501,7 +501,7 @@ void ksu_ksud_init()
     INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 }
 
-void ksu_ksud_exit()
+void __exit ksu_ksud_exit()
 {
     // TODO:
     // this should be done before unregister vfs_read_kp
