@@ -99,7 +99,7 @@ static void unwatch_one_dir(struct watch_dir *wd)
 
 static struct watch_dir g_watch = { .path = "/data/system", .mask = MASK_SYSTEM };
 
-int __init ksu_observer_init(void)
+int ksu_observer_init(void)
 {
     int ret = 0;
 
