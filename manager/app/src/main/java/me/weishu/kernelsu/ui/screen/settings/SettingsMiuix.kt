@@ -277,7 +277,7 @@ fun SettingPagerMiuix(
                                     Icons.AutoMirrored.Rounded.Article,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_sulog),
-                                    tint = colorScheme.onBackground
+                                    tint = if (uiState.sulogStatus == "supported") colorScheme.onBackground else colorScheme.disabledOnSecondaryVariant
                                 )
                             },
                             enabled = uiState.sulogStatus == "supported",
@@ -322,7 +322,7 @@ fun SettingPagerMiuix(
                                     Icons.Rounded.ElectricalServices,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_auto_jailbreak),
-                                    tint = if (uiState.isLateLoadMode) colorScheme.onSurfaceVariantSummary else colorScheme.disabledOnSecondaryVariant
+                                    tint = if (uiState.isLateLoadMode) colorScheme.onBackground else colorScheme.disabledOnSecondaryVariant
                                 )
                             },
                             enabled = uiState.isLateLoadMode,

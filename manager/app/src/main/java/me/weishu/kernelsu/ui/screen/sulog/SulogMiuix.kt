@@ -64,13 +64,13 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
+import me.weishu.kernelsu.ui.component.miuix.WarningCard
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.SulogEntry
 import me.weishu.kernelsu.ui.util.SulogEventFilter
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -92,6 +92,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.icon.extended.Filter
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.theme.MiuixTheme.isDynamicColor
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -331,36 +332,42 @@ private fun SulogStatusSection(
     state: SulogScreenState,
     actions: SulogActions,
 ) {
-    when (state.sulogStatus) {
-        "unsupported" -> {
-            WarningCard(
-                text = stringResource(R.string.sulog_unsupported_title),
-            )
-        }
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 12.dp),
+    ) {
+        when (state.sulogStatus) {
+            "unsupported" -> {
+                WarningCard(
+                    message = stringResource(R.string.sulog_unsupported_title),
+                )
+            }
 
-        "managed" -> {
-            WarningCard(
-                text = stringResource(R.string.feature_status_managed_summary),
-            )
-        }
+            "managed" -> {
+                WarningCard(
+                    message = stringResource(R.string.feature_status_managed_summary),
+                )
+            }
 
-        "supported" if !state.isSulogEnabled -> {
-            WarningCard(
-                text = stringResource(R.string.sulog_disabled_title),
-                action = {
-                    TextButton(
-                        text = stringResource(R.string.sulog_enable_action),
-                        onClick = actions.onEnableSulog,
-                        colors = ButtonDefaults.textButtonColors(
-                            color = colorScheme.error,
-                            textColor = colorScheme.onError,
-                        ),
-                    )
-                },
-            )
-        }
+            "supported" if !state.isSulogEnabled -> {
+                WarningCard(
+                    message = stringResource(R.string.sulog_disabled_title),
+                    action = {
+                        TextButton(
+                            text = stringResource(R.string.sulog_enable_action),
+                            onClick = actions.onEnableSulog,
+                            colors = ButtonDefaults.textButtonColors(
+                                color = if (isDynamicColor) colorScheme.onErrorContainer else Color(0xFFF72727),
+                                textColor = colorScheme.onError,
+                            ),
+                        )
+                    },
+                )
+            }
 
-        else -> Unit
+            else -> Unit
+        }
     }
 }
 
@@ -501,38 +508,6 @@ private fun SulogMessageCard(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun WarningCard(
-    text: String,
-    action: (@Composable () -> Unit)? = null,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-            .padding(bottom = 12.dp),
-        colors = CardDefaults.defaultColors(color = colorScheme.errorContainer),
-        insideMargin = PaddingValues(16.dp),
-        showIndication = false,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = text,
-                color = colorScheme.onErrorContainer,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f),
-            )
-            action?.invoke()
         }
     }
 }
