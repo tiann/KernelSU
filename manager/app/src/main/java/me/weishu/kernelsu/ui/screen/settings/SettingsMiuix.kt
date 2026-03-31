@@ -277,7 +277,7 @@ fun SettingPagerMiuix(
                                     Icons.AutoMirrored.Rounded.Article,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_sulog),
-                                    tint = if (uiState.sulogStatus == "supported") colorScheme.onSurfaceVariantSummary else colorScheme.disabledOnSecondaryVariant
+                                    tint = colorScheme.onBackground
                                 )
                             },
                             enabled = uiState.sulogStatus == "supported",
