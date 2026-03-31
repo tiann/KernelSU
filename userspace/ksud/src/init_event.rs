@@ -1,7 +1,7 @@
 use crate::module::{handle_updated_modules, prune_modules};
 use crate::utils::{is_safe_mode, switch_mnt_ns};
 use crate::{
-    assets, defs, ksucalls, metamodule, restorecon, sulog,
+    assets, defs, ksucalls, metamodule, restorecon,
     utils::{self},
 };
 use anyhow::{Context, Result};
@@ -85,10 +85,6 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("safe mode, skip load feature config");
     } else if let Err(e) = crate::feature::init_features() {
         warn!("init features failed: {e}");
-    }
-
-    if let Err(err) = sulog::ensure_sulogd_running() {
-        warn!("failed to ensure sulogd is running after feature init: {err:#}");
     }
 
     // execute metamodule post-fs-data script first (priority)
@@ -227,7 +223,7 @@ fn catch_bootlog(logname: &str, command: &[&str]) -> Result<()> {
 }
 
 pub fn soft_reboot() -> Result<()> {
-    utils::daemonize(|| -> Result<()> {
+    utils::daemonize_with(true, || -> Result<()> {
         switch_mnt_ns(1)?;
         chdir("/")?;
         Ok(())
