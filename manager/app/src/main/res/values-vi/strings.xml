@@ -27,7 +27,7 @@
     <string name="home_click_to_install">Nhấn để cài đặt</string>
     <string name="home_working">Đang hoạt động</string>
     <string name="home_working_version">Phiên bản: %d</string>
-    <string name="home_unsupported">Không được hỗ trợ</string>
+    <string name="home_unsupported">Không được hỗ trợ!</string>
     <string name="home_unsupported_reason">KernelSU hiện tại chỉ hỗ trợ Kernel GKI, nhưng bạn có thể patch file .img của thiết bị GKI mà bạn cần.</string>
     <string name="home_kernel">Phiên bản Kernel</string>
     <string name="home_manager_version">Phiên bản Trình quản lý</string>
@@ -162,7 +162,7 @@
     <string name="color_brown">Nâu</string>
     <string name="settings_key_color">Màu nhấn</string>
     <string name="feature_status_managed_summary">Tính năng này được quản lý bởi một module</string>
-    <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này</string>
+    <string name="feature_status_unsupported_summary">Kernel không hỗ trợ tính năng này!</string>
     <string name="module_repos">Thư viện Module</string>
     <string name="module_repos_sort_name">Tên (A → Z)</string>
     <string name="module_repos_source_code">Mã nguồn</string>
@@ -179,7 +179,7 @@
     <string name="module_shortcut_title">Tạo shortcut</string>
     <string name="module_shortcut_name_label">Tên shortcut</string>
     <string name="module_shortcut_icon_pick">Chọn icon tuỳ chỉnh</string>
-    <string name="module_shortcut_not_supported">Launcher không hỗ trợ shortcut</string>
+    <string name="module_shortcut_not_supported">Launcher không hỗ trợ shortcut!</string>
     <string name="module_shortcut_created">Shortcut đã được tạo</string>
     <string name="module_shortcut_updated">Shortcut đã được cập nhật</string>
     <string name="module_shortcut_delete">Xoá shortcut</string>
@@ -244,7 +244,7 @@
     <string name="sulog_log_files">File nhật ký</string>
     <string name="sulog_failed_to_load">Load nhật ký SU thất bại</string>
     <string name="sulog_disabled_title">Nhật ký SU chưa được bật</string>
-    <string name="sulog_unsupported_title">Nhật ký SU không được hỗ trợ</string>
+    <string name="sulog_unsupported_title">Nhật ký SU không được hỗ trợ!</string>
     <string name="sulog_enable_action">Bật</string>
     <string name="sulog_filter_title">Lọc theo loại</string>
     <string name="sulog_clean_title">Làm sạch nhật ký</string>
