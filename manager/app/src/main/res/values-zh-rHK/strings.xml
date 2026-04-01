@@ -171,7 +171,7 @@
     <string name="flash_failed">刷入失敗</string>
     <string name="selected_lkm">已選取 LKM：%s</string>
     <string name="log_saved">日誌已儲存</string>
-    <string name="feature_status_unsupported_summary">内核不支援此功能</string>
+    <string name="feature_status_unsupported_summary">核心不支援此功能</string>
     <string name="feature_status_managed_summary">功能正由模組管理</string>
     <string name="settings_mode_enable_by_default">啟用（預設）</string>
     <string name="settings_mode_disable_until_reboot">停用至重新啟動</string>
