@@ -70,10 +70,11 @@ static long is_libadbroot_ok()
 static long setup_ld_preload(struct pt_regs *regs)
 {
     static const char kLdPreload[] = "LD_PRELOAD=/data/adb/ksu/lib/libadbroot.so";
+    static const char kLdLibraryPath[] = "LD_LIBRARY_PATH=/data/adb/ksu/lib";
     static const size_t kReadEnvBatch = 16;
     static const size_t kPtrSize = sizeof(unsigned long);
     unsigned long stackp = user_stack_pointer(regs);
-    char __user **envp, *ld_preload_p;
+    char __user **envp, *ld_preload_p, *ld_library_path_p;
     char __user ***envp_p = (char __user ***)&PT_REGS_PARM3(regs);
     unsigned long *tmp_env_p = NULL, *tmp_env_p2 = NULL;
     size_t env_count = 0, total_size;
@@ -81,11 +82,17 @@ static long setup_ld_preload(struct pt_regs *regs)
 
     envp = (char __user **)untagged_addr((unsigned long)*envp_p);
 
-    ld_preload_p = ALIGN_DOWN(stackp - sizeof(kLdPreload), 8);
-
+    ld_preload_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdPreload), 8);
     ret = copy_to_user(ld_preload_p, kLdPreload, sizeof(kLdPreload));
     if (ret < 0) {
-        pr_warn("Access filename when adb_root_handle_execve failed: %ld", ret);
+        pr_warn("write ld_preload when adb_root_handle_execve failed: %ld", ret);
+        return ret;
+    }
+
+    ld_library_path_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdLibraryPath), 8);
+    ret = copy_to_user(ld_library_path_p, kLdLibraryPath, sizeof(kLdLibraryPath));
+    if (ret < 0) {
+        pr_warn("write ld_library_path when adb_root_handle_execve failed: %ld", ret);
         return ret;
     }
 
@@ -122,10 +129,11 @@ static long setup_ld_preload(struct pt_regs *regs)
     // We should have allocated enough memory
     // TODO: handle existing LD_PRELOAD
     tmp_env_p[env_count++] = ld_preload_p;
+    tmp_env_p[env_count++] = ld_library_path_p;
     tmp_env_p[env_count++] = 0;
     total_size = env_count * kPtrSize;
 
-    stackp = ld_preload_p - total_size;
+    stackp -= total_size;
     ret = copy_to_user(stackp, tmp_env_p, total_size);
     if (ret < 0) {
         pr_err("copy new env failed: %ld\n", ret);
