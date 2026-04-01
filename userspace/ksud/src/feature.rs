@@ -28,6 +28,7 @@ impl FeatureId {
             0 => Some(Self::SuCompat),
             1 => Some(Self::KernelUmount),
             2 => Some(Self::Sulog),
+            3 => Some(Self::AdbRoot),
             _ => None,
         }
     }
