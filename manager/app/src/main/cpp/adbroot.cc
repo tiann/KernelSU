@@ -45,6 +45,11 @@ int selinux_android_setcon(const char *con) {
 void Init() {
     unsetenv("LD_PRELOAD");
     unsetenv("LD_LIBRARY_PATH");
-    auto path = std::string{getenv("PATH")} + ":/data/adb/ksu/bin";
+    std::string path = getenv("PATH") ?: "";
+    if (!path.empty()) {
+        path += ":/data/adb/ksu/bin";
+    } else {
+        path += "/data/adb/ksu/bin";
+    }
     setenv("PATH", path.c_str(), 1);
 }
