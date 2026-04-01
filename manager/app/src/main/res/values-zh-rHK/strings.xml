@@ -121,7 +121,7 @@
     <string name="module_shortcut_title">建立捷徑</string>
     <string name="module_shortcut_name_label">捷徑名稱</string>
     <string name="module_shortcut_icon_pick">選擇自訂圖示</string>
-    <string name="module_shortcut_not_supported">啟動器不支援桌面捷徑</string>
+    <string name="module_shortcut_not_supported">啟動器不支援桌面捷徑！</string>
     <string name="module_shortcut_created">已在桌面建立捷徑</string>
     <string name="module_shortcut_updated">捷徑已更新</string>
     <string name="module_shortcut_delete">刪除捷徑</string>
@@ -171,7 +171,7 @@
     <string name="flash_failed">刷入失敗</string>
     <string name="selected_lkm">已選取 LKM：%s</string>
     <string name="log_saved">日誌已儲存</string>
-    <string name="feature_status_unsupported_summary">核心不支援此功能</string>
+    <string name="feature_status_unsupported_summary">内核不支援此功能</string>
     <string name="feature_status_managed_summary">功能正由模組管理</string>
     <string name="settings_mode_enable_by_default">啟用（預設）</string>
     <string name="settings_mode_disable_until_reboot">停用至重新啟動</string>
@@ -190,7 +190,7 @@
     <string name="module_sort_action_first">可執行優先</string>
     <string name="module_sort_enabled_first">已啟用優先</string>
     <string name="module_repos">模組庫</string>
-    <string name="module_repos_sort_name">按名稱排序</string>
+    <string name="module_repos_sort_name">名稱（A → Z）</string>
     <string name="module_repos_source_code">原始碼</string>
     <string name="confirm">確認</string>
     <string name="metamodule_uninstall_confirm">是否解除安裝 %s 模組？這將影響所有模組，且 meta 模組提供的功能（如掛載）將失效</string>
@@ -244,12 +244,12 @@
     <string name="sulog_filter_title">按類型篩選</string>
     <string name="sulog_clean_title">清除紀錄</string>
     <string name="sulog_enable_action">啟用</string>
-    <string name="sulog_unsupported_title">不支援 SU Log</string>
-    <string name="sulog_disabled_title">未啟用 SU Log</string>
-    <string name="sulog_entry_title_daemon_restarted">守護程序（Daemon）重新啟動</string>
+    <string name="sulog_unsupported_title">不支援 SU log</string>
+    <string name="sulog_disabled_title">未啟用 SU log</string>
+    <string name="sulog_entry_title_daemon_restarted">Daemon（守護程序）重新啟動</string>
     <string name="sulog_log_files">紀錄檔案</string>
-    <string name="sulog_failed_to_load">無法載入 SU Log</string>
-    <string name="settings_sulog">SU Log</string>
+    <string name="sulog_failed_to_load">無法載入 SU log</string>
+    <string name="settings_sulog">SU 日誌</string>
     <string name="settings_sulog_summary">將 Root 相關活動記錄至 KernelSU sulog 檔案</string>
     <string name="sulog_filter_root_execve">Root 執行請求</string>
     <string name="sulog_filter_sucompat">傳統 SU 指令</string>
