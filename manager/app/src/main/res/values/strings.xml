@@ -261,4 +261,6 @@
     <string name="download">Download</string>
     <string name="download_cancel">Cancel</string>
     <string name="download_install">Install</string>
+    <string name="settings_adb_root" translatable="false">ADB Root</string>
+    <string name="settings_adb_root_summary">Enable ADB root, run adbd in KernelSU\'s privilege</string>
 </resources>

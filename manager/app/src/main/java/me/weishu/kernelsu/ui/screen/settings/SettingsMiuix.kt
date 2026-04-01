@@ -301,6 +301,21 @@ fun SettingPagerMiuix(
                         )
 
                         SuperSwitch(
+                            title = stringResource(id = R.string.settings_adb_root),
+                            summary = stringResource(id = R.string.settings_adb_root_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.DeveloperMode,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_adb_root),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.isAdbRootEnabled,
+                            onCheckedChange = actions.onSetAdbRootEnabled
+                        )
+
+                        SuperSwitch(
                             title = stringResource(id = R.string.enable_web_debugging),
                             summary = stringResource(id = R.string.enable_web_debugging_summary),
                             startAction = {

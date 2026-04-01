@@ -118,6 +118,10 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override fun setSulogEnabled(enabled: Boolean): Boolean = execKsud("feature set sulog ${if (enabled) 1 else 0}", true)
 
+    override suspend fun getAdbRootPersistValue(): Long? = getFeaturePersistValue("adbroot")
+
+    override fun setAdbRootEnabled(enabled: Boolean): Boolean = execKsud("feature set adbroot ${if (enabled) 1 else 0}", true)
+
     override fun isDefaultUmountModules(): Boolean = Natives.isDefaultUmountModules()
 
     override fun setDefaultUmountModules(enabled: Boolean): Boolean = Natives.setDefaultUmountModules(enabled)
