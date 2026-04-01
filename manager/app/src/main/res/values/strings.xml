@@ -6,7 +6,7 @@
     <string name="home_click_to_install">Tap to install</string>
     <string name="home_working">Working</string>
     <string name="home_working_version">Version: %d</string>
-    <string name="home_unsupported">Unsupported</string>
+    <string name="home_unsupported">Unsupported!</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now, but you can patch the image for GKI devices.</string>
     <string name="home_version_mismatch">Manager version (%1$d) and KernelSU driver version (%2$d) mismatch.</string>
     <string name="home_kernel">Kernel version</string>
@@ -21,7 +21,7 @@
     <string name="sulog_log_files">Log files</string>
     <string name="sulog_failed_to_load">Failed to load sulog</string>
     <string name="sulog_disabled_title">SU log is not enabled</string>
-    <string name="sulog_unsupported_title">SU log is unsupported</string>
+    <string name="sulog_unsupported_title">SU log is unsupported!</string>
     <string name="sulog_enable_action">Enable</string>
     <string name="sulog_filter_title">Filter by type</string>
     <string name="sulog_clean_title">Clean log</string>
@@ -174,7 +174,7 @@
     <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile.</string>
     <string name="settings_sulog">SU Log</string>
     <string name="settings_sulog_summary">Record root-related events into KernelSU sulog files.</string>
-    <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
+    <string name="feature_status_unsupported_summary">Kernel does not support this feature!</string>
     <string name="feature_status_managed_summary">This feature is managed by a module</string>
     <string name="settings_mode_enable_by_default">Enable (Default)</string>
     <string name="settings_mode_disable_until_reboot">Disable until Reboot</string>
@@ -225,7 +225,7 @@
     <string name="module_shortcut_title">Create shortcut</string>
     <string name="module_shortcut_name_label">Shortcut name</string>
     <string name="module_shortcut_icon_pick">Choose custom icon</string>
-    <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts</string>
+    <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts!</string>
     <string name="module_shortcut_created">Shortcut created on desktop</string>
     <string name="module_shortcut_updated">Shortcut updated</string>
     <string name="module_shortcut_delete">Delete shortcut</string>
