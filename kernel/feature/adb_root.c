@@ -4,7 +4,7 @@
 #include "linux/jump_label.h"
 #include "linux/namei.h"
 #include "linux/path.h"
-#include "policy/app_profile.h"
+#include "selinux/selinux.h"
 #include <linux/printk.h>
 #include <linux/types.h>
 #include <linux/string.h>
@@ -159,7 +159,7 @@ static long do_ksu_adb_root_handle_execve(struct pt_regs *regs)
     }
 
     pr_info("escape to root for adb\n");
-    escape_to_root_for_init();
+    escape_to_root_for_adb_root();
     return 0;
 }
 
