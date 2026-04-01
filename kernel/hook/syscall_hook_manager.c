@@ -7,6 +7,12 @@
 #include <linux/slab.h>
 #include <trace/events/syscalls.h>
 
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
+#include <linux/compat.h>
+#include <linux/sched/task_stack.h>
+#endif
+
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "hook/syscall_hook_manager.h"
