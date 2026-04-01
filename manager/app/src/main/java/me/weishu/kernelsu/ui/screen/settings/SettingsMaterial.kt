@@ -239,6 +239,15 @@ fun SettingPagerMaterial(
                         {
                             SegmentedSwitchItem(
                                 icon = Icons.Filled.DeveloperMode,
+                                title = stringResource(id = R.string.settings_adb_root),
+                                summary = stringResource(id = R.string.settings_adb_root_summary),
+                                checked = uiState.isAdbRootEnabled,
+                                onCheckedChange = actions.onSetAdbRootEnabled
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Filled.DeveloperMode,
                                 title = stringResource(id = R.string.enable_web_debugging),
                                 summary = stringResource(id = R.string.enable_web_debugging_summary),
                                 checked = uiState.enableWebDebugging,

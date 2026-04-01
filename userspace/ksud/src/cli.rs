@@ -61,6 +61,9 @@ enum Commands {
     Install {
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
+
+        #[arg(long, default_value = None)]
+        libadbroot: Option<PathBuf>,
     },
 
     /// Unload KernelSU kernel module (LKM Only)
@@ -586,7 +589,10 @@ pub fn run() -> Result<()> {
                 }
             }
         }
-        Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Install {
+            magiskboot,
+            libadbroot,
+        } => utils::install(magiskboot, libadbroot),
         Commands::Unload => crate::unload::unload(),
         Commands::Uninstall {
             magiskboot,

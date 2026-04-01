@@ -23,7 +23,7 @@ static u32 cached_zygote_sid __read_mostly = 0;
 static u32 cached_init_sid __read_mostly = 0;
 u32 ksu_file_sid __read_mostly = 0;
 
-static int transive_to_domain(const char *domain, struct cred *cred)
+static int transive_to_domain(const char *domain, struct cred *cred, bool clear_exec_sid)
 {
     u32 sid;
     int error;
@@ -46,13 +46,16 @@ static int transive_to_domain(const char *domain, struct cred *cred)
         tsec->create_sid = 0;
         tsec->keycreate_sid = 0;
         tsec->sockcreate_sid = 0;
+        if (clear_exec_sid) {
+            tsec->exec_sid = 0;
+        }
     }
     return error;
 }
 
 void setup_selinux(const char *domain, struct cred *cred)
 {
-    if (transive_to_domain(domain, cred)) {
+    if (transive_to_domain(domain, cred, false)) {
         pr_err("transive domain failed.\n");
         return;
     }
@@ -60,7 +63,7 @@ void setup_selinux(const char *domain, struct cred *cred)
 
 void setup_ksu_cred(void)
 {
-    if (ksu_cred && transive_to_domain(KERNEL_SU_CONTEXT, ksu_cred)) {
+    if (ksu_cred && transive_to_domain(KERNEL_SU_CONTEXT, ksu_cred, false)) {
         pr_err("setup ksu cred failed.\n");
     }
 }
@@ -200,4 +203,20 @@ bool is_zygote(const struct cred *cred)
 bool is_init(const struct cred *cred)
 {
     return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
+}
+
+void escape_to_root_for_adb_root(void)
+{
+    struct cred *cred = prepare_creds();
+    if (!cred) {
+        pr_err("Failed to prepare adbd's creds!\n");
+        return;
+    }
+
+    if (transive_to_domain(KERNEL_SU_CONTEXT, cred, true)) {
+        pr_err("transive domain failed.\n");
+        abort_creds(cred);
+        return;
+    }
+    commit_creds(cred);
 }

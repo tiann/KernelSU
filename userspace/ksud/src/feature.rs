@@ -19,6 +19,7 @@ pub enum FeatureId {
     SuCompat = 0,
     KernelUmount = 1,
     Sulog = 2,
+    AdbRoot = 3,
 }
 
 impl FeatureId {
@@ -27,6 +28,7 @@ impl FeatureId {
             0 => Some(Self::SuCompat),
             1 => Some(Self::KernelUmount),
             2 => Some(Self::Sulog),
+            3 => Some(Self::AdbRoot),
             _ => None,
         }
     }
@@ -36,6 +38,7 @@ impl FeatureId {
             Self::SuCompat => "su_compat",
             Self::KernelUmount => "kernel_umount",
             Self::Sulog => "sulog",
+            Self::AdbRoot => "adb_root",
         }
     }
 
@@ -50,6 +53,7 @@ impl FeatureId {
             Self::Sulog => {
                 "SU Log - streams kernel sulog events to userspace and persists them to disk"
             }
+            Self::AdbRoot => "ADB Root - Enable adbd root",
         }
     }
 }
@@ -59,6 +63,7 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
         "su_compat" | "0" => Ok(FeatureId::SuCompat),
         "kernel_umount" | "1" => Ok(FeatureId::KernelUmount),
         "sulog" | "2" => Ok(FeatureId::Sulog),
+        "adb_root" | "3" => Ok(FeatureId::AdbRoot),
         _ => bail!("Unknown feature: {name}"),
     }
 }
@@ -303,6 +308,7 @@ pub fn list_features() {
         FeatureId::SuCompat,
         FeatureId::KernelUmount,
         FeatureId::Sulog,
+        FeatureId::AdbRoot,
     ];
 
     for feature_id in &all_features {
@@ -364,6 +370,7 @@ pub fn save_config() -> Result<()> {
         FeatureId::SuCompat,
         FeatureId::KernelUmount,
         FeatureId::Sulog,
+        FeatureId::AdbRoot,
     ];
 
     for feature_id in &all_features {

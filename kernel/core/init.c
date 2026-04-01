@@ -22,6 +22,7 @@
 #include "infra/file_wrapper.h"
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
+#include "feature/adb_root.h"
 
 #if defined(__x86_64__)
 #include <asm/cpufeature.h>
@@ -122,6 +123,7 @@ int __init kernelsu_init(void)
 
     ksu_feature_init();
     ksu_sulog_init();
+    ksu_adb_root_init();
 
     ksu_supercalls_init();
 
@@ -194,6 +196,7 @@ void __exit kernelsu_exit(void)
 
     ksu_allowlist_exit();
 
+    ksu_adb_root_exit();
     ksu_sulog_exit();
     ksu_feature_exit();
 
