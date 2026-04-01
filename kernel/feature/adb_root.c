@@ -33,11 +33,13 @@ static long is_exec_adbd(struct pt_regs *regs)
     fn = (char __user *)untagged_addr((unsigned long)filename_user);
     memset(buf, 0, sizeof(buf));
 
-    ret = strncpy_from_user(buf, *filename_user, sizeof(buf));
+    ret = strncpy_from_user(buf, fn, sizeof(buf));
     if (ret < 0) {
         pr_warn("Access filename when adb_root_handle_execve failed: %ld\n", ret);
         return ret;
     }
+    // DEBUG
+    pr_info("ret=%ld s=%s\n", ret, buf);
 
     if (ret < kAdbdLen || memcmp(buf + ret - kAdbdLen, kAdbd, kAdbdLen + 1) != 0) {
         // DEBUG
