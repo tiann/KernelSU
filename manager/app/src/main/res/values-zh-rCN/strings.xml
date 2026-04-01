@@ -240,4 +240,5 @@
     <string name="download">下载</string>
     <string name="download_cancel">取消</string>
     <string name="download_install">安装</string>
+    <string name="settings_adb_root_summary">以 root 权限运行 adbd 守护进程</string>
 </resources>
