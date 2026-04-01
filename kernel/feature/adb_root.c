@@ -126,7 +126,7 @@ static long setup_ld_preload(struct pt_regs *regs)
             }
         }
         env_count += new_env_count;
-        if (new_env_count != max_new_env_count)
+        if (meet_zero)
             break;
     }
 
