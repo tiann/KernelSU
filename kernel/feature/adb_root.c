@@ -38,12 +38,8 @@ static long is_exec_adbd(struct pt_regs *regs)
         pr_warn("Access filename when adb_root_handle_execve failed: %ld\n", ret);
         return ret;
     }
-    // DEBUG
-    pr_info("ret=%ld s=%s\n", ret, buf);
 
     if (ret < kAdbdLen || memcmp(buf + ret - kAdbdLen, kAdbd, kAdbdLen + 1) != 0) {
-        // DEBUG
-        pr_info("not adbd: %s\n", buf);
         return 0;
     }
 
@@ -85,14 +81,14 @@ static long setup_ld_preload(struct pt_regs *regs)
     ld_preload_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdPreload), 8);
     ret = copy_to_user(ld_preload_p, kLdPreload, sizeof(kLdPreload));
     if (ret < 0) {
-        pr_warn("write ld_preload when adb_root_handle_execve failed: %ld", ret);
+        pr_warn("write ld_preload when adb_root_handle_execve failed: %ld\n", ret);
         return ret;
     }
 
     ld_library_path_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdLibraryPath), 8);
     ret = copy_to_user(ld_library_path_p, kLdLibraryPath, sizeof(kLdLibraryPath));
     if (ret < 0) {
-        pr_warn("write ld_library_path when adb_root_handle_execve failed: %ld", ret);
+        pr_warn("write ld_library_path when adb_root_handle_execve failed: %ld\n", ret);
         return ret;
     }
 
