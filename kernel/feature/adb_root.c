@@ -54,7 +54,7 @@ static long is_libadbroot_ok()
     if (ret < 0) {
         if (ret == -ENOENT) {
             pr_err("libadbroot.so not exists, skip adb root. Please run `ksud install`\n");
-            return 0;
+            ret = 0;
         } else {
             pr_err("access libadbroot.so failed: %ld, skip adb root\n", ret);
         }
@@ -70,8 +70,8 @@ static long setup_ld_preload(struct pt_regs *regs)
     static const size_t kReadEnvBatch = 16;
     static const size_t kPtrSize = sizeof(unsigned long);
     unsigned long stackp = user_stack_pointer(regs);
-    char __user **envp, *ld_preload_p, *ld_library_path_p;
-    char __user ***envp_p = (char __user ***)&PT_REGS_PARM3(regs);
+    unsigned long envp, ld_preload_p, ld_library_path_p;
+    unsigned long *envp_p = (unsigned long *)&PT_REGS_PARM3(regs);
     unsigned long *tmp_env_p = NULL, *tmp_env_p2 = NULL;
     size_t env_count = 0, total_size;
     long ret;
@@ -80,14 +80,14 @@ static long setup_ld_preload(struct pt_regs *regs)
 
     ld_preload_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdPreload), 8);
     ret = copy_to_user(ld_preload_p, kLdPreload, sizeof(kLdPreload));
-    if (ret < 0) {
+    if (ret != 0) {
         pr_warn("write ld_preload when adb_root_handle_execve failed: %ld\n", ret);
         return ret;
     }
 
     ld_library_path_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdLibraryPath), 8);
     ret = copy_to_user(ld_library_path_p, kLdLibraryPath, sizeof(kLdLibraryPath));
-    if (ret < 0) {
+    if (ret != 0) {
         pr_warn("write ld_library_path when adb_root_handle_execve failed: %ld\n", ret);
         return ret;
     }
@@ -107,15 +107,23 @@ static long setup_ld_preload(struct pt_regs *regs)
         }
         size_t read_count = kReadEnvBatch * kPtrSize - ret;
         size_t max_new_env_count = read_count / kPtrSize, new_env_count = 0;
+        bool meet_zero = false;
         for (; new_env_count < max_new_env_count; new_env_count++) {
             if (!tmp_env_p[new_env_count + env_count]) {
+                meet_zero = true;
                 break;
             }
         }
-        if (new_env_count == max_new_env_count && read_count % kPtrSize != 0) {
-            pr_err("read count not aligned\n");
-            ret = -EFAULT;
-            goto out_release_env_p;
+        if (!meet_zero) {
+            if (read_count % kPtrSize != 0) {
+                pr_err("unaligned envp array!\n");
+                ret = -EFAULT;
+                goto out_release_env_p;
+            } else if (ret != 0) {
+                pr_err("truncated envp array!\n");
+                ret = -EFAULT;
+                goto out_release_env_p;
+            }
         }
         env_count += new_env_count;
         if (new_env_count != max_new_env_count)
@@ -131,7 +139,7 @@ static long setup_ld_preload(struct pt_regs *regs)
 
     stackp -= total_size;
     ret = copy_to_user(stackp, tmp_env_p, total_size);
-    if (ret < 0) {
+    if (ret != 0) {
         pr_err("copy new env failed: %ld\n", ret);
         goto out_release_env_p;
     }
