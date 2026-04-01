@@ -1,10 +1,8 @@
 
-#include "asm/memory.h"
-#include "asm/ptrace.h"
-#include "linux/jump_label.h"
-#include "linux/namei.h"
-#include "linux/path.h"
-#include "selinux/selinux.h"
+#include <asm/memory.h>
+#include <asm/ptrace.h>
+#include <linux/namei.h>
+#include <linux/path.h>
 #include <linux/printk.h>
 #include <linux/types.h>
 #include <linux/string.h>
@@ -16,6 +14,7 @@
 #include "adb_root.h"
 #include "arch.h"
 #include "policy/feature.h"
+#include "selinux/selinux.h"
 
 #include "klog.h" // IWYU pragma: keep
 
