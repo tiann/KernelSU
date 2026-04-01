@@ -307,6 +307,7 @@ pub fn list_features() {
         FeatureId::SuCompat,
         FeatureId::KernelUmount,
         FeatureId::Sulog,
+        FeatureId::AdbRoot,
     ];
 
     for feature_id in &all_features {
@@ -368,6 +369,7 @@ pub fn save_config() -> Result<()> {
         FeatureId::SuCompat,
         FeatureId::KernelUmount,
         FeatureId::Sulog,
+        FeatureId::AdbRoot,
     ];
 
     for feature_id in &all_features {
