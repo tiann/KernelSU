@@ -262,5 +262,5 @@
     <string name="download_cancel">Cancel</string>
     <string name="download_install">Install</string>
     <string name="settings_adb_root" translatable="false">ADB Root</string>
-    <string name="settings_adb_root_summary">Run adbd daemon with root privilege</string>
+    <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
 </resources>
