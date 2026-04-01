@@ -116,7 +116,7 @@ int ksu_observer_init(void)
     return 0;
 }
 
-void ksu_observer_exit(void)
+void __exit ksu_observer_exit(void)
 {
     unwatch_one_dir(&g_watch);
     fsnotify_put_group(g);

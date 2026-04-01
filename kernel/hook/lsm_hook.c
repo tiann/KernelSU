@@ -406,12 +406,12 @@ void ksu_unregister_lsm_hook(struct ksu_lsm_hook *hook)
     ksu_lsm_unhook(hook);
 }
 
-void ksu_lsm_hook_init(void)
+void __init ksu_lsm_hook_init(void)
 {
     pr_info("lsm_hook: init, tracked hooks=%d\n", READ_ONCE(ksu_lsm_hook_count));
 }
 
-void ksu_lsm_hook_exit(void)
+void __exit ksu_lsm_hook_exit(void)
 {
     struct ksu_lsm_hook *hooks[ARRAY_SIZE(ksu_lsm_hook_entries)];
     int count;

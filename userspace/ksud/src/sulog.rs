@@ -2,7 +2,7 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Days, Local, NaiveDate};
 use std::fmt::Write as FmtWrite;
 use std::fs::{self, DirBuilder, File, OpenOptions, Permissions};
-use std::io::{self, ErrorKind, LineWriter, Read, Seek, Write};
+use std::io::{self, ErrorKind, LineWriter, Write};
 use std::mem::size_of;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
@@ -86,9 +86,8 @@ enum SessionExitReason {
     EpollHangup,
 }
 
-struct PidFileGuard {
+struct SulogdLockGuard {
     _lock_file: File,
-    state: PidFileState,
 }
 
 struct DailyLogWriter {
@@ -97,13 +96,6 @@ struct DailyLogWriter {
     current_size: u64,
     max_file_size: u64,
     writer: LineWriter<File>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct PidFileState {
-    pid: i32,
-    start_time_ticks: u64,
-    boot_id: String,
 }
 
 impl EventRecordHeader {
@@ -182,39 +174,21 @@ impl SulogEvent {
     }
 }
 
-impl Drop for PidFileGuard {
-    fn drop(&mut self) {
-        if read_pid_file().ok().flatten() == Some(self.state.clone()) {
-            let _ = fs::remove_file(defs::SULOGD_PID_PATH);
-        }
-    }
-}
-
-impl PidFileGuard {
+impl SulogdLockGuard {
     fn acquire() -> Result<Option<Self>> {
         ensure_private_dir_exists(Path::new(defs::WORKING_DIR))?;
-        let state = current_pid_file_state()?;
-        let mut file = open_pid_file(true)?;
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .mode(SULOG_FILE_MODE)
+            .open(defs::SULOGD_LOCK_PATH)
+            .with_context(|| format!("failed to open {}", defs::SULOGD_LOCK_PATH))?;
 
-        if try_lock_pid_file(&file)? {
-            write_pid_file_state(&mut file, &state)
-                .with_context(|| format!("failed to write {}", defs::SULOGD_PID_PATH))?;
-            file.sync_all()
-                .with_context(|| format!("failed to sync {}", defs::SULOGD_PID_PATH))?;
-            return Ok(Some(Self {
-                _lock_file: file,
-                state,
-            }));
+        if try_lock_file(&file)? {
+            return Ok(Some(Self { _lock_file: file }));
         }
 
-        match read_pid_file_state_from_file(&mut file)? {
-            Some(existing) => {
-                log::info!("sulogd already running with pid={}", existing.pid);
-            }
-            None => {
-                log::warn!("sulogd lock is held but pid metadata is unavailable");
-            }
-        }
         Ok(None)
     }
 }
@@ -473,38 +447,7 @@ fn read_boot_id() -> Result<String> {
     Ok(boot_id.trim().to_string())
 }
 
-fn read_pid_file() -> Result<Option<PidFileState>> {
-    let pid_text = match fs::read_to_string(defs::SULOGD_PID_PATH) {
-        Ok(pid_text) => pid_text,
-        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(None),
-        Err(err) => {
-            return Err(err).with_context(|| format!("failed to read {}", defs::SULOGD_PID_PATH));
-        }
-    };
-
-    Ok(parse_pid_file_state(&pid_text))
-}
-
-fn open_pid_file(create: bool) -> Result<File> {
-    let file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(create)
-        .mode(SULOG_FILE_MODE)
-        .open(defs::SULOGD_PID_PATH)
-        .with_context(|| format!("failed to open {}", defs::SULOGD_PID_PATH))?;
-    file.set_permissions(Permissions::from_mode(SULOG_FILE_MODE))
-        .with_context(|| {
-            format!(
-                "failed to chmod {} to {:o}",
-                defs::SULOGD_PID_PATH,
-                SULOG_FILE_MODE
-            )
-        })?;
-    Ok(file)
-}
-
-fn try_lock_pid_file(file: &File) -> io::Result<bool> {
+fn try_lock_file(file: &File) -> io::Result<bool> {
     let ret = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) };
     if ret == 0 {
         return Ok(true);
@@ -522,101 +465,6 @@ fn try_lock_pid_file(file: &File) -> io::Result<bool> {
     }
 
     Err(err)
-}
-
-fn pid_is_alive(pid: i32) -> bool {
-    if pid <= 0 {
-        return false;
-    }
-
-    let ret = unsafe { libc::kill(pid, 0) };
-    ret == 0 || io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
-}
-
-fn parse_pid_file_state(pid_text: &str) -> Option<PidFileState> {
-    let mut fields = pid_text.split_whitespace();
-    let pid = fields.next()?.parse::<i32>().ok()?;
-    let start_time_ticks = fields.next()?.parse::<u64>().ok()?;
-    let boot_id = fields.next()?.to_string();
-    if pid <= 0 || boot_id.is_empty() {
-        return None;
-    }
-    Some(PidFileState {
-        pid,
-        start_time_ticks,
-        boot_id,
-    })
-}
-
-fn write_pid_file_state(file: &mut File, state: &PidFileState) -> io::Result<()> {
-    file.set_len(0)?;
-    file.rewind()?;
-    write!(
-        file,
-        "{} {} {}",
-        state.pid, state.start_time_ticks, state.boot_id
-    )
-}
-
-fn read_pid_file_state_from_file(file: &mut File) -> Result<Option<PidFileState>> {
-    file.rewind()?;
-    let mut pid_text = String::new();
-    file.read_to_string(&mut pid_text)?;
-    Ok(parse_pid_file_state(&pid_text))
-}
-
-fn read_process_start_time_ticks(pid: i32) -> Result<Option<u64>> {
-    if pid <= 0 {
-        return Ok(None);
-    }
-
-    let stat_path = format!("/proc/{pid}/stat");
-    let stat_text = match fs::read_to_string(&stat_path) {
-        Ok(stat_text) => stat_text,
-        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(None),
-        Err(err) => return Err(err).with_context(|| format!("failed to read {stat_path}")),
-    };
-
-    let (_, rest) = stat_text
-        .rsplit_once(") ")
-        .context("failed to parse /proc stat comm field")?;
-    let fields: Vec<&str> = rest.split_whitespace().collect();
-    let start_time = fields
-        .get(19)
-        .context("failed to read start_time from /proc stat")?
-        .parse::<u64>()
-        .context("failed to parse start_time from /proc stat")?;
-    Ok(Some(start_time))
-}
-
-fn current_pid_file_state() -> Result<PidFileState> {
-    let pid = i32::try_from(std::process::id()).context("invalid current pid")?;
-    let start_time_ticks =
-        read_process_start_time_ticks(pid)?.context("failed to get current process start time")?;
-    let boot_id = read_boot_id()?;
-    Ok(PidFileState {
-        pid,
-        start_time_ticks,
-        boot_id,
-    })
-}
-
-fn pid_file_state_matches_live_process(state: &PidFileState) -> bool {
-    if !pid_is_alive(state.pid) {
-        return false;
-    }
-
-    let Ok(current_boot_id) = read_boot_id() else {
-        return false;
-    };
-    if current_boot_id != state.boot_id {
-        return false;
-    }
-
-    matches!(
-        read_process_start_time_ticks(state.pid),
-        Ok(Some(start_time_ticks)) if start_time_ticks == state.start_time_ticks
-    )
 }
 
 fn escape_field(value: &str) -> String {
@@ -896,7 +744,8 @@ fn run_sulog_session(restart_count: u64) -> Result<SessionExitReason> {
 }
 
 pub fn run_sulogd() -> Result<()> {
-    let Some(_pid_guard) = PidFileGuard::acquire()? else {
+    let Some(_lock_guard) = SulogdLockGuard::acquire()? else {
+        log::info!("sulogd lock is held, skipping start");
         return Ok(());
     };
 
@@ -929,36 +778,20 @@ pub fn run_sulogd() -> Result<()> {
 }
 
 pub fn spawn_sulogd() -> Result<()> {
-    if let Some(existing) = read_pid_file()?
-        && pid_file_state_matches_live_process(&existing)
-    {
-        log::info!(
-            "sulogd already running with pid={}, skipping spawn",
-            existing.pid
-        );
-        return Ok(());
+    if utils::create_daemon(true)? {
+        let current_exe = std::env::current_exe().context("failed to resolve current ksud path")?;
+        let mut command = Command::new(current_exe);
+        command
+            .arg("sulogd")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .current_dir("/");
+
+        Err(command.exec()).context("failed to exec sulogd")
+    } else {
+        Ok(())
     }
-
-    let current_exe = std::env::current_exe().context("failed to resolve current ksud path")?;
-    let mut command = Command::new(current_exe);
-    command
-        .arg("sulogd")
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .current_dir("/")
-        .process_group(0);
-
-    unsafe {
-        command.pre_exec(|| {
-            utils::switch_cgroups();
-            Ok(())
-        });
-    }
-
-    let child = command.spawn().context("failed to spawn sulogd")?;
-    log::info!("spawned sulogd pid={}", child.id());
-    Ok(())
 }
 
 pub fn ensure_sulogd_running() -> Result<()> {

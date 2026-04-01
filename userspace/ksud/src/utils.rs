@@ -191,6 +191,7 @@ fn link_ksud_to_bin() -> Result<()> {
 
 pub fn install(magiskboot: Option<PathBuf>) -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
+    let _ = std::fs::remove_file(defs::DAEMON_PATH);
     std::fs::copy(
         std::env::current_exe().with_context(|| "Failed to get self exe path")?,
         defs::DAEMON_PATH,
@@ -245,14 +246,40 @@ pub fn reset_std() -> Result<()> {
     Ok(())
 }
 
-pub fn daemonize<F: FnOnce() -> Result<()>>(configure: F) -> Result<()> {
+pub fn daemonize_with<F: FnOnce() -> Result<()>>(use_init_pgrp: bool, configure: F) -> Result<()> {
+    if !create_daemon_impl(use_init_pgrp, configure)? {
+        unsafe { libc::_exit(0) }
+    }
+    Ok(())
+}
+
+pub fn daemonize(use_init_pgrp: bool) -> Result<()> {
+    daemonize_with(use_init_pgrp, || Ok(()))
+}
+
+pub fn create_daemon(use_init_pgrp: bool) -> Result<bool> {
+    create_daemon_with(use_init_pgrp, || Ok(()))
+}
+
+pub fn create_daemon_with<F: FnOnce() -> Result<()>>(
+    use_init_pgrp: bool,
+    configure: F,
+) -> Result<bool> {
+    create_daemon_impl(use_init_pgrp, configure)
+}
+
+fn create_daemon_impl<F: FnOnce() -> Result<()>>(
+    use_init_pgrp: bool,
+    configure: F,
+) -> Result<bool> {
     unsafe {
         let pid = libc::fork();
         if pid < 0 {
             bail!("fork error {}", std::io::Error::last_os_error());
         } else if pid > 0 {
+            let mut status: i32 = -1;
             loop {
-                if libc::waitpid(pid, std::ptr::null_mut(), 0) < 0 {
+                if libc::waitpid(pid, &raw mut status, 0) < 0 {
                     if *libc::__errno() != libc::EINTR {
                         libc::_exit(1);
                     }
@@ -260,23 +287,49 @@ pub fn daemonize<F: FnOnce() -> Result<()>>(configure: F) -> Result<()> {
                     break;
                 }
             }
-            libc::_exit(0);
+            if !libc::WIFEXITED(status) || libc::WEXITSTATUS(status) != 0 {
+                bail!("child exited with unexpected status {status}")
+            }
+            return Ok(false);
         }
     }
 
-    setpgid(None, None)?;
-    switch_cgroups();
-    configure()?;
-    reset_std()?;
+    let do_configure = || -> Result<()> {
+        detach_process_group(use_init_pgrp);
+        switch_cgroups();
+        configure()?;
+        reset_std()?;
 
-    unsafe {
-        let pid = libc::fork();
-        if pid < 0 {
-            bail!("fork error {}", std::io::Error::last_os_error());
-        } else if pid > 0 {
-            libc::_exit(0);
+        unsafe {
+            let pid = libc::fork();
+            if pid < 0 {
+                bail!("fork error {}", std::io::Error::last_os_error());
+            } else if pid > 0 {
+                libc::_exit(0);
+            }
+        }
+        Ok(())
+    };
+
+    if let Err(e) = do_configure() {
+        log::error!("failed to configure daemon: {e:?}");
+        unsafe {
+            libc::_exit(1);
         }
     }
 
-    Ok(())
+    Ok(true)
+}
+
+pub fn detach_process_group(use_init_pgrp: bool) {
+    if use_init_pgrp {
+        if let Err(e) = ksucalls::set_init_pgrp() {
+            log::error!("failed to switch to init group: {e:?}");
+        } else {
+            return;
+        }
+    }
+    if let Err(e2) = setpgid(None, None) {
+        log::error!("failed to set process group: {e2:?}");
+    }
 }

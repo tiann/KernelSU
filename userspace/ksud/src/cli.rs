@@ -32,7 +32,8 @@ enum Commands {
     /// Trigger `service` event
     Services,
 
-    /// Run sulog reader daemon
+    /// Run sulog reader daemon. Not for user. Use `ksud debug sulogd` to launch daemon.
+    #[command(hide = true)]
     Sulogd,
 
     /// Trigger `boot-complete` event
@@ -196,6 +197,9 @@ enum Debug {
         #[command(subcommand)]
         command: MarkCommand,
     },
+
+    /// Launch sulogd daemon manually
+    Sulogd,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -618,9 +622,6 @@ pub fn run() -> Result<()> {
                 info!("KernelSU not available, exiting services");
                 std::process::exit(0);
             }
-            if let Err(err) = sulog::ensure_sulogd_running() {
-                error!("failed to ensure sulogd is running: {err:#}");
-            }
             init_event::on_services();
             Ok(())
         }
@@ -678,6 +679,7 @@ pub fn run() -> Result<()> {
                 MarkCommand::Unmark { pid } => debug::mark_unset(pid),
                 MarkCommand::Refresh => debug::mark_refresh(),
             },
+            Debug::Sulogd => sulog::ensure_sulogd_running(),
         },
 
         Commands::BootPatch(boot_patch) => crate::boot_patch::patch(boot_patch),

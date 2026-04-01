@@ -43,7 +43,7 @@
 #include <linux/random.h>
 unsigned long __stack_chk_guard __ro_after_init __attribute__((visibility("hidden")));
 
-__attribute__((no_stack_protector)) void ksu_setup_stack_chk_guard()
+__attribute__((no_stack_protector)) void __init ksu_setup_stack_chk_guard()
 {
     unsigned long canary;
 
@@ -174,7 +174,7 @@ int __init kernelsu_init(void)
     return 0;
 }
 
-void kernelsu_exit(void)
+void __exit kernelsu_exit(void)
 {
     // Phase 1: Stop all hooks first to prevent new callbacks
     ksu_syscall_hook_manager_exit();
