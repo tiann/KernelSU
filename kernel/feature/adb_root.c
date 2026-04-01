@@ -11,6 +11,7 @@
 #include <linux/uaccess.h>
 #include <linux/ptrace.h>
 #include <linux/static_key.h>
+#include <linux/slab.h>
 
 #include "adb_root.h"
 #include "arch.h"
