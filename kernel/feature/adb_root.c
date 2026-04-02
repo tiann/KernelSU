@@ -1,5 +1,4 @@
 
-#include <asm/memory.h>
 #include <asm/ptrace.h>
 #include <linux/namei.h>
 #include <linux/path.h>
